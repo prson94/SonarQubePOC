@@ -51,6 +51,21 @@
             </div>
         </ng-container>
 
+        <ng-container *ngIf="showConditionGroups">
+            <div class="calculation-group">
+                <div class="title">Asset Conditions and Weighting</div>
+                <div>Measure Applied to <span *ngIf="selected.MatchConditionsOnly">all</span><span *ngIf="!selected.MatchConditionsOnly">any</span> Assets</div>
+                <div class="conditions">
+                    <div *ngFor="let condition of selected.Conditions;let i = index;">
+                        <div>Weight: {{formatWeight(condition.Weight)}} - Determined via match on Condition Group {{condition.Position}}</div>
+                        <span *ngFor="let item of condition.ConditionItems;let i = index;">
+                           <span *ngIf="i > 0">&nbsp;,</span> {{item.FieldName}} {{Operator[item.Operator]}} {{isDate(item) ? (item.Value | date: shortdate) : item.Value}}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+
         <ng-container *ngIf="!showPassTest()">
             <div class="calculation-group">
                 <div class="title">Measure Score</div>

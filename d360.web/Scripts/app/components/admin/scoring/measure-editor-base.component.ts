@@ -77,12 +77,10 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     verb = "Add";
     canAddGroup: boolean = false;
     private baseMenuItems = [
-        { "title": "Delete" }
+        { "title": "Delete" },
+        { "title": "Duplicate" }
     ];
 
-    private duplicationMenu = [
-        { "title": "Duplicate" },
-    ];
 
     private upMenuItems: any[] = [
         { title: "Move to Top" },
@@ -573,10 +571,14 @@ export class BaseMeasureEditorComponent extends BaseComponent {
             updated.forEach(x => {
                 let originalMatch = original.find(y => y.Uid == x.Uid);
                 if (originalMatch) {
-                    if (x.MatchType != originalMatch.MatchType
-                        || x.Position != originalMatch.Position
-                        || x.Threshold != originalMatch.Threshold
-                        || x.Weight != originalMatch.Weight) {
+                    if (x.MatchType !== originalMatch.MatchType
+                        || x.Position !== originalMatch.Position
+                        || x.Threshold !== originalMatch.Threshold
+                        || +(x.Weight ?? 0) !== +(originalMatch.Weight ?? 0) 
+                        || +(x.DisplayWeight ?? 0) !== +(originalMatch.DisplayWeight ?? 0)
+                        || x.DisplayOrder !== originalMatch.DisplayOrder
+                        || x.Position !== originalMatch.Position
+                        || x.conditionItemFields.filter(x => x.field).length !== originalMatch.conditionItemFields.filter(x => x.field).length) {
                         changeFound = true;
                     } else if (!originalMatch.conditionItemFields.every((item) => {
                         return x.conditionItemFields.findIndex(x => x.field == item.field
@@ -589,8 +591,8 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                     changeFound = true;
                 }
             });
+            return changeFound;
         }
-        return false;
     }
 
 

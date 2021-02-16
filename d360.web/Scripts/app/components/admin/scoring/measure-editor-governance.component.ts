@@ -147,7 +147,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
     }
 
     ngAfterViewInit() {
-        this.originalConditions = _.cloneDeep(this.conditionGroups);
+        this.originalConditions = _.cloneDeep(this.conditionGroups)
         this.originalModel = _.cloneDeep(this.model);
         this.originalEffectiveDate = new Date(this.displayEffectiveDate?.toString());
         if (!this.uid) {
@@ -178,6 +178,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
             } else {
                 this.isLoading = false;
             }
+            this.checkModelChanged();
             this.cdRef.markForCheck();
         });
 
@@ -439,6 +440,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
             && (
                 this.model.Name &&
                 this.originalModel.Name != this.model.Name
+                || this.originalModel.MatchConditionsOnly != this.model.MatchConditionsOnly
                 || (this.originalModel.Description && this.originalModel.Description != this.model.Description)
                 || (!this.originalModel.Description && !(!this.model.Description || this.model.Description == null || this.model.Description.trim() == ""))
                 || (this.displayWeight && (this.originalModel.Weight * 100) != this.displayWeight)

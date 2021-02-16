@@ -1586,7 +1586,8 @@ from	(
 				iif(Ma.IsGroup = 1, null, SI.Value) as Value,
                 SI.DecimalValue,
 				cast(iif(SI.Evidence is not null and SI.Evidence <> '', 1, 0) as bit) as HasEvidence,
-				A.ScoreType
+				A.ScoreType,
+				V.MatchConditionsOnly
 		from    metrics.Score S 
 				inner join metrics.Allocation A on A.Uid = S.AllocationUid
                 inner join metrics.ScoreItemLink SIL on SIL.ScoreUid = S.Uid 
@@ -1614,7 +1615,7 @@ select		R.*,
 											from	FieldLookupValue
 											where	FieldTypeID = F.ID and LookupObjectType = F.LookupObjectType and LookupObjectID = F.LookupObjectID and AssetUid = CIV.Value
 										)
-									ELSE CIV.Value 
+									ELSE CIV.Value
 								end
 								) as [Value]
                     	from	[metrics].[AssetVersionCondition] C
@@ -1630,25 +1631,35 @@ select		R.*,
 			for json path
 			) as MeasuresJson,
 						(
-                    	select	F.FriendlyName as FieldName,
-                    			CI.Operator,
-                    			(
-									case when F.Type = 'Lookup' then 
-										(
-											select	top 1
-													[Text]
-											from	FieldLookupValue
-											where	FieldTypeID = F.ID and LookupObjectType = F.LookupObjectType and LookupObjectID = F.LookupObjectID and AssetUid = CIV.Value
-										)
-									ELSE CIV.Value 
-								end
-								) as [Value]
-                    	from	[metrics].[AssetVersionCondition] C
-                                inner join metrics.AssetVersionConditionItem CI on CI.AssetVersionConditionUid = C.Uid
-                                inner join metrics.AssetVersionConditionItemValue CIV on CIV.Uid = CI.Uid 
-                    			inner join FieldType F on F.ID = CI.ConditionFieldTypeID
-                    	where	C.AssetVersionUid = R.VersionUid
-                    	for json path
+                    	SELECT 
+							MatchType,
+							Position,
+							threshold,
+							Weight,
+							(
+                            select	F.FriendlyName as FieldName,
+                    					CI.Operator,
+                    					(
+											case when F.Type = 'Lookup' then 
+												(
+													select	top 1
+															[Text]
+													from	FieldLookupValue
+													where	FieldTypeID = F.ID and LookupObjectType = F.LookupObjectType and LookupObjectID = F.LookupObjectID and AssetUid = CIV.Value
+												)
+											ELSE CIV.Value
+										end
+										) as [Value]
+                    			from	[metrics].[AssetVersionCondition] C1
+										inner join metrics.AssetVersionConditionItem CI on CI.AssetVersionConditionUid = C.Uid
+										left join metrics.AssetVersionConditionItemValue CIV on CIV.Uid = CI.Uid 
+                    					inner join FieldType F on F.ID = CI.ConditionFieldTypeID
+                    			where	C.AssetVersionUid = R.VersionUid and CI.[AssetVersionConditionUid] = C1.[Uid]
+                    			for json path
+                                ) as ConditionItems
+							from metrics.AssetVersionCondition C
+							where	C.AssetVersionUid = R.VersionUid
+							for json path
 						) as ConditionsJson
 from		#results R
 where		R.ParentUid is null
@@ -1656,7 +1667,7 @@ order by	R.[Name]";
 
             if (cnn.State != ConnectionState.Open)
                 cnn.Open();
-
+            
             return cnn.Query<RootMetricAssetHierarchyModel>(sql, new { allocationUid, assetUid, effectiveDate = effectiveDate.Value }, commandTimeout: ApiTimeout).ToList();
         }
 
