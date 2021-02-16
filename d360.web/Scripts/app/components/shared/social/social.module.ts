@@ -15,7 +15,7 @@ import { SocialTagInputComponent } from './social-tag-input.component';
 import { ButtonModule } from 'primeng/button';
 import { EditorModule } from 'primeng/editor';
 import { AutoCompleteModule } from 'primeng/autocomplete';
-import { ResourcesService } from '../../../services/resources.service';
+import { ResourcesService } from "../../../services/resources.service";
 
 
 @NgModule({

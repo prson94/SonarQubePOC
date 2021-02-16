@@ -105,16 +105,16 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
 
         if (this.comment) {
             this.resourcesService.getResource(this.comment.CreatedBy)
-                .subscribe(r => {
+                .subscribe((r) => {
                     this.comment.CreatedByUid = r.items[0].uid;
                 });
             if (this.comment.Comments && this.comment.Comments.length > 0) {
-                this.comment.Comments.forEach(x => {
+                this.comment.Comments.forEach((x) => {
                     this.resourcesService.getResource(x.CreatedBy)
-                        .subscribe(i => {
+                        .subscribe((i) => {
                             x.CreatedByUid = i.items[0].uid;
                         });
-                })
+                });
             }
         }
 
