@@ -1221,19 +1221,23 @@ for json path";
 		                                    T.Name, 
 		                                    T.[Class], 
 		                                    P.Path,
-                                            RUid.ResponsibilitiesJson
+                                            Res.Value as ResponsibilitiesJson
                                         FROM 
                                             IssueTypeRelation R
                                             INNER JOIN AssetType T ON T.ID = R.AssetTypeID
                                             CROSS APPLY dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
-                                            OUTER APPLY (select 
-                                                    CONCAT('[""',STRING_AGG(STRING_ESCAPE(cast(rt.Uid as nvarchar(36)),'JSON'), '"",""'),'""]') as ResponsibilitiesJson		                                 
-	                                            from 
-		                                            IssueTypeRelationResponsibility ITRR 
-                                                    INNER JOIN
-                                                    ResponsibilityType rt on RT.ID = ITRR.ResponsibilityTypeId 
-	                                            where 
-		                                            ITRR.IssueTypeRelationID = R.ID) RUid
+                                            OUTER APPLY (select [value] = (
+                                                    select
+			                                            rt.Name, rt.Uid
+	                                                from 
+		                                                IssueTypeRelationResponsibility ITRR 
+                                                        INNER JOIN
+                                                        ResponsibilityType rt on RT.ID = ITRR.ResponsibilityTypeId 
+	                                                where 
+		                                                ITRR.IssueTypeRelationID = R.ID
+                                                    For Json Path   
+                                                )
+                                            ) Res
                                         WHERE 
                                             R.IssueTypeID = @issueTypeID";
 
