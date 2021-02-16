@@ -27,6 +27,7 @@ export class GalleryDropDownComponent implements OnInit {
     ngOnInit(): void {
         this.properties = new Array();
         this.properties.push({ Name: "igSize", Type: "string", Description: "Size of the input. Options are small(150px), medium(308px), large(624px) and full(100%).", Default: "full" });
+        this.properties.push({ Name: "ellipsisDirection", Type: "string", Description: "Direction of ellipsis. Options are ltr(left to right) or rtl(right to left)", Default: "ltr" });
         this.properties.push({ Name: "pDropdown", Type: "", Description: "All properties exposed by Prime NG Dropdown component", Default: "" });
     }
     cars = [
@@ -41,6 +42,20 @@ export class GalleryDropDownComponent implements OnInit {
         { label: 'VW', value: 'VW' },
         { label: 'Volvo', value: 'Volvo' }
     ];
+
+    longNames = [
+        { label: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam pharetra egestas dolor at faucibus. Nunc porttitor eros erat, non hendrerit sem dictum quis. Morbi porttitor et sem id consectetur. Pellentesque quis mattis dolor. Pellentesque imperdiet nisl eu justo tincidunt tempor. Suspendisse eu urna et lacus vestibulum facilisis", value: "Audi" },
+        { label: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam pharetra egestas dolor at faucibus. Nunc porttitor eros erat, non hendrerit sem dictum quis. Morbi porttitor et sem id consectetur. Pellentesque quis mattis dolor. Pellentesque imperdiet nisl eu justo tincidunt tempor. Suspendisse eu urna et lacus vestibulum facilisis", value: "Aud2i" },
+        { label: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam pharetra egestas dolor at faucibus. Nunc porttitor eros erat, non hendrerit sem dictum quis. Morbi porttitor et sem id consectetur. Pellentesque quis mattis dolor. Pellentesque imperdiet nisl eu justo tincidunt tempor. Suspendisse eu urna et lacus vestibulum facilisis", value: "Aud3i" }
+    ];
+
+    longNamesPaths = [
+        { label: "Business Asset > Suma Hop test Parent_TA/Suma Hop test Child_TA/Suma Hop test Grand Child_TA/Suma Hop test Great Grand Child_TA/One More Level/Two Levels Under/Third Level/One more/Suma Hop test Child_TA/Suma Hop test Grand Child_TA/Suma Hop test Great Grand Child_TA/One More Level/Two Levels Under/Third Level/One more", value: "Audi" },
+        { label: "Business Asset > Suma Hop test Parent_TA/Suma Hop test Child_TA/Suma Hop test Grand Child_TA/Suma Hop test Great Grand Child_TA/One More Level/Two Levels Under/Third Level/One more/Suma Hop test Child_TA/Suma Hop test Grand Child_TA/Suma Hop test Great Grand Child_TA/One More Level/Two Levels Under/Third Level/One more", value: "Audi" },
+        { label: "Business Asset > Suma Hop test Parent_TA/Suma Hop test Child_TA/Suma Hop test Grand Child_TA/Suma Hop test Great Grand Child_TA/One More Level/Two Levels Under/Third Level/One more/Suma Hop test Child_TA/Suma Hop test Grand Child_TA/Suma Hop test Great Grand Child_TA/One More Level/Two Levels Under/Third Level/One more", value: "Audi" },
+       ];
+
+
 
     companies = [
         {

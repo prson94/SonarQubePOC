@@ -2,26 +2,10 @@
 import { SelectItem } from 'primeng/api';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { RelationshipDetail, PredicateDropdown } from '../../../models/relationship.model';
-import { ViewEncapsulation } from '@angular/core';
 
 @Component({
     selector: 'd3s-admin-relationships-editor',
     templateUrl: './admin-relationships-editor.component.html',
-
-    // Having three dropdowns in compact space gives ugly and unusable dropdown panels...esp for long dropdown items
-    // insert custom styling using Angular Default View Encapsulation
-    // appendTo="body" was added to the dropdowns to address Edge issues leaving the panels show allover.
-    // This fix should address the correct left position
-
-    encapsulation: ViewEncapsulation.None,
-    styles: [
-        `
-            .p-dropdown-panel {
-                max-width: 300px;
-            }
-        `
-    ],
-
     providers: [RelationshipsService],
 
 })
