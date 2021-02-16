@@ -13,7 +13,7 @@ export class DropdownDirective implements AfterContentInit {
     @Input() required: boolean;
     @Input() disabled: boolean;
     @Input() overlayLowerZIndex: boolean = false;
-
+    @Input() ellipsisDirection: string = 'ltr';
     constructor(public el: ElementRef, public dropdownRef: Dropdown, private ref: ChangeDetectorRef) { }
 
     setDisabledState?(isDisabled: boolean): void {
@@ -22,7 +22,7 @@ export class DropdownDirective implements AfterContentInit {
 
     ngAfterContentInit(): void {
         DomHandler.addMultipleClasses(this.el.nativeElement, this.getStyleClass());
-        if (this.required !== null && (typeof this.required !== undefined) && this.required.toString() !== '') {
+        if (this.required !== null && (typeof this.required !== undefined) && this.required?.toString() !== '') {
             //If required was set by Angular binding via [required] input parameter
             if (this.required) {
                 (this.el.nativeElement as HTMLElement).setAttribute("required", "true");
@@ -54,9 +54,17 @@ export class DropdownDirective implements AfterContentInit {
         this.dropdownRef.scrollHeight = '340px';
 
         setInterval(() => {
-            if (this.dropdownRef.overlayVisible) {
+            if (this.dropdownRef.overlayVisible && this.dropdownRef?.overlay) {
                 if (this.dropdownRef.overlay.className.indexOf('ig-dropdown-overlay') == -1) {
                     this.dropdownRef.overlay.classList.add('ig-dropdown-overlay');
+
+                    if (this.ellipsisDirection === 'ltr') {
+                        this.dropdownRef.overlay.classList.add('ig-dropdown-ellipsis-ltr');
+                    }
+                    else {
+                        this.dropdownRef.overlay.classList.add('ig-dropdown-ellipsis-rtl');
+                    }
+
                     if (this.overlayLowerZIndex) {
                         this.dropdownRef.overlay.classList.add('ig-dropdown-overlay-lower-index');
                     }

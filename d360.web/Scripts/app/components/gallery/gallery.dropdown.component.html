@@ -41,10 +41,57 @@
             <div class="row">full(100%)</div>
             <p-dropdown igDropdown
                         igSize="full"
-
                         [(ngModel)]="value"
                         [options]="cars"></p-dropdown>
         </div>
+    </div>
+
+    <hr />
+    <div class="gallery-section">
+        <h4>Long names on full width (left to right ellipsis)</h4>
+        * used for regular drop down lists
+        <div class="row">
+            <p-dropdown igDropdown
+                        required
+                        igSize="medium"
+                        [(ngModel)]="reqValue"
+                        [appendTo]="'body'"
+                        [options]="longNames"></p-dropdown>
+        </div>
+        <div class="row">&nbsp;</div>
+        <h4>Long names on full width (right to left ellipsis)</h4>
+        * used for drop down lists which contains asset paths
+        <div class="row">
+            <p-dropdown igDropdown
+                        required
+                        igSize="medium"
+                        [(ngModel)]="reqValue"
+                        [ellipsisDirection]="'rtl'"
+                        [appendTo]="'body'"
+                        [options]="longNamesPaths"></p-dropdown>
+        </div>
+        <div class="row">&nbsp;</div>
+        <h4>Long names on limited width (left to right ellipsis)</h4>
+        * used for regular drop down lists
+        <div class="row">
+            <p-dropdown igDropdown
+                        required
+                        igSize="medium"
+                        [(ngModel)]="reqValue"
+                        [options]="longNames"></p-dropdown>
+        </div>
+        <div class="row">&nbsp;</div>
+        <h4>Long names on limited width (right to left ellipsis)</h4>
+        * used for drop down lists which contains asset paths
+        <div class="row">
+            <p-dropdown igDropdown
+                        required
+                        igSize="medium"
+                        [(ngModel)]="reqValue"
+                        [ellipsisDirection]="'rtl'"
+                        [options]="longNamesPaths"></p-dropdown>
+        </div>
+        <div class="row">&nbsp;</div>
     </div>
 
     <hr />

@@ -2,171 +2,185 @@
 @import './IgUiVariables.less';
 
 .ig-dropdown {
-    font-family: @ig-field-font-family;
-    font-size: 14px;
-    display: inline-block;
+  font-family: @ig-field-font-family;
+  font-size: 14px;
+  display: inline-block;
+  height: 32px;
+  outline: none;
+  width: 100%;
+  border-radius: 4px;
+
+  .p-dropdown {
     height: 32px;
-    outline: none;
+    padding: 0px;
+    border-radius: inherit;
+    border: 1px solid @ig-select-border-color;
     width: 100%;
+    min-width: 0px;
+
+    &.p-focus {
+      outline: 0 none;
+      outline-offset: 0;
+      box-shadow: 0 0 0 @ig-focus-width @ig-midblue-t3;
+      border-color: @ig-select-border-color;
+      background: none;
+    }
+  }
+
+  .p-dropdown-label {
+    overflow: hidden;
+    white-space: nowrap !important;
+    text-overflow: ellipsis;
+    padding-top: 5px;
+    padding-left: 8px;
+    padding-right: 56px;
+    border-radius: inherit;
+  }
+
+  &[required] .p-dropdown-label {
+    padding-right: 32px;
+  }
+
+  .p-dropdown-trigger {
+    background-color: @ig-select-button-color;
+    width: 24px;
+    height: 24px;
+    top: 3px;
+    right: 3px;
+    border-radius: 4px;
+  }
+
+  .p-dropdown-clear-icon {
+    width: 24px;
+    height: 24px;
+    right: 30px;
+    background-color: @ig-select-button-color;
+    top: 10px;
+    font-size: 14px;
+    padding: 5px;
     border-radius: 4px;
 
-    .p-dropdown {
-        height: 32px;
-        padding: 0px;
-        border-radius: inherit;
-        border: 1px solid @ig-select-border-color;
-        width: 100%;
-        min-width: 0px;
-
-        &.p-focus {
-            outline: 0 none;
-            outline-offset: 0;
-            box-shadow: 0 0 0 @ig-focus-width @ig-midblue-t3;
-            border-color: @ig-select-border-color;
-            background: none;
-        }
+    &:hover {
+      background-color: @ig-select-button-hover-color;
     }
+
+    &:active {
+      background-color: @ig-select-button-active-color;
+    }
+  }
+
+  .p-dropdown-trigger {
+    background-color: @ig-select-button-color;
+
+    &:hover {
+      background-color: @ig-select-button-hover-color;
+    }
+
+    &:active {
+      background-color: @ig-select-button-active-color;
+    }
+  }
+
+  &.ng-dirty.ng-invalid > .p-dropdown {
+    border-color: @ig-select-border-color;
+    border-bottom: 1px solid @ig-select-border-color;
+  }
+
+  &[required].ng-invalid {
+    background-color: @ig-lightblue-t4;
 
     .p-dropdown-label {
-        overflow: hidden;
-        white-space: nowrap !important;
-        text-overflow: ellipsis;
-        padding-top: 5px;
-        padding-left: 8px;
-        padding-right: 56px;
-        border-radius: inherit;
+      background: @ig-lightblue-t4;
     }
+  }
 
-    &[required] .p-dropdown-label {
-        padding-right: 32px;
+  &.ig-input-small {
+    max-width: @ig-field-width-small;
+
+    .p-dropdown {
+      width: 100%;
+      max-width: @ig-field-width-small;
     }
+  }
 
-    .p-dropdown-trigger {
-        background-color: @ig-select-button-color;
-        width: 24px;
-        height: 24px;
-        top: 3px;
-        right: 3px;
-        border-radius: 4px;
+  &.ig-input-medium {
+    max-width: @ig-field-width-medium;
+
+    .p-dropdown {
+      width: 100%;
+      max-width: @ig-field-width-medium;
     }
+  }
 
-    .p-dropdown-clear-icon {
-        width: 24px;
-        height: 24px;
-        right: 30px;
-        background-color: @ig-select-button-color;
-        top: 10px;
-        font-size: 14px;
-        padding: 5px;
-        border-radius: 4px;
+  &.ig-input-large {
+    max-width: @ig-field-width-large;
 
-        &:hover {
-            background-color: @ig-select-button-hover-color;
-        }
-
-        &:active {
-            background-color: @ig-select-button-active-color;
-        }
+    .p-dropdown {
+      width: 100%;
+      max-width: @ig-field-width-large;
     }
+  }
 
-    .p-dropdown-trigger {
-        background-color: @ig-select-button-color;
+  &.ig-input-full {
+    max-width: @ig-field-width-full;
 
-        &:hover {
-            background-color: @ig-select-button-hover-color;
-        }
-
-        &:active {
-            background-color: @ig-select-button-active-color;
-        }
+    .p-dropdown {
+      width: 100%;
+      max-width: @ig-field-width-full;
     }
+  }
+}
 
-    &.ng-dirty.ng-invalid > .p-dropdown {
-        border-color: @ig-select-border-color;
-        border-bottom: 1px solid @ig-select-border-color;
-    }
+.ig-dropdown-ellipsis-ltr {
+  .p-dropdown-item {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    direction: ltr;
+  }
+}
 
-    &[required].ng-invalid {
-        background-color: @ig-lightblue-t4;
-
-        .p-dropdown-label {
-            background: @ig-lightblue-t4;
-        }
-    }
-
-    &.ig-input-small {
-        max-width: @ig-field-width-small;
-
-        .p-dropdown {
-            width: 100%;
-            max-width: @ig-field-width-small;
-        }
-    }
-
-    &.ig-input-medium {
-        max-width: @ig-field-width-medium;
-
-        .p-dropdown {
-            width: 100%;
-            max-width: @ig-field-width-medium;
-        }
-    }
-
-    &.ig-input-large {
-        max-width: @ig-field-width-large;
-
-        .p-dropdown {
-            width: 100%;
-            max-width: @ig-field-width-large;
-        }
-    }
-
-    &.ig-input-full {
-        max-width: @ig-field-width-full;
-
-        .p-dropdown {
-            width: 100%;
-            max-width: @ig-field-width-full;
-        }
-    }
+.ig-dropdown-ellipsis-rtl {
+  .p-dropdown-item {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    direction: rtl;
+  }
 }
 
 .ig-dropdown-overlay {
-    border-radius: 4px !important;
-    z-index: 20005 !important;
+  border-radius: 4px !important;
+  z-index: 20005 !important;
 
-    &.ig-dropdown-overlay-lower-index {
-        z-index: 899 !important;
+  .p-dropdown-items-wrapper {
+    border-radius: 4px;
+  }
+
+  .p-dropdown-items {
+    padding: 0;
+
+    li {
+      margin: 0px 0px;
+      height: 32px;
+      color: black;
+      padding: 6px 12px;
+
+      &.p-highlight {
+        background-color: @ig-orange-t3;
+      }
+
+      &:hover {
+        background-color: @ig-orange-t4;
+      }
     }
+  }
 
-    .p-dropdown-items-wrapper {
-        border-radius: 4px;
-    }
+  .p-dropdown-filter-container {
+    padding: 4px;
+  }
 
-    .p-dropdown-items {
-        padding: 0;
-
-        li {
-            margin: 0px 0px;
-            height: 32px;
-            color: black;
-            padding: 6px 12px;
-
-            &.p-highlight {
-                background-color: @ig-orange-t3;
-            }
-
-            &:hover {
-                background-color: @ig-orange-t4;
-            }
-        }
-    }
-
-    .p-dropdown-filter-container {
-        padding: 4px;
-    }
-
-    .ig-input {
-        width: 100%;
-    }
+  .ig-input {
+    width: 100%;
+  }
 }
