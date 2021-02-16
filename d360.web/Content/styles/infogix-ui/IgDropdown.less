@@ -81,19 +81,6 @@
     }
   }
 
-  &.ng-dirty.ng-invalid > .p-dropdown {
-    border-color: @ig-select-border-color;
-    border-bottom: 1px solid @ig-select-border-color;
-  }
-
-  &[required].ng-invalid {
-    background-color: @ig-lightblue-t4;
-
-    .p-dropdown-label {
-      background: @ig-lightblue-t4;
-    }
-  }
-
   &.ig-input-small {
     max-width: @ig-field-width-small;
 
@@ -129,6 +116,19 @@
       max-width: @ig-field-width-full;
     }
   }
+
+  &.ng-dirty.ng-invalid > .p-dropdown {
+    border-color: @ig-select-border-color;
+    border-bottom: 1px solid @ig-select-border-color;
+  }
+
+  &[required].ng-invalid {
+    background-color: @ig-lightblue-t4;
+
+    .p-dropdown-label {
+      background: @ig-lightblue-t4;
+    }
+  }
 }
 
 .ig-dropdown-ellipsis-ltr {
@@ -161,7 +161,7 @@
     padding: 0;
 
     li {
-      margin: 0px 0px;
+      margin: 0px;
       height: 32px;
       color: black;
       padding: 6px 12px;
