@@ -2202,8 +2202,8 @@ div.home-image-title-text {
 .modal-overlay.show {
     visibility: visible;
     opacity: 1;
-    overflow: hidden;
     position: fixed;
+    max-height: 100%;
 }
 
 .modal-overlay.begin-hide {
@@ -2382,12 +2382,6 @@ div.home-image-title-text {
     flex-shrink: 1;
     min-height: 32px;
     overflow-y: auto;
-}
-
-.modal-overlay .modal-dialog .content .bottom-action-bar {
-    position: absolute;
-    right: 24px;
-    bottom: 24px;
 }
 
 .modal-overlay.show .modal-dialog {
@@ -6429,12 +6423,23 @@ table {
         .measure-details-item {
             margin-bottom: 8px;
 
+            .match-info {
+                margin-bottom: 8px;
+            }
+
             .condition-content {
                 display: inline-flex;
+                width: 100%;
 
                 .condition-items {
                     padding-right: 4px;
                     flex-direction: column;
+                    margin-bottom: 8px;
+                    width: 100%;
+
+                    .inline {
+                        display: inline-flex;
+                    }
                 }
             }
 
@@ -6928,4 +6933,59 @@ table {
     .flex-col {
         padding:0px 16px 0px 0px;
     }
+}
+
+.condition-group {
+    background: @ig-grey-t5;
+    border-radius: 8px;
+    padding: 24px;
+    margin-right: 24px;
+    margin-bottom: 8px;
+
+    .cg-field-group-container {
+        width: 100%;
+
+        .p-dropdown {
+            width: 280px;
+        }
+
+        .field-condition-grid {
+            width: 101%;
+            overflow-x: hidden;
+        }
+    }
+
+    .cg-header-row {
+        display: inline-block;
+        line-height: 24px;
+        width: 100%;
+
+        .condition-group-header {
+            display: inline-block;
+        }
+
+        .input-actions {
+            float: right;
+            display: flex;
+
+            .ig-label {
+                line-height: 26px;
+                padding-right: 16px;
+            }
+
+            .ig-number-field {
+                width: 80px !important;
+                 margin-right: 8px;
+            }
+
+            .ig-button-container {
+                left: 76px;
+            }
+        }
+    }
+}
+.add-group-btn {
+    color: @ig-lightblue-t1;
+    background: white;
+    margin-top: 8px;
 }

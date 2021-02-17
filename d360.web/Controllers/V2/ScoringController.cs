@@ -60,7 +60,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Gets a list of score definitions set up in Administration / Scoring.
         /// </summary>
-        /// <param name="Class">Allows for filtering the allocations by asset type class.The Generic and ReferenceItemType class types are used internally, and are not intended for use in general data requests.</param>
+        /// <param name="Class">Allows for filtering the allocations by asset type class. The Fusion, FusionAttribute, Organization, User, Group, FusionQuery, Reference, Diagram, Generic and ReferenceItemType class types are not applicable for scoring.</param>
         /// <returns>The allocation.</returns>
         [
             HttpGet,
@@ -406,6 +406,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Returns the rule results used to determine the data quality score for this score item based on a defined measure.
         /// </summary>
+        /// <param name="scoreItemUid">The Uid of the score item result. This is the ScoreItemUid property value which may be found via the following endpoint: api/v2/metrics/{allocationUid}/assets/{assetUid}/pointbreakdown</param>
         /// <remarks>
         /// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
         /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
@@ -924,5 +925,46 @@ namespace d360.web.Controllers.V2
 
             return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model));
         }
+
+
+        /// <summary>
+        /// Forces a recalculation of Governance score item results associated with a specific measure.
+        /// </summary>
+        /// <param name="allocationUid">The unique identifier for the allocation the measure belongs to.</param>
+        /// <param name="measureUid">The unique identifier for the measure.</param>
+        /// <returns>Http Status OK</returns>
+        [
+            HttpPut,
+            Route("{allocationUid:Guid}/measures/{measureUid:Guid}/recalculations"),
+            SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Now Recalculating score item results for this measure."),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Conflict, CONFLICT_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public IHttpActionResult RecalculateMeasureScoreItems(Guid allocationUid, Guid measureUid)
+        {
+            try
+            {
+                MetricsRepository.RecalculateMeasureScoreItems(allocationUid, measureUid);
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
+            }
+            catch (Exception ex)
+            {
+                var messages = new List<StatusCodeErrorMessage>
+                {
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = "You are not allowed to recalculate score items associated with this measure." }
+                };
+                return DetermineUnhandledException(
+                    ex,
+                    ApiMessages.EndpointRecalculatingMeasureScoreItemsHeading,
+                    messages,
+                    new Dictionary<string, string> { { "Method Name", "RecalculateMeasureScoreItems" } }
+                );
+            }
+        }
+
     }
 }

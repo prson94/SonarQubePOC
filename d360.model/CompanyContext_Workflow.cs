@@ -1368,7 +1368,7 @@ namespace d360.model
                         if (actionField != null)
                         {
                             var actionFieldType = FieldTypes.FirstOrDefault(x => x.Object == "IssueType" && x.ID == actionField.FieldTypeID);
-                            if (actionFieldType.Type == "Lookup")
+                            if (actionFieldType.Type == "Lookup" || actionFieldType.Type == "Link")
                             {
                                 val = actionField?.Value;
                             }

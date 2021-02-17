@@ -97,6 +97,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error recalculating measure score items.
+        /// </summary>
+        internal static string EndpointRecalculatingMeasureScoreItemsHeading {
+            get {
+                return ResourceManager.GetString("EndpointRecalculatingMeasureScoreItemsHeading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error adding score results.
         /// </summary>
         internal static string ErrorAddingScoreResultsHeading {
@@ -129,6 +138,15 @@ namespace Resources {
         internal static string ForbiddenUserNotAuthorizedMessage {
             get {
                 return ResourceManager.GetString("ForbiddenUserNotAuthorizedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Request.
+        /// </summary>
+        internal static string InvalidRequest {
+            get {
+                return ResourceManager.GetString("InvalidRequest", resourceCulture);
             }
         }
         

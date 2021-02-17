@@ -126,6 +126,23 @@
         }
     }
 
+    &.ig-button-midblue {
+        background: none;
+        color: @ig-midblue-t1;
+
+        &:hover:not(:disabled), &.ig-state-hover {
+            background: rgba(0, 0, 0, 0.09);
+        }
+
+        &:active:not(:disabled), &.ig-state-active {
+            background: rgba(0, 0, 0, 0.18);
+        }
+
+        &:focus:not(:disabled), &.ig-state-focus {
+            background: none;
+        }
+    }
+
     &:disabled {
         opacity: @ig-field-disabled-opacity;
         cursor: default;

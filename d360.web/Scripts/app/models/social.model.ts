@@ -33,6 +33,7 @@ export class CommentDetail {
     ID: number;
     ParentID: number;
     CreatedBy: number;
+    CreatedByUid: string;
     UpdatedBy: number;
     CreatedOn: Date;
     UpdatedOn: Date;
@@ -54,6 +55,12 @@ export class CommentDetails {
     page: number;
     pageSize: number;
     comments: CommentDetail[];
+}
+
+export class CommentVoteDetail {
+    emoji: Emoji;
+    resourceUid: string;
+    userDisplayName: string;
 }
 
 export class CommentApiPostModel {

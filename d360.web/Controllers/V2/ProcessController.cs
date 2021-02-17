@@ -137,11 +137,15 @@ namespace d360.web.Controllers.V2
         public IHttpActionResult GetProcessDiagram(Guid assetUid)
         {
             if (assetUid == null)
+            {
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset uid must be specified."));
+            }
 
             var asset = AssetRepository.GetAssetByUID(assetUid);
             if (asset == null)
+            {
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset with uid specified does not exist."));
+            }
 
             ProcessDiagramModel model = ProcessRepository.GetAssetsProcessDiagram(assetUid);
             var assetDetail = Company.GetAssetDetail(asset.ID);
@@ -262,10 +266,14 @@ namespace d360.web.Controllers.V2
                         foreach (var link in model.linkDataArray)
                         {
                             if (link.from == currentKey)
+                            {
                                 link.from = newKey;
+                            }
 
                             if (link.to == currentKey)
+                            {
                                 link.to = newKey;
+                            }
                         }
 
                         node["key"] = newKey.ToString();
@@ -284,7 +292,7 @@ namespace d360.web.Controllers.V2
                     {
                         hasError = true,
                         errors = err
-                    })));
+                    }))).ConfigureAwait(false);
                 }
 
                 ProcessDiagramModel existingProcess = ProcessRepository.GetAssetsProcessDiagram(assetUid);
@@ -332,7 +340,7 @@ namespace d360.web.Controllers.V2
                         var data = item.Items.FirstOrDefault();
                         err.Add(new ValidationError() { ErrorType = "CustomUniqueName", AssetTypeUid = data.AssetTypeUid, AssetUid = data.AssetUid, Error = item.Items.Count() + " items have the same name '" + data["Name"] + "'" });
                     }
-                    return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = err })));
+                    return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = err }))).ConfigureAwait(false);
 
                 }
                 List<NodeData> toAdd = new List<NodeData>();
@@ -422,7 +430,7 @@ namespace d360.web.Controllers.V2
                 var validationRes = AssetRepository.ValidateAssetUpsertModel(upsertModels, validateFields, true);
                 if (validationRes.Count > 0)
                 {
-                    return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = validationRes })));
+                    return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = validationRes }))).ConfigureAwait(false);
                 }
 
                 var totalCount = toAdd.Count + toDelete.Count + toUpdate.Count;
@@ -445,7 +453,7 @@ namespace d360.web.Controllers.V2
 
 
                 var result = new { updated = toUpdate.Count, added = toAdd.Count, deleted = toDelete.Count, warnings = rejectedRelationsipsCopy != null ? rejectedRelationsipsCopy : null };
-                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result))).ConfigureAwait(false);
 
             }
             catch (Exception ex)
@@ -495,7 +503,7 @@ namespace d360.web.Controllers.V2
 
 
             var response = createFileResponseMessage(HttpStatusCode.OK, $"{detail.DisplayValue} {DateTime.Now.ToString("MMM dd yyyy")}.xlsx", bytes);
-            return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
 
         }
 
@@ -526,7 +534,7 @@ namespace d360.web.Controllers.V2
 
             IEnumerable<dynamic> response = ProcessRepository.GetDiagramAssetBadges(assetUid);
 
-            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
+            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response))).ConfigureAwait(false);
 
         }
 
@@ -553,7 +561,7 @@ namespace d360.web.Controllers.V2
 
             Guid baseAssetUid = Company.Query<Guid>(@"select top 1 diagramassetuid from processexpandeddata where fromuid = @assetUid or touid = @assetUid", new { assetUid }).FirstOrDefault();
             string url = $"sidebar/visualization/browser/{baseAssetUid.ToString()}/Process/{assetUid}";
-            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, url)));
+            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, url))).ConfigureAwait(false);
 
         }
 

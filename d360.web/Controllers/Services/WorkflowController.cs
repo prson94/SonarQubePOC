@@ -2372,7 +2372,7 @@ order by wi.StartedOn desc";
                                         else coalesce(utility.getassetdisplayvalue(ass.id),'(unknown)')
                                     end as Name,
                                     wvs.Settings.query('settings/FormResponseType').value('.', 'varchar(50)') as 'responseType',
-	                                wis.Fields.value('(fields/@TotalResources)[1]', 'int') as 'countAssigned'
+	                                itemCount.assignedCount as 'countAssigned'
                                 from
 	                                [workflow].[type] wt
 	                                inner join [workflow].[version] wv on (wt.id = wv.typeid)
@@ -2382,6 +2382,10 @@ order by wi.StartedOn desc";
 	                                inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
 	                                inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
 	                                inner join [workflow].[itemassignment] wia on (wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r and (wia.itemstepid = wis.id or wia.itemstepid is null))
+                                    outer apply( 
+										SELECT count(*) as 'assignedCount' from [workflow].[itemassignment] 
+											WIC WHERE WIC.itemid = wi.id and (WIC.itemstepid = wis.id or WIC.itemstepid is null)
+										) itemCount(assignedCount)                                    
                                     inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid)
                                     left outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue')
                                     left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
@@ -3036,7 +3040,14 @@ order by wi.StartedOn desc";
                         var actionFieldTypeId = int.Parse(fieldData[1]);
 
                         var actionField = Company.Fields.FirstOrDefault(x => x.FieldTypeID == actionFieldTypeId && x.ObjectID == detail.ObjectID);
-                        fieldChange.Value = actionField?.FormattedValue;
+                        if (fieldChange.Type == "Link")
+                        {
+                            fieldChange.Value = actionField?.Value;
+                        }
+                        else
+                        {
+                            fieldChange.Value = actionField?.FormattedValue;
+                        }
 
                     }
 

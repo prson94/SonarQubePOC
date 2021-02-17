@@ -56,11 +56,13 @@ namespace d360.web.Controllers
             {
                 ViewData.Add("ResourceName", res.FullName);
                 ViewData.Add("ResourceEmail", res.Email);
+                ViewData.Add("ResourceUid", res.Uid);
             }
             else
             {
                 ViewData.Add("ResourceName", "");
                 ViewData.Add("ResourceEmail", "");
+                ViewData.Add("ResourceUid", "");
             }
 
 

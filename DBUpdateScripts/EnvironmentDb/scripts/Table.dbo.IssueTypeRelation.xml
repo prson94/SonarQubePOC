@@ -27,5 +27,27 @@ END
 		]]>
 	</rollback>
   </changeSet>
+  <changeSet author="bquinlivan" id="Table.dbo.IssueTypeRelation-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'IssueTypeRelation')
+BEGIN
+	ALTER TABLE [dbo].[IssueTypeRelation]
+	ADD [ID] [int] IDENTITY(1,1) NOT NULL
+  
+  ALTER TABLE [dbo].[IssueTypeRelation]
+  ADD CONSTRAINT UC_IssueTypeRelation_ID UNIQUE (ID);
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
 
 </databaseChangeLog>

@@ -391,7 +391,9 @@ namespace d360.web.Controllers.V2
             var result = MetricsRepository.AddOrUpdateMetrics(model);
 
             if (!result.StatusCode.In(HttpStatusCode.OK, HttpStatusCode.Created))
+            {
                 return errorMessageResponse(result.StatusCode, result.Error, result.Message);
+            }
 
             var isNew = (result.StatusCode == HttpStatusCode.Created);
             return successMessageResponse(
@@ -419,12 +421,16 @@ namespace d360.web.Controllers.V2
         public IHttpActionResult DeleteById(Guid uid)
         {
             if (!Company.CurrentResourceIsAdmin)
+            {
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, "You are not allowed to remove this metric."));
+            }
 
             MetricAsset model = MetricsRepository.GetActiveMetric(uid);
 
             if (model == null)
+            {
                 return errorMessageResponse(HttpStatusCode.NotFound, "Error removing metric", "Metric not found.");
+            }
 
             MetricsRepository.DeleteMetric(model);
 
@@ -455,18 +461,20 @@ namespace d360.web.Controllers.V2
                 var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
                 if (assetType == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {assetTypeUid} could not be found."));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {assetTypeUid} could not be found.")).ConfigureAwait(false);
+                }
 
                 var result = MetricsRepository.GetMetricDefinitionHierarchyByAssetType(assetTypeUid, effectiveDate);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result))).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown Error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown Error", errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -496,7 +504,9 @@ namespace d360.web.Controllers.V2
                 var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
                 if (assetType == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type with Uid {assetTypeUid} could not be found."));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type with Uid {assetTypeUid} could not be found.")).ConfigureAwait(false);
+                }
 
                 var results = await MetricsRepository.GetMetricPathOptionsBy(assetType.ID, scoreType);
 
@@ -535,14 +545,14 @@ namespace d360.web.Controllers.V2
             {
                 var results = await MetricsRepository.GetFieldsByRuleResultPath(ruleResultPathUid);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
             }
         }
 
@@ -576,7 +586,7 @@ namespace d360.web.Controllers.V2
                     var value = param.FirstOrDefault(x => x.Key.ToLower() == "effectivedate").Value;
                     if (!DateTime.TryParse(value, out effectiveDate))
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Invalid Effective date provided!"));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Invalid Effective date provided!")).ConfigureAwait(false);
                     }
                 }
                 else
@@ -586,7 +596,9 @@ namespace d360.web.Controllers.V2
 
                 var assetDetail = Company.Filter<AssetDetail>(i => i.uid == assetUid).FirstOrDefault();
                 if (assetDetail == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset corresponding with identifier of {assetUid} could not be found."));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset corresponding with identifier of {assetUid} could not be found.")).ConfigureAwait(false);
+                }
 
                 var allocation = Company.Filter<MetricAllocation>(al =>
                     al.AssetTypeUid == assetDetail.AssetTypeUid &&
@@ -595,7 +607,9 @@ namespace d360.web.Controllers.V2
                     ).FirstOrDefault();
 
                 if (allocation == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Score Allocation corresponding to asset with identifier of {assetUid} could not be found."));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Score Allocation corresponding to asset with identifier of {assetUid} could not be found.")).ConfigureAwait(false);
+                }
 
                 var result = MetricsRepository.GetMetricHierarchyByAsset(allocation.Uid, assetUid, effectiveDate);
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
@@ -636,13 +650,13 @@ namespace d360.web.Controllers.V2
                 var allocationStatus = validateScoreAllocation(allocationUid, out _allocationUid);
                 if (allocationStatus.StatusCode != HttpStatusCode.OK)
                 {
-                    return await Task.FromResult(errorMessageResponse(allocationStatus.StatusCode, "Bad request", allocationStatus.Message));
+                    return await Task.FromResult(errorMessageResponse(allocationStatus.StatusCode, "Bad request", allocationStatus.Message)).ConfigureAwait(false);
                 }
 
                 var assetStatus = validateAsset(assetUid, Permission.ReadAsset, out _assetUid);
                 if (assetStatus.StatusCode != HttpStatusCode.OK)
                 {
-                    return await Task.FromResult(errorMessageResponse(assetStatus.StatusCode, "Bad request", assetStatus.Message));
+                    return await Task.FromResult(errorMessageResponse(assetStatus.StatusCode, "Bad request", assetStatus.Message)).ConfigureAwait(false);
                 }
 
                 DateTime effectiveDate = DateTime.MinValue;
@@ -792,7 +806,7 @@ namespace d360.web.Controllers.V2
 
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid)).ConfigureAwait(false);
                 }
 
                 (var result, string errorMessage) = MetricsRepository.GetMetricScore(assetType, queryParams);
@@ -809,7 +823,7 @@ namespace d360.web.Controllers.V2
                 var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -829,7 +843,9 @@ namespace d360.web.Controllers.V2
         {
             var asset = Company.Filter<Asset>(x => x.uid == uid, x => x.AssetType).FirstOrDefault();
             if (asset == null)
+            {
                 return errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid of {uid} not found.");
+            }
 
             DateTime? effDate = null;
             if (!string.IsNullOrEmpty(effectiveDate))
@@ -929,14 +945,14 @@ namespace d360.web.Controllers.V2
             {
                 if (!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_owningAssetUid").Value, out _owningAssetUid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid", $"OwningAssetUid {queryParams.ToList().FirstOrDefault(q => q.Key == "_owningAssetUid").Value} is not a valid Uid"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid", $"OwningAssetUid {queryParams.ToList().FirstOrDefault(q => q.Key == "_owningAssetUid").Value} is not a valid Uid")).ConfigureAwait(false);
                 }
 
                 ruleAsset = AssetRepository.GetAssetByUID(_owningAssetUid);
 
                 if (ruleAsset == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {_owningAssetUid} could not be found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {_owningAssetUid} could not be found.")).ConfigureAwait(false);
                 }
                 else if (ruleAsset.AssetType.Class != AssetTypeClass.Rule)
                 {
@@ -945,7 +961,7 @@ namespace d360.web.Controllers.V2
             }
             else
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", $"_owningAssetUid is a required parameter"));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", $"_owningAssetUid is a required parameter")).ConfigureAwait(false);
             }
 
             if (queryParams.Any(q => q.Key == "_evaluatedAssetUid"))
@@ -953,7 +969,7 @@ namespace d360.web.Controllers.V2
                 Guid tempEvaluatedUid;
                 if (!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_evaluatedAssetUid").Value, out tempEvaluatedUid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid", $"EvaluatedAssetUid {queryParams.ToList().FirstOrDefault(q => q.Key == "_evaluatedAssetUid").Value} is not a valid Uid"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid", $"EvaluatedAssetUid {queryParams.ToList().FirstOrDefault(q => q.Key == "_evaluatedAssetUid").Value} is not a valid Uid")).ConfigureAwait(false);
                 }
 
                 _evaluatedAssetUid = tempEvaluatedUid;
@@ -962,18 +978,18 @@ namespace d360.web.Controllers.V2
 
                 if (asset == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {_evaluatedAssetUid.Value} could not be found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {_evaluatedAssetUid.Value} could not be found.")).ConfigureAwait(false);
                 }
                 else if (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid", $"EvaluatedAssetUid {_evaluatedAssetUid.Value} is not valid"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid", $"EvaluatedAssetUid {_evaluatedAssetUid.Value} is not valid")).ConfigureAwait(false);
                 }
             }
 
 
             if (!Company.HasAssetDefaultReadPermission(ruleAsset.AssetType.Object, ruleAsset.AssetType.ObjectID))
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
             }
 
             if (queryParams.Any(q => q.Key == "_order"))
@@ -1494,10 +1510,14 @@ namespace d360.web.Controllers.V2
             try
             {
                 if (request == null)
+                {
                     request = readRequestJsonContent<List<DataQualityInsertModel>>(Request).Result;
+                }
 
                 if (request == null)
+                {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+                }
 
                 var execution = getApiExecution(request.Count);
 
@@ -1581,21 +1601,21 @@ namespace d360.web.Controllers.V2
                             var point = new GraphPoints();
                             point.key = measure.Uid.ToString();
                             point.EffectiveDate = item.EffectiveDate;
-                            point.Value = measure.AdjustedWeight;// * (measure.Value.HasValue && measure.Value.Value ? 1 : 0);
+                            point.Value = measure.AdjustedWeight;
                             allPoints.Add(point);
                         }
                         else
                         {
-                            //var maxWeight = measure.AdjustedMaxWeight;
-                            //decimal result = 0;
-                            foreach (var m in measure.Measures)
-                            {
-                                var point = new GraphPoints();
-                                point.key = m.Uid.ToString();
-                                point.EffectiveDate = item.EffectiveDate;
-                                point.Value = m.AdjustedWeight;// maxWeight * m.AdjustedWeight * (m.Value.HasValue && m.Value.Value ? 1 : 0);
-                                //result += point.Value;
-                                allPoints.Add(point);
+                            if (measure.Measures != null)
+                            { 
+                                foreach (var m in measure.Measures)
+                                {
+                                    var point = new GraphPoints();
+                                    point.key = m.Uid.ToString();
+                                    point.EffectiveDate = item.EffectiveDate;
+                                    point.Value = m.AdjustedWeight;
+                                    allPoints.Add(point);
+                                }                            
                             }
 
                             var measurePoint = new GraphPoints();
@@ -1607,11 +1627,6 @@ namespace d360.web.Controllers.V2
                     }
                 }
                 allPoints.AddRange(results);
-
-                //allPoints.ForEach(point =>
-                //{
-                //    point.Value = Math.Round(point.Value, 3);
-                //});
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, allPoints.GroupBy(x => x.key).Select(x => new { key = x.Key, data = x.ToList() })));
             }

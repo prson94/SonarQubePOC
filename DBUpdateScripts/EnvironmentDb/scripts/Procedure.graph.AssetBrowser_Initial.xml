@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Procedure.graph.AssetBrowser_Initial-v22">
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Initial-v23">
     <comment>GOV-13498</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -27,7 +27,7 @@ begin
 	declare @maxLineageDescendants int = 500;
 	declare @dataLimitReached bit = 0;
 
-	if @ancestry = 3
+if @ancestry = 3
 	begin	-- This is impact
 		insert into @functionalTypesToInclude (ID) values (1),(2),(3),(4),(5),(6),(7),(8),(9),(10),(11),(12),(13)
 		insert into @offLimitImpactFunctionalTypes (ID) values (15)
@@ -665,7 +665,9 @@ begin
 	from	#hierarchies T
 			inner join #hierarchies S on S.uid = @uid and S.hierarchyKey = T.hierarchyKey;
 
+			
 	-- Get flat node collection.
+	drop table if exists #flatNodeCollection
 	select		distinct
 				H.hierarchyKey,
 				H.focal,
@@ -684,11 +686,133 @@ begin
 				coalesce(H.useAsTransformation, 0) as useAsTransformation,
 				H.hasAssetReadAccess,
 				coalesce(H.isSubjectInTransformation, 0) as isSubjectInTransformation
+	into #flatNodeCollection
 	from		#hierarchies H
 				left join #counts C on C.ID = H.ID 
 				inner join AssetType T on T.ID = H.AssetTypeID
 				inner join AssetTypeStyle S on S.ID = T.ID
 	order by	H.hierarchyKey
+
+	--For assets which contains process diagram we should manually map its diagram nodes and underlaying Diagram Use relationship otherwise they wont be included
+	drop table if exists #hierarchyPredicates
+	create table #hierarchyPredicates ([key] nvarchar(50), Predicate nvarchar(200), ID int, Uid uniqueidentifier, AssetId int, Direction int, hierarchyKey nvarchar(50), SourceAssetId int);
+
+	if exists (select top 1 * from asset a 
+			inner join assetprocessdiagram apd on apd.assetid = a.id where a.uid = @uid)
+	begin
+		drop table if exists #hierarchyDiagramUseMap
+		create table #hierarchyDiagramUseMap (ID int,assetUid uniqueidentifier, hierarchyKey nvarchar(50), iuid uniqueidentifier, IsLeaf bit);
+
+		declare @diagramHash varchar(50)
+		declare @diagramAssetHash varchar(50)
+		declare @hierarchyKey varchar(50)
+	    declare @back varchar(50)
+		declare @backAmount varchar(50)
+
+		select @diagramHash = utility.GetHash('diagram' + convert(nvarchar(36), @uid))
+		select @diagramAssetHash = (select top 1 [key] from #hierarchies where uid = @uid)
+		select @hierarchyKey = (select top 1 [hierarchyKey] from #hierarchies where uid = @uid)
+		select @back = (select top 1 [back] from #hierarchies where uid = @uid)
+		select @backAmount = (select top 1 [backAmount] from #hierarchies where uid = @uid)
+
+		--Map all diagram nodes which are part of process diagram
+		;with asset_cte as(
+				select da.id, da.uid as assetUid, h.hierarchykey, it.uid as ituid, h.isleaf from #hierarchies h
+					inner join assetprocessdiagram d on d.assetid = h.id
+					inner join asset a on a.id = h.id
+					inner join processexpandeddata pxd on pxd.diagramassetuid = a.uid
+					inner join asset da on da.uid = pxd.fromuid
+					inner join assettype at on at.id = da.assettypeid
+					inner join intersecttype it on at.uid = it.subjectuid 
+					inner join [predicate] p on it.predicateid = p.id
+				where h.id is not null and p.type = 16 and exists (select top 1 id from [intersect] where intersecttypeid = it.id)
+				union
+				select da.id, da.uid as assetUid, h.hierarchykey, it.uid as ituid, h.isleaf from #hierarchies h
+					inner join assetprocessdiagram d on d.assetid = h.id
+					inner join asset a on a.id = h.id
+					inner join processexpandeddata pxd on pxd.diagramassetuid = a.uid
+					inner join asset da on da.uid = pxd.touid
+					inner join assettype at on at.id = da.assettypeid
+					inner join intersecttype it on at.uid = it.subjectuid 
+					inner join [predicate] p on it.predicateid = p.id
+				where h.id is not null and p.type = 16 and exists (select top 1 id from [intersect] where intersecttypeid = it.id)
+			)
+		insert into #hierarchyDiagramUseMap 
+		select distinct id, assetUid, hierarchyKey, ituid, IsLeaf from asset_cte 
+
+		--Find all Diagram use relationships that exists for current asset and its diagram nodes
+		--This will be included as badge
+		insert into #hierarchyPredicates
+		select distinct	Hr.hierarchyKey + '-R-' + cast(E.PredicateID as varchar) as [key],
+							(select top 1 Inverse from Predicate where ID = E.PredicateID) as [Predicate],  -- Improves performance 10x
+							E.PredicateID as ID, 
+							E.PredicateUid as Uid, 
+							T.ID as AssetId,
+							1 as Direction,
+							Hr.hierarchyKey,
+							S.ID as SourceAssetId
+					from	graph.AssetNode S,
+							graph.AssetEdge E,
+							graph.AssetNode T,
+							#hierarchyDiagramUseMap Hr
+					where	MATCH(S-(E)->T)
+							and E.PredicateType not in (select ID from @offLimitImpactFunctionalTypes)
+							and E.IntersectTypeUid = Hr.iuid and S.Id = Hr.Id
+							and ( (@includeNonLeaf = 0 and Hr.IsLeaf = 1) or (@includeNonLeaf = 1) )
+
+
+		--In case of Lineage create a `Diagram` group node, and add process diagrams nodes as leaf nodes
+		if @ancestry = 1
+		begin
+				insert into #flatNodeCollection
+				select  @hierarchyKey as hierarchyKey,
+						1,
+						0 as leaf,
+						@diagramHash as [key],
+						@hierarchyKey as [group],
+						@uid as assetUid,
+						null,
+						@uid,
+						@backAmount,
+						@back,
+						'fa-share-alt',
+						15,
+						'Diagram' as [text],
+						0 as actionCount, 
+						0 as useAsTransformation,
+						1,
+						0 as isSubjectInTransformation
+				from		asset a 
+							inner join assetprocessdiagram apd on apd.assetid = a.id 
+							where a.uid = @uid
+
+				;with assets as (select distinct SourceAssetId from #hierarchyPredicates)
+							insert into #flatNodeCollection
+							select @hierarchyKey as hierarchyKey,
+									1,
+									1 as leaf,
+									@diagramHash as [key],
+									@diagramHash as [group],
+									ad.uid as assetUid,
+									null,
+									ad.uid,
+									@backAmount,
+									@back,
+									isnull(ats.icon,'fa-book'),
+									15,
+									ad.displayvalue as [text],
+									0 as actionCount, 
+									0 as useAsTransformation,
+									1,
+									0 as isSubjectInTransformation 
+							from assets 
+							inner join assetdetail ad on ad.id = assets.SourceAssetId
+							inner join assettype at on at.id = ad.assettypeid
+							left join assettypestyle ats on ats.id = at.id
+		end
+	end
+
+	select * from #flatNodeCollection
 
 	-- Get link collection.
 	select		iif(H.Direction = 'B' and @ancestry = 3, T.hierarchyKey, S.hierarchyKey) as [from],
@@ -762,7 +886,7 @@ begin
 					inner join  asset a on a.AssetTypeID = att.ID
 					inner join #hierarchies Ho on Ho.hierarchyKey = H.hierarchyKey and Ho.ID = a.ID and ( (@includeNonLeaf = 0 and Ho.IsLeaf = 1) or (@includeNonLeaf = 1) )
 				where
-					exists (select 1 from ResponsibilityTypeRelationOverrideItem rra where Ho.ID = rra.AssetID and rra.ResponsibilityTypeID = rt.Id /*)*/  and (rra.SecurityAsset ='R' or (rra.SecurityAsset = 'G' and exists (select 1 from ResourceGroup rg where rg.GroupID = rra.SecurityAssetID) ) or (rra.SecurityAsset = 'O' and exists (select 1 from OrganizationResource og where og.OrganizationID = rra.SecurityAssetID) ) ) )
+					exists (select 1 from ResponsibilityTypeRelationOverrideItem rra where Ho.ID = rra.AssetID and rra.ResponsibilityTypeID = rt.Id and (rra.SecurityAsset ='R' or (rra.SecurityAsset = 'G' and exists (select 1 from ResourceGroup rg where rg.GroupID = rra.SecurityAssetID) ) or (rra.SecurityAsset = 'O' and exists (select 1 from OrganizationResource og where og.OrganizationID = rra.SecurityAssetID) ) ) )
                )  as a order by a.responsibilityType for json path
 			) as ownersJson,
 			(
@@ -805,6 +929,10 @@ begin
 							and Hr.hierarchyKey = H.hierarchyKey and Hr.ID = T.ID
 							and E.ID not in (select IntersectID from #hops where Hop <> -1)
 							and ( (@includeNonLeaf = 0 and Hr.IsLeaf = 1) or (@includeNonLeaf = 1) )
+					union 
+					select [key], Predicate, ID, Uid, AssetId, Direction 
+					   from #hierarchyPredicates hp 
+					where hp.hierarchykey = H.hierarchyKey
 					) O
 			left join #processAssetCountMap pacm on pacm.puid = O.uid and pacm.dir = O.direction and pacm.[key]  = O.[key]
 			group by [Predicate], ID, Uid, Direction,O.[key],pacm.[count]
@@ -1607,7 +1735,7 @@ begin
 					inner join  asset a on a.AssetTypeID = att.ID
 					inner join #hierarchies Ho on Ho.hierarchyKey = H.hierarchyKey and Ho.ID = a.ID and ( (@includeNonLeaf = 0 and Ho.IsLeaf = 1) or (@includeNonLeaf = 1) )
 				where
-					exists (select 1 from ResponsibilityTypeRelationOverrideItem rra where Ho.ID = rra.AssetID and rra.ResponsibilityTypeID = rt.Id ) 
+					exists (select 1 from ResponsibilityTypeRelationOverrideItem rra where Ho.ID = rra.AssetID and rra.ResponsibilityTypeID = rt.Id and (rra.SecurityAsset ='R' or (rra.SecurityAsset = 'G' and exists (select 1 from ResourceGroup rg where rg.GroupID = rra.SecurityAssetID) ) or (rra.SecurityAsset = 'O' and exists (select 1 from OrganizationResource og where og.OrganizationID = rra.SecurityAssetID) ) ) )
                )  as a order by a.responsibilityType for json path
 			) as ownersJson,
 			(
@@ -1698,7 +1826,6 @@ begin
 	
 	select @dataLimitReached;
 end
-
 ]]>
 	</rollback>
   </changeSet>

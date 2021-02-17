@@ -236,10 +236,15 @@ where A.FusionTypeID = @id", columns, joins);
         public HttpResponseMessage GetConfiguration(int typeID, int id)
         {
             if (!Company.CurrentResourceIsAdmin)
+            {
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to see the fusion configuration details.");
+            }
 
             var model = Company.GetFusionAsDictionary(id);
-            if (model == null) return Request.CreateResponse(HttpStatusCode.NotFound);
+            if (model == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.NotFound);
+            }
             return Request.CreateResponse<Dictionary<string, object>>(HttpStatusCode.OK, model);
         }
 
@@ -283,7 +288,10 @@ where A.FusionTypeID = @id", columns, joins);
                         Query = i.Query
                     });
 
-                if (models == null) return Request.CreateResponse(HttpStatusCode.NotFound);
+                if (models == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound);
+                }
                 return Request.CreateResponse(HttpStatusCode.OK, models);
             }
             catch (Exception ex)
@@ -444,7 +452,9 @@ where A.FusionTypeID = @id", columns, joins);
             var sql = string.Format(QueryConstants.AgentHistoryExportList, top);
 
             if (fusionId > 0)
+            {
                 sql += $" where S.fusionId = {fusionId}";
+            }
 
             sql += " order by S.DateStarted desc";
 
@@ -829,7 +839,10 @@ where A.FusionTypeID = @id", columns, joins);
             }
             log.MachineQueuedOn = model.MachineQueuedOn;
             log.Message = model.Message;
-            if (model.Success) log.Success = model.Success;
+            if (model.Success)
+            {
+                log.Success = model.Success;
+            }
 
             Company.Update<FusionStatusLog>(log);
 
@@ -898,10 +911,14 @@ where A.FusionTypeID = @id", columns, joins);
         public async Task<HttpResponseMessage> PostBulkAttributesAsync(int typeID, int fusionID)
         {
             if (!Company.CurrentResourceIsAdmin)
+            {
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to upload fusion data for this configuration.");
+            }
 
             if (!Community.IsFusionEnabled())
+            {
                 return Request.CreateErrorResponse(HttpStatusCode.Forbidden, "You are not allowed to upload fusion data. Fusion is disabled in this environment.");
+            }
 
             #region Validation
             var fusion = Company.Filter<Fusion>(x => x.ID == fusionID).Select(x=>new { x.ID,x.FusionTypeID}).SingleOrDefault();
@@ -963,7 +980,9 @@ where A.FusionTypeID = @id", columns, joins);
                     var host = "";
                     //agent encountered errors log them for display in the ui
                     if (System.Web.HttpContext.Current != null)
+                    {
                         host = System.Web.HttpContext.Current.Request.UserHostName;
+                    }
 
 
                     FusionAgentError error = new FusionAgentError
@@ -1215,19 +1234,19 @@ where A.FusionTypeID = @id", columns, joins);
                     }
                 }
 
-                return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, "File Saved", "File uploaded and queued for processing."));
+                return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, "File Saved", "File uploaded and queued for processing.")).ConfigureAwait(false);
             }
             catch (InvalidFieldException ex)
             {
-                return await Task.FromResult(errorMessageResponse(ex.StatusCode, "Invalid Field", ex.StatusDescription));
+                return await Task.FromResult(errorMessageResponse(ex.StatusCode, "Invalid Field", ex.StatusDescription)).ConfigureAwait(false);
             }
             catch (BaseException ex)
             {
-                return await Task.FromResult(errorMessageResponse(ex.StatusCode, "Govern Exception", ex.StatusDescription));
+                return await Task.FromResult(errorMessageResponse(ex.StatusCode, "Govern Exception", ex.StatusDescription)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown Error", ex.Message));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown Error", ex.Message)).ConfigureAwait(false);
             }
         }
 
@@ -1322,7 +1341,9 @@ where A.FusionTypeID = @id", columns, joins);
                 }
 
                 if (columns.Contains("[type]"))
+                {
                     columns = columns.Replace("[type]", "[_type]");
+                }
 
                 var dbArgs = new Dapper.DynamicParameters();
                 dbArgs.Add("f", fusionID);
@@ -1354,7 +1375,9 @@ where   A.Deleted = 0";
                             var dataType = typeof(string).ToString();
 
                             if (kvp.Value != null)
+                            {
                                 dataType = kvp.Value.GetType().ToString();
+                            }
 
                             header.Add(new { field = kvp.Key, type = dataType });
                         }

@@ -1,5 +1,5 @@
 ﻿<div class="content">
-    <div class="description">Showing rule results for the measure <strong>{{scoreItem.Name}}</strong> on the asset <strong>{{assetName}}</strong> (<strong>{{assetTypeName}}</strong>):</div>
+    <div class="description">Showing rule results for the measure <strong>{{scoreItem?.Name}}</strong> on the asset <strong>{{assetName}}</strong> (<strong>{{assetTypeName}}</strong>):</div>
     <div>
         <div class="scoring-v2">
             <div class="score-left-content right-padding-16 flex">
@@ -37,6 +37,10 @@
                                 Asset
                                 <d3s-sortIcon [field]="'EvaluatedAssetDisplayPath'"></d3s-sortIcon>
                             </th>
+                            <th [pSortableColumn]="'EffectiveDate'" style="width: 15%">
+                                Effective Date
+                                <d3s-sortIcon [field]="'EffectiveDate'"></d3s-sortIcon>
+                            </th>
                             <th [pSortableColumn]="'PassFraction'" style="width: 15%">
                                 Pass Fraction
                                 <d3s-sortIcon [field]="'PassFraction'"></d3s-sortIcon>
@@ -47,6 +51,7 @@
                         <tr (dblclick)="selected=item;" [pSelectableRow]="item">
                             <td><div class="path-column-wrapper"><div class="path-column" [title]="item.OwningAssetDisplayPath">{{item.OwningAssetDisplayPath}}</div></div></td>
                             <td><div class="path-column-wrapper"><div class="path-column" [title]="item.EvaluatedAssetDisplayPath">{{item.EvaluatedAssetDisplayPath}}</div></div></td>
+                            <td><span>{{ item.EffectiveDate | date:'shortDate':'GMT'}}</span></td>
                             <td>{{item.PassFraction}}</td>
                         </tr>
                     </ng-template>
@@ -79,17 +84,17 @@
                         </div>
                         <div class="measure-details-item">
                             <div class="details-header">Run Date</div>
-                            <div *ngIf="selected.RunDate" class="details-content" [innerText]="selected.RunDate | date:'short'"></div>
+                            <div *ngIf="selected.RunDate" class="details-content" [innerText]="selected.RunDate | date:'short':'GMT'"></div>
                             <div *ngIf="!selected.RunDate" class="details-content">---</div>
                         </div>
                         <div class="measure-details-item">
                             <div class="details-header">Effective Date</div>
-                            <div *ngIf="selected.EffectiveDate" class="details-content" [innerText]="selected.EffectiveDate | date:'shortDate'"></div>
+                            <div *ngIf="selected.EffectiveDate" class="details-content" [innerText]="selected.EffectiveDate | date:'shortDate':'GMT'"></div>
                             <div *ngIf="!selected.EffectiveDate" class="details-content">---</div>
                         </div>
                         <div class="measure-details-item">
                             <div class="details-header">Pass Fraction</div>
-                            <div class="details-content" [innerText]="selected.PassFraction"></div>
+                            <div class="details-content"><span [innerText]="selected.PassFraction"></span><span *ngIf="!selected.TotalCount">&#160;[No result found]</span></div>
                         </div>
                         <div class="measure-details-item">
                             <div class="details-header">Total Rows</div>
@@ -112,7 +117,7 @@
             </div>
         </div>
     </div>
-    <div class="bottom-action-bar">
+    <div style="position: absolute; right: 24px; bottom: 16px">
         <button igButton class="ig-button-primary" type="button" (click)="cancel()" label="Close"></button>
     </div>
 </div>

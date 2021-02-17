@@ -2,21 +2,26 @@
 @import './IgUiVariables.less';
 
 .ig-tooltip {
-    z-index: 100000 !important;
-    max-width: 400px;
-    padding: 0px !important;
+  z-index: 100000 !important;
+  max-width: 400px;
+  padding: 0px !important;
 
-    .p-tooltip-arrow {
-        display: none;
-    }
+  .p-tooltip-arrow {
+    display: none;
+  }
 
-    .p-tooltip-text {
-        background-color: white;
-        color: @ig-black;
-        padding: 8px;
-        border-radius: 4px;
-        box-shadow: @ig-box-shadow;
-        font-size: 14px;
-        line-height: 21px;
-    }
+  .p-tooltip-text {
+    background-color: white;
+    color: @ig-black;
+    padding: 8px;
+    border-radius: 4px;
+    box-shadow: @ig-box-shadow;
+    font-size: 14px;
+    line-height: 21px;
+  }
+
+  &.ig-tooltip-big {
+    max-width: 550px;
+    min-width: 320px;
+  }
 }

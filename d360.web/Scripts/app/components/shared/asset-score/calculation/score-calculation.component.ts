@@ -1,6 +1,7 @@
 ﻿import { Component, Input } from "@angular/core";
-import { ScoreType } from "../../../../models/metrics.model";
-import { PointBreakdown } from "../../../../models/score.model";
+import { MetricFieldTypeViewModel, ScoreType, MetricAssetDefinitionViewModel } from "../../../../models/metrics.model";
+import { Operator } from "../../../../models/operator.model";
+import { PointBreakdown} from "../../../../models/score.model";
 import { BaseComponent } from "../../base.component";
 
 @Component({
@@ -9,11 +10,15 @@ import { BaseComponent } from "../../base.component";
 })
 export class ScoreCalculationComponent extends BaseComponent {
     @Input() scoreType: ScoreType;
+    @Input() definition: MetricAssetDefinitionViewModel;
     @Input() selected: PointBreakdown;
     @Input() measures: PointBreakdown[];
     @Input() formattedCheck: string = "";
     @Input() assetName: string;
     @Input() assetTypeName: string;
+    @Input() fields: MetricFieldTypeViewModel[] = [];
+
+    Operator = Operator;
 
     private isRuleResultsModalVisible: boolean = false;
 
@@ -34,4 +39,30 @@ export class ScoreCalculationComponent extends BaseComponent {
 
         return show;
     }
+
+    isDate(item) {
+        if (this.fields && this.fields.length > 0) {
+            let f = this.fields.find(x => x.Name === item.FieldName);
+            if (f) {
+                return (f.Type === "Date")
+            }
+        }
+    }
+
+    showConditionGroups(): boolean {
+        let show = false;
+        if (this.selected) {
+            show = (this.selected.Conditions.length > 0);
+        }
+        return show;
+    }
+   
+    formatWeight(num: number) {
+        if (num) {
+            return (num * 100).toFixed(2).replace(/[.,]00$/, "") + "%";
+        } else {
+            return "(default)";
+        }
+    }
+
 }

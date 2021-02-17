@@ -95,12 +95,16 @@
     }
 
     .pg-collapsable-content {
+
         padding-left: 24px;
         transition: height 200ms ease;
         overflow: hidden;
         height: auto;
         padding-top: 4px;
 
+        &.no-padding {
+            padding-left: 0px;
+        }
         &.close {
             height: 0px;
             opacity: 0;

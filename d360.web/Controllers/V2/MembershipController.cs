@@ -16,10 +16,14 @@ using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
@@ -90,7 +94,9 @@ namespace d360.web.Controllers.V2
                 }
 
                 if (!Company.CurrentResourceIsAdmin && (settings["ShowResources"] ?? "").ToUpper() != "TRUE" && IsCurrentUser == false)
+                {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
+                }
 
                 string finalSql = "";
                 string joinsSql = $@" outer apply (select object,objectid from Asset A1 where A1.Object = 'Resource' and A1.ObjectID = gr.ResourceID) A 
@@ -128,7 +134,7 @@ namespace d360.web.Controllers.V2
 
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", isValid));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", isValid)).ConfigureAwait(false);
                 }
 
                 var fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
@@ -269,10 +275,14 @@ namespace d360.web.Controllers.V2
                 validCols.AddRange(fieldTypes.Select(x => x.Name));
 
                 if (validCols.All(x => x.ToLower() != _order.ToLower()))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", "Invalid order by passed in the request"));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", "Invalid order by passed in the request")).ConfigureAwait(false);
+                }
 
                 if (!new string[] { "asc", "desc" }.Contains(_direction.ToLower()))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", "Invalid order passed in the request"));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", "Invalid order passed in the request")).ConfigureAwait(false);
+                }
 
                 orderBySQL = $"order by {_order} {_direction}";
 
@@ -297,7 +307,7 @@ namespace d360.web.Controllers.V2
                     byte[] xlsResult = GetUsersExcelFromResults(results, fieldTypes);
 
                     var response = createFileResponseMessage(HttpStatusCode.OK, $"Users {System.DateTime.Now.ToShortDateString()}.xlsx", xlsResult);
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
 
                 }
                 else
@@ -343,20 +353,28 @@ namespace d360.web.Controllers.V2
             var kvpGroupUid = new Dictionary<string, string> { { "Uid", groupUid.ToString() } };
 
             if (groupUid == Guid.Empty)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Group Uid passed in is empty. Please provided a valid group"));
+            }
 
             var isValidGroup = await this.membershipRepository.GetGroups(kvpGroupUid);
 
             List<ResourceGroup> resourceGroups = new List<ResourceGroup>();
 
             if (!Company.CurrentResourceIsAdmin)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
+            }
 
             if (isValidGroup.Total == 0)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Group UID provided is not a valid group UID. Group does not exist."));
+            }
 
             if (isValidGroup.items?.First()?.IsActiveDirectoryGroup == true)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Group UID provided is an active directory group and cannot be managed manually."));
+            }
 
             var duplicatedUsers = from u in users group u by u.Uid into user where user.Count() > 1 select user.Key;
 
@@ -366,7 +384,9 @@ namespace d360.web.Controllers.V2
             }
 
             if (users.Count == 0)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "No user UIDs provided."));
+            }
 
             var id = Company.Filter<Asset>(x => x.uid == groupUid).SingleOrDefault().ObjectID;
 
@@ -376,18 +396,24 @@ namespace d360.web.Controllers.V2
                 bool isValid = this.IsValidGuid(userUid, "uid");
 
                 if (!isValid)
+                {
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "One or more user UIDs do not exist."));
+                }
 
                 var isUser = this.assetRepository.GetAssetByUID(user.Uid);
 
                 if (isUser == null || isUser.Object != "Resource")
+                {
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "One or more user UIDs passed in are not a user."));
+                }
 
 
                 var isMember = Company.Filter<ResourceGroup>(x => x.GroupID == id && x.ResourceID == isUser.ObjectID).SingleOrDefault();
 
                 if (isMember != null)
+                {
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"User {user.Uid.ToString()} is already a member of this group"));
+                }
 
                 resourceGroups.Add(new ResourceGroup { GroupID = id, ResourceID = isUser.ObjectID });
             }
@@ -395,7 +421,9 @@ namespace d360.web.Controllers.V2
             try
             {
                 foreach (var m in resourceGroups)
+                {
                     Company.Add(m);
+                }
             }
             catch (Exception ex)
             {
@@ -575,15 +603,15 @@ namespace d360.web.Controllers.V2
 
                 if (!this.IsValidGuid(queryParams, "uid"))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid uid is passed in the request"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid uid is passed in the request")).ConfigureAwait(false);
                 }
                 if (!this.IsValidGuid(queryParams, "resourceuid"))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid Resource Uid provided in request"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid Resource Uid provided in request")).ConfigureAwait(false);
                 }
                 var results = await this.membershipRepository.GetGroups(queryParams);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -592,7 +620,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -619,7 +647,9 @@ namespace d360.web.Controllers.V2
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Unauthorized", "Access Denied."));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Unauthorized", "Access Denied.")).ConfigureAwait(false);
+                }
 
                 var group = (await Company.QueryAsync<Group>(@"
 select G.* from [Group] G 
@@ -629,7 +659,9 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 var userId = _company.Assets.FirstOrDefault(x => x.Object == "Resource" && x.uid == resourceUid)?.ObjectID ?? 0;
 
                 if (group?.PrimaryOwnerResourceID == userId)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Cannot delete Primary Owner of group."));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Cannot delete Primary Owner of group.")).ConfigureAwait(false);
+                }
 
                 var res = await Company.Database.Connection.ExecuteAsync(@"delete rg from [dbo].[ResourceGroup] rg inner join[reporting].[Global_Resource] gr on gr.uid = @resource inner join[dbo].[Asset] a on a.uid = @group and a.object = 'Group' inner join[dbo].[Group] g on g.ID = a.ObjectID where rg.ResourceID = gr.ResourceID and rg.GroupID = g.ID;  
                         Update G set  G.SecondaryOwnerResourceID = null
@@ -637,8 +669,14 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                         inner join[dbo].[Asset] a on a.uid = @group and a.object = 'Group'
                         where G.ID = A.ObjectID and G.SecondaryOwnerResourceID = @user", new { resource = resourceUid, group = groupUid, user = userId });
 
-                if (res > 0) return successMessageResponse(HttpStatusCode.OK, "User removed.", "User removed from group."); // deleted
-                else return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Resource / Group doesn't exist"));
+                if (res > 0)
+                {
+                    return successMessageResponse(HttpStatusCode.OK, "User removed.", "User removed from group."); // deleted
+                }
+                else
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Resource / Group doesn't exist")).ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {
@@ -672,10 +710,14 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Unauthorized", $"Access denied"));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Unauthorized", $"Access denied")).ConfigureAwait(false);
+                }
 
                 if (users == null || users.Count() == 0)
+                {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", $"No users provided in request."));
+                }
 
                 List<UserApiDeleteModel> resources = new List<UserApiDeleteModel>();
 
@@ -1245,7 +1287,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             catch (FilterExpressionParserException ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Filter expression parse error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Filter expression parse error", errorMessage)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -1537,6 +1579,65 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         }
 
 
+        /// <summary>
+        /// Retrieve a users logo
+        /// </summary>
+        /// <param name="uid">Uid of the user</param>
+        /// <param name="size">Size of the image to be returned in pixels.</param>
+        [HttpGet,
+        Route("users/{uid:Guid}/image"),
+        SwaggerConsumes("application/json"),
+        SwaggerProduces("application/octet-stream"),
+        SwaggerResponse(HttpStatusCode.OK, "Success"),
+        SwaggerResponse(HttpStatusCode.BadRequest, "Invalid size specified for image, value greater than max or less than or equal to 0.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.NotFound, "Invalid Resource Uid provided.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),]
+        public async Task<IHttpActionResult> MyImage(Guid uid, int size = 150)
+        {
+            var email = await Community.QueryFirstOrDefaultAsync<string>("select email from [resource] where uid = @uid", new { uid });
+
+            if (email == null)
+            {
+                return errorMessageResponse(HttpStatusCode.NotFound, "Not Found", "Invalid resource uid specified.");
+            }
+
+            if (size < 1 || size > 2048)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Invalid request, invalid size specified for image. Value must be less then 2048 or greater than 0.");
+            }
+
+
+            MD5 md5Hasher = MD5.Create();
+
+            // Convert the input string to a byte array and compute the hash. 
+            // 1.  Trim leading and trailing whitespace from an email address
+            // 2.  Force all characters to lower-case
+            // 3.  md5 hash the final string
+            byte[] data = md5Hasher.ComputeHash(Encoding.Default.GetBytes((email ?? "").Trim().ToLower()));
+
+            // Create a new Stringbuilder to collect the bytes  
+            // and create a string.  
+            StringBuilder sBuilder = new StringBuilder();
+
+            // Loop through each byte of the hashed data  
+            // and format each one as a hexadecimal string.  
+            for (int i = 0; i < data.Length; i++)
+            {
+                sBuilder.Append(data[i].ToString("x2"));
+            }
+
+
+            string url = "http://www.gravatar.com/avatar/" + sBuilder.ToString() + "?s=" + size + "&d=mm";
+            var uri = new Uri(url);
+            using (var client = new HttpClient())
+            {
+                var res = client.GetAsync(uri).Result;
+                byte[] content = await res.Content.ReadAsByteArrayAsync();
+                var dataStream = new MemoryStream(content);
+                var response = createFileResponseMessage(HttpStatusCode.OK, $"user.png", content);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+            }
+        }
 
         /// <summary>
         /// Checks the watch status of an Asset for the requesting user.

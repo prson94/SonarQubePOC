@@ -308,6 +308,7 @@ namespace d360.model
         void SendApiGraphEvent(ApiExecutionInfo info);
         Task SaveScoreProcessingResultsAsync<T>(Guid executionUid, ScoreQueueChangeType changeType, string resultFileSuffix, T item, DateTime? startedOn = null);
         void SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid? fromExecutionUid = null, TimeSpan? timespan = null);
+        void SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, dynamic fields, TimeSpan? timespan = null);
         void SendContinuingScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid executionUid, DateTime startedOn);
         int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value);
         List<DataQualityResponseModel> UpsertAssetResults(List<IDataQualityUpsert> request, ApiExecution execution, int timeout = 3600, bool sendWorkflowEvents = true);
@@ -338,6 +339,30 @@ namespace d360.model
         string ParseOrderColumn(IEnumerable<KeyValuePair<string, string>> queryParams, List<DefaultFilter> fields, string defaultColumn);
         string ParseOrderDirection(IEnumerable<KeyValuePair<string, string>> queryParams, string defaultDirection = "desc");
         string ParsePageOffsetSql(int pageNumber, int pageSize, int pageSizeLimit = 10000);
+
+        #endregion
+
+        #region Scoring
+
+        /// <summary>
+        /// Gets the SQL statement to execute for data quality measures, depending on the type of query needed.
+        /// </summary>
+        /// <param name="queryType">
+        /// 1 => Impacted Assets/Effective Dates by ResultUids.
+        /// 2 => Impacted Asset/Effective Dates By Provided Uid.
+        /// 3 => Get Measure Results For Calculation.
+        /// </param>
+        DataQualityMeasureQueryModel BuildDataQualityMeasureQueryModel(int queryType, Guid assetVersionRollupPathUid);
+
+        /// <summary>
+        /// Used where BuildDataQualityMeasureQueryModel uses QueryType = 2
+        /// </summary>
+        List<AssetMeasureModel> GetDataQualityAssetEffectiveDateResultModels(DataQualityMeasureQueryModel query, Guid metricAssetUid, Guid metricAssetVersionUid, DateTime measureEffectiveDate);
+
+        /// <summary>
+        /// Used where BuildDataQualityMeasureQueryModel uses QueryType = 3
+        /// </summary>
+        List<DataQualityMeasureQueryResultModel> GetDataQualityMeasureQueryResultModels(DataQualityMeasureQueryModel query, Guid assetUid, DateTime? maxDate);
 
         #endregion
     }

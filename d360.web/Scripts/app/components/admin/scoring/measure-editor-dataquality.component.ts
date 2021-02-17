@@ -114,7 +114,8 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
             ruleResultPath: ['', [Validators.required]],
             ruleResultOperation: ['', [Validators.required]],
             ruleResultMatchType: null,
-            matchType: null
+            matchType: null,
+            MatchConditionsOnly: null
         });
 
         this.metricForm.updateValueAndValidity();
@@ -123,7 +124,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
     }
 
     ngAfterViewInit() {
-        this.originalConditions = _.cloneDeep(this.conditions);
+        this.originalConditions = _.cloneDeep(this.conditionGroups);
         this.originalModel = _.cloneDeep(this.model);
         this.originalEffectiveDate = new Date(this.displayEffectiveDate?.toString());
         if (this.uid) {
@@ -220,7 +221,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
                 this.metricForm.removeControl("ruleResultOperation");
                 this.metricForm.removeControl("ruleResultMatchType");
                 this.metricForm.removeControl("matchType");
-                this.conditions = [];
+                this.conditionGroups = [];
             } else {
                 this.metricForm.addControl("ruleResultPath", new FormControl('', [Validators.required]));
                 this.metricForm.addControl("ruleResultOperation", new FormControl('', [Validators.required]));
@@ -343,19 +344,16 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
             if (this.originalModel.IsGroup != this.model.IsGroup) {
                 this.hasModelChanged = true;
             }
-            if (this.haveConditionsChanged(this.conditions.filter(x => x.field), this.originalConditions)) {
+            if (this.haveConditionsChanged(this.conditionGroups, this.originalConditions)) {
                 this.hasModelChanged = true;
             }
             if (this.havePassTestCriteriaChanged(this.model.Definition, this.originalModel.Definition)) {
                 this.hasModelChanged = true;
             }
-            if (this.haveConditionsChanged(this.ruleResultFilters.filter(x => x.field), this.originalRuleResultFilters.filter(x => x.field !== ""))) {
+            if (this.haveRuleConditionsChanged(this.ruleResultFilters.filter(x => x.field), this.originalRuleResultFilters.filter(x => x.field !== ""))) {
                 this.hasModelChanged = true;
             }
 
-            if (!this.hasModelChanged) {
-                this.validateConditions();
-            }
         }
 
         if (this.verb == "Edit") {
