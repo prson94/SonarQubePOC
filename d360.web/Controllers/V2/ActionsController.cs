@@ -457,7 +457,7 @@ for json path";
 
             var resourceUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_resourceuid");
 
-            if (resourceUidParam.Key != null)
+            if (resourceUidParam.Key != null && !string.IsNullOrWhiteSpace(resourceUidParam.Value))
             {
                 if (Guid.TryParse(resourceUidParam.Value, out Guid resourceUid))
                 {
