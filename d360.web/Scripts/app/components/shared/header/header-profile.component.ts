@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
 import { retry } from 'rxjs/operators';
 
 declare var CurrentResourceID;
+declare var CurrentResourceUid;
 declare var SingleSignOn;
 declare var ResourceName;
 declare var ResourceEmail;
@@ -14,7 +15,7 @@ declare var CompanySettings;
 @Component({
     selector: 'd3s-header-profile',
     template: ` <span #item class="header-search" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)" >
-                    <a class="photo hide-on-med-and-down"><img [src]="'/resources/image/' + resourceId + '?size=25'" height="25" width="25" /></a>
+                    <a class="photo hide-on-med-and-down"><img [src]="'/api/v2/membership/users/' + resourceUid + '/image?size=25'" height="25" width="25" /></a>
                     <div class="show-on-medium-and-down hide-on-med-and-up">
                         <div class="mini-menu-line">
                             <div class="check-gutter"></div><div class="text">My Account</div><div class="expand-gutter"><i class="fa fa-caret-right"></i></div>
@@ -65,6 +66,7 @@ export class HeaderProfileComponent implements OnInit , OnDestroy{
     public active: boolean = false;
     private hideHandle: number = 0;
     public resourceId: number = CurrentResourceID;
+    public resourceUid: string = CurrentResourceUid;
     public singleSignOn: boolean = SingleSignOn;
     public userName: string = ResourceName;
     public userEmail: string = ResourceEmail;

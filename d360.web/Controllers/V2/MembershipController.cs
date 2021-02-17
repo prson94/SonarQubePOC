@@ -16,10 +16,14 @@ using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
@@ -1575,6 +1579,65 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         }
 
 
+        /// <summary>
+        /// Retrieve a users logo
+        /// </summary>
+        /// <param name="uid">Uid of the user</param>
+        /// <param name="size">Size of the image to be returned in pixels.</param>
+        [HttpGet,
+        Route("users/{uid:Guid}/image"),
+        SwaggerConsumes("application/json"),
+        SwaggerProduces("application/octet-stream"),
+        SwaggerResponse(HttpStatusCode.OK, "Success"),
+        SwaggerResponse(HttpStatusCode.BadRequest, "Invalid size specified for image, value greater than max or less than or equal to 0.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.NotFound, "Invalid Resource Uid provided.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),]
+        public async Task<IHttpActionResult> MyImage(Guid uid, int size = 150)
+        {
+            var email = await Community.QueryFirstOrDefaultAsync<string>("select email from [resource] where uid = @uid", new { uid });
+
+            if (email == null)
+            {
+                return errorMessageResponse(HttpStatusCode.NotFound, "Not Found", "Invalid resource uid specified.");
+            }
+
+            if (size < 1 || size > 2048)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Invalid request, invalid size specified for image. Value must be less then 2048 or greater than 0.");
+            }
+
+
+            MD5 md5Hasher = MD5.Create();
+
+            // Convert the input string to a byte array and compute the hash. 
+            // 1.  Trim leading and trailing whitespace from an email address
+            // 2.  Force all characters to lower-case
+            // 3.  md5 hash the final string
+            byte[] data = md5Hasher.ComputeHash(Encoding.Default.GetBytes((email ?? "").Trim().ToLower()));
+
+            // Create a new Stringbuilder to collect the bytes  
+            // and create a string.  
+            StringBuilder sBuilder = new StringBuilder();
+
+            // Loop through each byte of the hashed data  
+            // and format each one as a hexadecimal string.  
+            for (int i = 0; i < data.Length; i++)
+            {
+                sBuilder.Append(data[i].ToString("x2"));
+            }
+
+
+            string url = "http://www.gravatar.com/avatar/" + sBuilder.ToString() + "?s=" + size + "&d=mm";
+            var uri = new Uri(url);
+            using (var client = new HttpClient())
+            {
+                var res = client.GetAsync(uri).Result;
+                byte[] content = await res.Content.ReadAsByteArrayAsync();
+                var dataStream = new MemoryStream(content);
+                var response = createFileResponseMessage(HttpStatusCode.OK, $"user.png", content);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+            }
+        }
 
         /// <summary>
         /// Checks the watch status of an Asset for the requesting user.
