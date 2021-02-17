@@ -93,7 +93,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                     (dataSet.data as []).forEach(pt => {
                         var sp = new ScorePoint();
                         sp.EffectiveDate = pt['EffectiveDate'];
-                        var score = Math.ceil(+pt['Value'] * measureAdjustmentRatio * 1000) / 1000;
+                        var score = (+pt['Value'] * measureAdjustmentRatio * 1000) / 1000;
                         sp.Score = Math.round(score * 100 * 10) / 10;
                         arr.push(sp);
                     })
