@@ -410,6 +410,7 @@ namespace d360.web.Controllers.V2
                 #endregion
 
                 #region Validation
+                
                 var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel);
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                     throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
@@ -417,6 +418,12 @@ namespace d360.web.Controllers.V2
                 bool anyExistingItems = FieldsRepository.HasExistingItems(typeIdentifierInfoModel);
 
                 List<FieldType> currentFieldTypes = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
+                bool anyResponsibilitiesUsingField = FieldsRepository.hasResponsibilityUsingField(typeIdentifierInfoModel, currentFieldTypes);
+
+                if (anyResponsibilitiesUsingField)
+                {
+                    throw new RestApiException(HttpStatusCode.BadRequest, "Used in Responsibility Rules", "This field type is in use in a responsibility rule and the rule needs to be deleted first.");
+                }
 
                 (var fieldValidatorStatus, List<string> fieldNamesToDelete) = FieldApiModelValidator.FieldValidator(model, anyExistingItems, currentFieldTypes);
                 if (fieldValidatorStatus.StatusCode != HttpStatusCode.OK)
