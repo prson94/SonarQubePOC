@@ -52,10 +52,14 @@ namespace d360.web.Controllers
                 {
                     //Don't include "choose.." and allow all in typeahead results
                     if (!ft.IsRequired && !ft.AllowMultipleValues)
+                    {
                         selectList.Add(new SelectListInfoItem { Text = "Choose...", Value = "" });
+                    }
 
                     if (ft.AllowAllValue)
+                    {
                         selectList.Add(new SelectListInfoItem { Text = ft.AllowAllLabel, Value = "0" });
+                    }
                 }
 
                 if (exceptionMessage == "")
@@ -149,7 +153,9 @@ namespace d360.web.Controllers
                 var items = Company.Query<SelectListInfoItem>(itemsSql, queryParameters).ToList();
 
                 if (items.Count() >= typeaheadThreshold)
+                {
                     useTypeahead = true;
+                }
 
                 selectList.AddRange(items.Select(i => new SelectListInfoItem
                 {
@@ -185,7 +191,9 @@ namespace d360.web.Controllers
             string selectedValue = string.IsNullOrWhiteSpace(value) ? (string.IsNullOrWhiteSpace(ft.DefaultValue) ? "" : ft.DefaultValue) : value;
 
             if (ft.AllowAllValue)
+            {
                 selectList.Add(new SelectListItem { Text = ft.AllowAllLabel, Value = "0" });
+            }
 
             int maxItems = 20;
             var columns = $@"

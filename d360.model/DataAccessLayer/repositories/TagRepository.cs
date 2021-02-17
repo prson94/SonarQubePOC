@@ -48,12 +48,16 @@ namespace d360.model.DataAccessLayer
         {
             var model = tagsToDelete.FirstOrDefault(i => i.uid == uid);
             if (model == null && model.State != State.Deleted)
+            {
                 throw new Exception($"Tag with uid '{uid}' does not exists!");
+            }
 
             var anyAssetTagsForDeletion = companyContext.AssetTags.Any(x => x.TagID == model.ID);
 
             if (anyAssetTagsForDeletion && !cascade)
+            {
                 throw new Exception($"Tag with uid '{uid}' have related assets. Use cascade='true' to delete this tag!");
+            }
 
             model.State = State.Deleted;
 
@@ -139,16 +143,25 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
 
                 if (int.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_pagesize").Value, out pageSize))
                 {
-                    if (pageSize < 1) pageSize = 1;
+                    if (pageSize < 1)
+                    {
+                        pageSize = 1;
+                    }
                 }
-                if (pageSize > 250) pageSize = 250; // max page size is 250 people.
+                if (pageSize > 250)
+                {
+                    pageSize = 250; // max page size is 250 people.
+                }
             }
 
             if (queryParams.ToList().Any(q => q.Key.ToLower() == "_pagenum"))
             {
                 if (int.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_pagenum").Value, out pageNum))
                 {
-                    if (pageNum < 1) pageNum = 1;
+                    if (pageNum < 1)
+                    {
+                        pageNum = 1;
+                    }
                 }
             }
 
@@ -214,19 +227,31 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
 
             sql += $" order by [{orderByField}] {direction}";
 
-            if (pageSize < 1) pageSize = 1;
-            if (pageNum < 1) pageNum = 1;
+            if (pageSize < 1)
+            {
+                pageSize = 1;
+            }
+            if (pageNum < 1)
+            {
+                pageNum = 1;
+            }
 
             if (!disablePaging)
+            {
                 sql += $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
+            }
 
             results.pageNum = pageNum;
             results.pageSize = pageSize;
 
             if (includeTotal)
+            {
                 results.total = (await companyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout)).FirstOrDefault();
+            }
             else
+            {
                 results.total = null;
+            }
 
             results.items = (await companyContext.QueryAsync<TagApiModel>(sql, dbArgs, ApiTimeout));
 
@@ -269,13 +294,25 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
 
                         break;
                     case "sortby":
-                        if (qitem.Value.ToLower() == "usecount") sortField = "usecount";
-                        if (qitem.Value.ToLower() == "value") sortField = "t.value";
+                        if (qitem.Value.ToLower() == "usecount")
+                        {
+                            sortField = "usecount";
+                        }
+                        if (qitem.Value.ToLower() == "value")
+                        {
+                            sortField = "t.value";
+                        }
                         break;
                     case "sortorder":
                         int val = int.Parse(qitem.Value);
-                        if (val >= 0) sortOrder = "ASC";
-                        else sortOrder = "DESC";
+                        if (val >= 0)
+                        {
+                            sortOrder = "ASC";
+                        }
+                        else
+                        {
+                            sortOrder = "DESC";
+                        }
                         break;
                 }
             }
@@ -559,7 +596,9 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         break;
                     case "ignorecounts":
                         if (queryitem.Value.ToLower() == "true")
+                        {
                             ignoreCounts = true;
+                        }
                         break;
                     case "value":
                         value = $"%{queryitem.Value.ToLower()}%";
@@ -570,7 +609,10 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         {
                             maxNumberOfResults = size;
                         }
-                        else throw new Exception("Invalid value for page size parametar!");
+                        else
+                        {
+                            throw new Exception("Invalid value for page size parametar!");
+                        }
                         break;
                 }
             }
@@ -595,7 +637,9 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
         {
             StringBuilder sb = new StringBuilder();
             foreach (var tag in tags)
+            {
                 sb.AppendLine(GetTagAuditInsertSql(tag, action));
+            }
 
             companyContext.Query<int>(sb.ToString()).FirstOrDefault();
         }
@@ -631,7 +675,9 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
         public AssetTag CreateAssetTag(int tagId, long assetId)
         {
             if (this.DoesAssetTagExists(tagId, assetId))
+            {
                 return null;
+            }
 
             var assetTag = new AssetTag()
             {
@@ -685,7 +731,9 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
             {
                 AssetTag tag = companyContext.AssetTags.Where(x => x.TagID == tagId && x.AssetID == assetId).SingleOrDefault();
                 if (tag != null)
+                {
                     hasPersmission = tag.CreatedBy == companyContext.CurrentResourceID;
+                }
             }
 
             if (!hasPersmission)
@@ -698,8 +746,14 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
         public bool IsAuthorizedToEditTag(Guid tagUid)
         {
             var tag = GetTagByUid(tagUid);
-            if (tag == null) return false;
-            if (companyContext.CurrentResourceIsAdmin || companyContext.CurrentResourceID == tag.CreatedBy) return true;
+            if (tag == null)
+            {
+                return false;
+            }
+            if (companyContext.CurrentResourceIsAdmin || companyContext.CurrentResourceID == tag.CreatedBy)
+            {
+                return true;
+            }
             return false;
         }
 
@@ -760,26 +814,50 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         {
                             result.pageSize = int.Parse(param.Value);
                         }
-                        else throw new Exception("Invalid value for page size parametar!");
+                        else
+                        {
+                            throw new Exception("Invalid value for page size parametar!");
+                        }
                         break;
                     case "_pagenum":
                         int num = 0;
                         if (int.TryParse(param.Value, out num))
                         {
                             result.pageNum = int.Parse(param.Value);
-                            if (result.pageNum <= 0) result.pageNum = 1;
+                            if (result.pageNum <= 0)
+                            {
+                                result.pageNum = 1;
+                            }
                         }
-                        else throw new Exception("Invalid value for page number parametar!");
+                        else
+                        {
+                            throw new Exception("Invalid value for page number parametar!");
+                        }
                         break;
                     case "sortby":
-                        if (param.Value.ToLower() == "displayvalue") sortField = "displayvalue";
-                        if (param.Value.ToLower() == "assettype") sortField = "assettype";
-                        if (param.Value.ToLower() == "tagsasstring") sortField = "AssetTags.Tags";
+                        if (param.Value.ToLower() == "displayvalue")
+                        {
+                            sortField = "displayvalue";
+                        }
+                        if (param.Value.ToLower() == "assettype")
+                        {
+                            sortField = "assettype";
+                        }
+                        if (param.Value.ToLower() == "tagsasstring")
+                        {
+                            sortField = "AssetTags.Tags";
+                        }
                         break;
                     case "sortorder":
                         int val = int.Parse(param.Value);
-                        if (val >= 0) sortOrder = "ASC";
-                        else sortOrder = "DESC";
+                        if (val >= 0)
+                        {
+                            sortOrder = "ASC";
+                        }
+                        else
+                        {
+                            sortOrder = "DESC";
+                        }
                         break;
                 }
             }
@@ -834,7 +912,10 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
             var data = string.Join("", companyContext.Query<string>(sql, dbArgs, ApiTimeout).ToList());
 
             result.items = JsonConvert.DeserializeObject<List<TagDetail>>(data);
-            if (result.items == null) result.items = new List<TagDetail>();
+            if (result.items == null)
+            {
+                result.items = new List<TagDetail>();
+            }
             return result;
         }
 
@@ -875,16 +956,24 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
         {
             string paramValue = "";
             if ("model".Contains(value.ToLower()))
+            {
                 paramValue = "TaxonomyType";
+            }
 
             if ("glossary".Contains(value.ToLower()))
+            {
                 paramValue = "ArtifactType";
+            }
 
             if ("policy".Contains(value.ToLower()))
+            {
                 paramValue = "PolicyType";
+            }
 
             if ("rule".Contains(value.ToLower()))
+            {
                 paramValue = "RuleType";
+            }
 
             if (!string.IsNullOrEmpty(paramValue))
             {

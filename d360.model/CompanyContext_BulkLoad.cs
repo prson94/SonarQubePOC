@@ -1069,10 +1069,14 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
         public async Task BulkRelation(Load load, IRelationshipRepository relationshipRepository, IAssetRepository assetRepository, BulkRelationshipOperation operation)
         {
             if (load == null)
+            {
                 throw new ArgumentNullException("load cannot be null");
+            }
 
             if (!load.IntersectTypeUid.HasValue)
+            {
                 throw new ArgumentNullException("intersect type uid cannot be null");
+            }
 
             await GenerateExecutionItemUids(load, timeout);
 
@@ -1200,7 +1204,9 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                     RelationshipDeletes deletes = new RelationshipDeletes();
 
                     if (Connection.State == ConnectionState.Closed)
+                    {
                         await Connection.OpenAsync();
+                    }
 
                     //populate intersect IDs
                     await Connection.ExecuteAsync($@"update L

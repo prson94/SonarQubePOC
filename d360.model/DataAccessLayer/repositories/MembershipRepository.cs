@@ -240,14 +240,18 @@ namespace d360.model.DataAccessLayer
                 row["ItemNumber"] = itemNumber;
                 row["Username"] = user.Username;
                 if (user.uid.HasValue)
+                {
                     row["uid"] = user.uid;
+                }
 
                 resourceTable.Rows.Add(row);
 
             }
 
             if (CommunityContext.Connection.State == ConnectionState.Closed)
+            {
                 await CommunityContext.Connection.OpenAsync();
+            }
 
             CompanyContext.SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
@@ -480,15 +484,27 @@ namespace d360.model.DataAccessLayer
                 }
 
                 row["ExecutionID"] = executionID;
-                if (user.uid.HasValue) row["Uid"] = user.uid;
-                if (user.ResourceID.HasValue) row["ResourceID"] = user.ResourceID;
-                if (user.ExecutionItemUid.HasValue) row["ExecutionItemUId"] = user.ExecutionItemUid;
+                if (user.uid.HasValue)
+                {
+                    row["Uid"] = user.uid;
+                }
+                if (user.ResourceID.HasValue)
+                {
+                    row["ResourceID"] = user.ResourceID;
+                }
+                if (user.ExecutionItemUid.HasValue)
+                {
+                    row["ExecutionItemUId"] = user.ExecutionItemUid;
+                }
                 row["ItemNumber"] = user.ItemNumber;
                 row["Username"] = user.Username;
                 row["FirstName"] = user.FirstName;
                 row["LastName"] = user.LastName;
                 row["Password"] = user.Password;
-                if (user.State.HasValue && !IsChangePasswordReqeust) row["State"] = (int)user.State;
+                if (user.State.HasValue && !IsChangePasswordReqeust)
+                {
+                    row["State"] = (int)user.State;
+                }
                 row["IsAdministrator"] = user.IsAdministrator;
                 row["IsNew"] = user.IsNew;
                 row["Object"] = "Resource";
@@ -520,7 +536,10 @@ namespace d360.model.DataAccessLayer
                     }
                 }
 
-                if (!success) row["Success"] = false;
+                if (!success)
+                {
+                    row["Success"] = false;
+                }
                 row["Message"] = messages.Any() ? string.Join(". ", messages) + ". " : "";
 
             }
@@ -528,7 +547,9 @@ namespace d360.model.DataAccessLayer
             #region Bulk Copy Company
 
             if (CompanyContext.Connection.State == ConnectionState.Closed)
+            {
                 await CompanyContext.Connection.OpenAsync();
+            }
 
             using (SqlTransaction trans = CompanyContext.Connection.BeginTransaction())
             {
@@ -940,8 +961,14 @@ namespace d360.model.DataAccessLayer
                         var row = resultsTable.NewRow();
                         row["ExecutionID"] = executionID;
                         row["ItemNumber"] = r.ItemNumber;
-                        if (r.uid.HasValue) row["uid"] = r.uid;
-                        if (r.Success == false) row["Success"] = false;
+                        if (r.uid.HasValue)
+                        {
+                            row["uid"] = r.uid;
+                        }
+                        if (r.Success == false)
+                        {
+                            row["Success"] = false;
+                        }
                         row["Message"] = r.Message ?? "";
 
                         resultsTable.Rows.Add(row);
@@ -1017,16 +1044,24 @@ namespace d360.model.DataAccessLayer
         private bool validatePassword(string password)
         {
             if (string.IsNullOrEmpty(password))
+            {
                 return false;
+            }
 
             if (password.Length < 7 || password.Length > 25)
+            {
                 return false;
+            }
 
             if (!password.Any(char.IsUpper) || !password.Any(char.IsLower))
+            {
                 return false;
+            }
 
             if (!password.Any(char.IsDigit))
+            {
                 return false;
+            }
 
             return true;
         }
@@ -1120,7 +1155,9 @@ order by	q.SortOrder";
                     case FavoriteType.Asset:
                         AssetDetail asset = GetAssetDetailsFromRoute(apiFavorite.Route);
                         if (asset == null)
+                        {
                             return false;
+                        }
 
                         favorite.Object = asset.Object;
                         favorite.ObjectID = asset.ObjectID;
@@ -1130,7 +1167,9 @@ order by	q.SortOrder";
                     case FavoriteType.AssetType:
                         AssetType assettype = GetAssetTypeFromRoute(apiFavorite.Route);
                         if (assettype == null)
+                        {
                             return false;
+                        }
 
                         favorite.Object = assettype.Object;
                         favorite.ObjectID = assettype.ObjectID;
@@ -1215,7 +1254,9 @@ order by	q.SortOrder";
                     }
                 }
                 if (asset != null)
+                {
                     break;
+                }
             }
             return asset;
         }
@@ -1325,7 +1366,9 @@ order by	q.SortOrder";
                     }
                 }
                 if (assettype != null)
+                {
                     break;
+                }
             }
             return assettype;
         }

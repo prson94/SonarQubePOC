@@ -361,8 +361,10 @@ order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).T
                 );
 
                 foreach (var item in res){
-                    if(!string.IsNullOrEmpty(item.owners))
+                    if (!string.IsNullOrEmpty(item.owners))
+                    {
                         item.owners = JsonConvert.DeserializeObject(item.owners);
+                    }
                 }
 
                 return Request.CreateResponse(HttpStatusCode.OK, res);
@@ -646,7 +648,7 @@ order by Name";
             try
             {
                 var fil = GraphFilterRepository.GetGraphFiltersByUser(Company.CurrentResourceID);
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, fil)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, fil))).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -656,7 +658,7 @@ order by Name";
                     { "Endpoint Method", "BrowserController.GetUserAssetBrowserFilters" },
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -679,9 +681,13 @@ order by Name";
             try
             {
                 if (GraphFilterRepository.CreateGraphFilter(model))
+                {
                     return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
+                }
                 else
+                {
                     return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = "Save failed", Success = false, Uid = Guid.Empty }));
+                }
 
             }
             catch (Exception ex)
@@ -714,10 +720,14 @@ order by Name";
                 GraphFilter orig = GraphFilterRepository.GetGraphFilterByUid(uid);
 
                 if (orig == null)
+                {
                     return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, "Filter not found."));
+                }
 
                 if (orig.OwnedBy != Company.CurrentResourceID)
+                {
                     return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, "Filter not owned by user."));
+                }
 
                 orig.Name = model.Name;
                 orig.IsPublic = model.IsPublic;
@@ -756,10 +766,14 @@ order by Name";
                 GraphFilter model = GraphFilterRepository.GetGraphFilterByUid(uid);
 
                 if (model == null)
+                {
                     return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, "Filter not found."));
+                }
 
                 if (model.OwnedBy != Company.CurrentResourceID)
+                {
                     return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, "Filter not owned by user."));
+                }
 
                 GraphFilterRepository.DeleteGraphFilter(model);
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = "Filter removed.", Success = true, Uid = Guid.Empty }));
@@ -791,17 +805,23 @@ order by Name";
         public async Task<IHttpActionResult> GetDiagramTypes(Guid uid)
         {
             if (uid == null)
+            {
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset uid must be specified"));
+            }
 
             var asset = (await Company.QueryAsync<Asset>("select * from Asset where uid = @uid", new { uid })).FirstOrDefault();
 
             if (asset == null)
+            {
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, "The asset for this uid could not be found"));
+            }
 
             var assetType = (await Company.QueryAsync<AssetType>("select * from AssetType where id = @assetTypeID", new { asset.AssetTypeID })).FirstOrDefault();
 
             if (assetType == null)
+            {
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, "The asset type for this asset could not be found"));
+            }
 
 
             var items = new List<dynamic>();

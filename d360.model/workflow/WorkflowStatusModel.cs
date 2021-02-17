@@ -9,12 +9,17 @@ namespace d360.model.workflow
 
         public static WorkflowStatusModel ParseFromXml(XElement xml)
         {
-            if (xml == null) throw new Exception("INVALID XML SPECIFIED");
+            if (xml == null)
+            {
+                throw new Exception("INVALID XML SPECIFIED");
+            }
 
             var status = string.Empty;
 
-            if(xml.Element("Status") != null)
+            if (xml.Element("Status") != null)
+            {
                 status = xml.Element("Status").Value;
+            }
             
             return new WorkflowStatusModel
             {

@@ -154,8 +154,10 @@ namespace d360.extensions.search
 
         public void IndexObjectType(string ObjectType, bool clearIndex = true)
         {
-            if(clearIndex)
+            if (clearIndex)
+            {
                 _source.ClearIndex(_companyID, ObjectType);
+            }
 
             IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, ObjectType);
             _source.AddToIndex(models);
@@ -177,7 +179,9 @@ namespace d360.extensions.search
                 assetClass = _context.QueryFirstOrDefault<AssetTypeClass>("SELECT [Class] FROM AssetType att WHERE att.uid = @AssetTypeUid", new { AssetTypeUid });
             }
             if (assetClass == null)
+            {
                 throw new Exception("AssetClass is null");
+            }
 
             int assettypeclass = (int)assetClass;
             switch (assetClass)
@@ -722,9 +726,13 @@ namespace d360.extensions.search
             string tagsSql = @"SELECT a.ID as AssetID, a.uid AS AssetUID, t.uid AS TagUID, t.Value FROM [dbo].[AssetTag] at " +
             "INNER JOIN [dbo].[Tag] t ON at.TagID = t.ID INNER JOIN [dbo].[Asset] a ON at.AssetID = a.ID";
             if (tagJoin.Any())
+            {
                 tagsSql += " " + string.Join(" " + Environment.NewLine, tagJoin.ToArray());
+            }
             if (tagWhere.Any())
+            {
                 tagsSql += " WHERE " + string.Join(" AND " + Environment.NewLine, tagWhere.ToArray());
+            }
 
             return tagsSql;
         }
@@ -852,7 +860,9 @@ namespace d360.extensions.search
         private void FetchDataPage(long AssetID)
         {
             if (LastPage)
+            {
                 return;
+            }
 
             _param.Add("PagerAssetID", AssetID);
             _param.Add("PageSize", PageSize);
@@ -889,7 +899,9 @@ namespace d360.extensions.search
         {
             //If requested ID is higher than what is current, and last page has not been reached, fetch the next data page
             if (!LastPage && AssetID > CurrentHighID)
+            {
                 FetchDataPage(AssetID);
+            }
 
             return _data.Where(i => i.AssetID == AssetID).ToList();
         }

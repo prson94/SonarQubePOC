@@ -148,7 +148,9 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> DeleteTemplateByUid(Guid templateUid)
         {
             if (!Company.CurrentResourceIsAdmin)
+            {
                 return errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage);
+            }
 
             var res = await Company.Database.Connection.ExecuteAsync("delete AssetTypeExportTemplate where uid = @uid", new { uid = templateUid });
 
@@ -339,10 +341,14 @@ namespace d360.web.Controllers.V2
             data.Row = model.Row;
 
             if (!string.IsNullOrEmpty(model.BgColor))
+            {
                 data.BackgroundColor = ColorTranslator.FromHtml(model.BgColor).ToArgb();
+            }
 
             if (!string.IsNullOrEmpty(model.TextColor))
+            {
                 data.Color = ColorTranslator.FromHtml(model.TextColor).ToArgb();
+            }
 
             Company.Entry(data).State = System.Data.Entity.EntityState.Modified;
             var res = await Company.SaveChangesAsync();
@@ -636,7 +642,9 @@ namespace d360.web.Controllers.V2
         {
             List<FieldType> fieldTypes = GetRuleTypeFields(guid);
             if (template != null)
+            {
                 UseTempleteFields(template, fieldTypes);
+            }
             IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes, template);
 
             SLDocument document = new SLDocument();
