@@ -70,7 +70,7 @@ export class AdminCustomAPIEndpointVersionsComponent extends BaseComponent imple
 
     deleteService(id: number) {
         this.customAPIService.deleteEndpointVersion(id).subscribe(
-            result => {
+            (result) => {
                 this.showMessageForResult(this.messagesService, result);
                 this.load();
 

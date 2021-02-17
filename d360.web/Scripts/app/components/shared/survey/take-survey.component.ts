@@ -61,7 +61,7 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
 
     closeDialog() {
         this.currentQuestionIndex = 0;
-        this.surveyDetails.Questions.forEach(qd => { qd.Options.forEach(i => { i.Value = null; i.IsChecked = false }) });
+        this.surveyDetails.Questions.forEach((qd) => { qd.Options.forEach((i) => { i.Value = null; i.IsChecked = false }) });
         this.currentQuestion = this.surveyDetails.Questions[0];
         this.ref.markForCheck();
         this.surveyBack.emit();

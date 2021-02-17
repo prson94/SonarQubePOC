@@ -33,7 +33,7 @@ export class AssetDeleteEditorComponent extends BaseComponent {
     public deleteAsset(id: number): void {
         this.assetService.deleteAsset(this.assetTypeUid, this.uid)
             .subscribe(
-                result => {
+                (result) => {
                     this.showMessageForApiResults(this.messagesService, result, `${this.displayValue} successfully deleted`, true);
                     this.onDeleted.emit();
                     this.changeDetectorRef.markForCheck();

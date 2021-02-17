@@ -118,9 +118,9 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
         const observer: Observable<boolean> = new Observable((obs) => {
 
-            this.fieldsService.getFieldsV2(this.allocation.assetTypeUid, null, null).subscribe(res => {
+            this.fieldsService.getFieldsV2(this.allocation.assetTypeUid, null, null).subscribe((res) => {
                 const tempFields: FieldTypeAPIModelFieldCondition[] = [];
-                res.forEach(f => {
+                res.forEach((f) => {
                     if (FieldTypeHelper.isFieldForOperator(f.Type)) {
                         tempFields.push(f as FieldTypeAPIModelFieldCondition);
                     }

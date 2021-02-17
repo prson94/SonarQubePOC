@@ -84,7 +84,7 @@ export class ResponsibilityTypeForm implements OnInit {
     private getTypeRelations() {
         this.item.ResponsibilityTypeRelations = [];
         if (this.selectedAllocations)
-            this.selectedAllocations.forEach(s => {
+            this.selectedAllocations.forEach((s) => {
                 let r = new ResponsibilityTypeRelation();
                 r.ObjectID = parseInt(s.split('|')[1]);
                 r.ObjectType = s.split('|')[0];

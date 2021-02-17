@@ -119,7 +119,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
         if (this.showEmptyRelationshipTypes)
             return this.relationshipItems;
 
-        return this.relationshipItems.filter(x => x.Count > 0);
+        return this.relationshipItems.filter((x) => x.Count > 0);
     }
 
     onFilterChange(qstring) {

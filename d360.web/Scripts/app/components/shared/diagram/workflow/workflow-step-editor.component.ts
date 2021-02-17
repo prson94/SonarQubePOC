@@ -79,17 +79,17 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     }
 
     ngOnInit() {
-        this.fieldsSub = this.workflowFieldsService.formFields$.subscribe(s => {
+        this.fieldsSub = this.workflowFieldsService.formFields$.subscribe((s) => {
             this.filterFormFields();
         });
 
-        this.httpFieldsSub = this.workflowFieldsService.httpFields$.subscribe(s => {
+        this.httpFieldsSub = this.workflowFieldsService.httpFields$.subscribe((s) => {
             this.filterHttpFields();
         });
 
         this.workflowService.getEmailTaskRecipientType()
-            .subscribe(r => {
-                r.forEach(e => {
+            .subscribe((r) => {
+                r.forEach((e) => {
                     if (e.ID < 1)
                         return;
                     else if (e.ID == EmailTaskRecipientType.Followers) {

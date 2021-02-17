@@ -176,12 +176,12 @@ export class ProcessDiagramTemplates {
 
     private static getRelBadge(type: string, component: ProcessDiagramComponent): go.Panel {
         var $ = go.GraphObject.make;
-        var margin = new go.Margin(5, 5, 0, 0);
+        var RectangleMargin = new go.Margin(5, 5, 0, 0);
         if (type == 'gateway') {
-            var margin = new go.Margin(28, 28, 0, 0);
+            var RectangleMargin = new go.Margin(28, 28, 0, 0);
         }
         if (type == 'event') {
-            var margin = new go.Margin(24, 38, 0, 0);
+            var RectangleMargin = new go.Margin(24, 38, 0, 0);
         }
 
         var badge = $(go.Panel, 'Spot',
@@ -195,7 +195,7 @@ export class ProcessDiagramTemplates {
             $(go.Shape, "Rectangle",
                 {
                     maxSize: new go.Size(NaN, 22),
-                    margin: margin,
+                    margin: RectangleMargin,
                     fill: '#006fba',
                     strokeWidth: 1,
                     stroke: "white"

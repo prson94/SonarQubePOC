@@ -99,7 +99,7 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
         let nav: NavigationState[] = JSON.parse(localStorage.getItem("NavigationMenu"));
 
         //check if there's already a branch for this category
-        if (nav.some(x => x.SiteMenuID == this.category)) {
+        if (nav.some((x) => x.SiteMenuID == this.category)) {
             nav.forEach(menu => {
                 if (menu.SiteMenuID == this.category) {
                     menu.DisplayElements.push({ ParentUrl: this.parentUrl, Url: this.item.Url ? this.item.Url : this.item.Name });

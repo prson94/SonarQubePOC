@@ -40,7 +40,7 @@ export class PermissionsComponent extends BaseComponent implements OnInit, OnDes
     }
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             this.assetTypeId = +params['assetTypeId'];
    
         });

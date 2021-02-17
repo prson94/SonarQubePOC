@@ -138,7 +138,7 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     theDeleteCallback: Function;
 
     get globalFilterFields(): string[] {
-        return this.columns.map(c => c.datafield);
+        return this.columns.map((c) => c.datafield);
     }
 
     constructor(private gridDefinitionService: GridDefinitionService, private uriBasedService: UriBasedService, private messagesService: MessagesObservableService) {
@@ -164,18 +164,18 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     }
 
     public onDeleted() {
-        this.items = this.items.filter(x => x.ID != this.selected.ID);
+        this.items = this.items.filter((x) => x.ID != this.selected.ID);
         this.selected = null;
         this.showDelete = false;
     }
 
     deleteItem(id: number) {
         this.uriBasedService.deleteItemWithResult(this.deleteUri, id)
-            .subscribe(res => {
+            .subscribe((res) => {
                 this.showMessageForResult(this.messagesService, res);
                 this.showDelete = false;
                 if (res.type != 'error')
-                    this.items = this.items.filter(x => x.ID != id);
+                    this.items = this.items.filter((x) => x.ID != id);
             });
     }
 
@@ -191,7 +191,7 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     getData() {
         this.isLoading = true;
         this.uriBasedService.getItems(this.dataUri)
-            .subscribe(result => {
+            .subscribe((result) => {
                 this.items = result;
                 this.isLoading = false;
                 if (this.items.length > 0) this.selected = this.items[0];
@@ -232,7 +232,7 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
         let field = e.field;
         let direction = e.order;
 
-        var fld = this.fields.filter(x => x.name == field);
+        var fld = this.fields.filter((x) => x.name == field);
         var type = (fld != null && fld.length > 0) ? fld[0].type : "";
 
         this.items = this.items.slice().sort((a, b) => {

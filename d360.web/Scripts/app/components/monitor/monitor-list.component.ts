@@ -122,7 +122,7 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
                             this.workflowItems = this.workflowItems.filter(i => i.Object == this.objectType && i.ObjectID == this.objectId);
                         } else if (this.useFilteredObject) {
                             //filtering is done on the server for specific objects. If the list comes back null, the specific object is not present
-                            this.workflowItems = this.workflowItems.filter(i => i.ObjectNames != null);
+                            this.workflowItems = this.workflowItems.filter((i) => i.ObjectNames != null);
                         }
                     }
                 }),

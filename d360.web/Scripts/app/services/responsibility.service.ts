@@ -26,8 +26,8 @@ export class ResponsibilityService extends BaseObservableService implements IRes
         return this.http.get(`form/Responsibility?assetID=${assetID}&overrideID=${responsibilityID}&assetUid=${assetUid}&responsibilityUid=${responsibilityUid}&resourceUid=${resourceUid}`)
 
             .pipe(
-                map(response => <ResponsibilityEditorModel>response),
-                map(model => {
+                map((response) => <ResponsibilityEditorModel>response),
+                map((model) => {
                     FormHelper.mapSelectItems(model.resources);
                     FormHelper.mapSelectItems(model.responsibilityTypes);
 
@@ -60,7 +60,7 @@ export class ResponsibilityService extends BaseObservableService implements IRes
         return this.http.put('form/responsibility', JSON.stringify(responsibility), { headers })
             .pipe(
                 map(response => <JsonResult>response),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
 

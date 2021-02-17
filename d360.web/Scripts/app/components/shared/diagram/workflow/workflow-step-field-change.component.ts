@@ -73,7 +73,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
                     this.fieldUpdate.Field.forEach(f => {
                         this.initField(f);
-                        let fieldIndex = this.fields.findIndex(i => i.ID.toString() == f['@FieldId'].toString());
+                        let fieldIndex = this.fields.findIndex((i) => i.ID.toString() == f['@FieldId'].toString());
 
                         if (fieldIndex > -1) {
                             this.usedFields.push(this.fields[fieldIndex]);
@@ -84,7 +84,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                 }),
                 map(() => {
                     if (this.issueObject != '') {
-                        var actionFields = this.fields.filter(x => x.Object == 'IssueType');
+                        var actionFields = this.fields.filter((x) => x.Object == 'IssueType');
                         actionFields.forEach(function (item) {
                             var actionFormField: any = {};
                             actionFormField['@FieldName'] = 'Action Type::' + item.FriendlyName;

@@ -84,7 +84,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
         this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
 
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             this.canReadSelectedType = false;
 
             //load default perms
@@ -97,7 +97,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                     if (this.loadObjectDataSub) {
                         this.loadObjectDataSub.unsubscribe();
                     }
-                    this.loadObjectDataSub = this.assetTypeService.getAssetTypeObjectAndID(params['referenceListId']).subscribe(res => {
+                    this.loadObjectDataSub = this.assetTypeService.getAssetTypeObjectAndID(params['referenceListId']).subscribe((res) => {
                         this.selectedReferenceListId = +res.ObjectID;
                         this.load();
                     })
@@ -116,10 +116,10 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
             this.loadPermissionSub.unsubscribe();
 
         this.loadPermissionSub = this.referenceService.canReadReferenceType(this.selectedReferenceListId)
-            .subscribe(r => {
+            .subscribe((r) => {
                 this.canReadSelectedType = r;
                 if (this.selectedReferenceListId && !isNaN( this.selectedReferenceListId)) {
-                    this.loadPermissions(this.permissionsService, "ReferenceItemType", this.selectedReferenceListId).then(perms => {
+                    this.loadPermissions(this.permissionsService, "ReferenceItemType", this.selectedReferenceListId).then((perms) => {
                         this.canAddReferenceItem = this.hasModifyAssetPermissions();
                         this.canEditReferenceItem = this.hasModifyAssetPermissions();
                         this.canRemoveReferenceItem = this.hasDeleteAssetPermissions();

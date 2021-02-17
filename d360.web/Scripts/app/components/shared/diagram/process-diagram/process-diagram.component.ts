@@ -147,7 +147,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     ngOnInit() {
 
-        this.route.params.subscribe(params => {
+        this.route.params.subscribe((params) => {
             this.focusKey = params['focusKey'];
             if (this.focusKey) {
                 let url: string = `/sidebar/visualization/browser/${params['assetUid']}/${params['diagramType']}`;
@@ -160,11 +160,11 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
 
         this.processService.getProcessDiagramColors(this.assetUid)
-            .subscribe(colors => {
+            .subscribe((colors) => {
                 this.colors = colors;
             });
         this.processService.getAvailableNodes(this.assetUid)
-            .subscribe(res => {
+            .subscribe((res) => {
                 this.assetTypeNodes = res;
                 this.events = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Event);
                 this.activities = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Activity);

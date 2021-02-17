@@ -123,7 +123,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     loadObjectFields(): Observable<any> {
         return this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType, true, this.issueObject)
             .pipe(
-                map(r => {
+                map((r) => {
                     this.fields = [];
                     this.fields = r.filter(function (x) {
                         return x.Type != "JsonElement" && x.Type != 'Link';
@@ -134,7 +134,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
     loadFormFields() {
         if (this.formFields.length > 0) {
-            this.formFields.forEach(f => {
+            this.formFields.forEach((f) => {
                 if (f['@type'] == 'html')
                     return;
                 this.fieldList.push({
@@ -147,7 +147,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
     loadHttpFields() {
         if (this.httpFields.length > 0) {
-            this.httpFields.forEach(f => {
+            this.httpFields.forEach((f) => {
                 this.fieldList.push({
                     value: 'HTTPRequest|' + f['@stepId'] + '|' + f['@id'],
                     label: 'HTTP Request :: ' + f['@label']
@@ -175,7 +175,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
         if (this.selectedField.split('|')[0] == 'FieldType') {
 
-            let field = this.fields.find(f => f.ID == +this.selectedField.split('|')[1]);
+            let field = this.fields.find((f) => f.ID == +this.selectedField.split('|')[1]);
 
             this.selectedType = field.Type.toLowerCase();
 

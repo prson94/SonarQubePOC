@@ -154,7 +154,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
 
     clearUnusedFormControls() {
         if (this.conditions) {
-            Object.keys(this.formGroup.controls).forEach(control => {
+            Object.keys(this.formGroup.controls).forEach((control) => {
                 if (control.startsWith(this.conditionPrefix)) {
                     if (control.indexOf(this.conditionPrefix + 'option_') !== -1
                         || control.indexOf(this.conditionPrefix + 'condition_') !== -1

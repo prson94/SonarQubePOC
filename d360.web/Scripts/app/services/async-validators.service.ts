@@ -31,8 +31,8 @@ export class AsyncValidatorService {
         return (control: AbstractControl): Promise<ValidationErrors | null> | Observable<ValidationErrors | null> => {
             let url = `api/v2/tags/search?value=${control.value}&ignoreCounts=true`;
             return this.httpClient.get(url)
-                .pipe(map(response => <any[]>response))
-                .pipe(map(res => {
+                .pipe(map((response) => <any[]>response))
+                .pipe(map((res) => {
                     var doesExist = false;
                     res.forEach(s => {
                         if (s.name.toLowerCase() == control.value.toLowerCase()) {
