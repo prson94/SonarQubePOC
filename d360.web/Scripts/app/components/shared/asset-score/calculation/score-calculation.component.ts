@@ -50,11 +50,13 @@ export class ScoreCalculationComponent extends BaseComponent {
     }
 
     showConditionGroups(): boolean {
-        let show = false;
-        if (this.selected) {
-            show = (this.selected.Conditions.length > 0);
-        }
-        return show;
+        return false;
+        // Let this always be false until we know how to display the data properly here.
+        //let show = false;
+        //if (this.selected) {
+        //    show = (this.selected.Conditions.length > 0);
+        //}
+        //return show;
     }
    
     formatWeight(num: number) {
