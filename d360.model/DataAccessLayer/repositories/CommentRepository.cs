@@ -152,17 +152,38 @@ namespace d360.model.DataAccessLayer
 
 		public bool AddVote(Guid commentUid, int resourceId, Emoji emoji, bool toggle = true)
 		{
+			var emojiGroup = emoji.GetGroupName();
+			var groupedEmojis = new List<int>();
+
+			if (!string.IsNullOrEmpty(emojiGroup))
+            {
+				groupedEmojis = Emoji.ThumbsDown
+					.GetEmojiInfoList()
+					.Where(e => e.Group == emojiGroup)
+					.Select(e => e.ID)
+					.ToList();
+			}
+			else
+            {
+				groupedEmojis.Add((int)emoji);
+            }
+
 			var comment = CompanyContext.Filter<Comment>(o => o.Uid == commentUid).SingleOrDefault();
 			if (comment != null)
 			{
-				var commentVoteExists = CompanyContext.Any<CommentVote>(o => o.CommentID == comment.ID && o.ResourceID == resourceId && o.Emoji == emoji);
-				if (!commentVoteExists)
+				var commentVote = CompanyContext.Filter<CommentVote>(o => o.CommentID == comment.ID && o.ResourceID == resourceId && groupedEmojis.Contains((int)o.Emoji)).FirstOrDefault();
+				if (commentVote == null)
 				{
 					if (CompanyContext.Add(new CommentVote { CommentID = comment.ID, ResourceID = resourceId, Emoji = emoji }))
 					{
 						return true;
 					}
 				}
+				else if (commentVote.Emoji != emoji)
+                {
+					commentVote.Emoji = emoji;
+					return CompanyContext.Update(commentVote);
+                }
 				else if (toggle == true)
                 {
 					DeleteVote(commentUid, resourceId, emoji);

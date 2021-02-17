@@ -14,6 +14,18 @@ namespace d360.core
         }
     }
 
+    /// <summary>
+    /// Emojis in the same group are mutually exclusive
+    /// </summary>
+    public class EmojiGroupAttribute : Attribute
+    {
+        public string Name { get; private set; }
+        public EmojiGroupAttribute(string name)
+        {
+            Name = name;
+        }
+    }
+
     public class BackColorAttribute : Attribute
     {
         public string Color { get; private set; } = "#000";
