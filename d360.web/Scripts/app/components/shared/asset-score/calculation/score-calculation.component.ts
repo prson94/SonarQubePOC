@@ -33,11 +33,13 @@ export class ScoreCalculationComponent extends BaseComponent {
     }
 
     showPassTest(): boolean {
-        let show = true;
+        return false;
+        //let this return false always until we know how to display the data properly
+        //let show = true;
 
-        show = (this.scoreType !== ScoreType.DataQuality);
+        //show = (this.scoreType !== ScoreType.DataQuality);
 
-        return show;
+        //return show;
     }
 
     isDate(item) {
