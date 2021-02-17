@@ -363,9 +363,9 @@ BEGIN
 
 							if @currentValue is not null
 							begin
-								if @lookupObjectType is not null and @lkpID is not null
+								if @lkpType is not null and @lkpID is not null
 								begin
-									select @currentValue = utility.GetFormattedFieldLookupValueWithMultiple(@Type, @lkpFormat, @lkpType, @lkpID, @currentValue, @allowMultiple)
+									select @currentValue = COALESCE(utility.GetFormattedFieldLookupValueWithMultiple(@Type, @lkpFormat, @lkpType, @lkpID, @currentValue, @allowMultiple), '')
 								end
 
 								SET @formattedValue = REPLACE(@formattedValue, @currentToken, @currentValue)
@@ -463,7 +463,7 @@ BEGIN
 											V.AllowMultipleValues
 									from	(
 											SELECT	IT.Name,
-													[IF].Value,
+													COALESCE([IF].Value,[IF].FormattedValue) AS [Value],
 													[IT].LookupObjectType,
 													COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
 													[IT].LookupDisplayFormat,
@@ -508,7 +508,7 @@ BEGIN
 											V.AllowMultipleValues
 									from	(
 											SELECT	IT.Name,
-													[IF].Value,
+													COALESCE([IF].Value,[IF].FormattedValue) AS [Value],
 													[IT].LookupObjectType,
 													COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
 													[IT].LookupDisplayFormat,
@@ -553,7 +553,7 @@ BEGIN
 										V.AllowMultipleValues
 								from	( 
 										SELECT	IT.Name,
-												[IF].Value,
+												COALESCE([IF].Value,[IF].FormattedValue) AS [Value],
 												[IT].LookupObjectType,
 												COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
 												[IT].LookupDisplayFormat,
@@ -596,7 +596,7 @@ BEGIN
 											V.AllowMultipleValues
 									from	(
 											SELECT	IT.Name,
-													[IF].Value,
+													COALESCE([IF].Value,[IF].FormattedValue) AS [Value],
 													[IT].LookupObjectType,
 													COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
 													[IT].LookupDisplayFormat,
@@ -640,7 +640,7 @@ BEGIN
 											V.AllowMultipleValues
 									from	(
 											SELECT	IT.Name,
-													[IF].Value,
+													COALESCE([IF].Value,[IF].FormattedValue) AS [Value],
 													[IT].LookupObjectType,
 													COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
 													[IT].LookupDisplayFormat,
@@ -685,7 +685,7 @@ BEGIN
 										V.AllowMultipleValues
 								from	(
 										SELECT	IT.Name,
-												[IF].Value,
+												COALESCE([IF].Value,[IF].FormattedValue) AS [Value],
 												[IT].LookupObjectType,
 												COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
 												[IT].LookupDisplayFormat,
