@@ -3237,12 +3237,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         },
                         new go.Binding("mouseEnter", "", (val) => {
                             return (ev: go.InputEvent, obj: go.GraphObject) => {
-                                this.setRelationshipBadgeHoverState(ev, val.data, true, this);
+                                this.setRelationshipBadgeHoverState(val.part.data["hierarchyKey"], ev, val.data, true, this);
                             }
                         }).ofObject(),
                         new go.Binding("mouseLeave", "", (val) => {
                             return (ev: go.InputEvent, obj: go.GraphObject) => {
-                                this.setRelationshipBadgeHoverState(ev, val.data, false, this);
+                                this.setRelationshipBadgeHoverState(val.part.data["hierarchyKey"], ev, val.data, false, this);
                             }
                         }).ofObject(),
                         this.g(go.Shape, "RoundedRectangle",
@@ -3328,12 +3328,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         },
                         new go.Binding("mouseEnter", "", (val) => {
                             return (ev: go.InputEvent, obj: go.GraphObject) => {
-                                this.setRelationshipBadgeHoverState(ev, val.data, true, this);
+                                this.setRelationshipBadgeHoverState(val.part.data["hierarchyKey"], ev, val.data, true, this);
                             }
                         }).ofObject(),
                         new go.Binding("mouseLeave", "", (val) => {
                             return (ev: go.InputEvent, obj: go.GraphObject) => {
-                                this.setRelationshipBadgeHoverState(ev, val.data, false, this);
+                                this.setRelationshipBadgeHoverState(val.part.data["hierarchyKey"], ev, val.data, false, this);
                             }
                         }).ofObject(),
                         this.g(go.Shape, "RoundedRectangle",
@@ -3376,12 +3376,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private isRelationshipBadgeTooltipVisible: boolean = false;
     private relationshipBadgeHtml = "The item in this collection has 'xx' relationships to x other item.";
     private showTooltipTimeout;
-    private setRelationshipBadgeHoverState(ev: go.InputEvent, data: go.ObjectData, isHover: boolean, self: AssetBrowserComponent) {
+    private setRelationshipBadgeHoverState(hierarchyKey: string, ev: go.InputEvent, data: go.ObjectData, isHover: boolean, self: AssetBrowserComponent) {
         self.isRelationshipBadgeTooltipVisible = isHover;
         var refHtmlElement = self.relationshipBadgesTooltipRef.nativeElement as HTMLElement;
         if (!refHtmlElement) return;
         if (isHover) {
-            self.relationshipBadgeHtml = self.getRelBadgeTooltip(data);
+            self.relationshipBadgeHtml = self.getRelBadgeTooltip(data, hierarchyKey);
 
             self.showTooltipTimeout = setTimeout(() => {
                 refHtmlElement.style.display = "block";
@@ -3596,12 +3596,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 let totalCount: number = 0;
                                 (obj.part.data[propertyName] as Array<any>).forEach(d => totalCount += d.count);
                                 var data = { consolidated: true, count: totalCount };
-                                this.setRelationshipBadgeHoverState(ev, data, true, this);
+                                this.setRelationshipBadgeHoverState(val.part.data["hierarchyKey"], ev, data, true, this);
                             }
                         }).ofObject(),
                         new go.Binding("mouseLeave", "", (val) => {
                             return (ev: go.InputEvent, obj: go.GraphObject) => {
-                                this.setRelationshipBadgeHoverState(ev, val.data, false, this);
+                                this.setRelationshipBadgeHoverState(val.part.data["hierarchyKey"], ev, val.data, false, this);
                             }
                         }).ofObject(),
                         this.g(go.Shape, "RoundedRectangle",
@@ -3755,8 +3755,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     }
 
-    private getRelBadgeTooltip(rel: any) {
+    private getRelBadgeTooltip(rel: any, hierarchyKey: string) {
         var title = "";
+
+        var dataCount = this.diagram.nodes.filter(x =>
+            x.data['hierarchyKey'] == hierarchyKey
+        ).count - 1;
+
         if (rel.text) {
             title = rel.text;
         }
@@ -3770,7 +3775,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
 
         if (!rel.consolidated) {
-            if (rel.count > 1) {
+            if (dataCount > 1) {
                 return `Items in this collection have '${title}' relationships to ${rel.count} other items.<br/>Click to toggle the display of related items.`
             }
             else {
@@ -3778,7 +3783,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             }
         }
         else {
-            return `Items in this collection have relationships to ${rel.count} other items.<br/>Click to toggle the display of relationships.`
+            if (dataCount > 1) {
+                return `Items in this collection have relationships to ${rel.count} other items.<br/>Click to toggle the display of relationships.`
+            }
+            else {
+                return `The item in this collection has relationships to ${rel.count} other items.<br/>Click to toggle the display of relationships.`
+            }
         }
     }
 }
