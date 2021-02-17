@@ -434,7 +434,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         }
         
         this.matchType = (this.matchType == 'Any') ? 'Any' : 'All';
-
+        
         if (this.allocation.isExternallyCalculated) {
             this.model.ConditionGroups = [];
         }
