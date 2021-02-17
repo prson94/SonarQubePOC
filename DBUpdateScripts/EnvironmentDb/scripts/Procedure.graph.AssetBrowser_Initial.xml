@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Initial-v23">
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Initial-v23.1">
     <comment>GOV-13498</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -744,7 +744,7 @@ if @ancestry = 3
 		--This will be included as badge
 		insert into #hierarchyPredicates
 		select distinct	Hr.hierarchyKey + '-R-' + cast(E.PredicateID as varchar) as [key],
-							(select top 1 Inverse from Predicate where ID = E.PredicateID) as [Predicate],  -- Improves performance 10x
+							(select top 1 Name from Predicate where ID = E.PredicateID) as [Predicate],  -- Improves performance 10x
 							E.PredicateID as ID, 
 							E.PredicateUid as Uid, 
 							T.ID as AssetId,
