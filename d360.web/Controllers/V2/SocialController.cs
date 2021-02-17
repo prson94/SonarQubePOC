@@ -101,7 +101,7 @@ namespace d360.web.Controllers.V2
         		                    {QueryConstants.HighLevelTypeCaseStatement} + T.Name as TypeName,
         			                			                 R.Type,
         			                 R.TypeID,
-        			                 R.[Count] * R.AssetCount as [Count]
+        			                 Sum(R.AssetCount) as [Count]
         		                from AssetType T
         		                inner join (
         			                select 
@@ -123,6 +123,7 @@ namespace d360.web.Controllers.V2
         						                and C.ResourceID = @r
         			                group by C.[Type], C.TypeID, A.Count
         		                ) R on R.[Type] = T.Object and R.TypeID = T.ObjectID
+			                    Group by T.Object, T.Class, t.[Name], R.[Type], r.TypeID
         						";
 
             var query = await Company.QueryAsync<dynamic>(sql, new { r = id, rt = responsibilityTypeID }, ApiTimeout);
