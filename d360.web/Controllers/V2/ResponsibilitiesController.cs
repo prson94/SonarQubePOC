@@ -780,7 +780,7 @@ namespace d360.web.Controllers.V2
 
                 }
 
-                var existingUids = Company.Query<Guid>("select uid from responsibilitytype where uid in @uids", new { uids = responsibilityTypes.Select(x => x.Uid) }).ToList();
+                var existingUids = Company.Query<Guid>("select uid from responsibilitytype where uid in @uids", new { uids = responsibilityTypes.Where(x=> x.Uid.HasValue).Select(x => x.Uid) }).ToList();
                 if (existingUids.Any())
                 {
                     errorMessage = $"Non Unique Responsibility Uids: {string.Join(", ", existingUids.Select(i => i.ToString()))}. Identifiers must be unique within a table.";
@@ -1216,7 +1216,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Responsibility Type with Uid '{responsibilityTypeUid}'.")).ConfigureAwait(false);
                 }
 
-                var existingUids = Company.Query<Guid>("select uid from ResponsibilityTypeRelationRule where uid in @uids", new { uids = responsibilityRules.Select(x => x.Uid) }).ToList();
+                var existingUids = Company.Query<Guid>("select uid from ResponsibilityTypeRelationRule where uid in @uids", new { uids = responsibilityRules.Where(x=> x.Uid.HasValue).Select(x => x.Uid) }).ToList();
                 if (existingUids.Any())
                 {
                     errorMessage = $"Non Unique Responsibility Rule Uids: {string.Join(", ", existingUids.Select(i => i.ToString()))}. Identifiers must be unique within a table.";
