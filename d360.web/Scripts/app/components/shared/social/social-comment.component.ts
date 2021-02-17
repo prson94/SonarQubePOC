@@ -117,15 +117,16 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
                 if (res) {
                     this.socialService.getCommentVotes(this.comment.Uid)
                         .subscribe((v) => {
-                            let emojis = this.comment.Emojis.find((e) => e.Emoji === emoji);
-                            let count = v.filter((e) => e.emoji === emoji).length;
+                            this.comment.Emojis.forEach((e) => e.Count = 0);
 
-                            if (emojis) {
-                                emojis.Count = count;
-                            } else {
-                                this.comment.Emojis.push({ Emoji: emoji, Count: count });
-                            }
-
+                            v.forEach((i) => {
+                                let emojis = this.comment.Emojis.find((e) => e.Emoji === i.emoji);
+                                if (emojis) {
+                                    emojis.Count++;
+                                } else {
+                                    this.comment.Emojis.push({ Emoji: emoji, Count: 1 });
+                                }
+                            });
                             this.calculateVotes();
                             this.isLoading = false;
                         });
