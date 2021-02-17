@@ -101,11 +101,20 @@ namespace igx.jobs.fusionloadprocessor
             MergeChunkSize = chunkSize;
             Log = log;
 
-            if (CompanyID <= 0) throw new Exception("Invalid company id specified.");
+            if (CompanyID <= 0)
+            {
+                throw new Exception("Invalid company id specified.");
+            }
 
-            if (string.IsNullOrEmpty(LogFileName)) throw new Exception("Error invalid or no file specified to process fusion data from");
+            if (string.IsNullOrEmpty(LogFileName)) 
+            { 
+                throw new Exception("Error invalid or no file specified to process fusion data from"); 
+            }
 
-            if (FusionID < 0) throw new Exception("Invalid fusion id specified.");
+            if (FusionID < 0)
+            {
+                throw new Exception("Invalid fusion id specified.");
+            }
 
             var baseEventProperties = new Dictionary<string, string>()
             {
@@ -130,18 +139,27 @@ namespace igx.jobs.fusionloadprocessor
             string json = storageProvider.GetFileContentsAsString(folderName, fusionData.LogFileName, Encoding.UTF8);
             data = JsonConvert.DeserializeObject<BulkFusionImport>(json);
 
-            if (data == null) throw new Exception("UNABLE TO LOAD FUSION DATA FROM AZURE STORAGE / NULL FUSION DATA OBJECT.");
+            if (data == null)
+            {
+                throw new Exception("UNABLE TO LOAD FUSION DATA FROM AZURE STORAGE / NULL FUSION DATA OBJECT.");
+            }
 
             Log.WriteLine(string.Format("COMPLETED JSON DATA READ\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
             CoreFunction.AITrackRequest(FUSION_PROCESSOR_AI_NAME_DOWNLOAD, sw.Elapsed);
 
 
             if (data.Models == null)
+            {
                 data.Models = new List<Dictionary<string, string>>();
+            }
             if (data.QueryItems == null)
+            {
                 data.QueryItems = new List<IDictionary<string, string>>();
+            }
             if (data.Relationships == null)
+            {
                 data.Relationships = new FusionRelationshipModels();
+            }
 
             Log.WriteLine($"FUSION JOB HAS {data.Models.Count} MODELS, {data.QueryItems.Count} QUERY ITEMS, {data.Relationships.Count} RELATIONS");
 
@@ -269,7 +287,10 @@ namespace igx.jobs.fusionloadprocessor
 
         private async Task SaveChangedValuesLog(SqlConnection companyConnection)
         {
-            if (_workArea.Changes.ChangedValues.Count <= 0) return;
+            if (_workArea.Changes.ChangedValues.Count <= 0)
+            {
+                return;
+            }
 
             //bulk sql insert to the resultex table
             using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, null))
@@ -319,25 +340,40 @@ namespace igx.jobs.fusionloadprocessor
                     row["ExecutionID"] = ExecutionID;
                     row["FusionAttributeID"] = item.FusionAttributeID;
 
-                    if (item.Action == "D") row["Body"] = "Item removed from source.";
+                    if (item.Action == "D")
+                    {
+                        row["Body"] = "Item removed from source.";
+                    }
 
                     row["FieldTypeID"] = item.FieldTypeID;
                     var fieldInfo = _workArea.FieldToAttributeMapping.FirstOrDefault(x => x.FieldTypeID == item.FieldTypeID);
                     if (fieldInfo != null)
+                    {
                         row["FieldName"] = fieldInfo.FieldTypeName;
+                    }
                     else
+                    {
                         row["FieldName"] = "Name";
+                    }
 
                     row["Action"] = item.Action;
                     if (!string.IsNullOrEmpty(item.OldValue) && item.OldValue.Length > 250)
+                    {
                         row["OldValue"] = item.OldValue.Substring(0, 250);
+                    }
                     else
+                    {
                         row["OldValue"] = item.OldValue;
+                    }
 
                     if (!string.IsNullOrEmpty(item.Value) && item.Value.Length > 250)
+                    {
                         row["NewValue"] = item.Value.Substring(0, 250);
+                    }
                     else
+                    {
                         row["NewValue"] = item.Value;
+                    }
 
                     table.Rows.Add(row);
                 }
@@ -360,7 +396,10 @@ namespace igx.jobs.fusionloadprocessor
 
         private async Task<int> LogExecution(SqlConnection companyConnection, string version)
         {
-            if (string.IsNullOrEmpty(version)) version = "unknown";
+            if (string.IsNullOrEmpty(version))
+            {
+                version = "unknown";
+            }
             //insert a record into the fusion execution table that logs the start of this execution            
             var result = await companyConnection.QueryAsync<int>(@"
                     insert 
@@ -552,7 +591,9 @@ MERGE
                 if (sourceToIDMapping.TryGetValue(item.SourceID, out temp))
                 {
                     if (item.ID > 0)
+                    {
                         temp.ID = item.ID;
+                    }
                 }
                 else
                 {
@@ -597,7 +638,10 @@ MERGE
                 //TRY TO FIND THE FUSIONATTRIBUTE ID FOR BOTH THE START ID AND THE END ID
                 if (sourceToIDMapping.TryGetValue(item.StartID, out fusionInfo))
                 {
-                    if (fusionInfo == null) throw new Exception("INVALID FUSION ATTRIBUTE ENCOUNTERED");
+                    if (fusionInfo == null)
+                    {
+                        throw new Exception("INVALID FUSION ATTRIBUTE ENCOUNTERED");
+                    }
 
                     sourceAttributeTypeID = fusionInfo.FusionAttributeTypeID;
                     relData.StartFusionAttributeID = fusionInfo.ID;
@@ -925,13 +969,6 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
                 inner join FusionQueryAttribute S on 
                     S.FusionQueryAttributeTypeID = T.FusionQueryAttributeTypeID 
                     and S.SourceID = T.SourceID;", commandTimeout: ExecuteQueryTimeout, transaction: trans);
-                        //                await companyConnection.ExecuteAsync(@"
-                        //update  T 
-                        //set     T.FusionQueryAttributeID = S.ID
-                        //from    #FusionQueryAttributeField T
-                        //        inner join #FusionQueryAttribute S on 
-                        //            S.FusionQueryAttributeTypeID = T.FusionQueryAttributeTypeID 
-                        //            and S.SourceID = T.SourceID;", commandTimeout: ExecuteQueryTimeout, transaction: trans);
 
                         //merge temp table with fusion query attributes table
                         await companyConnection.ExecuteAsync(@"
@@ -1007,7 +1044,9 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
                 }
 
                 if (!string.IsNullOrEmpty(action))
+                {
                     _workArea.Changes.ChangedValues.Add(new FusionChangeTableValue(x, oldValue, action));
+                }
             }
 
         }
@@ -1033,7 +1072,10 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
 
             foreach (var item in _workArea.FieldValueCollection)
             {
-                if (string.IsNullOrEmpty(item.Value)) continue;
+                if (string.IsNullOrEmpty(item.Value))
+                {
+                    continue;
+                }
 
                 var key = string.Format("{0}_{1}", item.FieldTypeID, item.ObjectID);
 

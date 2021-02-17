@@ -88,7 +88,7 @@ namespace d360.web.Controllers.V2
                 string isValid = IsPageSizeAndNumValid(queryParams, pageSizeLimit);
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid)).ConfigureAwait(false);
                 }
 
                 List<DefaultFilter> fieldList = new List<DefaultFilter>
@@ -136,8 +136,10 @@ namespace d360.web.Controllers.V2
                     !Company.Any<Report>(i => i.uid == assetUid))
                 {
                     assetType = Company.Filter<AssetType>(i => i.uid == assetUid).SingleOrDefault();
-                    if(assetType == null)
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Asset, Asset Type, Tag, Workflow Type, RelationshipType or Responsibility Type not found for UID"));
+                    if (assetType == null)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Asset, Asset Type, Tag, Workflow Type, RelationshipType or Responsibility Type not found for UID")).ConfigureAwait(false);
+                    }
                     isAssetType = true;
                 }
 
@@ -146,7 +148,9 @@ namespace d360.web.Controllers.V2
 
                 string whereSql = "";
                 if (whereStatements.Any())
+                {
                     whereSql = $" where {string.Join(" and ", whereStatements)}";
+                }
 
                 int pageNum = Company.ParsePageNumber(queryParams, 1);
                 int pageSize = Company.ParsePageSize(queryParams);
@@ -169,7 +173,7 @@ namespace d360.web.Controllers.V2
                     byte[] bytes = stream.ToArray();
 
                     var response = createFileResponseMessage(HttpStatusCode.OK, $"{fileName} {DateTime.Now.ToString("MMM dd yyyy")}.xlsx", bytes);
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
                 }
                 else
                 {
@@ -179,7 +183,7 @@ namespace d360.web.Controllers.V2
                     model.pageSize = pageSize;
                     model.items = query;
 
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model)));
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -211,24 +215,36 @@ namespace d360.web.Controllers.V2
             result = Company.Query<dynamic>($@"select Object,ObjectId,DisplayValue from AssetDetail where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
 
             if (result == null)
+            {
                 result = Company.Query<dynamic>($@"select Object,ObjectId,Name as DisplayValue from AssetType where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
+            }
 
             if (result == null)
+            {
                 result = Company.Query<dynamic>($@"select 'Tag' as Object, ID as ObjectId,Value as DisplayValue from Tag where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
+            }
 
             if (result == null)
+            {
                 result = Company.Query<dynamic>($@"select 'IssueType' as Object, ID as ObjectId, Name as DisplayValue from IssueType where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
+            }
 
             if (result == null)
+            {
                 result = Company.Query<dynamic>($@"select 'IntersectType' as Object, ID as ObjectId, itn.name as DisplayValue
                     from dbo.[IntersectType] IT
                     CROSS APPLY dbo.GetIntersectTypeNames(IT.ID) ITN where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
+            }
 
             if (result == null)
+            {
                 result = Company.Query<dynamic>($@"select 'ResponsibilityType' as Object, ID as ObjectId, Name as DisplayValue from ResponsibilityType where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
+            }
 
             if (result == null)
+            {
                 result = Company.Query<dynamic>($@"select 'Report' as Object, ID as ObjectId, Name as DisplayValue from Report where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
+            }
 
             return result;
         }
@@ -244,7 +260,7 @@ namespace d360.web.Controllers.V2
             try
             {
                 int id = Company.GetObjectId(uid, type);
-                return await AuditCombined(type, id, sortDataField);
+                return await AuditCombined(type, id, sortDataField).ConfigureAwait(false);
             }
             catch
             {
@@ -284,7 +300,7 @@ namespace d360.web.Controllers.V2
 
                 var query = Company.Query<dynamic>(sql, dbArgs, ApiTimeout);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { total, results = query })));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { total, results = query }))).ConfigureAwait(false);
             }
             catch
             {
@@ -701,28 +717,47 @@ namespace d360.web.Controllers.V2
             {
                 var _pageSize = queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value;
                 if (_pageSize.Length > 10)
+                {
                     return "Invalid pageSize value provided.";
+                }
                 if (long.TryParse(_pageSize, out pageSize))
                 {
-                    if (pageSize > pageSizeLimit) return "Invalid pageSize value provided. Number is too large";
-                    if (pageSize <= 0) return "Invalid pageSize value provided. Value must be greater than 0";
+                    if (pageSize > pageSizeLimit) { 
+                        return "Invalid pageSize value provided. Number is too large"; 
+                    }
+                    if (pageSize <= 0)
+                    {
+                        return "Invalid pageSize value provided. Value must be greater than 0";
+                    }
                 }
                 else
+                {
                     return "Invalid pageSize value provided. Must be a numeric value";
+                }
             }
 
             if (parameters.Any(q => q.Key == "_pageNum"))
             {
                 var _pageNum = queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value;
                 if (_pageNum.Length > 10)
+                {
                     return "Invalid pageNum value provided.";
+                }
                 if (long.TryParse(_pageNum, out pageNum))
                 {
-                    if (pageNum > 100000) return "Invalid pageNum value provided. Number is too large";
-                    if (pageNum <= 0) return "Invalid pageNum value provided. Value must be greater than 0";
+                    if (pageNum > 100000)
+                    {
+                        return "Invalid pageNum value provided. Number is too large";
+                    }
+                    if (pageNum <= 0)
+                    {
+                        return "Invalid pageNum value provided. Value must be greater than 0";
+                    }
                 }
                 else
+                {
                     return "Invalid pageNum value provided. Must be a numeric value.";
+                }
             }
 
             return "";

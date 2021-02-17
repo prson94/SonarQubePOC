@@ -462,7 +462,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
             return '0%';
         if (!val)
             return;
-        if (val == 1)
+        if (val >= 1)
             return '100%'
         let s = val + '0000';
         s = s.replace('0.', '');

@@ -43,7 +43,10 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();
             var a = Company.ApiServices.Where(x => x.ID == id).FirstOrDefault();
 
-            if (a == null) return jsonException("Cannot find the specified service to edit", HttpStatusCode.NotFound);
+            if (a == null)
+            {
+                return jsonException("Cannot find the specified service to edit", HttpStatusCode.NotFound);
+            }
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), Value = a.Name });
@@ -358,11 +361,17 @@ namespace d360.web.Controllers
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                if (!form.HasKeys()) throw new NoFormDataException("endpoint");
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException("endpoint");
+                }
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<ApiEndpoint>(id);
-                if (model == null) throw new NotFoundException("api service endpoint");
+                if (model == null)
+                {
+                    throw new NotFoundException("api service endpoint");
+                }
 
                 model.Name = parseTextField(form, "Name");
                 model.UriPrefix = parseTextField(form, "URIPrefix");
@@ -430,10 +439,16 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();
             var a = Company.ApiEndpointVersions.Where(x => x.ID == id).FirstOrDefault();
 
-            if (a == null) return jsonException("Cannot find the specified service endpoint version to edit", HttpStatusCode.NotFound);
+            if (a == null)
+            {
+                return jsonException("Cannot find the specified service endpoint version to edit", HttpStatusCode.NotFound);
+            }
 
             var ent = Company.ApiEntities.FirstOrDefault(x => x.EndpointVersionID == a.ID);
-            if (ent == null) return jsonException("Cannot find the specified service endpoint version entity to edit", HttpStatusCode.NotFound);
+            if (ent == null)
+            {
+                return jsonException("Cannot find the specified service endpoint version entity to edit", HttpStatusCode.NotFound);
+            }
 
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
@@ -524,11 +539,17 @@ namespace d360.web.Controllers
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                if (!form.HasKeys()) throw new NoFormDataException("version");
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException("version");
+                }
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<ApiEndpointVersion>(id);
-                if (model == null) throw new NotFoundException("api service version");
+                if (model == null)
+                {
+                    throw new NotFoundException("api service version");
+                }
 
                 model.UriPrefix = parseTextField(form, "URIPrefix");
                 model.MajorVersion = parseIntField(form, "MajorVersion");
@@ -539,7 +560,10 @@ namespace d360.web.Controllers
                 var assetTypeID = parseIntField(form, "AssetType");
 
                 var entity = Company.ApiEntities.FirstOrDefault(x => x.EndpointVersionID == model.ID);
-                if (entity == null) throw new NotFoundException("api service version entity");
+                if (entity == null)
+                {
+                    throw new NotFoundException("api service version entity");
+                }
 
                 entity.AssetTypeID = assetTypeID;
 
@@ -627,7 +651,10 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("uri");
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException("uri");
+                }
 
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
@@ -637,7 +664,9 @@ namespace d360.web.Controllers
                 var uriType = (ApiUriType)parseIntField(form, "UriType");
 
                 if (string.IsNullOrEmpty(format))
+                {
                     return jsonException("API Service Endpoint Version URI format is null", HttpStatusCode.NotFound);
+                }
 
                 var uri = new ApiEntityUri
                 {
@@ -674,7 +703,10 @@ namespace d360.web.Controllers
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<ApiEntityUri>(id);
-                if (model == null) throw new NotFoundException("api service version uri");
+                if (model == null)
+                {
+                    throw new NotFoundException("api service version uri");
+                }
 
                 model.Format = parseTextField(form, "Format");
                 model.UriType = (ApiUriType)parseIntField(form, "UriType");
@@ -804,10 +836,14 @@ namespace d360.web.Controllers
                 };
 
                 if (!string.IsNullOrWhiteSpace(jsonFieldNameOverride))
+                {
                     field.JsonFieldNameOverride = jsonFieldNameOverride;
+                }
 
                 if (!string.IsNullOrWhiteSpace(xmlFieldNameOverride))
+                {
                     field.XmlFieldNameOverride = xmlFieldNameOverride;
+                }
 
                 Company.Add(field);
 
@@ -933,7 +969,10 @@ namespace d360.web.Controllers
             {
                 var id = parseIntField(form, "ID");
                 var o = Company.GetById<ApiEntityFieldType>(id);
-                if (o == null) throw new NotFoundException("api field");
+                if (o == null)
+                {
+                    throw new NotFoundException("api field");
+                }
 
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
@@ -941,7 +980,9 @@ namespace d360.web.Controllers
                 var multiSelectRecords = Company.ApiEntityFieldTypeMultiSelectFields.Where(i => i.EntityFieldTypeID == id);
 
                 if (multiSelectRecords.Any())
+                {
                     Company.ApiEntityFieldTypeMultiSelectFields.RemoveRange(multiSelectRecords);
+                }
 
                 Company.Delete(o);
 
@@ -965,11 +1006,17 @@ namespace d360.web.Controllers
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                if (!form.HasKeys()) throw new NoFormDataException("field");
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException("field");
+                }
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<ApiEntityFieldType>(id);
-                if (model == null) throw new NotFoundException("api field");
+                if (model == null)
+                {
+                    throw new NotFoundException("api field");
+                }
 
                 model.FieldTypeID = parseIntField(form, "FieldTypeID");
                 model.AllowFilter = parseBooleanField(form, "AllowFilter");
@@ -980,14 +1027,22 @@ namespace d360.web.Controllers
                 var xmlFieldNameOverride = parseTextField(form, "XmlFieldNameOverride");
 
                 if (string.IsNullOrWhiteSpace(jsonFieldNameOverride))
+                {
                     model.JsonFieldNameOverride = null;
+                }
                 else
+                {
                     model.JsonFieldNameOverride = jsonFieldNameOverride;
+                }
 
                 if (string.IsNullOrWhiteSpace(xmlFieldNameOverride))
+                {
                     model.XmlFieldNameOverride = null;
+                }
                 else
+                {
                     model.XmlFieldNameOverride = xmlFieldNameOverride;
+                }
 
                 Company.Update(model);
 

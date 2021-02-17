@@ -80,6 +80,7 @@ namespace d360.web.Controllers.V2
             HttpPost,
             Route("{commentUid:Guid}/votes/{emoji}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerParameter("toggle", "If true the vote will be removed if it already exists.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.Created, "The request was accepted and the vote was registered.", null),
             SwaggerResponse(HttpStatusCode.OK, "The request was accepted but the user already used this emoji on the comment.", null),
             SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)), 
@@ -88,10 +89,19 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult AddVote(Guid commentUid, Emoji emoji)
         {
+            var queryParams = Request.GetQueryNameValuePairs();
+            bool toggle = true;
+
+            if (queryParams.Any(qp => qp.Key.ToLower() == "toggle"))
+            {
+                var toggleString = queryParams.FirstOrDefault(x => x.Key.ToLower() == "toggle").Value;
+                bool.TryParse(toggleString, out toggle);
+            }
+
             try
             {
-                var returnValue = Comments.AddVote(commentUid, Company.CurrentResourceID, emoji);
-                if (returnValue)
+                var created = Comments.AddVote(commentUid, Company.CurrentResourceID, emoji, toggle);
+                if (created)
                 {
                     return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created));
                 }

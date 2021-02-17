@@ -3,11 +3,8 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace igx.jobs.scoreprocessor.Models
+namespace d360.core.entities.Metric
 {
     public class DataQualityMeasureQueryModel
     {

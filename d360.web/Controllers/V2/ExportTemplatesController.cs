@@ -53,7 +53,9 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> Get()
         {
             if (!Company.CurrentResourceIsAdmin)
+            {
                 return errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage);
+            }
 
             List<AssetTypeExportTemplate> templateList = (await assetRepository.GetExportTemplates());
 
@@ -178,13 +180,17 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))            
         ]
         public async Task<IHttpActionResult> AddTemplate(AssetTypeExportTemplateUpsertRequest model)
-        {            
+        {
             if (!Company.CurrentResourceIsAdmin)
+            {
                 return errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage);
+            }
 
             //Validate and map asset type uid to to id
             if (string.IsNullOrEmpty(model.AssetTypeUID.ToString()) || model.AssetTypeUID == Guid.Empty)
+            {
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", "AssetTypeUid is a required field");
+            }
 
             AssetType assetType = Company.AssetTypes.FirstOrDefault(t => t.uid == model.AssetTypeUID);
 
@@ -194,7 +200,9 @@ namespace d360.web.Controllers.V2
 
             var validationStatus = ValidateTemplate(template, assetType);
             if (validationStatus.StatusCode != HttpStatusCode.OK)
-                return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
+            {
+                return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message)).ConfigureAwait(false);
+            }
 
             var createExportTemplateSQL = $@"insert into AssetTypeExportTemplate 
                                                 (Name, Description, AssetTypeID, ExportViewType, IncludeUrl, IncludeParent, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, UsageNotes) 
@@ -237,9 +245,10 @@ namespace d360.web.Controllers.V2
         ]
         public IEnumerable<AssetTypeExportTemplateStyle> GetStyles(int templateId)
         {
-            var context = Request.Properties["MS_HttpContext"] as System.Web.HttpContextWrapper;
             if (!Company.CurrentResourceIsAdmin)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+            }
             var styles = Company.AssetTypeExportTemplateStyles.Where(x => x.AssetTypeExportTemplateID == templateId).ToList();
             styles.ForEach(x =>
             {
@@ -268,15 +277,23 @@ namespace d360.web.Controllers.V2
         {
             var context = Request.Properties["MS_HttpContext"] as System.Web.HttpContextWrapper;
             if (!Company.CurrentResourceIsAdmin)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+            }
             if (!Company.AssetTypeExportTemplates.Any(x => x.ID == model.AssetTypeExportTemplateID))
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Template not found"));
+            }
 
             if (!string.IsNullOrEmpty(model.BgColor))
+            {
                 model.BackgroundColor = ColorTranslator.FromHtml(model.BgColor).ToArgb();
+            }
 
             if (!string.IsNullOrEmpty(model.TextColor))
+            {
                 model.Color = ColorTranslator.FromHtml(model.TextColor).ToArgb();
+            }
 
             Company.Add(model);
             await Company.SaveChangesAsync();
@@ -307,11 +324,15 @@ namespace d360.web.Controllers.V2
 
             //validate the model input
             if (model.ID <= 0 || model.AssetTypeExportTemplateID <= 0)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields."));
+            }
 
             //check that there is a export template exists
             if (!Company.AssetTypeExportTemplateStyles.Any(x => x.ID == model.ID))
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain a valid existing export template style."));
+            }
             var data = Company.AssetTypeExportTemplateStyles.FirstOrDefault(x => x.ID == model.ID);
             data.IsBold = model.IsBold;
             data.Column = model.Column;
@@ -325,7 +346,10 @@ namespace d360.web.Controllers.V2
 
             Company.Entry(data).State = System.Data.Entity.EntityState.Modified;
             var res = await Company.SaveChangesAsync();
-            if (res > 0) return model; // updated
+            if (res > 0)
+            {
+                return model; // updated
+            }
 
             throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Export Template Style not found to update."));
 
@@ -348,11 +372,16 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> DeleteStyle(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+            }
 
             var res = await Company.Database.Connection.ExecuteAsync("delete AssetTypeExportTemplateStyle where id = @id", new { id = id });
 
-            if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
+            if (res > 0)
+            {
+                return Request.CreateResponse(HttpStatusCode.OK); // deleted
+            }
 
             return Request.CreateResponse(HttpStatusCode.NotFound); // nothing deleted
         }
@@ -379,7 +408,9 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage);
 
             if (!Company.AssetTypeExportTemplates.Any(x => x.Uid == templateUid))
-                return errorMessageResponse(HttpStatusCode.NotFound, "Template Not Found", "Template not found matching Uid Provided.");            
+            {
+                return errorMessageResponse(HttpStatusCode.NotFound, "Template Not Found", "Template not found matching Uid Provided.");
+            }
 
             byte[] template = null;
             try
@@ -429,11 +460,15 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> UpdateTemplate(Guid templateUid, AssetTypeExportTemplateUpsertRequest model)
         {
             if (!Company.CurrentResourceIsAdmin)
+            {
                 return errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage);
+            }
 
             //Validate and map asset type uid to to id
             if (string.IsNullOrEmpty(model.AssetTypeUID.ToString()))
+            {
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", "AssetTypeUid is a required field");
+            }
 
             AssetType assetType = Company.AssetTypes.FirstOrDefault(t => t.uid == model.AssetTypeUID);
 
@@ -539,8 +574,10 @@ namespace d360.web.Controllers.V2
             fieldTypes.Add(new FieldType { Type = "decimal", Name = "Threshold", FriendlyName = "Threshold" });
             fieldTypes.Add(new FieldType { Type = "Number", Name = "AssetUid", FriendlyName = "Rule UID" });
             fieldTypes.Add(new FieldType { Type = "Number", Name = "ID", FriendlyName = "Rule ID" });
-            if (template == null || (template != null && template.IncludeUrl)) 
+            if (template == null || (template != null && template.IncludeUrl))
+            {
                 fieldTypes.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
+            }
 
             foreach (var col in fieldColumns)
             {
@@ -584,8 +621,10 @@ namespace d360.web.Controllers.V2
         private async Task<SLDocument> GetDefaultRuleDocument(Guid guid, AssetTypeExportTemplate template = null)
         {
             List<FieldType> fieldTypes = GetRuleTypeFields(guid);
-            if(template != null)
+            if (template != null)
+            {
                 UseTempleteFields(template, fieldTypes);
+            }
             IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes, template);
 
             SLDocument document = new SLDocument();

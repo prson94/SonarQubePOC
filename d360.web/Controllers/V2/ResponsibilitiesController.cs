@@ -95,7 +95,9 @@ namespace d360.web.Controllers.V2
             var errorMessage = "";
 
             if (!Company.CurrentResourceIsAdmin)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+            }
 
             try
             {
@@ -464,7 +466,9 @@ namespace d360.web.Controllers.V2
             var errorMessage = "";
 
             if (!Company.CurrentResourceIsAdmin)
+            {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+            }
 
 
             try
@@ -473,7 +477,9 @@ namespace d360.web.Controllers.V2
 
                 ResponsibilityType responsibility = Company.Filter<ResponsibilityType>(x => x.UID == uid).FirstOrDefault();
                 if (responsibility == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid ResponsibilityType uid for this request."));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid ResponsibilityType uid for this request.")).ConfigureAwait(false);
+                }
 
                 foreach (var allocation in model.Items)
                 {
@@ -682,7 +688,10 @@ namespace d360.web.Controllers.V2
                             case "_timeout":
                                 if (int.TryParse(q.Value, out timeout))
                                 {
-                                    if (timeout < 1) timeout = 30; // min timeout
+                                    if (timeout < 1)
+                                    {
+                                        timeout = 30; // min timeout
+                                    }
                                 }
                                 break;
                         }
@@ -762,11 +771,11 @@ namespace d360.web.Controllers.V2
                 {
                     if (type.Name?.Trim().Length > 250)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Name provided must be less than 250 characters in length."));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Name provided must be less than 250 characters in length.")).ConfigureAwait(false);
                     }
                     if (type.Description?.Trim().Length > 4000)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Description must be less than 4000 characters in length."));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Description must be less than 4000 characters in length.")).ConfigureAwait(false);
                     }
 
                 }
@@ -816,12 +825,14 @@ namespace d360.web.Controllers.V2
                 var validAsset = Company.Assets.Any(x => x.uid == assetUid);
 
                 if (!validAsset)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Asset does not exist for UID provided."));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Asset does not exist for UID provided.")).ConfigureAwait(false);
+                }
 
 
                 var res = await ResponsibilityRepository.GetOwnership(assetUid);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res))).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -830,7 +841,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
             }
         }
 
@@ -857,25 +868,35 @@ namespace d360.web.Controllers.V2
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+                }
 
                 if (responsibilityTypes == null)
+                {
                     responsibilityTypes = readRequestJsonContent<List<ResponsibilityTypeUpsertModel>>(Request, true).Result;
+                }
 
                 if (responsibilityTypes == null)
+                {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+                }
 
                 if (responsibilityTypes.Count == 0)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided any predicates to process in this request."));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided any predicates to process in this request.")).ConfigureAwait(false);
+                }
 
                 if (responsibilityTypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} predicates in this request."));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} predicates in this request.")).ConfigureAwait(false);
+                }
 
                 foreach (var type in responsibilityTypes)
                 {
                     if (type.Name.Trim().Length > 250)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Name provided must be less then 250 characters in length."));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Name provided must be less then 250 characters in length.")).ConfigureAwait(false);
                     }
                 }
 
@@ -916,14 +937,18 @@ namespace d360.web.Controllers.V2
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
+                }
 
                 if (responsibilityTypes == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request.")).ConfigureAwait(false);
+                }
 
                 ResponsibilityTypeDeleteResult results = ResponsibilityRepository.DeleteResponsibilityTypes(responsibilityTypes);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
 
             }
             catch (Exception ex)
@@ -931,7 +956,7 @@ namespace d360.web.Controllers.V2
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
             }
         }
 
@@ -962,30 +987,38 @@ namespace d360.web.Controllers.V2
 
                 var asset = AssetRepository.GetAssetByUID(assetUid);
                 if (asset == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Asset with UID '{assetUid}' does not exist."));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Asset with UID '{assetUid}' does not exist.")).ConfigureAwait(false);
+                }
 
 
                 var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityUid);
                 if (responsibility == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Responsibility with UID '{responsibilityUid}' does not exist."));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Responsibility with UID '{responsibilityUid}' does not exist.")).ConfigureAwait(false);
+                }
 
                 if (!Company.HasAssetPermission(asset.ID, Permission.ModifyResponsibilities))
+                {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+                }
 
 
                 bool isValidResponsibilityForAsset = ResponsibilityRepository.IsValidResponsibilityForAsset(responsibilityUid, assetUid);
 
                 if (!isValidResponsibilityForAsset)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", "Responsibility Type not valid for current Asset."));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", "Responsibility Type not valid for current Asset.")).ConfigureAwait(false);
+                }
 
                 if (model.ResourceUid.Count == 0)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", "List of Resource UIDs cannot be empty."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", "List of Resource UIDs cannot be empty.")).ConfigureAwait(false);
                 }
 
                 if (model.ResourceUid.Any(x => x == Guid.Empty))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", "One or more invalid Resource UIDs passed."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", "One or more invalid Resource UIDs passed.")).ConfigureAwait(false);
                 }
 
                 var securityAssets = ResponsibilityRepository.GetSecurityAssetModelsForResources(model.ResourceUid, asset.uid, responsibility.UID).ToList();
@@ -993,25 +1026,27 @@ namespace d360.web.Controllers.V2
                 if (securityAssets.Any(x => string.IsNullOrEmpty(x.SecurityAsset)))
                 {
                     var badAsset = securityAssets.First(x => string.IsNullOrEmpty(x.SecurityAsset));
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Uid '{badAsset.uid}' is not valid Resource or Group."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Uid '{badAsset.uid}' is not valid Resource or Group.")).ConfigureAwait(false);
                 }
 
                 if (securityAssets.Any(x => x.Exists == true))
                 {
                     var badAsset = securityAssets.First(x => x.Exists == true);
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Responsibility override for '{badAsset.uid}' already exist."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Responsibility override for '{badAsset.uid}' already exist.")).ConfigureAwait(false);
                 }
 
                 foreach (var uid in model.ResourceUid)
                 {
                     var sas = securityAssets.FirstOrDefault(x => x.uid == uid);
                     if (sas == null)
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Resource/Group with uid '{uid}' does not exist."));
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Resource/Group with uid '{uid}' does not exist.")).ConfigureAwait(false);
+                    }
                 }
 
                 ResponsibilityRepository.InsertResponsibilityOverrides(responsibility, asset, securityAssets, model.Description);
 
-                return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, "Success", "Responsibility successfully added"));
+                return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, "Success", "Responsibility successfully added")).ConfigureAwait(false);
 
             }
             catch (Exception ex)
@@ -1058,7 +1093,9 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Responsibility with UID '{responsibilityUid}' does not exist."));
 
                 if (!Company.HasAssetPermission(asset.ID, Permission.DeleteResponsibilities))
+                {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+                }
 
 
                 bool isValidResponsibilityForAsset = ResponsibilityRepository.IsValidResponsibilityForAsset(responsibilityUid, assetUid);
@@ -1087,7 +1124,7 @@ namespace d360.web.Controllers.V2
                 if (securityAssets.Any(x => x.Exists != true))
                 {
                     var badAsset = securityAssets.First(x => x.Exists != true);
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Responsibility override for '{badAsset.uid}' does not exist."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Responsibility override for '{badAsset.uid}' does not exist.")).ConfigureAwait(false);
                 }
 
                 foreach (var uid in resourceUids.Select(x => x.ResourceUid).ToList())
@@ -1099,14 +1136,14 @@ namespace d360.web.Controllers.V2
 
                 ResponsibilityRepository.DeleteResponsibilityOverrides(responsibility, asset, securityAssets);
 
-                return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, "Success", "Responsibility successfully deleted"));                
+                return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, "Success", "Responsibility successfully deleted")).ConfigureAwait(false);                
 
             }
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Server Error", errorMessage));                
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Server Error", errorMessage)).ConfigureAwait(false);                
             }
         }
 
@@ -1160,12 +1197,16 @@ namespace d360.web.Controllers.V2
             {
 
                 if (!Company.CurrentResourceIsAdmin)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
+                }
 
                 var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid);
 
                 if (responsibility == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Responsibility Type with Uid '{responsibilityTypeUid}'."));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Responsibility Type with Uid '{responsibilityTypeUid}'.")).ConfigureAwait(false);
+                }
 
                 var execution = getApiExecution(responsibilityRules.Count);
 
@@ -1177,7 +1218,7 @@ namespace d360.web.Controllers.V2
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error", errorMessage)).ConfigureAwait(false);
             }
         }
 

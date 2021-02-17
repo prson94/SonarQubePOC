@@ -1,5 +1,5 @@
 ﻿import { Component, Input } from "@angular/core";
-import { MetricFieldTypeViewModel, ScoreType } from "../../../../models/metrics.model";
+import { MetricFieldTypeViewModel, ScoreType, MetricAssetDefinitionViewModel } from "../../../../models/metrics.model";
 import { Operator } from "../../../../models/operator.model";
 import { PointBreakdown} from "../../../../models/score.model";
 import { BaseComponent } from "../../base.component";
@@ -10,6 +10,7 @@ import { BaseComponent } from "../../base.component";
 })
 export class ScoreCalculationComponent extends BaseComponent {
     @Input() scoreType: ScoreType;
+    @Input() definition: MetricAssetDefinitionViewModel;
     @Input() selected: PointBreakdown;
     @Input() measures: PointBreakdown[];
     @Input() formattedCheck: string = "";

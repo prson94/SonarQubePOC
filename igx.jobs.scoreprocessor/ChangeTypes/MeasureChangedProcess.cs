@@ -21,7 +21,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
             {
                 // We can continue processing it.
                 var Db = GetCompanyContext();
-                var maxScoreItem = Db.Filter<ScoreItem>(i => i.AssetVersionUid == measureChangedModel.MetricAssetVersionUid).OrderByDescending(i => i.UpdatedOn).FirstOrDefault();
+                var maxScoreItem = Db.Filter<ScoreItem>(i => i.AssetVersionUid == measureChangedModel.MetricAssetVersionUid).OrderByDescending(i => i.UpdatedOn).Select(i => new { i.Uid, i.UpdatedOn }).FirstOrDefault();
                 var maxUpdatedOnForThisVersion = DateTime.UtcNow.AddDays(-7);
                 if (maxScoreItem != null)
                 {
@@ -29,46 +29,44 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                 }
                 if (DateTime.UtcNow.Subtract(maxUpdatedOnForThisVersion).TotalDays > 0)
                 {
-                    var version = Db.Filter<MetricAssetVersion>(v => v.Uid == measureChangedModel.MetricAssetVersionUid, v => v.Asset.Allocation).SingleOrDefault();
+                    var version = Db.Filter<MetricAssetVersion>(v => v.Uid == measureChangedModel.MetricAssetVersionUid, v => v.Asset.Allocation, v => v.RollupPaths).SingleOrDefault();
 
                     if (version != null)
                     {
                         if (version.State == State.Active && !version.Asset.Allocation.IsExternallyCalculated)
                         {
                             var definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(version.Definition ?? "{}");
-                            bool shouldProceed = false;
+                            var list = new List<AssetMeasureModel>();
+
                             if (definition.DataQuality != null)
                             {
-                                shouldProceed = true;
+                                var dqQueryDetail = Db.BuildDataQualityMeasureQueryModel(2, version.RollupPaths.First().Uid);
+                                list = Db.GetDataQualityAssetEffectiveDateResultModels(dqQueryDetail, measureChangedModel.MetricAssetUid, measureChangedModel.MetricAssetVersionUid, version.EffectiveDate);
                             }
                             else if (definition.Governance != null)
                             {
                                 if (definition.Governance.Check != MetricGovernanceCheckType.External)
                                 {
-                                    shouldProceed = true;
+                                    list = Db.Query<Guid>(
+                                        "select A.Uid from Asset A inner join AssetType T on T.ID = A.AssetTypeID and T.Uid = @AssetTypeUid",
+                                        new { version.Asset.Allocation.AssetTypeUid }
+                                        )
+                                        .ToList()
+                                        .Select(uid => new AssetMeasureModel
+                                        {
+                                            AssetUid = uid,
+                                            EffectiveDate = DateTime.UtcNow,
+                                            Measures = new List<AssetMeasureChildModel>() {
+                                            new AssetMeasureChildModel { MetricAssetUid = measureChangedModel.MetricAssetUid, MetricAssetVersionUid = measureChangedModel.MetricAssetVersionUid, Result = false }
+                                             }
+                                        })
+                                        .ToList();
                                 }
                             }
 
-                            if (shouldProceed)
+                            if (list.Count > 0)
                             {
-                                var list = Db.Query<Guid>(
-                                    "select A.Uid from Asset A inner join AssetType T on T.ID = A.AssetTypeID and T.Uid = @AssetTypeUid", 
-                                    new { version.Asset.Allocation.AssetTypeUid }
-                                    )
-                                    .ToList()
-                                    .Select(uid => new AssetMeasureModel { 
-                                         AssetUid = uid,
-                                         EffectiveDate = DateTime.UtcNow,
-                                         Measures = new List<AssetMeasureChildModel>() { 
-                                            new AssetMeasureChildModel { MetricAssetUid = measureChangedModel.MetricAssetUid, MetricAssetVersionUid = measureChangedModel.MetricAssetVersionUid, Result = false }
-                                         }
-                                    })
-                                    .ToList();
-                                
-                                if (list.Count > 0)
-                                {
-                                    Db.SendContinuingScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, list, Info.ExecutionUid, Info.StartedOn);
-                                }
+                                Db.SendContinuingScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, list, Info.ExecutionUid, Info.StartedOn);
                             }
                         }
                     }

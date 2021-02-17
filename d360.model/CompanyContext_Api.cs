@@ -2803,7 +2803,7 @@ from	IntersectType I
                                     //include hierarchical records for graph tables
                                     graphResults.AddRange(
                                         Query<DatabaseBulkAssetResult>(
-                                            $"select * from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+                                            $"select * from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber and Success = 1",
                                             new { execution.ExecutionID, beginItemNumber, endItemNumber }
                                         )
                                     );

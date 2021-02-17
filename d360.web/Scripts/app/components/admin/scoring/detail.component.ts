@@ -306,6 +306,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                 this.showPassTest = false;
         }
         else {
+            this.selectedMetric = null;
             this.showConditions = false;
             this.showPassTest = false;
         }

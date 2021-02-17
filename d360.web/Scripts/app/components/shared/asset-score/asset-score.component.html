@@ -121,11 +121,12 @@
                                    [assetName]="assetName"></score-calculation>
             </div>
             <div [hidden]="!(activeTab=='Definition')">
-                <score-definition #defTab
+                <score-definition #defTab 
                                   [isExternallyCalculated]="isExternallyCalculated" 
                                   [selectedMetric]="selectedMetric" 
                                   [assetTypeUid]="assetTypeUid" 
-                                  [allocationUid]="allocationUid"></score-definition>
+                                  [allocationUid]="allocationUid">
+                </score-definition>
             </div>
         </div>
     </div>

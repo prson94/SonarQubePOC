@@ -41,6 +41,7 @@ enum PageMode {
 export class ResourceItemComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
     private resourceId = -1;
+    private resourceUid = "";
     private items: any[] = [];
     private resource: any;
     private isSavingProcess : boolean =  false;
@@ -98,6 +99,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                         return;
                     }
 
+                    this.resourceUid = this.resource.uid;
                     this.headerBreadcrumbService.clearBreadcrumbs();
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Resource', SiteUrlHelpers.SITE_URL_RESOURCE_ROOT));
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.resource.FirstName} ${this.resource.LastName}`));

@@ -240,26 +240,26 @@
                                             title="This will remove all other assignments of this form. The User selected will be the designated Assignee to work this issue"></p-checkbox>
                             </div>
                         </div>
-                            <div class="row">
-                                <div class="col s12"
-                                     *ngIf="reassignType">
-                                    <div class="FieldName">&nbsp;</div>
-                                    <button pButton
-                                            type="button"
-                                            (click)="reassign()"
-                                            [disabled]="selectedReassignResource == null && (term == null || term.ObjectID == null)"
-                                            style="width: 150px;"
-                                            label="Assign"></button>
-                                    <button pButton
-                                            type="button"
-                                            (click)="isReassignEnabled = false"
-                                            style="width: 150px;"
-                                            label="Cancel"></button>
-                                </div>
+                        <div class="row">
+                            <div class="col s12"
+                                 *ngIf="reassignType">
+                                <div class="FieldName">&nbsp;</div>
+                                <button pButton
+                                        type="button"
+                                        (click)="reassign()"
+                                        [disabled]="selectedReassignResource == null && (term == null || term.ObjectID == null)"
+                                        style="width: 150px;"
+                                        label="Assign"></button>
+                                <button pButton
+                                        type="button"
+                                        (click)="isReassignEnabled = false"
+                                        style="width: 150px;"
+                                        label="Cancel"></button>
                             </div>
                         </div>
+                     </div>
                     <div class="col s12">&nbsp;</div>
-                    <div class="col s12">
+                    <div class="col s12" *ngIf="!isReassignEnabled">
                         <button pButton
                             type="submit"
                             [disabled]="!workflowForm.valid || isReassignEnabled"

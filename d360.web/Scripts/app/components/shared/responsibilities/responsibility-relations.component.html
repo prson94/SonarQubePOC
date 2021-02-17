@@ -50,12 +50,12 @@
                     <td *ngIf="queryType === 'R'">{{item.AssetTypeName}}</td>
                     <td *ngIf="queryType === 'A'">{{item.ResponsibilityTypeName}}</td>
                     <td>
-                        <div class="RowTools">
+                        <div *ngIf="showEditButton" class="RowTools">
                             <a (click)="edit(item)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
                         </div>
                     </td>
                     <td>
-                        <div class="RowTools">
+                        <div *ngIf="showDeleteButton" class="RowTools">
                             <a (click)="delete(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                         </div>
                     </td>

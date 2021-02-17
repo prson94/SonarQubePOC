@@ -106,6 +106,7 @@
 	<include file="scripts/Table.dbo.Intersect.xml"/>
 	<include file="scripts/Table.dbo.IssueType.xml"/>
 	<include file="scripts/Table.dbo.IssueTypeRelation.xml"/>
+	<include file="scripts/Table.dbo.IssueTypeRelationResponsibility.xml"/>
 	<include file="scripts/Table.dbo.Issue.xml"/>
 	<include file="scripts/Table.dbo.Load.xml"/>
 	<include file="scripts/Table.dbo.LoadColumn.xml"/>
