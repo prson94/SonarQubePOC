@@ -35,6 +35,20 @@ import { BaseMeasureEditorComponent } from './measure-editor-base.component';
     .field-row{
         margin-bottom: 8px;
     }
+    .top-margin{
+        margin-top: 8px;
+    }
+    .weight-container{
+        dislpay:flex;
+    }
+    .weight-row{
+        display: inline-flex;
+        margin-right: auto;
+        width: 100%;
+    }
+    .right{
+        margin-left:auto
+    }
     `]
 
 })
@@ -117,7 +131,8 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
             weight: ['', [this.isValidWeight()]],
             isGroup: null,
             check: null,
-            matchType: null
+            matchType: null,
+            MatchConditionsOnly: null
         });
 
         this.metricForm.updateValueAndValidity();
@@ -132,7 +147,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
     }
 
     ngAfterViewInit() {
-        this.originalConditions = _.cloneDeep(this.conditions)
+        this.originalConditions = _.cloneDeep(this.conditionGroups)
         this.originalModel = _.cloneDeep(this.model);
         this.originalEffectiveDate = new Date(this.displayEffectiveDate?.toString());
         if (!this.uid) {
@@ -163,6 +178,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
             } else {
                 this.isLoading = false;
             }
+            this.checkModelChanged();
             this.cdRef.markForCheck();
         });
 
@@ -368,7 +384,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
         if (this.metricForm) {
             if (this.model.IsGroup) {
                 this.metricForm.removeControl("check");
-                this.conditions = [];
+                this.conditionGroups = [];
             } else {
                 this.metricForm.addControl("check", new FormControl(''));
             }
@@ -424,19 +440,19 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
             && (
                 this.model.Name &&
                 this.originalModel.Name != this.model.Name
+                || this.originalModel.MatchConditionsOnly != this.model.MatchConditionsOnly
                 || (this.originalModel.Description && this.originalModel.Description != this.model.Description)
                 || (!this.originalModel.Description && !(!this.model.Description || this.model.Description == null || this.model.Description.trim() == ""))
                 || (this.displayWeight && (this.originalModel.Weight * 100) != this.displayWeight)
                 || (this.displayEffectiveDate && this.getFormattedEffectiveDate(this.originalEffectiveDate).getTime() !== this.getFormattedEffectiveDate(this.displayEffectiveDate).getTime())
                 || (this.originalModel.IsGroup != this.model.IsGroup)
-                || this.haveConditionsChanged(this.conditions.filter(x => x.field), this.originalConditions)
+                || this.haveConditionsChanged(this.conditionGroups, this.originalConditions)
                 || this.havePassTestCriteriaChanged(this.model.Definition, this.originalModel.Definition)
             )
         ) {
             this.hasModelChanged = true;
         } else {
             this.hasModelChanged = false;
-            this.validateConditions();
         }
 
         if (this.verb == "Edit") {

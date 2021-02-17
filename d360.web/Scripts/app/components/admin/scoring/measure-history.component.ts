@@ -1,6 +1,6 @@
 ﻿import { Component, Input, OnInit, OnDestroy, EventEmitter, Output } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
-import { MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel, MetricFieldTypeViewModel, MetricAssetHistoryViewModel, MetricAssetViewModel } from '../../../models/metrics.model';
+import { MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel, MetricFieldTypeViewModel, MetricAssetHistoryViewModel, MetricAssetViewModel, ScoreTypeAllocation } from '../../../models/metrics.model';
 import { MetricsService } from '../../../services/metrics.service';
 import { TreeNode } from 'primeng/api';
 import { AssetTypeMetricModel } from '../../../models/asset.model';
@@ -18,10 +18,8 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
     @Input() AssetType: AssetTypeMetricModel;
     @Input() isExternallyCalculated: boolean = false;
     @Input() screenReferences: CommonScreenReferencesModel;
-
     @Output() onClose = new EventEmitter;
 
-    private conditions: MetricAssetVersionConditionItemViewModel[] = [];
     private metricHistoryRecords: MetricAssetHistoryViewModel[] = [];
     private metricTree: TreeNode[] = [];
     private selectedNode: TreeNode;
@@ -74,68 +72,13 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
         this.onClose.emit(null);
     }
 
-    formatConditions() {
-        this.conditions.forEach(c => {
-            const field = this.screenReferences.fields.find(f => f.ApiName === c.ConditionFieldTypeName);
-            c.OperatorText = this.screenReferences.operators.find(o => o.ID === c.Operator).Name;
-
-            if (field) {
-                c.FieldTypeName = field.Name;
-                c.FieldType = field;
-
-                switch (field.Type) {
-                    case 'Lookup':
-                        if (field.Values) {
-                            if (field.Values.length > 0) {
-                                if (c.Values) {
-                                    if (c.Values[0]) {
-                                        let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === c.Values[0]);
-                                        valueModel = field.Values.find(o => o.Value === c.Values[0]);
-                                        if (valueModel) {
-                                            c.SingleValue = c.Values[0];
-                                            c.ValuesText = valueModel.Text;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        break;
-                    case 'Date':
-                        if (c.Values) {
-                            if (c.Values[0]) {
-                                c.SingleValue = c.Values[0];
-                                c.ValuesText = new Date(c.Values[0]).toLocaleDateString();
-                            }
-                        }
-                        break;
-                    case 'DateTime':
-                        if (c.Values) {
-                            if (c.Values[0]) {
-                                c.SingleValue = c.Values[0];
-                                c.ValuesText = new Date(c.Values[0]).toLocaleString();
-                            }
-                        }
-                        break;
-                    default:
-                        if (c.Values) {
-                            if (c.Values[0]) {
-                                c.SingleValue = c.Values[0];
-                                c.ValuesText = c.Values[0];
-                            }
-                        }
-                        break;
-                }
-            }
-        });
-    }
+  
 
     private hasConditions(item: MetricAssetHistoryViewModel) {
         if (item && item.ConditionGroups && item.ConditionGroups.length > 0) {
-            this.conditions = item.ConditionGroups[0].ConditionItems;
-            this.formatConditions();
             return true;
         } else {
-            this.conditions = [];
+            return false;
         }
     }
 
@@ -163,17 +106,8 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
         this.selectedNode = e;
         this.selection = e === null ? null : e.data;
 
-        if (this.hasConditions(this.selection)) {
-            this.showConditions = true;
-        }
-        else {
-            this.showConditions = false;
-        }
-     
-        if (this.hasPassTest(this.selection) && !this.Measure.IsGroup)
-            this.showPassTest = true
-        else
-            this.showPassTest = false;
+        this.showConditions = this.hasConditions(this.selection);
+        this.showPassTest = (this.hasPassTest(this.selection) && !this.Measure.IsGroup);
     }
 
     private hasPassTest(item: MetricAssetHistoryViewModel) {

@@ -18,7 +18,6 @@ import { DataQualityMeasureEditorComponent } from './measure-editor-dataquality.
 import { ExternalMeasureEditorComponent } from './measure-editor-external.component';
 import { GovernanceMeasureEditorComponent } from './measure-editor-governance.component';
 import { MeasureListComponent } from './measure-list.component';
-import { AdminMetricPassTestDetailsComponent } from './admin-metric-pass-test-details.component';
 
 import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
@@ -108,9 +107,9 @@ import { ScoreDefinitionModule } from '../../shared/asset-score/definition/score
         IgMessageBoxModule,
         PopupMenuModule,
         IgBadgeModule,
+        ScoreDefinitionModule,
 
-        MetricPassTestDetailsModule,
-        ScoreDefinitionModule
+        MetricPassTestDetailsModule
 
     ],
     declarations: [
@@ -123,7 +122,7 @@ import { ScoreDefinitionModule } from '../../shared/asset-score/definition/score
         GovernanceMeasureEditorComponent,
 
         MeasureListComponent,
-        AdminMeasureHistoryComponent,
+        AdminMeasureHistoryComponent
     ],
     providers: [
         {

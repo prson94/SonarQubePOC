@@ -2,7 +2,7 @@
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, ScorePoint } from '../../../models/score.model';
-import { ScoreType, ScoreTypeAllocation } from '../../../models/metrics.model';
+import { MetricFieldTypeViewModel, ScoreType, ScoreTypeAllocation } from '../../../models/metrics.model';
 import { Observable, Subject } from 'rxjs';
 import { SelectItem } from 'primeng/api';
 import { MetricsService } from '../../../services/metrics.service';
@@ -48,6 +48,8 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     private scoreTypes: number[] = [];
     private allocationData: ScoreTypeAllocation[] = [];
     showEmptyMessage: boolean = false;
+    
+    fields: MetricFieldTypeViewModel[];
 
     showExpandAndCollapse: boolean = true;
     totalScore: number;
@@ -153,6 +155,9 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 this.assetTypeUid = res.AssetTypeUid;
                 this.assetName = res.DisplayValue;
                 this.assetTypeName = res.TypeName;
+                this.metricService.getFieldTypeViewModelsByAssetType(this.assetTypeUid).subscribe((x) => {
+                    this.fields = x;
+                });
             });
 
             this.metricService.getActiveAllocationsByAssetUid(this.uid).subscribe(x => {

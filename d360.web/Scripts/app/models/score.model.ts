@@ -1,5 +1,6 @@
 ﻿import { AssetTypeClass } from "./asset.model";
 import { ScoreType } from "./metrics.model";
+import { Operator } from "./operator.model";
 
 //#region Evidence Models
 
@@ -55,7 +56,8 @@ export class PointBreakdown {
     EffectiveDate: string;
     EndDate: string;
     ScoreType: ScoreType;
-    Conditions: PointBreakdownCondition[];
+    MatchConditionsOnly;
+    Conditions: PointBreakDownConditionItem[];
     Measures: PointBreakdown[];
 
 
@@ -70,10 +72,20 @@ export class PointBreakdown {
     _measureSumWeight: number = 0;
 }
 
+export class PointBreakDownConditionItem {
+    Weight: number;
+    MatchType: number;
+    ConditionItems: PointBreakdownCondition[]; 
+}
+
 export class PointBreakdownCondition {
     FieldName: string;
-    Operator: string;
+    Operator: Operator;
     Value: string;
+
+    //display only
+    _formattedValue: string;
+
 }
 
 export class ScorePoint {

@@ -6,10 +6,9 @@ import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { DirectivesModule } from '../../../../directives/directives.module';
 import { GovernRequestInterceptor } from '../../../../http-interceptors/govern-request.interceptor';
 import { ScoreDefinitionComponent } from './score-definition.component';
-import { CoreModule } from '../../core.module';
 import { PipesModule } from '../../../../pipes/pipes.module';
-import { AdminMetricPassTestDetailsComponent } from '../../../admin/scoring/admin-metric-pass-test-details.component';
 import { MetricPassTestDetailsModule } from '../../../admin/scoring/admin-metric-pass-test-details.module';
+import { MeasureConditionsDetailsComponent } from './measure-conditions-details.component';
 
 @NgModule({
     imports: [
@@ -20,14 +19,16 @@ import { MetricPassTestDetailsModule } from '../../../admin/scoring/admin-metric
         DirectivesModule,
         PipesModule,
 
-        MetricPassTestDetailsModule
+        MetricPassTestDetailsModule,
 
     ],
     declarations: [
-        ScoreDefinitionComponent
+        ScoreDefinitionComponent,
+        MeasureConditionsDetailsComponent
     ],
     exports: [
-        ScoreDefinitionComponent
+        ScoreDefinitionComponent,
+        MeasureConditionsDetailsComponent
     ],
     providers: [
         {

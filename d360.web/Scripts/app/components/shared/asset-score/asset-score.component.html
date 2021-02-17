@@ -116,10 +116,9 @@
                                    [formattedCheck]="defTab.getPassCheckValue()" 
                                    [selected]="selectedPoint" 
                                    [measures]="pointBreakdown" 
+                                   [fields]="fields"
                                    [assetTypeName]="assetTypeName" 
-                                   [assetName]="assetName"             
-                                   [definition]="selectedMetric?.Definition">
-                </score-calculation>
+                                   [assetName]="assetName"></score-calculation>
             </div>
             <div [hidden]="!(activeTab=='Definition')">
                 <score-definition #defTab 
