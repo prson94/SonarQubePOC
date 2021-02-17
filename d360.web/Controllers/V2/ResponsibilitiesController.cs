@@ -780,6 +780,13 @@ namespace d360.web.Controllers.V2
 
                 }
 
+                var existingUids = Company.Query<Guid>("select uid from responsibilitytype where uid in @uids", new { uids = responsibilityTypes.Where(x=> x.Uid.HasValue).Select(x => x.Uid) }).ToList();
+                if (existingUids.Any())
+                {
+                    errorMessage = $"Non Unique Responsibility Uids: {string.Join(", ", existingUids.Select(i => i.ToString()))}. Identifiers must be unique within a table.";
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, errorMessage))).ConfigureAwait(false);
+                }
+
                 var execution = getApiExecution(responsibilityTypes.Count);
 
                 var upserts = new List<ResponsibilityTypeUpsertModel>();
@@ -787,7 +794,8 @@ namespace d360.web.Controllers.V2
                 {
                     Name = x.Name,
                     Description = x.Description,
-                    Uid = null
+                    Uid = x.Uid,
+                    IsNew = true
                 });
 
                 List<ResponsibilityTypeUpsertResult> results = ResponsibilityRepository.UpsertResponsibilityTypes(upserts, execution);
@@ -978,7 +986,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> AddResponsibilitiesOverride(Guid assetUid, Guid responsibilityUid, [FromBody]ResponsibilityOverridePostModel model)
+        public async Task<IHttpActionResult> AddResponsibilitiesOverride(Guid assetUid, Guid responsibilityUid, [FromBody] ResponsibilityOverridePostModel model)
         {
             var prefix = "Responsibilities.AddResponsibilitiesOverride => ";
             var errorMessage = "";
@@ -1077,7 +1085,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> DeleteResponsibilitiesOverride(Guid assetUid, Guid responsibilityUid, [FromBody]List<ResponsibilityOverrideDeleteModel> resourceUids)
+        public async Task<IHttpActionResult> DeleteResponsibilitiesOverride(Guid assetUid, Guid responsibilityUid, [FromBody] List<ResponsibilityOverrideDeleteModel> resourceUids)
         {
             var prefix = "Responsibilities.DeleteResponsibilitiesOverride => ";
             var errorMessage = "";
@@ -1189,7 +1197,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse))
 
         ]
-        public async Task<IHttpActionResult> PostResponsibilityRules(Guid responsibilityTypeUid, [FromBody]List<ResponsibilityRuleUpsertModel> responsibilityRules)
+        public async Task<IHttpActionResult> PostResponsibilityRules(Guid responsibilityTypeUid, [FromBody] List<ResponsibilityRuleUpsertModel> responsibilityRules)
         {
             var prefix = "Relationships.PostResponsibilityRules => ";
             var errorMessage = "";
@@ -1206,6 +1214,13 @@ namespace d360.web.Controllers.V2
                 if (responsibility == null)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Responsibility Type with Uid '{responsibilityTypeUid}'.")).ConfigureAwait(false);
+                }
+
+                var existingUids = Company.Query<Guid>("select uid from ResponsibilityTypeRelationRule where uid in @uids", new { uids = responsibilityRules.Where(x=> x.Uid.HasValue).Select(x => x.Uid) }).ToList();
+                if (existingUids.Any())
+                {
+                    errorMessage = $"Non Unique Responsibility Rule Uids: {string.Join(", ", existingUids.Select(i => i.ToString()))}. Identifiers must be unique within a table.";
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, errorMessage))).ConfigureAwait(false);
                 }
 
                 var execution = getApiExecution(responsibilityRules.Count);
@@ -1261,7 +1276,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PutResponsibilityRules(Guid responsibilityTypeUid, [FromBody]List<ResponsibilityRuleUpsertModel> responsibilityRules)
+        public async Task<IHttpActionResult> PutResponsibilityRules(Guid responsibilityTypeUid, [FromBody] List<ResponsibilityRuleUpsertModel> responsibilityRules)
         {
             var prefix = "Relationships.PutResponsibilityRules => ";
             var errorMessage = "";
@@ -1306,7 +1321,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> DeleteResponsibilityRules(Guid responsibilityTypeUid, [FromBody]List<ResponsibilityRuleDeleteModel> responsibilityRulesDeletes)
+        public async Task<IHttpActionResult> DeleteResponsibilityRules(Guid responsibilityTypeUid, [FromBody] List<ResponsibilityRuleDeleteModel> responsibilityRulesDeletes)
         {
             var prefix = "Relationships.DeleteResponsibilityRules => ";
             var errorMessage = "";

@@ -7615,6 +7615,7 @@ where   ER.ExecutionID = @ExecutionID
 
                 var uidDupes = import.GroupBy(i => i.Uid).Where(i => i.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
                 var nameDupes = import.GroupBy(i => i.Name).Where(i => i.Count() > 1).Select(i => new { Name = i.Key, Count = i.Count() }).ToList();
+
                 if (uidDupes.Any() && execution.Method == "PUT")
                 {
                     execution.ErrorMessage = $"Duplicate Asset Uids: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
@@ -7686,11 +7687,22 @@ where   ER.ExecutionID = @ExecutionID
                                     row["Name"] = model.Name.Trim();
                                 }
                                 row["Description"] = model.Description;
-                                if (model.Uid.HasValue)
+                                if (model.Uid.HasValue && model.Uid.Value != Guid.Empty)
+                                {
                                     row["Uid"] = model.Uid;
+                                }
                                 else
                                 {
+                                    row["Uid"] = Guid.NewGuid();
+                                }
+
+                                if (model.IsNew == true)
+                                {
                                     row["IsNew"] = true;
+                                }
+                                else
+                                {
+                                    row["IsNew"] = false;
                                 }
 
                                 table.Rows.Add(row);
@@ -7745,8 +7757,9 @@ where   ER.ExecutionID = @ExecutionID
     set		Success = 0,
 		    [Message] = coalesce([Message] + '; ', '') + 'Responsibility type with this Uid does not exists'
     from api.ExecutionResponsibilityType ERT
+    inner join api.Execution AE on AE.ExecutionID = ERT.ExecutionID
     left join [ResponsibilityType] RT on RT.Uid = ERT.Uid
-    where	ExecutionID = @ExecutionID and ERT.Uid is not null and RT.Uid is null;
+    where	 AE.Method = 'PUT' and ERT.ExecutionID = @ExecutionID and ERT.Uid is not null and RT.Uid is null;
 
     update	api.ExecutionResponsibilityType 
     set		Success = 0,
@@ -7805,14 +7818,16 @@ where   ER.ExecutionID = @ExecutionID
                                                           and ResponsibilityTypeId is null
                                                           and Success is null
 	                                              ) S
-                                            on (RT.uid = S.uid)
+                                            on (RT.Uid = S.Uid and S.IsNew = 0)
 											when matched then
 											update  
 												set RT.Name = S.Name,
-												RT.Description = S.Description
+												RT.Description = S.Description,
+                                                UpdatedOn = getutcdate(),
+                                                UpdatedBy = @CurrentResourceID
                                             when not matched then
-	                                            insert (Name, Description)
-	                                            values (S.Name,S.Description)
+	                                            insert (Name, Description, Uid, CreatedOn, CreatedBy)
+	                                            values (S.Name,S.Description, S.Uid, getutcdate(), @CurrentResourceID)
 	                                        output inserted.ID, inserted.Uid, S.ExecutionItemUid into #mergeResultTable;
 
                                             update RT
@@ -7824,7 +7839,7 @@ where   ER.ExecutionID = @ExecutionID
                                             where RT.ExecutionID = @ExecutionID and RT.Success is null";
 
                                         Connection.Execute(insertSQL,
-                                                new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                                new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 
                                         Connection.Execute(
                                             $"update ERT set ERT.Success = 1 from api.ExecutionResponsibilityType ERT where	{querySuffix} and ERT.ResponsibilityTypeId is not null;",
@@ -9287,17 +9302,12 @@ WHEN MATCHED THEN DELETE;
                                     row["Definition"] = JsonConvert.SerializeObject(model.Definition);
                                 }
 
-                                if (execution.Method.ToLower() == "post" && model.Uid.HasValue)
-                                {
-                                    rowError += ";Cannot use Uid in POST request. Please use PUT Api for updating records!";
-                                }
-
                                 if (execution.Method.ToLower() == "put" && !model.Uid.HasValue)
                                 {
                                     rowError += ";UID cannot be empty!";
                                 }
 
-                                if (model.Uid.HasValue)
+                                if (model.Uid.HasValue && model.Uid.Value != Guid.Empty)
                                 {
                                     row["uid"] = model.Uid.Value;
                                 }
@@ -9458,8 +9468,9 @@ WHEN MATCHED THEN DELETE;
     set		Success = 0,
 		    [Message] = coalesce([Message] + '; ', '') + 'Responsibility Rule with specified Uid not found!'
     from api.ExecutionResponsibilityRule EP
+    inner join api.execution ae on ae.executionid = ep.executionid
     left join ResponsibilityTypeRelationRule rtrr on rtrr.uid = ep.uid
-    where	ExecutionID = @ExecutionID and EP.Uid is not null and rtrr.uid is null;
+    where	ep.ExecutionID = @ExecutionID and EP.Uid is not null and rtrr.uid is null and ae.Method = 'Put';
 
     update	api.ExecutionResponsibilityRule 
     set		Success = 0,
@@ -9829,13 +9840,15 @@ WHEN MATCHED
                                         xrr.Context,
                                         xrr.IsVisible,
                                         xrr.ApplyToType, 
-                                        xrr.DefinitionConverted
+                                        xrr.DefinitionConverted,
+                                        ae.method
                                          from api.executionresponsibilityrule xrr
+                                        inner join api.execution ae on ae.executionid = xrr.executionid
                                         inner join assettype at on at.uid = xrr.AssetTypeUid
                                         inner join ResponsibilityType rt on rt.uid = xrr.ResponsibilityTypeUid
                                         where xrr.executionid = @ExecutionID and xrr.ItemNumber between @beginItemNumber and @endItemNumber and xrr.success is null
                                         )Data
-                                        ON RTRR.uid = Data.uid
+                                        ON (RTRR.uid = Data.uid and method = 'PUT')
                                         WHEN MATCHED
                                             THEN update set 
                                                 name = data.name,
@@ -9849,8 +9862,8 @@ WHEN MATCHED
                                                 updatedon = getdate(),
                                                 updatedby = @resourceId
                                         WHEN NOT MATCHED
-                                            THEN insert (ResponsibilityTypeId,Object,ObjectId,Name,Context,IsVisible, ApplyToType,CreatedOn,CreatedBy,Definition)
-	                                        values (data.ResponsibilityTypeId,data.Object, data.ObjectId, data.Name, data.Context, data.IsVisible, data.ApplyToType, getdate(), @resourceId,data.DefinitionConverted)
+                                            THEN insert (uid,ResponsibilityTypeId,Object,ObjectId,Name,Context,IsVisible, ApplyToType,CreatedOn,CreatedBy,Definition)
+	                                        values (isnull(data.uid, newid()), data.ResponsibilityTypeId,data.Object, data.ObjectId, data.Name, data.Context, data.IsVisible, data.ApplyToType, getdate(), @resourceId,data.DefinitionConverted)
                                             output inserted.uid, data.executionid, data.itemnumber into @mergeResults;
 
                                         update api.executionresponsibilityrule
