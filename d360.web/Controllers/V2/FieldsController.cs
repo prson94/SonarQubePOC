@@ -420,8 +420,10 @@ namespace d360.web.Controllers.V2
                 List<FieldType> currentFieldTypes = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
                 bool anyResponsibilitiesUsingField = FieldsRepository.hasResponsibilityUsingField(typeIdentifierInfoModel, currentFieldTypes);
 
-                if(anyResponsibilitiesUsingField)
+                if (anyResponsibilitiesUsingField)
+                {
                     throw new RestApiException(HttpStatusCode.BadRequest, "Used in Responsibility Rules", "This field type is in use in a responsibility rule and the rule needs to be deleted first.");
+                }
 
                 (var fieldValidatorStatus, List<string> fieldNamesToDelete) = FieldApiModelValidator.FieldValidator(model, anyExistingItems, currentFieldTypes);
                 if (fieldValidatorStatus.StatusCode != HttpStatusCode.OK)
