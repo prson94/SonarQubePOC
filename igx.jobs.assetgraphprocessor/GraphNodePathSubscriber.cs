@@ -19,7 +19,9 @@ namespace igx.jobs.assetgraphprocessor
         {
             var info = brokeredMessage.GetBody<AssetEventInfo>();
             if (info.Type != AssetEventType.Node)
+            {
                 return;
+            }
 
             CoreFunction.AITrackJobStart(functionName);
 

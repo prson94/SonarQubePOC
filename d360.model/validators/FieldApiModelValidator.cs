@@ -19,7 +19,9 @@ namespace d360.model.validators
 
 
             if (baseValidation.StatusCode != HttpStatusCode.OK)
+            {
                 return baseValidation;
+            }
 
             bool actionIsReplaceAndKeySelected = (model.Action == FieldTypesApiEditAction.Merge); //If set to merge we can set to true and skip this step.
             bool fieldsHaveErrors = false;
@@ -376,28 +378,44 @@ namespace d360.model.validators
                 {
 
                     if (field.Type.ComputedOwnershipLookup != null)
+                    {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"ComputedOwnershipLookup fields are not allowed for current Asset Type!");
+                    }
 
                     if (field.Type.ComputedRelationshipField != null)
+                    {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"ComputedRelationshipField fields are not allowed for current Asset Type!");
+                    }
 
                     if (field.Type.ComputedRelationshipLookup != null)
+                    {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"ComputedRelationshipLookup fields are not allowed for current Asset Type!");
+                    }
 
                     if (field.Type.ComputedRelationshipReferenceList != null)
+                    {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"ComputedRelationshipReferenceList fields are not allowed for current Asset Type!");
+                    }
 
                     if (field.Type.Json != null)
+                    {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Json fields are not allowed for current Asset Type!");
+                    }
 
                     if (field.Type.JsonElement != null)
+                    {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"JsonElement fields are not allowed for current Asset Type!");
+                    }
 
                     if (field.Type.Relationship != null)
+                    {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Relationship fields are not allowed for current Asset Type!");
+                    }
 
                     if (field.Type.Score != null)
+                    {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Score fields are not allowed for current Asset Type!");
+                    }
 
                     if (field.Type.Text != null && field.Name == "Name")
                     {
@@ -405,19 +423,33 @@ namespace d360.model.validators
                         var message = "Task Types cannot have field property '{0}' on field Name set to {1}.";
                         var ft = field.Type.Text;
                         if (ft.IsDisplayable == false)
+                        {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsDisplayable", "false"));
+                        }
                         if (ft.IsEditable == false)
+                        {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsEditable", "false"));
+                        }
                         if (ft.IsListable == false)
+                        {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsListable", "false"));
+                        }
                         if (ft.IsPartOfKey == false)
+                        {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPartOfKey", "false"));
+                        }
                         if (ft.Validation.IsRequired == false)
+                        {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsRequired", "false"));
+                        }
                         if (ft.IsPrimaryFilter == true)
+                        {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPrimaryFilter", "true"));
+                        }
                         if (ft.ShowIfEmpty == false)
+                        {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "ShowIfEmpty", "false"));
+                        }
 
                     }
                     if (field.Type.Lookup != null && field.Name == "GovernanceRole")
@@ -426,15 +458,25 @@ namespace d360.model.validators
                         var message = "Task Types cannot have field property '{0}' on field GovernanceRole set to {1}.";
                         var ft = field.Type.Lookup;
                         if (ft.IsDisplayable == false)
+                        {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsDisplayable", "false"));
+                        }
                         if (ft.IsPartOfKey == true)
+                        {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPartOfKey", "true"));
+                        }
                         if (ft.IsPrimaryFilter == true)
+                        {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPrimaryFilter", "true"));
+                        }
                         if (ft.ShowIfEmpty == false)
+                        {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "ShowIfEmpty", "false"));
+                        }
                         if (ft.List.AllowMultipleValues == true)
+                        {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "AllowMultipleValues", "true"));
+                        }
                     }
                     if (field.Type.Decimal != null && field.Name == "StepNo")
                     {
@@ -456,11 +498,17 @@ namespace d360.model.validators
                     {
                         var editableViewModel = GetEditableViewModel(field);
                         if (editableViewModel.IsListable == true)
+                        {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Non static fields on Diagram Asset Type cannot have 'IsListable' set to true!");
+                        }
                         if (editableViewModel.IsPartOfKey == true)
+                        {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Non static fields on Diagram Asset Type cannot have 'IsPartOfKey' set to true!");
+                        }
                         if (editableViewModel.IsPrimaryFilter == true)
+                        {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Non static fields on Diagram Asset Type cannot have 'IsPrimaryFilter' set to true!");
+                        }
 
                     }
                 }
@@ -497,23 +545,41 @@ namespace d360.model.validators
         {
             var editableViewModel = new FieldTypeEditableApiViewModel();
             if (field.Type.Text != null)
+            {
                 editableViewModel = field.Type.Text as FieldTypeEditableApiViewModel;
+            }
             if (field.Type.Boolean != null)
+            {
                 editableViewModel = field.Type.Boolean as FieldTypeEditableApiViewModel;
+            }
             if (field.Type.Date != null)
+            {
                 editableViewModel = field.Type.Date as FieldTypeEditableApiViewModel;
+            }
             if (field.Type.DateTime != null)
+            {
                 editableViewModel = field.Type.DateTime as FieldTypeEditableApiViewModel;
+            }
             if (field.Type.Decimal != null)
+            {
                 editableViewModel = field.Type.Decimal as FieldTypeEditableApiViewModel;
+            }
             if (field.Type.Html != null)
+            {
                 editableViewModel = field.Type.Html as FieldTypeEditableApiViewModel;
+            }
             if (field.Type.Link != null)
+            {
                 editableViewModel = field.Type.Link as FieldTypeEditableApiViewModel;
+            }
             if (field.Type.Lookup != null)
+            {
                 editableViewModel = field.Type.Lookup as FieldTypeEditableApiViewModel;
+            }
             if (field.Type.Number != null)
+            {
                 editableViewModel = field.Type.Number as FieldTypeEditableApiViewModel;
+            }
             return editableViewModel;
         }
 
@@ -602,10 +668,15 @@ namespace d360.model.validators
 
         private static bool IsFieldNameAllowed(string fieldApiName, bool isRelationshipType = false, TypeIdentifierInfoModel assetTypeIdentifierInfoModel = null)
         {
-            if (string.IsNullOrEmpty(fieldApiName)) return false;
+            if (string.IsNullOrEmpty(fieldApiName))
+            {
+                return false;
+            }
             List<string> disallowedFieldNames = new List<string> { "id", "uid", "assetid", "assetuid", "assettypeid", "assettypeuid", "createdon", "updatedon", "parentdisplayname", "parentassetuid", "keypath" };
             if (isRelationshipType)
+            {
                 disallowedFieldNames.Add("source");
+            }
 
             if (assetTypeIdentifierInfoModel != null)
             {

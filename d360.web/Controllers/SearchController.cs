@@ -118,21 +118,29 @@ namespace d360.web.Controllers
 
             //We have Grammatic Types if we have Nyms or any intersects with predicate type 6
             if (Company.Nyms.Any())
+            {
                 visibleCategories.Add("Synonym");
+            }
             else if (Company.Query<int>(@"select case when exists(select *
                     from[intersect] I
                     inner join IntersectType T on T.ID = I.IntersectTypeID
                     inner join Predicate P on P.ID = T.PredicateID and P.Type = 6) then 1
                     else 0 end").FirstOrDefault() == 1)
+            {
                 visibleCategories.Add("Synonym");
+            }
 
             if (Community.IsFusionEnabled())
             {
                 if (Company.FusionAttributes.Any())
+                {
                     visibleCategories.Add("FusionAttributes");
+                }
 
                 if (Company.FusionTypes.Any())
+                {
                     visibleCategories.Add("FusionType");
+                }
             }
 
             return Json(visibleCategories, JsonRequestBehavior.AllowGet);
@@ -223,9 +231,13 @@ namespace d360.web.Controllers
                     foreach (var r in results.Where(r => r.AssetTypeUid == m.AssetTypeUid))
                     {
                         if (!string.IsNullOrEmpty(m.ImageIconUrl))
+                        {
                             r.ImageUrl = constants.COMPANY_RESOURCES_URL + m.ImageIconUrl;
-                        else if(!string.IsNullOrEmpty(m.Icon))
+                        }
+                        else if (!string.IsNullOrEmpty(m.Icon))
+                        {
                             r.Icon = m.Icon;
+                        }
                     }
                 }
             }
@@ -246,9 +258,13 @@ namespace d360.web.Controllers
                 foreach (var r in results.Where(res => res.MissingIcon() && iconMap.ContainsKey(siteNavMap[res.Group])))
                 {
                     if (!string.IsNullOrEmpty(iconMap[siteNavMap[r.Group]].Item2))
+                    {
                         r.ImageUrl = constants.COMPANY_RESOURCES_URL + iconMap[siteNavMap[r.Group]].Item2;
+                    }
                     else if (!string.IsNullOrEmpty(iconMap[siteNavMap[r.Group]].Item1))
+                    {
                         r.Icon = iconMap[siteNavMap[r.Group]].Item1;
+                    }
                 }
             }
 
@@ -266,7 +282,9 @@ namespace d360.web.Controllers
             {
                 Guid uid = r.Uid ?? Guid.Empty;
                 if (paths.ContainsKey(uid))
+                {
                     r.AssetPath = paths[uid];
+                }
             }
         }
 

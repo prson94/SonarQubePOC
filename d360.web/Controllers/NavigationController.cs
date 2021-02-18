@@ -50,16 +50,20 @@ namespace d360.web.Controllers
             {
                 var techAssets = Company.Query<int>($"select count(*) from AssetType where Class = {(int)AssetTypeClass.TechnicalAsset}").First();
                 if (techAssets == 0)
+                {
                     nodes = nodes.Where(x => x.MenuID != "#Technical").ToList();
+                }
             }
 
             if (nodes != null)
+            {
                 nodes.ForEach(n =>
                 {
                     n.NavigationItems = (string.IsNullOrEmpty(n.Items)) ?
                         new List<NavigationItem>() :
                         parseXmlNavigationDocument(XElement.Parse(string.Format("<nav>{0}</nav>", n.Items)));
                 });
+            }
 
             return new JsonNetResult
             {
@@ -117,14 +121,18 @@ namespace d360.web.Controllers
         public JsonNetResult AddFolderItem(SiteNav item)
         {
             if (!Company.CurrentResourceIsAdmin)
+            {
                 return jsonNetException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+            }
 
             var success = true;
             var message = "";
             try
             {
                 if (string.IsNullOrWhiteSpace(item.Name))
+                {
                     throw new Exception("Folder name cannot be empty");
+                }
 
                 var deleteExisting = Company.Query<SiteNav>(@"with s as
                 (
@@ -163,7 +171,9 @@ namespace d360.web.Controllers
         public JsonNetResult RemoveFolderItem(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
+            {
                 return jsonNetException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+            }
 
             var success = true;
             var message = "";
@@ -171,7 +181,9 @@ namespace d360.web.Controllers
             {
                 var fi = Company.GetById<SiteNav>(id);
                 if (fi == null)
+                {
                     throw new Exception($"Folder Item Id ${id} not found");
+                }
                 Company.Delete(fi);
                 Company.SaveChanges();
                 message = "Folder item removed successfully.";
@@ -203,7 +215,9 @@ namespace d360.web.Controllers
             {
                 var folder = Company.GetById<SiteNav>(id);
                 if (folder == null)
+                {
                     throw new Exception($"Folder id ${id} not found");
+                }
                 string originalImage = folder.ImageIconUrl;
                 if (!string.IsNullOrEmpty(originalImage))
                 {
@@ -244,7 +258,9 @@ namespace d360.web.Controllers
             try
             {
                 if (string.IsNullOrWhiteSpace(model.Folder.Name))
+                {
                     throw new Exception("Folder name cannot be empty.");
+                }
 
                 if (!string.IsNullOrEmpty(model.Folder.IconPayload))
                 {
@@ -310,9 +326,13 @@ namespace d360.web.Controllers
                 var siteNavAbove = Company.SiteNav.Where(s => s.ParentID == null && s.SortOrder == siteNav.SortOrder - 1).SingleOrDefault();
 
                 if (siteNav == null)
+                {
                     throw new Exception($"Folder id ${id} not found");
+                }
                 if (siteNavAbove == null)
+                {
                     throw new Exception("This folder is already sorted to the top");
+                }
 
                 siteNavAbove.SortOrder++;
                 siteNav.SortOrder--;
@@ -452,9 +472,13 @@ namespace d360.web.Controllers
                 var siteNavBelow = Company.GetById<SiteNav>(adjacentFolderId);
 
                 if (siteNav == null)
+                {
                     throw new Exception($"Folder Id ${targetFolderId} not found.");
+                }
                 if (siteNavBelow == null)
+                {
                     throw new Exception($"Folder Id ${adjacentFolderId} not found.");
+                }
 
                 int? tmpSortOrder = siteNav.SortOrder;
                 siteNav.SortOrder = siteNavBelow.SortOrder;
@@ -568,15 +592,21 @@ namespace d360.web.Controllers
         public JsonNetResult SetSiteNavPermissions(SiteNav nav)
         {
             if (!Company.CurrentResourceIsAdmin)
+            {
                 return jsonNetException(new Exception("You do not have permission to do this"));
+            }
 
             if (nav == null || nav.ID < 1)
+            {
                 return jsonNetException(new Exception("The model passed to the method was invalid"));
+            }
 
             var existing = Company.SiteNavPermissions.Where(p => p.SiteNavID == nav.ID).ToList();
 
             if (nav.Permissions == null)
+            {
                 nav.Permissions = new List<SiteNavPermission>();
+            }
 
             nav.Permissions.ForEach(p => { p.SiteNavID = nav.ID; });
 
@@ -608,13 +638,19 @@ namespace d360.web.Controllers
             var nav = Company.GetById<SiteNav>(perm.SiteNavID);
 
             if (!Company.CurrentResourceIsAdmin)
+            {
                 return jsonNetException(new Exception("You do not have permission to do this"));
+            }
 
             if (nav == null)
+            {
                 return jsonNetException(new Exception("The site nav specified was not found"));
+            }
 
             if (string.IsNullOrEmpty(perm.Object) || perm.ObjectID == 0)
+            {
                 return jsonNetException(new Exception("Invalid object passed"));
+            }
 
             try
             {
@@ -655,7 +691,9 @@ namespace d360.web.Controllers
                 }
             }
             else
+            {
                 return jsonNetException(new Exception("Could not find existing permission"));
+            }
 
             return new JsonNetResult
             {
@@ -676,19 +714,25 @@ namespace d360.web.Controllers
             try
             {
                 if (admin && !Company.CurrentResourceIsAdmin)
+                {
                     throw new Exception("user does not have admin privileges.");
+                }
 
                 var resid = admin ? 0 : Company.CurrentResourceID;
 
                 var favorite = Company.Favorites.Where(f => f.ResourceID == resid && f.Route == route).First();
 
                 if (favorite == null)
+                {
                     throw new Exception("no favorite with supplied route");
+                }
                 if (moveUp)
                 {
                     var above = Company.Favorites.Where(f => f.SortOrder == (favorite.SortOrder - 1) && f.ResourceID == favorite.ResourceID).SingleOrDefault();
                     if (above == null)
+                    {
                         throw new Exception("no favorite above");
+                    }
                     favorite.SortOrder--;
                     above.SortOrder++;
                 }
@@ -696,7 +740,9 @@ namespace d360.web.Controllers
                 {
                     var below = Company.Favorites.Where(f => f.SortOrder == (favorite.SortOrder + 1) && f.ResourceID == favorite.ResourceID).SingleOrDefault();
                     if (below == null)
+                    {
                         throw new Exception("no favorite below");
+                    }
                     favorite.SortOrder++;
                     below.SortOrder--;
                 }

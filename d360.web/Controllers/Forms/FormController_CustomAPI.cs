@@ -64,18 +64,27 @@ namespace d360.web.Controllers
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                }
 
-                if (!form.HasKeys()) throw new NoFormDataException("service");
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException("service");
+                }
 
                 var name = parseTextField(form, "Name");
                 var prefix = parseTextField(form, "URIPrefix");
 
                 if (string.IsNullOrEmpty(name))
+                {
                     return jsonException("API Service Name is null", HttpStatusCode.NotFound);
+                }
 
                 if (string.IsNullOrEmpty(prefix))
+                {
                     return jsonException("API Service Prefix is null", HttpStatusCode.NotFound);
+                }
 
                 var service = new ApiService
                 {
@@ -160,7 +169,10 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();
             var a = Company.ApiNamespaces.Where(x => x.ID == id).FirstOrDefault();
 
-            if (a == null) return jsonException("Cannot find the specified service to edit", HttpStatusCode.NotFound);
+            if (a == null)
+            {
+                return jsonException("Cannot find the specified service to edit", HttpStatusCode.NotFound);
+            }
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Element Name", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), Value = a.Node });
@@ -184,10 +196,14 @@ namespace d360.web.Controllers
                 var serviceId = parseIntField(form, "ServiceID");
 
                 if (string.IsNullOrEmpty(name))
+                {
                     return jsonException("API Namespace Name is null", HttpStatusCode.NotFound);
+                }
 
                 if (string.IsNullOrEmpty(ns))
+                {
                     return jsonException("API Namespace is null", HttpStatusCode.NotFound);
+                }
 
                 var apiNamespace = new ApiNamespace
                 {
@@ -217,14 +233,22 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("service");
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException("service");
+                }
 
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+                }
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<ApiNamespace>(id);
-                if (model == null) throw new NotFoundException("api service");
+                if (model == null)
+                {
+                    throw new NotFoundException("api service");
+                }
 
                 model.Node = parseTextField(form, "Name");
                 model.Namespace = parseTextField(form, "Namespace");
@@ -295,7 +319,10 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();
             var a = Company.ApiEndpoints.Where(x => x.ID == id).FirstOrDefault();
 
-            if (a == null) return jsonException("Cannot find the specified service endpoint to edit", HttpStatusCode.NotFound);
+            if (a == null)
+            {
+                return jsonException("Cannot find the specified service endpoint to edit", HttpStatusCode.NotFound);
+            }
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), Value = a.Name });
@@ -312,10 +339,15 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("endpoint");
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException("endpoint");
+                }
 
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                }
 
                 var serviceId = parseIntField(form, "ServiceID");
                 var name = parseTextField(form, "Name");
@@ -697,9 +729,14 @@ namespace d360.web.Controllers
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+                }
 
-                if (!form.HasKeys()) throw new NoFormDataException("version");
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException("version");
+                }
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<ApiEntityUri>(id);
@@ -812,10 +849,15 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("uri");
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException("uri");
+                }
 
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                }
 
                 var entityId = parseIntField(form, "EntityID");
                 var fieldTypeId = parseIntField(form, "FieldTypeID");

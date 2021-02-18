@@ -217,14 +217,20 @@ namespace d360.web.Controllers.Services
 
                     var key = mlList.Key.Name;
                     if (mlList.Value.JsonFieldOverrideName != null && asJson)
+                    {
                         key = mlList.Value.JsonFieldOverrideName;
+                    }
                     if (mlList.Value.XmlFieldOverrideName != null && !asJson)
+                    {
                         key = mlList.Value.XmlFieldOverrideName;
+                    }
 
                     if (dic.TryGetValue(key, out object val))
                     {
                         if (val == null)
+                        {
                             continue;
+                        }
                         var ids = (val ?? "").ToString().Split(',');
                         mlList.Value.Values = new List<int>();
 
@@ -238,20 +244,28 @@ namespace d360.web.Controllers.Services
                 foreach (var field in multiSelectDetails)
                 {
                     if (!field.Value.Fields.Any())
+                    {
                         field.Value.Fields = Company.ApiEntityFieldTypeMultiSelectFields.Where(i => i.EntityFieldTypeID == field.Value.EntityFieldTypeID).Select(i => i.FieldTypeID).ToList();
+                    }
 
                     //clear out previous values
                     field.Value.Items = null;
 
                     var key = field.Key.Name;
                     if (field.Value.JsonFieldOverrideName != null && asJson)
+                    {
                         key = field.Value.JsonFieldOverrideName;
+                    }
                     if (field.Value.XmlFieldOverrideName != null && !asJson)
+                    {
                         key = field.Value.XmlFieldOverrideName;
+                    }
 
                     //based on the field type get the properties for the reference list type
                     if (field.Key.LookupObjectType != "ReferenceItem" || field.Key.LookupObjectID <= 0)
+                    {
                         continue;
+                    }
 
                     var joins = new List<string>();
                     var columns = new List<string>();
@@ -260,7 +274,9 @@ namespace d360.web.Controllers.Services
                     var valueCount = field.Value.Values.Count;
 
                     if (valueCount < 1)
+                    {
                         continue;
+                    }
 
                     if (fieldCount > 0)
                     {
@@ -288,9 +304,13 @@ namespace d360.web.Controllers.Services
                     var items = Company.Query<dynamic>(listSql).ToArray();
 
                     if (field.Value.Fields.Count > 1)
+                    {
                         field.Value.Items = items;
+                    }
                     else //for single fields return an array of values
+                    {
                         field.Value.Items = items.Select(i => i.value).ToArray();
+                    }
 
                     var assetObj = asset as IDictionary<string, object>;
                     //remove the original values as they are no longer needed
@@ -308,11 +328,15 @@ namespace d360.web.Controllers.Services
                 foreach (var field in multiSelectDetails)
                 {
                     if (field.Value.Items == null || field.Value.Items.Count() < 1)
+                    {
                         continue;
+                    }
 
                     var key = field.Key.Name;
                     if (field.Value.XmlFieldOverrideName != null)
+                    {
                         key = field.Value.XmlFieldOverrideName;
+                    }
 
                     var p = DynamicHelper.GetXElement(key, namespaces, asset);
                     asset.Add(p);
@@ -320,9 +344,13 @@ namespace d360.web.Controllers.Services
                     foreach (var i in field.Value.Items)
                     {
                         if (field.Value.Fields.Count > 1)
+                        {
                             p.Add(DynamicHelper.ConvertToXml(i, field.Value.ItemName, namespaces, p));
+                        }
                         else
+                        {
                             p.Add(DynamicHelper.GetXElement(field.Value.ItemName, namespaces, p, i));
+                        }
                     }
                 }
             }
@@ -338,10 +366,14 @@ namespace d360.web.Controllers.Services
                 {
                     var key = field.Key.Name;
                     if (field.Value.JsonFieldOverrideName != null)
+                    {
                         key = field.Value.JsonFieldOverrideName;
+                    }
 
                     if (!dic.ContainsKey(key))
+                    {
                         dic.Add(key, field.Value.Items);
+                    }
                 }
             }
         }
@@ -397,7 +429,9 @@ namespace d360.web.Controllers.Services
                              });
 
                 if (config.Count() <= 0)
+                {
                     return CreateCustomApiError(HttpStatusCode.NotFound, "Endpoint not found.");
+                }
 
                 var acceptHeaders = Request.Headers.Accept;
 
@@ -510,7 +544,9 @@ namespace d360.web.Controllers.Services
                 var asset = Company.Query<dynamic>(sql, new { id = config.First().AssetType.ID, key }).FirstOrDefault();
 
                 if (asset == null)
+                {
                     return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Item not found.");
+                }
 
                 //process multiselect values
                 GetMultiSelectValues(multiSelectDetails, asset, asJson);
@@ -528,7 +564,10 @@ namespace d360.web.Controllers.Services
 
                     foreach (var property in dic)
                     {
-                        if (property.Value != null) exp.Add(property.Key, property.Value);
+                        if (property.Value != null)
+                        {
+                            exp.Add(property.Key, property.Value);
+                        }
                     }
 
                     exp.Add("_links", new List<JsonResultLinkModel> { new JsonResultLinkModel { href = canoUri, rel = JsonResultLinkModel.CANO } });
@@ -559,8 +598,10 @@ namespace d360.web.Controllers.Services
                 }
 
                 if (lastModifiedDate != DateTime.MinValue)
+                {
                     responseMessage.Content.Headers.LastModified = new DateTimeOffset(lastModifiedDate,
                               TimeZoneInfo.Local.GetUtcOffset(lastModifiedDate)); ;
+                }
 
                 return responseMessage;
 
@@ -592,7 +633,9 @@ namespace d360.web.Controllers.Services
             try
             {
                 if (Request.RequestUri.ToString().Length > 16000)
+                {
                     return CreateCustomApiError(HttpStatusCode.NotFound, "Request URI must not exceed 16,000 characters.");
+                }
 
                 var queryParams = Request.GetQueryNameValuePairs();
 
@@ -632,7 +675,9 @@ namespace d360.web.Controllers.Services
                 #endregion
 
                 if (config.Count <= 0)
+                {
                     return CreateCustomApiError(HttpStatusCode.NotFound, "Endpoint not found.");
+                }
 
                 var maxAge = config[0].MaximumCacheAge;
 
@@ -746,7 +791,10 @@ namespace d360.web.Controllers.Services
 
                     // 1. check to see if the value is negated (has a ! at the first character of the filter query string value. This negates all comma-delimited values.)
                     var isNegated = fieldValueToFilterBy.StartsWith("!");
-                    if (isNegated) fieldValueToFilterBy = fieldValueToFilterBy.Remove(0, 1); //Now, remove this c=! so it does not interfere with further processing.
+                    if (isNegated)
+                    {
+                        fieldValueToFilterBy = fieldValueToFilterBy.Remove(0, 1); //Now, remove this c=! so it does not interfere with further processing.
+                    }
 
                     // 2. Check for functions in the value. This requires special processing, based on the function name passed.
                     var continueChecking = true;
@@ -1082,7 +1130,9 @@ namespace d360.web.Controllers.Services
 
 
                     if (includeColumn)
+                    {
                         columnSql += $", {formattedValueColumnSql} as [{fieldName}]";
+                    }
 
                     if (includeJoin)
                     {
@@ -1100,17 +1150,25 @@ namespace d360.web.Controllers.Services
                                 fieldFilterSql += $"({formattedValueColumnSql} {@operator} @{filter.FieldName})";
 
                                 // TRUE / FALSE DATA TYPE HANDLING
-                                if(fieldDbType == System.Data.DbType.Byte)
+                                if (fieldDbType == System.Data.DbType.Byte)
                                 {
-                                    if((singleValueFilter.Value ?? "").ToUpper() == "TRUE")
+                                    if ((singleValueFilter.Value ?? "").ToUpper() == "TRUE")
+                                    {
                                         dbArgs.Add($"@{filter.FieldName}", 1, fieldDbType);
-                                    else if((singleValueFilter.Value ?? "").ToUpper() == "FALSE")
+                                    }
+                                    else if ((singleValueFilter.Value ?? "").ToUpper() == "FALSE")
+                                    {
                                         dbArgs.Add($"@{filter.FieldName}", 0, fieldDbType);
+                                    }
                                     else
+                                    {
                                         dbArgs.Add($"@{filter.FieldName}", singleValueFilter.Value, fieldDbType);
+                                    }
                                 }
                                 else
+                                {
                                     dbArgs.Add($"@{filter.FieldName}", singleValueFilter.Value, fieldDbType);
+                                }
                             }
                             else if (filter is MultiValueFilterModel)
                             {
@@ -1156,7 +1214,10 @@ namespace d360.web.Controllers.Services
                                 {
                                     foreach (var v in multiValueFilter.Values)
                                     {
-                                        if (!string.IsNullOrEmpty(fieldFilterSql)) fieldFilterSql += conjunction;
+                                        if (!string.IsNullOrEmpty(fieldFilterSql))
+                                        {
+                                            fieldFilterSql += conjunction;
+                                        }
 
                                         fieldFilterSql += $"{formattedValueColumnSql} {@operator} @{filter.FieldName}{loopNumber}";
                                         dbArgs.Add($"@{filter.FieldName}{loopNumber}", v, fieldDbType);
@@ -1166,7 +1227,9 @@ namespace d360.web.Controllers.Services
                                 }
 
                                 if (!string.IsNullOrEmpty(additionalWhereSql))
+                                {
                                     additionalWhereSql = " and " + additionalWhereSql;
+                                }
 
                             }
                             else if (filter is RangeValueFilterModel)

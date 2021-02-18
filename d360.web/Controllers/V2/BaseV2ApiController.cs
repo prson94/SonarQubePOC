@@ -52,16 +52,22 @@ namespace d360.web.Controllers.V2
                 }
 
                 if (f.Type == "Link")
+                {
                     valueColumn = "Value";
+                }
 
                 if (f.Type == "FieldFromRelationship")
                 {
                     if (!f.LookupObjectFieldTypeID.HasValue || !f.LookupObjectID.HasValue)
+                    {
                         return;
+                    }
 
                     var relatedField = _company.GetById<FieldType>((int)f.LookupObjectFieldTypeID);
                     if (relatedField == null)
+                    {
                         return;
+                    }
 
                 }
 
@@ -71,12 +77,18 @@ namespace d360.web.Controllers.V2
                     if (!string.IsNullOrEmpty(fieldDataType))
                     {
                         if (fieldDataType == "bit")
+                        {
                             fieldColumns.Add($"cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
+                        }
                         else
+                        {
                             fieldColumns.Add($"cast({tableAlias}.{valueColumn} as {fieldDataType}) as [{columnName}]");
+                        }
                     }
                     else
+                    {
                         fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
+                    }
                 }
                 else
                 {
@@ -243,29 +255,49 @@ namespace d360.web.Controllers.V2
             if (parameters.Any(q => q.Key == "_pageSize"))
             {
                 var _pageSize = queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value;
-                if(_pageSize.Length > 10)
+                if (_pageSize.Length > 10)
+                {
                     return "Invalid pageSize value provided.";
+                }
                 if (long.TryParse(_pageSize, out pageSize))
                 {
-                    if (pageSize > 200000) return "Invalid pageSize value provided. Number is too large";
-                    if (pageSize <= 0) return "Invalid pageSize value provided. Value must be greater than 0";
+                    if (pageSize > 200000)
+                    {
+                        return "Invalid pageSize value provided. Number is too large";
+                    }
+                    if (pageSize <= 0)
+                    {
+                        return "Invalid pageSize value provided. Value must be greater than 0";
+                    }
                 }
                 else
+                {
                     return "Invalid pageSize value provided. Must be a numeric value";
+                }
             }
 
             if (parameters.Any(q => q.Key == "_pageNum"))
             {
                 var _pageNum = queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value;
-                if(_pageNum.Length > 10)
+                if (_pageNum.Length > 10)
+                {
                     return "Invalid pageNum value provided.";
+                }
                 if (long.TryParse(_pageNum, out pageNum))
                 {
-                    if (pageNum > 100000) return "Invalid pageNum value provided. Number is too large";
-                    if (pageNum <= 0) return "Invalid pageNum value provided. Value must be greater than 0";
+                    if (pageNum > 100000)
+                    {
+                        return "Invalid pageNum value provided. Number is too large";
+                    }
+                    if (pageNum <= 0)
+                    {
+                        return "Invalid pageNum value provided. Value must be greater than 0";
+                    }
                 }
                 else
+                {
                     return "Invalid pageNum value provided. Must be a numeric value.";
+                }
             }
 
             return "";
@@ -287,10 +319,15 @@ namespace d360.web.Controllers.V2
                 json = await request.Content.ReadAsStringAsync();
             }
 
-            if (deserializeAsIs) return JsonConvert.DeserializeObject<T>(json);
+            if (deserializeAsIs)
+            {
+                return JsonConvert.DeserializeObject<T>(json);
+            }
 
             if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+            {
                 return default(T);
+            }
             else
             {
                 if ((json.StartsWith("{") && json.EndsWith("}")) || //For object
@@ -309,9 +346,13 @@ namespace d360.web.Controllers.V2
                     }
 
                     if (isValid)
+                    {
                         return JsonConvert.DeserializeObject<T>(json);
+                    }
                     else
+                    {
                         return default(T);
+                    }
                 }
                 else
                 {
@@ -428,7 +469,10 @@ namespace d360.web.Controllers.V2
             {
                 bool rowSameAsPrevious = true;
 
-                if (previousRow == null) rowSameAsPrevious = false;
+                if (previousRow == null)
+                {
+                    rowSameAsPrevious = false;
+                }
 
                 index = 1;
                 rowNumber++;
@@ -519,16 +563,24 @@ namespace d360.web.Controllers.V2
                 case "DECIMAL":
                     double dVal = 0;
                     if (double.TryParse(value, out dVal))
+                    {
                         document.SetCellValue(rowIndex, columnIndex, dVal);
+                    }
                     else
+                    {
                         document.SetCellValue(rowIndex, columnIndex, value);
+                    }
                     break;
                 case "NUMBER":
                     int intVal = 0;
                     if (int.TryParse(value, out intVal))
+                    {
                         document.SetCellValue(rowIndex, columnIndex, intVal);
+                    }
                     else
+                    {
                         document.SetCellValue(rowIndex, columnIndex, value);
+                    }
                     break;
                 case "DATE":
                     if (DateTime.TryParse((value ?? "").ToString(), out DateTime dateVal))
@@ -545,7 +597,9 @@ namespace d360.web.Controllers.V2
                     doc.LoadHtml(value + "");
                     var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
                     if (txt.StartsWith("="))
+                    {
                         txt = "'" + txt;
+                    }
                     document.SetCellValue(rowIndex, columnIndex, txt);
                     break;
             }
@@ -553,7 +607,10 @@ namespace d360.web.Controllers.V2
 
         protected internal void SetRowStylesFromField(ICollection<AssetTypeExportTemplateStyle> styles, SLDocument document, int rowIndex, int columnIndex, FieldType field, dynamic row)
         {
-            if (styles == null || !styles.Any()) return;
+            if (styles == null || !styles.Any())
+            {
+                return;
+            }
 
             //check if the styles collection has an entry for this row
             var style = styles.Where(x => x.Row == rowIndex && x.Column == -1 && (x.BackgroundColorValueFieldTypeID > 0 || x.ColorValueFieldTypeID > 0)).FirstOrDefault();
@@ -577,7 +634,9 @@ namespace d360.web.Controllers.V2
                 {
                     var st = CreateStyle(style, row);
                     if (field.Type == "Date")
+                    {
                         st.FormatCode = "m/d/yyyy";
+                    }
 
                     //we have a style based on the value in another column(s)
                     document.SetCellStyle(rowIndex, columnIndex, st);
@@ -587,7 +646,10 @@ namespace d360.web.Controllers.V2
 
         private void SetColumnCellStyle(SLDocument document, int column, int totalRows, ICollection<AssetTypeExportTemplateStyle> styles)
         {
-            if (styles == null) return;
+            if (styles == null)
+            {
+                return;
+            }
             //style for the whole column
             var columnStyle = styles.Where(x => x.Row == -1 && x.Column == column).FirstOrDefault();
 
@@ -619,11 +681,17 @@ namespace d360.web.Controllers.V2
 
         private void SetRowStyles(SLDocument document, int row, ICollection<AssetTypeExportTemplateStyle> styles)
         {
-            if (styles == null) return;
+            if (styles == null)
+            {
+                return;
+            }
 
             var columnStyle = styles.Where(x => x.Row == row && x.Column == -1).FirstOrDefault();
 
-            if (columnStyle == null) return;
+            if (columnStyle == null)
+            {
+                return;
+            }
 
             document.SetRowStyle(row, CreateStyle(columnStyle));
         }
@@ -636,16 +704,24 @@ namespace d360.web.Controllers.V2
                 case "DECIMAL":
                     double dVal = 0;
                     if (double.TryParse(valueString, out dVal))
+                    {
                         document.SetCellValue(rowIndex, colIndex, dVal);
+                    }
                     else
+                    {
                         document.SetCellValue(rowIndex, colIndex, valueString);
+                    }
                     break;
                 case "NUMBER":
                     int intVal = 0;
                     if (int.TryParse(valueString, out intVal))
+                    {
                         document.SetCellValue(rowIndex, colIndex, intVal);
+                    }
                     else
+                    {
                         document.SetCellValue(rowIndex, colIndex, valueString);
+                    }
                     break;
                 case "DATE":
                     if (DateTime.TryParse((value ?? "").ToString(), out DateTime dateVal))
@@ -679,7 +755,9 @@ namespace d360.web.Controllers.V2
             }
 
             if (columnStyle.Color.HasValue)
+            {
                 style.SetFontColor(System.Drawing.Color.FromArgb(columnStyle.Color.Value));
+            }
 
             if (columnStyle.BackgroundColorValueFieldTypeID > 0 && row != null)
             {
@@ -707,9 +785,13 @@ namespace d360.web.Controllers.V2
         private string getRowFieldValue(dynamic row, int fieldId, string hardCodedName = null)
         {
             if (fieldId > 0 && string.IsNullOrEmpty(hardCodedName))
+            {
                 return (string)((row as IDictionary<string, object>)[$"Field{fieldId}"]);
+            }
             else
+            {
                 return (((row as IDictionary<string, object>)[$"{hardCodedName}"]) ?? "").ToString();
+            }
         }
        
         private void SetExcelColumnWidths(SLDocument document, List<FieldType> fields)
@@ -752,7 +834,10 @@ namespace d360.web.Controllers.V2
                 foreach (var fieldName in fieldNameList)
                 {
                     var field = oldFields.Find(x => x.Name.Equals(fieldName, StringComparison.InvariantCultureIgnoreCase));
-                    if (field != null) fieldTypes.Add(field);
+                    if (field != null)
+                    {
+                        fieldTypes.Add(field);
+                    }
                 }
             }
         }

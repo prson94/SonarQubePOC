@@ -403,7 +403,7 @@ for json path";
                 }
                 else
                 {
-                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Type Uid provided is invalid."));
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Type Uid provided is invalid.")).ConfigureAwait(false);
                 }
             }
 
@@ -436,7 +436,7 @@ for json path";
                 }
                 else
                 {
-                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Uid provided is invalid."));
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Uid provided is invalid.")).ConfigureAwait(false);
                 }
             }
 
@@ -540,7 +540,9 @@ for json path";
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Forbidden user is not an administrator."));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Forbidden user is not an administrator.")).ConfigureAwait(false);
+                }
 
                 if (model.Uid != null)
                 {
@@ -553,16 +555,20 @@ for json path";
                 }
 
                 if (string.IsNullOrEmpty(model.Name.Trim()))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Empty string provided for Name. Cannot be empty."));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Empty string provided for Name. Cannot be empty.")).ConfigureAwait(false);
+                }
 
                 if (model.Name.Trim().Length > 250)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Name provided must be less then 250 characters in length."));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Name provided must be less then 250 characters in length.")).ConfigureAwait(false);
+                }
 
                 var validName = Company.IssueTypes.Any(i => i.Name.ToLower() == model.Name.Trim().ToLower());
 
                 if (validName)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Name must be unique. Workflow action already exists with this name"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Name must be unique. Workflow action already exists with this name")).ConfigureAwait(false);
                 }
 
                 if (model.Uid == null || model.Uid == Guid.Empty)
@@ -596,7 +602,7 @@ for json path";
                 result.Message = "Action Type is created";
                 result.Success = true;
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result))).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -744,17 +750,19 @@ for json path";
             var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
 
             if (issueType == null)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"No Action Type found matching the Uid Provided."));
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"No Action Type found matching the Uid Provided.")).ConfigureAwait(false);
+            }
 
             if (!model.cascade && (Company.Issues.Any(x => x.IssueTypeID == issueType.ID)))
             {
                 if (IsFromUI)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"The selected action type ({issueType.Name}) has associated actions, and therefore cannot be deleted."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"The selected action type ({issueType.Name}) has associated actions, and therefore cannot be deleted.")).ConfigureAwait(false);
                 }
                 else
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Action Type has associated actions. Enable on cascade request to delete."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Action Type has associated actions. Enable on cascade request to delete.")).ConfigureAwait(false);
                 }
             }
 
@@ -767,7 +775,7 @@ for json path";
             var res = await Company.Database.Connection.ExecuteAsync(deleteSQL,
                 new { uid = actionTypeUid, issueTypeId = issueType.ID });
 
-            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new AddIssueTypeApiModel() { Uid = actionTypeUid, Message = "Action Type was deleted", Success = true })));
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new AddIssueTypeApiModel() { Uid = actionTypeUid, Message = "Action Type was deleted", Success = true }))).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -796,20 +804,20 @@ for json path";
 
             if (actionTypeUid == null || actionTypeUid == Guid.Empty)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Invalid ActionTypeUid provided."));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Invalid ActionTypeUid provided.")).ConfigureAwait(false);
             }
 
             var issueType = Company.Filter<IssueType>(i => i.uid == actionTypeUid).SingleOrDefault();
 
             if (issueType == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Not Found", $"Action Type with Uid {actionTypeUid} could not be found."));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Not Found", $"Action Type with Uid {actionTypeUid} could not be found.")).ConfigureAwait(false);
             }
 
             WorkHttpStatus validationStatus = PopulateRequest(models, ref issueModels, issueType, lookupFieldsPassedByValue);
             if (validationStatus.StatusCode != HttpStatusCode.OK)
             {
-                return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
+                return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message)).ConfigureAwait(false);
             }
 
             foreach (var issueModel in issueModels)
@@ -1134,9 +1142,13 @@ for json path";
         {
             var setting = Community.Filter<CompanySetting>(i => i.CompanyID == Company.CurrentCompanyID && i.SettingID == 61).SingleOrDefault();
             if (setting == null)
+            {
                 return true;
+            }
             else
+            {
                 return bool.Parse(setting.Value);
+            }
 
         }        
 
@@ -1159,7 +1171,9 @@ for json path";
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage)).ConfigureAwait(false);
+                }
 
                 if (actionTypeUid == null || actionTypeUid == Guid.Empty)
                 {
@@ -1173,7 +1187,7 @@ for json path";
 
                 if (assetTypeUids.Count == 0)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.EmptyAllocationRequest));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.EmptyAllocationRequest)).ConfigureAwait(false);
                 }
 
                 List<IssueTypeRelation> allocations = new List<IssueTypeRelation>();
@@ -1182,7 +1196,7 @@ for json path";
                 {
                     if (!Guid.TryParse(assetTypeUid, out Guid uid))
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid)));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid))).ConfigureAwait(false);
                     }
 
                     var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == uid);
@@ -1203,7 +1217,7 @@ for json path";
                 string allocationsSQL = "INSERT INTO IssueTypeRelation (AssetTypeID, IssueTypeID) VALUES (@AssetTypeID, @IssueTypeID)";
                 var res = await Company.Database.Connection.ExecuteAsync(allocationsSQL, allocations);
 
-                return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, allocations?.Count == 1 ? ActionApiMessages.AddSingleAllocationSuccessful : ActionApiMessages.AddAllocationsSuccessful));
+                return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, allocations?.Count == 1 ? ActionApiMessages.AddSingleAllocationSuccessful : ActionApiMessages.AddAllocationsSuccessful)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -1231,7 +1245,7 @@ for json path";
             {
                 if (actionTypeUid == null || actionTypeUid == Guid.Empty)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.InvalidActionTypeUid));                    
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.InvalidActionTypeUid)).ConfigureAwait(false);                    
                 }
 
                 var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
@@ -1269,13 +1283,13 @@ for json path";
 
                 var allocations = await Company.QueryAsync<IssueTypeAllocationsResponse>(allocationsSQL, new { issueTypeID = issueType.ID });                
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, allocations)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, allocations))).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }    
 
@@ -1307,7 +1321,7 @@ for json path";
 
                 if (assetTypeUid == null || assetTypeUid == Guid.Empty)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.AssetTypeUidIsNotValid));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.AssetTypeUidIsNotValid)).ConfigureAwait(false);
                 }
 
                 var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
@@ -1329,10 +1343,10 @@ for json path";
 
                 if(res == 0)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.NoMatchingAllocation, assetType.Name, issueType.Name)));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.NoMatchingAllocation, assetType.Name, issueType.Name))).ConfigureAwait(false);
                 }
 
-                return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ActionApiMessages.DeleteAllocationSuccessful));
+                return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ActionApiMessages.DeleteAllocationSuccessful)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

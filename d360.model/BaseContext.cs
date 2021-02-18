@@ -249,7 +249,9 @@ namespace d360.model
                 Entry(entity).State = EntityState.Modified;
             }
             else
+            {
                 this.Set<T>().Add(entity);
+            }
 
             int numRecords = 0;
 
@@ -284,7 +286,9 @@ namespace d360.model
             cmd.CommandText = sql;
             cmd.CommandType = CommandType.Text;
             if (Database.Connection.State != (ConnectionState.Open | ConnectionState.Fetching | ConnectionState.Executing))
+            {
                 Database.Connection.Open();
+            }
             return cmd.ExecuteReader();
         }
 
@@ -335,7 +339,9 @@ namespace d360.model
                 if (connection != null)
                 {
                     if (connection.State != ConnectionState.Closed)
+                    {
                         connection.Close();
+                    }
                 }
             }
         }
