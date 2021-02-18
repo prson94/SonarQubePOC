@@ -114,7 +114,7 @@
                 </span>
             </td>
             <td>
-                <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.RunDate | date : 'short'}}</span>
+                <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.RunDate | date : 'short' : 'UTC'}}</span>
             </td>
             <td>
                 <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.EffectiveDate | date : 'shortDate' : 'UTC'}}</span>
