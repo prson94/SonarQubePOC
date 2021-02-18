@@ -14,16 +14,16 @@ export class SiteCustomizationsService extends BaseObservableService  {
     getCustomCss(): Observable<string> {
         return this.http.get('/api/v2/environment/styles')
             .pipe(
-                map(response => <string>response),
-                catchError(err => this.handleError(err))
+                map((response) => <string>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     saveCustomCss(css: string): Observable<JsonResult> {
         return this.http.put('/api/v2/environment/styles', { css: css })
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 }

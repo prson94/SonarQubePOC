@@ -78,7 +78,7 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
             this.screenReferences.operators = op;
             if (relationships) {
                 this.screenReferences.relationships = relationships;
-                this.screenReferences.predicates = relationships.map(x => {
+                this.screenReferences.predicates = relationships.map((x) => {
                     return x.Predicate;
                 });
             }
@@ -88,11 +88,11 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
 
             if (alloc) {
                 if (alloc.scoreType.toString() == "DataQuality") {
-                    this.metricsService.getRuleResultPathOptions(this.assetTypeUid, alloc.scoreType).subscribe(options => {
-                        options.forEach(p => {
+                    this.metricsService.getRuleResultPathOptions(this.assetTypeUid, alloc.scoreType).subscribe((options) => {
+                        options.forEach((p) => {
                             let processedUids: string[] = [];
                             let html: string = p.Path;
-                            p.Segments.forEach(s => {
+                            p.Segments.forEach((s) => {
                                 // Keep track of Uids we already replaced the paths for, so we do not mess up the resulting HTML.
                                 if (processedUids.findIndex(x => { return x == s.AssetTypeUid }) == -1) {
                                     let segmentPath = s.Path.split('->').join(' > ');

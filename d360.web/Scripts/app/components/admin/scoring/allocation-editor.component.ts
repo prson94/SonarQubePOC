@@ -102,7 +102,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
             this.allocationService.getunallocatedAssetTypes(this.selection.scoreType)
                 .subscribe(data => {
                     this.ddlAssetTypes = [];
-                    data.forEach(item => {
+                    data.forEach((item) => {
                         this.ddlAssetTypes.push({
                             value: item.assetTypeUid,
                             class: this.getClassFriendlyName(item.assetTypeClass),
@@ -175,7 +175,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
         item.upperThreshold = this.selection.upperThreshold;
         this.savingInProgress = true;
         this.allocationService.save(item)
-            .subscribe(res => {
+            .subscribe((res) => {
                 let openItem = false;
                 this.savingInProgress = false;
                 if (!res || (res.type && res.type == "error"))

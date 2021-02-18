@@ -74,13 +74,13 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
         this.saveFilterModalWorking = false;
         this.createUserFilter = new StoredAssetBrowserFilterModel();
         this.createUserFilter.assetTypes = this.options.AssetTypeOptions
-            .filter(a => this.filterModel.SelectedAssetTypes.indexOf(a.AssetTypeId) > -1)
+            .filter((a) => this.filterModel.SelectedAssetTypes.indexOf(a.AssetTypeId) > -1)
             .map((a) => { return { uid: a.Uid, class: a.Class } });
         this.createUserFilter.responsibilityTypes = this.options.ResponsibilityTypeOptions
-            .filter(r => this.filterModel.SelectedResponsibilityTypes.indexOf(r.Id) > -1)
+            .filter((r) => this.filterModel.SelectedResponsibilityTypes.indexOf(r.Id) > -1)
             .map((r) => { return { uid: r.Uid, type: r.Name } });
         this.createUserFilter.predicates = this.options.PredicateOptions
-            .filter(p => this.filterModel.SelectedPredicates.indexOf(p.Id) > -1)
+            .filter((p) => this.filterModel.SelectedPredicates.indexOf(p.Id) > -1)
             .map((p) => { return { uid: p.Uid, type: p.Name } });
         this.createUserFilter.ancestryMode = this.filterModel.AncestryMode;
         this.createUserFilter.numberOfHops = this.numberOfHops();
@@ -102,7 +102,7 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
         let model: AssetBrowserFilterModel = this.filterModel;
 
         var selectedAssetTypes = this.options.AssetTypeOptions
-            .filter(a => this.selectedFilter.assetTypes.findIndex((f) => f.uid == a.Uid) > -1)
+            .filter((a) => this.selectedFilter.assetTypes.findIndex((f) => f.uid == a.Uid) > -1)
             .map((a) => a.AssetTypeId);
 
         var selectedPredicates = this.options.PredicateOptions
@@ -110,7 +110,7 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
             .map((p) => p.Id);
 
         var selectedResponsibilityTypes = this.options.ResponsibilityTypeOptions
-            .filter(r => this.selectedFilter.responsibilityTypes.findIndex((f) => f.uid == r.Uid) > -1)
+            .filter((r) => this.selectedFilter.responsibilityTypes.findIndex((f) => f.uid == r.Uid) > -1)
             .map((r) => r.Id);
 
         model.SelectedAssetTypes = selectedAssetTypes;

@@ -58,7 +58,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
             this.currentAreaNameSubscription =
                 this.headerBreadcrumbService
                     .getAreaName('RuleType', this.ruleTypeId)
-                    .subscribe(result => { this.currentAreaName = result });
+                    .subscribe((result) => { this.currentAreaName = result });
             this.headerBreadcrumbService.setCurrentObjectInfo('RuleType', this.ruleTypeId);
 
             this.loadPermissions(this.permissionsService, StringConstants.ObjectRuleType, this.ruleTypeId);
@@ -83,7 +83,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                             undefined,
                             true));
 
-                        this.headerBreadcrumbService.getAssetFolderIcon('RuleType', this.ruleType.ID, this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
+                        this.headerBreadcrumbService.getAssetFolderIcon('RuleType', this.ruleType.ID, this.currentAreaName ? this.currentAreaName : res).subscribe((icon) => {
                             this.secondaryNavService.setCurrentArea(this.ruleType.Name, icon, 'Rules');
                             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('RuleType', this.ruleType.ID, this.ruleType.Name, null, true, null, this.ruleType.AssetTypeUID));
                             this.setCommonSecondaryNavTabs(false, false, this.ruleType.HasDashboards);

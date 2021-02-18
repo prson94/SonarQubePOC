@@ -165,7 +165,7 @@ export class AdminContractsComponent extends BaseComponent implements OnInit {
         this.organizationsService
             .getDefaultContracts()
             .subscribe(
-                result => {
+                (result) => {
                     this.contracts = result;
                     this.selected = (this.contracts.length > 0 ? this.contracts[0] : null);
 
@@ -180,7 +180,7 @@ export class AdminContractsComponent extends BaseComponent implements OnInit {
                 this.showMessageForResult(this.messagesService, result);
 
                 if (result.type != 'error') {
-                    this.contracts = this.contracts.filter(x => x.ID != id);
+                    this.contracts = this.contracts.filter((x) => x.ID != id);
                 }
 
                 this.showDelete = false;

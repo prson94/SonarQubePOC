@@ -103,9 +103,9 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get<SelectItem[]>(`api/v2/fields/GetFieldFromRelationshipFields?${url}`)
             .pipe(
-                map(response => <FtItem[]>response),
-                map(r => this.ftItemToSelectItem(r)),
-                catchError(err => this.handleError(err))
+                map((response) => <FtItem[]>response),
+                map((r) => this.ftItemToSelectItem(r)),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -194,7 +194,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .pipe(
                 map(response => <any>response),
                 map(
-                    r => {
+                    (r) => {
                         let l = new Lookups();
                         let i = this.ftItemToSelectItem(r.IntersectTypes);
 
@@ -202,7 +202,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
                         l.FusionAttributeTypes = this.ftItemToSelectItem(r.FusionAttributeTypes);
                         l.IntersectTypes = [];
 
-                        i.forEach(j => {
+                        i.forEach((j) => {
                             l.IntersectTypes.push({value: j.value, label: j.label, id: null});
                         });
 
@@ -283,7 +283,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
         let s = new Array<SelectItem>();
 
         /* Empty value at beginning of list */
-        items.forEach(i => {
+        items.forEach((i) => {
             s.push({label: i.title, value: i.value});
         });
 
@@ -402,7 +402,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
         return event.pipe(
             distinctUntilChanged(),
             switchMap(
-                event => {
+                (event) => {
                     let uri = `api/relationships/field/${event.fieldTypeID}?offset=${event.event.first}&rows=${event.event.rows}`;
 
                     if (event.event.globalFilter != null && event.event.globalFilter.length > 0) {
@@ -416,7 +416,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
                     return this.http.get(uri).pipe(
                         map(res => res),
                         map(
-                            res => {
+                            (res) => {
                                 return {fieldTypeID: event.fieldTypeID, results: res, event: event.event}
                             }
                         )
@@ -430,7 +430,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
         return e.pipe(
             distinctUntilChanged(),
             switchMap(
-                e => {
+                (e) => {
                     let uri = `form/FieldType_TypeAheadLookup?fieldTypeId=${e.fieldTypeID}&query=${e.event.query}&useColor=${useColor}`;
 
                     if (e.value != null) {
@@ -462,7 +462,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
     getTypeaheadFilteredByPredicateItems(e: Observable<any>, objectType: string, id: number): Observable<EditorDropDownItem[]> {
         return e.pipe(
             distinctUntilChanged(),
-            switchMap(e => {
+            switchMap((e) => {
                 let uri = `form/FieldType_Lookup_FilteredByPredicate?fieldTypeId=${e.fieldTypeID}&objectType=${objectType}&ObjectID=${id}&query=${e.event.query}`
                 if (e.value != null)
                     uri += `&value=${e.value}`;

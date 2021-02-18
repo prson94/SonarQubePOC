@@ -28,7 +28,7 @@ export class GridDefinitionService extends BaseObservableService {
         }
 
         return this.http.get(url).pipe(
-            map(response => <GridDefinition>response),
+            map((response) => <GridDefinition>response),
             catchError(err => this.handleError(err))
         );
     }

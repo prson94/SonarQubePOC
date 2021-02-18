@@ -136,7 +136,7 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
     ngOnInit() {
         this.predefinedFilters = [];
         this.isLoading = true;
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             if (params['id'] != null) {
                 this.selectedWorkflowTypes = [];
                 this.selectedWorkflowTypes.push(params['id']);
@@ -145,7 +145,7 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
 
         });
 
-        this.querySub = this.route.queryParams.subscribe(params => {
+        this.querySub = this.route.queryParams.subscribe((params) => {
             if (params['tab'] != null) {
                 let i = this.tabs.findIndex(t => t.key == params['tab'].toLowerCase());
                 if (i > -1) {
@@ -191,7 +191,7 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
                 this.headerBreadcrumbService.clearCurrentObjectInfo();
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res, SiteUrlHelpers.SITE_URL_MONITOR_ROOT));
 
-                this.headerBreadcrumbService.getFolderIcon(res).subscribe(icon => {
+                this.headerBreadcrumbService.getFolderIcon(res).subscribe((icon) => {
                     this.secondaryNavService.clearItems();
                     this.secondaryNavService.clearCurrentObject();
                     this.secondaryNavService.setCurrentArea(res, icon, 'Definition');

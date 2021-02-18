@@ -58,7 +58,7 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
         this.field.MultiSelect = true;
         this.isLoading = true;
         this.groupService.getGroupUid(this.groupId).subscribe(
-            g => {
+            (g) => {
                 if (g.length > 0) {
                     this.groupUid = g[0].uid;
                     this.groupService.getGroupResourceList(this.groupUid).subscribe(
@@ -111,7 +111,7 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
         }
 
         this.groupService.addUsersToGroup(this.groupUid, this.members).subscribe(
-            r => {
+            (r) => {
                 this.load();
                 this.formMode = FormMode.Default;
 
@@ -153,7 +153,7 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
 
     deleteService() {
         this.groupService.deleteUsersFromGroup(this.groupUid, this.selectedRow.uid).subscribe(
-            result => {
+            (result) => {
                 this.showDelete = false;
                 this.formMode = FormMode.Default;
                 this.load();

@@ -173,7 +173,7 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
                 this.showMessageForResult(this.messagesService, result);
                 this.showDelete = false;
                 if (result.type != 'error') {
-                    this.ruleTypes = this.ruleTypes.filter(x => x.ID != id);
+                    this.ruleTypes = this.ruleTypes.filter((x) => x.ID != id);
                     this.selected = this.ruleTypes.length > 0 ? this.ruleTypes[0] : null;
                 }
                 this.stateService.reloadLeftNavMenu();
@@ -209,7 +209,7 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
     private loadDataAndExecuteAction() {
         if (this.selected) {
             this.assetsService.getAssetTypeLegacyData(this.selected.uid)
-                .subscribe(res => {
+                .subscribe((res) => {
                     this.selected.ID = res.ObjectID;
                     this.selected.AssetTypeID = res.AssetTypeID;
                 });

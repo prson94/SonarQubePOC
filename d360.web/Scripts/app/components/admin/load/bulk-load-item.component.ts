@@ -64,7 +64,7 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
             data => {
                 this.columns = data;
 
-                this.loadService.getLoadItems(this.id).subscribe(data => {
+                this.loadService.getLoadItems(this.id).subscribe((data) => {
                     this.items = data;
 
                     this.isLoading = false;

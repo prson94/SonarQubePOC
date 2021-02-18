@@ -57,7 +57,7 @@ export class PredicateSelectorComponent implements OnInit {
         if (this.predicateType) {
             if (!this.assetTypeUid) {
                 this.predicatesService.getPredicatesByType(this.predicateType)
-                    .subscribe(res => {
+                    .subscribe((res) => {
                         this.predicates = res;
                         if (this.predicates.length == 0) {
                             this.noPredicates = true;
@@ -75,9 +75,9 @@ export class PredicateSelectorComponent implements OnInit {
             }
             else {
                 this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid)
-                    .subscribe(result => {
+                    .subscribe((result) => {
                         this.predicates = [];
-                        result.forEach(rel => {
+                        result.forEach((rel) => {
 
                             if (rel.Predicate.Type == this.predicateType.toString()) {
                                 if (this.relationshipSide == CommonComponentAssetTypeFilterRelationshipSide.Subject && this.assetTypeUid == rel.Subject.Uid)

@@ -123,12 +123,12 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 break;
         }
         
-        this.routeSub = this.route.params.subscribe(params => {
+        this.routeSub = this.route.params.subscribe((params) => {
             this.objectTypeId = +params['typeId'];
             this.assetTypeUid = params['uid'];
 
             if (this.assetTypeUid) {
-                this.assetTypeService.getAssetTypeObjectAndID(this.assetTypeUid).subscribe(res => {
+                this.assetTypeService.getAssetTypeObjectAndID(this.assetTypeUid).subscribe((res) => {
                     this.isLoading = true;
                     this.objectTypeId = res.ObjectID
                     this.load();
@@ -149,7 +149,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         this.setCommonSecondaryNavTabs(true);
         this.currentAreaNameSub = this.headerBreadcrumbService
             .getAreaName(this.objectType, this.objectTypeId)
-            .subscribe(result => { this.currentAreaName = result });  
+            .subscribe((result) => { this.currentAreaName = result });  
         
             this.getFieldsDefinition();        
             this.loadPermissions(this.permissionsService, this.objectType, this.objectTypeId);
@@ -160,7 +160,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 case AssetTypeClass.Model:
                     this.isLoading = true;
                     this.modelsService.getModel(this.objectTypeId)
-                        .subscribe(result => {
+                        .subscribe((result) => {
                             this.searchValue = "";
                             this.assetType = result;
                             this.buildNav();
@@ -169,7 +169,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 case AssetTypeClass.Policy:
                     this.isLoading = true;
                     this.policiesService.getPolicyType(this.objectTypeId)
-                        .subscribe(result => {
+                        .subscribe((result) => {
                             this.searchValue = "";
                             this.assetType = result;
                             this.buildNav();
@@ -178,7 +178,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             }
        
         this.levelsService.getObjectLevels(this.objectTypeId, this.objectType)
-            .subscribe(result => {
+            .subscribe((result) => {
                 this.levels = result;
             });
     }
@@ -191,7 +191,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.assetType.Name, SiteUrlHelpers.getObjectUrl(this.objectType, this.assetType.ID), undefined, this.objectType, this.assetType.ID, undefined, undefined, true));
 
             this.headerBreadcrumbService.getAssetFolderIcon(this.objectType, this.objectTypeId, this.currentAreaName ? this.currentAreaName : res)
-                .subscribe(icon => {
+                .subscribe((icon) => {
                     this.secondaryNavService.setCurrentArea(this.assetType.Name, icon, this.objectName);
                     this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(this.objectType, this.assetType.ID, this.assetType.Name, null, true, null, this.assetType.AssetTypeUID));
                     this.setCommonSecondaryNavTabs(true, false, this.assetType.HasDashboards);
@@ -215,7 +215,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     private getFieldsDefinition() {
         this.gridDefinitionService.getGridDefinition(this.objectTypeId, this.objectType).subscribe(
-            result => {
+            (result) => {
                 this.scoreAllocations = result.ScoreAllocations;
                 this.columns = result.Columns;                
                 this.fields = result.Fields;                 
@@ -230,7 +230,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             case AssetTypeClass.Model:
                 this.isLoading = true;
                 this.modelsService.getModelHierarchy(this.objectTypeId, true, true).subscribe(
-                    result => {
+                    (result) => {
                         this.hierarchy = result;
                         this.totalRecords = result.length;
                         this.buildScoreAllocationThresholds();
@@ -242,7 +242,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             case AssetTypeClass.Policy:
                 this.isLoading = true;
                 this.policiesService.getPolicies(this.objectTypeId, true).subscribe(
-                    result => {
+                    (result) => {
                         this.hierarchy = result;
                         this.totalRecords = result.length;
                         this.buildScoreAllocationThresholds();
@@ -276,8 +276,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     private buildScoreAllocationThresholds() {
         if (this.scoreAllocations && this.scoreAllocations.length > 0) {
             if (this.hierarchy) {
-                this.hierarchy.forEach(i => {
-                    this.scoreAllocations.forEach(s => {
+                this.hierarchy.forEach((i) => {
+                    this.scoreAllocations.forEach((s) => {
                         var field = this.fields.find(f => f.apiName == s.Name);
                         if (field) {
                             i[field.name + '_threshold'] = this.getThreshold(i[field.name], s.LowerThreshold, s.UpperThreshold);
@@ -440,7 +440,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     private expandChildNodes(nodes: TreeNode[], fields: string[], search: string) {
         nodes.forEach((node) => {
             var match = false;
-            fields.forEach(field => { if (node.data[field] && String(node.data[field]).toLowerCase().includes(search.toLowerCase())) { match = true; } }); //check each of the global filterfields for filter value
+            fields.forEach((field) => { if (node.data[field] && String(node.data[field]).toLowerCase().includes(search.toLowerCase())) { match = true; } }); //check each of the global filterfields for filter value
             if (!match) { // if we haven't found a match expand the node and check children.
                 node.expanded = true;
                 if (node.children && node.children.length > 0) {

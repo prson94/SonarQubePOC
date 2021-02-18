@@ -61,7 +61,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     ngOnInit() {
         this.setBrowserTitle(this.titleService, 'Fusion');
                 
-        this.routeParams = this.route.params.subscribe(params => {
+        this.routeParams = this.route.params.subscribe((params) => {
             let newFusionID = +params['fusionId'];
             this.selectedFusionAttributeTypeId = +params['fusionAttributeTypeId'];
             this.initialFusionAttributeId = +params['fusionAttributeId'];            
@@ -74,12 +74,12 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
                 this.loadPermissions(this.permissionsService, StringConstants.ObjectFusion , this.fusionId);
 
                 this.getFusionConfiguration = this.fusionService.getFusionConfiguration(this.fusionId).subscribe(
-                    result => {
+                    (result) => {
                         this.fusion = result;
                         this.setBrowserTitle(this.titleService, `Fusion - ${this.fusion.Name}`);
                         this.setObjectInfo('Fusion', this.fusionId, undefined, this.fusion.AssetID);
                         this.treeSub = this.headerBreadcrumbService.breadcrumbTreeSource$.subscribe(
-                            id => {
+                            (id) => {
                                 this.changeFusionAttributeTypeId(id);
                             }
                         );

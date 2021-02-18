@@ -56,7 +56,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     }
 
     parseTagResult(tags: any[]) {
-        return tags.map(tag => { return { uid: tag.Uid, Value: tag.Value }; });
+        return tags.map((tag) => { return { uid: tag.Uid, Value: tag.Value }; });
     }
     get type() {
         if (this.result) {
@@ -94,7 +94,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     private loadDetails() {
         if (this.result.Uid) {
             this.objectStatisticsService.getSearchDetails(this.result.Uid).subscribe(
-                result => {
+                (result) => {
                     this.searchDetails = result;
                     if (this.searchDetails && this.searchDetails?.AssetDetail.Status) {
                         this.status = this.searchDetails.AssetDetail.Status;

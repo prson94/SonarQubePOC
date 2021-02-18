@@ -17,26 +17,26 @@ export class ResourcesService extends BaseObservableService {
     getHelpResources(): Observable<HelpResource[]> {
         return this.http.get('/resources/HelpResources')
             .pipe(
-                map(response => <HelpResource[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <HelpResource[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getResources(): Observable<Resource[]> {
         return this.http.get('/api/resources/1')
             .pipe(
-                map(response => <Resource[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <Resource[]>response),
+                catchError((err) => this.handleError(err))
             );
 
     }
 
     getResource(id: number): Observable<any> {
         return this.http.get(`/api/v2/membership/users?ResourceID=${id}`).pipe(
-            map(response => {
+            map((response) => {
                 return <any>response;
             }),
-            catchError(err => {
+            catchError((err) => {
                 if (this.isErrorFromFilterExpression(err)) {
                     return throwError(err);
                 }
@@ -65,7 +65,7 @@ export class ResourcesService extends BaseObservableService {
                     map((res: ApiResult) => {
                         return res[0];
                     }),
-                    catchError(err => this.handleError(err))
+                    catchError((err) => this.handleError(err))
                 );
         }
         else {
@@ -76,7 +76,7 @@ export class ResourcesService extends BaseObservableService {
                     map((res: ApiResult[]) => {
                         return res[0];
                     }),
-                    catchError(err => this.handleError(err))
+                    catchError((err) => this.handleError(err))
                 );
         }
     }
@@ -94,7 +94,7 @@ export class ResourcesService extends BaseObservableService {
             .delete(`api/v2/membership/users`, httpOptions)
             .pipe(
                 map(res => <JsonResult>res),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -108,10 +108,10 @@ export class ResourcesService extends BaseObservableService {
         }
 
         return this.http.get('/api/v2/membership/users' + qString).pipe(
-            map(response => {
+            map((response) => {
                 return response;
             }),
-            catchError(err => {
+            catchError((err) => {
                 if (this.isErrorFromFilterExpression(err)) {
                     return throwError(err);
                 }
@@ -146,8 +146,8 @@ export class ResourcesService extends BaseObservableService {
 
         return this.http.get(url)
             .pipe(
-                map(response => <CountObject[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <CountObject[]>response),
+                catchError((err) => this.handleError(err))
             );
 
     }
@@ -155,8 +155,8 @@ export class ResourcesService extends BaseObservableService {
     getFollowingBreakdownByResource(id: number): Observable<CountObject[]> {
         return this.http.get(`/api/v2/social/FollowingBreakdownByResource?id=${id}`)
             .pipe(
-                map(response => <CountObject[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <CountObject[]>response),
+                catchError((err) => this.handleError(err))
             );
 
     }
@@ -167,8 +167,8 @@ export class ResourcesService extends BaseObservableService {
             uri += `?responsibilityTypeId=${responsibilityTypeId}`;
         return this.http.get(uri)
             .pipe(
-                map(response => <ResponsibilityDetailForResource[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ResponsibilityDetailForResource[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -176,8 +176,8 @@ export class ResourcesService extends BaseObservableService {
     getFollowingByResourceByType(resourceID: number, type: string, id: number): Observable<FollowingDetailForResource[]> {
         return this.http.get(`queries/followingbyresourcebytype?resourceID=${resourceID}&type=${type}&id=${id}`)
             .pipe(
-                map(response => <FollowingDetailForResource[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <FollowingDetailForResource[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -196,16 +196,16 @@ export class ResourcesService extends BaseObservableService {
     getMyCredentials(): Observable<ResourceAPICredentials> {
         return this.http.get('resources/myapicredentials')
             .pipe(
-                map(response => <ResourceAPICredentials>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ResourceAPICredentials>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getUserGroups(resourceUid: string): Observable<any> {
         return this.http.get(`/api/v2/membership/groups?ResourceUid=${resourceUid}`)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -217,16 +217,16 @@ export class ResourcesService extends BaseObservableService {
         return this.http
             .post(`form/ResetResourcePassword`, 'ID=' + resourceID, { headers: headers })
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getResourceItems(uri: string): Observable<MulitSelectResourceData> {
         return this.http.get(uri)
             .pipe(
-                map(response => <MulitSelectResourceData>response),
-                catchError(err => this.handleError(err))
+                map((response) => <MulitSelectResourceData>response),
+                catchError((err) => this.handleError(err))
             );
     }
 

@@ -137,7 +137,7 @@ export class AdminRelationshipsEditor {
 
     private loadObjectOptions(subject: string, subjectId: number, object?: string, objectId?: number, predicateId?: number) {
         this.isLoadingObject = true;
-        this.relationshipsService.getObjectOptions(subjectId, subject, objectId, object, predicateId).subscribe(result => {
+        this.relationshipsService.getObjectOptions(subjectId, subject, objectId, object, predicateId).subscribe((result) => {
             this.objectOptions = [];
             for (let item of result) {
                 this.objectOptions.push({
@@ -151,7 +151,7 @@ export class AdminRelationshipsEditor {
 
     private loadCardinalityOptions() {
         this.isLoadingCardinality = true;
-        this.relationshipsService.getCardinalityOptions().subscribe(result => {
+        this.relationshipsService.getCardinalityOptions().subscribe((result) => {
             this.cardinalityOptions = [];
             for (let item of result) {
                 this.cardinalityOptions.push({
@@ -168,7 +168,7 @@ export class AdminRelationshipsEditor {
             }
 
             if (this.selectedPredicate && this.selectedPredicate.type == 'Diagram') {
-                this.subjectCardinalityOptions = JSON.parse(JSON.stringify(this.subjectCardinalityOptions.filter(x => x.label != 'One')));
+                this.subjectCardinalityOptions = JSON.parse(JSON.stringify(this.subjectCardinalityOptions.filter((x) => x.label != 'One')));
                 this.objectCardinalityOptions = JSON.parse(JSON.stringify(this.objectCardinalityOptions.filter(x => x.label != 'One')));
 
             }

@@ -29,8 +29,8 @@ export class DashboardService extends BaseObservableService {
             .http
             .get(`reports/bycontext/${objectType}/${objectID}`)
             .pipe(
-                map(response => <Dashboard[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <Dashboard[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 

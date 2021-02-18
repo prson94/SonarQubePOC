@@ -170,7 +170,7 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
     private deleteArtifactType(id: number) {
         var data = this.getAssetTypeById(id);
         if (data) {
-            this.assetTypeService.deleteSingleAssetType(data.uid).subscribe(result => {
+            this.assetTypeService.deleteSingleAssetType(data.uid).subscribe((result) => {
                 result.title = 'Success!';
                 this.showMessageForResult(this.messagesService, result, 'Item successfully removed.');
                 this.isDeleting = false;

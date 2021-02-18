@@ -141,7 +141,7 @@ export class AdminOrganizationInvitationsComponent extends BaseComponent impleme
         this.organizationsService
             .getInvitationsByOrganization(this.organization.ID)
             .subscribe(
-                result => {
+                (result) => {
                     this.invitations = result;
                     this.selected = (this.invitations.length > 0 ? this.invitations[0] : null);
 

@@ -66,7 +66,7 @@ export class SearchComponent extends BaseComponent implements OnInit, AfterViewI
         this.secondaryNavService.showHeader(false);
         this.searchStateService.advancedFilters = [];
 
-        this.sub = this.route.queryParams.subscribe(params => {
+        this.sub = this.route.queryParams.subscribe((params) => {
             this.searchText = params['query'] ? params['query'] : '';
             this.isExactMatch = params['exactMatch'] ? params['exactMatch'] != '0' : (CompanySettings.SearchExactMatch && CompanySettings.SearchExactMatch == 'true');
             if (params['types'] != undefined) {

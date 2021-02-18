@@ -52,7 +52,7 @@ export class SocialInputComponent extends BaseComponent {
     tags: Tag[] = [];
      
     ngAfterViewInit() {
-        this.viewChildren.changes.subscribe(x => this.setFocus(x) );
+        this.viewChildren.changes.subscribe((x) => this.setFocus(x) );
     }
 
     handleCommentClick() {

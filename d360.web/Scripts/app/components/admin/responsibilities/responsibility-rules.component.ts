@@ -111,11 +111,11 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
     }
 
     deleteRule(id: number) {
-        this.responsibilityTypeService.deleteRule(id).subscribe(res => {
+        this.responsibilityTypeService.deleteRule(id).subscribe((res) => {
             this.showMessageForResult(this.messagesService, res);
             if (!res.isError) {
                 this.isDeleting = false;
-                let index = this.rows.findIndex(f => f.ID == id);
+                let index = this.rows.findIndex((f) => f.ID == id);
                 if (index >= 0 && index < this.rows.length)
                     this.rows.splice(index, 1);
                 this.onFieldsChanged.emit();

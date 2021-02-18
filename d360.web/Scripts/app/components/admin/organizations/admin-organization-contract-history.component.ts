@@ -137,7 +137,7 @@ export class AdminOrganizationContractHistoryComponent extends BaseComponent imp
             case 'contract':
                 this.organizationsService.getContractHistoryForContract(this.id)
                     .subscribe(
-                        r => {
+                        (r) => {
                             this.contracts = r;
 
                             this.isLoading = false;

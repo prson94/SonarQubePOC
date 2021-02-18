@@ -97,7 +97,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     }
 
     private selectScoreItem(item: PointBreakdown) {
-        this.pointBreakdown.forEach(x => {
+        this.pointBreakdown.forEach((x) => {
             x._isSelected = false;
             if (x.Measures) {
                 x.Measures.forEach(m => m._isSelected = false);

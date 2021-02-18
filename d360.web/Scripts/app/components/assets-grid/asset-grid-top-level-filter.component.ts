@@ -139,9 +139,9 @@ export class AssetGridTopLevelFilterComponent extends BaseComponent implements O
 
         if (givenparentfield.value.length > 0) {
             this.fieldService.getCascadingListFieldValues(fieldId, undefined, givenparentfield.value).subscribe(
-                res => {
+                (res) => {
                     givenfield.disabled = false;
-                    givenfield.filteritems = res.map(r => r.Text + '!~!' + r.Value);
+                    givenfield.filteritems = res.map((r) => r.Text + '!~!' + r.Value);
                 });
         } else {
             givenfield.disabled = true;

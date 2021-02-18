@@ -51,48 +51,48 @@ export class ScoreService extends BaseObservableService {
         let uri = `/api/v2/metrics/${type}/${assetUid}/pointbreakdown` + (date == null ? "" : `?effectiveDate=${date}`);
         return this.http.get(uri)
             .pipe(
-                map(response => <PointBreakdown[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <PointBreakdown[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getScoreHistory(type: ScoreType, assetUid: string): Observable<ScorePoint[]> {
         return this.http.get(`/api/v2/metrics/history/${type}/${assetUid}`)
             .pipe(
-                map(response => <ScorePoint[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ScorePoint[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getAverageScore(assetUid: string): Observable<AverageScore> {
         return this.http.get(`queries/${assetUid}/AverageScoreByObjectType`)
             .pipe(
-                map(response => <AverageScore>response),
-                catchError(err => this.handleError(err))
+                map((response) => <AverageScore>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getScoreDefinition(assetUid: string): Observable<any> {
         return this.http.get(`/api/v2/metrics/${assetUid}/definition`)
             .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err))
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     //getScoreTypes(assetUid: string): Observable<any[]> {
     //    return this.http.get(`/api/v2/metrics/ScoreTypes/${assetUid}`)
     //        .pipe(
-    //            map(response => <any>response),
-    //            catchError(err => this.handleError(err))
+    //            map((response) => <any>response),
+    //            catchError((err) => this.handleError(err))
     //        );
     //}
 
     getAssetScoreGraphPoints(assetUid: string, type: ScoreType): Observable<number[]> {
         return this.http.get(`/api/v2/metrics/${type}/${assetUid}/graphPoints`)
             .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err))
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err))
             );
     }
 }
