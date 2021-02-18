@@ -350,6 +350,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Validation.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_Start\ContentSecurityPolicyMiddleware.cs" />
     <Compile Include="App_Start\CorsMiddleware.cs" />
     <Compile Include="App_Start\GovernAppInsightsTelemetryInitializer.cs" />
     <Compile Include="App_Start\CachingHeaderMiddleware.cs" />
@@ -455,6 +456,7 @@
     </Compile>
     <Compile Include="Models\Attributes\NonNullableParametersAttribute.cs" />
     <Compile Include="Models\ClientErrorModel.cs" />
+    <Compile Include="Models\CSPReportModel.cs" />
     <Compile Include="Models\Diagram Models.cs" />
     <Compile Include="Models\Extensions.cs" />
     <Compile Include="Models\Filter Models.cs" />

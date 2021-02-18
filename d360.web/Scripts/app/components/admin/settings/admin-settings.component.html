@@ -106,10 +106,17 @@
             <header>Security</header>
             <div class="FieldName">Cross-origin resource sharing (CORS)</div>
             <div class="directions">
-                Specify a comma separated list of allowed origins
+                Specify a comma separated list of allowed origins.
             </div>
             <div>
                 <input type="text" [(ngModel)]="companySettings.AllowedOrigins" style="width: 95%" /> <br />
+            </div>
+            <div class="FieldName">Framing</div>
+            <div class="directions">
+                Specify a comma separated list of allowed domains.
+            </div>
+            <div>
+                <input type="text" [(ngModel)]="companySettings.FramingDomains" style="width: 95%" /> <br />
             </div>
         </div>
 

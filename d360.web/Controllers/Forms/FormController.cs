@@ -775,6 +775,7 @@ namespace d360.web.Controllers
             model.HomePageBackgroundImage = (settings.Any(i => i.SettingID == 45) ? settings.Single(i => i.SettingID == 45).Value : "");
             model.BrowserTitlePrefix = (settings.Any(i => i.SettingID == 33) ? settings.Single(i => i.SettingID == 33).Value : "D3S");
             model.AllowedOrigins = (settings.Any(i => i.SettingID == 76) ? settings.Single(i => i.SettingID == 76).Value : "");
+            model.FramingDomains = (settings.Any(i => i.SettingID == 77) ? settings.Single(i => i.SettingID == 77).Value : "");
 
 
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
@@ -1053,6 +1054,21 @@ namespace d360.web.Controllers
                         .Where(o => !string.IsNullOrWhiteSpace(o) && o != "*")
                         .ToList();
                     updateCompanySetting(settings, 76, string.Join(",", origins));
+                }
+
+
+                if (string.IsNullOrWhiteSpace(formModel.FramingDomains))
+                {
+                    updateCompanySetting(settings, 77, null);
+                }
+                else
+                {
+                    var domains = formModel.FramingDomains
+                        .Split(',')
+                        .Select(o => o.Trim())
+                        .Where(o => !string.IsNullOrWhiteSpace(o) && o != "*")
+                        .ToList();
+                    updateCompanySetting(settings, 77, string.Join(",", domains));
                 }
 
                 #endregion
