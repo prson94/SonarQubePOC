@@ -22,7 +22,7 @@ export class AssetsComponent implements OnInit, OnDestroy {
         this.sub = this.route.params.subscribe(params => {
             let assetTypeUid = params['assetTypeUid'];
 
-            this.assetTypeService.getAssetTypeLegacyUri(assetTypeUid).subscribe(uri => {
+            this.assetTypeService.getAssetTypeLegacyUri(assetTypeUid).subscribe((uri) => {
                 if (uri !== '') {
                     this.router.navigate([uri]);
                 }

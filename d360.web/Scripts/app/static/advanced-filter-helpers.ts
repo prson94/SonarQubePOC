@@ -9,7 +9,7 @@ export class AdvancedFiltersHelper {
             if (prop != 'global') {
                 let fieldName = prop;
                 var value = this.escapeString(data[prop].value);
-                var field = fields.filter(x => x.name.toLowerCase() == prop.toLowerCase())[0];
+                var field = fields.filter((x) => x.name.toLowerCase() == prop.toLowerCase())[0];
                 if (field) {
                     if (field.apiName)
                         fieldName = field.apiName;

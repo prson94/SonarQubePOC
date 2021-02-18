@@ -128,7 +128,7 @@ export class FusionQueryListComponent extends BaseComponent implements OnChanges
             .getFusionQueryAttributeTypes(this.fusion.FusionTypeID, this.fusion.ID)
             .pipe(takeUntil(this.destroySubject$))
             .subscribe(
-                result => {
+                (result) => {
                     this.queries = result;
                     this.selected = this.queries.length > 0 ? this.queries[0] : null;
 
@@ -147,7 +147,7 @@ export class FusionQueryListComponent extends BaseComponent implements OnChanges
             .deleteFusionQuery(id)
             .pipe(takeUntil(this.destroySubject$))
             .subscribe(
-                result => {
+                (result) => {
                     this.showMessageForResult(this.messagesService, result);
 
                     //remove the template with this id from the grid

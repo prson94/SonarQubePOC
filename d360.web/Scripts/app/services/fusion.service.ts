@@ -64,7 +64,7 @@ export class FusionService extends BaseObservableService {
 
     getFusionAttributeTypeTree(id: number, query: string = ''): Observable<TreeNode[]> {
         return this.getFusionAttributeTypes(id, query).pipe(
-            map(r => {
+            map((r) => {
                 return FormHelper.formTree(r);
             }),
             catchError(err => this.handleError(err))

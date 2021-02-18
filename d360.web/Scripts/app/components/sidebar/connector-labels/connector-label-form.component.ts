@@ -87,12 +87,12 @@ export class ConnectorLabelsFormComponent implements OnChanges {
     onAutocomplete(q: any) {
         this.autoCompleteSelected(null);
         this.connectorLabelService.getAvailableLabels(q.query, false, true, this.label.uid)
-            .subscribe(response => {
-                this.suggestionResultsArray = response.map(s => { return { name: s.Value, UseCount: s.UseCount, uid: s.uid } });
+            .subscribe((response) => {
+                this.suggestionResultsArray = response.map((s) => { return { name: s.Value, UseCount: s.UseCount, uid: s.uid } });
                 this.suggestionResults = [];
                 this.suggestionResultsArray.forEach(x => this.suggestionResults.push(x.name));
 
-                this.suggestionResultsArray.forEach(s => {
+                this.suggestionResultsArray.forEach((s) => {
                     if (s.name.toLowerCase() == this.connectorLabelForm.controls['value'].value.toLowerCase()) {
                         this.autoCompleteSelected(s);
                     }

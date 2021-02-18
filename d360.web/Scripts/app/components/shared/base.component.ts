@@ -103,7 +103,7 @@ export class BaseComponent {
         objectID: number
     ) {
 
-        return permissionsService.getPermissions(objectID, objectType).toPromise().then(result => {
+        return permissionsService.getPermissions(objectID, objectType).toPromise().then((result) => {
             this.permissions = result;
         });
 
@@ -114,7 +114,7 @@ export class BaseComponent {
         assetID: number
     ) {
 
-        return permissionsService.getPermissionsById(assetID).toPromise().then(result => {
+        return permissionsService.getPermissionsById(assetID).toPromise().then((result) => {
             this.permissions = result;
         })
 
@@ -155,7 +155,7 @@ export class BaseComponent {
     checkSecondaryNavLocalStorage(checkLocal?: boolean) {
         if (this.secondaryNavService) {
             this.buildLocalStorage();
-            this.secondaryNavService.rebuildHeader$.subscribe(res => {
+            this.secondaryNavService.rebuildHeader$.subscribe((res) => {
                 if (res) {
                     window.setTimeout(() => {
                         this.buildLocalStorage();
@@ -182,7 +182,7 @@ export class BaseComponent {
             this.secondaryNavService.setCurrentArea(currentArea.title, currentArea.icon, currentArea.tabTitle);
             this.secondaryNavService.setLocalHomeUrl(homeUrl);
 
-            tabs.forEach(tab => {
+            tabs.forEach((tab) => {
                 if (tab.title == currentTab.title) {
                     tab.active = true;
                     this.secondaryNavService.setLocalActiveItem(tab);
@@ -205,7 +205,7 @@ export class BaseComponent {
 
             let priority = 10;
 
-            allocations.forEach(allocation => {
+            allocations.forEach((allocation) => {
                 const navItem = new SecondaryNavItem(
                     ScoreTypeInfo.get(allocation.scoreType.toString()),
                     ScoreTypeInfo.get(allocation.scoreType.toString()),
@@ -426,7 +426,7 @@ export class BaseComponent {
             }
 
             this.sidebarSubscription = this.secondaryNavService.rightSidebarClicked$.subscribe(
-                item => {
+                (item) => {
                     this.isVisitingSidebar = true;
                     this.showHideBreadcrumbItem(item);
                 });
@@ -702,7 +702,7 @@ export class BaseComponent {
         }
 
         if (failed.length > 0) {
-            failed.forEach(f => {
+            failed.forEach((f) => {
                 messagesService.showError('Error', f.Message);
             });
         }
@@ -730,7 +730,7 @@ export class BaseComponent {
         var tempChildren = node.children;
         node.children = [];
         if (tempChildren) {
-            tempChildren.forEach(n => {
+            tempChildren.forEach((n) => {
                 if (this.doesNodeContainsValue(n, q)) {
                     node.children.push(n);
                 }
@@ -738,7 +738,7 @@ export class BaseComponent {
         }
         if (node.children && node.children.length > 0) return true;
 
-        nodeProps.forEach(prop => {
+        nodeProps.forEach((prop) => {
             if (prop.toLowerCase().indexOf("name") != -1 || prop.toLowerCase().indexOf("value") != -1 || prop.toLowerCase().indexOf("field") != -1) {
                 if (node.data[prop] && node.data[prop].toString().toLowerCase().indexOf(q.toLowerCase()) != -1) hasValue = true;
             }
@@ -824,7 +824,7 @@ export class BaseComponent {
             return;
         }
 
-        this.secondaryNavService.getSiteMenuService().getSecondaryNav(data).subscribe(r => {
+        this.secondaryNavService.getSiteMenuService().getSecondaryNav(data).subscribe((r) => {
             this.assetID = r.AssetId;
             this.assetTypeID = r.AssetTypeId;
             this.uid = r.Uid;
@@ -951,7 +951,7 @@ export class BaseComponent {
         components.push(this.governanceRolesSidebar);
         components.push(this.connectorLabels);
 
-        components.forEach(cmp => {
+        components.forEach((cmp) => {
             if (cmp && cmp.url == currentComponentUrl) {
                 cmp.active = true;
             }
@@ -970,7 +970,7 @@ export class BaseComponent {
         if (artifact.Class == AssetTypeClass.TechnicalAsset) {
             folderName = '#Technical';
         }
-        this.breadcrumbsService.getFolderTitle(folderName).then(res => {
+        this.breadcrumbsService.getFolderTitle(folderName).then((res) => {
             this.breadcrumbsService.clearBreadcrumbs();
 
             var folderTitle = res;
@@ -979,12 +979,12 @@ export class BaseComponent {
             let index = 0;
             this.breadcrumbsService
                 .getAreaName('ArtifactType', data.Artifact.Breadcrumbs[0] ? this.GetIDFromUrl(data.Artifact.Breadcrumbs[0].Url) : data.Artifact.AssetTypeID)
-                .subscribe(result => {
+                .subscribe((result) => {
                     var currentAreaName = result;
                     let currentFolderName = currentAreaName ? currentAreaName : folderTitle;
 
                     this.breadcrumbsService.clearBreadcrumbs();
-                    this.breadcrumbsService.getAssetFolderIcon('ArtifactType', data.ObjectTypeId, currentFolderName).subscribe(res => {
+                    this.breadcrumbsService.getAssetFolderIcon('ArtifactType', data.ObjectTypeId, currentFolderName).subscribe((res) => {
                         this.secondaryNavService.setCurrentArea(data.Artifact.DisplayValue, res, 'Definition');
                         let areaName: string = currentAreaName ? currentAreaName : folderTitle;
                         let areaLink: string = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}`;
@@ -1066,7 +1066,7 @@ export class BaseComponent {
         this.breadcrumbsService.clearBreadcrumbs();
 
         this.breadcrumbsService.breadcrumbTreeSource$.subscribe(
-            id => {
+            (id) => {
                 if (objectName.toLowerCase() == 'policy') {
                     this.breadcrumbsService.reRouteFromBreadcrumbs(`/${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${data.ObjectTypeId};hierarchyId=${id}`);
                 }
@@ -1078,7 +1078,7 @@ export class BaseComponent {
 
         this.breadcrumbsService
             .getAreaName(objectTypeName, data.ObjectTypeId)
-            .subscribe(result => {
+            .subscribe((result) => {
                 this.baseCrumbs = [];
                 var currentAreaName = result;
 
@@ -1088,7 +1088,7 @@ export class BaseComponent {
                     var folderTitle = res;
                     let currentFolderName = currentAreaName ? currentAreaName : folderTitle;
 
-                    this.breadcrumbsService.getAssetFolderIcon(objectTypeName, data.ObjectTypeId, currentFolderName).subscribe(res => {
+                    this.breadcrumbsService.getAssetFolderIcon(objectTypeName, data.ObjectTypeId, currentFolderName).subscribe((res) => {
                         this.secondaryNavService.setCurrentArea(data.DisplayValue, res, 'Definition');
                     });
 
@@ -1129,7 +1129,7 @@ export class BaseComponent {
     private setRuleBreadcrumbs(data) {
         this.breadcrumbsService
             .getAreaName('RuleType', data.ObjectTypeId)
-            .subscribe(result => {
+            .subscribe((result) => {
 
                 var currentAreaName = result;
                 this.breadcrumbsService.getFolderTitle('#Data Quality').then((res) => {
@@ -1143,7 +1143,7 @@ export class BaseComponent {
                         undefined,
                         true));
 
-                    this.breadcrumbsService.getAssetFolderIcon('RuleType', data.ObjectTypeId, currentAreaName ? currentAreaName : res).subscribe(icon => {
+                    this.breadcrumbsService.getAssetFolderIcon('RuleType', data.ObjectTypeId, currentAreaName ? currentAreaName : res).subscribe((icon) => {
                         this.secondaryNavService.setCurrentArea(data.DisplayValue, icon, 'Definition');
 
                     });

@@ -225,7 +225,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
         this.isLoading = true;
 
         this.gridDefinitionService.getGridDefinition(this.fusionObjectID, this.fusionObject, this.fusionId, target).subscribe(
-            result => {
+            (result) => {
                 if (result) {
                     this.columns = result.Columns;
                     this.fields = result.Fields;
@@ -270,7 +270,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
                 this.stateService.getFusionFilter(this.isDataProfile).sortOrder,
                 this.stateService.getFusionFilter(this.isDataProfile).filters
             ).subscribe(
-                res => {
+                (res) => {
                     this.results = res;
 
                     this.isFiltering = false;
@@ -299,7 +299,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
                 this.stateService.getFusionFilter(this.isDataProfile).sortOrder,
                 this.stateService.getFusionFilter(this.isDataProfile).filters
             ).subscribe(
-                res => {
+                (res) => {
                     this.results = res;
                     this.isFiltering = false;
 
@@ -342,7 +342,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
             this.stateService.getFusionFilter(this.isDataProfile).sortOrder,
             this.stateService.getFusionFilter(this.isDataProfile).filters
         ).subscribe(
-            res => {
+            (res) => {
                 this.isLoading = false;
 
                 this.changeDetectorRef.markForCheck();
@@ -355,7 +355,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
 
         this.showEditor = false;
         this.fusionAttributeService.saveAttribute(event.item).subscribe(
-            result => {
+            (result) => {
                 this.showMessageForResult(this.messagesService, result);
                 this.getData();
 

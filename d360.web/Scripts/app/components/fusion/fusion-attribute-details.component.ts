@@ -55,7 +55,7 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
 
     ngOnInit() {        
         this.setCommonSecondaryNavTabs(true, true, false, true, true, true, false);
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             this.type = decodeURIComponent(params['type']);
             this.id = +params['id'];
             this.name = decodeURIComponent(params['name'] ? params['name'] : 'Details');
@@ -65,12 +65,12 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
         });
 
         this.fusionAttributeService.getFusionAttributeDetails(this.type, this.id).subscribe(
-            item => {
+            (item) => {
                 this.fusionAttributeDetail = item;
                 this.uid = item.Uid;
                 //get the fusion details for initial breadcrumb
                 this.getFusionConfiguration = this.fusionService.getFusionConfiguration(item.FusionID).subscribe(
-                    result => {
+                    (result) => {
                         this.fusion = result;
                         this.buildBreadcrumb();
                         this.isLoading = false;
@@ -114,7 +114,7 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
                 this.checkParent(this.fusionAttributeDetail);
             }
 
-            this.headerBreadcrumbService.getFolderIcon(areaBreadcrumb.text).subscribe(icon => {
+            this.headerBreadcrumbService.getFolderIcon(areaBreadcrumb.text).subscribe((icon) => {
                 this.secondaryNavService.setCurrentArea(areaBreadcrumb.text, icon, 'Definition');
                 this.setCommonSecondaryNavTabs(true, true, false, true, false, true, false);
                 this.secondaryNavService.showHeader(true);
@@ -126,7 +126,7 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
 
     private checkParent(item: FusionAttributeValueDetails) {
         if (item.ParentID) {
-            this.fusionAttributeService.getFusionAttributeDetails(this.type, item.ParentID).subscribe(parentItem => {
+            this.fusionAttributeService.getFusionAttributeDetails(this.type, item.ParentID).subscribe((parentItem) => {
                 this.fusionAttributeDetailHierarchy.unshift(parentItem);
                 let crumb = new Breadcrumb(parentItem.Name,
                     `/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${parentItem.FusionID};fusionAttributeTypeId=${parentItem.FusionAttributeTypeID}`,

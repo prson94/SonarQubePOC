@@ -142,14 +142,14 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
 
     updateFormValidity(event) {
         if (this.groups && this.groups.length > 0) {
-            this.groups.forEach(x => { x.refreshBadgeCounts(); });
+            this.groups.forEach((x) => { x.refreshBadgeCounts(); });
         }
         this.checkModelChanged();
         this.cdRef.markForCheck();
     }
 
     loadFieldData() {
-        this.loadConditionFieldOptions().subscribe(result => {
+        this.loadConditionFieldOptions().subscribe((result) => {
             if (this.uid && !this.model.IsGroup) {
                 if (this.model.Definition) {
                     this.model.Definition.Governance.Check = MetricGovernanceCheckType[this.model.Definition.Governance.Check + ""];
@@ -167,7 +167,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
         });
 
         if (this.screenReferences.responsibilities && this.screenReferences.responsibilities.length) {
-            this.responsibilityTypes = this.screenReferences.responsibilities.map(x => {
+            this.responsibilityTypes = this.screenReferences.responsibilities.map((x) => {
                 return { label: x.Name, value: x.uid };
             });
             this.responsibilityOperators = [{ label: "is assigned", value: Operator.Populated }, { label: "is not assigned", value: Operator.NotPopulated }];
