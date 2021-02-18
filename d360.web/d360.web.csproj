@@ -456,7 +456,6 @@
     </Compile>
     <Compile Include="Models\Attributes\NonNullableParametersAttribute.cs" />
     <Compile Include="Models\ClientErrorModel.cs" />
-    <Compile Include="Models\CSPReportModel.cs" />
     <Compile Include="Models\Diagram Models.cs" />
     <Compile Include="Models\Extensions.cs" />
     <Compile Include="Models\Filter Models.cs" />

@@ -14,7 +14,7 @@ namespace d360.web
 {
     public class ContentSecurityPolicyMiddleware
     {
-        Func<IDictionary<string, object>, Task> _next;
+        readonly Func<IDictionary<string, object>, Task> _next;
         const string FramesKey = "FrameAncestors";
         const int AncestorSettingsID = 77;
 
@@ -27,6 +27,7 @@ namespace d360.web
             { "style-src", new List<string>{ "*", "data:", "blob:", "'unsafe-inline'" } },
             { "font-src", new List<string>{ "*", "data:", "blob:", "'unsafe-inline'" } },
             { "frame-src", new List<string>{ "*" } },
+            { "frame-ancestors", new List<string>{ "'self'" } },
         };
 
         public ContentSecurityPolicyMiddleware(Func<IDictionary<string, object>, Task> next)
@@ -57,7 +58,7 @@ namespace d360.web
                             left join CompanySetting CS on CS.SettingID = S.ID and CS.CompanyID = @companyID
                             where S.ID = @AncestorSettingsID", new { companyID, AncestorSettingsID }).FirstOrDefault();
 
-                        companyAncestor = new CompanyFrameAncestor() { CompanyID = (int)companyID, FrameAncestor = ancestor };
+                        companyAncestor = new CompanyFrameAncestor { CompanyID = (int)companyID, FrameAncestor = ancestor };
                         ancestors.Add(companyAncestor);
                     }
                 }
@@ -71,7 +72,7 @@ namespace d360.web
                 if(!string.IsNullOrEmpty(ancestor))
                 {
                     //Get base permissive CSP
-                    Dictionary<string, List<string>> directives = Permissive.ToDictionary(d => d.Key, d => d.Value);
+                    Dictionary<string, List<string>> directives = Permissive.ToDictionary(d => d.Key, d => d.Value.ToList());
 
                     //Add the allowed ancestors from the setting
                     if(!directives.ContainsKey("frame-ancestors"))
@@ -87,11 +88,11 @@ namespace d360.web
                             .Where(d => d.Value.Any())
                             .Select(d => d.Key + " " + string.Join(" ", d.Value.ToArray())).ToArray());
 
-                        res.Headers.Add("Content-Security-Policy", new string[] { directiveString });
+                        res.Headers.Add("Content-Security-Policy", new[] { directiveString });
                     }, response);
                 }
             }
-            await _next.Invoke(environment);
+            await _next.Invoke(environment).ConfigureAwait(false);
         }
 
         private class CompanyFrameAncestor
