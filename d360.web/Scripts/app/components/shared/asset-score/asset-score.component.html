@@ -118,7 +118,9 @@
                                    [measures]="pointBreakdown" 
                                    [fields]="fields"
                                    [assetTypeName]="assetTypeName" 
-                                   [assetName]="assetName"></score-calculation>
+                                   [assetName]="assetName"
+                                   [definition]="selectedMetric?.Definition">
+                </score-calculation>
             </div>
             <div [hidden]="!(activeTab=='Definition')">
                 <score-definition #defTab 
