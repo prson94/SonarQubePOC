@@ -44,10 +44,10 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
         this.isLoading = true;
         if (this.Measure.Uid) {
             this.metricsService.getMetricsVersionHistory(this.Measure.Uid)
-                .subscribe((result) => {
+                .subscribe(result => {
                     this.metricHistoryRecords = result;
                     if (this.metricHistoryRecords) {
-                        this.metricHistoryRecords.forEach((g) => {
+                        this.metricHistoryRecords.forEach(g => {
                             let n = {
                                 data: g,
                                 children: [],
@@ -75,7 +75,7 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
     }
 
     formatConditions() {
-        this.conditions.forEach((c) => {
+        this.conditions.forEach(c => {
             const field = this.screenReferences.fields.find(f => f.ApiName === c.ConditionFieldTypeName);
             c.OperatorText = this.screenReferences.operators.find(o => o.ID === c.Operator).Name;
 
