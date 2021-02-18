@@ -449,14 +449,16 @@ namespace d360.web.Controllers.V2
 
                     document.SetCellValue(1, 1, "Rule");
                     document.SetCellValue(1, 2, "Asset");
-                    document.SetCellValue(1, 3, "Pass Fraction");
+                    document.SetCellValue(1, 3, "Effective Date");
+                    document.SetCellValue(1, 4, "Pass Fraction");
 
                     int ix = 2;
                     model.items.ForEach(row =>
                     {
                         document.SetCellValue(ix, 1, row.OwningAssetDisplayPath);
                         document.SetCellValue(ix, 2, row.EvaluatedAssetDisplayPath);
-                        document.SetCellValue(ix, 3, row.PassFraction);
+                        document.SetCellValue(ix, 3, row.EffectiveDate?.ToString("yyyy-MM-dd"));
+                        document.SetCellValue(ix, 4, row.PassFraction);
                         ix++;
                     });
 
