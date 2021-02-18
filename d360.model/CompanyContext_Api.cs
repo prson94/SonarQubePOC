@@ -7691,10 +7691,6 @@ where   ER.ExecutionID = @ExecutionID
                                 {
                                     row["Uid"] = model.Uid;
                                 }
-                                else
-                                {
-                                    row["Uid"] = Guid.NewGuid();
-                                }
 
                                 if (model.IsNew == true)
                                 {
@@ -7827,7 +7823,7 @@ where   ER.ExecutionID = @ExecutionID
                                                 UpdatedBy = @CurrentResourceID
                                             when not matched then
 	                                            insert (Name, Description, Uid, CreatedOn, CreatedBy)
-	                                            values (S.Name,S.Description, S.Uid, getutcdate(), @CurrentResourceID)
+	                                            values (S.Name,S.Description, ISNULL(S.Uid,newid()), getutcdate(), @CurrentResourceID)
 	                                        output inserted.ID, inserted.Uid, S.ExecutionItemUid into #mergeResultTable;
 
                                             update RT
