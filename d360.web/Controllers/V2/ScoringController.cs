@@ -458,7 +458,7 @@ namespace d360.web.Controllers.V2
                         document.SetCellValue(ix, 1, row.OwningAssetDisplayPath);
                         document.SetCellValue(ix, 2, row.EvaluatedAssetDisplayPath);
                         document.SetCellValue(ix, 3, row.EffectiveDate?.ToString("yyyy-MM-dd"));
-                        document.SetCellValue(ix, 4, row.PassFraction);
+                        document.SetCellValue(ix, 4, row.PassFraction.ToString());
                         ix++;
                     });
 
