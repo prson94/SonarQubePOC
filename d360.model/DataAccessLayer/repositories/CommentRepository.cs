@@ -78,7 +78,7 @@ namespace d360.model.DataAccessLayer
 				var parentComment = CompanyContext.Filter<Comment>(o => o.Uid == comment.ParentUid.Value, o => o.Asset).SingleOrDefault();
 				if (parentComment == null)
 				{
-					throw new NotFoundException("parent comment");
+					throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Parent comment not found");
 				}
 				else 
 				{
