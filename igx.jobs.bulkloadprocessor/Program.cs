@@ -23,6 +23,7 @@ using d360.model.DataAccessLayer;
 using d360.extensions.storage;
 using d360.core;
 using System.Text;
+using d360.core.entities.Metric;
 
 namespace igx.jobs.bulkloadprocessor
 {
@@ -1043,9 +1044,6 @@ where	ID = @loadId", new { loadId }, transaction: trans);
 
                 var loaddata = company.LoadItemColumns.Where(x => x.LoadID == loadId);
 
-                //loop throw rows until there are no more indexes start at 2
-                int currentRowIndex = 2;
-                var rowData = loaddata.Where(x => x.RowIndex == currentRowIndex).ToList();
                 int assetUidIndex = -1;
                 int responsibilityIndex = -1;
                 int resourceIndex = -1;
@@ -1231,7 +1229,53 @@ where LI.LoadID = @loadId"
 , new { loadId = load.ID, updatedBy = load.UpdatedBy.GetValueOrDefault() }
 , transaction: trans);
 
+                        #region send score events
+
+                        var today = DateTime.UtcNow.Date;
+                        var measureResults = await connection.QueryAsync<ResponsibilityAssetMeasureProcessedResult>(@"
+    select  A.Uid as AssetUid, 
+            M.Uid as MetricAssetUid,
+            V.Uid as MetricAssetVersionUid
+    from    #ResponsibilityTypeOverride O 
+			inner join ResponsibilityType RT on RT.ID = O.ResponsibilityTypeID
+            inner join Asset A on A.ID = O.AssetID
+            inner join AssetType T on T.ID = A.AssetTypeID
+            inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
+            inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
+            inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
+                and ( 
+                    (@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or 
+                    (@today >= V.EffectiveDate and V.EffectiveEndDate is null) 
+                    ) 
+                and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
+                and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = RT.uid
+		        and V.Definition <> '{}'
+	where	O.Success = 1"
+, new { today }
+, transaction: trans);
+
+                        var structuredMeasures = measureResults.GroupBy(m => new { m.AssetUid })
+                            .Select(m => new AssetMeasureModel
+                            {
+                                AssetUid = m.Key.AssetUid,
+                                EffectiveDate = today,
+                                Measures = m.Select(o => new AssetMeasureChildModel
+                                {
+                                    MetricAssetUid = o.MetricAssetUid,
+                                    MetricAssetVersionUid = o.MetricAssetVersionUid
+                                }).Distinct().ToList()
+                            }).ToList();
+
+                        if (structuredMeasures.Count > 0)
+                        {
+                            company.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, structuredMeasures);
+                        }
+
+                        #endregion
+
                         trans.Commit();
+
+
                     }
                     catch (Exception ex)
                     {
@@ -1247,6 +1291,7 @@ where LI.LoadID = @loadId"
                         catch { }
                     }
                 }
+
             }
             catch (Exception ex)
             {
