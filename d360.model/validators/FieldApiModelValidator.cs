@@ -173,7 +173,7 @@ namespace d360.model.validators
                 #region isPartOfKey
                 if (field.Type.IsPartOfKey() == true && assetTypeIdentifierInfoModel != null)
                 {
-                    if (assetTypeIdentifierInfoModel.Object == SystemObjects.ResourceType.ToString() || assetTypeIdentifierInfoModel.Object == SystemObjects.OrganizationType.ToString())
+                    if (assetTypeIdentifierInfoModel.Object == SystemObjects.ResourceType.ToString() || (assetTypeIdentifierInfoModel.Object == SystemObjects.OrganizationType.ToString() && field.Name.ToLower() != "name"))
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"This asset type may not have a key fields defined!");
                     }
