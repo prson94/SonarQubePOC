@@ -4,6 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using d360.core.enums;
 using System.ComponentModel.DataAnnotations;
 using System;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace d360.core.entities
 {
@@ -29,6 +31,7 @@ namespace d360.core.entities
     public class CommentAggregateVoteDetail : BaseObject
     {
         [DataMember, Key, Column(Order = 1)]
+        [JsonConverter(typeof(StringEnumConverter))]
         public Emoji Emoji { get; set; }
 
         [DataMember, Key, Column(Order = 2)]
