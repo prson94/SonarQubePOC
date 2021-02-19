@@ -11,8 +11,8 @@ import { AllocationAPIModel, AllocationRequestModel } from "../../../models/work
 declare var CompanySettings: any;
 
 @Component({
-    selector: 'd3s-admin-issue-type-allocation-editor',
-    templateUrl: 'admin-issue-type-allocation-editor.component.html',
+    selector: "d3s-admin-issue-type-allocation-editor",
+    templateUrl: "admin-issue-type-allocation-editor.component.html",
     providers: [WorkflowService, AssetTypeService, ResponsibilityTypeService],
 })
 
@@ -45,7 +45,7 @@ export class AdminIssueTypeAllocationEditorComponent extends BaseComponent {
                 var data = result
                     .filter((r) =>
                         (this.allocation?.AssetTypeUid === r.uid || !this.allocations.some((a) => a.AssetTypeUid === r.uid))
-                        && this.isAllowedClass(r.Class.Value)
+                        && this.isAllowedClass(r.Class.ID)
                     );
 
                 data.forEach((r) => {
@@ -62,15 +62,15 @@ export class AdminIssueTypeAllocationEditorComponent extends BaseComponent {
 
     isAllowedClass(atc: AssetTypeClass) {
         
-        switch (AssetTypeClass[atc.toString()]) {
+        switch (atc) {
             case AssetTypeClass.DiagramAsset:
             case AssetTypeClass.Reference:
                 return false;
             case AssetTypeClass.Fusion:
             case AssetTypeClass.FusionAttribute:
             case AssetTypeClass.FusionQuery:
-                if (CompanySettings != null && CompanySettings.FusionEnabled != null) {
-                    return CompanySettings.FusionEnabled == "false" ? false : true;
+                if (CompanySettings != null && CompanySettings.FusionEnabled !== null) {
+                    return CompanySettings.FusionEnabled === "false" ? false : true;
                 } else {
                     return false;
                 }
@@ -94,7 +94,7 @@ export class AdminIssueTypeAllocationEditorComponent extends BaseComponent {
                     });
 
                     if (this.allocation && this.selection?.ResponsibilityTypeUid.length === 0 && this.allocation.AssetTypeUid === this.selection.AssetTypeUid) {
-                        this.selection.ResponsibilityTypeUid = this.allocation.Responsibilities.map(r => r.Uid);
+                        this.selection.ResponsibilityTypeUid = this.allocation.Responsibilities.map((r) => r.Uid);
                     }
 
                     this.cdRef.detectChanges();

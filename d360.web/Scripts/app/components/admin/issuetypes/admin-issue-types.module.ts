@@ -22,7 +22,7 @@ import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared
 
 import { AdminIssueTypesComponent } from './admin-issue-types.component';
 import { AdminIssueTypeAllocationComponent } from './admin-issue-type-allocation.component';
-import { AdminIssueTypeAllocationEditorComponent } from './admin-issue-type-allocation-editor.component';
+import { AdminIssueTypeAllocationEditorComponent } from "./admin-issue-type-allocation-editor.component";
 
 
 import { AdminIssueTypesRoutingModule } from './admin-issue-types.routes';

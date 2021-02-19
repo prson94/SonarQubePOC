@@ -746,6 +746,11 @@ export class ActionEditorModel {
     Fields: any;
 }
 
+export class AllocationResponsibilityModel {
+    Name: string;
+    Uid: string;
+}
+
 export class AllocationAPIModel {
     AssetTypeUid: string;
     Name: string;
@@ -753,11 +758,6 @@ export class AllocationAPIModel {
     Path: string;
     ClassName: string;
     Responsibilities: AllocationResponsibilityModel[];
-}
-
-export class AllocationResponsibilityModel {
-    Name: string;
-    Uid: string;
 }
 
 export class AllocationRequestModel {

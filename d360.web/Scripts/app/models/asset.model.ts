@@ -49,7 +49,7 @@ export enum AssetTypeClass {
     Model = 2,
     Fusion = 3,
     FusionAttribute = 4,
-    FusionQuery = 4,
+    FusionQuery = 13,
     Policy = 6,
     Rule = 7,
     TechnicalAsset = 8,
