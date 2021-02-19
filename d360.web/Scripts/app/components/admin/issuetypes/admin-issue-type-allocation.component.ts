@@ -123,7 +123,7 @@ export class AdminIssueTypeAllocationComponent extends BaseComponent implements 
         this.workflowService.getIssueTypeAllocations(this.issueTypeUid)
             .subscribe(r => {
                 this.allocations = r;
-                this.showResponsibilities = this.allocations.some(a => a.Responsibilities && a.Responsibilities.length > 0);
+                this.showResponsibilities = this.allocations.some((a) => a.Responsibilities && a.Responsibilities.length > 0);
                 this.isLoading = false;
             });
     }

@@ -1,12 +1,12 @@
-﻿import { ChangeDetectorRef, Component, EventEmitter, Input, Output} from '@angular/core';
-import { WorkflowService } from '../../../services/workflow.service';
-import { BaseComponent } from '../../shared/base.component';
-import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { AssetTypeClass } from '../../../models/asset.model';
-import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
-import { AssetTypeService } from '../../../services/asset-type.service';
-import { SelectItem } from 'primeng/api';
-import { AllocationAPIModel, AllocationRequestModel } from '../../../models/workflow.model';
+﻿import { ChangeDetectorRef, Component, EventEmitter, Input, Output} from "@angular/core";
+import { WorkflowService } from "../../../services/workflow.service";
+import { BaseComponent } from "../../shared/base.component";
+import { MessagesObservableService } from "../../../services/messages-observable.service";
+import { AssetTypeClass } from "../../../models/asset.model";
+import { ResponsibilityTypeService } from "../../../services/responsibility-type.service";
+import { AssetTypeService } from "../../../services/asset-type.service";
+import { SelectItem } from "primeng/api";
+import { AllocationAPIModel, AllocationRequestModel } from "../../../models/workflow.model";
 
 declare var CompanySettings: any;
 
@@ -41,21 +41,21 @@ export class AdminIssueTypeAllocationEditorComponent extends BaseComponent {
         }
 
         this.assetTypeService.getAssetTypes()
-            .subscribe(result => {
+            .subscribe((result) => {
                 var data = result
-                    .filter(r =>
-                        (this.allocation?.AssetTypeUid == r.uid || !this.allocations.some(a => a.AssetTypeUid == r.uid))
+                    .filter((r) =>
+                        (this.allocation?.AssetTypeUid === r.uid || !this.allocations.some((a) => a.AssetTypeUid === r.uid))
                         && this.isAllowedClass(r.Class.Value)
                     );
 
-                data.forEach(r => {
+                data.forEach((r) => {
                     this.assetTypes.push({
-                        label: r.Class.Name + ': ' + r.Path,
+                        label: r.Class.Name + ": " + r.Path,
                         value: r.uid
                     });
                 });
                 
-                this.assetTypes.sort((a, b) => a.label.localeCompare(b.label))
+                this.assetTypes.sort((a, b) => a.label.localeCompare(b.label));
                 this.isLoading = false;
             });
     }
@@ -82,11 +82,11 @@ export class AdminIssueTypeAllocationEditorComponent extends BaseComponent {
     assetTypeChanged() {
         if (this.selection.AssetTypeUid) {
             this.responsibilityTypeService.getAdminResponsibilityTypes(this.selection.AssetTypeUid).
-                subscribe(res => {
+                subscribe((res) => {
                     this.responsibilityList = [];
                     this.selection.ResponsibilityTypeUid = [];
 
-                    res.forEach(o => {
+                    res.forEach((o) => {
                         this.responsibilityList.push({
                             label: o.Name,
                             value: o.uid
@@ -107,9 +107,9 @@ export class AdminIssueTypeAllocationEditorComponent extends BaseComponent {
         this.isLoading = true;
         if (this.allocation) {
             this.workflowService.deleteIssueTypeAllocation(this.issueTypeUid, this.allocation.AssetTypeUid)
-                .subscribe(o => {
+                .subscribe((o) => {
                     this.workflowService.postIssueTypeAllocation(this.issueTypeUid, this.selection)
-                        .subscribe(r => {
+                        .subscribe((r) => {
                             this.closeClick.emit();
                             this.isLoading = false;
                             r.message = "Allocation Updated Successfully";
@@ -118,7 +118,7 @@ export class AdminIssueTypeAllocationEditorComponent extends BaseComponent {
                 });
         } else {
             this.workflowService.postIssueTypeAllocation(this.issueTypeUid, this.selection)
-                .subscribe(r => {
+                .subscribe((r) => {
                     this.closeClick.emit();
                     this.isLoading = false;
                     this.showMessageForResult(this.messagesService, r);

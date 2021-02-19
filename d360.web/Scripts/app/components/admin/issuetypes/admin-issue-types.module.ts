@@ -8,7 +8,7 @@ import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
-import { MultiSelectModule } from 'primeng/multiselect';
+import { MultiSelectModule } from "primeng/multiselect";
 
 import { TableModule } from 'primeng/table';
 
