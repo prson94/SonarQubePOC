@@ -155,7 +155,7 @@ namespace d360.extensions.queue
             var topicName = getTopicName();
             var bm = new BrokeredMessage(e);
             bm.Properties["topic"] = topicName;
-            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+            var client = CreateTopicClient(topicName);
             client.Send(bm);
         }
 
@@ -163,7 +163,7 @@ namespace d360.extensions.queue
         {
             var bm = new BrokeredMessage(e);
             bm.Properties["topic"] = topicName;
-            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+            var client = CreateTopicClient(topicName);
             client.Send(bm);            
         }
 
@@ -177,7 +177,7 @@ namespace d360.extensions.queue
         {
             var bm = new BrokeredMessage(e);
             bm.Properties["topic"] = topicName;
-            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+            var client = CreateTopicClient(topicName);
             await client.SendAsync(bm);
         }
 
@@ -210,7 +210,7 @@ namespace d360.extensions.queue
 
             }
 
-            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+            var client = CreateTopicClient(topicName);
 
             foreach (var batch in batches)
             {                
@@ -228,11 +228,33 @@ namespace d360.extensions.queue
             return (GetTopicNameBySetting("EventBusTopicName") ?? "events-debug");
         }
 
+        private RetryPolicy DefaultTopicRetryPolicy
+        {
+            get
+            {
+                return new RetryExponential( // default strategy
+                minBackoff: TimeSpan.FromSeconds(0), // default
+                maxBackoff: TimeSpan.FromSeconds(30), // default
+                maxRetryCount: 15); // increased from default of 10
+            }
+        }
+
+        private TopicClient CreateTopicClient(string topicName)
+        {
+            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);            
+
+            client.RetryPolicy = DefaultTopicRetryPolicy;
+
+            return client;
+        }
+
         public async Task CreateTopicMessagesAsync(List<EventInfo> events)
         {
             var topicName = getTopicName();
             await CreateTopicMessagesAsync(topicName, events);
         }
+
+        
 
         public async Task CreateTopicMessagesAsync(string topicName, List<EventInfo> events)
         {
@@ -249,7 +271,7 @@ namespace d360.extensions.queue
                 batchSize = AddMessageToBatch(bm, batches, batchSize);
             }
 
-            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+            var client = CreateTopicClient(topicName);
 
             foreach (var batch in batches)
             {                
@@ -261,7 +283,7 @@ namespace d360.extensions.queue
         {
             var bm = new BrokeredMessage(e);
             bm.Properties["topic"] = topicName;
-            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+            var client = CreateTopicClient(topicName);
             client.Send(bm);
         }
 
@@ -269,8 +291,8 @@ namespace d360.extensions.queue
         {
             var bm = new BrokeredMessage(e);
             bm.Properties["topic"] = topicName;
-            
-            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+
+            var client = CreateTopicClient(topicName);
             await client.SendAsync(bm);
         }
 
@@ -301,7 +323,7 @@ namespace d360.extensions.queue
                 batchSize = AddMessageToBatch(bm, batches, batchSize);
             }
 
-            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+            var client = CreateTopicClient(topicName);
 
             foreach (var batch in batches)
             {                
@@ -323,7 +345,7 @@ namespace d360.extensions.queue
                 batchSize = AddMessageToBatch(bm, batches, batchSize);
             }
 
-            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+            var client = CreateTopicClient(topicName);
 
             foreach (var batch in batches)
             {                

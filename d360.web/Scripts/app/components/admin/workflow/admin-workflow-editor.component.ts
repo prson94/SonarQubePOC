@@ -44,6 +44,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     private conditions: any[] = [];
     private issueObjectTypes: any[] = [];
     private scoreTypes: any[] = [];
+    private scheduleTypes: any[] = [{ label: 'Daily', value: 'd' }, { label: 'Hourly', value:'h' }]
     private resSub: Subscription;
     private defaultWorkflowObject = new WorkflowObjectType();
 
@@ -81,6 +82,8 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         if (CompanySettings != null && CompanySettings.EnableShoppingCart != null && CompanySettings.EnableShoppingCart.toString() == 'true') {
             this.hideShoppingCart = false;
         }
+        this.defaultWorkflowObject.label = "";
+        this.defaultWorkflowObject.value = "";
 
         this.load();
     }
@@ -137,6 +140,10 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                             if (this.model.Event.SettingsObject.Settings.SendAggregateEmail != null)
                                 //convert to bool
                                 this.model.Event.SettingsObject.Settings.SendAggregateEmail = this.model.Event.SettingsObject.Settings.SendAggregateEmail.toString().toLowerCase() == "true" ? true : false;
+                        }
+                        if (this.model.Event.SettingsObject != null && this.model.Event.SettingsObject.Settings != null
+                            && this.model.Event.SettingsObject.Settings.ScheduleType == null) {
+                            this.model.Event.SettingsObject.Settings.ScheduleType = 'd';
                         }
 
                         this.selectedObjectType = (this.model.Event.ObjectID != null) ? this.model.Event.Object + '|' + this.model.Event.ObjectID.toString() : '';
@@ -271,9 +278,16 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                 delete this.model.Event.SettingsObject.Settings.TaxonomyTypeID;
             }
 
-            if (this.model.Event.ChangeType != WorkflowChangeType.Schedule
-                && this.model.Event.SettingsObject.Settings.ScheduleInterval != null) {
-                delete this.model.Event.SettingsObject.Settings.ScheduleInterval;
+            if (this.model.Event.ChangeType != WorkflowChangeType.Schedule) {
+                if (this.model.Event.SettingsObject.Settings.ScheduleInterval != null) {
+                    delete this.model.Event.SettingsObject.Settings.ScheduleInterval;
+                }
+                if (this.model.Event.SettingsObject.Settings.ScheduleDays != null) {
+                    delete this.model.Event.SettingsObject.Settings.ScheduleDays;
+                }
+                if (this.model.Event.SettingsObject.Settings.ScheduleType != null) {
+                    delete this.model.Event.SettingsObject.Settings.ScheduleType;
+                }
             }
 
             if (this.objectType == 'IssueType') {
@@ -330,6 +344,15 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             this.scoreTypes = [];
             this.workflowFieldsService.setAvailableScoreTypes(this.scoreTypes);
         }
+    }
+
+    runFrequencyMax(): number {
+        return this.model.Event.SettingsObject.Settings.ScheduleType == 'h' ? 72 : 365;
+    }
+
+    checkScheduleInterval() {
+        if (+this.model.Event.SettingsObject.Settings.ScheduleInterval > this.runFrequencyMax())
+            this.model.Event.SettingsObject.Settings.ScheduleInterval = this.runFrequencyMax();
     }
 
     showCondition() {
@@ -437,6 +460,13 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             }
         }
 
+        if (this.model.Event.ChangeType != WorkflowChangeType.Schedule) {
+            //delete schedule settings
+            delete this.model.Event.SettingsObject.Settings.ScheduleType;
+            delete this.model.Event.SettingsObject.Settings.ScheduleInterval;
+            delete this.model.Event.SettingsObject.Settings.ScheduleDays;
+        }
+
         this.model.Event.Condition = JSON.stringify({ Conditions: { Condition: this.conditions } });
         this.model.Event.Settings = JSON.stringify(this.model.Event.SettingsObject);
 
@@ -470,12 +500,32 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         }
 
         if (this.model.Event.ChangeType == WorkflowChangeType.Schedule && this.selectedObjectType != '' && this.selectedObjectType != null) {
+            if (this.scheduleTypes.map(s => s.value).indexOf(this.model.Event.SettingsObject.Settings.ScheduleType) == -1) {
+                this.errorMessage = "Please select a Run Interval.";
+                this.isValid = false;
+                return;
+            }
+
             if (this.model.Event.SettingsObject.Settings.ScheduleInterval == null) {
-                this.errorMessage = "Please enter a run interval";
+                this.errorMessage = "Please enter a Run Frequency.";
+                this.isValid = false;
+                return;
+            } else if (!Number.isInteger(+this.model.Event.SettingsObject.Settings.ScheduleInterval)) {
+                this.errorMessage = "Run Frequency must be an integer.";
                 this.isValid = false;
                 return;
             } else if (+this.model.Event.SettingsObject.Settings.ScheduleInterval < 1) {
-                this.errorMessage = "Run interval must be greater than or equal to 1";
+                this.errorMessage = "Run Frequency must be greater than or equal to 1.";
+                this.isValid = false;
+                return;
+            } else if (+this.model.Event.SettingsObject.Settings.ScheduleInterval > this.runFrequencyMax()) {
+                this.errorMessage = "Run Frequency must be less than or equal to " + this.runFrequencyMax() + ".";
+                this.isValid = false;
+                return;
+            }
+
+            if (+this.model.Event.SettingsObject.Settings.ScheduleDays == 0) {
+                this.errorMessage = "At least one Run Day must be selected.";
                 this.isValid = false;
                 return;
             }

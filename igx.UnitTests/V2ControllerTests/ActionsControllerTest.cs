@@ -20,7 +20,7 @@ namespace igx.UnitTests.V2ControllerTests
         internal ActionsController actionsController;
         public ActionsControllerTest()
         {
-            this.actionsController = new ActionsController(GetCommunity(), GetCompany(), GetIssueRepository(), GetAssetRepository())
+            this.actionsController = new ActionsController(GetCommunity(), GetCompany(), GetCommentRepository(), GetIssueRepository(), GetAssetRepository(), GetResponsibilityRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()

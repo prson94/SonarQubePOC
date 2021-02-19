@@ -56,7 +56,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     }
 
     parseTagResult(tags: any[]) {
-        return tags.map(tag => { return { uid: tag.Uid, Value: tag.Value }; });
+        return tags.map((tag) => { return { uid: tag.Uid, Value: tag.Value }; });
     }
     get type() {
         if (this.result) {
@@ -94,7 +94,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     private loadDetails() {
         if (this.result.Uid) {
             this.objectStatisticsService.getSearchDetails(this.result.Uid).subscribe(
-                result => {
+                (result) => {
                     this.searchDetails = result;
                     if (this.searchDetails && this.searchDetails?.AssetDetail.Status) {
                         this.status = this.searchDetails.AssetDetail.Status;
@@ -120,13 +120,13 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         var menu: MenuItem[] = [
             { label: 'More Information', command: (event) => { this.showInfo() } },
         ];
-        if (this.result.Uid && CompanySettings.LineageVersion == 3 && ['Reference', 'Resource', 'Group', 'Grammatic type', 'Attribute', 'Fusion'].indexOf(this.result.Group) == -1) {
+        if (this.result.Uid && CompanySettings.LineageVersion == 3 && ['Reference', 'Resource', 'Group', 'Grammatic type', 'Fusion'].indexOf(this.result.Group) == -1) {
             menu.push({
                 label: 'View Diagram',
                 command: (event) => { this.navigateVisualization(); }
             });
         }
-        if (this.showShoppingCart && ['Synonym', 'Attribute', 'Grammatic type'].indexOf(this.result.Group) == -1) {
+        if (this.showShoppingCart && ['Synonym', 'Grammatic type'].indexOf(this.result.Group) == -1) {
             menu.push({
                 label: '',
                 icon: 'fa fa-cart-plus',

@@ -61,7 +61,9 @@ namespace d360.web.Controllers
         public JsonResult Artifact_AddFields(int at, int p)
         {
             if (!Company.HasAssetTypePermission(SystemObjects.ArtifactType, at, Permission.ModifyAsset))
+            {
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+            }
 
             var list = new List<EditableField>();
 
@@ -79,7 +81,7 @@ namespace d360.web.Controllers
                 list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentUid", Name = $"Parent {pluralize.Singularize(intersectType.SubjectName)}", FieldType = DataType.Lookup.ToString(), Value = ((p > 0) ? p.ToString() : null), Items = parents, VirtualScroll = parents.Count > 9, ItemSize = 20 });
             }
 
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, at).ToList(), 1);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, at).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -89,7 +91,9 @@ namespace d360.web.Controllers
         public JsonResult Artifact_EditFields(int id)
         {
             if (!Company.HasAssetPermission(SystemObjects.Artifact, id, Permission.ModifyAsset))
+            {
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+            }
 
             var list = new List<EditableField>();
             var a = Company.Assets.Where(x => x.ObjectID == id && x.Object == SystemObjects.Artifact.ToString()).Include(x => x.AssetType).FirstOrDefault();
@@ -146,7 +150,9 @@ namespace d360.web.Controllers
                 {
                     var parentAssetType = Company.Query<AssetType>("select * from AssetType where class = @class and ObjectID = @parentID", new { @class, parentID }).FirstOrDefault();
                     if (parentAssetType != null)
+                    {
                         parentUid = parentAssetType.uid;
+                    }
                 }
 
                 var loadPredicates = false;
@@ -192,12 +198,16 @@ namespace d360.web.Controllers
                 if (id.HasValue)
                 {
                     if (!id.HasValue)
+                    {
                         return jsonNetException($"No asset type ID provided (id parameter).", HttpStatusCode.BadRequest);
+                    }
 
                     var assetType = Company.GetById<AssetType>(id.Value);
 
                     if (assetType == null)
+                    {
                         return jsonNetException($"No asset type found for the ID {id.Value}", HttpStatusCode.NotFound);
+                    }
 
                     var style = assetType.AssetTypeStyle;
 
@@ -269,7 +279,10 @@ namespace d360.web.Controllers
                             model.AssetType.Notes = assetType.Notes;
                             model.AssetType.Description = assetType.Description;
                             model.AssetType.DisplayFormat = assetType.DisplayFormat;
-                            if (model.Tokens != null) model.Tokens.Add(new PrimeSelectItem { label = "Code", value = "{Code}" });
+                            if (model.Tokens != null)
+                            {
+                                model.Tokens.Add(new PrimeSelectItem { label = "Code", value = "{Code}" });
+                            }
                             break;
                         case AssetTypeClass.Rule:
                         case AssetTypeClass.Diagram:
@@ -292,7 +305,9 @@ namespace d360.web.Controllers
 
 
                         if (@class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.Reference) //If model or policy you must always have a predicate to load.
+                        {
                             loadPredicates = true;
+                        }
 
                         if (intersectType != null)
                         {

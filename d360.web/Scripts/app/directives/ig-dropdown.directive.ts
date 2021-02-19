@@ -1,10 +1,10 @@
-﻿import { NgModule, Directive, ElementRef, AfterViewInit, Input, ChangeDetectorRef, AfterContentInit } from '@angular/core';
-import { DomHandler } from 'primeng/dom';
-import { CommonModule } from '@angular/common';
-import { Dropdown } from 'primeng/dropdown';
+﻿import { NgModule, Directive, ElementRef, AfterViewInit, Input, ChangeDetectorRef, AfterContentInit } from "@angular/core";
+import { DomHandler } from "primeng/dom";
+import { CommonModule } from "@angular/common";
+import { Dropdown } from "primeng/dropdown";
 
 @Directive({
-    selector: '[igDropdown]'
+    selector: "[igDropdown]"
 })
 export class DropdownDirective implements AfterContentInit {
 
@@ -12,8 +12,8 @@ export class DropdownDirective implements AfterContentInit {
     public _size: string;
     @Input() required: boolean;
     @Input() disabled: boolean;
-    private isOverlayVisible: boolean = false;
-
+    @Input() overlayLowerZIndex: boolean = false;
+    @Input() ellipsisDirection: string = "ltr";
     constructor(public el: ElementRef, public dropdownRef: Dropdown, private ref: ChangeDetectorRef) { }
 
     setDisabledState?(isDisabled: boolean): void {
@@ -22,6 +22,16 @@ export class DropdownDirective implements AfterContentInit {
 
     ngAfterContentInit(): void {
         DomHandler.addMultipleClasses(this.el.nativeElement, this.getStyleClass());
+        if (this.required !== null && (typeof this.required !== undefined) && this.required?.toString() !== "") {
+            //If required was set by Angular binding via [required] input parameter
+            if (this.required) {
+                (this.el.nativeElement as HTMLElement).setAttribute("required", "true");
+            }
+            else {
+                (this.el.nativeElement as HTMLElement).removeAttribute("required");
+            }
+        }
+
         this.required = this.el.nativeElement.getAttribute("required");
         this.disabled = this.el.nativeElement.getAttribute("disabled");
         var tabIndex = this.el.nativeElement.getAttribute("tabIndex");
@@ -29,12 +39,11 @@ export class DropdownDirective implements AfterContentInit {
         var placeholder = this.el.nativeElement.getAttribute("placeholder");
         this.el.nativeElement.tabIndex = -1;
         this.dropdownRef.tabindex = tabIndex;
-
-        let isPlaceholderSet = !(placeholder == undefined || placeholder == null || placeholder == '');
+        let isPlaceholderSet = !(placeholder == undefined || placeholder == null || placeholder == "");
 
         if (!isPlaceholderSet) {
             if (this.required == null) {
-                this.dropdownRef.placeholder = 'Optional';
+                this.dropdownRef.placeholder = "Optional";
                 this.dropdownRef.showClear = true;
             } else {
                 this.dropdownRef.placeholder = "Value required";
@@ -42,34 +51,45 @@ export class DropdownDirective implements AfterContentInit {
                 this.el.nativeElement.setAttribute("aria-required", true);
             }
         }
-        this.dropdownRef.scrollHeight = '340px';
-        setInterval(() => {
-            if (this.isOverlayVisible !== this.dropdownRef.overlayVisible) {
-                if (this.dropdownRef.overlayVisible && this.dropdownRef.overlay.className.indexOf('ig-dropdown-overlay') == -1) {
-                    this.dropdownRef.overlay.classList.add('ig-dropdown-overlay');
+        this.dropdownRef.scrollHeight = "340px";
 
-                    var input = this.dropdownRef.overlay.getElementsByTagName('input')[0];
+        setInterval(() => {
+            if (this.dropdownRef.overlayVisible && this.dropdownRef?.overlay) {
+                if (this.dropdownRef.overlay.className.indexOf("ig-dropdown-overlay") == -1) {
+                    this.dropdownRef.overlay.classList.add("ig-dropdown-overlay");
+
+                    if (this.ellipsisDirection === "ltr") {
+                        this.dropdownRef.overlay.classList.add("ig-dropdown-ellipsis-ltr");
+                    }
+                    else {
+                        this.dropdownRef.overlay.classList.add("ig-dropdown-ellipsis-rtl");
+                    }
+
+                    if (this.overlayLowerZIndex) {
+                        this.dropdownRef.overlay.classList.add("ig-dropdown-overlay-lower-index");
+                    }
+                    var input = this.dropdownRef.overlay.getElementsByTagName("input")[0];
 
                     if (input)
-                        input.className = 'ig-input';
-                }
-                this.isOverlayVisible = this.dropdownRef.overlayVisible;
-
-                if (this.dropdownRef.options && this.dropdownRef.options.length > 10) {
-                    this.dropdownRef.filter = true;
-                    this.dropdownRef.filterPlaceholder = 'Search fields';
-                }
-                else {
-                    this.dropdownRef.filter = false;
+                        input.className = "ig-input";
                 }
 
+            }
+
+
+            if (this.dropdownRef.options && this.dropdownRef.options.length > 10) {
+                this.dropdownRef.filter = true;
+                this.dropdownRef.filterPlaceholder = "Search fields";
+            }
+            else {
+                this.dropdownRef.filter = false;
             }
         }, 10);
 
     }
 
     getStyleClass(): string {
-        return 'ig-dropdown';
+        return "ig-dropdown";
     }
 
     @Input() get igSize(): string {

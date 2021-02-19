@@ -91,7 +91,7 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
             LineageView.MapItemList,
             false
         ).subscribe(
-            r => {
+            (r) => {
                 this.lineage = r.items;
 
                 if (this.lineage != null && this.lineage.length > 0) {

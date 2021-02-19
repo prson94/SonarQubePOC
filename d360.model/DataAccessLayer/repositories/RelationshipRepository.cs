@@ -79,12 +79,19 @@ namespace d360.model.DataAccessLayer
             if (IsUsed.HasValue)
             {
                 if (IsUsed.Value)
+                {
                     whereConditions.Add("Usage.Id is not null");
-                else whereConditions.Add("Usage.Id is null");
+                }
+                else
+                {
+                    whereConditions.Add("Usage.Id is null");
+                }
             }
 
             if (whereConditions.Count > 0)
+            {
                 whereClause = $"WHERE {string.Join(" AND ", whereConditions)}";
+            }
 
             var currentLineageversion = communityContext.GetCompanySettingByKey<int>("LineageVersion");
 
@@ -373,7 +380,9 @@ left join graph.AssetNodeKeyPath OKP on OKP.ID = O.ID
 
             string fieldColumnsSql = "";
             if (fieldColumns.Count > 0)
+            {
                 fieldColumnsSql = string.Join(",\n", fieldColumns) + ",";
+            }
 
             var sql = $@"
         select	lower(I.Uid) as Uid,
@@ -838,9 +847,13 @@ from	IntersectType I
             var rowData = new List<JToken>();
 
             if (items != null)
+            {
                 rowData = items.ToList();
+            }
             else
+            {
                 return document;
+            }
 
             int rowNumber = 1;
             int index = 1;
@@ -886,7 +899,9 @@ from	IntersectType I
                     }
                     string value = "";
                     if (token != null)
+                    {
                         value = token.Value<string>();
+                    }
                     document.SetCellValue(rowNumber, index, value);
                     index++;
                 }

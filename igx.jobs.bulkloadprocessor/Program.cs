@@ -23,6 +23,7 @@ using d360.model.DataAccessLayer;
 using d360.extensions.storage;
 using d360.core;
 using System.Text;
+using d360.core.entities.Metric;
 
 
 namespace igx.jobs.bulkloadprocessor
@@ -383,10 +384,6 @@ namespace igx.jobs.bulkloadprocessor
                             break;
                         case "U":   // Unrelate
                             await BulkRelate(company, assetRepository, relationshipRepository, load, BulkRelationshipOperation.Unrelate);
-                            break;
-                        case "B":
-                        case "BL":  // Business Lineage
-                            executeWithTry(companyConnection, $@"EXEC bulkload.BusinessLineage {load.ID}", loadInfo.CompanyID, 2400);
                             break;
                     }
 
@@ -1038,7 +1035,6 @@ where	ID = @loadId", new { loadId }, transaction: trans);
                     throw new Exception($"Bulk load relate cannot find the load job to run [{loadId}].");
                 }
 
-
                 // get the load columns
                 var columns = company.LoadColumns.Where(x => x.LoadID == loadId).ToList();
 
@@ -1049,18 +1045,15 @@ where	ID = @loadId", new { loadId }, transaction: trans);
 
                 var loaddata = company.LoadItemColumns.Where(x => x.LoadID == loadId);
 
-                //loop throw rows until there are no more indexes start at 2
-                int currentRowIndex = 2;
-                var rowData = loaddata.Where(x => x.RowIndex == currentRowIndex).ToList();
-                int assetIdIndex = -1;
+                int assetUidIndex = -1;
                 int responsibilityIndex = -1;
                 int resourceIndex = -1;
 
                 foreach (var column in columns)
                 {
-                    if (string.Compare(column.Name, "Asset ID") == 0)
+                    if (string.Compare(column.Name, "Asset UID") == 0)
                     {
-                        assetIdIndex = column.ColumnIndex;
+                        assetUidIndex = column.ColumnIndex;
                     }
                     else if (string.Compare(column.Name, "Resource") == 0)
                     {
@@ -1072,143 +1065,234 @@ where	ID = @loadId", new { loadId }, transaction: trans);
                     }
                 }
 
-                while (rowData != null && rowData.Count > 0)
+                var connection = company.Connection;
+                if (connection.State != System.Data.ConnectionState.Open)
                 {
-                    //add a row to [ResponsibilityTypeRelationOverrideItem] table for the responsibility
-                    var responsibilityCol = rowData.Where(x => x.RowIndex == currentRowIndex && x.ColumnIndex == responsibilityIndex).FirstOrDefault();
-                    var resourceCol = rowData.Where(x => x.RowIndex == currentRowIndex && x.ColumnIndex == resourceIndex).FirstOrDefault();
-                    var assetCol = rowData.Where(x => x.RowIndex == currentRowIndex && x.ColumnIndex == assetIdIndex).FirstOrDefault();
-                    var msg = "";
-                    var status = 0;
-                    if ((responsibilityCol == null) || (resourceCol == null) || (assetCol == null))
-                    {
-                        if (responsibilityCol == null)
-                            CoreFunction.AITrackTrace(functionName, $"Bulk load responsibilities cannot find the responsibility column in row {currentRowIndex}", companyId: company.CurrentCompanyID);
-                        if (resourceCol == null)
-                            CoreFunction.AITrackTrace(functionName, $"Bulk load responsibilities cannot find the resource column in row {currentRowIndex}", companyId: company.CurrentCompanyID);
-                        if (assetCol == null)
-                            CoreFunction.AITrackTrace(functionName, $"Bulk load responsibilities cannot find the asset column in row {currentRowIndex}", companyId: company.CurrentCompanyID);
-                    }
-                    else
-                    {
-                        var responsiblityOverride = new ResponsibilityTypeRelationOverrideItem();
-                        responsiblityOverride.UpdatedBy = load.UpdatedBy.GetValueOrDefault();
-                        
-                        if (!int.TryParse(assetCol.Value, out int assetId))
-                        {
-                            msg = $"Bulk load responsibilities asset ID value {assetCol.Value} is not a valid asset id.  Asset ID values must be an integer.";
-                            CoreFunction.AITrackTrace(functionName, msg, companyId: company.CurrentCompanyID);
-                        }
-                        else
-                        {
-                            responsiblityOverride.AssetID = assetId;
-                        }
-
-                        var resource = resourceCol.Value;
-                        var responsiblity = responsibilityCol.Value;
-
-                        // lookup the resource
-                        var resourceParts = resource.Split(':');
-
-                        if (resourceParts.Length != 2)
-                        {
-                            msg = $"Bulk load responsibilities resource value {resource} is not a valid resource it must be formatted [type]:[id].";
-                            CoreFunction.AITrackTrace(functionName, msg, companyId: company.CurrentCompanyID);
-                        }
-                        else
-                        {
-                            if (string.Compare(resourceParts[0], "USER", true) == 0)
-                            {
-                                responsiblityOverride.SecurityAsset = "R";
-
-                                var email = resourceParts[1];
-                                //lookup the resource
-                                var res = company.GlobalReportingResources.Where(x => string.Compare(x.Email, email, true) == 0).FirstOrDefault();
-
-                                if (res == null)
-                                {
-                                    msg = $"Bulk load responsibilities user value {resourceParts[1]} is not a valid resource and the email cannot be found in the resources table.";
-                                    CoreFunction.AITrackTrace(functionName, msg, companyId: company.CurrentCompanyID);
-                                }
-                                else
-                                {
-                                    responsiblityOverride.SecurityAssetID = res.ResourceID;
-                                }
-                            }
-                            else
-                            {
-                                responsiblityOverride.SecurityAsset = "G";
-
-                                //lookup the group
-                                var resourcePart = resourceParts[1];
-                                var grp = company.Groups.Where(x => string.Compare(x.Name, resourcePart, true) == 0).FirstOrDefault();
-
-                                if (grp == null)
-                                {
-                                    msg = $"Bulk load responsibilities group name value {resourcePart} is not a valid group name it cannot be found in the groups table.";
-                                    CoreFunction.AITrackTrace(functionName, msg, companyId: company.CurrentCompanyID);
-                                }
-                                else
-                                {
-                                    responsiblityOverride.SecurityAssetID = grp.ID;
-                                }
-                            }
-                        }
-
-                        // lookup the responsibility
-
-                        var resp = company.ResponsibilityTypes.Where(x => string.Compare(x.Name, responsiblity, true) == 0).FirstOrDefault();
-
-                        if (resp == null)
-                        {
-                            msg = $"Bulk load responsibilities responsibility value {responsiblity} is not a valid responsibility type it cannot be found in the responsibility type table.";
-                            CoreFunction.AITrackTrace(functionName, msg, companyId: company.CurrentCompanyID);
-                        }
-                        else
-                        {
-                            responsiblityOverride.ResponsibilityTypeID = resp.ID;
-                        }
-
-                        if (string.IsNullOrEmpty(msg))
-                        {
-                            if (company.ResponsibilityTypeRelationOverrideItems.Any(x => x.ResponsibilityTypeID == responsiblityOverride.ResponsibilityTypeID && x.SecurityAsset == responsiblityOverride.SecurityAsset && x.SecurityAssetID == responsiblityOverride.SecurityAssetID && responsiblityOverride.AssetID == x.AssetID))
-                            {
-                                msg = "Responsibility already exists.";
-                                status = 1;
-                            }                            
-                            else
-                            {                                                               
-                                company.ResponsibilityTypeRelationOverrideItems.Add(responsiblityOverride);
-
-                                try
-                                {
-                                    company.SaveChanges();
-
-                                    msg = "Responsibility added sucessfully.";
-                                    status = 1;
-                                }
-                                catch (Exception e)
-                                {
-                                    msg = e.Message;
-                                    status = 0;
-                                }
-                            }
-                        }
-
-                        CoreFunction.AITrackTrace(functionName, $"Bulk load responsibilities adding {currentRowIndex} of {rowData.Count} responsibilites.", companyId: company.CurrentCompanyID);
-
-                        // update status for this item
-                        var statusSql = "update LoadItem set [Object] = 'Intersect', ObjectID = @objectId, Status = @status, StatusMessage = @msg where LoadID = @loadId and RowIndex = @rowIndex";
-
-                        await company.QueryAsync<int>(statusSql, new { objectId = responsiblityOverride.ID, status = status, msg = msg, loadId = loadId, rowIndex = currentRowIndex });
-                    }
-
-                    //next row
-                    currentRowIndex++;
-
-                    rowData = loaddata.Where(x => x.RowIndex == currentRowIndex).ToList();
+                    await connection.OpenAsync();
                 }
-                
+
+                using (var trans = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        //create and load temp table
+                        await connection.ExecuteAsync(@"
+drop table if exists #ResponsibilityTypeOverride;
+create table #ResponsibilityTypeOverride
+(
+    RowIndex int,
+    ResponsibilityName nvarchar(max),
+    ResourceName nvarchar(max),
+    AssetUid nvarchar(max),
+    [uid] uniqueidentifier,
+    [AssetID] int,
+    ResponsibilityTypeID int,
+    SecurityAsset nvarchar(10),
+    SecurityAssetID int,
+    Message nvarchar(max),
+    Success bit not null
+);"
+, transaction: trans);
+
+                        await connection.ExecuteAsync(@"
+insert into #ResponsibilityTypeOverride
+select LI.RowIndex, 
+LIC1.Value as ResponsibilityName,
+LIC2.Value as ResourceName,
+LIC3.Value as AssetUid,
+null as [uid],
+null as [AssetID],
+null as ResponsibilityTypeID,
+null as SecurityAsset,
+null as SecurityAssetID,
+null as Message,
+cast(1 as bit) as Success
+from  LoadItem LI
+left join LoadItemColumn LIC1 on LIC1.ColumnIndex = @responsibilityIndex and LIC1.RowIndex = LI.RowIndex and LIC1.LoadID = LI.LoadID
+left join LoadItemColumn LIC2 on LIC2.ColumnIndex = @resourceIndex and LIC2.RowIndex = LI.RowIndex and LIC2.LoadID = LI.LoadID
+left join LoadItemColumn LIC3 on LIC3.ColumnIndex = @assetUidIndex and LIC3.RowIndex = LI.RowIndex and LIC3.LoadID = LI.LoadID
+where LI.LoadID = @loadId
+", new { loadId = load.ID, responsibilityIndex, resourceIndex, assetUidIndex }
+                                                      , transaction: trans);
+
+                        //validate records and populate IDs
+                        await connection.ExecuteAsync(@"
+--check for null values
+update #ResponsibilityTypeOverride set Success = 0, Message = 'Bulk load responsibilities cannot find the responsibility column in row ' + cast(RowIndex as varchar(50)) where coalesce(ResponsibilityName,'') = '';
+update #ResponsibilityTypeOverride set Success = 0, Message = 'Bulk load responsibilities cannot find the resource column in row ' + cast(RowIndex as varchar(50)) where coalesce(ResourceName,'') = '';
+update #ResponsibilityTypeOverride set Success = 0, Message = 'Bulk load responsibilities cannot find the asset column in row ' + cast(RowIndex as varchar(50)) where coalesce(AssetUid,'') = '';
+
+
+
+--asset validation
+update #ResponsibilityTypeOverride set [uid] = try_cast(AssetUid as uniqueidentifier) where Success = 1;
+update #ResponsibilityTypeOverride set Success = 0, Message = 'Bulk load responsibilities asset UID value ' + AssetUid + ' is not a valid asset Uid.  Asset UID values must be an unique identifier.' where Success = 1 and [uid] is null;
+
+update R set R.AssetID = A.ID
+from #ResponsibilityTypeOverride R 
+inner join Asset A on A.[uid] = R.[uid]
+where Success = 1;
+update #ResponsibilityTypeOverride set Success = 0, Message = 'Bulk load responsibilities asset UID value ' + AssetUid + ' is not a valid asset Uid.  Asset cannot be found.' where Success = 1 and AssetID is null;
+
+
+
+--resource validation
+update #ResponsibilityTypeOverride set Success = 0, Message = 'Bulk load responsibilities resource value ' + ResourceName + ' is not a valid resource it must be formatted [type]:[id].' where Success = 1 and ResourceName not like '%:%';
+update #ResponsibilityTypeOverride set SecurityAsset = case when ResourceName like 'user:%' then 'R' else 'G' end where Success = 1;
+
+update R
+set SecurityAssetID = G.ResourceID
+from #ResponsibilityTypeOverride R
+inner join reporting.Global_Resource G on G.Email = replace(R.ResourceName,'user:','')
+where R.SecurityAsset = 'R' and R.Success = 1;
+
+update R
+set SecurityAssetID = G.ID
+from #ResponsibilityTypeOverride R
+inner join [Group] G on G.Name = replace(R.ResourceName,'group:','')
+where R.SecurityAsset = 'G' and R.Success = 1;
+
+update #ResponsibilityTypeOverride set Success = 0, 
+Message = case when SecurityAsset = 'R' then 
+    'Bulk load responsibilities user value ' + replace(ResourceName,'user:','') + ' is not a valid resource and the email cannot be found in the resources table.' 
+else 
+    'Bulk load responsibilities group name value ' + replace(ResourceName,'group:','') + ' is not a valid group name it cannot be found in the groups table.' 
+end
+where Success = 1 and SecurityAssetID is null;
+
+
+
+--responsibility validation
+update R
+set ResponsibilityTypeID = G.ID
+from #ResponsibilityTypeOverride R
+inner join [ResponsibilityType] G on G.Name = R.ResponsibilityName
+where R.Success = 1;
+
+update #ResponsibilityTypeOverride set Success = 0, Message = 'Bulk load responsibilities responsibility value '+ ResponsibilityName + ' is not a valid responsibility type it cannot be found in the responsibility type table.' where Success = 1 and ResponsibilityTypeID is null;
+
+
+
+--mark duplicate records among the batch except the first row of each group
+update R
+set R.Message = 'Responsibility already exists.'
+from #ResponsibilityTypeOverride R
+inner join (
+		select min(RowIndex) as RowIndex, R.ResponsibilityTypeID, R.AssetID, R.SecurityAsset, R.SecurityAssetID
+		from #ResponsibilityTypeOverride R
+		where R.Success = 1 
+		group by R.ResponsibilityTypeID, R.AssetID, R.SecurityAsset, R.SecurityAssetID
+		having count(*) > 1
+) D on D.ResponsibilityTypeID = R.ResponsibilityTypeID and D.AssetID = R.AssetID and D.SecurityAsset = R.SecurityAsset and D.SecurityAssetID = R.SecurityAssetID and D.RowIndex <> R.RowIndex
+where R.Success = 1;
+", transaction: trans);
+
+                        //merge valid records and update load table
+                        await connection.ExecuteAsync(@"
+drop table if exists #MergeResult;
+create table #MergeResult (RowIndex int, [Action] nvarchar(max))
+
+merge into  ResponsibilityTypeRelationOverrideItem T
+using		(
+			select      
+						RowIndex,
+						ResponsibilityTypeID,
+						AssetID,
+						SecurityAsset,
+						SecurityAssetID,
+						null as Context,
+						@updatedBy as UpdatedBy,
+						getutcdate() as UpdatedOn
+			from        #ResponsibilityTypeOverride
+			where		Success = 1 and Message is null
+        ) S
+on      ( T.ResponsibilityTypeID = S.ResponsibilityTypeID and T.AssetID = S.AssetID and T.SecurityAsset = S.SecurityAsset and T.SecurityAssetID = S.SecurityAssetID )
+when matched then
+	update set
+			T.UpdatedBy = @updatedBy,
+			T.UpdatedOn = getutcdate()
+when not matched by target then
+	insert  (ResponsibilityTypeID, AssetID, SecurityAsset, SecurityAssetID, UpdatedBy, UpdatedOn)
+	values  (S.ResponsibilityTypeID, S.AssetID, S.SecurityAsset, S.SecurityAssetID, @updatedBy, getutcdate())
+output  S.RowIndex, $action into #MergeResult;
+
+
+update R
+set R.Message = case when M.[Action] = 'INSERT' then 'Responsibility added sucessfully.' else 'Responsibility already exists.' end
+from #ResponsibilityTypeOverride R
+inner join #MergeResult M on M.RowIndex = R.RowIndex;
+
+update LI
+set LI.Status = R.Success, LI.StatusMessage = R.Message
+from LoadItem LI
+inner join #ResponsibilityTypeOverride R on R.RowIndex = LI.RowIndex
+where LI.LoadID = @loadId"
+, new { loadId = load.ID, updatedBy = load.UpdatedBy.GetValueOrDefault() }
+, transaction: trans);
+
+                        #region send score events
+
+                        var today = DateTime.UtcNow.Date;
+                        var measureResults = await connection.QueryAsync<ResponsibilityAssetMeasureProcessedResult>(@"
+    select  A.Uid as AssetUid, 
+            M.Uid as MetricAssetUid,
+            V.Uid as MetricAssetVersionUid
+    from    #ResponsibilityTypeOverride O 
+			inner join ResponsibilityType RT on RT.ID = O.ResponsibilityTypeID
+            inner join Asset A on A.ID = O.AssetID
+            inner join AssetType T on T.ID = A.AssetTypeID
+            inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
+            inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
+            inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
+                and ( 
+                    (@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or 
+                    (@today >= V.EffectiveDate and V.EffectiveEndDate is null) 
+                    ) 
+                and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
+                and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = RT.uid
+		        and V.Definition <> '{}'
+	where	O.Success = 1"
+, new { today }
+, transaction: trans);
+
+                        var structuredMeasures = measureResults.GroupBy(m => new { m.AssetUid })
+                            .Select(m => new AssetMeasureModel
+                            {
+                                AssetUid = m.Key.AssetUid,
+                                EffectiveDate = today,
+                                Measures = m.Select(o => new AssetMeasureChildModel
+                                {
+                                    MetricAssetUid = o.MetricAssetUid,
+                                    MetricAssetVersionUid = o.MetricAssetVersionUid
+                                }).Distinct().ToList()
+                            }).ToList();
+
+                        if (structuredMeasures.Count > 0)
+                        {
+                            company.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, structuredMeasures);
+                        }
+
+                        #endregion
+
+                        trans.Commit();
+
+
+                    }
+                    catch (Exception ex)
+                    {
+                        try
+                        {
+                            CoreFunction.AITrackException(functionName, ex, companyId: company.CurrentCompanyID);
+                            trans.Rollback();
+
+                            //mark incomplete records as failed
+                            (await company.QueryAsync(@"update LoadItem set Status = 0, StatusMessage = 'A fatal error occurred while attempting to load responsibilities.' where LoadID = @loadId and coalesce(Status,0) <> 1", new { loadId = load.ID })).FirstOrDefault();
+
+                        }
+                        catch { }
+                    }
+                }
+
             }
             catch (Exception ex)
             {

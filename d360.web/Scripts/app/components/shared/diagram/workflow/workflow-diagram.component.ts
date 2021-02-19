@@ -1034,52 +1034,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     return false;
                 if (n.settings.MessageBodyTemplate == null || n.settings.MessageBodyTemplate.length < 1)
                     return false;
-                if (n.settings.MessageRecipientType == null || n.settings.MessageRecipientType == '')
+                if (this.validateEmailRecipient(n) === false) {
                     return false;
-
-                switch (n.settings.MessageRecipientType) {
-                    case 'SpecificUser':
-                        if (n.settings.MessageToUser == null || n.settings.MessageToUser.length < 1)
-                            return false;
-                        break;
-                    case 'Responsibility':
-                        if (n.settings.ResponsibilityTypeID == null || n.settings.ResponsibilityTypeID < 0)
-                            return false;
-                        break;
-                    case "Followers":
-                        let obj = this.model.Event.Object;
-                        if (obj == 'IntersectType') 
-                            return false;
-
-                        if (!(this.model.Event.ChangeType == WorkflowChangeType.Add ||
-                            this.model.Event.ChangeType == WorkflowChangeType.Update ||
-                            this.model.Event.ChangeType == WorkflowChangeType.Schedule ||
-                            this.model.Event.ChangeType == WorkflowChangeType.RequestCertification))
-                            return false;
-
-                        if ((this.model.Event.ChangeType == WorkflowChangeType.Add) && !(obj == 'IssueType'))
-                            return false
-
-                        if ((this.model.Event.ChangeType == WorkflowChangeType.Add) && (obj == 'IssueType'))
-                        {
-                            if (this.model.Event.IssueObject != null && this.model.Event.IssueObject != '')
-                            {
-                                let objArr = this.model.Event.IssueObject.split("|", 1);
-                                let Issobj = "";
-                                if (objArr.length <= 0)
-                                    Issobj = " ";
-                                else
-                                    Issobj = objArr[0];
-
-                                if (!(Issobj == 'ArtifactType' || Issobj == 'PolicyType' || Issobj == 'RuleType' || Issobj == 'TaxonomyType'))
-                                    return;
-                            }
-                        }
-                        break;
-                    case "Group":
-                        if (n.settings.MessageToGroup == null || n.settings.MessageToGroup.length != 36)
-                            return false;
-                        break;
                 }
 
                 n.errors = n.errors.concat(this.validateTextFields(n.settings.MessageBodyTemplate));
@@ -1093,35 +1049,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     return false;
                 if (n.settings.FormResponseType == null || n.settings.FormResponseType == '')
                     return false;
-                if (n.settings.MessageRecipientType == null || n.settings.MessageRecipientType == '')
+                if (this.validateEmailRecipient(n) === false) {
                     return false;
-                switch (n.settings.MessageRecipientType) {
-                    case 'SpecificUser':
-                        if (n.settings.MessageToUser == null || n.settings.MessageToUser.length < 1)
-                            return false;
-                        break;
-                    case 'Responsibility':
-                        if (this.model.Event.Object == 'IntersectType' && n.settings.ResponsibilitySide == null || n.settings.ResponsibilitySide == '')
-                            return false;
-                        if (n.settings.ResponsibilityTypeID == null)
-                            return false;
-                        if (!_.isArray(n.settings.ResponsibilityTypeID) && n.settings.ResponsibilityTypeID < 0) //we still need to check single value here for legacy workflows
-                            return false;
-                        if (_.isArray(n.settings.ResponsibilityTypeID)) {
-                            if (n.settings.ResponsibilityTypeID.length < 1)
-                                return false;
-
-                            let x = n.settings.ResponsibilityTypeID.findIndex(r => r == null || r == '' || r < 0);
-                            if (x > -1)
-                                return false;
-                        }
-                        break;
-                    case "Group":
-                        if (n.settings.MessageToGroup == null || n.settings.MessageToGroup.length != 36)
-                            return false;
-                        break;
                 }
-
 
                 if (n.settings.SendFormEmail != null && n.settings.SendFormEmail.toString().toLowerCase() == 'true') {
                     if (n.settings.MessageBodyTemplate == null || n.settings.MessageBodyTemplate.length < 1)
@@ -1225,6 +1155,67 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 }
 
                 if (n.settings.HTTPRequest.Method == null || n.settings.HTTPRequest.Method == '')
+                    return false;
+                break;
+        }
+
+        return true;
+    }
+
+    private validateEmailRecipient(n: NodeModel): boolean {
+        if (n.settings.MessageRecipientType == null || n.settings.MessageRecipientType == '')
+            return false;
+        switch (n.settings.MessageRecipientType) {
+            case 'SpecificUser':
+                if (n.settings.MessageToUser == null || n.settings.MessageToUser.length < 1)
+                    return false;
+                break;
+            case 'Responsibility':
+                if (this.model.Event.Object == 'IntersectType' && n.settings.ResponsibilitySide == null || n.settings.ResponsibilitySide == '')
+                    return false;
+                if (n.settings.ResponsibilityTypeID == null)
+                    return false;
+                if (!_.isArray(n.settings.ResponsibilityTypeID) && n.settings.ResponsibilityTypeID < 0) //we still need to check single value here for legacy workflows
+                    return false;
+                if (_.isArray(n.settings.ResponsibilityTypeID)) {
+                    if (n.settings.ResponsibilityTypeID.length < 1)
+                        return false;
+
+                    let x = n.settings.ResponsibilityTypeID.findIndex(r => r == null || r == '' || r < 0);
+                    if (x > -1)
+                        return false;
+                }
+                break;
+            case "Followers":
+                let obj = this.model.Event.Object;
+                if (obj == 'IntersectType')
+                    return false;
+
+                if (!(this.model.Event.ChangeType == WorkflowChangeType.Add ||
+                    this.model.Event.ChangeType == WorkflowChangeType.Update ||
+                    this.model.Event.ChangeType == WorkflowChangeType.Schedule ||
+                    this.model.Event.ChangeType == WorkflowChangeType.RequestCertification))
+                    return false;
+
+                if ((this.model.Event.ChangeType == WorkflowChangeType.Add) && !(obj == 'IssueType'))
+                    return false
+
+                if ((this.model.Event.ChangeType == WorkflowChangeType.Add) && (obj == 'IssueType')) {
+                    if (this.model.Event.IssueObject != null && this.model.Event.IssueObject != '') {
+                        let objArr = this.model.Event.IssueObject.split("|", 1);
+                        let Issobj = "";
+                        if (objArr.length <= 0)
+                            Issobj = " ";
+                        else
+                            Issobj = objArr[0];
+
+                        if (!(Issobj == 'ArtifactType' || Issobj == 'PolicyType' || Issobj == 'RuleType' || Issobj == 'TaxonomyType'))
+                            return;
+                    }
+                }
+                break;
+            case "Group":
+                if (n.settings.MessageToGroup == null || n.settings.MessageToGroup.length != 36)
                     return false;
                 break;
         }
@@ -1433,6 +1424,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 n.settings.MessageToUser = e.settings.MessageToUser;
                 n.settings.MessageToGroup = e.settings.MessageToGroup;
                 n.settings.IncludePreviousFormResponses = e.settings.IncludePreviousFormResponses;
+                n.settings.SendToDefaultUsers = e.settings.SendToDefaultUsers;
                 n.settings.ResponsibilityTypeID = e.settings.ResponsibilityTypeID;
 
                 if (e.settings.MessageRecipientType == 'Responsibility') {

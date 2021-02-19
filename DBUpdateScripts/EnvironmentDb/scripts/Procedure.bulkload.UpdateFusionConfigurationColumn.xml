@@ -5,12 +5,17 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.bulkload.UpdateFusionConfigurationColumn-v1">
+  <changeSet author="Core" id="Procedure.bulkload.UpdateFusionConfigurationColumn-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+    DROP PROCEDURE IF EXISTS [bulkload].[UpdateFusionConfigurationColumn]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [bulkload].[UpdateFusionConfigurationColumn]
 	@id int,
 	@fusionConfigColumn int
@@ -23,10 +28,6 @@ begin
 	from	LoadItemColumn T
 			inner join Fusion S on lower(S.Name) = lower(T.Value) and T.ColumnIndex = @fusionConfigColumn and T.LoadID = @id
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
 
 		]]>
 	</rollback>

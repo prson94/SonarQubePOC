@@ -55,7 +55,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 
             if (measure.Conditions.Count > 0)
             {
-                measure.Conditions.ForEach(c => {
+                measure.Conditions.OrderBy(c => c.Position).ToList().ForEach(c => {
 
                     if (!metConditions.ConditionMet || matchExtraneousConditions)
                     {
@@ -161,16 +161,11 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                             var metCondition = new MetConditionModel
                             {
                                 ConditionUid = c.ConditionUid,
-                                Position = c.Position
+                                Position = c.Position,
+                                Weight = (c.Weight > 0) ? c.Weight : measure.Weight,
+                                Threshold = (c.Threshold > 0) ? c.Threshold : measure.Threshold
                             };
-                            if (c.Weight > 0)
-                            {
-                                metCondition.Weight = c.Weight;
-                            }
-                            if (c.Threshold > 0)
-                            {
-                                metCondition.Threshold = c.Threshold;
-                            }
+                            metConditions.Conditions.Add(metCondition);
                         }
                     }
 
@@ -184,14 +179,9 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                     metConditions.SelectedWeight = metConditions.Conditions[0].Weight;
                     metConditions.SelectedThreshold = metConditions.Conditions[0].Threshold;
                 }
-
-                // Set the measure weight as the default.
-                if (!metConditions.SelectedWeight.HasValue)
+                else 
                 {
                     metConditions.SelectedWeight = measure.Weight;
-                }
-                if (!metConditions.SelectedThreshold.HasValue)
-                {
                     metConditions.SelectedThreshold = measure.Threshold;
                 }
             }
@@ -233,7 +223,12 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                 o.AdjustedMaxWeight = o.RawMeasureWeight / 
                     items.Where(i => rootUids.Contains(i.MetricAssetUid)).Sum(i => i.RawMeasureWeight);
 
-                o.AdjustedMaxWeight = Math.Round(o.AdjustedMaxWeight ?? 0, 3, MidpointRounding.AwayFromZero);
+                o.AdjustedMaxWeight = Math.Round(o.AdjustedMaxWeight ?? 0, 6, MidpointRounding.AwayFromZero);
+
+                if (o.AdjustedMaxWeight > 1)
+                {
+                    o.AdjustedMaxWeight = 1;
+                }
 
                 decimal totalChildPassingWeights = 0;
                 // Child-level measures.
@@ -247,7 +242,11 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                     foreach (var c in childMeasures)
                     {
                         c.AdjustedMaxWeight = c.RawMeasureWeight / childMeasures.Sum(i => i.RawMeasureWeight);
-                        c.AdjustedMaxWeight = Math.Round(c.AdjustedMaxWeight ?? 0, 3, MidpointRounding.AwayFromZero);
+                        c.AdjustedMaxWeight = Math.Round(c.AdjustedMaxWeight ?? 0, 6, MidpointRounding.AwayFromZero);
+                        if (c.AdjustedMaxWeight > 1)
+                        {
+                            c.AdjustedMaxWeight = 1;
+                        }
                         if (c.DecimalValue.HasValue)
                         {
                             // Typically applies when deling with a DataQuality measure that is NOT threshold-based.
@@ -256,6 +255,11 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                         else 
                         {
                             c.AdjustedWeight = c.Value ? c.AdjustedMaxWeight : 0;
+                        }
+
+                        if (c.AdjustedWeight > 1)
+                        {
+                            c.AdjustedWeight = 1;
                         }
 
                         totalChildPassingWeights += c.AdjustedWeight.Value;
@@ -280,13 +284,21 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                         o.DecimalValue = (float)o.AdjustedWeight;
                     }
                 }
-                o.AdjustedWeight = Math.Round(o.AdjustedWeight.Value, 3, MidpointRounding.AwayFromZero);
+                o.AdjustedWeight = Math.Round(o.AdjustedWeight.Value, 6, MidpointRounding.AwayFromZero);
+                if (o.AdjustedWeight > 1)
+                {
+                    o.AdjustedWeight = 1;
+                }
                 scoreValue += o.AdjustedWeight.Value;
             }
 
-            if (scoreValue > 1) scoreValue = 1; // Catch if the score is more than 100%, for whatever reason. 
+            scoreValue = Math.Round(scoreValue, 6, MidpointRounding.AwayFromZero);
+            if (scoreValue > 1)
+            {
+                scoreValue = 1; // Catch if the score is more than 100%, for whatever reason. 
+            }
 
-            return Math.Round(scoreValue, 3, MidpointRounding.AwayFromZero);
+            return scoreValue;
         }
 
         internal SqlBulkCopy CreateBulkCopy(SqlConnection company, SqlTransaction trans, string tableName)
@@ -296,186 +308,6 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                 DestinationTableName = tableName,
                 BulkCopyTimeout = 0
             };
-        }
-
-        internal DataQualityMeasureQueryModel BuildDataQualityMeasureQueryModel(Guid incomingAllocationUid, Guid assetVersionRollupPathUid)
-        {
-            var dqQueryDetail = new DataQualityMeasureQueryModel
-            {
-                AssetVersionRollupPathUid = assetVersionRollupPathUid
-            };
-
-            var dqCompany = GetEnvironmentConnection();
-
-            if (dqCompany.State != ConnectionState.Open)
-                dqCompany.Open();
-
-            var dqQueryDetails = dqCompany.QueryMultiple(
-                "metrics.BuildDataQualityMeasureQuery @incomingAllocationUid, @assetVersionRollupPathUid",
-                new { incomingAllocationUid, assetVersionRollupPathUid }
-                );
-            var resultSqlQueryStatements = dqQueryDetails.Read<string>();
-            dqQueryDetail.FilterMatchType = dqQueryDetails.Read<MetricMatchType>().Single();
-            var resultFilters = dqQueryDetails.Read<DataQualityMeasureQueryFilterModel>();
-
-            dqQueryDetail.Sql = string.Join("", resultSqlQueryStatements);
-            dqQueryDetail.Filters = resultFilters.ToList();
-
-            if (dqQueryDetail.Filters.Count > 0)
-            {
-
-                dqQueryDetail.Filters.ForEach(f =>
-                {
-                    var listFieldQuery = $" in (select FD.AssetID from FieldDetail FD inner join FieldLookupValue LV on LV.FieldTypeID = FD.FieldTypeID and LV.Value = FD.Value and FD.AssetTypeID = {f.AssetTypeID} and FD.FieldTypeID = {f.FieldTypeID} and ";
-                    var nonListFieldQuery = $" in (select AssetID from FieldDetail where AssetTypeID = {f.AssetTypeID} and FieldTypeID = {f.FieldTypeID} and ";
-
-                    f.WhereQuery += ((f.Type == "Lookup") ? listFieldQuery : nonListFieldQuery);
-                    var queryColumn = ((f.Type == "Lookup") ? "LV.AssetUid" : "FormattedValue");
-
-                    var paramName = $"@P{f.AssetTypeID}_{f.FieldTypeID}";
-                    var dbTypeToCastTo = "";
-                    switch (f.Type)
-                    {
-                        case "Date":
-                        case "DateTime":
-                            dbTypeToCastTo = "datetime";
-                            DateTime dt;
-                            if (DateTime.TryParse(f.Value, out dt))
-                            {
-                                f.Parameter = new SqlParameter(paramName, dt);
-                            }
-                            break;
-                        case "Decimal":
-                            dbTypeToCastTo = "decimal";
-                            decimal dc;
-                            if (decimal.TryParse(f.Value, out dc))
-                            {
-                                f.Parameter = new SqlParameter(paramName, dc);
-                            }
-                            break;
-                        case "Number":
-                            dbTypeToCastTo = "bigint";
-                            long lg;
-                            if (long.TryParse(f.Value, out lg))
-                            {
-                                f.Parameter = new SqlParameter(paramName, lg);
-                            }
-                            break;
-                        default:
-                            if (!string.IsNullOrEmpty(f.Value))
-                            {
-                                f.Parameter = new SqlParameter(paramName, f.Value);
-                            }
-                            break;
-                    }
-
-                    switch (f.Operator)
-                    {
-                        case Operator.After:
-                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) > {paramName}";
-                            break;
-                        case Operator.Before:
-                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) < {paramName}";
-                            break;
-                        //case Operator.Between:
-                        //    break;
-                        case Operator.Contains:
-                            queryColumn = $"{queryColumn} like '%' + {paramName} + '%'";
-                            break;
-                        case Operator.EndsWith:
-                            queryColumn = $"{queryColumn} like '%' + {paramName}";
-                            break;
-                        case Operator.Equals:
-                            queryColumn = (string.IsNullOrEmpty(dbTypeToCastTo)) ?
-                                $"{queryColumn} = {paramName}" :
-                                $"try_cast({queryColumn} as {dbTypeToCastTo}) = {paramName}";
-                            break;
-                        case Operator.GreaterThan:
-                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) > {paramName}";
-                            break;
-                        case Operator.GreaterThanOrEquals:
-                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) >= {paramName}";
-                            break;
-                        //case Operator.In:
-                        //    break;
-                        case Operator.IsFalse:
-                            queryColumn = $"coalesce(try_cast({queryColumn} as bit), 1) = 0";
-                            break;
-                        case Operator.IsTrue:
-                            queryColumn = $"coalesce(try_cast({queryColumn} as bit), 0) = 1";
-                            break;
-                        case Operator.LessThan:
-                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) < {paramName}";
-                            break;
-                        case Operator.LessThanOrEquals:
-                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) <= {paramName}";
-                            break;
-                        case Operator.NotContains:
-                            queryColumn = $"{queryColumn} not like '%' + {paramName} + '%'";
-                            break;
-                        case Operator.NotEquals:
-                            queryColumn = (string.IsNullOrEmpty(dbTypeToCastTo)) ?
-                                $"{queryColumn} <> {paramName}" :
-                                $"try_cast({queryColumn} as {dbTypeToCastTo}) <> {paramName}";
-                            break;
-                        //case Operator.NotIn:
-                        //    break;
-                        case Operator.NotPopulated:
-                            queryColumn = $"{queryColumn} is null";
-                            break;
-                        case Operator.OnOrAfter:
-                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) >= {paramName}";
-                            break;
-                        case Operator.OnOrBefore:
-                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) <= {paramName}";
-                            break;
-                        case Operator.Populated:
-                            queryColumn = $"{queryColumn} is not null";
-                            break;
-                        case Operator.StartsWith:
-                            queryColumn = $"{queryColumn} like {paramName} + '%'";
-                            break;
-                    }
-
-                    f.WhereQuery += queryColumn + ")";
-                });
-
-                var filterSql = " and (" + string.Join(
-                    dqQueryDetail.FilterMatchType == MetricMatchType.Any ? " or " : " and ",
-                    dqQueryDetail.Filters.Select(f => f.WhereQuery)
-                    ) + ") ";
-
-                dqQueryDetail.Sql += filterSql;
-            }
-
-            dqCompany.Close();
-            dqCompany.Dispose();
-
-            return dqQueryDetail;
-        }
-
-        internal List<DataQualityMeasureQueryResultModel> GetDataQualityMeasureQueryResultModels(DataQualityMeasureQueryModel query, Guid assetUid, DateTime minDate, DateTime? maxDate)
-        {
-            var args = new DynamicParameters();
-            args.Add("@AssetUid", assetUid, DbType.Guid);
-            args.Add("@MinimumEffectiveDate", minDate, DbType.Date);
-            args.Add("@MaximumEffectiveDate", maxDate ?? DateTime.UtcNow, DbType.Date);
-            foreach (var p in query.Filters.Where(p => p.Parameter != null).Select(p => p.Parameter))
-            {
-                args.Add(p.ParameterName, p.Value, p.DbType);
-            }
-
-            var dqCompany = GetEnvironmentConnection();
-
-            if (dqCompany.State != ConnectionState.Open)
-                dqCompany.Open();
-
-            var list = dqCompany.Query<DataQualityMeasureQueryResultModel>(query.Sql, args).ToList();
-
-            dqCompany.Close();
-            dqCompany.Dispose();
-
-            return list;
         }
     }
 }

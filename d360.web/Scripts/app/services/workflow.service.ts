@@ -140,13 +140,14 @@ export class WorkflowService extends BaseObservableService {
     deleteWorkflowIssueType(actionTypeUid: string): Observable<ApiResult & ErrorResponse> {
 
         var model = { cascade: false };
+        var queryString = '?_RequestfromUI=true';
 
         const httpHeaders = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
             body: model
         };
 
-        return this.http.delete(`/api/v2/actions/type/${actionTypeUid}`, httpHeaders)
+        return this.http.delete(`/api/v2/actions/type/${actionTypeUid}` + queryString, httpHeaders)
             .pipe(
                 map(response => <ApiResult & ErrorResponse>response),
                 catchError(err => this.handleError(err))
@@ -223,9 +224,9 @@ export class WorkflowService extends BaseObservableService {
             );
     }
  
-    reassignUser(itemStepId: number, resourceId: number): Observable<JsonResult> {
+    reassignUser(itemStepId: number, resourceId: number, clearAssignents: boolean): Observable<JsonResult> {
         return this.http
-            .post(`services/workflow/ReassignWorkflowResource/${itemStepId}/${resourceId}`, null)
+            .post(`services/workflow/ReassignWorkflowResource/${itemStepId}/${resourceId}/${clearAssignents}`, null)
             .pipe(
                 map(response => <JsonResult>response),
                 catchError(err=>this.handleError(err))
@@ -560,8 +561,14 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-    getWorkflowVersionStepFormLookups(object: string, objectId: number):Observable<any> {
-        return this.http.get(`services/workflow/versionstep/form/lookups/${object}/${objectId}`)
+    getWorkflowVersionStepFormLookups(object: string, objectId: number, issueObject: string = null, issueObjectId: number = null): Observable<any> {
+        let query = ``;
+
+        if (issueObject != null) {
+            query = `?issueObject=${issueObject}&issueObjectId=${issueObjectId}`;
+        }
+
+        return this.http.get(`services/workflow/versionstep/form/lookups/${object}/${objectId}${query}`)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))

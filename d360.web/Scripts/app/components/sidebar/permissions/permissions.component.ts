@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy } from "@angular/core";
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { ObjectDetailService } from '../../../services/object-detail.service';
@@ -13,7 +13,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                     <div class="tile tile-detail">
-                        <d3s-responsibility-relations queryType="A" [id]="assetTypeId" [showAddButton]="false" showDeleteButton="true"></d3s-responsibility-relations>                        
+                       <d3s-responsibility-relations queryType="A" [id]="assetTypeId" [showAddButton]="false" [showDeleteButton]="showControls" [showEditButton]="showControls"></d3s-responsibility-relations>                        
                     </div>
                 </div>
             </div>
@@ -21,10 +21,11 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
     providers: [ObjectDetailService]
 })
 
-export class PermissionsComponent extends BaseComponent implements OnInit, OnDestroy, AfterViewInit {
+export class PermissionsComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
     assetTypeId: number;    
     title: string;
+    showControls: boolean;
 
     constructor(private objectDetailService: ObjectDetailService,
         private route: ActivatedRoute,
@@ -39,19 +40,14 @@ export class PermissionsComponent extends BaseComponent implements OnInit, OnDes
     }
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             this.assetTypeId = +params['assetTypeId'];
    
         });
         this.checkSecondaryNavLocalStorage();
-    }
-     
-    ngAfterViewInit(): void {
-        window.setTimeout(() => {
-            if (!this.authenticationService.isAdmin) {            
-                this.router.navigateByUrl('/home');
-            }
-        }, 200);
+        this.authenticationService.checkCurrentUserAdmin().subscribe((isAdmin) => {
+            this.showControls = isAdmin;
+        });
     }
 
     ngOnDestroy() {

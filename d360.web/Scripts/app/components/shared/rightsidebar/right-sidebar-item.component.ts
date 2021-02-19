@@ -7,8 +7,8 @@
                     <ng-template [ngIf]="!active">
                         <i *ngIf="activeIcons.length==1" [class]="'fa fa-lg ' + activeIcons[0]"></i>    
                         <span *ngIf="activeIcons.length>1" class="fa-stack fa-lg">
-                            <i [class]="'fa ' + activeIcons[0] + ' fa-stack-2x'"></i>
-                            <i [class]="'fa ' +  activeIcons[1] + ' fa-stack-1x'"></i>
+                            <i [class]="'fa ' + activeIcons[0] + ' fa-stack-2x'"></i>
+                            <i [class]="'fa ' + activeIcons[1] + ' fa-stack-1x'"></i>
                         </span>
                     </ng-template>
                 </div>
@@ -25,4 +25,4 @@ export class RightSidebarItemComponent {
     @Input() activeIcons: string[] = ["fa-share-alt"];
 
     @Input() url: string;
-};
+}

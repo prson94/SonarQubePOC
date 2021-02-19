@@ -81,10 +81,15 @@ namespace d360.web.Controllers
             try
             {
                 var model = Company.GetById<ResponsibilityTypeRelationOverrideItem>(id);
-                if (model == null) throw new NotFoundException("responsibility");
+                if (model == null)
+                {
+                    throw new NotFoundException("responsibility");
+                }
 
                 if (!Company.HasAssetPermission(model.AssetID, Permission.DeleteResponsibilities))
+                {
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+                }
 
                 Company.Delete(model);
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, new { AssetID = model.AssetID });
@@ -202,6 +207,8 @@ namespace d360.web.Controllers
                     case "Organization":
                         resourceType = "O";
                         break;
+                    default:
+                        break;
                 }
                 overrideID = Company.ResponsibilityTypeRelationOverrideItems.FirstOrDefault(ro => ro.ResponsibilityTypeID == responsibilityID && ro.AssetID == assetID && ro.SecurityAssetID == Resource.ObjectID && ro.SecurityAsset == resourceType).ID;
             }
@@ -289,7 +296,9 @@ namespace d360.web.Controllers
                 {
                     var tag = $"{selectedAllocations[indx].ObjectType}|{selectedAllocations[indx].ObjectID}";
                     if (!allocations.Any(x => x.value == tag))
+                    {
                         selectedAllocations.RemoveAt(indx);
+                    }
                     indx--;
                 }
             }
@@ -312,7 +321,9 @@ namespace d360.web.Controllers
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+                }
 
                 var existing = Company.GetById<ResponsibilityType>(model.ID, i => i.ResponsibilityTypeRelations);
                 if (existing == null) throw new NotFoundException("ownership type");
@@ -379,7 +390,9 @@ namespace d360.web.Controllers
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                }
                 //setting all permission as default
                 int allPermissions = Permission.DeleteAsset.GetList().Sum(i => i.Value);
                 model.ResponsibilityTypeRelations.ToList().
@@ -425,7 +438,9 @@ namespace d360.web.Controllers
             }
 
             if (ignoreObjects.Count > 0)
+            {
                 ignoreObjectTypeSQL = $" AND A.Object not in ({string.Join(",", ignoreObjects.Select(o => "'" + o + "'"))})";
+            }
 
             string fusionJoinSql = "",
                    fusionCaseSql = "",
@@ -489,7 +504,9 @@ order by case Object
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+                }
 
                 var model = Company.Filter<ResponsibilityTypeRelation>(i =>
                     i.ResponsibilityTypeID == responsibilityTypeId &&
@@ -519,12 +536,16 @@ order by case Object
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                }
 
                 var assetType = Company.GetById<AssetType>(model.AssetTypeID);
 
                 if (assetType == null)
+                {
                     return jsonException("Asset Type not found", HttpStatusCode.BadRequest);
+                }
 
                 var rtr = new ResponsibilityTypeRelation { ObjectID = assetType.ObjectID, ObjectType = assetType.Object, ResponsibilityTypeID = model.ResponsibilityTypeID, PermissionsBitMask = 0 };
 
@@ -551,10 +572,15 @@ order by case Object
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+                }
 
                 var existing = Company.Filter<ResponsibilityTypeRelation>(r => r.ObjectType == model.ObjectType && r.ObjectID == model.ObjectID && r.ResponsibilityTypeID == model.ResponsibilityTypeID).SingleOrDefault();
-                if (existing == null) throw new NotFoundException("responsibility type relation");
+                if (existing == null)
+                {
+                    throw new NotFoundException("responsibility type relation");
+                }
 
                 existing.PermissionsBitMask = model.Permissions.Where(i => i.Selected).Sum(i => i.Value);
 
@@ -838,10 +864,15 @@ order by	case
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+                }
 
                 var model = Company.GetById<ResponsibilityTypeRelationRule>(id, i => i.ResponsibilityType);
-                if (model == null) throw new NotFoundException("responsibility type rule");
+                if (model == null)
+                {
+                    throw new NotFoundException("responsibility type rule");
+                }
 
                 var results = await ResponsibilityRepository.DeleteResponsibilityRules(model.ResponsibilityType.UID, new List<Guid>() { model.UID.Value });
                 if (results == null)
@@ -875,10 +906,15 @@ order by	case
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+                }
 
                 var model = Company.GetById<ResponsibilityTypeRelationRule>(id);
-                if (model == null) throw new NotFoundException("responsibility type rule");
+                if (model == null)
+                {
+                    throw new NotFoundException("responsibility type rule");
+                }
 
                 model.LastRunOn = null;
                 Company.Update(model);
@@ -924,10 +960,15 @@ order by	case
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+                }
 
                 var existing = Company.GetById<ResponsibilityTypeRelationRule>(model.ID);
-                if (existing == null) throw new NotFoundException("ownership type");
+                if (existing == null)
+                {
+                    throw new NotFoundException("ownership type");
+                }
 
                 existing.Name = model.Name;
                 existing.StructuredDefinition = model.StructuredDefinition;
@@ -947,11 +988,12 @@ order by	case
                 }
                 if (model.StructuredDefinition?.When != null)
                 {
-                    var allowedFieldTypeIds = Company.FieldTypes.Where(x => x.Object == model.Object & x.ObjectID == model.ObjectID).Select(x => x.ID).ToList();
+                    var allowedFieldTypeIds = Company.FieldTypes.Where(x => x.Object == model.Object && x.ObjectID == model.ObjectID).Select(x => x.ID).ToList();
 
                     foreach (var action in model.StructuredDefinition.When)
                     {
-                        if (!allowedFieldTypeIds.Contains(action.FieldTypeID))
+                        // if a field check type AND its a field type not on this asset type dont allow it
+                        if (action.CheckType == "F"  && !allowedFieldTypeIds.Contains(action.FieldTypeID))
                         {
                             throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_Then_InvalidFieldType);
                         }
@@ -992,7 +1034,9 @@ order by	case
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                }
 
                 model.SetRawFromDefinition();
                 if (model.StructuredDefinition?.Then?.Conditions?.Where(x => x.Value == null).Count() > 0)

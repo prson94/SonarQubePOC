@@ -141,6 +141,9 @@
   <data name="AssetTypeUidIsNotValid" xml:space="preserve">
     <value>{0} is not a valid Asset Type Uid.</value>
   </data>
+  <data name="AssetUidIsNotValid" xml:space="preserve">
+    <value>{0} is not a valid Asset Uid.</value>
+  </data>
   <data name="DeleteAllocationSuccessful" xml:space="preserve">
     <value>Allocation Deleted Successfully.</value>
   </data>

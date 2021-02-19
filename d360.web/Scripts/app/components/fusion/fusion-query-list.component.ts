@@ -15,7 +15,7 @@ import { MessagesObservableService } from '../../services/messages-observable.se
         <div class="col s12">
             <div class="tile tile-detail">
                 <header *ngIf="!isLoading && !showDelete && !showEditor">Fusion Queries For {{fusion?.Name}}
-                    <d3s-tile-actions [hasAdd]="true" (addClick)="showAddQuery()" [hasFilterMode]="true"
+                    <d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true"
                                       [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
                 </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -128,7 +128,7 @@ export class FusionQueryListComponent extends BaseComponent implements OnChanges
             .getFusionQueryAttributeTypes(this.fusion.FusionTypeID, this.fusion.ID)
             .pipe(takeUntil(this.destroySubject$))
             .subscribe(
-                result => {
+                (result) => {
                     this.queries = result;
                     this.selected = this.queries.length > 0 ? this.queries[0] : null;
 
@@ -137,40 +137,9 @@ export class FusionQueryListComponent extends BaseComponent implements OnChanges
             );
     }
 
-    private showAddQuery() {
-        this.selected = null;
-        this.showEditor = true;
-    }
-
     private doSave(data) {
-        data.query.FusionID = this.fusion.ID;
-
-        this.fusionService
-            .saveQueryAttributeType(data.query)
-            .pipe(takeUntil(this.destroySubject$))
-            .subscribe(
-                result => {
-                    this.showMessageForResult(this.messagesService, result);
-
-                    if (result.type != 'error') {
-                        if (data.query.ID == undefined) {
-                            data.query.ID = Number(result.id);
-                            this.queries[this.queries.length] = data.query;
-                            this.treeRequiresUpdate.emit();
-                        } else {
-                            let index = this.queries.findIndex(x => x.ID == data.query.ID);
-
-                            if (index >= 0 && index < this.queries.length)
-                                this.queries[index] = data.query;
-                        }
-
-                        this.selected = data.query;
-                    }
-
-                    this.showEditor = false;
-                }
-            )
-        ;
+        this.messagesService.showError('Not Saved', 'Saving Fusion Queries has been disabled');
+        this.showEditor = false;
     }
 
     private deleteQuery(id: number) {
@@ -178,7 +147,7 @@ export class FusionQueryListComponent extends BaseComponent implements OnChanges
             .deleteFusionQuery(id)
             .pipe(takeUntil(this.destroySubject$))
             .subscribe(
-                result => {
+                (result) => {
                     this.showMessageForResult(this.messagesService, result);
 
                     //remove the template with this id from the grid

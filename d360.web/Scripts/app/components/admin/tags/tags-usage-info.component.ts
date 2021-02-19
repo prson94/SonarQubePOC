@@ -23,9 +23,9 @@ export class TagUsageInfoBox {
 
     load() {
         this.tooltipHTML = `<i class="fa fa-spinner fa-spin fa-2x"></i>`;
-        this.tagsService.getAssetPathsForTag(this.uid).subscribe(assets => {
+        this.tagsService.getAssetPathsForTag(this.uid).subscribe((assets) => {
             let tableHTML: string = '';
-            assets.forEach(a => {
+            assets.forEach((a) => {
                 tableHTML += `<tr><td class="name"><a target="_blank" href='${a.Url}'>${a.DisplayName}</a></td><td class="suppressed">${a.Breadcrumbs}</td></tr>`;
             })
 

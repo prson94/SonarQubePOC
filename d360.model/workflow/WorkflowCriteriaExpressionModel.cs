@@ -77,7 +77,10 @@ namespace d360.model.workflow
         {
             var field = context.FieldTypes.Where(x => x.ID == this.FieldTypeId).FirstOrDefault();
 
-            if (field == null) return "(unknown)";
+            if (field == null)
+            {
+                return "(unknown)";
+            }
 
             return field.FriendlyName;
         }
@@ -151,7 +154,9 @@ namespace d360.model.workflow
                     return val;
                 case CriteriaValueDataType.Boolean:
                     if (string.IsNullOrEmpty(val))
+                    {
                         return null;
+                    }
                     return (val ?? "").ToUpper() == bool.TrueString.ToUpper() ? true : false;
                 case CriteriaValueDataType.String:
                     return (val ?? "").Trim().ToUpper();
@@ -159,18 +164,26 @@ namespace d360.model.workflow
                 case CriteriaValueDataType.Double:
                     double? dVal = null;
                     if (double.TryParse(val, out double dValParsed))
+                    {
                         dVal = dValParsed;
+                    }
                     return dVal;
                 case CriteriaValueDataType.Date:
                     if (string.IsNullOrEmpty(val))
+                    {
                         return null;
+                    }
                     return int.Parse(val);
                 case CriteriaValueDataType.Lookup:
                     {
                         if (int.TryParse(val, out int res))
+                        {
                             return res;
+                        }
                         else
+                        {
                             return -1;
+                        }
                     }
 
             }
@@ -187,28 +200,46 @@ namespace d360.model.workflow
                 DateTime dt = DateTime.MinValue;
 
                 if (Operator == CriteriaOperator.NotPopulated)
+                {
                     return string.IsNullOrEmpty(givenValue) || !DateTime.TryParse(givenValue, out _);
+                }
                 else if (Operator == CriteriaOperator.Populated)
+                {
                     return DateTime.TryParse(givenValue, out _);
+                }
                 else if (!DateTime.TryParse(givenValue, out dt))
+                {
                     return false;
+                }
 
                 DateTime currentDate = DateTime.UtcNow;
 
                 var numDays = (dt.Date - currentDate.Date).TotalDays;
 
                 if (Operator == CriteriaOperator.Equal)
+                {
                     return (numDays == (int)Value);
+                }
                 else if (Operator == CriteriaOperator.NotEqual)
+                {
                     return (numDays != (int)Value);
+                }
                 else if (Operator == CriteriaOperator.GreaterThan)
+                {
                     return (numDays > (int)Value);
+                }
                 else if (Operator == CriteriaOperator.GreaterThanOrEqual)
+                {
                     return (numDays >= (int)Value);
+                }
                 else if (Operator == CriteriaOperator.LessThan)
+                {
                     return (numDays < (int)Value);
+                }
                 else if (Operator == CriteriaOperator.LessThanOrEqual)
+                {
                     return (numDays <= (int)Value);
+                }
 
                 throw new Exception("INVALID DATE OPERATION");
             }

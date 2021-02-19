@@ -13,14 +13,16 @@ namespace d360.model.DataAccessLayer
         bool DoesAllocationExist(Guid allocationUid, AllocationApiUpsertModel model);
         MetricAllocation GetAllocationByModel(AllocationApiUpsertModel model);
         MetricAllocation GetAllocationByUid(Guid allocationUid);
-        List<AllocationApiGetModel> GetAllocations(IEnumerable<KeyValuePair<string, string>> queryParams, out string error);
+        List<AllocationApiGetModel> GetAllocations(IEnumerable<KeyValuePair<string, string>> queryParams, out string error, AssetTypeClass? Class = null);
+        Task<DataQualityScoreItemEvidenceViewModel> GetEvidenceForDataQualityScoreItem(Guid scoreItemUid, IEnumerable<KeyValuePair<string, string>> queryParams);
         bool HasActiveMeasures(MetricAllocation alloc);
         AllocationApiGetModel PostAllocation(AllocationApiUpsertModel model, ref MetricAllocation alloc);
         AllocationApiGetModel UpdateAllocation(AllocationApiUpsertModel model, MetricAllocation alloc);
         Task<List<AllocationApiGetUnallocatedAssetTypeModel>> GetUnallocatedAssetTypes(ScoreType scoreType);
         List<AssetTypeClass> AllowedClassesForScoreType();
-        List<ExternalScoreResultsApiResultsModel> PostExternalResults(ScoreType scoreType, List<ExternalScoreResultsApiPostModel> model, ApiExecution execution);
-        List<BulkMetricTemporaryTableModel> PostScoreResults(ScoreType scoreType, ApiExecution execution, List<ScoreResultApiPostModel> results);
-
+        List<ExternalScoreResultApiResponseModel> PostExternalResults(MetricAllocation allocation, List<ExternalScoreResultApiRequestModel> model, ApiExecution execution);
+        List<ExternalScoreResultApiResponseModel> PostExternalResults(ScoreType scoreType, List<ExternalScoreResultApiRequestModel> model, ApiExecution execution);
+        List<InternalScoreResultApiResponseModel> PostScoreResults(ScoreType scoreType, ApiExecution execution, List<InternalScoreResultApiRequestModel> results);
+        List<InternalScoreResultApiResponseModel> PostScoreResults(MetricAllocation allocation, ApiExecution execution, List<InternalScoreResultApiRequestModel> results);
     }
 }

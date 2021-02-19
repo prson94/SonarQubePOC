@@ -156,9 +156,9 @@ export class AdminDashboardsEditor {
             ot += "Type";
         let otid: number = +object[1];
         this.responsibilityTypeService.getRelationsByObjectType(ot, otid).
-            subscribe(res => {
+            subscribe((res) => {
                 this.responsibilities = [];
-                res.forEach(o => {
+                res.forEach((o) => {
                     this.responsibilities.push({
                         label: o.ResponsibilityTypeName,
                         value: o.ResponsibilityTypeID
@@ -169,4 +169,4 @@ export class AdminDashboardsEditor {
                 }
             });
     }
-};
+}

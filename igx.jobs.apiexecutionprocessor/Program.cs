@@ -367,7 +367,7 @@ namespace igx.jobs.apiexecutionprocessor
                                 dbExecutionItem.Error = deleteAssetTypesResults.Count(i => !i.Success);
                                 log.WriteLine($"DELETE Asset Types (DB Complete): Total results: {deleteAssetTypesResults.Count}.");
 
-                                company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = 0 });
+                                company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = 0 });
 
                                 await SaveResultsJsonToAzure(deleteAssetTypesResults, log, "Asset Types", HttpMethod.Delete);
 
@@ -411,7 +411,7 @@ namespace igx.jobs.apiexecutionprocessor
                                     var assetMeasures = company.GetAssetMeasuresFromRuleResults(ruleResultUids);
                                     if (assetMeasures.Count > 0)
                                     {
-                                        company.SendScoreEventWithPayload(dbExecutionItem.ExecutionID, ScoreQueueChangeType.AssetMeasures, assetMeasures);
+                                        company.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, assetMeasures, dbExecutionItem.ExecutionID);
                                     }
                                 }
 

@@ -2,7 +2,7 @@
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, ScorePoint } from '../../../models/score.model';
-import { ScoreType, ScoreTypeAllocation } from '../../../models/metrics.model';
+import { MetricFieldTypeViewModel, ScoreType, ScoreTypeAllocation } from '../../../models/metrics.model';
 import { Observable, Subject } from 'rxjs';
 import { SelectItem } from 'primeng/api';
 import { MetricsService } from '../../../services/metrics.service';
@@ -19,6 +19,9 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     @Input() uid: string;
     @Input() objectName: string;
     assetTypeUid: string;
+
+    assetTypeName: string = "";
+    assetName: string = "";
 
     scoresPoints: ScorePoint[];
     measurePoints: ScorePoint[];
@@ -41,9 +44,12 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
     ScoreType = ScoreType;
     private selectedScoreType = ScoreType.Governance;
+    private allocationUid: string = "";
     private scoreTypes: number[] = [];
     private allocationData: ScoreTypeAllocation[] = [];
     showEmptyMessage: boolean = false;
+    
+    fields: MetricFieldTypeViewModel[];
 
     showExpandAndCollapse: boolean = true;
     totalScore: number;
@@ -91,7 +97,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     }
 
     private selectScoreItem(item: PointBreakdown) {
-        this.pointBreakdown.forEach(x => {
+        this.pointBreakdown.forEach((x) => {
             x._isSelected = false;
             if (x.Measures) {
                 x.Measures.forEach(m => m._isSelected = false);
@@ -116,6 +122,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                         var selectedDate = new Date(this.scoreDate);
                         if (effDate < selectedDate) {
                             this.selectedMetric = metric;
+                            this.selectedMetric.AdjustedWeight = this.selectedPoint._adjustedMaxWeight;
                         }
                         else {
                             var isMetricSet: boolean = false;
@@ -127,6 +134,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                                             this.selectedMetric = item;
                                             this.selectedMetric['Uid'] = this.selectedMetric['MeasureUid'];
                                             this.selectedMetric['State'] = 3;
+                                            this.selectedMetric.AdjustedWeight = this.selectedPoint._adjustedMaxWeight;
                                             isMetricSet = true;
                                             this.cdRef.markForCheck();
                                         }
@@ -145,10 +153,15 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
             this.assetService.getUIDetailsForAssetUID(this.uid).subscribe(res => {
                 this.assetTypeUid = res.AssetTypeUid;
+                this.assetName = res.DisplayValue;
+                this.assetTypeName = res.TypeName;
+                this.metricService.getFieldTypeViewModelsByAssetType(this.assetTypeUid).subscribe((x) => {
+                    this.fields = x;
+                });
             });
 
             this.metricService.getActiveAllocationsByAssetUid(this.uid).subscribe(x => {
-                this.scoreTypes = x.map(x => <any>ScoreType[x.scoreType] );
+                this.scoreTypes = x.map(x => <any>ScoreType[x.scoreType]);
                 this.allocationData = x;
                 if (x.length > 0) {
                     this.setSelectedButton(this.scoreTypes[0])
@@ -244,6 +257,10 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
         return style;
     }
 
+    round(value: number) {
+        return Math.round(value * 1000) / 1000;
+    }
+
     private loadPoints(isTabChange: boolean = false) {
         this.isDataLoaded = false;
         if (this.uid) {
@@ -254,6 +271,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 .subscribe(res => {
 
                     let selectedAllocation = this.allocationData.find(o => { return <any>ScoreType[o.scoreType] == this.selectedScoreType });
+                    this.allocationUid = selectedAllocation.uid;
 
                     this.pointBreakdown = res;
                     this.isDQAndNoItems();
@@ -276,18 +294,22 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                             pb.Measures.forEach(m => {
                                 m._measureSumWeight = pb.AdjustedWeight;
                                 m._adjustedGroupWeight = pb.AdjustedMaxWeight;
-                                m._adjustedWeight = Math.round(m.AdjustedWeight * pb.AdjustedMaxWeight * 1000) / 1000;
-                                m._adjustedMaxWeight = m.AdjustedMaxWeight * pb.AdjustedMaxWeight;
+                                m._adjustedWeight = this.round(m.AdjustedWeight * pb.AdjustedMaxWeight);
+                                m._adjustedMaxWeight = this.round(m.AdjustedMaxWeight * pb.AdjustedMaxWeight);
                                 m._badgeStyle = this.calculateBadgeStyle(selectedAllocation, m.AdjustedWeight / m.AdjustedMaxWeight);
                             });
                         }
 
                         pb._badgeStyle = this.calculateBadgeStyle(selectedAllocation, pb.AdjustedWeight / pb.AdjustedMaxWeight);
-                        pb._adjustedMaxWeight = pb.AdjustedMaxWeight;
-                        pb._adjustedWeight = pb.AdjustedWeight;
+                        pb._adjustedMaxWeight = this.round(pb.AdjustedMaxWeight);
+                        pb._adjustedWeight = this.round(pb.AdjustedWeight);
 
                         this.totalScore += pb._adjustedWeight;
                     });
+
+                    if (this.totalScore >= 0.999) {
+                        this.totalScore = 1;
+                    }
 
                     this.totalScoreBadgeStyle = this.calculateBadgeStyle(selectedAllocation, this.totalScore);
 
@@ -399,6 +421,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                     this.loadPoints(true);
                     this.isDQAndNoItems();
                 });
+
                 break;
             case ScoreType.DataQuality:
                 this.showGovernanceScores = false;
@@ -439,7 +462,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
             return '0%';
         if (!val)
             return;
-        if (val == 1)
+        if (val >= 1)
             return '100%'
         let s = val + '0000';
         s = s.replace('0.', '');
@@ -509,8 +532,21 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                     })
                 }
             }
-
         }
+    }
+
+    getTooltipForScoreBadge(item: PointBreakdown) {
+        if (item.IsGroup)
+            return "Measure Score = sum of sub-measures " + this.getAsPrecentage(item._adjustedWeight);;
+
+        return "Measure Score = " + this.getAsPrecentage(item._adjustedWeight);
+    }
+
+    getTooltipForWeightBadge(item: PointBreakdown) {
+        if (item.IsGroup)
+            return "Maximum possible score = adjusted measure weight = " + this.getAsPrecentage(item._adjustedMaxWeight);
+
+        return "Maximum possible score for measure = measure weight = " + this.getAsPrecentage(item._adjustedMaxWeight);
     }
 
 }

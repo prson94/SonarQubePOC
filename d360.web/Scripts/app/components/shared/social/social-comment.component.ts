@@ -1,64 +1,18 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit } from '@angular/core';
-import { BaseComponent } from '../base.component';
-import { SocialService } from '../../../services/social.service';
-import { SocialComment, SocialVoteType, SocialCommentType } from '../../../models/social.model';
-import { Router } from '@angular/router';
-import { CurrentCompanySettings } from '../../../static/company-settings'
+﻿import { Input, Component, EventEmitter, Output, OnInit } from "@angular/core";
+import { BaseComponent } from "../base.component";
+import { SocialService } from "../../../services/social.service";
+import { CommentAggregateVoteDetail, CommentDetail, CommentType, Emoji } from "../../../models/social.model";
+import { Router } from "@angular/router";
+import { CurrentCompanySettings } from "../../../static/company-settings"
+import { map } from "rxjs/operators";
+import { ResourcesService } from "../../../services/resources.service";
+import { forEach } from "core-js/fn/array";
+
+declare var CurrentResourceID;
 
 @Component({
-    selector: 'd3s-social-comment',    
-    template: ` 
-                <div class="row comment" (mouseenter)="showTools=true" (mouseleave)="showTools=false" [ngStyle]="{'background':(showTools ? '#EFEFEF': '')}">                                
-                    <div class="col s1 right-align">
-                        <img class="user" height="35" [src]="'/resources/image/' + comment.CreatingResourceID + '?size=35'" width="35">                        
-                    </div>
-                    <div class="col s11">
-                        <div class="row" *ngIf="!showEdit">
-                            <div class="col s12 toolbox">                                
-                                <span class="commentType"><i class="fa" [ngClass]="{'fa-comment blue-text': isSocial() ,'fa-question-circle purple-text': isChallenge(), 'fa-exclamation-triangle orange-text': isIssue()}" aria-hidden="true" ></i></span>&nbsp;<span class="user">                                    
-                                    <d3s-preview-tooltip objectType="Resource" [objectId]="comment.CreatingResourceID">{{comment.ResourceName}}</d3s-preview-tooltip>
-                                </span>&nbsp;<span class="postDate">{{comment.DateCreated | date:'medium'}}</span> 
-                                <div *ngIf="showTools" class="comment-tools">
-                                    <a *ngIf="canReply()" class="comment-tool-item-mid" (click)="showReply=true;"><i class="fa fa-reply" aria-hidden="true" ></i></a>
-                                    <a *ngIf="comment.IsDeletable" class="comment-tool-item-mid" (click)="deleteCommentClick();"><i class="fa fa-trash-o" aria-hidden="true" ></i></a>                                    
-                                    <a *ngIf="comment.IsEditable" class="comment-tool-item-mid" (click)="showEdit = true;editText = comment.Body"><i class="fa fa-pencil-square-o" aria-hidden="true" ></i></a>                                    
-                                    <a class="comment-tool-item-mid" (click)="doVote(socialVoteType.UpVote);"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'up'" [icon]="'thumbs-o-up'" [iconColor]="'#646464'"></d3s-tooltip> {{upVotes}}</a>
-                                    <a class="comment-tool-item-mid" (click)="doVote(socialVoteType.DownVote);"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'down'" [icon]="'thumbs-o-down'" [iconColor]="'#646464'"></d3s-tooltip> {{downVotes}}</a>
-                                </div>                      
-                            </div>
-                            <div class="col s12 comment-box" [innerHtml]="comment.Body"></div>                            
-                            <div class="col s12">
-                                <i class="fa fa-tag" aria-hidden="true"></i> Comment Tags: <d3s-preview-tooltip *ngFor="let tag of comment.Tags" class="comment-tag" (click)="changeUrl(tag.Url)" [objectType]="tag.Object" [objectId]="tag.ObjectID" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">{{tag.TextPath}}</d3s-preview-tooltip>
-                            </div>
-                        </div>                        
-                        <div class="row" *ngIf="showEdit">
-                            <div class="col s11 offset-s1" style="padding-top:15px">   
-                                <p-editor name="Edit" [style]="{'height':'50px'}" [(ngModel)]="editText" ></p-editor>                 
-                            </div>
-                            <div class="col s11 offset-s1" style="padding-top:15px;padding-botton:15px;">   
-                                <button pButton type="button" (click)="handleEditClick();" label="Edit"></button>
-                                <button pButton type="button" (click)="showEdit = false;" label="Cancel"></button>
-                            </div>
-                        </div>
-                    </div>                                    
-                </div> 
-                <div class="row add-reply" *ngIf="showReply">
-                    <div class="col s11 offset-s1" style="padding-top:15px">   
-                        <p-editor placeholder="Post Reply..." name="Reply" [style]="{'height':'50px'}" [(ngModel)]="replyText" ></p-editor>                 
-                    </div>
-                    <div class="col s11 offset-s1" style="padding-top:15px;padding-botton:15px;">   
-                        <button pButton type="button" (click)="handleReplyClick();" label="Post"></button>
-                        <button pButton type="button" (click)="showReply = false;replyText='';" label="Cancel"></button>
-                    </div>
-                </div>   
-                <div class="row reply" *ngFor="let response of comment?.Comments">
-                    <div class="col s2 right-align"><img class="user" height="35" [src]="'/resources/image/' + response.CreatingResourceID + '?size=35'" width="35"></div>
-                    <div class="col s10">
-                        <div><span class="user"><d3s-preview-tooltip [objectType]="'Resource'" [objectId]="comment.CreatingResourceID">{{response.ResourceName}}</d3s-preview-tooltip></span>&nbsp;<span class="postDate">{{response.DateCreated | date:'medium'}}</span>                        
-                        <div [innerHtml]="response.Body"></div>                            
-                    </div>                                
-                </div>                 
-                `,    
+    selector: "d3s-social-comment",    
+    templateUrl: "./social-comment.component.html",    
     styles: [`
                 span.user{
                     font-weight:bold;
@@ -69,6 +23,17 @@ import { CurrentCompanySettings } from '../../../static/company-settings'
                 img.user{
                     border-radius:5px;
                 }                                              
+                .comment-removed {
+                    border-radius: 3px;
+                    padding: 5px;
+                    background: #EFEFEF;
+                    border: 1px solid #CCCCCC;
+                    font-size: 90%;
+                }       
+                .comment-modified {
+                    margin-left: 5px;
+                    font-style: oblique;
+                }
                 .comment-tag{
                     border-radius: 5px;
                     margin-right: 5px;
@@ -105,11 +70,11 @@ import { CurrentCompanySettings } from '../../../static/company-settings'
                     position:relative;
                 }
             `]
-
 })
 
 export class SocialCommentComponent extends BaseComponent implements OnInit {
-    @Input() comment: SocialComment;
+    @Input() comment: CommentDetail;
+    @Input() isAdmin: boolean;
 
     @Output() delete = new EventEmitter();
     @Output() reply = new EventEmitter();
@@ -125,32 +90,71 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     replyText: string = "";    
     editText: string = "";
 
-    socialVoteType = SocialVoteType; // for template to use enum
-       
-
-    constructor(private socialService: SocialService, private router: Router) {
-        super();
-    }
-
-    ngOnInit() {
-        if (this.comment && this.comment.Votes) {
-            this.calculateVotes();               
-        }
-    }   
+    isDeletable: boolean = false;
+    isEditable: boolean = false;
+    resourceUid: string = "";
     
-    calculateVotes() {
-        this.upVotes = this.comment.Votes.filter(res => res.Vote == SocialVoteType.UpVote).length;
-        this.downVotes = this.comment.Votes.filter(res => res.Vote == SocialVoteType.DownVote).length;
+
+    constructor(private socialService: SocialService, private router: Router, private resourcesService: ResourcesService) {
+        super(); 
+    } 
+
+    ngOnInit(): void {
+        this.isDeletable = this.isAdmin || (this.comment.CreatedBy == CurrentResourceID);
+        this.isEditable = this.comment.CreatedBy == CurrentResourceID;
+
+        if (this.comment) {
+            this.resourcesService.getResource(this.comment.CreatedBy)
+                .subscribe((r) => {
+                    this.comment.CreatedByUid = r.items[0].uid;
+                });
+            if (this.comment.Comments && this.comment.Comments.length > 0) {
+                this.comment.Comments.forEach((x) => {
+                    this.resourcesService.getResource(x.CreatedBy)
+                        .subscribe((i) => {
+                            x.CreatedByUid = i.items[0].uid;
+                        });
+                });
+            }
+        }
+
+        this.calculateVotes();
     }
 
-    doVote(vote: SocialVoteType) {
-        this.socialService.vote(this.comment.ID, vote).subscribe(
-            res => {
-                if (res) {                    
-                    this.comment.Votes = res;                    
-                    this.calculateVotes();    
+    doVote(emojiString: string) {
+        let emoji: Emoji = Emoji[emojiString];
+
+        if (this.isLoading === true) {
+            return;
+        }
+
+        this.isLoading = true;
+
+        this.socialService.addVote(this.comment.Uid, emoji)
+            .subscribe((res) => {
+                if (res) {
+                    this.socialService.getCommentVotes(this.comment.Uid)
+                        .subscribe((v) => {
+                            this.comment.Emojis.forEach((e) => e.Count = 0);
+
+                            v.forEach((i) => {
+                                let emojis = this.comment.Emojis.find((e) => e.Emoji === i.emoji);
+                                if (emojis) {
+                                    emojis.Count++;
+                                } else {
+                                    this.comment.Emojis.push({ Emoji: emoji, Count: 1 });
+                                }
+                            });
+                            this.calculateVotes();
+                            this.isLoading = false;
+                        });
                 }
             });
+    }
+
+    private calculateVotes() {
+        this.downVotes = this.comment.Emojis.filter((e) => e.Emoji === Emoji.ThumbsDown).reduce((prev, curr) => prev + curr.Count, 0);
+        this.upVotes = this.comment.Emojis.filter((e) => e.Emoji === Emoji.ThumbsUp).reduce((prev, curr) => prev + curr.Count, 0);
     }
 
     private deleteCommentClick() {
@@ -161,45 +165,42 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
         this.router.navigate([route]); 
     }
 
+    isModified() {
+        return (this.comment.CreatedOn != this.comment.UpdatedOn);
+    }
+
     private commentTypeIcon() {
-        switch (this.comment.CommentTypeID) {
-            case SocialCommentType.Challenge:
-                return "Challenge";
-            case SocialCommentType.Issue:
+        switch (this.comment.CommentType) {
+            case CommentType.Issue:
                 return "Issue";
-            case SocialCommentType.Social:
+            case CommentType.Social:
                 return "";
-            case SocialCommentType.Task:
-                return "Task";            
         }
 
         return "Other";
     }
 
-    handleReplyClick() {        
-        this.reply.emit({ reply: this.replyText, commentId: this.comment.ID });
+    handleReplyClick() {
+        this.reply.emit({ reply: this.replyText, parentUid: this.comment.Uid });
         this.showReply = false;
     }
 
     handleEditClick() {
+        this.comment.UpdatedOn = new Date(0); //Just to show the modified symbol.
         this.comment.Body = this.editText;
         this.edit.emit({ comment: this.comment });
         this.showEdit = false;
     }
 
-    isChallenge(): boolean {
-        return this.comment.CommentTypeID == SocialCommentType.Challenge;
-    }
-
     isSocial(): boolean {        
-        return this.comment.CommentTypeID == SocialCommentType.Social;
+        return this.comment.CommentType == CommentType.Social;
     }
 
     isIssue(): boolean {
-        return this.comment.CommentTypeID == SocialCommentType.Issue;
+        return this.comment.CommentType == CommentType.Issue;
     }
 
     canReply(): boolean {
         return !CurrentCompanySettings.disableCommunityPosting;
     }
-};
+}

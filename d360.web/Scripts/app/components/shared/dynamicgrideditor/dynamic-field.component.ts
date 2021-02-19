@@ -85,7 +85,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     private useColorMultiSelect: boolean = false;
     private currentRelationshipLoadedFilter;
-
+    private selectedRelationRowIndex: number = null;
 
     private component_uid: string = '';
     defaultColorOptions: SelectItem[] = [];
@@ -327,7 +327,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         if (this.field && this.field.Validations) {
             for (let validation of this.field.Validations) {
                 if (validation.regex) {
-                    this.regexErrorMessage = validation.message ? String(validation.message).replace(/<[^>]+>/gm, '') : '';
+                    this.regexErrorMessage = validation.message ? String(validation.message).replace(/<[^>]+>/gm, '') : 'Value does not match the required pattern.';
                 } else if (validation.rule && validation.rule.startsWith('increment')) {
                     this.Increment = +validation.rule.split("increment=")[1];
                 } else if (validation.rule && validation.rule.startsWith('min')) {
@@ -374,6 +374,12 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 this.field.Value = this.field.Items.filter(x => x.Selected == true).map(x => x.Value)
             }
 
+            if (this.field.FieldType == 'Lookup' && this.field.Value == null) {
+                setTimeout(() => {
+                    this.form.controls[this.field.FieldName].setValue(null);
+                });
+            }
+
             window.setTimeout(() => {
 
                 this.listItemChange.emit({ field: this.field, value: this.field.Value });
@@ -393,7 +399,6 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         if (this.field.UseColorControl) {
             this.field.Items = this.getColorItemsAsSelectItem(this.field.Items);
         }
-
     }
 
     ngOnChanges() {
@@ -645,7 +650,6 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         if (e == null || e.target == null || min == null || max == null) {
             return;
         }
-
         if (newVal != null && (newVal != 0 || newVal != +val) && !isNaN(newVal)) {
             this.form.controls[this.field.FieldName].setValue(newVal);
             this.field.Value = newVal;
@@ -701,6 +705,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
                 if (x > -1) {
                     this.relationItems[i] = this.field.Items[x];
+                    this.selectedRelationRowIndex = x;
                 }
             }
 

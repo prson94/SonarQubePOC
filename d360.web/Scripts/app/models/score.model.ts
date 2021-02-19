@@ -1,8 +1,50 @@
-﻿import { ScoreType } from "./metrics.model";
+﻿import { AssetTypeClass } from "./asset.model";
+import { ScoreType } from "./metrics.model";
+import { Operator } from "./operator.model";
+
+//#region Evidence Models
+
+export class DataQualityScoreItemEvidenceItemRollupPathModel {
+    Uid: string;
+    AssetPath: string;
+    AssetTypePath: string;
+    Predicate: string;
+    Position: number;
+}
+
+export class DataQualityEvidenceItemModel {
+    RollupPath: DataQualityScoreItemEvidenceItemRollupPathModel[];
+    ResultUid: string;
+    OwningAssetUid: string;
+    OwningAssetPath: string;
+    OwningAssetTypePath: string;
+    OwningAssetDisplayPath: string;
+    EvaluatedAssetUid: string;
+    EvaluatedAssetPath: string;
+    EvaluatedAssetTypePath: string;
+    EvaluatedAssetDisplayPath: string;
+    EvaluatedAssetClass: AssetTypeClass;
+    EffectiveDate: Date;
+    RunDate: Date;
+    TotalCount: number;
+    PassCount: number;
+    FailCount: number;
+    PassFraction: number;
+}
+
+export class DataQualityEvidenceModel {
+    pageSize: number;
+    pageNum: number;
+    total: number;
+    items: DataQualityEvidenceItemModel[]
+}
+
+//#endregion Evidence Models
 
 export class PointBreakdown {
     Uid: string;
     ParentUid: string;
+    ScoreItemUid: string;
     IsGroup: boolean;
     Name: string;
     Description: string;
@@ -14,7 +56,8 @@ export class PointBreakdown {
     EffectiveDate: string;
     EndDate: string;
     ScoreType: ScoreType;
-    Conditions: PointBreakdownCondition[];
+    MatchConditionsOnly;
+    Conditions: PointBreakDownConditionItem[];
     Measures: PointBreakdown[];
 
 
@@ -29,10 +72,20 @@ export class PointBreakdown {
     _measureSumWeight: number = 0;
 }
 
+export class PointBreakDownConditionItem {
+    Weight: number;
+    MatchType: number;
+    ConditionItems: PointBreakdownCondition[]; 
+}
+
 export class PointBreakdownCondition {
     FieldName: string;
-    Operator: string;
+    Operator: Operator;
     Value: string;
+
+    //display only
+    _formattedValue: string;
+
 }
 
 export class ScorePoint {

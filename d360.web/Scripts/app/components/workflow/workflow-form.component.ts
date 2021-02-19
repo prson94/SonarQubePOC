@@ -45,6 +45,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private typeName: string;
     private hasObjectReassign: boolean = true;
     private resourceId: number;
+    private IsClearAssignementsAllowed: boolean = true;
 
     fieldType = WorkflowFormFieldType;
     private isCompleted: boolean = false;
@@ -60,6 +61,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private selectedReassignObjectId: number;
     private selectedReassignObjectType: string;
     private selectedReassignResource: number;
+    private clearAssignments: boolean = false;
     private searchSub: ISubscription;
     @Input() hasCloseButton: boolean = true;
     private isSetValidatior: boolean = false;
@@ -104,7 +106,12 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
         let assignValidation: boolean = false;
         this.isSetValidatior = true;
         this.fields.forEach(x => {
-            if (x.Required && x.FieldType != WorkflowFormFieldType.Boolean) {
+            if (x.Required && x.FieldType == WorkflowFormFieldType.Link) {
+                assignValidation = true;
+                this.workflowFormGroup.controls[`inputUrl_${count}`].setValidators([Validators.required]);
+                this.workflowFormGroup.controls[`inputUrl_${count}`].updateValueAndValidity();
+            }
+            else if (x.Required && x.FieldType != WorkflowFormFieldType.Boolean) {
                 assignValidation = true;
                 this.workflowFormGroup.controls[`input_${count}`].setValidators([Validators.required]);
                 this.workflowFormGroup.controls[`input_${count}`].updateValueAndValidity();
@@ -132,7 +139,14 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
            return false;
         } 
         for (var i = 0; i < this.fields.length; i++) {
-            if (Array.isArray(this.fields[i].Value)) {
+            var isLink = this.fields[i].FieldType == WorkflowFormFieldType.Link;
+            if (isLink) {
+                let name = this.workflowFormGroup.controls[`inputName_${i}`].value;
+                let url = this.workflowFormGroup.controls[`inputUrl_${i}`].value;
+                var linkString = name + '|' + url;
+                this.fields[i].Value = linkString;
+            }
+            else if (Array.isArray(this.fields[i].Value)) {
                 this.fields[i].Value = this.fields[i].Value.join();
             }
         }
@@ -163,11 +177,12 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                 this.issueTypeName = res.IssueTypeName;
                 this.objectTypeID = res.ObjectTypeID;
                 this.typeName = res.TypeName;
+                this.IsClearAssignementsAllowed = res.IsClearAssignementsAllowed;
                 if (res.AllowReassignObject)
                     this.reassignAvailableTypes.push({ value: 'object', text: 'Object' });
                 if (res.AllowReassignResource) {
                     this.reassignAvailableTypes.push({ value: 'resource', text: 'Resource' });
-                    this.loadResources();
+                    this.loadResources(); 
                 }
                 this.hasObjectReassign = (this.reassignAvailableTypes.length > 0);
             }),map(() => {
@@ -203,7 +218,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
             });
         }
         else if (this.reassignType == 'resource') {
-            this.workflowService.reassignUser(this.workflowItemStepId, this.selectedReassignResource).subscribe(result => {
+            this.workflowService.reassignUser(this.workflowItemStepId, this.selectedReassignResource, this.clearAssignments).subscribe(result => {
                 this.showMessageForResult(this.messagesService, result, 'Successfully Assigned');
                 this.isLoading = false;
                 this.isCompleted = true;

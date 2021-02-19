@@ -5,7 +5,6 @@ export class PolicyType {
     Description: string;   
     ID: number;
     AssetTypeID: number;
-    AllowAttributes: boolean;
     NymTypes: NymType[];
     MaximumDepth: number;
     AssetTypeUID: string;

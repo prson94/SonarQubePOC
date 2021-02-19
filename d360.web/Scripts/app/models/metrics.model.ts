@@ -1,6 +1,7 @@
 ﻿import { FieldType } from "./fields.model";
 import { State, AssetTypeClass } from "./asset.model";
 import { OperatorModel, Operator } from "./operator.model";
+import { FieldCondition } from "./field-condition-grid.models";
 
 export class MetricAssetViewModel {
     Uid: string;
@@ -13,8 +14,9 @@ export class MetricAssetViewModel {
     Description: string;
     EffectiveDate: Date;
     Weight: number;
+    AdjustedWeight: number;
     Threshold: number;
-    MatchConditionsOnly: boolean;
+    MatchConditionsOnly: boolean = false;
     ConditionGroups: MetricAssetVersionConditionViewModel[] = [];
     VersionCount: number;
     HasResults: boolean;
@@ -41,6 +43,12 @@ export class MetricAssetVersionConditionViewModel {
     MatchType: MatchTypeString;
 
     ConditionItems: MetricAssetVersionConditionItemViewModel[] = [];
+
+    //used for the fieldconditiongrids
+    conditionItemFields: FieldCondition[] = [];
+    DisplayOrder: number;
+    DisplayWeight: number;
+
 }
 
 export class MetricAssetVersionConditionItemViewModel {

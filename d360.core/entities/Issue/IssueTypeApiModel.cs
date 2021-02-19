@@ -1,4 +1,5 @@
 ﻿using d360.core.enums;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,5 +65,29 @@ namespace d360.core.entities
         public string Name { get; set; }
         [DataMember]
         public string Path { get; set; }
+        [IgnoreDataMember]
+        protected string ResponsibilitiesJson { get; set; }
+        [DataMember]
+        public List<IssueTypeAllocationsResponsibility> Responsibilities { 
+            get
+            {
+                return JsonConvert.DeserializeObject<List<IssueTypeAllocationsResponsibility>>(string.IsNullOrEmpty(ResponsibilitiesJson) ? "[]" : ResponsibilitiesJson);
+            } 
+        }
+
+    }
+
+    public class IssueTypeAllocationsResponsibility
+    {
+        public string Name { get; set; }
+        public Guid Uid { get; set; }
+    }
+
+    public class IssueTypeAllocationRequest
+    {
+        [DataMember]
+        public Guid assetTypeUid { get; set; }
+        [DataMember]
+        public IEnumerable<Guid> responsibilityTypeUid { get; set; }
     }
 }

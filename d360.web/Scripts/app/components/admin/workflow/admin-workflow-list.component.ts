@@ -90,7 +90,7 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
     ];
 
     get globalFilterFields(): string[] {
-        return this.columns.map(c => c.datafield);
+        return this.columns.map((c) => c.datafield);
     }
 
     constructor(
@@ -108,7 +108,7 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
 
         this.isLoading = true
         this.workflowService.cloneWorkflowDiagramModel(uid)
-            .subscribe(x => {
+            .subscribe((x) => {
                 this.isLoading = false;
                 this.onEditClick.emit({ uid: x, isClone: true });
             });
@@ -134,11 +134,11 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
                 map(r => this.changeTypes = r),
                 map(() =>
                     this.workflowService.getAdminTypes()
-                        .subscribe(r => {
+                        .subscribe((r) => {
                             let workflowItems: WorkflowListItem[] = [];
                            
                            
-                            r.filter(x=>x.State == 'Active' || x.State== 'InActive').forEach(x => {
+                            r.filter((x) => x.State == 'Active' || x.State== 'InActive').forEach((x) => {
                                 let workflowItem: WorkflowListItem = new WorkflowListItem();
 
                                 workflowItem.Name = x.Name;

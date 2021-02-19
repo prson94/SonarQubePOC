@@ -1,7 +1,7 @@
 ﻿<div class="row">
     <div class="tile tile-detail measures">
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
-        <div *ngIf="!isLoading">
+        <div *ngIf="!isLoading && allocation">
             <div class="measure-heading">
                 <div class="title">Score Definition</div>
                 <div class="actions">
@@ -50,7 +50,7 @@
     <div class="measure-actions" *ngIf="!isLoading">
         <div class="action-box">
             <p-checkbox igCheckbox [(ngModel)]="showDisabled" [binary]="true" label="Show disabled measures" *ngIf="!isMeasureListCommandBarDisabled"></p-checkbox>
-            <button igButton icon="fa-plus" (click)="add()" class="ig-button-primary" label="Add Measure" [disabled]="isMeasureListCommandBarDisabled"></button>
+            <button igButton icon="fa-plus" (click)="add()" class="ig-button-primary" label="Add Measure" [disabled]="isMeasureListCommandBarDisabled || screenReferencedStillLoading()"></button>
         </div>
     </div>
     <div class="measure-heading measure-list">
@@ -70,53 +70,13 @@
             </measure-list>
         </div>
         <div *ngIf="!isLoading && selectedMetric" class="col s5 measure-details-panel">
-            <div>
-                <div class="panel-heading">
-                    {{selectedMetric?.Name}}
-                </div>
-                <div class="measure-details-item">
-                    <div class="details-header">Description</div>
-                    <div class="details-content">{{selectedMetric?.Description ? selectedMetric?.Description :'---'}}</div>
-                </div>
-                <div class="measure-details-item">
-                    <div class="details-header">Effective Dates</div>
-                    <div class="details-content">
-                        {{selectedMetric?.EffectiveDate | utcDate  | date:'shortDate'}} -
-                        <span *ngIf="selectedMetric.State == 1">Present</span>
-                        <span *ngIf="selectedMetric.State == 3">{{selectedMetric?.EffectiveEndDate | utcDate  | date:'shortDate'}}</span>
-                    </div>
-                </div>
-                <div *ngIf="!data?.isExternallyCalculated" class="measure-details-item">
-                    <div class="details-header">Weight</div>
-                    <div class="details-content">{{getAsPrecentage(selectedMetric?.Weight)}}</div>
-                </div>
-                <div *ngIf="!data?.isExternallyCalculated" class="measure-details-item">
-                    <div class="details-header">Grouping Measure</div>
-                    <div class="details-content">{{selectedMetric?.IsGroup ? 'Yes':'No'}}</div>
-                </div>
-                <div *ngIf="!data?.isExternallyCalculated && showPassTest">
-                    <d3s-admin-metric-pass-test-details [assetTypeUid]="selectedAssetType.Uid"
-                                                        [definition]="selectedMetric?.Definition"
-                                                        [screenReferences]="screenReferences">
-                    </d3s-admin-metric-pass-test-details>
-                </div>
-                <div *ngIf="showConditions" class="measure-details-item">
-                    <div class="details-header">Asset Conditions</div>
-                    <div class="details-condition" *ngFor="let conditionGroup of selectedMetric?.ConditionGroups">
-                        <div class="condition-content">
-                            <div class="condition-items">
-                                <div *ngFor="let condition of conditionGroup.ConditionItems" class="right-space">
-                                    {{condition.FieldTypeName}} {{condition.OperatorText}} {{condition.ValuesText}}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="measure-details-item">
-                    <div class="details-header">UID</div>
-                    <div class="details-content">{{selectedMetric?.Uid}}</div>
-                </div>
-            </div>
+            <score-definition 
+                              [isAdminPage]="true"
+                              [isExternallyCalculated]="allocation?.isExternallyCalculated" 
+                              [selectedMetric]="selectedMetric" 
+                              [assetTypeUid]="assetTypeUid" 
+                              [allocationUid]="allocationUid">
+            </score-definition>
         </div>
     </div>
 </div>

@@ -18,7 +18,6 @@ import { DataQualityMeasureEditorComponent } from './measure-editor-dataquality.
 import { ExternalMeasureEditorComponent } from './measure-editor-external.component';
 import { GovernanceMeasureEditorComponent } from './measure-editor-governance.component';
 import { MeasureListComponent } from './measure-list.component';
-import { AdminMetricPassTestDetailsComponent } from './admin-metric-pass-test-details.component';
 
 import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
@@ -55,6 +54,8 @@ import { FieldConditionGridModule } from '../../shared/controls/field-condition-
 import { IgMessageBoxModule } from '../../shared/controls/message-box/message-box.module';
 import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.component';
 import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
+import { MetricPassTestDetailsModule } from './admin-metric-pass-test-details.module';
+import { ScoreDefinitionModule } from '../../shared/asset-score/definition/score-definition.module';
 
 
 @NgModule({
@@ -105,7 +106,10 @@ import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
         FieldConditionGridModule,
         IgMessageBoxModule,
         PopupMenuModule,
-        IgBadgeModule
+        IgBadgeModule,
+        ScoreDefinitionModule,
+
+        MetricPassTestDetailsModule
 
     ],
     declarations: [
@@ -118,7 +122,6 @@ import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
         GovernanceMeasureEditorComponent,
 
         MeasureListComponent,
-        AdminMetricPassTestDetailsComponent,
         AdminMeasureHistoryComponent
     ],
     providers: [

@@ -76,7 +76,7 @@ namespace igx.jobs.scoreprocessor
                     await process.Run();
                 }
             }
-            catch (ScoresCurrentlyProcessingException ex)
+            catch (ScoresCurrentlyProcessingException)
             {
                 var queue = new AzureQueueSource();
                 await queue.CreateMessageAsync(Config.GetValue<string>("ScoringQueue"), scoreInfo, new TimeSpan(0, 0, 30));

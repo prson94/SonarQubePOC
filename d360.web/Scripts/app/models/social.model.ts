@@ -1,69 +1,83 @@
-﻿export enum SocialVoteType {
-    DownVote = -1,
-    UpVote = 1
+﻿export enum Emoji {
+    ThumbsUp = 1,
+    ThumbsDown = 2
 }
 
-export enum SocialCommentType {
+export enum CommentType {
     System = 1,
     Social = 2,
-    Governance = 3,
-    Relationship = 4,
-    Issue = 5,
-    Task = 6,
-    RedFlag = 7,
-    DataEvent = 8,
-    Challenge = 9,
+    Issue = 5
 }
 
-export class SocialCommentTag {
-    Object: string;
-    ObjectID: number;
-    TextPath: string;
+export class CommentRelationDetail {
+    AssetUid: string;
+    Path: string;
+    TypeName: string;
+    Url: string;
+    IconBackColor: string;
+    IconForeColor: string;
 }
 
-export class SocialVote {
-    CommentID: number;
-    ResourceID: number;
-    Vote: SocialVoteType;
-    ID: number;
+export class CommentAggregateVoteDetail {
+    Count: number;
+    Emoji: Emoji;
 }
 
-export class SocialComment {
+export class CommentDetail {
+    Uid: string;
     Body: string;
-    Comments: SocialComment[];
-    CommentTypeID: SocialCommentType;
-    CreatorIsOwner: boolean;
-    CreatingResourceID: number;
-    DateCreated: Date;
-    DateCreatedUTCString: Date;
-    DateEdited: Date;
-    DateEditedUTCString: Date;
-    ID: number;
-    IsDeletable: boolean;
+    AssetUid: string;
+    CommentType: CommentType;
     IsDeleted: boolean;
-    IsEditable: boolean;
-    ObjectID: number;
-    ObjectName: string;
-    ObjectType: string;
+
+    ID: number;
     ParentID: number;
-    ResourceEmail: string;
+    CreatedBy: number;
+    CreatedByUid: string;
+    UpdatedBy: number;
+    CreatedOn: Date;
+    UpdatedOn: Date;
+
     ResourceName: string;
-    Tags: SocialCommentTag[];
-    Votes: SocialVote[];
+    AssetPath: string;
+    Url: string;
+
+    IsDeletable: boolean;
+    IsEditable: boolean;
+
+    Comments: CommentDetail[];
+    Tags: CommentRelationDetail[];
+    Emojis: CommentAggregateVoteDetail[];
 }
 
-export class SocialEditCommentData{
-    constructor(comment?: SocialComment, tags?: SocialCommentTag[])
-    {
-        if(comment)
-            this.Comment = comment;
+export class CommentDetails {
+    count: number;
+    page: number;
+    pageSize: number;
+    comments: CommentDetail[];
+}
 
-        if(tags)
-            this.Tags = tags;
-    }
+export class CommentVoteDetail {
+    emoji: Emoji;
+    resourceUid: string;
+    userDisplayName: string;
+}
 
-    ObjectType: string;
-    ObjectID: number;
-    Comment: SocialComment;
-    Tags: SocialCommentTag[];
+export class CommentApiPostModel {
+    AssetUid: string;
+    ParentUid: string;
+    Body: string;
+    /*
+     *A list of unique identifiers for the list os assets you are tagging to this comment. 
+     */
+    Tags: string[];
+}
+
+export class CommentApiPutModel {
+    Uid: string;
+    Body: string;
+    /*
+     *A list of unique identifiers for the list os assets you are tagging to this comment. 
+     */
+    Tags: string[];
 }

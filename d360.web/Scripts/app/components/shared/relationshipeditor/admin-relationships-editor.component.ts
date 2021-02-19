@@ -2,26 +2,10 @@
 import { SelectItem } from 'primeng/api';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { RelationshipDetail, PredicateDropdown } from '../../../models/relationship.model';
-import { ViewEncapsulation } from '@angular/core';
 
 @Component({
     selector: 'd3s-admin-relationships-editor',
     templateUrl: './admin-relationships-editor.component.html',
-
-    // Having three dropdowns in compact space gives ugly and unusable dropdown panels...esp for long dropdown items
-    // insert custom styling using Angular Default View Encapsulation
-    // appendTo="body" was added to the dropdowns to address Edge issues leaving the panels show allover.
-    // This fix should address the correct left position
-
-    encapsulation: ViewEncapsulation.None,
-    styles: [
-        `
-            .p-dropdown-panel {
-                max-width: 300px;
-            }
-        `
-    ],
-
     providers: [RelationshipsService],
 
 })
@@ -123,7 +107,6 @@ export class AdminRelationshipsEditor {
         this.relationshipsService.getRelationshipPredicates(subject, subjectId, object, objectId, predicateId)
             .subscribe(result => {
                 this.predicates = [];
-                this.predicates.push({ label: 'Select A Predicate', value: null, isSemantic: false, type: 'none' });
                 for (let item of result) {
                     this.predicates.push({
                         label: item.label,
@@ -142,7 +125,6 @@ export class AdminRelationshipsEditor {
         this.isLoading = true;
         this.relationshipsService.getSubjectOptions().subscribe(result => {
             this.subjectOptions = [];
-            this.subjectOptions.push({ label: 'Select Subject', value: null });
             for (let item of result) {
                 this.subjectOptions.push({
                     value: item.value,
@@ -155,9 +137,8 @@ export class AdminRelationshipsEditor {
 
     private loadObjectOptions(subject: string, subjectId: number, object?: string, objectId?: number, predicateId?: number) {
         this.isLoadingObject = true;
-        this.relationshipsService.getObjectOptions(subjectId, subject, objectId, object, predicateId).subscribe(result => {
+        this.relationshipsService.getObjectOptions(subjectId, subject, objectId, object, predicateId).subscribe((result) => {
             this.objectOptions = [];
-            this.objectOptions.push({ label: 'Select Object', value: null });
             for (let item of result) {
                 this.objectOptions.push({
                     value: item.value,
@@ -170,9 +151,8 @@ export class AdminRelationshipsEditor {
 
     private loadCardinalityOptions() {
         this.isLoadingCardinality = true;
-        this.relationshipsService.getCardinalityOptions().subscribe(result => {
+        this.relationshipsService.getCardinalityOptions().subscribe((result) => {
             this.cardinalityOptions = [];
-            this.cardinalityOptions.push({ label: 'Select Cardinality', value: null });
             for (let item of result) {
                 this.cardinalityOptions.push({
                     value: item.value.toString(),
@@ -188,7 +168,7 @@ export class AdminRelationshipsEditor {
             }
 
             if (this.selectedPredicate && this.selectedPredicate.type == 'Diagram') {
-                this.subjectCardinalityOptions = JSON.parse(JSON.stringify(this.subjectCardinalityOptions.filter(x => x.label != 'One')));
+                this.subjectCardinalityOptions = JSON.parse(JSON.stringify(this.subjectCardinalityOptions.filter((x) => x.label != 'One')));
                 this.objectCardinalityOptions = JSON.parse(JSON.stringify(this.objectCardinalityOptions.filter(x => x.label != 'One')));
 
             }
@@ -200,4 +180,4 @@ export class AdminRelationshipsEditor {
         //save the item back to the save or edit url        
         this.saveClick.emit({ relationship: this.editedRelationship, action: this.relationshipID > 0 ? "new" : "edit" });
     }
-};
+}

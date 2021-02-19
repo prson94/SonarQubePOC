@@ -4,11 +4,8 @@ using System.Linq;
 using Dapper;
 using System.Data.SqlClient;
 using d360.core.enums;
-using Nest;
-using System.Web.UI;
 using d360.core.queue;
 using d360.core;
-using System.Runtime.Remoting.Messaging;
 using System.Collections.Concurrent;
 using MoreLinq;
 
@@ -17,6 +14,7 @@ namespace d360.extensions.search
     public class SearchIndexer
     {
         private static int _defaultQueryCommandTimeout = 180;
+        private static int _indexClassAsTypesLimit = 400000;
         private SqlConnection _context;
         private int _companyID;
         private ElasticSearchSource _source;
@@ -73,7 +71,7 @@ namespace d360.extensions.search
 
         public void IndexAsset(Guid AssetUid)
         {
-            List<IndexObjectModel> models = LoadModels(_context, _companyID, _source, null, null, AssetUid).ToList();
+            List<IndexObjectModel> models = LoadModels(_context, _companyID, null, null, AssetUid).ToList();
             if (models.Any())
             {
                 _source.RemoveFromIndex(models);
@@ -83,7 +81,7 @@ namespace d360.extensions.search
 
         public void IndexAssets(ConcurrentBag<Guid> AssetGuids)
         {
-            List<IndexObjectModel> models = AssetGuids.SelectMany(g => LoadModels(_context, _companyID, _source, null, null, g)).ToList();
+            List<IndexObjectModel> models = AssetGuids.SelectMany(g => LoadModels(_context, _companyID, null, null, g)).ToList();
             if (models.Any())
             {
                 _source.RemoveFromIndex(models);
@@ -93,7 +91,7 @@ namespace d360.extensions.search
 
         public void IndexAsset(string Object, long ObjectID)
         {
-            List<IndexObjectModel> models = LoadModels(_context, _companyID, _source, Object, ObjectID).ToList();
+            List<IndexObjectModel> models = LoadModels(_context, _companyID, Object, ObjectID).ToList();
             if (models.Any())
             {
                 _source.RemoveFromIndex(models);
@@ -103,7 +101,7 @@ namespace d360.extensions.search
 
         public void IndexAssets(ConcurrentBag<Tuple<string, long>> tuples)
         {
-            List<IndexObjectModel> models = tuples.SelectMany(t => LoadModels(_context, _companyID, _source, t.Item1, t.Item2)).ToList();
+            List<IndexObjectModel> models = tuples.SelectMany(t => LoadModels(_context, _companyID, t.Item1, t.Item2)).ToList();
             if (models.Any())
             {
                 _source.RemoveFromIndex(models);
@@ -111,36 +109,63 @@ namespace d360.extensions.search
             }
         }
 
-        public void IndexAssetType(Guid AssetTypeUid)
+        public void IndexAssetType(Guid AssetTypeUid, bool clearIndex = true)
         {
-            _source.ClearIndex(_companyID, AssetTypeUid);
+            if(clearIndex)
+                _source.ClearIndex(_companyID, AssetTypeUid);
+    
             AssetClassAndName assettype = _context.QueryFirstOrDefault<AssetClassAndName>("SELECT [Class], [Name] FROM AssetType att WHERE att.uid = @AssetTypeUid", new { AssetTypeUid });
             if (assettype != null)
             {
-                IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, _source, assettype.Class, AssetTypeUid, null);
+                //If clearIndex is not set, the method is being called from IndexAssetClass, so field query should use temp tables.
+                IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, assettype.Class, AssetTypeUid, null, !clearIndex);
                 _source.AddToIndex(models);
             }
         }
 
-        public void IndexAssetClass(AssetTypeClass assetclass)
+        public void IndexAssetClass(AssetTypeClass assetClass)
         {
-            _source.ClearIndex(_companyID, assetclass.ToString());
-            IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, _source, assetclass, null, null);
-            _source.AddToIndex(models);
+            _source.ClearIndex(_companyID, assetClass.ToString());
+            bool processByAssetType = false;
+            int assettypeclass = (int)assetClass;
+
+            //Count number of assets in class (if not Fusion) to determine if the class contains a large number of assets
+            //and indexing by asset type is more performant.
+            if (assetClass != AssetTypeClass.Fusion && assetClass != AssetTypeClass.FusionAttribute)
+            {
+                int assetCount = _context.QueryFirstOrDefault<int>(@"SELECT COUNT(1) 
+                FROM [dbo].[Asset] a
+                INNER JOIN [dbo].[AssetType] at ON a.assettypeid = at.id
+                WHERE at.[Class] = @assettypeclass", new { assettypeclass });
+
+                processByAssetType = assetCount > _indexClassAsTypesLimit;
+            }
+
+            if(processByAssetType)
+            {
+                List<Guid> assetTypes = _context.Query<Guid>("SELECT at.uid FROM [dbo].[AssetType] at WHERE EXISTS (SELECT 1 FROM [dbo].[Asset] a WHERE a.assettypeid = at.id) AND at.class =  @assettypeclass", new { assettypeclass }).ToList();
+                assetTypes.ForEach(t => IndexAssetType(t, false));
+            } else
+            {
+                IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, assetClass, null, null);
+                _source.AddToIndex(models);
+            }
         }
 
         public void IndexObjectType(string ObjectType, bool clearIndex = true)
         {
-            if(clearIndex)
+            if (clearIndex)
+            {
                 _source.ClearIndex(_companyID, ObjectType);
+            }
 
-            IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, _source, ObjectType, null);
+            IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, ObjectType);
             _source.AddToIndex(models);
         }
 
-        private IEnumerable<IndexObjectModel> LoadModels(SqlConnection context, int companyID, ElasticSearchSource source, AssetTypeClass? assetClass, Guid? AssetTypeUid, Guid? AssetUid)
+        private IEnumerable<IndexObjectModel> LoadModels(SqlConnection context, int companyID, AssetTypeClass? assetClass, Guid? AssetTypeUid, Guid? AssetUid, bool useTempTable = false)
         {
-            bool loadFields = false;
+            IndexMode mode = IndexMode.BaseQuery;
             string sql = "";
             List<string> where = new List<string>();
             Func<dynamic, IndexObjectModel> shaper = null;
@@ -154,7 +179,9 @@ namespace d360.extensions.search
                 assetClass = _context.QueryFirstOrDefault<AssetTypeClass>("SELECT [Class] FROM AssetType att WHERE att.uid = @AssetTypeUid", new { AssetTypeUid });
             }
             if (assetClass == null)
+            {
                 throw new Exception("AssetClass is null");
+            }
 
             int assettypeclass = (int)assetClass;
             switch (assetClass)
@@ -197,7 +224,7 @@ namespace d360.extensions.search
                         where
 	                          {whereCondition}
                         ORDER BY A.ID";
-                    loadFields = true;
+                    mode = IndexMode.WithFields | IndexMode.WithTags | IndexMode.WithResponsibility;
                     shaper = (dynamic o) =>
                     {
                         return new IndexObjectModel
@@ -428,10 +455,10 @@ namespace d360.extensions.search
                     break;
             }
 
-            return getData(context, sql, companyID, source, parameters, loadFields, shaper);
+            return getData(context, sql, parameters, mode, shaper, useTempTable);
         }
 
-        private IEnumerable<IndexObjectModel> LoadModels(SqlConnection context, int companyID, ElasticSearchSource source, string Object, long? ObjectID = null)
+        private IEnumerable<IndexObjectModel> LoadModels(SqlConnection context, int companyID, string Object, long? ObjectID = null)
         {
             string sql = "";
             string where = "";
@@ -586,48 +613,58 @@ namespace d360.extensions.search
                     };
                     break;
             }
-            return getData(context, sql, companyID, source, parameters, false, shaper);
+            return getData(context, sql, parameters, IndexMode.BaseQuery, shaper);
         }
 
-        private static IEnumerable<IndexObjectModel> getData(SqlConnection context, string sql, int companyID, ElasticSearchSource source, DynamicParameters parameters, bool loadFields, Func<dynamic, IndexObjectModel> convertToDictionary)
+        private static IEnumerable<IndexObjectModel> getData(SqlConnection context, string sql, DynamicParameters parameters, IndexMode mode, Func<dynamic, IndexObjectModel> convertToDictionary, bool useTempTable = false)
         {
-            if (loadFields)
+            IPagedQuery<FieldSqlModel> FieldQuery = null;
+            PagedQuery<TagSqlModel> TagsQuery = null;
+            PagedQuery<ResponsibilitySqlModel> ResponsibilityQuery = null;
+
+            if (mode.HasFlag(IndexMode.WithFields))
             {
-                return getDataWithFields(context, sql, companyID, source, parameters, convertToDictionary);
+                if (useTempTable)
+                {
+                    FieldQuery = new TempTablePagedQuery<FieldSqlModel>(context, GetFieldQuery(parameters), parameters);
+                }
+                else
+                {
+                    FieldQuery = new PagedQuery<FieldSqlModel>(context, GetFieldQuery(parameters), parameters);
+                }
             }
-
-            return getDataWithoutFields(context, sql, companyID, source, parameters, convertToDictionary);
-        }
-
-        private static IEnumerable<IndexObjectModel> getDataWithoutFields(SqlConnection context, string sql, int companyID, ElasticSearchSource source, DynamicParameters parameters, Func<dynamic, IndexObjectModel> convertToDictionary)
-        {
-            return context.Query(sql, parameters, commandTimeout: _defaultQueryCommandTimeout, buffered: false).ToList().Select(a => (IndexObjectModel)convertToDictionary(a));
-        }
-
-        private static IEnumerable<IndexObjectModel> getDataWithFields(SqlConnection context, string sql, int companyID, ElasticSearchSource source, DynamicParameters parameters, Func<dynamic, IndexObjectModel> convertToDictionary)
-        {
-            var FieldQuery = new PagedQuery<FieldSqlModel>(context, GetFieldQuery(parameters), parameters);
-            var TagsQuery = new PagedQuery<TagSqlModel>(context, GetTagQuery(parameters), parameters);
-            var ResponsibilityQuery = new PagedQuery<ResponsibilitySqlModel>(context, GetResponsibilityQuery(parameters), parameters);
-            var list = getDataWithoutFields(context, sql, companyID, source, parameters, convertToDictionary);
+            if (mode.HasFlag(IndexMode.WithTags))
+            {
+                TagsQuery = new PagedQuery<TagSqlModel>(context, GetTagQuery(parameters), parameters);
+            }
+            if (mode.HasFlag(IndexMode.WithResponsibility))
+            {
+                ResponsibilityQuery = new PagedQuery<ResponsibilitySqlModel>(context, GetResponsibilityQuery(parameters), parameters);
+            }
+            IEnumerable<IndexObjectModel> list = context.Query(sql, parameters, commandTimeout: _defaultQueryCommandTimeout, buffered: false).ToList().Select<dynamic, IndexObjectModel>(a => convertToDictionary(a));
 
             foreach (var item in list)
             {
-                var subset = FieldQuery.GetByAssetID(item.AssetID);
-                foreach (var f in subset)
-                {
-                    item.Fields[f.Name] = f.FormattedValue;
+                if (FieldQuery != null) {
+                    var subset = FieldQuery.GetByAssetID(item.AssetID);
+                    foreach (var f in subset)
+                    {
+                        item.Fields[f.Name] = f.FormattedValue;
+                    }
                 }
-                if (item.Uid.HasValue && item.Uid != Guid.Empty)
+                if (TagsQuery != null && item.Uid.HasValue && item.Uid != Guid.Empty)
                 {
                     item.Tags = TagsQuery.GetByAssetID(item.AssetID).ToDictionary(x => x.TagUID.ToString(), x => x.Value);
                 }
-                var secset = ResponsibilityQuery.GetByAssetID(item.AssetID);
-                item.NoRead = new Dictionary<string, List<int>> {
-                    { "R" , secset.Where(r => r.SecurityAsset == "R").Select(r => r.SecurityAssetID).ToList() },
-                    { "G" , secset.Where(r => r.SecurityAsset == "G").Select(r => r.SecurityAssetID).ToList() },
-                    { "O" , secset.Where(r => r.SecurityAsset == "O").Select(r => r.SecurityAssetID).ToList() }
-                };
+                if (ResponsibilityQuery != null)
+                {
+                    var secset = ResponsibilityQuery.GetByAssetID(item.AssetID);
+                    item.NoRead = new Dictionary<string, List<int>> {
+                        { "R" , secset.Where(r => r.SecurityAsset == "R").Select(r => r.SecurityAssetID).ToList() },
+                        { "G" , secset.Where(r => r.SecurityAsset == "G").Select(r => r.SecurityAssetID).ToList() },
+                        { "O" , secset.Where(r => r.SecurityAsset == "O").Select(r => r.SecurityAssetID).ToList() }
+                    };
+                }
                 yield return item;
             }
         }
@@ -635,23 +672,29 @@ namespace d360.extensions.search
         private static string GetFieldQuery(DynamicParameters parameters)
         {
             List<string> fieldWhere = new List<string>();
+            List<string> existsWhere = new List<string>();
             List<string> fieldJoin = new List<string>();
 
             fieldJoin.Add("inner join FieldType FT on FT.ID = F.FieldTypeID");
-            fieldJoin.Add("inner join AssetType ATT on ATT.ID = FT.AssetTypeID");
 
             if (parameters.ParameterNames.Contains("assettypeclass"))
             {
-                fieldWhere.Add("ATT.class = @assettypeclass");
+                existsWhere.Add("ATT.class = @assettypeclass");
             }
             if (parameters.ParameterNames.Contains("assettypeuid"))
             {
-                fieldWhere.Add("att.uid = @assettypeuid");
+                existsWhere.Add("att.uid = @assettypeuid");
             }
             if (parameters.ParameterNames.Contains("assetuid"))
             {
                 fieldJoin.Add("inner join Asset a on a.ID = F.AssetID");
                 fieldWhere.Add("a.uid = @assetuid");
+            }
+
+            if(existsWhere.Any())
+            {
+                existsWhere.Add("ATT.ID = FT.AssetTypeID");
+                fieldWhere.Add($"exists (select 1 from AssetType ATT where {string.Join(Environment.NewLine + " and ", existsWhere.ToArray())})");
             }
 
             string fieldsSql = @"select F.AssetID, FT.Name, F.FormattedValue from Field F " +
@@ -683,9 +726,13 @@ namespace d360.extensions.search
             string tagsSql = @"SELECT a.ID as AssetID, a.uid AS AssetUID, t.uid AS TagUID, t.Value FROM [dbo].[AssetTag] at " +
             "INNER JOIN [dbo].[Tag] t ON at.TagID = t.ID INNER JOIN [dbo].[Asset] a ON at.AssetID = a.ID";
             if (tagJoin.Any())
+            {
                 tagsSql += " " + string.Join(" " + Environment.NewLine, tagJoin.ToArray());
+            }
             if (tagWhere.Any())
+            {
                 tagsSql += " WHERE " + string.Join(" AND " + Environment.NewLine, tagWhere.ToArray());
+            }
 
             return tagsSql;
         }
@@ -728,6 +775,14 @@ namespace d360.extensions.search
         }
     }
 
+    [Flags]
+    internal enum IndexMode
+    {
+        BaseQuery = 0,
+        WithFields = 1,
+        WithTags = 2,
+        WithResponsibility = 4
+    }
 
     internal interface IPagedQuerySqlModel
     {
@@ -766,31 +821,21 @@ namespace d360.extensions.search
     {
         List<T> GetByAssetID(long AssetID);
     }
-    internal class PagedQuery<T> : IPagedQuery<T> where T : IPagedQuerySqlModel
-    {
-        private static readonly int PageSize = 50000;
-        private long CurrentHighID = 0;
-        private List<T> _data;
-        private SqlConnection _connection;
-        private readonly string _query;
-        public DynamicParameters _param;
-        private bool LastPage = false;
-        private static readonly int _defaultQueryCommandTimeout = 180;
 
-        /// <summary>
-        /// Performs a paged/chunked query
-        /// </summary>
-        /// <param name="connection"></param>
-        /// <param name="query">Query string</param>
-        /// <param name="param"></param>
-        public PagedQuery(SqlConnection connection, string query, DynamicParameters param = null)
+    internal abstract class BasePagedQuery<T> : IPagedQuery<T> where T : IPagedQuerySqlModel
+    {
+        protected readonly int PageSize = 50000;
+        protected long CurrentHighID;
+        protected List<T> _data;
+        protected SqlConnection _connection;
+        protected string _query;
+        public DynamicParameters _param;
+        protected bool LastPage;
+        protected readonly int _defaultQueryCommandTimeout = 180;
+
+        protected BasePagedQuery(SqlConnection connection, DynamicParameters param = null)
         {
             _connection = connection;
-
-            //Use <T> to specify columns to select, as SqlMapper can slow down a lot over *
-            string alias = "pagedquery";
-            string queryColumns = string.Join(", ", typeof(T).GetProperties().Select(p => $"{alias}.{p.Name}").ToArray());
-            _query = $"SELECT TOP (@PageSize) {queryColumns} FROM ({query}) {alias} WHERE {alias}.AssetID >= @PagerAssetID ORDER BY {alias}.AssetID"; ;
             _param = new DynamicParameters();
             if (param != null)
             {
@@ -802,6 +847,11 @@ namespace d360.extensions.search
             _data = new List<T>();
         }
 
+        //Hook, used to clean up temp tables
+        protected virtual void OnLastPage()
+        {
+        }
+
         /// <summary>
         /// Fetches the next "page" of data. Starting with the requested AssetID
         /// No need to get any records with a lower AssetID's
@@ -810,7 +860,9 @@ namespace d360.extensions.search
         private void FetchDataPage(long AssetID)
         {
             if (LastPage)
+            {
                 return;
+            }
 
             _param.Add("PagerAssetID", AssetID);
             _param.Add("PageSize", PageSize);
@@ -819,6 +871,7 @@ namespace d360.extensions.search
             {
                 //If we fetched less than PageSize, this is the last page of data
                 LastPage = true;
+                OnLastPage();
             }
             else
             {
@@ -837,7 +890,6 @@ namespace d360.extensions.search
                 }
             }
         }
-
         /// <summary>
         /// Fetches records from the query for the provided Asset ID
         /// </summary>
@@ -847,9 +899,74 @@ namespace d360.extensions.search
         {
             //If requested ID is higher than what is current, and last page has not been reached, fetch the next data page
             if (!LastPage && AssetID > CurrentHighID)
+            {
                 FetchDataPage(AssetID);
+            }
 
             return _data.Where(i => i.AssetID == AssetID).ToList();
+        }
+    }
+
+    internal class PagedQuery<T> : BasePagedQuery<T> where T : IPagedQuerySqlModel
+    {
+        /// <summary>
+        /// Performs a paged/chunked query
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="query">Query string</param>
+        /// <param name="param"></param>
+        public PagedQuery(SqlConnection connection, string query, DynamicParameters param = null) : base(connection, param)
+        {
+            //Use <T> to specify columns to select, as SqlMapper can slow down a lot over *
+            string alias = "pagedquery";
+            string queryColumns = string.Join(", ", typeof(T).GetProperties().Select(p => $"{alias}.{p.Name}").ToArray());
+            _query = $"SELECT TOP (@PageSize) {queryColumns} FROM ({query}) {alias} WHERE {alias}.AssetID >= @PagerAssetID ORDER BY {alias}.AssetID option(recompile)";
+        }
+    }
+
+    internal class TempTablePagedQuery<T> : BasePagedQuery<T> where T : IPagedQuerySqlModel
+    {
+        private readonly string _tableIdentifier;
+
+        /// <summary>
+        /// Performs a paged/chunked query using a global temporary table to hold the result of the query
+        /// and then paging from that
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="query">Query string</param>
+        /// <param name="param"></param>
+        public TempTablePagedQuery(SqlConnection connection, string query, DynamicParameters param = null) : base(connection, param)
+        {
+            //generate random name for global temp table
+            _tableIdentifier = "pagedQuery_" + Guid.NewGuid().ToString().Replace("-", "_");
+
+            //Use <T> to specify columns to select, as SqlMapper can slow down a lot over *
+            string alias = "pagedquery";
+            string queryColumns = string.Join(", ", typeof(T).GetProperties().Select(p => $"{alias}.{p.Name}").ToArray());
+            _query = $"SELECT TOP (@PageSize) {queryColumns} FROM ##{_tableIdentifier} {alias} WHERE {alias}.AssetID >= @PagerAssetID ORDER BY {alias}.sortid option(recompile)";
+
+            _connection.Execute($@"
+                DROP TABLE IF EXISTS ##{_tableIdentifier};
+
+                SELECT ROW_NUMBER() OVER (ORDER BY AssetID) AS sortid, {queryColumns}
+                INTO ##{_tableIdentifier}
+                FROM ({query}) {alias};
+
+                CREATE UNIQUE INDEX UIX_{_tableIdentifier} ON ##{_tableIdentifier} (sortid); 
+
+                CREATE NONCLUSTERED INDEX IX_{_tableIdentifier}_AssetID ON ##{_tableIdentifier} (AssetID); 
+            ", _param, null, _defaultQueryCommandTimeout);
+
+        }
+        ~TempTablePagedQuery()
+        {
+            OnLastPage();
+        }
+
+        protected override void OnLastPage()
+        {
+            base.OnLastPage();
+            _connection.Execute($"DROP TABLE IF EXISTS ##{_tableIdentifier}");
         }
     }
 }

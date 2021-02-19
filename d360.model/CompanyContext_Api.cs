@@ -390,9 +390,9 @@ where	ExecutionID = @executionID
             {
                 throw new ApplicationException("Endpoint logic is misconfigured, and is missing an API table name.");
             }
-            if (!CurrentResourceIsAdmin && isInsert && p == Permission.ModifyAsset)
+            if (!CurrentResourceIsAdmin && isInsert && (p & Permission.AddAsset) != 0)
             {
-                PermissionInfo permission = this.GetTypePermissions(at.Object, at.ObjectID).Where(x => x.ID == Permission.ModifyAsset).SingleOrDefault();
+                PermissionInfo permission = this.GetTypePermissions(at.Object, at.ObjectID).Where(x => (x.ID & Permission.AddAsset) != 0).SingleOrDefault();
                 if (permission == null || !permission.Selected)
                 {
                     Connection.Execute($@"
@@ -1322,7 +1322,8 @@ where T.ExecutionId = @executionid;
             DataTable fieldTable, out bool success, out string errorMessage,
             bool useFriendlyNames = false,
             bool allowTagFields = false,
-            FieldValidationFieldProperties validationFieldProperties = null
+            FieldValidationFieldProperties validationFieldProperties = null,
+            bool jsonElementsEnabled = true
             )
         {
             List<DataRow> fieldRows = new List<DataRow>();
@@ -1443,23 +1444,27 @@ where T.ExecutionId = @executionid;
                             }
                             if (isValueEmptyString)
                             {
-                                success = false;
                                 switch (fieldType.Type)
                                 {
                                     case "Boolean":
                                         errorMessages.Add($"{fieldName} is a boolean field and may only be 'false' or 'true'");
+                                        success = false;
                                         break;
                                     case "Date":
                                         errorMessages.Add($"{fieldName} must be a valid date");
+                                        success = false;
                                         break;
                                     case "DateTime":
                                         errorMessages.Add($"{fieldName} must be a valid datetime value");
+                                        success = false;
                                         break;
                                     case "Decimal":
                                         errorMessages.Add($"{fieldName} must be a valid decimal");
+                                        success = false;
                                         break;
                                     case "Number":
-                                        errorMessages.Add($"{fieldName} must be a valid whole number, greater than -9223372036854775808 and less than 9223372036854775807");
+                                        errorMessages.Add($"{fieldName} must be a valid number");
+                                        success = false;
                                         break;
                                 }
                             }
@@ -1542,7 +1547,7 @@ where T.ExecutionId = @executionid;
                                     }
                                     break;
                                 case "JSON":
-                                    if (fieldValue.Length > 2500)
+                                    if (jsonElementsEnabled && (fieldValue.Length > 2500) )
                                     {
                                         success = false;
                                         errorMessages.Add($"{fieldName} exceeds the maximum length of 2500 characters");
@@ -2611,16 +2616,16 @@ from	IntersectType I
                                                 Connection.Execute($@"
     delete	T
     from	CommentRelation T
-		    inner join api.ExecutionDeletedAsset S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and {querySuffix};
+		    inner join api.ExecutionDeletedAsset S on S.AssetID = T.AssetID and {querySuffix};
 
     delete	T
     from	CommentVote T
 		    inner join Comment C on C.ID = T.CommentID
-		    inner join api.ExecutionDeletedAsset S on S.Object = C.OwnerObjectType and S.ObjectID = C.OwnerObjectID and {querySuffix};
+		    inner join api.ExecutionDeletedAsset S on S.AssetID = C.AssetID and {querySuffix};
 
     delete	T
     from	Comment T
-		    inner join api.ExecutionDeletedAsset S on S.Object = T.OwnerObjectType and S.ObjectID = T.OwnerObjectID and {querySuffix};
+		    inner join api.ExecutionDeletedAsset S on S.AssetID = T.AssetID and {querySuffix};
 
     delete	T
     from	Favorite T
@@ -2798,7 +2803,7 @@ from	IntersectType I
                                     //include hierarchical records for graph tables
                                     graphResults.AddRange(
                                         Query<DatabaseBulkAssetResult>(
-                                            $"select * from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+                                            $"select * from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber and Success = 1",
                                             new { execution.ExecutionID, beginItemNumber, endItemNumber }
                                         )
                                     );
@@ -3061,7 +3066,6 @@ from	IntersectType I
 
                         if (generalChecksCompleted)
                         {
-
                             bool runCompleted = false;
                             int retryCount = 0;
 
@@ -3086,7 +3090,7 @@ from	IntersectType I
                                             AddMeasurement(metrics, "Building Deletion Tree", sw.ElapsedMilliseconds, 1);
                                             sw.Restart();
                                         }
-                                        catch (Exception ex)
+                                        catch (Exception)
                                         {
                                             if (trans != null)
                                                 trans.Rollback();
@@ -3137,6 +3141,7 @@ from	IntersectType I
                                                 {
                                                     AddMeasurement(metrics, $"Asset Type '{at.uid}' deletion : {(i + 1)}/{transactionsCount}", sw.ElapsedMilliseconds, 1);
                                                     sw.Restart();
+
                                                     #region RemoveAssetsGraphDataByChunks
                                                     using (var trans = Connection.BeginTransaction())
                                                     {
@@ -3318,15 +3323,15 @@ from	IntersectType I
                             }
 
                             Connection.Close();
-
+                        
                             // Queue successfully deleted asset types for reindexing
                             results.Where(r => r.Success).ToList().ForEach(r =>
-                            {
-                                Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
                                 {
-                                    CompanyID = CurrentCompanyID,
-                                    AssetTypeUid = r.uid
-                                });
+                                    Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
+                                    {
+                                        CompanyID = CurrentCompanyID,
+                                        AssetTypeUid = r.uid
+                                    });
                             });
                         }
                     }
@@ -3408,18 +3413,18 @@ from	IntersectType I
 
                                                 delete	T
                                     			from	CommentRelation T
-                                    					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
+                                    					inner join Asset O on O.ID = T.AssetID 
                                     					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid
                                                         where O.ID in (select id from #deleteAssets);
                                     			delete	T
                                     			from	CommentVote T
                                     					inner join Comment C on C.ID = T.CommentID
-                                    					inner join Asset O on O.Object = C.OwnerObjectType and O.ObjectID = C.OwnerObjectID 
+                                    					inner join Asset O on O.ID = C.AssetID 
                                     					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid
                                                         where O.ID in (select id from #deleteAssets);
                                     			delete	T
                                     			from	Comment T
-                                    					inner join Asset O on O.Object = T.OwnerObjectType and O.ObjectID = T.OwnerObjectID
+                                    					inner join Asset O on O.ID = T.AssetID
                                     					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid
                                                         where O.ID in (select id from #deleteAssets);
                                     			delete	T
@@ -3589,19 +3594,12 @@ from	IntersectType I
                                     			delete	T
                                     			from	api.Entity T
                                     					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.AssetTypeID and S.AssetTypeID = @AssetTypeID and S.ExecutionID = @executionUid;
-
-
                                   			
                                     			delete	T
                                     			from	[Load] T
                                     					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
 
-
-                                                delete	T
-                                    			from	[metrics].[Allocation] T
-                                    					inner join api.ExecutionDeletedAssetType S on S.Uid = T.AssetTypeUid and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
-
-                                    			delete	T
+                                       			delete	T
                                     			from	SiteNavPermission T
                                     					inner join SiteNav O on O.ID = T.SiteNavID
                                     					inner join api.ExecutionDeletedAssetType S on S.Object = O.Object and S.ObjectID = O.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
@@ -3630,6 +3628,25 @@ from	IntersectType I
                                     			from    AssetTypeStyle E 
                                     					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.ID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
                                     			
+                                                delete	T
+                                    			from	[metrics].[ScoreItem] T
+                                    					inner join [metrics].[AssetVersion] MV on MV.Uid = T.AssetVersionUid
+                                    					inner join [metrics].[Asset] MA on MA.Uid = MV.AssetUid
+                                    					inner join [metrics].Allocation A on A.Uid = MA.AllocationUid
+                                    					where A.AssetTypeUid = @assetTypeUid;
+
+                                                delete	T
+                                    			from	[metrics].[Score] T
+                                    					inner join Asset MA on MA.Uid = T.AssetUid and MA.AssetTypeID = @assetTypeId;
+
+                                                delete  [metrics].[RollupPathSegment] 
+                                                where   AssetTypeID = @assetTypeId;
+
+                                                delete  [metrics].[AssetVersionRollupPathFilter] 
+                                                where   AssetTypeID = @assetTypeId;
+
+                                    			delete	[metrics].Allocation where AssetTypeUid = @assetTypeUid;
+
                                     			delete	T
                                     			from	[IntersectType] T
                                                         where T.Subject = @Object and T.SubjectID = @ObjectId;
@@ -3646,19 +3663,7 @@ from	IntersectType I
                                                 delete	T
                                     			from	FieldType T
                                     					where T.Object = @Object and T.ObjectID = @ObjectId;
-                                                
-                                                delete	T
-                                    			from	[metrics].[ScoreItem] T
-                                    					inner join [metrics].[AssetVersion] MV on MV.Uid = T.AssetVersionUid
-                                    					inner join [metrics].[Asset] MA on MA.Uid = MV.AssetUid
-                                    					inner join [metrics].Allocation A on A.Uid = MA.AllocationUid
-                                    					where A.AssetTypeUid = @assetTypeUid;
-                                                
-                                    			delete	T
-                                    			from	[metrics].[Asset] T
-                                    					inner join [metrics].Allocation A on A.Uid = T.AllocationUid
-                                    					where A.AssetTypeUid = @assetTypeUid;
-
+                                               
                                     			delete	T
                                     			from	IssueTypeRelation T
                                     					where T.AssetTypeID = @AssetTypeId;
@@ -3910,7 +3915,9 @@ where   ExecutionID = @ExecutionID
                                             $"select ExecutionItemUid,Uid,Message,Success from api.ExecutionRelationshipType where ExecutionID = @ExecutionID",
                                             new { execution.ExecutionID }
                                             ).ToList();
-                    }
+
+                    SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel(), execution.ExecutionID);
+                }
                     finally
                     {
                         if (Database.Connection.State == ConnectionState.Open)
@@ -4236,10 +4243,9 @@ where   ExecutionID = @ExecutionID
                         if (impactedMeasureVersions.Count > 0)
                         {
                             SendScoreEventWithPayload(
-                                Guid.NewGuid(),
                                 ScoreQueueChangeType.CheckTypeDependencyRemoved,
                                 new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions },
-                                createApiExecution: true
+                                execution.ExecutionID
                             );
                         }
                     }
@@ -4455,7 +4461,7 @@ where   ExecutionID = @ExecutionID
                             {
                                 bool success;
                                 string errorMessage;
-                                var fieldRows = ValidateFields(at.Object, at.ObjectID, isInsert, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, validationFieldProperties: fieldLoadProperties);
+                                var fieldRows = ValidateFields(at.Object, at.ObjectID, isInsert, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, validationFieldProperties: fieldLoadProperties, jsonElementsEnabled: enableJsonAttributes);
 
                                 if (success && isInsert && parentObjectID.HasValue && predicateType == PredicateType.InterTypeHierarchy)
                                 {
@@ -5405,7 +5411,7 @@ delete from graph.AssetEdge where ID in (select ID from #DeletedRelationships);
                                                    Result = false
                                                }
                                                ).ToList();
-                                SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.ExternalMeasureResultsCreated, measures);
+                                SendScoreEventWithPayload(ScoreQueueChangeType.ExternalMeasureResultsCreated, measures, execution.ExecutionID);
                                 AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
                             }
                         }
@@ -5554,7 +5560,7 @@ delete from graph.AssetEdge where ID in (select ID from #DeletedRelationships);
 
                                 bool success;
                                 string errorMessage;
-                                var fieldRows = ValidateFields("IntersectType", rt.ID, true, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage);
+                                var fieldRows = ValidateFields("IntersectType", rt.ID, true, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, jsonElementsEnabled:false);
 
                                 if (success)
                                 {
@@ -5875,7 +5881,7 @@ begin
 			                    or P.AssetID is null
 			                    )
 			                    and (
-				                    (P.PermissionsBitMask is not null and P.PermissionsBitMask & 1024 <> 1024) 
+				                    (P.PermissionsBitMask is not null and P.PermissionsBitMask & @p <> @p) 
 				                    or 
 				                    P.PermissionsBitMask is null
 				                    )
@@ -5896,14 +5902,14 @@ begin
 			                    or P.AssetID is null
 			                    )
 			                    and (
-				                    (P.PermissionsBitMask is not null and P.PermissionsBitMask & 1024 <> 1024) 
+				                    (P.PermissionsBitMask is not null and P.PermissionsBitMask & @p <> @p) 
 				                    or 
 				                    P.PermissionsBitMask is null
 				                    )
                         group by R.ExecutionID, R.ItemNumber
                         ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
 end",
-                        new { execution.ExecutionID, execution.ResourceID }, commandTimeout: timeout);
+                        new { execution.ExecutionID, execution.ResourceID, p = (int)Permission.ModifyRelationships }, commandTimeout: timeout);
                         AddMeasurement(metrics, "Permissions Validation", sw.ElapsedMilliseconds, ++step);
                         #endregion
 
@@ -6135,7 +6141,7 @@ where   T.ID = @ID", new { rt.ID }).Single();
 
                             if (measureAssets.Count > 0)
                             {
-                                SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.ExternalMeasureResultsCreated, measureAssets);
+                                SendScoreEventWithPayload(ScoreQueueChangeType.ExternalMeasureResultsCreated, measureAssets, execution.ExecutionID);
                                 AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
                             }
                         }
@@ -6271,7 +6277,7 @@ from	api.ExecutionDeletedRelationship T
                             and P.AssetTypeID = A.AssetTypeID
                             and ( P.AssetID = A.ID or P.AssetID = 0 )
 			                and (
-				                (P.PermissionsBitMask is not null and P.PermissionsBitMask & 2048 = 2048) 
+				                (P.PermissionsBitMask is not null and P.PermissionsBitMask & @p = @p) 
 				                or 
 				                P.PermissionsBitMask is null
 				                )
@@ -6294,7 +6300,7 @@ from	api.ExecutionDeletedRelationship T
                             and P.AssetTypeID = A.AssetTypeID
                             and ( P.AssetID = A.ID or P.AssetID = 0 )
 			                and (
-				                (P.PermissionsBitMask is not null and P.PermissionsBitMask & 2048 = 2048) 
+				                (P.PermissionsBitMask is not null and P.PermissionsBitMask & @p = @p) 
 				                or 
 				                P.PermissionsBitMask is null
 				                )
@@ -6303,7 +6309,7 @@ from	api.ExecutionDeletedRelationship T
 where	T.ExecutionID = @ExecutionID 
 		and S.ItemNumber is null;
 end",
-                    new { execution.ExecutionID, execution.ResourceID }, commandTimeout: timeout);
+                    new { execution.ExecutionID, execution.ResourceID, p = (int)Permission.DeleteRelationships }, commandTimeout: timeout);
 
                     #endregion
 
@@ -6530,7 +6536,7 @@ from    [Intersect] T
 
                     if (measureAssets.Count > 0)
                     {
-                        SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.ExternalMeasureResultsCreated, measureAssets);
+                        SendScoreEventWithPayload(ScoreQueueChangeType.ExternalMeasureResultsCreated, measureAssets, execution.ExecutionID);
                     }
                 }
 
@@ -7609,6 +7615,7 @@ where   ER.ExecutionID = @ExecutionID
 
                 var uidDupes = import.GroupBy(i => i.Uid).Where(i => i.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
                 var nameDupes = import.GroupBy(i => i.Name).Where(i => i.Count() > 1).Select(i => new { Name = i.Key, Count = i.Count() }).ToList();
+
                 if (uidDupes.Any() && execution.Method == "PUT")
                 {
                     execution.ErrorMessage = $"Duplicate Asset Uids: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
@@ -7680,11 +7687,18 @@ where   ER.ExecutionID = @ExecutionID
                                     row["Name"] = model.Name.Trim();
                                 }
                                 row["Description"] = model.Description;
-                                if (model.Uid.HasValue)
+                                if (model.Uid.HasValue && model.Uid.Value != Guid.Empty)
+                                {
                                     row["Uid"] = model.Uid;
-                                else
+                                }
+
+                                if (model.IsNew == true)
                                 {
                                     row["IsNew"] = true;
+                                }
+                                else
+                                {
+                                    row["IsNew"] = false;
                                 }
 
                                 table.Rows.Add(row);
@@ -7739,8 +7753,9 @@ where   ER.ExecutionID = @ExecutionID
     set		Success = 0,
 		    [Message] = coalesce([Message] + '; ', '') + 'Responsibility type with this Uid does not exists'
     from api.ExecutionResponsibilityType ERT
+    inner join api.Execution AE on AE.ExecutionID = ERT.ExecutionID
     left join [ResponsibilityType] RT on RT.Uid = ERT.Uid
-    where	ExecutionID = @ExecutionID and ERT.Uid is not null and RT.Uid is null;
+    where	 AE.Method = 'PUT' and ERT.ExecutionID = @ExecutionID and ERT.Uid is not null and RT.Uid is null;
 
     update	api.ExecutionResponsibilityType 
     set		Success = 0,
@@ -7799,14 +7814,16 @@ where   ER.ExecutionID = @ExecutionID
                                                           and ResponsibilityTypeId is null
                                                           and Success is null
 	                                              ) S
-                                            on (RT.uid = S.uid)
+                                            on (RT.Uid = S.Uid and S.IsNew = 0)
 											when matched then
 											update  
 												set RT.Name = S.Name,
-												RT.Description = S.Description
+												RT.Description = S.Description,
+                                                UpdatedOn = getutcdate(),
+                                                UpdatedBy = @CurrentResourceID
                                             when not matched then
-	                                            insert (Name, Description)
-	                                            values (S.Name,S.Description)
+	                                            insert (Name, Description, Uid, CreatedOn, CreatedBy)
+	                                            values (S.Name,S.Description, ISNULL(S.Uid,newid()), getutcdate(), @CurrentResourceID)
 	                                        output inserted.ID, inserted.Uid, S.ExecutionItemUid into #mergeResultTable;
 
                                             update RT
@@ -7818,7 +7835,7 @@ where   ER.ExecutionID = @ExecutionID
                                             where RT.ExecutionID = @ExecutionID and RT.Success is null";
 
                                         Connection.Execute(insertSQL,
-                                                new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                                new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 
                                         Connection.Execute(
                                             $"update ERT set ERT.Success = 1 from api.ExecutionResponsibilityType ERT where	{querySuffix} and ERT.ResponsibilityTypeId is not null;",
@@ -8710,7 +8727,7 @@ from	#Combos C
                     var assetMeasures = GetAssetMeasuresFromRuleResults(ruleResultUids);
                     if (assetMeasures.Count > 0)
                     {
-                        SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.AssetMeasures, assetMeasures);
+                        SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, assetMeasures, execution.ExecutionID);
                     }
                 }
 
@@ -9172,9 +9189,9 @@ WHEN MATCHED THEN DELETE;
                     }
 
                     // Now that results are deleted, send the score events to re-process scores for impacted assets.
-                    if (assetMeasures.Count > 0)
+                    if (assetMeasures != null && assetMeasures.Count > 0)
                     {
-                        SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.AssetMeasures, assetMeasures);
+                        SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, assetMeasures, execution.ExecutionID);
                     }
                 }
             }
@@ -9281,17 +9298,12 @@ WHEN MATCHED THEN DELETE;
                                     row["Definition"] = JsonConvert.SerializeObject(model.Definition);
                                 }
 
-                                if (execution.Method.ToLower() == "post" && model.Uid.HasValue)
-                                {
-                                    rowError += ";Cannot use Uid in POST request. Please use PUT Api for updating records!";
-                                }
-
                                 if (execution.Method.ToLower() == "put" && !model.Uid.HasValue)
                                 {
                                     rowError += ";UID cannot be empty!";
                                 }
 
-                                if (model.Uid.HasValue)
+                                if (model.Uid.HasValue && model.Uid.Value != Guid.Empty)
                                 {
                                     row["uid"] = model.Uid.Value;
                                 }
@@ -9452,8 +9464,9 @@ WHEN MATCHED THEN DELETE;
     set		Success = 0,
 		    [Message] = coalesce([Message] + '; ', '') + 'Responsibility Rule with specified Uid not found!'
     from api.ExecutionResponsibilityRule EP
+    inner join api.execution ae on ae.executionid = ep.executionid
     left join ResponsibilityTypeRelationRule rtrr on rtrr.uid = ep.uid
-    where	ExecutionID = @ExecutionID and EP.Uid is not null and rtrr.uid is null;
+    where	ep.ExecutionID = @ExecutionID and EP.Uid is not null and rtrr.uid is null and ae.Method = 'Put';
 
     update	api.ExecutionResponsibilityRule 
     set		Success = 0,
@@ -9823,13 +9836,15 @@ WHEN MATCHED
                                         xrr.Context,
                                         xrr.IsVisible,
                                         xrr.ApplyToType, 
-                                        xrr.DefinitionConverted
+                                        xrr.DefinitionConverted,
+                                        ae.method
                                          from api.executionresponsibilityrule xrr
+                                        inner join api.execution ae on ae.executionid = xrr.executionid
                                         inner join assettype at on at.uid = xrr.AssetTypeUid
                                         inner join ResponsibilityType rt on rt.uid = xrr.ResponsibilityTypeUid
                                         where xrr.executionid = @ExecutionID and xrr.ItemNumber between @beginItemNumber and @endItemNumber and xrr.success is null
                                         )Data
-                                        ON RTRR.uid = Data.uid
+                                        ON (RTRR.uid = Data.uid and method = 'PUT')
                                         WHEN MATCHED
                                             THEN update set 
                                                 name = data.name,
@@ -9843,8 +9858,8 @@ WHEN MATCHED
                                                 updatedon = getdate(),
                                                 updatedby = @resourceId
                                         WHEN NOT MATCHED
-                                            THEN insert (ResponsibilityTypeId,Object,ObjectId,Name,Context,IsVisible, ApplyToType,CreatedOn,CreatedBy,Definition)
-	                                        values (data.ResponsibilityTypeId,data.Object, data.ObjectId, data.Name, data.Context, data.IsVisible, data.ApplyToType, getdate(), @resourceId,data.DefinitionConverted)
+                                            THEN insert (uid,ResponsibilityTypeId,Object,ObjectId,Name,Context,IsVisible, ApplyToType,CreatedOn,CreatedBy,Definition)
+	                                        values (isnull(data.uid, newid()), data.ResponsibilityTypeId,data.Object, data.ObjectId, data.Name, data.Context, data.IsVisible, data.ApplyToType, getdate(), @resourceId,data.DefinitionConverted)
                                             output inserted.uid, data.executionid, data.itemnumber into @mergeResults;
 
                                         update api.executionresponsibilityrule
@@ -10212,7 +10227,25 @@ SO.ObjectID as SecondaryID
                     }
                 }
 
-                return results;
+
+            //Convert GroupResponseResult to DatabaseBulkAssetResult to use in SendAssetGraphEvents
+            IEnumerable<IGraphAsset> graphResults = results.Where(r => r.uid.HasValue).Select(r => {
+                return new DatabaseBulkAssetResult
+                {
+                    ExecutionItemUid = r.ExecutionItemUid,
+                    ItemNumber = r.ItemNumber,
+                    uid = r.uid ?? Guid.Empty,
+                    Message = r.Message,
+                    Success = r.Success,
+                    Object = SystemObjects.Group.ToString()
+                };
+            }).AsEnumerable();
+            if (graphResults.Any())
+            {
+                SendAssetGraphEvents(graphResults);
+            }
+
+            return results;
             }
 
             public List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups)

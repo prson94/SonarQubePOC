@@ -282,13 +282,64 @@
                     </div>
                 </div>
             </ig-property-group>
-
-            <ig-property-group [igformGroup]="metricForm" [title]="'Asset Condition'" *ngIf="!metricForm.value.isGroup && !isExternallyCalculated">
+            <ig-property-group [igformGroup]="metricForm"
+                               [title]="'Asset Conditions and Weighting'"
+                               [shouldBePadded]="false"
+                               [showMoreInfo]="true"
+                               [moreInfoHtml]="assetConditionsAndWeightingTooltip"
+                               *ngIf="!metricForm.value.isGroup && !isExternallyCalculated"
+                               (isValid)="canAddNewGroup($event)">
                 <div inputs>
-                    <field-condition-grid *ngIf="!isLoadingFields" [formGroup]="metricForm" [conditions]="conditions" [conditionPrefix]="'ac_'" [fields]="fields" (onChange)="updateFormValidity($event)"></field-condition-grid>
-                    <div class="row" *ngIf="showMatchPicker">
-                        <p-radioButton igRadioButton formControlName="matchType" [(ngModel)]="matchType" value="All" label="Match all conditions"></p-radioButton>&nbsp;
-                        <p-radioButton igRadioButton formControlName="matchType" [(ngModel)]="matchType" value="Any" label="Match any conditions"></p-radioButton>
+                    <div class="row">
+                        <p-radioButton igRadioButton formControlName="MatchConditionsOnly" [(ngModel)]="model.MatchConditionsOnly" [value]="true" label="Only apply this measure to assets that match a condition group"></p-radioButton>&nbsp;
+                        <p-radioButton igRadioButton formControlName="MatchConditionsOnly" [(ngModel)]="model.MatchConditionsOnly" [value]="false" label="Apply this measure to all assets, using the first matching condition group to determine measure weight"></p-radioButton>
+                    </div>
+                    <div class="condition-group" *ngFor="let cg of sortByDisplayOrder();let i=index">
+                        <div class="row cg-header-row">
+                            <div class="condition-group-header">
+                                Condition Group {{cg.DisplayOrder}}
+                            </div>
+                            <div class="input-actions" *ngIf="!isLoadingFields">
+                                <div class="weight-container">
+                                    <div class="weight-row">
+                                        <label for="weight" class="ig-label right">
+                                            Weight(%) <ng-container *ngTemplateOutlet="conditionWeightTooltip"></ng-container>
+                                        </label>
+                                        <ig-number-input
+                                                         [tabindex]="4"
+                                                         placeholder="25"
+                                                         [min]="1"
+                                                         [max]="100"
+                                                         [step]="1"
+                                                         name="cg_{{cg.Position}}_weight"
+                                                         formControlName="cg_{{cg.Position}}_weight"
+                                                         [(ngModel)]="cg.DisplayWeight"></ig-number-input>
+                                    </div>
+                                    <div *ngIf="metricForm.get('cg_'+ cg.Position + '_weight').invalid && (metricForm.get('cg_'+ cg.Position + '_weight').dirty || metricForm.get('cg_'+ cg.Position + '_weight').touched)">
+                                        <div *ngIf="metricForm.get('cg_'+ cg.Position + '_weight').errors?.outOfRange" class="ig-text-required">
+                                            Please enter a value between 1 and 100
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" icon="fa-ellipsis-v" igButton (click)="menu.toggle($event)" pTooltip="Measure Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                                <ig-popup-menu (onSelect)="menuClicked($event, cg.DisplayOrder, cg.Position)" [items]="menuOptions(cg.DisplayOrder != 1, cg.DisplayOrder != conditionGroups.length)" #menu [tabIndex]="1"></ig-popup-menu>
+                            </div>
+                        </div>
+                        <div class="cg-field-group-container">
+                            <field-condition-grid *ngIf="!isLoadingFields"
+                                                  [formGroup]="metricForm"
+                                                  [conditions]="cg.conditionItemFields"
+                                                  [conditionPrefix]="'ac_' + cg.Position + '_'"
+                                                  [fields]="fields"
+                                                  (onChange)="updateFormValidity($event)"></field-condition-grid>
+                        </div>
+                        <div class="row" *ngIf="showConditionMatch(cg)">
+                            <p-radioButton igRadioButton formControlName="cg_{{cg.Position}}_matchType" [(ngModel)]="cg.MatchType" value="All" label="Match all conditions"></p-radioButton>&nbsp;
+                            <p-radioButton igRadioButton formControlName="cg_{{cg.Position}}_matchType" [(ngModel)]="cg.MatchType" value="Any" label="Match any conditions"></p-radioButton>
+                        </div>
+                    </div>
+                    <div class="row top-margin">
+                        <button *ngIf="canAddGroup" type="button" icon="fa-plus-circle" igButton class="ig-button-midblue" label="Add condition group" (click)="addNewGroup()"></button>
                     </div>
                 </div>
             </ig-property-group>
@@ -305,12 +356,18 @@
 
 <ng-template #weightTooltip>
     <div class="info-tip">
-        <i class="fa fa-question-circle" pTooltip="{{weightTootlip}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium" [appendTo]="'body'"></i>
+        <i class="fa fa-question-circle" pTooltip="{{weightTootlip}}" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium" [appendTo]="'body'"></i>
     </div>
 </ng-template>
 
 <ng-template #groupTooltip>
     <div class="info-tip">
-        <i class="fa fa-question-circle" pTooltip="{{groupingTooltip}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium" [appendTo]="'body'"></i>
+        <i class="fa fa-question-circle" pTooltip="{{groupingTooltip}}" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium" [appendTo]="'body'"></i>
+    </div>
+</ng-template>
+
+<ng-template #conditionWeightTooltip>
+    <div class="info-tip">
+        <i class="fa fa-question-circle" pTooltip="{{conditionWeightTootlip}}" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium" [appendTo]="'body'"></i>
     </div>
 </ng-template>

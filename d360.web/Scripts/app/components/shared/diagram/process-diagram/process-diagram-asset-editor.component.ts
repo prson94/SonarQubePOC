@@ -58,7 +58,7 @@ export class ProcessDiagramAssetEditorComponent extends DiagramBaseComponent imp
             }
         }
         var fields = $event['fields'] as EditorField[];
-        fields.filter(x => x.FieldTypeID).forEach(f => {
+        fields.filter((x) => x.FieldTypeID).forEach((f) => {
             if (data[f.FieldName] == undefined) {
                 data[f.FieldName] = '';
             }

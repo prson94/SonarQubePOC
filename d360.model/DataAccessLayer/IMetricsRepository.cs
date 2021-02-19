@@ -11,7 +11,6 @@ namespace d360.model.DataAccessLayer
     public interface IMetricsRepository
     {
         WorkHttpStatus AddOrUpdateMetrics(MetricAssetEditModel model);
-        List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model, ApiExecution execution);
         void DeleteMetric(MetricAsset model);
         MetricAsset GetActiveMetric(Guid uid);
         Task<List<MetricFieldTypeViewModel>> GetFieldsByRuleResultPath(Guid ruleResultPathUid);
@@ -30,5 +29,6 @@ namespace d360.model.DataAccessLayer
         List<DataQualityDeleteResponseModel> DeleteDataQualityResult(List<DataQualityDeleteModel> list, ApiExecution execution);
         Task<ApiExecutionInfo> PostBulkDataQualityResults(List<DataQualityInsertModel> request, ApiExecution execution, bool sendWorkflowEvents = true);
         List<MeasureVersionHistoryModel> GetMetricVersionHistory(Guid measureUid);
+        void RecalculateMeasureScoreItems(Guid allocationUid, Guid measureUid);
     }
 }

@@ -79,17 +79,17 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     }
 
     ngOnInit() {
-        this.fieldsSub = this.workflowFieldsService.formFields$.subscribe(s => {
+        this.fieldsSub = this.workflowFieldsService.formFields$.subscribe((s) => {
             this.filterFormFields();
         });
 
-        this.httpFieldsSub = this.workflowFieldsService.httpFields$.subscribe(s => {
+        this.httpFieldsSub = this.workflowFieldsService.httpFields$.subscribe((s) => {
             this.filterHttpFields();
         });
 
         this.workflowService.getEmailTaskRecipientType()
-            .subscribe(r => {
-                r.forEach(e => {
+            .subscribe((r) => {
+                r.forEach((e) => {
                     if (e.ID < 1)
                         return;
                     else if (e.ID == EmailTaskRecipientType.Followers) {
@@ -155,7 +155,11 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
 
         if (this.step.activityType == WorkflowActivityType.EmailNotification) {
-
+            if (this.step.settings.SendToDefaultUsers == null) {
+                this.step.settings.SendToDefaultUsers = true;                   
+            } else {
+                this.step.settings.SendToDefaultUsers = this.step.settings.SendToDefaultUsers.toString().toLowerCase() === 'true' ? true : false;
+            } 
         } else if (this.step.activityType == WorkflowActivityType.Procedure) {
             this.workflowService.getWorkflowProcedures()
                 .subscribe(r => {

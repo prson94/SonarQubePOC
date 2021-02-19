@@ -25,7 +25,7 @@ namespace d360.web.Controllers
         {
             var query = Company.Query<dynamic>(@"select ObjectType, ObjectID, Name, ID, Url, CurrentScore, OpenEventCount
 from FollowDetail
-where ResourceID = @r and Type = @t and TypeID = @i", new { r = resourceID, t = new Dapper.DbString { Value = type, IsAnsi = true }, i = id });
+where ResourceID = @r and Type = @t and TypeID = @i and Type != ObjectType", new { r = resourceID, t = new Dapper.DbString { Value = type, IsAnsi = true }, i = id });
 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -36,6 +36,13 @@ where ResourceID = @r and Type = @t and TypeID = @i", new { r = resourceID, t = 
             var query = await Company.QueryAsync<dynamic>(@"exec [dbo].[GetResponsibilityTypeBreakdown]");
 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        [Route("{uid:Guid}/ResourcesByResponsibilityType")]
+        public JsonNetResult GetResourcesByResponsibilityType(Guid uid)
+        {
+            int responsibilityTypeID = Company.ResponsibilityTypes.Where(t => t.UID == uid).Select(t => t.ID).First();
+            return GetResourcesByResponsibilityType(responsibilityTypeID);
         }
 
         [Route("{id:int}/ResourcesByResponsibilityType")]

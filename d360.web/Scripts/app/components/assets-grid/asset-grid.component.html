@@ -94,11 +94,10 @@
       [lazy]="true"
       (onLazyLoad)="loadArtifactsLazy($event)"
       [totalRecords]="totalRecords"
-      [scrollable]="false"
+      [scrollable]="true"
       scrollWidth="100%"
       [loading]="isLoading"
       [loadingIcon]="'fa fa-spinner fa-spin'"      
-      [autoLayout]="false"
     >
       <ng-template pTemplate="colgroup">
         <colgroup>

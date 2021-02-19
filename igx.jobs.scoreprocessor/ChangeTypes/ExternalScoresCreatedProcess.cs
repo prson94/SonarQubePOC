@@ -17,7 +17,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 
             // More work to do here. Sprint 9.
             await Task.Delay(10);
-            Db.SendScoreEventWithPayload(Info.ExecutionUid, ScoreQueueChangeType.WorkflowCheck, scores, Info.StartedOn);
+            Db.SendContinuingScoreEventWithPayload(ScoreQueueChangeType.WorkflowCheck, scores, Info.ExecutionUid, Info.StartedOn);
         }
     }
 }

@@ -143,5 +143,5 @@ export class ResourcePasswordComponent extends BaseComponent{
         else
             this.SamePasswordMatch = false;
     }
-};
+}
 

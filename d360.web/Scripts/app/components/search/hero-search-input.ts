@@ -24,7 +24,7 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
 
     ngOnInit() {
         if (CompanySettings) {
-            this.searchService.getSearchCategories(CompanySettings, this.authenticationService.isAdmin, false).subscribe(cat => {
+            this.searchService.getSearchCategories(CompanySettings, this.authenticationService.isAdmin, false).subscribe((cat) => {
                 this.searchObjectTypes = cat.map((set) => {
                     return {
                         label: set.title,
@@ -57,4 +57,4 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
             label.textContent = 'Search ' + this.searchTypes.length + ' Categories';
         }
     }
-};
+}

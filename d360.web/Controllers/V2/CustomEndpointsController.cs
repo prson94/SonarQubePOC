@@ -44,21 +44,25 @@ namespace d360.web.Controllers.V2
               SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
               SwaggerResponse(HttpStatusCode.OK, "A list of Field types"),
               SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
-              SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+              SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
           ]
         public async Task<IHttpActionResult> CustomAPIVersionFieldEditor_GetFieldTypes(int versionId)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add assets of this type."));
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add assets of this type.")).ConfigureAwait(false);
+            }
 
             var entity = Company.ApiEntities.First(x => x.EndpointVersionID == versionId);
 
             if (entity == null)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", "API Entity Not Found"));
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", "API Entity Not Found")).ConfigureAwait(false);
+            }
 
             var fieldTypes = Company.FieldTypes.Where(x => x.AssetTypeID == entity.AssetTypeID).ToList();
      
-            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, fieldTypes)));
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, fieldTypes))).ConfigureAwait(false);
 
         }
 
@@ -74,7 +78,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "A list of lookup fields.", typeof(List<System.Web.Mvc.SelectListItem>)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> CustomAPIVersionFieldEditor_GetLookupFields(int fieldTypeId)
         {
@@ -84,11 +88,15 @@ namespace d360.web.Controllers.V2
             var fieldType = Company.GetById<FieldType>(fieldTypeId);
 
             if (fieldType == null)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", "Field Type Not Found"));
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", "Field Type Not Found")).ConfigureAwait(false);
+            }
 
 
             if (!fieldType.AllowMultipleValues || fieldType.LookupObjectType != "ReferenceItem")
-              return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new List<System.Web.Mvc.SelectListItem>())));
+            {
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new List<System.Web.Mvc.SelectListItem>()))).ConfigureAwait(false);
+            }
 
 
 
@@ -98,7 +106,7 @@ namespace d360.web.Controllers.V2
                 .ToList();
 
 
-            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, fields)));
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, fields))).ConfigureAwait(false);
 
 
         }
@@ -114,17 +122,21 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "Model for field editor."),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> CustomAPIVersionFieldEditor_EditModel(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
+            {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add assets of this type."));
+            }
 
             var model = Company.GetById<ApiEntityFieldType>(id);
 
             if (model == null)
+            {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", "Field Type Not Found"));
+            }
 
             var entity = Company.GetById<ApiEntity>(model.EntityID);
             var fieldType = Company.GetById<FieldType>(model.FieldTypeID);
@@ -151,7 +163,7 @@ namespace d360.web.Controllers.V2
             };
 
 
-            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, Data)));
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, Data))).ConfigureAwait(false);
 
         }
 
@@ -167,17 +179,21 @@ namespace d360.web.Controllers.V2
     SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
    SwaggerResponse(HttpStatusCode.OK, "API Entity Field Type", typeof(ApiEntityFieldType)),
     SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
-    SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+    SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 ]
 
         public async Task<IHttpActionResult> AddCustomAPIVersionField(ApiEntityFieldType model)
         {
             var prefix = "CustomEndPoints.AddCustomAPIVersionField => ";
             if (!Company.CurrentResourceIsAdmin)
+            {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add assets of this type."));
+            }
 
             if (model == null)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", "model Not Found"));
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", "model Not Found")).ConfigureAwait(false);
+            }
 
             try
             {
@@ -197,7 +213,9 @@ namespace d360.web.Controllers.V2
                     var existing = Company.ApiEntityFieldTypes.FirstOrDefault(i => i.ID == model.ID);
 
                     if (existing == null)
+                    {
                         throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "entity field type Not Found"));
+                    }
 
                     var existingMultiSelect = Company.ApiEntityFieldTypeMultiSelectFields.Where(i => i.EntityFieldTypeID == model.ID).ToList();
                     Company.ApiEntityFieldTypeMultiSelectFields.RemoveRange(existingMultiSelect);
@@ -219,7 +237,7 @@ namespace d360.web.Controllers.V2
                     Company.SaveChanges();
                     
                 }
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -229,7 +247,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
             }
 
            

@@ -1662,6 +1662,25 @@ from	IntersectType I
             return anyExistingItems;
         }
 
+        public bool hasResponsibilityUsingField(TypeIdentifierInfoModel typeIdentifierInfoModel, List<FieldType> fieldTypes)
+        {
+            var anyResponsibilityUsingField = false;
+
+            var rules = Company.ResponsibilityTypeRelationRules.Where(x => x.Object == typeIdentifierInfoModel.Object && x.ObjectID == typeIdentifierInfoModel.ObjectID);
+            foreach(var rule in rules)
+            {
+                rule.SetDefinitionFromRaw();
+                anyResponsibilityUsingField = rule.StructuredDefinition.When.Any(x => fieldTypes.Any(f=>f.ID == x.FieldTypeID));
+                if (anyResponsibilityUsingField)
+                {
+                    break;
+                }
+            }
+            return anyResponsibilityUsingField;
+        }
+
+
+
         public void DeleteFields(List<FieldType> currentFieldTypes, List<string> fieldNamesToDelete)
         {
             var fieldsRemoved = false;
@@ -1711,10 +1730,8 @@ from	IntersectType I
             if (impactedMeasureVersions.Count > 0)
             {
                 Company.SendScoreEventWithPayload(
-                    Guid.NewGuid(),
                     ScoreQueueChangeType.CheckTypeDependencyRemoved,
-                    new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions },
-                    createApiExecution: true
+                    new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions }
                 );
             }
         }

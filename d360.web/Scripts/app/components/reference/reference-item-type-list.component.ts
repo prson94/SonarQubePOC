@@ -82,8 +82,8 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
         this.isLoading = true;
         this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
         this.assetTypeService.getAssetTypesByClass(AssetTypeClass.Reference)
-            .subscribe(data => {
-                var result = data.map(x => (x as any) as ReferenceItemType);
+            .subscribe((data) => {
+                var result = data.map((x) => (x as any) as ReferenceItemType);
                 this.referenceTypes = result.sort((a, b) => a.Name.localeCompare(b.Name));
                 if (this.referenceTypes.length > 0) {
                     if (this.initialSelectedListUid.length > 0) {
@@ -111,7 +111,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
         this
             .assetTypeService
             .deleteSingleAssetType(uid)
-            .subscribe(result => {
+            .subscribe((result) => {
                 this.showMessageForResult(this.messagesService, result);
 
                 if (result.type != 'error') {
@@ -143,7 +143,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
 
     private onSelect() {
         this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid)
-            .subscribe(res => {
+            .subscribe((res) => {
                 this.selected.ID = +res.ObjectID;
                 this.selectedChange.emit(this.selected);
             });
@@ -152,7 +152,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
     private onEdit(item: ReferenceItemType) {
         this.selected = item;
         this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid)
-            .subscribe(res => {
+            .subscribe((res) => {
                 this.selected.ID = +res.ObjectID;
                 this.selected.AssetTypeID = +res.Id;
                 this.showEditor = true;
@@ -162,7 +162,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
     private onDelete(item: ReferenceItemType) {
         this.selected = item;
         this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid)
-            .subscribe(res => {
+            .subscribe((res) => {
                 this.selected.ID = +res.ObjectID;
                 this.selected.AssetTypeID = +res.Id;
                 this.showDelete = true;

@@ -29,8 +29,8 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
     getResponsibilityTypes(): Observable<ResponsibilityType[]> {
         return this.http.get('api/ownership/types')
             .pipe(
-                map(response => <ResponsibilityType[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ResponsibilityType[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -40,16 +40,16 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
             uidstring = `/${uid}`
         return this.http.get(`api/v2/responsibilities/types${uidstring}`)
             .pipe(
-                map(response => <ResponsibilityType[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ResponsibilityType[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getAdminResponsibilityTypeDetails(uid: string): Observable<any> {
         return this.http.get(`api/v2/responsibilities/type/${uid}`)
             .pipe(
-                map(response => <ResponsibilityType[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ResponsibilityType[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -67,23 +67,23 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
                         t.ResponsibilityTypeRelations = [];
                     return t;
                 }),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
     putResponsibilityType(responsibilityType: ResponsibilityType): Observable<any> {
         return this.http.put(`form/ResponsibilityType`, responsibilityType)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     postResponsibilityType(responsibilityType: ResponsibilityType): Observable<any> {
         return this.http.post(`form/ResponsibilityType`, responsibilityType)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -93,32 +93,32 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
         };        
         return this.http.delete(`api/v2/responsibilities/types`, httpHeaders)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getResponsibilityTypeBreakdown(): Observable<ResponsibilityTypeCount[]> {
         return this.http.get('queries/ResponsibilityTypeBreakdown')
             .pipe(
-                map(response => <ResponsibilityTypeCount[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ResponsibilityTypeCount[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
-    getResourceResponsibilityByType(responsibilityTypeId: number): Observable<ResourceResponsibilityTypeCount[]> {
-        return this.http.get(`queries/${responsibilityTypeId}/ResourcesByResponsibilityType`)
+    getResourceResponsibilityByType(responsibilityTypeUid: string): Observable<ResourceResponsibilityTypeCount[]> {
+        return this.http.get(`queries/${responsibilityTypeUid}/ResourcesByResponsibilityType`)
             .pipe(
-                map(response => <ResourceResponsibilityTypeCount[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ResourceResponsibilityTypeCount[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getRelationFormData(): Observable<ResponsibilityTypeRelation_FormData> {
         return this.http.get(`form/ResponsibilityTypeRelation_FormData`)
             .pipe(
-                map(response => <ResponsibilityTypeRelation_FormData>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ResponsibilityTypeRelation_FormData>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -130,56 +130,56 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
 
         return this.http.get(uri)
             .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err))
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getRelationsByAssetType(id: number): Observable<ResponsibilityTypeRelation[]> {
         return this.http.get(`api/ownership/types/asset/${id}/relations`)
             .pipe(
-                map(response => <ResponsibilityTypeRelation[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ResponsibilityTypeRelation[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getRelationsByObjectType(type: string, id: number): Observable<ResponsibilityTypeRelation[]> {
         return this.http.get(`api/ownership/${type}/${id}/responsibilitytypes`)
             .pipe(
-                map(response => <ResponsibilityTypeRelation[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ResponsibilityTypeRelation[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getRelationsByResponsibilityType(id: number): Observable<ResponsibilityTypeRelation[]> {
         return this.http.get(`api/ownership/types/${id}/relations`)
             .pipe(
-                map(response => <ResponsibilityTypeRelation[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ResponsibilityTypeRelation[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     putRelation(rule: ResponsibilityTypeRelation): Observable<any> {
         return this.http.put(`form/ResponsibilityTypeRelation`, rule)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     postRelation(rule: ResponsibilityTypeRelation): Observable<any> {
         return this.http.post(`form/ResponsibilityTypeRelation`, rule)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     deleteRelation(relation: ResponsibilityTypeRelation): Observable<any> {
         return this.http.delete(`form/ResponsibilityTypeRelation?responsibilityTypeId=${relation.ResponsibilityTypeID}&type=${relation.ObjectType}&typeId=${relation.ObjectID}`)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -187,88 +187,88 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
     getResponsibilityTypeRelationRule(id: number): Observable<ResponsibilityTypeRelationRule> {
         return this.http.get(`form/ResponsibilityTypeRelationRule?id=${id}`)
             .pipe(
-                map(r => <ResponsibilityTypeRelationRule>r),
-                catchError(err => this.handleError(err))
+                map((r) => <ResponsibilityTypeRelationRule>r),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getRelationOptionsByResponsibilityType(id: number): Observable<SelectItem[]> {
         return this.http.get(`form/RelationsByResponsibilityType?id=${id}`)
             .pipe(
-                map(response => <SelectItem[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <SelectItem[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getRelationRuleFormData(type: string, id: number): Observable<ResponsibilityTypeRelationRuleFormData> {
         return this.http.get(`form/ResponsibilityTypeRelationRule_FormData?type=${type}&id=${id}`)
             .pipe(
-                map(response => <ResponsibilityTypeRelationRuleFormData>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ResponsibilityTypeRelationRuleFormData>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getRelationRuleFormDataRelationshipsForDropdown(type: string, id: number, intersectTypeId: number): Observable<SelectItem[]> {
         return this.http.get(`form/ResponsibilityTypeRelationRuleRelationships_FormData?type=${type}&id=${id}&intersectTypeID=${intersectTypeId}`)
             .pipe(
-                map(response => <SelectItem[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <SelectItem[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getRelationRulesByResponsibilityType(id: number): Observable<ResponsibilityTypeRelationRuleSummary[]> {
         return this.http.get(`api/ownership/types/${id}/rules`)
             .pipe(
-                map(response => <ResponsibilityTypeRelationRuleSummary[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ResponsibilityTypeRelationRuleSummary[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     putRule(rule: ResponsibilityTypeRelationRule): Observable<any> {
         return this.http.put(`form/ResponsibilityTypeRelationRule`, rule)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     postRule(rule: ResponsibilityTypeRelationRule): Observable<any> {
         return this.http.post(`form/ResponsibilityTypeRelationRule`, rule)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     deleteRule(id: number): Observable<any> {
         return this.http.delete(`form/DeleteResponsibilityTypeRelationRuleByID?id=${id}`)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     deleteDate(id: number): Observable<any> {
         return this.http.delete(`form/DeleteResponsibilityTypeRelationRuleDateByID?id=${id}`)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     testWhen(rule: ResponsibilityTypeRelationRule): Observable<ResponsibilityTypeRelationRuleDefinitionWhenTestRow[]> {
         return this.http.post(`form/ResponsibilityTypeRelationRule_WhenTest`, rule)
             .pipe(
-                map(response => <ResponsibilityTypeRelationRuleDefinitionWhenTestRow[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ResponsibilityTypeRelationRuleDefinitionWhenTestRow[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     testThen(rule: ResponsibilityTypeRelationRule): Observable<ResponsibilityTypeRelationRuleDefinitionThenTestRow[]> {
         return this.http.post(`form/ResponsibilityTypeRelationRule_ThenTest`, rule)
             .pipe(
-                map(response => <ResponsibilityTypeRelationRuleDefinitionThenTestRow[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ResponsibilityTypeRelationRuleDefinitionThenTestRow[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 }

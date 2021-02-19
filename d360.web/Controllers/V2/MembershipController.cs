@@ -1,5 +1,7 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
 using d360.core.entities.Membership;
+using d360.core.entities.Views;
 using d360.model;
 using d360.model.DataAccessLayer;
 using d360.model.helpers;
@@ -14,10 +16,14 @@ using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
@@ -69,7 +75,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.OK, "Gets a list of Users.", typeof(ResourceApiViewModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> GetUsers(Guid? Uid = null, int? ResourceID = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc", string _filter = "", string _simpleFilter = "", bool _includeOrganization = false)
         {
@@ -88,13 +94,15 @@ namespace d360.web.Controllers.V2
                 }
 
                 if (!Company.CurrentResourceIsAdmin && (settings["ShowResources"] ?? "").ToUpper() != "TRUE" && IsCurrentUser == false)
+                {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
+                }
 
                 string finalSql = "";
                 string joinsSql = $@" outer apply (select object,objectid from Asset A1 where A1.Object = 'Resource' and A1.ObjectID = gr.ResourceID) A 
-                                        {(_includeOrganization ? 
+                                        {(_includeOrganization ?
                                                     @" left join dbo.OrganizationResource org on org.ResourceID = GR.ResourceID 
-                                                    left join dbo.asset ao on ao.Object like 'Organization' and ao.ObjectID = org.OrganizationID " 
+                                                    left join dbo.asset ao on ao.Object like 'Organization' and ao.ObjectID = org.OrganizationID "
                                     : "")}";
                 string whereSql = "";
                 string selectSql = $@"select
@@ -126,7 +134,7 @@ namespace d360.web.Controllers.V2
 
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", isValid));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", isValid)).ConfigureAwait(false);
                 }
 
                 var fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
@@ -267,10 +275,14 @@ namespace d360.web.Controllers.V2
                 validCols.AddRange(fieldTypes.Select(x => x.Name));
 
                 if (validCols.All(x => x.ToLower() != _order.ToLower()))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", "Invalid order by passed in the request"));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", "Invalid order by passed in the request")).ConfigureAwait(false);
+                }
 
                 if (!new string[] { "asc", "desc" }.Contains(_direction.ToLower()))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", "Invalid order passed in the request"));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", "Invalid order passed in the request")).ConfigureAwait(false);
+                }
 
                 orderBySQL = $"order by {_order} {_direction}";
 
@@ -295,7 +307,7 @@ namespace d360.web.Controllers.V2
                     byte[] xlsResult = GetUsersExcelFromResults(results, fieldTypes);
 
                     var response = createFileResponseMessage(HttpStatusCode.OK, $"Users {System.DateTime.Now.ToShortDateString()}.xlsx", xlsResult);
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
 
                 }
                 else
@@ -334,27 +346,35 @@ namespace d360.web.Controllers.V2
            SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request made, users not added to group", typeof(ErrorResponse)),
            SwaggerResponse(HttpStatusCode.NotFound, "Group or user(s) provided not found", typeof(ErrorResponse)),
            SwaggerResponse(HttpStatusCode.OK, "Members added to group.", typeof(List<Guid>)),
-           SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+           SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<HttpResponseMessage> AddMembers(Guid groupUid, List<InsertUserToGroup> users)
         {
             var kvpGroupUid = new Dictionary<string, string> { { "Uid", groupUid.ToString() } };
 
-            if(groupUid == Guid.Empty)
+            if (groupUid == Guid.Empty)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Group Uid passed in is empty. Please provided a valid group"));
-            
+            }
+
             var isValidGroup = await this.membershipRepository.GetGroups(kvpGroupUid);
 
             List<ResourceGroup> resourceGroups = new List<ResourceGroup>();
 
             if (!Company.CurrentResourceIsAdmin)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
+            }
 
             if (isValidGroup.Total == 0)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Group UID provided is not a valid group UID. Group does not exist."));
+            }
 
             if (isValidGroup.items?.First()?.IsActiveDirectoryGroup == true)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Group UID provided is an active directory group and cannot be managed manually."));
+            }
 
             var duplicatedUsers = from u in users group u by u.Uid into user where user.Count() > 1 select user.Key;
 
@@ -364,7 +384,9 @@ namespace d360.web.Controllers.V2
             }
 
             if (users.Count == 0)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "No user UIDs provided."));
+            }
 
             var id = Company.Filter<Asset>(x => x.uid == groupUid).SingleOrDefault().ObjectID;
 
@@ -374,18 +396,24 @@ namespace d360.web.Controllers.V2
                 bool isValid = this.IsValidGuid(userUid, "uid");
 
                 if (!isValid)
+                {
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "One or more user UIDs do not exist."));
+                }
 
                 var isUser = this.assetRepository.GetAssetByUID(user.Uid);
 
                 if (isUser == null || isUser.Object != "Resource")
+                {
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "One or more user UIDs passed in are not a user."));
+                }
 
 
                 var isMember = Company.Filter<ResourceGroup>(x => x.GroupID == id && x.ResourceID == isUser.ObjectID).SingleOrDefault();
 
                 if (isMember != null)
+                {
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"User {user.Uid.ToString()} is already a member of this group"));
+                }
 
                 resourceGroups.Add(new ResourceGroup { GroupID = id, ResourceID = isUser.ObjectID });
             }
@@ -393,7 +421,9 @@ namespace d360.web.Controllers.V2
             try
             {
                 foreach (var m in resourceGroups)
+                {
                     Company.Add(m);
+                }
             }
             catch (Exception ex)
             {
@@ -416,11 +446,11 @@ namespace d360.web.Controllers.V2
            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
            SwaggerResponse(HttpStatusCode.OK, "Gets Members of a Group.", typeof(ResourceApiViewModel)),
            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
-           SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+           SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
            SwaggerParameter("_firstName", "The First Name of the user.", DataType = "string", ParameterType = "query", Required = false),
            SwaggerParameter("_lastName", "The last name of the user.", DataType = "string", ParameterType = "query", Required = false),
            SwaggerParameter("_pageSize", "The number of results to return per page. The default is 5 users per page and max value is 250.", DataType = "integer", ParameterType = "query", Required = false),
-           SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+           SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
        ]
         public async Task<HttpResponseMessage> GetMembers(Guid groupUid)
         {
@@ -558,7 +588,7 @@ namespace d360.web.Controllers.V2
             Route("groups"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(GroupApiModels)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerParameter("Uid", "Uid of the group.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("Name", "Name of the group", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("ResourceUid", "Uid of user", DataType = "string", ParameterType = "query", Required = false)
@@ -573,15 +603,15 @@ namespace d360.web.Controllers.V2
 
                 if (!this.IsValidGuid(queryParams, "uid"))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid uid is passed in the request"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid uid is passed in the request")).ConfigureAwait(false);
                 }
                 if (!this.IsValidGuid(queryParams, "resourceuid"))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid Resource Uid provided in request"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid Resource Uid provided in request")).ConfigureAwait(false);
                 }
                 var results = await this.membershipRepository.GetGroups(queryParams);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -590,7 +620,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -607,7 +637,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource / Group doesn't exist.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - Provided group could not be updated", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 
         ]
         public async Task<IHttpActionResult> DeleteGroupMember(Guid groupUid, Guid resourceUid)
@@ -617,7 +647,9 @@ namespace d360.web.Controllers.V2
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Unauthorized", "Access Denied."));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Unauthorized", "Access Denied.")).ConfigureAwait(false);
+                }
 
                 var group = (await Company.QueryAsync<Group>(@"
 select G.* from [Group] G 
@@ -627,7 +659,9 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 var userId = _company.Assets.FirstOrDefault(x => x.Object == "Resource" && x.uid == resourceUid)?.ObjectID ?? 0;
 
                 if (group?.PrimaryOwnerResourceID == userId)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Cannot delete Primary Owner of group."));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Cannot delete Primary Owner of group.")).ConfigureAwait(false);
+                }
 
                 var res = await Company.Database.Connection.ExecuteAsync(@"delete rg from [dbo].[ResourceGroup] rg inner join[reporting].[Global_Resource] gr on gr.uid = @resource inner join[dbo].[Asset] a on a.uid = @group and a.object = 'Group' inner join[dbo].[Group] g on g.ID = a.ObjectID where rg.ResourceID = gr.ResourceID and rg.GroupID = g.ID;  
                         Update G set  G.SecondaryOwnerResourceID = null
@@ -635,8 +669,14 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                         inner join[dbo].[Asset] a on a.uid = @group and a.object = 'Group'
                         where G.ID = A.ObjectID and G.SecondaryOwnerResourceID = @user", new { resource = resourceUid, group = groupUid, user = userId });
 
-                if (res > 0) return successMessageResponse(HttpStatusCode.OK, "User removed.", "User removed from group."); // deleted
-                else return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Resource / Group doesn't exist"));
+                if (res > 0)
+                {
+                    return successMessageResponse(HttpStatusCode.OK, "User removed.", "User removed from group."); // deleted
+                }
+                else
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Resource / Group doesn't exist")).ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {
@@ -661,7 +701,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> DeleteUsers(List<DeleteUserModel> users)
         {
@@ -670,10 +710,14 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Unauthorized", $"Access denied"));
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Unauthorized", $"Access denied")).ConfigureAwait(false);
+                }
 
                 if (users == null || users.Count() == 0)
+                {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", $"No users provided in request."));
+                }
 
                 List<UserApiDeleteModel> resources = new List<UserApiDeleteModel>();
 
@@ -733,7 +777,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PostUsers(List<UserApiInsertModel> users, bool lookupFieldsPassedByValue = false)
         {
@@ -795,7 +839,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PutUsers(List<UserApiUpdateModel> users, bool lookupFieldsPassedByValue = false, bool IsChangePasswordReqeust = false)
         {
@@ -848,7 +892,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             try
             {
                 var execution = getApiExecution(users.Count);
-                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, false , IsChangePasswordReqeust);
+                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, false, IsChangePasswordReqeust);
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
@@ -870,7 +914,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         HttpGet,
         Route("users/me/favorites"),
         SwaggerResponse(HttpStatusCode.OK, "", typeof(List<FavoriteApiModel>)),
-        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> GetFavorites()
         {
@@ -933,7 +977,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         HttpDelete,
         Route("users/me/favorites"),
         SwaggerResponse(HttpStatusCode.OK, ""),
-        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> ClearFavorites()
         {
@@ -969,7 +1013,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerRequestExample(typeof(FavoriteApiModel), typeof(FavoriteApiModelExample)),
             SwaggerResponse(HttpStatusCode.Created, "Favorite status toggled."),
             SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> ToggleFavorite(FavoriteApiModel favorite)
         {
@@ -986,7 +1030,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerRequestExample(typeof(FavoriteApiModel), typeof(FavoriteApiModelExample)),
             SwaggerResponse(HttpStatusCode.Created, "Homepage status toggled."),
             SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> ToggleHomepage(FavoriteApiModel favorite)
         {
@@ -1010,7 +1054,8 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 {
                     string message = "Name is required.";
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Name.", message));
-                } else
+                }
+                else
                 {
                     favorite.Name = favorite.Name.Trim();
                 }
@@ -1018,7 +1063,8 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 {
                     string message = "Favorites of type Page cannot have an empty route.";
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Type and Route.", message));
-                } else
+                }
+                else
                 {
                     favorite.Route = favorite.Route.Trim();
                 }
@@ -1053,7 +1099,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerRequestExample(typeof(DeleteGroupModel), typeof(DeleteGroupExample)),
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 
         ]
         public async Task<IHttpActionResult> DeleteGroup(List<DeleteGroupModel> groups)
@@ -1061,7 +1107,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
-            if(groups.Count() < 1)
+            if (groups.Count() < 1)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "No Groups provided in request"));
 
             var execution = getApiExecution(groups.Count);
@@ -1099,7 +1145,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "There are no groups in this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 
         ]
         public async Task<IHttpActionResult> UpdateGroup(List<UpdateGroupModel> groups)
@@ -1134,7 +1180,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "There are no groups in this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 
         ]
         public async Task<IHttpActionResult> AddGroup(List<AddGroupModel> groups)
@@ -1184,26 +1230,26 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
      Route("organizations/{organizationTypeUid:Guid}"),
      SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
      SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
-     SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+     SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
      SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by AssetId.", DataType = "string", ParameterType = "query", Required = false),
      SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
      SwaggerParameter("_filter", "The filter expression used to filter organisations by name and accepted users email. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
      SwaggerResponse(HttpStatusCode.OK, "Gets a list of Organizations.", typeof(List<OrganizationModel>)),
      SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Parameters provided"),
      SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied: User is not an administrator"),
-     SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+     SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
  ]
         public async Task<IHttpActionResult> GetOrganizationsByType(Guid organizationTypeUid)
         {
             if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));                     
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
             if (!Company.Any<AssetType>(x => x.uid == organizationTypeUid && x.Object == core.SystemObjects.OrganizationType.ToString()))
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid organizationTypeUid provided"));
             }
 
-            var queryParams = Request.GetQueryNameValuePairs();            
+            var queryParams = Request.GetQueryNameValuePairs();
 
             string isValid = isPageSizeAndNumValid(queryParams);
 
@@ -1216,7 +1262,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     isValid = $"{order} is not a valid _order field";
                 }
             }
-            
+
             if (string.IsNullOrEmpty(isValid) && queryParams.Any(q => q.Key == "_direction"))
             {
                 string[] allowedValues = new string[] { "asc", "desc" };
@@ -1226,27 +1272,28 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 {
                     isValid = "Invalid _direction provided";
                 }
-            }            
+            }
 
             if (!string.IsNullOrEmpty(isValid))
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
             }
-            try {
+            try
+            {
                 List<OrganizationModel> organizations = await membershipRepository.GetOrganizationsByType(organizationTypeUid, queryParams);
-                
+
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, organizations)));
-            }           
+            }
             catch (FilterExpressionParserException ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Filter expression parse error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Filter expression parse error", errorMessage)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
-            }            
+            }
         }
 
 
@@ -1262,13 +1309,13 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
              SwaggerResponse(HttpStatusCode.OK, "Gets details about a single organization.", typeof(List<OrganizationDetailModel>)),
              SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Organization Uid"),
              SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied: User is not an administrator"),
-             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> GetOrganizationsDetails(Guid organizationUid)
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
-                        
+
             try
             {
                 OrganizationDetailModel organizationDetails = await membershipRepository.GetOrganizationsDetails(organizationUid);
@@ -1277,7 +1324,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Organization Uid", "Invalid Organization Uid provided"));
                 }
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, organizationDetails)));
-            }            
+            }
             catch (Exception ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
@@ -1341,7 +1388,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         Route("users/me/apikey"),
         SwaggerResponse(HttpStatusCode.OK, "", typeof(List<ApiKeyDetailModel>)),
         SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> GetApikey()
         {
@@ -1390,6 +1437,281 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
+        }
+
+        /// <summary>
+        /// Retrieve the roles of current user (Administrator/User)
+        /// </summary>
+        /// <returns></returns>
+        [
+        HttpGet,
+        Route("users/me/roles"),
+        SwaggerResponse(HttpStatusCode.OK, "", typeof(List<string>)),
+        SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<IHttpActionResult> GetUserRoles()
+        {
+            var prefix = "Membership.GetUserRoles => ";
+
+            try
+            {
+                List<string> roles = new List<string>();
+
+                if (Company.CurrentResourceIsAdmin)
+                {
+                    roles.Add("Administrator");
+                }
+                else
+                {
+                    roles.Add("User");
+                }
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, roles)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Updates the watch status of an Asset/Asset Type for the requesting user.
+        /// </summary>
+        /// <param name="model">Request model containing the Asset/Asset Type to be watched/unwatched</param>
+        [
+            HttpPut,
+            Route("users/me/watches"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),            
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid request model parameters provided.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> UpdateWatches(UpdateUserWatchModel model)
+        {
+            int id = -1;
+            string type = "";
+            string name = "";
+            string parentName = "";
+            bool includeChildren = false;            
+
+            if (model.assetTypeUid == null && model.assetUid == null)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Either assetTypeUid or assetUid must be provided"));
+            }
+
+            if (model.assetTypeUid != null && model.assetUid != null)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Only one of assetTypeUid or assetUid should be provided"));
+            }
+
+            if (model.assetTypeUid != null)
+            {
+                if((model.assetTypeUid.Value == Guid.Empty) || !Company.Any<AssetType>(x => x.uid == model.assetTypeUid))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid assetTypeUid provided"));
+                }
+                else
+                {
+                    var assetType = assetRepository.GetAssetTypeByUID(model.assetTypeUid.Value);
+                    id = assetType.ObjectID;
+                    type = assetType.Object;
+                    name = assetType.Name;
+                    includeChildren = true;
+                }                
+            }
+           
+            if (model.assetUid != null)
+            {
+                
+                if((model.assetUid.Value == Guid.Empty) || !Company.Any<Asset>(x => x.uid == model.assetUid.Value))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid assetUid provided"));
+                }
+                else
+                {
+                    var asset = Company.Filter<AssetDetail>(x => x.uid == model.assetUid.Value).FirstOrDefault();
+                    id = asset.ObjectID;
+                    type = asset.Object;
+                    name = asset.DisplayValue;
+                    parentName = asset.TypeName;
+                }               
+            }
+
+            var followDetail = Company.Filter<FollowDetail>(i => i.ObjectID == id && i.ObjectType == type && i.ResourceID == Company.CurrentResourceID).FirstOrDefault();
+
+            if(model.watches && followDetail != null)
+            {
+
+                if (followDetail.HardFollow)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", string.Format("You are already watching {0}.", (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'")));
+                }
+                else
+                {
+                    if (followDetail != null && !followDetail.HardFollow)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You are currently watching '{name}' via it's parent, '{parentName}'."));
+                    }
+                }                
+            }
+
+            if(!model.watches)
+            {
+                if(followDetail == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", string.Format("You are not currently watching {0}.", (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'")));
+                }
+                if(followDetail != null && !followDetail.HardFollow)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You are currently watching this item's parent, '{parentName}'.  You can not unwatch this item individually."));
+                }
+            }
+
+            bool success = Company.UpdateFollowStatus((SystemObjects)Enum.Parse(typeof(SystemObjects), type), id, null, includeChildren);            
+
+            return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, "Success", string.Format("You are {0} watching {1}.", (success) ? "now" : "no longer", (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'"))); ;
+        }
+
+
+        /// <summary>
+        /// Retrieve a users logo
+        /// </summary>
+        /// <param name="uid">Uid of the user</param>
+        /// <param name="size">Size of the image to be returned in pixels.</param>
+        [HttpGet,
+        Route("users/{uid:Guid}/image"),
+        SwaggerConsumes("application/json"),
+        SwaggerProduces("application/octet-stream"),
+        SwaggerResponse(HttpStatusCode.OK, "Success"),
+        SwaggerResponse(HttpStatusCode.BadRequest, "Invalid size specified for image, value greater than max or less than or equal to 0.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.NotFound, "Invalid Resource Uid provided.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),]
+        public async Task<IHttpActionResult> MyImage(Guid uid, int size = 150)
+        {
+            var email = await Community.QueryFirstOrDefaultAsync<string>("select email from [resource] where uid = @uid", new { uid });
+
+            if (email == null)
+            {
+                return errorMessageResponse(HttpStatusCode.NotFound, "Not Found", "Invalid resource uid specified.");
+            }
+
+            if (size < 1 || size > 2048)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Invalid request, invalid size specified for image. Value must be less then 2048 or greater than 0.");
+            }
+
+
+            MD5 md5Hasher = MD5.Create();
+
+            // Convert the input string to a byte array and compute the hash. 
+            // 1.  Trim leading and trailing whitespace from an email address
+            // 2.  Force all characters to lower-case
+            // 3.  md5 hash the final string
+            byte[] data = md5Hasher.ComputeHash(Encoding.Default.GetBytes((email ?? "").Trim().ToLower()));
+
+            // Create a new Stringbuilder to collect the bytes  
+            // and create a string.  
+            StringBuilder sBuilder = new StringBuilder();
+
+            // Loop through each byte of the hashed data  
+            // and format each one as a hexadecimal string.  
+            for (int i = 0; i < data.Length; i++)
+            {
+                sBuilder.Append(data[i].ToString("x2"));
+            }
+
+
+            string url = "http://www.gravatar.com/avatar/" + sBuilder.ToString() + "?s=" + size + "&d=mm";
+            var uri = new Uri(url);
+            using (var client = new HttpClient())
+            {
+                var res = client.GetAsync(uri).Result;
+                byte[] content = await res.Content.ReadAsByteArrayAsync();
+                var dataStream = new MemoryStream(content);
+                var response = createFileResponseMessage(HttpStatusCode.OK, $"user.png", content);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+            }
+        }
+
+        /// <summary>
+        /// Checks the watch status of an Asset for the requesting user.
+        /// </summary>
+        /// <param name="assetTypeUid">Uid of the asset type</param>
+        /// <param name="assetUid">Uid of the asset</param>
+        [
+            HttpGet,
+            Route("users/me/watches/{assetTypeUid:Guid}/{assetUid:Guid}"),            
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid parameters provided.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetWatchStatusOfAsset(Guid assetTypeUid, Guid? assetUid)
+        {            
+            return await Task.FromResult(GetWatchStatusForUser(assetTypeUid, assetUid));
+        }
+
+        /// <summary>
+        /// Checks the watch status of an Asset Type for the requesting user.
+        /// </summary>
+        /// <param name="assetTypeUid">Uid of the asset type</param>
+        [
+            HttpGet,
+            Route("users/me/watches/{assetTypeUid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid parameters provided.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetWatchStatusOfAssetType(Guid assetTypeUid)
+        {
+            return await Task.FromResult(GetWatchStatusForUser(assetTypeUid, null));
+        }
+
+        private IHttpActionResult GetWatchStatusForUser(Guid assetTypeUid, Guid? assetUid)
+        {
+            bool response = false;
+
+            if ((assetTypeUid == Guid.Empty) || !Company.Any<AssetType>(x => x.uid == assetTypeUid))
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid assetTypeUid provided.");
+            }
+
+            var assetType = assetRepository.GetAssetTypeByUID(assetTypeUid);
+
+            if (assetUid != null)
+            {
+
+                if ((assetUid.Value == Guid.Empty) || !Company.Any<Asset>(x => x.uid == assetUid.Value))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid assetUid provided.");
+                }
+                else
+                {
+                    var asset = Company.Filter<AssetDetail>(x => x.uid == assetUid.Value).FirstOrDefault();
+
+                    if (asset.AssetTypeUid != assetTypeUid)
+                    {
+                        return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid assetUid does not match the asset type provided.");
+                    }
+
+                    response = Company.Any<Follow>(F => F.ObjectID == asset.ObjectID && F.ObjectType == asset.Object && F.ResourceID == Company.CurrentResourceID);
+                }
+
+            }
+            
+            if(!response)
+            {
+                response = Company.Any<Follow>(F => F.ObjectID == assetType.ObjectID && F.ObjectType == assetType.Object && F.ResourceID == Company.CurrentResourceID);
+            }
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
         }
     }
 }

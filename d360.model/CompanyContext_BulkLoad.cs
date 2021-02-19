@@ -69,10 +69,7 @@ namespace d360.model
             when 'P' then 'Promotion'
 			when 'R' then 'Relation'
 			when 'U' then 'Unrelation'
-            when 'BL' then 'Lineage : Business'
             when 'L' then 'Lineage'
-            when 'DL' then 'Remove Lineage : Business'
-            when 'N' then 'Lineage : Business'
             when 'O' then 'Responsibilities'
             when 'T' then 'Lineage : Technical'
             when 'S' then 'Synonyms'
@@ -344,184 +341,7 @@ from	[Load] L
         }
 
         #endregion
-
-        #region Parse Spreadsheet Methods
-
-        public void BulkLoadParseFile(int loadID)
-        {
-            var load = GetById<Load>(loadID, i => i.LoadColumns);
-
-            var loadItemRowCount = Query<int>("select count(1) from LoadItem where LoadID = @id", new { id = loadID }).Single();
-
-            if (loadItemRowCount <= 0)
-            {
-                var memoryStream = new MemoryStream(load.File);
-                var xls = new SLDocument(memoryStream);
-
-                var stats = xls.GetWorksheetStatistics();
-
-                var rowIndex = stats.StartRowIndex + 1;
-                var numberOfColumns = load.LoadColumns.Count;
-
-                var loadItems = new List<LoadItem>();
-                var loadItemColumns = new List<LoadItemColumn>();
-
-                while (rowIndex <= stats.EndRowIndex)
-                {
-                    // Empty row validation.
-                    var numberOfEmptyColumns = 0;
-                    foreach (var c in load.LoadColumns.OrderBy(i => i.ColumnIndex))
-                    {
-                        var testValue = (xls.GetCellValueAsString(rowIndex, c.ColumnIndex) ?? "").TrimEnd();
-                        if (string.IsNullOrEmpty(testValue))
-                            numberOfEmptyColumns++;
-                    }
-
-                    // Empty row check.
-                    if (numberOfEmptyColumns < numberOfColumns)
-                    {
-                        var loadItem = new LoadItem { LoadID = load.ID, RowIndex = rowIndex };
-                        loadItems.Add(loadItem);
-
-                        foreach (var c in load.LoadColumns.OrderBy(i => i.ColumnIndex))
-                        {
-                            var format = xls.GetCellStyle(rowIndex, c.ColumnIndex).FormatCode;
-                            var isDate = false;
-
-                            if (format.Contains("[$-404]") || format.Contains("m/d") || format.Contains("m-d") || format.Contains("d-m") ||
-                                format.Contains("[$-F400]") || format.Contains("[$-409]"))
-                                isDate = true;
-
-                            var loadValue = string.Empty;
-
-                            if (isDate)
-                            {
-                                loadValue = xls.GetCellValueAsDateTime(rowIndex, c.ColumnIndex).ToShortDateString();
-                            }
-                            else
-                            {
-                                loadValue = (xls.GetCellValueAsString(rowIndex, c.ColumnIndex) ?? "").TrimEnd();
-                            }
-
-                            loadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = loadValue });
-                        }
-                    }
-                    rowIndex++;
-                }
-
-                var mustOpen = Database.Connection.State != ConnectionState.Open;
-                try
-                {
-                    if (mustOpen)
-                        Database.Connection.Open();
-
-                    // Load Items processing
-                    using (var bulkCopy = new SqlBulkCopy((Database.Connection) as SqlConnection))
-                    {
-                        bulkCopy.BatchSize = loadItems.Count;
-                        bulkCopy.DestinationTableName = "dbo.LoadItem";
-                        bulkCopy.BulkCopyTimeout = 3600;
-
-                        var table = new DataTable();
-                        var columnName = "LoadID";
-                        table.Columns.Add(columnName, typeof(int));
-                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                        columnName = "RowIndex";
-                        table.Columns.Add(columnName, typeof(int));
-                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                        foreach (var item in loadItems)
-                        {
-                            var row = table.NewRow();
-
-                            row["LoadID"] = item.LoadID;
-                            row["RowIndex"] = item.RowIndex;
-
-                            table.Rows.Add(row);
-                        }
-
-                        bulkCopy.WriteToServer(table);
-                    }
-
-                    // Load Item Columns Processing
-                    using (var bulkCopy = new SqlBulkCopy((Database.Connection) as SqlConnection))
-                    {
-                        bulkCopy.BatchSize = loadItemColumns.Count;
-                        bulkCopy.DestinationTableName = "dbo.LoadItemColumn";
-                        bulkCopy.BulkCopyTimeout = 3600;
-
-                        var table = new System.Data.DataTable();
-                        var columnName = "LoadID";
-                        table.Columns.Add(columnName, typeof(int));
-                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                        columnName = "RowIndex";
-                        table.Columns.Add(columnName, typeof(int));
-                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                        columnName = "ColumnIndex";
-                        table.Columns.Add(columnName, typeof(int));
-                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                        columnName = "Value";
-                        table.Columns.Add(columnName, typeof(string));
-                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                        foreach (var item in loadItemColumns)
-                        {
-                            var row = table.NewRow();
-
-                            row["LoadID"] = item.LoadID;
-                            row["RowIndex"] = item.RowIndex;
-                            row["ColumnIndex"] = item.ColumnIndex;
-                            if (string.IsNullOrEmpty(item.Value))
-                                row["Value"] = DBNull.Value;
-                            else
-                                row["Value"] = item.Value;
-
-                            table.Rows.Add(row);
-                        }
-
-                        bulkCopy.WriteToServer(table);
-                    }
-                }
-                catch (Exception)
-                {
-
-                }
-                finally
-                {
-                    if (mustOpen)
-                        Database.Connection.Close();
-                }
-            }
-        }
-
-        private bool findFieldObjectByValue(
-            List<BulkLoadMatchingModel> matchingItems,
-            List<LoadItemColumn> loadKeyFieldValues,
-            int objectIDToFind,
-            int groupIndex = 0
-            )
-        {
-            var inList = false;
-            var loadKeyValue = loadKeyFieldValues.Single(v => v.ColumnIndex == matchingItems[groupIndex].ColumnIndex);
-            if (matchingItems[groupIndex].Fields.Any(f => f.ObjectID == objectIDToFind && f.Value == loadKeyValue.Value))
-            {
-                inList = true;
-
-                if (groupIndex < matchingItems.Count - 1)
-                {
-                    //Recurse.
-                    inList = findFieldObjectByValue(matchingItems, loadKeyFieldValues, objectIDToFind, groupIndex + 1);
-                }
-            }
-
-            return inList;
-        }
-
-        #endregion Parse Spreadsheet Methods
+        
 
         #region Process Data Methods
 
@@ -779,11 +599,111 @@ from	[Load] L
                                     F.FieldTypeID = FT.ID
                             from    #BulkExecutionField F
                                     inner join AssetType T on T.ID = @atID
-                                    inner join AssetTypeLevel L on L.AssetTypeID = T.ID and L.[Level] = @maxLevel
+                                    inner join AssetTypeLevel L on L.AssetTypeID = T.ID and L.[Level] <= @maxLevel
                                     inner join FieldType FT on FT.Name = replace(F.FieldName,L.[Name] + ' ', '')  and FT.[Object] = T.[Object] and FT.ObjectID = T.ObjectID
                             where   F.FieldName = (coalesce(L.Name,'') + ' ' + coalesce(FT.Name,'')) and F.FieldTypeID is null;
 
                             delete from #BulkExecutionField where FieldTypeID is null;
+
+
+                            --build model text path from sheet to find existing assets and parent assets
+
+                            drop table if exists #PathFields;
+                            create table #PathFields 
+                            (
+                            ItemNumber int,
+                            ColumnIndex int,
+                            DisplayValue nvarchar(max)
+                            );
+
+                            drop table if exists #PathValues;
+                            create table #PathValues
+                            (
+	                            ItemNumber int,
+	                            FullPath nvarchar(max),
+	                            ParentPath nvarchar(max),
+	                            [Uid] uniqueidentifier,
+	                            ParentUid uniqueidentifier
+                            );
+
+                            insert into #PathFields
+                            select		A.ItemNumber,
+			                            D.ColumnIndex,
+			                            string_agg(coalesce(D.FormattedValue, D.value), '') as DisplayValue
+                            from		#BulkExecutionAsset A
+			                            inner join AssetType T on T.ID = @atID
+			                            outer apply (
+						                            select	TL.value,
+								                            F.FieldValue as FormattedValue,
+								                            F.ColumnIndex,
+								                            F.ItemNumber
+						                            from	string_split(replace(T.DisplayFormat, '{{', ' | '), '|') TF
+								                            cross apply string_split(replace(TF.[value], '}}', '|'), '|') TL
+								                            left join FieldType FT on FT.AssetTypeID = T.ID and FT.Name like TRIM(TL.Value)
+								                            left join #BulkExecutionField F on F.FieldTypeID = FT.ID
+						                            where	RTRIM(TF.value) <> ''
+								                            and RTRIM(TL.value) <> ''
+						                            ) D
+                            where		A.ItemNumber = D.ItemNumber
+                            group by	A.ItemNumber,
+			                            D.ColumnIndex
+
+                            insert into #PathValues
+                            select		F.ItemNumber, 
+			                            string_agg(F.DisplayValue,'/')  within group (order by F.ColumnIndex asc) as FullPath,
+			                            null as ParentPath,
+			                            null as [Uid],
+			                            null as [ParentUid]
+                            from		#PathFields F
+                            group by	F.ItemNumber;
+
+
+                            update V
+                            set V.ParentPath = P.ParentPath
+                            from #PathValues V
+                            cross apply (
+	                            select	F.ItemNumber, 
+			                            string_agg(F.DisplayValue,'/') within group (order by F.ColumnIndex asc) as ParentPath
+	                            from	#PathFields F
+	                            where	F.ColumnIndex < (select max(ColumnIndex) from #PathFields)
+	                            group by F.ItemNumber
+                            ) P
+                            where P.ItemNumber = V.ItemNumber;
+
+                            update V
+                            set V.Uid = A.UId
+                            from #PathValues V 
+                            inner join Asset A on A.AssetTypeID = @atID
+                            cross apply dbo.GetAssetTextPathById(A.ID, '/') T
+                            where V.FullPath = T.TextPath;
+
+                            update V
+                            set V.ParentUid = A.Uid
+                            from #PathValues V 
+                            inner join Asset A on A.AssetTypeID = @atID
+                            cross apply dbo.GetAssetTextPathById(A.ID, '/') T
+                            where V.ParentPath = T.TextPath;
+
+
+                            update A
+                            set A.AssetUid = P.Uid,
+                            A.ParentUid = P.ParentUid
+                            from #BulkExecutionAsset A
+                            inner join #PathValues P on P.ItemNumber = A.ItemNumber;
+                            
+                            update B
+                            set B.AssetID = A.ID
+                            from #BulkExecutionAsset B
+                            inner join Asset A on A.[uid] = B.AssetUid;
+
+                            --update LoadItem with correct parent uid for API
+						    update L
+							set L.ParentAssetUid = A.ParentUid
+							from LoadItem L
+							inner join #BulkExecutionAsset A on A.ItemNumber = L.RowIndex
+							where L.LoadID = @ID;
+
+
                         end
                         "
                             , new { executionID, load.ID, atID = assetType.ID, @class = assetType.Class, maxLevel }, transaction: trans, commandTimeout: timeout);
@@ -830,6 +750,8 @@ from	[Load] L
 
                                 Create index idx_AssetActiveKey on #AssetActiveKey(ActiveKey);
 
+                                
+
                                 update T set T.AssetUid = K.Uid                                  
                                 from #BulkExecutionAsset T                                   
                                 inner join  #AssetActiveKey K on K.ActiveKey = T.ProposedKey; 
@@ -844,7 +766,7 @@ from	[Load] L
                         else
                         {
 
-                            if (intersectTypeId.HasValue && calculateParentHashByUid)
+                            if ((intersectTypeId.HasValue || assetType.Class == AssetTypeClass.Model) && intersectTypeId.HasValue)
                             {
                                 await Connection.ExecuteAsync(@"
                                 drop table if exists #AssetActiveKey;
@@ -1035,7 +957,7 @@ from	[Load] L
                         var update = new AssetUpdate();
                         update.ExecutionItemUid = item.ExecutionItemUid;
 
-                        if (parentAssetType != null && item.ParentAssetUid.HasValue)
+                        if ((parentAssetType != null || assetType.Class == AssetTypeClass.Model) && item.ParentAssetUid.HasValue)
                             update.ParentUid = item.ParentAssetUid;
 
                         update.Uid = ((Guid)item.AssetUid);
@@ -1147,10 +1069,14 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
         public async Task BulkRelation(Load load, IRelationshipRepository relationshipRepository, IAssetRepository assetRepository, BulkRelationshipOperation operation)
         {
             if (load == null)
+            {
                 throw new ArgumentNullException("load cannot be null");
+            }
 
             if (!load.IntersectTypeUid.HasValue)
+            {
                 throw new ArgumentNullException("intersect type uid cannot be null");
+            }
 
             await GenerateExecutionItemUids(load, timeout);
 
@@ -1278,7 +1204,9 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                     RelationshipDeletes deletes = new RelationshipDeletes();
 
                     if (Connection.State == ConnectionState.Closed)
+                    {
                         await Connection.OpenAsync();
+                    }
 
                     //populate intersect IDs
                     await Connection.ExecuteAsync($@"update L

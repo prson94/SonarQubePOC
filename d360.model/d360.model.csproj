@@ -68,10 +68,6 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.4.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
-    <Reference Include="gudusoft.gsqlparser, Version=2.4.9.22298, Culture=neutral, PublicKeyToken=1e1734490a0fe9ed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\gudusoft.gsqlparser.dll</HintPath>
-    </Reference>
     <Reference Include="HtmlAgilityPack, Version=1.11.24.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <HintPath>..\packages\HtmlAgilityPack.1.11.24\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
@@ -126,7 +122,6 @@
     <Compile Include="CommunityContext.cs" />
     <Compile Include="CompanyContext_Api.cs" />
     <Compile Include="CompanyContext_Integration.cs" />
-    <Compile Include="CompanyContext_Reporting.cs" />
     <Compile Include="CompanyContext_Organization.cs" />
     <Compile Include="CompanyContext_BulkLoad.cs" />
     <Compile Include="CompanyContext_Asset.cs" />
@@ -138,6 +133,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="CompanyContext_MarkitLineage.cs" />
+    <Compile Include="DataAccessLayer\ICommentRepository.cs" />
     <Compile Include="DataAccessLayer\IGraphFilterRepository.cs" />
     <Compile Include="DataAccessLayer\IIssueRepository.cs" />
     <Compile Include="DataAccessLayer\IMembershipRepository.cs" />
@@ -146,6 +142,7 @@
     <Compile Include="DataAccessLayer\IResourceRepository.cs" />
     <Compile Include="DataAccessLayer\IResponsibilityRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\BaseRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\CommentRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\FusionRepository.cs" />
     <Compile Include="DataAccessLayer\IMetricsRepository.cs" />
     <Compile Include="DataAccessLayer\IScoringRepository.cs" />

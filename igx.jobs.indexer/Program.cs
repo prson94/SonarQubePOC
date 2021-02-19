@@ -73,8 +73,7 @@ namespace igx.jobs.indexer
     }
 
     public static class Indexer
-    {
-        private static int _defaultQueryCommandTimeout = 180;
+    {        
         const string functionName = "Indexing_ReIndex";
 #if DEBUG
         const string timerSettings = "0 */15 * * * *";

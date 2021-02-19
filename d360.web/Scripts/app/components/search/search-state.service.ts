@@ -38,27 +38,27 @@ export class SearchStateService extends BaseObservableService {
         return this._categories.value;
     }
     get categories() {
-        return new Observable(fn => this._categories.subscribe(fn));
+        return new Observable((fn) => this._categories.subscribe(fn));
     }
     private _results: BehaviorSubject<SearchFullResult[]> = new BehaviorSubject([]);
     get results() {
-        return new Observable(fn => this._results.subscribe(fn));
+        return new Observable((fn) => this._results.subscribe(fn));
     }
     private _resultCount: BehaviorSubject<number> = new BehaviorSubject(0);
     get resultCount() {
-        return new Observable(fn => this._resultCount.subscribe(fn));
+        return new Observable((fn) => this._resultCount.subscribe(fn));
     }
     private _pageNumber: BehaviorSubject<number> = new BehaviorSubject(0);
     get pageNumber() {
-        return new Observable(fn => this._pageNumber.subscribe(fn));
+        return new Observable((fn) => this._pageNumber.subscribe(fn));
     }
     private _loading: BehaviorSubject<boolean> = new BehaviorSubject(false);
     get loading() {
-        return new Observable(fn => this._loading.subscribe(fn));
+        return new Observable((fn) => this._loading.subscribe(fn));
     }
     private _treeLoading: BehaviorSubject<boolean> = new BehaviorSubject(false);
     get treeLoading() {
-        return new Observable(fn => this._treeLoading.subscribe(fn));
+        return new Observable((fn) => this._treeLoading.subscribe(fn));
     }
 
     public selectedFilters: CheckTreeNode[] = [];
@@ -241,7 +241,7 @@ export class SearchStateService extends BaseObservableService {
             distinctUntilChanged(this.compareQueries),
             tap(val => { this._treeLoading.next(true) }),
             switchMap((aggQuery) => this.searchService.getSearchResultsByQuery(aggQuery))
-        ).subscribe(res => {
+        ).subscribe((res) => {
             var filterTree = this.buildTree(res.Categories.map((val) => {
                 return {
                     "key": val.Name,
@@ -282,7 +282,7 @@ export class SearchStateService extends BaseObservableService {
             distinctUntilChanged(this.compareQueries),
             tap(val => { this._loading.next(true); }),
             switchMap((mainQuery) => this.searchService.getSearchResultsByQuery(mainQuery))
-        ).subscribe(res => {
+        ).subscribe((res) => {
             this._resultCount.next(res.Result.Matches);
             this._pageNumber.next(this._query.From / this._query.Size);
             this._results.next(res.Result.Results);

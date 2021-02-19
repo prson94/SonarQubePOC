@@ -9,6 +9,6 @@ export class ModelTypePipe implements PipeTransform {
 
         let search = type.toLowerCase();
 
-        return items.filter(item => item.TaxonomyTypeClass && item.TaxonomyTypeClass.toLowerCase().includes(search));
+        return items.filter((item) => item.TaxonomyTypeClass && item.TaxonomyTypeClass.toLowerCase().includes(search));
     }
 }

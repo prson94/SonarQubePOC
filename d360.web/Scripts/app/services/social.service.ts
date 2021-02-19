@@ -1,83 +1,111 @@
-﻿import { Injectable } from '@angular/core';
-import { SocialComment, SocialVote, SocialVoteType, SocialEditCommentData } from '../models/social.model';
-import { Count } from '../models/counts.model';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { catchError, map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
-import { BaseObservableService } from './baseObservable.service';
-import { MessagesObservableService } from './messages-observable.service';
+﻿import { Injectable } from "@angular/core";
+import { CommentApiPutModel, Emoji, CommentApiPostModel, CommentDetail, CommentDetails, CommentVoteDetail } from "../models/social.model";
+import { Count } from "../models/counts.model";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { catchError, map } from "rxjs/operators";
+import { Observable } from "rxjs";
+import { BaseObservableService } from "./baseObservable.service";
+import { MessagesObservableService } from "./messages-observable.service";
 
 @Injectable()
 export class SocialService extends BaseObservableService  {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getComments(objectID: number, objectType: string, daysToLookBack: number, page?: number, count?: number, typeFilter?: number): Observable<SocialComment[]> {        
-        let headers = new HttpHeaders({
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
-        });
-        
+    getComments(assetUid: string, daysToLookBack: number, page?: number, count?: number, typeFilter?: number): Observable<CommentDetails> {        
         return this.http
-            .post(`api/v2/social/comments`, `IsNg=true&ObjectType=${objectType}&ObjectID=${objectID > 0 ? objectID : ''}&Skip=${page ? page : 0}&Take=${count ? count : 10}&DateFilter=-${daysToLookBack}&TypeFilter=${typeFilter == undefined ? '' : typeFilter}`,  { headers })
+            .get(`api/v2/comments?assetUid=${assetUid}&_pageNum=${page ? page : 0}&_pageSize=${count ? count : 10}`)
             .pipe(
-            map(res => <SocialComment[]>res),
-            catchError(err => this.handleError(err))
+                map((res) => <CommentDetails>res),
+                catchError((err) => this.handleError(err))
             );
     }
 
-    vote(commentID: number, vote: SocialVoteType): Observable<SocialVote[]>{
-        let headers = new HttpHeaders({
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
-        });
-        
+    getCommentForFollowers(followerUid: string, daysToLookBack: number, page?: number, count?: number, typeFilter?: number): Observable<CommentDetails> {
         return this.http
-            .post('api/v2/social/vote', `CommentID=${commentID}&Vote=${vote}`, { headers })
+            .get(`api/v2/comments?followerUid=${followerUid}&_pageNum=${page ? page : 0}&_pageSize=${count ? count : 10}`)
             .pipe(
-            map(res => <SocialVote[]>res),
-            catchError(err => this.handleError(err))
+                map((res) => <CommentDetails>res),
+                catchError((err) => this.handleError(err))
             );
     }
 
-    editComment(commentEditData: SocialEditCommentData): Observable<SocialComment> {
+    getCommentVotes(commentUid: string): Observable<CommentVoteDetail[]> {
+        return this.http
+            .get(`api/v2/comments/${commentUid}/votes`)
+            .pipe(
+                map((res) => <CommentVoteDetail[]>res),
+                catchError((err) => this.handleError(err))
+            );
+    }
+
+    addVote(commentUid: string, emoji: Emoji): Observable<boolean>{
+       
+        return this.http
+            .post(`api/v2/comments/${commentUid}/votes/${emoji}`, {}, { observe: "response" })
+            .pipe(
+                map((res) => (res.status == 200 || res.status == 201)),
+                catchError((err) => this.handleError(err))
+            );
+    }
+
+    deleteVote(commentUid: string, emoji: Emoji): Observable<boolean> {
+
+        return this.http
+            .delete(`api/v2/comments/${commentUid}/votes/${emoji}`, { observe: "response" })
+            .pipe(
+                map((res) => (res.status == 200)),
+                catchError((err) => this.handleError(err))
+            );
+    }
+
+    addComment(comment: CommentApiPostModel): Observable<CommentDetail> {
         let headers = new HttpHeaders();
 
-        headers.append('Content-Type', 'application/json');
-        
+        headers.append("Content-Type", "application/json");
         return this.http
-            .post('api/v2/social/edit', commentEditData, { headers })
+            .post("api/v2/comments", comment, { headers })
             .pipe(
-            map(res => <SocialComment>res),
-            catchError(err => this.handleError(err))
+                map((res) => <CommentDetail>res),
+                catchError((err) => this.handleError(err))
             );
     }
 
-    addComment(commentAddData: SocialEditCommentData): Observable<SocialComment> {
-        let headers = new HttpHeaders();
-
-        headers.append('Content-Type', 'application/json');
-        
+    editComment(comment: CommentApiPutModel): Observable<boolean> {
+        const httpOptions = {
+            headers: new HttpHeaders({ "Content-Type": "application/json" }),
+            observe: "response"
+        };
         return this.http
-            .post('api/v2/social/comment', commentAddData, { headers })
+            .put(`api/v2/comments/${comment.Uid}`, comment, {observe: "response"})//httpOptions)
             .pipe(
-            map(res => <SocialComment>res),
-            catchError(err => this.handleError(err))
+                map((res) => (res.status == 200)),
+                catchError((err) => this.handleError(err))
+            );
+    }
+
+    deleteComment(commentUid: string): Observable<boolean> {
+        return this.http
+            .delete(`api/v2/comments/${commentUid}`, { observe: "response" })
+            .pipe(
+                map((res) => (res.status == 200)),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getMyCounts(daysToLookBack: number): Observable<Count[]> {
-        let resourceID = -1;
-        return this.http.get(`api/v2/social/count/${resourceID}/${daysToLookBack}`)
+        return this.http.get(`api/v2/comments/count/0/${daysToLookBack}`)
             .pipe(
-            map(response => <Count[]>response),
-            catchError(err => this.handleError(err))
+            map((response) => <Count[]>response),
+            catchError((err) => this.handleError(err))
             );
     }
 
     getTheCounts(resourceID: number, daysToLookBack: number): Observable<Count[]> {
-        return this.http.get(`api/v2/social/count/${resourceID}/${daysToLookBack}`)
+        return this.http.get(`api/v2/comments/count/${resourceID}/${daysToLookBack}`)
             .pipe(
-            map(response => <Count[]>response),
-            catchError(err => this.handleError(err))
+            map((response) => <Count[]>response),
+            catchError((err) => this.handleError(err))
             );
     }
 

@@ -83,7 +83,7 @@ export class ArtifactTypeService extends BaseObservableService {
     private formTree(data): TreeNode[] {
         var tree = new Array<TreeNode>();
 
-        data.filter(d => d.ParentID == null).forEach(d => {
+        data.filter((d) => d.ParentID == null).forEach((d) => {
             tree.push({ data: d, children: [], expanded: false });
         });
 
@@ -98,7 +98,7 @@ export class ArtifactTypeService extends BaseObservableService {
         node: TreeNode,
         data
     ) {
-        data.filter(d => d.ParentID == node.data.ID).forEach(d => {
+        data.filter(d => d.ParentID == node.data.ID).forEach((d) => {
             let child: TreeNode = { data: d, children: [] };
             node.children.push(child);
             this.formTreeR(child, data);

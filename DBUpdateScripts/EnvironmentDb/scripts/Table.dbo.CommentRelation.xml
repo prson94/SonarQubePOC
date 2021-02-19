@@ -40,5 +40,149 @@ END
 		]]>
 	</rollback>
   </changeSet>
+  
+  <changeSet author="Pappas" id="Table.dbo.CommentRelation-v2.1-CreateAssetIDColumn">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'CommentRelation' and COLUMN_NAME = 'AssetID')
+BEGIN
+	alter table CommentRelation add AssetID bigint null	
+END
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.CommentRelation-v2.1-UpdateAssetIDData">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'CommentRelation' and COLUMN_NAME = 'ObjectType')
+BEGIN
+	exec('update C set C.AssetID = A.ID from CommentRelation C inner join Asset A on A.Object = C.ObjectType and A.ObjectID = C.ObjectID')
+END
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.CommentRelation-v2.1-RemoveNullAssets">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'CommentRelation' and COLUMN_NAME = 'AssetID')
+BEGIN
+	delete CommentRelation where AssetID is null
+END
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.CommentRelation-v2.1-UpdateAssetIDColumn">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'CommentRelation' and COLUMN_NAME = 'AssetID')
+BEGIN
+	alter table CommentRelation alter column AssetID bigint not null
+END
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.CommentRelation-v2.1-ChangePk">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+ALTER TABLE [dbo].[CommentRelation] DROP CONSTRAINT [PK_CommentRelation] WITH ( ONLINE = OFF )
+GO
+ALTER TABLE [dbo].[CommentRelation] ADD  CONSTRAINT [PK_CommentRelation] PRIMARY KEY CLUSTERED ( CommentID ASC, AssetID ASC )
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.CommentRelation-v2.1-DropObjectIndex">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF EXISTS (select * from sys.indexes where name = 'IX_CommentRelation_ObjectType-ObjectID')
+BEGIN
+	DROP INDEX [IX_CommentRelation_ObjectType-ObjectID] ON [dbo].[CommentRelation]
+END
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.CommentRelation-v2.1-CreateAssetIndex">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_CommentRelation_AssetID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_CommentRelation_AssetID] ON [dbo].[CommentRelation] ( [AssetID] ASC )
+END
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.CommentRelation-v2.1-DropObjectColumns">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'CommentRelation' and COLUMN_NAME = 'ObjectType')
+BEGIN
+	alter table CommentRelation drop column ObjectType
+END
+
+if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'CommentRelation' and COLUMN_NAME = 'ObjectID')
+BEGIN
+	alter table CommentRelation drop column ObjectID
+END
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.CommentRelation-v2.1-DropDateConstraint">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF EXISTS (select * from [sys].[default_constraints] where name = 'DF_CommentRelation_Date')
+BEGIN
+	ALTER TABLE [dbo].[CommentRelation] DROP CONSTRAINT [DF_CommentRelation_Date]
+END
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.CommentRelation-v2.1-DropDateColumn">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'CommentRelation' and COLUMN_NAME = 'Date')
+BEGIN
+	alter table CommentRelation drop column [Date]
+END
+		]]>
+    </sql>
+  </changeSet>
 
 </databaseChangeLog>

@@ -30,7 +30,7 @@ export class AdminBaseComponent extends BaseComponent {
 
     setCommonItems(showAreaAsType: boolean = false, headerOverride: string = null) {
 
-        this.area = ['Business Assets','Technical Assets','Artifacts', 'Attributes', 'Lookups', 'Models', 'Policies', 'Predicates', 'Relationships', 'Rules', 'Surveys', 'Workflow Actions', 'Workflows']
+        this.area = ['Business Assets','Technical Assets','Artifacts', 'Models', 'Policies', 'Predicates', 'Relationships', 'Rules', 'Surveys', 'Workflow Actions', 'Workflows']
             .indexOf(this.areaName) !== -1 ? 'Configuration' : "Administration";
 
         this.headerBreadcrumbService.clearBreadcrumbs();
@@ -51,7 +51,7 @@ export class AdminBaseComponent extends BaseComponent {
     //Prime NG tree table doesnt handle default values good, trigger click on first element in p-treetable to mark it as seletected
     ngAfterContentChecked() {
         if (this.treeTableElements !== undefined && !this.isDefaultTreeValuesSet) {
-            if (!this.treeTableElements.some(x => x.nativeElement.className.includes('p-highlight'))) {
+            if (!this.treeTableElements.some((x) => x.nativeElement.className.includes('p-highlight'))) {
                 this.treeTableElements.map((x, index) => {
                     if (index == 0) {
                         x.nativeElement.click();

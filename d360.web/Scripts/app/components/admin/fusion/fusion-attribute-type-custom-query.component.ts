@@ -15,8 +15,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                 Override Queries For Attribute Types
                 <d3s-tile-actions hasClose="true"
                                   (closeClick)="onClose.emit()"
-                                  [hasAdd]="true"
-                                  (addClick)="selected=null;showEditor=true;"
+                                  [hasAdd]="false"
                                   [hasFilterMode]="false"
                                   [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
             </header>
@@ -129,15 +128,8 @@ export class FusionAttributeTypeCustomQueryComponent extends BaseComponent imple
     }
 
     private saveOverride(event): void {
-        event.override.FusionID = this.fusionId;
-        this.fusionService.saveFusionAttributeTypeCustomQuery(event.override).subscribe(
-            result => {
-                this.showMessageForResult(this.messagesService, result);
-                this.load();
-
-                this.showEditor = false;
-            }
-        );
+        this.messagesService.showError('Not Saved', 'Saving Override Queries For Attribute Types has been disabled');
+        this.showEditor = false;
     }
 
     private deleteOverride(id: number): void {

@@ -5,6 +5,27 @@ using System;
 
 namespace d360.core
 {
+    public class EmojiValueAttribute : Attribute
+    {
+        public int Value { get; private set; }
+        public EmojiValueAttribute(int value)
+        {
+            Value = value;
+        }
+    }
+
+    /// <summary>
+    /// Emojis in the same group are mutually exclusive
+    /// </summary>
+    public class EmojiGroupAttribute : Attribute
+    {
+        public string Name { get; private set; }
+        public EmojiGroupAttribute(string name)
+        {
+            Name = name;
+        }
+    }
+
     public class BackColorAttribute : Attribute
     {
         public string Color { get; private set; } = "#000";

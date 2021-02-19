@@ -20,6 +20,8 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net.Http;
 using System.IO;
+using System.Xml.Serialization;
+using d360.core.entities.Metric;
 
 namespace d360.model
 {
@@ -430,8 +432,7 @@ namespace d360.model
             int matchingItems = 0;
             List<string> items = new List<string>();
 
-
-            if (!registration.LastExecuted.HasValue || (registration.LastExecuted.HasValue && registration.LastExecuted.GetValueOrDefault().AddDays(settings.ScheduleInterval) <= DateTime.UtcNow))
+            if (settings.GetNextExecution(registration.LastExecuted) <= DateTime.UtcNow)
             {
                 var sql = @"select 
                                         ad.ObjectID as ID,
@@ -1090,12 +1091,40 @@ namespace d360.model
                 if (intersectType == null)
                     throw new Exception($"ERROR - INVALID INTERSECT TYPE ID SPECIFIED.  PLEASE CHECK THE SETTINGS ASSOCIATED WITH THE RELATIONSHIP UPDATE ACTION OF THE CURRENT WORKFLOW. INTERSECT TYPE ID IS [{intersectTypeId}]");
 
-                var isSubject = intersectType.SubjectID == objectInfo.ObjectTypeID && intersectType.Subject == objectInfo.ObjectType.ToString();
+
+                EventObjectInfo assetInfo;
+                //get underlying asset if this is an action
+                if (objectInfo.ObjectType == SystemObjects.IssueType)
+                {
+                    var issue = Issues.FirstOrDefault(i => i.ID == objectInfo.ObjectID);
+                    if (issue == null)
+                        throw new Exception($"ERROR - ASSET FOR ACTION ID [{objectInfo.ObjectID}] NOT FOUND");
+
+                    assetInfo = new EventObjectInfo()
+                    {
+                        Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), issue.Object),
+                        ObjectID = issue.ObjectID,
+                        ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), issue.ObjectType),
+                        ObjectTypeID = issue.ObjectTypeID
+                    };
+                }
+                else
+                {
+                    assetInfo = new EventObjectInfo()
+                    {
+                        Object = objectInfo.Object,
+                        ObjectID = objectInfo.ObjectID,
+                        ObjectType = objectInfo.ObjectType,
+                        ObjectTypeID = objectInfo.ObjectTypeID
+                    };
+                }
+
+                var isSubject = intersectType.SubjectID == assetInfo.ObjectTypeID && intersectType.Subject == assetInfo.ObjectType.ToString();
 
                 if (item.ClearValue)
                 {
                     //delete intersects with the given intersect type id for the current object
-                    DeleteIntersects(objectInfo.Object, objectInfo.ObjectID, intersectTypeId, isSubject);
+                    DeleteIntersects(assetInfo.Object, assetInfo.ObjectID, intersectTypeId, isSubject);
                 }
                 else
                 {
@@ -1105,7 +1134,7 @@ namespace d360.model
 
                     if (!item.AppendValue || supportsJustOne)
                     {
-                        DeleteIntersects(objectInfo.Object, objectInfo.ObjectID, intersectTypeId, isSubject);
+                        DeleteIntersects(assetInfo.Object, assetInfo.ObjectID, intersectTypeId, isSubject);
                     }
 
                     //split the value on , 
@@ -1117,6 +1146,8 @@ namespace d360.model
                         rels = new string[] { rels.First() };
                     }
 
+                    List<DatabaseBulkRelationshipResult> graphEvents = new List<DatabaseBulkRelationshipResult>();
+
                     foreach (var rel in rels)
                     {
                         // split by | for type id
@@ -1124,34 +1155,23 @@ namespace d360.model
                         if (!string.IsNullOrEmpty(rel))
                         {
                             var parts = rel.Split('|');
-                            var obj = objectInfo.Object.ToString();
-                            var objId = objectInfo.ObjectID;
+
                             var intersect = new Intersect();
 
                             intersect.IntersectTypeID = intersectType.ID;
 
 
-                            if (obj == "Issue")
-                            {
-                                var issue = Issues.FirstOrDefault(i => i.ID == objId);
-                                if (issue == null)
-                                    throw new Exception($"ERROR - ASSET FOR ACTION ID [{objId}] NOT FOUND");
-
-                                obj = issue.Object.ToString();
-                                objId = issue.ObjectID;
-                            }
-
                             if (isSubject)
                             {
-                                intersect.Subject = obj;
-                                intersect.SubjectID = objId;
+                                intersect.Subject = assetInfo.Object.ToString();
+                                intersect.SubjectID = assetInfo.ObjectID;
                                 intersect.Object = (parts[0] ?? "").Replace("Type", "");
                                 intersect.ObjectID = int.Parse(parts[1]);
                             }
                             else
                             {
-                                intersect.Object = obj;
-                                intersect.ObjectID = objId;
+                                intersect.Object = assetInfo.Object.ToString();
+                                intersect.ObjectID = assetInfo.ObjectID;
                                 intersect.Subject = (parts[0] ?? "").Replace("Type", "");
                                 intersect.SubjectID = int.Parse(parts[1]);
                             }
@@ -1170,9 +1190,23 @@ namespace d360.model
                                 Intersects.Add(intersect);
 
                                 SaveChanges();
+
+                                graphEvents.Add(new DatabaseBulkRelationshipResult()
+                                {
+                                    Object = "Intersect",
+                                    uid = intersect.uid,
+                                    Success = true
+                                });
+
+
                             }
                         }
 
+                    }
+
+                    if (graphEvents.Any())
+                    {
+                        SendAssetGraphEvents(graphEvents);
                     }
                 }
             }
@@ -1180,13 +1214,31 @@ namespace d360.model
 
         private void DeleteIntersects(SystemObjects @object, int objectID, int intersectTypeId, bool isSubject)
         {
-            var sql = "";
+            string sql;
+            List<DatabaseBulkRelationshipResult> graphEvents;
 
             if (isSubject)
-                sql = "delete [intersect] where subject = @obj and subjectid = @objectid and intersecttypeid = @intersectTypeId";
+            {
+                sql = "delete from [intersect] output deleted.uid into #deletedIntersects where subject = @obj and subjectid = @objectid and intersecttypeid = @intersectTypeId";
+            }
             else
-                sql = "delete [intersect] where [object] = @obj and objectid = @objectid and intersecttypeid = @intersectTypeId";
-            Database.Connection.Execute(sql, new { obj = @object.ToString(), objectid = objectID, intersectTypeId = intersectTypeId });
+            {
+                sql = "delete from [intersect] output deleted.uid into #deletedIntersects where [object] = @obj and objectid = @objectid and intersecttypeid = @intersectTypeId";
+            }
+
+
+            graphEvents = Database.Connection.Query<DatabaseBulkRelationshipResult>($@"
+                drop table if exists #deletedIntersects;
+                create table #deletedIntersects (uid uniqueidentifier);
+                {sql}
+                select uid, 'Intersect' as [Object], cast(1 as bit) as Success from #deletedIntersects"
+                , new { obj = @object.ToString(), objectid = objectID, intersectTypeId = intersectTypeId })
+                .ToList();
+
+            if (graphEvents.Any())
+            {
+                SendAssetGraphEvents(graphEvents);
+            }
         }
 
         private void UpdateField(int objectId, string objectType, FieldType fieldType, WorkflowFieldUpdateSettings item, string val, bool isAssetEdited = false, Asset asset = null)
@@ -1244,6 +1296,7 @@ namespace d360.model
             if (!settings.FieldUpdateSettings.Any()) return;
             var issue = Issues.FirstOrDefault(x => x.ID == objectInfo.ObjectID);
             Asset asset = null;
+            AssetType assetType = null;
             bool isAssetEdited = false;
 
             foreach (var item in settings.FieldUpdateSettings)
@@ -1258,8 +1311,14 @@ namespace d360.model
                     objectType = issue.Object;
                     objectId = issue.ObjectID;
                     asset = Assets.Where(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID).FirstOrDefault();
+                    assetType = AssetTypes.FirstOrDefault(a => a.Object == issue.ObjectType && a.ObjectID == issue.ObjectTypeID);
                     ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);                    
                     isAssetEdited = true;
+                }
+                else
+                {
+                    asset = Assets.Where(x => x.Object == objectInfo.Object.ToString() && x.ObjectID == objectInfo.ObjectID).FirstOrDefault();
+                    assetType = AssetTypes.FirstOrDefault(a => a.Object == objectInfo.ObjectType.ToString() && a.ObjectID == objectInfo.ObjectTypeID);
                 }
 
                 if (fieldType == null)
@@ -1309,7 +1368,7 @@ namespace d360.model
                         if (actionField != null)
                         {
                             var actionFieldType = FieldTypes.FirstOrDefault(x => x.Object == "IssueType" && x.ID == actionField.FieldTypeID);
-                            if (actionFieldType.Type == "Lookup")
+                            if (actionFieldType.Type == "Lookup" || actionFieldType.Type == "Link")
                             {
                                 val = actionField?.Value;
                             }
@@ -1333,7 +1392,38 @@ namespace d360.model
             {
                 asset.UpdatedBy = CurrentResourceID;
                 asset.UpdatedOn = DateTime.UtcNow;
+
+                //send scoring updates
+                if (assetType != null && Any<MetricAllocation>(i => i.AssetTypeUid == assetType.uid && i.ScoreType == ScoreType.Governance && !i.IsExternallyCalculated))
+                {
+                    var measureUids = Query<Guid>(@"select	M.Uid 
+                from	metrics.Allocation A 
+                  inner join metrics.Asset M on M.AllocationUid = A.Uid 
+                  and A.AssetTypeUid = @AssetTypeUid 
+                  and M.State = 1 and A.ScoreType = 1 and A.IsExternallyCalculated = 0 and M.IsGroup = 0
+                  cross apply (
+                   select	Definition
+                   from	metrics.AssetVersion 
+                   where	AssetUid = M.Uid
+                	    and EffectiveDate <= getutcdate()
+                	    and EffectiveEndDate is null
+                	    and JSON_VALUE(Definition, '$.Governance.Check') <> 'External'
+                	    and Definition <> '{}') V", new { AssetTypeUid = assetType.uid }).ToList();
+
+                    if (measureUids.Any())
+                    {
+                        SendScoreEventWithPayload(ScoreQueueChangeType.ExternalMeasureResultsCreated, measureUids.Select(m => new ExternalMeasureResultsCreatedModel
+                        {
+                            EffectiveDate = DateTime.UtcNow,
+                            AssetUid = asset.uid,
+                            MetricAssetUid = m,
+                            Result = false
+                        }).ToList());
+                    }
+                }
+
             }
+
 
             SaveChanges();
 
@@ -1514,7 +1604,7 @@ namespace d360.model
         /// <param name="originalResourceId">The resource Id of the original assignee on the form</param>
         /// <param name="sendFormEmails">Whether or not to resend form emails. If the step doesn't have form emails configured this setting is ignored</param>
         /// <returns></returns>
-        public async Task BulkWorkflowFormReassign(List<WorkflowItemStep> itemSteps, GlobalReportingResource resource, int originalResourceId, bool sendFormEmails = true)
+        public async Task BulkWorkflowFormReassign(List<WorkflowItemStep> itemSteps, GlobalReportingResource resource, int originalResourceId, bool sendFormEmails = true, bool clearAssignments = false)
         {
             foreach (var itemStep in itemSteps)
             {
@@ -1522,12 +1612,62 @@ namespace d360.model
                     continue;
 
                 var stepSettings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
-
+                
                 var fieldElement = XElement.Parse(itemStep.Fields);
                 var reassigned = new XElement("Reassigned");
+                var objectType = "";
+                int objectId = 0;
+                var isResourceReassignment = true;
+                if (stepSettings.ResponsibilityTypeID > 0 || (stepSettings.RecipientGroup != null || stepSettings.RecipientGroup != Guid.Empty))
+                {
+
+                    if (stepSettings.RecipientType == EmailTaskRecipientType.Responsibility)
+                    {
+                        isResourceReassignment = false;
+                        objectType = SystemObjects.ResponsibilityType.ToString();
+                        objectId = stepSettings.ResponsibilityTypeID;
+                    }
+                    else if(stepSettings.RecipientType == EmailTaskRecipientType.Group)
+                    {
+                        var group = Assets.Where(x => x.uid == stepSettings.RecipientGroup).FirstOrDefault();
+                        if(group != null)
+                        {
+                            isResourceReassignment = false;
+                            objectType = SystemObjects.Group.ToString();
+                            objectId = group.ObjectID;
+                        }
+                    }else if(stepSettings.RecipientType == EmailTaskRecipientType.SpecificUser)
+                    {
+                        isResourceReassignment = false;
+                        objectType = "Specific Users";
+                        objectId = -1;
+                    }
+                    DateTime date = DateTime.MinValue;
+                    var type = "";
+                    foreach (var elem in fieldElement.Elements("Reassigned"))
+                    {
+                        var reassignTime = DateTime.Parse(elem.Attribute("reassignOn").Value);
+                        if(date < reassignTime)
+                        {
+                            date = reassignTime;
+                            type = elem.Attribute("reassignType").Value;
+                            isResourceReassignment = type == "Resource";
+                        }
+                    }
+                }
+
+                if (isResourceReassignment)
+                {
+                    reassigned.Add(new XAttribute("toResourceId", resource.ResourceID.ToString()));
+                    reassigned.Add(new XAttribute("fromResourceId", originalResourceId.ToString()));
+                }
+                else
+                {
+                    reassigned.Add(new XAttribute("toResourceId", resource.ResourceID.ToString()));
+                    reassigned.Add(new XAttribute("objectId", objectId));
+                    reassigned.Add(new XAttribute("objectType", objectType));
+                }
                 reassigned.Add(new XAttribute("reassignType", "Resource"));
-                reassigned.Add(new XAttribute("toResourceId", resource.ResourceID.ToString()));
-                reassigned.Add(new XAttribute("fromResourceId", originalResourceId.ToString()));
                 reassigned.Add(new XAttribute("byResourceId", CurrentResourceID.ToString()));
                 reassigned.Add(new XAttribute("reassignOn", DateTime.UtcNow));
 
@@ -1536,7 +1676,22 @@ namespace d360.model
                 itemStep.Fields = fieldElement.ToString();
                 itemStep.StartedOn = DateTime.UtcNow;
 
-                var currentAssignments = WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID && x.ResourceObject == "Resource" && x.ResourceObjectID == originalResourceId).ToList();
+                List<WorkflowItemAssignment> currentAssignments = new List<WorkflowItemAssignment>();
+                if (clearAssignments)
+                {
+                    currentAssignments = WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID && x.ResourceObject == "Resource").ToList();
+                    var itemFields = (WorkflowItemStepDetail.FieldsModel)new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel)).Deserialize(new StringReader(itemStep.Fields));
+                    itemFields.NumberOfResponses = 1;
+                    itemFields.TotalResources = 1;
+                    using(var sr = new StringWriter())
+                    {
+                        var serializer = new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel));
+                        serializer.Serialize(sr, itemFields);
+                        itemStep.Fields = sr.ToString();
+                    }
+                }
+                else
+                    currentAssignments = WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID).ToList();
 
                 if (currentAssignments.Any())
                 {
@@ -1571,7 +1726,6 @@ namespace d360.model
                     //resend email to the reassigned user
                     stepSettings.SpecificUser = resource.Email;
                     stepSettings.RecipientType = EmailTaskRecipientType.SpecificUser;
-
                     await SendFormWorkflowEmail(itemStep, itemStep.ID, itemStep.ItemID, objEventInfo, stepSettings);
                 }
                 else
@@ -1647,8 +1801,7 @@ namespace d360.model
 
                 foreach (var email in settings.SpecificUser.Split(';'))
                 {
-                    var res = GlobalReportingResources.Where(x => string.Compare(x.Email, email, true) == 0).FirstOrDefault();
-
+                    var res = GlobalReportingResources.Where(x => string.Compare(x.Email, email.Trim(), true) == 0).FirstOrDefault();
                     if (res == null)
                     {
                         Console.WriteLine("FORM EMAIL SPECIFIC USER SET HOWEVER THE USER EMAIL IS NOT A VALID D3S EMAIL ACCOUNT.  WONT BE ABLE TO ASSIGN FORM TO USER..");
@@ -1873,7 +2026,7 @@ namespace d360.model
             }
             else if (settings.RecipientType == EmailTaskRecipientType.Responsibility)
             {
-                var users = GetWorkflowUsersBasedOnResponsibility(item.Step.Version.TypeID, item.Step.ID, item.ItemID);
+                var users = GetWorkflowUsersBasedOnResponsibility(item.Step.Version.TypeID, item.Step.ID, item.ItemID, settings.SendToDefaultUsers);
 
                 foreach (var user in users)
                 {
@@ -2082,12 +2235,17 @@ namespace d360.model
             return defaultWorkflowUserGroup;
         }
 
-        public IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID)
+        public IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID, bool sendToDefaultUsers = true)
         {
             var users = Query<core.entities.GlobalReportingResource>("[utility].[GetOwnersForWorkflow] @id, @stepId, @itemId", new { id = typeID, @stepId = stepID, @itemId = itemID });
 
             if (users == null || users.Count() == 0)
             {
+                if (sendToDefaultUsers == false)
+                {
+                    return new List<GlobalReportingResource>();
+                }
+
                 //check if there is a system setting that says to use a group.
                 var defaultWorkflowUserGroup = GetWorkflowAdminGroup();
 

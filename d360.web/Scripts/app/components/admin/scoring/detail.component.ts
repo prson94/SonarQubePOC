@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AdminBaseComponent } from '../admin-base.component';
@@ -39,7 +39,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
     private assetTypeUid: string;
     formattedScoreCalc: string;
     MatchType: MetricMatchType = MetricMatchType.All;
-    
+
     private conditions: MetricAssetVersionConditionItemViewModel[] = [];
     showEdit: boolean = false;
     formattedCheck: string = "";
@@ -55,7 +55,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
     maxScoreEffectiveDate: Date;
     showDisabled: boolean = false;
     showPassTest: boolean = false;
-    
+
 
     isMeasureListCommandBarDisabled: boolean = false;
 
@@ -66,6 +66,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
         secondaryNavService: SecondaryNavService,
         private route: ActivatedRoute,
         private router: Router,
+        private cdRef: ChangeDetectorRef,
         protected messagesService: MessagesObservableService,
         private metricsService: MetricsService,
         private allocationService: AllocationService,
@@ -83,7 +84,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
         this.routeParamsSubscription = this.route.params.subscribe(params => {
             this.allocationUid = params['allocationUid'];
             this.assetTypeUid = params['assetTypeUid'];
-
+            this.selectedMetric = null;
             this.isLoading = true;
 
             this.metricsService.getAllocationByUid(this.allocationUid).subscribe(res => {
@@ -108,12 +109,16 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                             p.value = p.Uid;
                         });
                         this.screenReferences.paths = options;
+                        this.screenReferences = { ...this.screenReferences };
 
                         this.isMeasureListCommandBarDisabled = !this.allocation.isExternallyCalculated && options.length == 0;
                     });
                 }
                 else {
                     this.isMeasureListCommandBarDisabled = false;
+                    this.screenReferences.paths = [];
+                    this.screenReferences = { ...this.screenReferences };
+                    this.cdRef.markForCheck();
                 }
             });
 
@@ -126,17 +131,20 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                 //spread operator is used for change detection as adding value wont trigger the change detection we need to format the pass test section.
                 this.screenReferences.fields = f;
                 this.screenReferences = { ...this.screenReferences };
+                this.cdRef.markForCheck();
             });
 
             this.settingsService.getOperators().subscribe(o => {
                 this.screenReferences.operators = o;
                 this.screenReferences = { ...this.screenReferences };
+                this.cdRef.markForCheck();
             });
 
             this.responsibilityService.getAdminResponsibilityTypes(this.assetTypeUid).subscribe((data) => {
                 if (data && data.length) {
                     this.screenReferences.responsibilities = data;
                     this.screenReferences = { ...this.screenReferences };
+                    this.cdRef.markForCheck();
                 }
             });
 
@@ -147,6 +155,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                         return x.Predicate;
                     });
                     this.screenReferences = { ...this.screenReferences };
+                    this.cdRef.markForCheck();
                 }
             });
         });
@@ -163,26 +172,26 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
         this.areaLink = '/admin/scoring';
         this.tabTitle = 'Governance Score';
 
-        this.setCommonItems(true, this.selectedAssetType.Name);
-        this.setCommonSecondaryNavTabs(false);
-        this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid)
-            .subscribe(r => {
-                var crumb = new Breadcrumb(this.selectedAssetType.Name, null, null, 'allocation', 1);
-                r.forEach(x => {
-                    const url = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${x.assetTypeUid}/${x.uid}`;
-                    const searchRes: SearchResult = new SearchResult();
-                    searchRes.Name = x.assetTypePath;
-                    searchRes.Url = url;
-                    searchRes.Uid = x.assetTypeUid;
-                    crumb.preLoadedTypeAhead.push(searchRes);
+        if (this.selectedAssetType && this.allocation) {
+            this.setCommonItems(true, this.selectedAssetType.Name);
+            this.setCommonSecondaryNavTabs(false);
+            this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid, "Active", "scoretype", "asc")
+                .subscribe(res => {
+                    var crumb = new Breadcrumb(this.selectedAssetType.Name, null, null, 'allocation', 1);
+                    res.forEach(x => {
+                        const url = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${x.assetTypeUid}/${x.uid}`;
+                        const searchRes: SearchResult = new SearchResult();
+                        searchRes.Name = x.assetTypePath;
+                        searchRes.Url = url;
+                        searchRes.Uid = x.assetTypeUid;
+                        crumb.preLoadedTypeAhead.push(searchRes);
 
-                    x.icon = 'fa-drivers-license-o';
-                });
+                        x.icon = 'fa-drivers-license-o';
+                    });
 
-                this.setScoringSecondaryNavTabs(this.selectedAssetType.Uid, this.allocation.uid, r);
+                    this.setScoringSecondaryNavTabs(this.selectedAssetType.Uid, this.allocation.uid, res);
 
-                this.headerBreadcrumbService.showBreadcrumb(crumb);
-                this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid).subscribe(res => {
+                    this.headerBreadcrumbService.showBreadcrumb(crumb);
                     if (res && res.length > 0) {
                         const items = res.filter(x => { return x.uid == this.allocation.uid });
 
@@ -213,68 +222,15 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                         }
                     }
                 });
-            });
+        }
+        else {
+            this.isLoading = false;
+        }
     }
-
     private formatScoreCalc() {
         if (this.allocation) {
             this.formattedScoreCalc = (this.allocation.isExternallyCalculated ? 'Externally Calculated' : 'Internally Calculated');
         }
-    }
-
-    formatConditions() {
-        this.conditions.forEach(c => {
-            const field = this.screenReferences.fields.find(f => f.ApiName === c.ConditionFieldTypeName);
-            c.OperatorText = this.screenReferences.operators.find(o => o.ID === c.Operator).Name;
-
-            if (field) {
-                c.FieldTypeName = field.Name;
-                c.FieldType = field;
-
-                switch (field.Type) {
-                    case 'Lookup':
-                        if (field.Values) {
-                            if (field.Values.length > 0) {
-                                if (c.Values) {
-                                    if (c.Values[0]) {
-                                        let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === c.Values[0]);
-                                        valueModel = field.Values.find(o => o.Value === c.Values[0]);
-                                        if (valueModel) {
-                                            c.SingleValue = c.Values[0];
-                                            c.ValuesText = valueModel.Text;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        break;
-                    case 'Date':
-                        if (c.Values) {
-                            if (c.Values[0]) {
-                                c.SingleValue = c.Values[0];
-                                c.ValuesText = new Date(c.Values[0]).toLocaleDateString();
-                            }
-                        }
-                        break;
-                    case 'DateTime':
-                        if (c.Values) {
-                            if (c.Values[0]) {
-                                c.SingleValue = c.Values[0];
-                                c.ValuesText = new Date(c.Values[0]).toLocaleString();
-                            }
-                        }
-                        break;
-                    default:
-                        if (c.Values) {
-                            if (c.Values[0]) {
-                                c.SingleValue = c.Values[0];
-                                c.ValuesText = c.Values[0];
-                            }
-                        }
-                        break;
-                }
-            }
-        });
     }
 
     private hasConditions(item: MetricAssetViewModel) {
@@ -282,8 +238,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
         if (item && item.ConditionGroups && item.ConditionGroups.length > 0) {
             this.conditions = item.ConditionGroups[0].ConditionItems;
             if (this.conditions && this.conditions.length > 0) {
-                this.formatConditions();
-                return true;
+              return true;
             } else
                 return false;
         } else {
@@ -297,8 +252,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
             item &&
             item.Definition &&
             (item.Definition.DataQuality || (item.Definition.Governance && item.Definition.Governance.Check))
-        )
-        {
+        ) {
             return true;
         } else {
             return false;
@@ -334,19 +288,36 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
         return s;
     }
 
-    selectionChanged(event:MetricAssetViewModel) {
-        this.selectedMetric = { ...event };
+    selectionChanged(event: MetricAssetViewModel) {
+        if (event) {
+            this.selectedMetric = { ...event };
 
-        if (this.hasConditions(this.selectedMetric))
-            this.showConditions = true;
-        else
+            if (this.hasConditions(this.selectedMetric))
+                this.showConditions = true;
+            else
+                this.showConditions = false;
+
+            if (this.hasPassTest(this.selectedMetric) && !this.selectedMetric.IsGroup)
+                this.showPassTest = true
+            else
+                this.showPassTest = false;
+        }
+        else {
+            this.selectedMetric = null;
             this.showConditions = false;
-
-        if (this.hasPassTest(this.selectedMetric) && !this.selectedMetric.IsGroup)
-            this.showPassTest = true
-        else
             this.showPassTest = false;
+        }
+    }
 
+    screenReferencedStillLoading(): boolean {
+        return (
+            !this.screenReferences.fields ||
+            !this.screenReferences.operators ||
+            !this.screenReferences.paths ||
+            !this.screenReferences.predicates ||
+            !this.screenReferences.relationships ||
+            !this.screenReferences.responsibilities
+        );
     }
 
     private save() {

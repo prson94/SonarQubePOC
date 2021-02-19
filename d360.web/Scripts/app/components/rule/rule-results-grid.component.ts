@@ -127,4 +127,4 @@ export class RuleResultsGridComponent extends BaseComponent {
         this.simpleTextFilter = '';
         this.filtersComponent.resetFilters();
     }
-};
+}

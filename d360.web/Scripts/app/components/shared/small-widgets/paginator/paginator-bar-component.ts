@@ -162,4 +162,4 @@ export class PaginatorComponent implements OnChanges, OnInit {
         else 
             return (this.page * this.itemsPerPage) + this.itemsPerPage;
     }
-};
+}

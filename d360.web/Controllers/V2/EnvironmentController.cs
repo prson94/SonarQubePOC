@@ -458,10 +458,10 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this information is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerConsumes("application/json"), 
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by eventDate.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_includeTotal", "Allows you to include the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
@@ -610,8 +610,16 @@ namespace d360.web.Controllers.V2
                             Guid ruid = Guid.Empty;
                             if (Guid.TryParse(q.Value,out ruid))
                             {
-                                whereClauseItems.Add("gr.uid = @resourceUid");
-                                dbArgs.Add("resourceUid", ruid);
+                                if(Company.GlobalReportingResources.Any(x => x.Uid == ruid) && ruid != Guid.Empty)
+                                {
+                                    whereClauseItems.Add("gr.uid = @resourceUid");
+                                    dbArgs.Add("resourceUid", ruid);
+                                }
+                                else
+                                {
+                                    code = HttpStatusCode.BadRequest;
+                                    errorMessage = $"Invalid _resourceuid provided!";
+                                }
                             }
                             else
                             {
@@ -624,8 +632,16 @@ namespace d360.web.Controllers.V2
                             Guid auid = Guid.Empty;
                             if (Guid.TryParse(q.Value, out auid))
                             {
-                                whereClauseItems.Add("a.uid = @assetuid");
-                                dbArgs.Add("assetuid", auid);
+                                if(Company.Assets.Any(x => x.uid == auid) && auid != Guid.Empty) 
+                                {
+                                    whereClauseItems.Add("a.uid = @assetuid");
+                                    dbArgs.Add("assetuid", auid);
+                                }
+                                else
+                                {
+                                    code = HttpStatusCode.BadRequest;
+                                    errorMessage = $"Invalid _assetuid provided!";
+                                }
                             }
                             else
                             {
@@ -638,8 +654,16 @@ namespace d360.web.Controllers.V2
                             Guid atuid = Guid.Empty;
                             if (Guid.TryParse(q.Value, out atuid))
                             {
-                                whereClauseItems.Add("(att.uid = @assettypeuid or att2.uid = @assettypeuid )");
-                                dbArgs.Add("assettypeuid", atuid);
+                                if(Company.AssetTypes.Any(x => x.uid == atuid) && atuid != Guid.Empty)
+                                {
+                                    whereClauseItems.Add("(att.uid = @assettypeuid or att2.uid = @assettypeuid )");
+                                    dbArgs.Add("assettypeuid", atuid);
+                                }
+                                else
+                                {
+                                    code = HttpStatusCode.BadRequest;
+                                    errorMessage = $"Invalid _assettypeuid provided!";
+                                }
                             }
                             else
                             {
@@ -680,7 +704,7 @@ namespace d360.web.Controllers.V2
                     h.Value as 'host',
                     bl.Value as 'language', 
 		            stat.Timestamp as 'eventDate', 
-                    att.Name as 'assetTypeName', 
+                    COALESCE(att.Name, att2.Name) as 'assetTypeName', 
                     COALESCE(att.uid,  att2.uid) as 'assetTypeUid', 
                     a.uid as 'assetUid', 
                     adv.DisplayValue as 'assetDisplayValue', 
@@ -753,7 +777,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "License info", typeof(LicenceDetailsModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this information is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 
         ]
         public async Task<IHttpActionResult> GetLicensingDetails()
@@ -816,14 +840,14 @@ namespace d360.web.Controllers.V2
 		                    GR.resourceid,
 		                    Case 
 		                                                       when permission.PermissionsBitMask is null then gr.IsAdministrator
-		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & 2 = 2 then 1
-		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & 4 = 4 then 1 END as Permissionsfound 
+		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pm = @pm then 1
+		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pd = @pd then 1 END as Permissionsfound 
 		                    from #AssetTypesWithResponsibilities AT
 			                    outer apply (Select * from UserAssetPermissions(GR.ResourceID,AT.AssetTypeID)) permission 
 			                    where 1 = Case 
 		                                                       when permission.PermissionsBitMask is null then gr.IsAdministrator
-		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & 2 = 2 then 1
-		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & 4 = 4 then 1 END
+		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pm = @pm then 1
+		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pd = @pd then 1 END
 
                     )   
                     and gr.Email not like '%@infogix.com' 
@@ -832,7 +856,7 @@ namespace d360.web.Controllers.V2
                     and gr.IsAdministrator = 0
                 ";
               
-                var contibutorCount = await Company.QueryFirstOrDefaultAsync<int>(contributorSql).ConfigureAwait(false);
+                var contibutorCount = await Company.QueryFirstOrDefaultAsync<int>(contributorSql, new { pm = (int)Permission.ModifyAsset, pd = (int)Permission.DeleteAsset }).ConfigureAwait(false);
                 var model = new { assets = new { count = allAssets }, users = new { total = allusers, contributors = (contibutorCount + allAdminUsers), administrators = allAdminUsers } };
 
 

@@ -76,10 +76,6 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.4.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
-    <Reference Include="gudusoft.gsqlparser, Version=2.4.9.22298, Culture=neutral, PublicKeyToken=1e1734490a0fe9ed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\gudusoft.gsqlparser.dll</HintPath>
-    </Reference>
     <Reference Include="HtmlAgilityPack, Version=1.11.24.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <HintPath>..\packages\HtmlAgilityPack.1.11.24\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
@@ -379,6 +375,7 @@
     <Compile Include="Controllers\Forms\FormController_Hierarchy.cs" />
     <Compile Include="Controllers\Services\CustomController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
+    <Compile Include="Controllers\V2\CommentsController.cs" />
     <Compile Include="Controllers\V2\ProcessController.cs" />
     <Compile Include="Controllers\V2\FieldsController.cs" />
     <Compile Include="Controllers\V2\AuditController.cs" />
@@ -652,17 +649,20 @@
     <Content Include="Content\primeicons\2.0.0\raw-svg\wifi.svg" />
     <Content Include="Content\primeicons\2.0.0\raw-svg\window-maximize.svg" />
     <Content Include="Content\primeicons\2.0.0\raw-svg\window-minimize.svg" />
-    <Content Include="Content\primeng\v10.0.3\default.min.css" />
-    <Content Include="Content\primeng\v10.0.3\fonts\roboto-v15-latin-regular.svg" />
-    <Content Include="Content\primeng\v10.0.3\images\color.png" />
-    <Content Include="Content\primeng\v10.0.3\images\hue.png" />
-    <Content Include="Content\primeng\v10.0.3\images\line.gif" />
-    <Content Include="Content\primeng\v10.0.3\images\loading.gif" />
-    <Content Include="Content\primeng\v10.0.3\images\password-meter.png" />
-    <Content Include="Content\primeng\v10.0.3\primeng.css" />
-    <Content Include="Content\primeng\v10.0.3\primeng.min.css" />
-    <Content Include="Content\primeng\v10.0.3\theme.css" />
-    <Content Include="Content\primeng\v10.0.3\theme.min.css">
+    <Content Include="Content\primeng\v11.1.0\default.css" />
+    <Content Include="Content\primeng\v11.1.0\default.min.css">
+      <DependentUpon>default.css</DependentUpon>
+    </Content>
+    <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.svg" />
+    <Content Include="Content\primeng\v11.1.0\images\color.png" />
+    <Content Include="Content\primeng\v11.1.0\images\hue.png" />
+    <Content Include="Content\primeng\v11.1.0\images\line.gif" />
+    <Content Include="Content\primeng\v11.1.0\images\loading.gif" />
+    <Content Include="Content\primeng\v11.1.0\images\password-meter.png" />
+    <Content Include="Content\primeng\v11.1.0\primeng.css" />
+    <Content Include="Content\primeng\v11.1.0\primeng.min.css" />
+    <Content Include="Content\primeng\v11.1.0\theme.css" />
+    <Content Include="Content\primeng\v11.1.0\theme.min.css">
       <DependentUpon>theme.css</DependentUpon>
     </Content>
     <Content Include="Content\quill\v1.3.7\quill.min.js" />
@@ -800,7 +800,6 @@
     <Content Include="Scripts\app\components\rule\rule-column-filter.component.html" />
     <Content Include="Scripts\app\components\rule\rule-list.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-list.component.html" />
-    <Content Include="Scripts\app\components\fusion\fusion-promotion-history.component.html" />
     <Content Include="Scripts\app\components\home\activity-details-tile.component.html" />
     <Content Include="Scripts\app\components\home\activity-tile.component.html" />
     <Content Include="Scripts\app\components\rule\rule-results-grid.component.html" />
@@ -810,6 +809,8 @@
     <Content Include="Scripts\app\components\search\search-result-item.component.html" />
     <Content Include="Scripts\app\components\search\search-results-component.html" />
     <Content Include="Scripts\app\components\search\search.component.html" />
+    <Content Include="Scripts\app\components\shared\asset-score\calculation\measure-rule-results.component.html" />
+    <Content Include="Scripts\app\components\shared\asset-score\definition\measure-conditions-details.component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
     <Content Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.html" />
     <Content Include="Scripts\app\components\shared\browser-warning\browser-warning.component.html" />
@@ -827,12 +828,13 @@
     <Content Include="Content\json\governanceIcons.json" />
     <Content Include="Scripts\app\components\shared\asset-score\definition\score-definition.less" />
     <Content Include="Scripts\app\components\shared\asset-score\history\score-history.less" />
-    <Content Include="Content\primeng\v10.0.3\fonts\roboto-v15-latin-regular.eot" />
-    <Content Include="Content\primeng\v10.0.3\fonts\roboto-v15-latin-regular.ttf" />
-    <Content Include="Content\primeng\v10.0.3\fonts\roboto-v15-latin-regular.woff" />
-    <Content Include="Content\primeng\v10.0.3\fonts\roboto-v15-latin-regular.woff2" />
-    <Content Include="Content\primeng\v10.0.3\theme.less" />
-    <Content Include="Content\primeng\v10.0.3\default.less" />
+    <Content Include="Content\primeng\v11.1.0\default.less" />
+    <Content Include="Content\primeng\v11.1.0\theme.less" />
+    <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.eot" />
+    <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.ttf" />
+    <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.woff" />
+    <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.woff2" />
+    <Content Include="Scripts\app\components\shared\asset-score\calculation\measure-rule-results.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
@@ -902,6 +904,7 @@
     <Content Include="Scripts\app\components\shared\small-widgets\score-badge\score-badge.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\status-badge\status-badge.component.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\synonyms.tile.html" />
+    <Content Include="Scripts\app\components\shared\social\social-board.component.html" />
     <Content Include="Scripts\app\components\shared\tags\d3s-tag-view.html" />
     <Content Include="Scripts\app\components\shared\user\user-list.component.html" />
     <Content Include="Scripts\app\components\shared\where-used\where-used.component.html" />
@@ -950,6 +953,7 @@
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
     <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\admin-metric-pass-test-details.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\scoring\admin-metric-pass-test-details.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\common-screen-references-model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\measure-editor-external.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\measure-editor-base.component.ts" />
@@ -1000,7 +1004,9 @@
     <TypeScriptCompile Include="Scripts\app\components\search\asset-path-widget\asset-path-widget.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\asset-path-widget\asset-path-widget.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search-session.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\calculation\measure-rule-results.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\calculation\score-calculation.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\definition\measure-conditions-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\definition\score-definition.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\history\score-history.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\browser-warning\browser-warning.component.ts" />
@@ -1042,6 +1048,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dayofweek-input\dayofweek-input.component.ts" />
+    <Content Include="Scripts\app\components\shared\social\social-comment.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\info-tooltip.component.ts" />
     <Content Include="Scripts\app\components\workflow\workflow-view-details.component.html" />
     <Content Include="Scripts\dist\*.js" />
@@ -1184,29 +1192,6 @@
     <Content Include="Content\primeicons\2.0.0\fonts\primeicons.woff" />
     <Content Include="Content\quill\v1.3.7\quill.min.js.map" />
     <Content Include="Content\json\fontawesome4x.json" />
-    <None Include="Content\redactor\redactor-iframe.css">
-      <DependentUpon>redactor-iframe.less</DependentUpon>
-    </None>
-    <None Include="Content\redactor\redactor-iframe.min.css">
-      <DependentUpon>redactor-iframe.css</DependentUpon>
-    </None>
-    <None Include="Content\redactor\redactor-iframe.css.map">
-      <DependentUpon>redactor-iframe.css</DependentUpon>
-    </None>
-    <None Include="Content\redactor\redactor-iframe.less" />
-    <None Include="Content\redactor\redactor.css.map">
-      <DependentUpon>redactor.css</DependentUpon>
-    </None>
-    <None Include="Content\redactor\redactor.less" />
-    <None Include="Content\redactor\redactor.css">
-      <DependentUpon>redactor.less</DependentUpon>
-    </None>
-    <None Include="Content\redactor\redactor.min.css">
-      <DependentUpon>redactor.css</DependentUpon>
-    </None>
-    <None Include="Content\redactor\redactor.min.css.gzip">
-      <DependentUpon>redactor.min.css</DependentUpon>
-    </None>
     <Content Include="Content\styles\AssetBrowser.less" />
     <None Include="Content\styles\ContentFormatting.less" />
     <None Include="Content\styles\Diagrams.less" />

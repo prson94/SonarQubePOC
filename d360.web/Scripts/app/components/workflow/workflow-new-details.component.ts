@@ -44,6 +44,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
     private bulkReassignModel: BulkWorkflowReassignModel;
     private fromMail: boolean = false;
     private isAdmin: boolean = false;
+    private clearOtherAssignments: boolean = false;
 
     constructor(private route: ActivatedRoute,
         private location: Location,
@@ -69,8 +70,9 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
             this.fromMail = params['fromMail'] === '1' ? true : false;
 
             this.isMe = this.resourceID ? this.resourceID == CurrentResourceID : true;
-            this.isAdmin = this.authenticationService.isAdmin;
-
+            this.authenticationService.checkCurrentUserAdmin().subscribe((x) => {
+                this.isAdmin = x;
+            });
             this.headerBreadcrumbService.clearBreadcrumbs();    
 
             this.load();
@@ -122,6 +124,9 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
             this.bulkReassignModel.OriginalAssigneeResourceID = isNaN(this.resourceID) ? CurrentResourceID : this.resourceID;
             this.bulkReassignModel.StepName = this.assignmentSummary.StepName;
             this.bulkReassignModel.StepHasFormEmails = this.assignmentSummary.SendFormEmail;
+            let noOfItemsCanClearAssignments = this.selection.filter((x) => { return x.countAssigned > 1 && x.responseType.toLowerCase() === "firstresponse"; }).length;
+            //only show option to bulk clear other assignments if all have the ability to clear assignments 
+            this.bulkReassignModel.IsClearOtherAssignmentsAllowed = (noOfItemsCanClearAssignments === this.selection.length);
             this.showBulkReassignEditor = true;
         }
     }
@@ -144,4 +149,4 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
 
         }
     }
-};
+}

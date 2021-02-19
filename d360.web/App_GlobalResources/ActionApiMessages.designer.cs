@@ -133,6 +133,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} is not a valid Asset Uid..
+        /// </summary>
+        internal static string AssetUidIsNotValid {
+            get {
+                return ResourceManager.GetString("AssetUidIsNotValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Allocation Deleted Successfully..
         /// </summary>
         internal static string DeleteAllocationSuccessful {

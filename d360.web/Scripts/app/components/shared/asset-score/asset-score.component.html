@@ -22,7 +22,7 @@
                                     <div class="score-name">
                                         <span *ngIf="!item.Description" class="name">{{item.Name}}</span>
                                         <span *ngIf="item.Description" pTooltip="{{item.Description}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip" class="name">{{item.Name}}</span>
-                                        <div>
+                                        <div class="score-date">
                                             Effective
                                             {{item.EffectiveDate | utcDate | date:'shortDate'}} to
                                             <ng-container *ngIf="item.EndDate">
@@ -32,10 +32,10 @@
                                         </div>
                                     </div>
                                     <div *ngIf="!isExternallyCalculated" class="score-badges big-badges">
-                                        <span pTooltip="{{'Measure Score = ' + getAsPrecentage(item._adjustedWeight)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
+                                        <span pTooltip="{{getTooltipForScoreBadge(item)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
                                             <ig-badge [variant]="item._badgeStyle" [text]="getAsPrecentage(item._adjustedWeight)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
                                         </span>
-                                        <span pTooltip="{{'Maximum possible score for measure = measure weight = ' + getAsPrecentage(item._adjustedMaxWeight)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
+                                        <span pTooltip="{{getTooltipForWeightBadge(item)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
                                             <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(item._adjustedMaxWeight)"></ig-badge>
                                         </span>
                                     </div>
@@ -51,7 +51,7 @@
                                             <div class="score-name">
                                                 <span *ngIf="!subItem.Description" class="name">{{subItem.Name}}</span>
                                                 <span *ngIf="subItem.Description" pTooltip="{{subItem.Description}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip" class="name">{{subItem.Name}}</span>
-                                                <div>
+                                                <div class="score-date">
                                                     Effective
                                                     {{subItem.EffectiveDate | utcDate | date:'shortDate'}} to
                                                     <ng-container *ngIf="subItem.EndDate">
@@ -93,7 +93,7 @@
             </ng-container>
         </div>
     </div>
-    <div class="col s4 no-margin no-padding">
+    <div class="score-right-content">
         <div class="card-box" [style.height.px]="panelHeight">
             <div class="button-group show-multiple">
                 <button igButton label="History" class="ig-button {{(activeTab=='History' ? 'ig-state-active' : '')}}" (click)="activeTab='History'"></button>
@@ -111,10 +111,24 @@
                                 (measurePointsChanged)="measurePoints=$event"></score-history>
             </div>
             <div [hidden]="!(activeTab=='Calculation')">
-                <score-calculation [scoreType]="selectedScoreType" [formattedCheck]="defTab.getPassCheckValue()" [selected]="selectedPoint" [measures]="pointBreakdown"></score-calculation>
+                <score-calculation 
+                                   [scoreType]="selectedScoreType" 
+                                   [formattedCheck]="defTab.getPassCheckValue()" 
+                                   [selected]="selectedPoint" 
+                                   [measures]="pointBreakdown" 
+                                   [fields]="fields"
+                                   [assetTypeName]="assetTypeName" 
+                                   [assetName]="assetName"
+                                   [definition]="selectedMetric?.Definition">
+                </score-calculation>
             </div>
             <div [hidden]="!(activeTab=='Definition')">
-                <score-definition #defTab [isExternallyCalculated]="isExternallyCalculated" [selectedMetric]="selectedMetric" [assetTypeUid]="assetTypeUid"></score-definition>
+                <score-definition #defTab 
+                                  [isExternallyCalculated]="isExternallyCalculated" 
+                                  [selectedMetric]="selectedMetric" 
+                                  [assetTypeUid]="assetTypeUid" 
+                                  [allocationUid]="allocationUid">
+                </score-definition>
             </div>
         </div>
     </div>

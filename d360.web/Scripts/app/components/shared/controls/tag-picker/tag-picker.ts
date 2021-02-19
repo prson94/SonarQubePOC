@@ -214,26 +214,30 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
         var tagType = new TagType();
         tagType.Value = event.title;
         this.tagService.doesTagExist(tagType)
-            .subscribe(result => {
-                if (result == null) {
-                    this.tagService.saveTag(tagType)
-                        .subscribe(result => {
-                            let msg: string = '';
-                            if (result.Value != undefined) {
-                                result.message = `${result.Value} succesfully created`;
-                            }
-                            this.showMessageForResult(this.messagesService, result, msg);
-                            this.tryAddValue({ value: result.uid, title: result.Value });
-                            this.onSelect.emit({ value: result.uid, title: result.Value });
-                            this.tagAutocompleteValue = '';
-                        });
-                }
-                else {
+            .subscribe((result) => {
+                if (result == 200) {
                     this.tryAddValue(event);
                     this.onSelect.emit(event);
                     this.tagAutocompleteValue = '';
                 }
-            })
+            },
+                (error) => {
+                    if (error.status == 404) {
+                        this.tagService.saveTag(tagType)
+                            .subscribe(result => {
+                                let msg: string = '';
+                                if (result.Value != undefined) {
+                                    result.message = `${result.Value} succesfully created`;
+                                }
+                                this.showMessageForResult(this.messagesService, result, msg);
+                                this.tryAddValue({ value: result.uid, title: result.Value });
+                                this.onSelect.emit({ value: result.uid, title: result.Value });
+                                this.tagAutocompleteValue = '';
+                            });
+                    }
+                },
+                () => {
+                })
         this.savingTag = false;
     }
 

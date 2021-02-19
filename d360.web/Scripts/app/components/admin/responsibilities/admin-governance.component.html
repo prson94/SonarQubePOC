@@ -5,9 +5,6 @@
                 Responsibility Types
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>
             </header>
-
-
-
             <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
             <p-table #dt [value]="responsibilityTypeItems" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" [paginator]="true" [rows]="20" [(selection)]="selectedRow" (onRowSelect)="selectedItemChange()">
                 <ng-template pTemplate="header">

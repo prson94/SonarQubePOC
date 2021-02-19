@@ -1,6 +1,6 @@
 import * as go from 'gojs';
 import * as _ from 'lodash';
-import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewChecked, Output, EventEmitter, HostListener, ViewChild, OnDestroy, Renderer2, ViewEncapsulation, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewChecked, Output, EventEmitter, HostListener, ViewChild, OnDestroy, Renderer2, ViewEncapsulation, OnChanges, SimpleChanges, ElementRef } from '@angular/core';
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
@@ -40,7 +40,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private assetDetail: any;
 
     isPalleteLoaded: boolean = false;
-    
+
     eventPalleteHeight: number = 300;
     myEventPalette: go.Diagram;
 
@@ -106,7 +106,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     @ViewChild('listView', { static: false }) listView: ProcessDiagramListViewComponent;
     @ViewChild('importTable', { static: false }) importTable: any;
     @ViewChild('overview') overviewControlRef: AssetBrowserOverviewComponent;
-
+    @ViewChild('palleteTooltip', { static: true }) palleteTooltip: ElementRef;
 
     public popupMenuItems = [
         {
@@ -142,11 +142,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.listView.clearSearchValue();
             }
         }
+        document.body.append(this.palleteTooltip.nativeElement);
     }
 
     ngOnInit() {
 
-        this.route.params.subscribe(params => {
+        this.route.params.subscribe((params) => {
             this.focusKey = params['focusKey'];
             if (this.focusKey) {
                 let url: string = `/sidebar/visualization/browser/${params['assetUid']}/${params['diagramType']}`;
@@ -159,11 +160,11 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
 
         this.processService.getProcessDiagramColors(this.assetUid)
-            .subscribe(colors => {
+            .subscribe((colors) => {
                 this.colors = colors;
             });
         this.processService.getAvailableNodes(this.assetUid)
-            .subscribe(res => {
+            .subscribe((res) => {
                 this.assetTypeNodes = res;
                 this.events = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Event);
                 this.activities = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Activity);
@@ -564,7 +565,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             }
             else {
                 this.breadcrumbsService.setCurrentObjectState('');
-            }           
+            }
         }
 
         this.cdRef.detectChanges();
@@ -882,7 +883,11 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                                 wrappingColumn: 2
                             }
                         ),
-                    'toolManager.hoverDelay': 100
+                    "toolManager.hoverDelay": 200,
+                    "draggingTool.doActivate": function () {
+                        this.diagram.toolManager.hideToolTip();
+                        go.DraggingTool.prototype.doActivate.call(this);
+                    }
                 });
 
         var eventArr = [];
@@ -924,7 +929,11 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                                 wrappingColumn: 2
                             }
                         ),
-                    'toolManager.hoverDelay': 100
+                    "toolManager.hoverDelay": 200,
+                    "draggingTool.doActivate": function () {
+                        this.diagram.toolManager.hideToolTip();
+                        go.DraggingTool.prototype.doActivate.call(this);
+                    }
                 });
 
         var activitiesArr = [];
@@ -966,7 +975,11 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                                 wrappingColumn: 2,
                             }
                         ),
-                    'toolManager.hoverDelay': 100
+                    "toolManager.hoverDelay": 200,
+                    "draggingTool.doActivate": function () {
+                        this.diagram.toolManager.hideToolTip();
+                        go.DraggingTool.prototype.doActivate.call(this);
+                    }
                 });
 
         var gatewaysArr = [];

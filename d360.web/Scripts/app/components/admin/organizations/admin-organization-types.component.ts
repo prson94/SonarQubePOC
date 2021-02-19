@@ -154,7 +154,7 @@ export class AdminOrganizationTypesComponent extends BaseComponent implements On
                 this.showMessageForResult(this.messagesService, result);
 
                 if (result.type != 'error') {
-                    this.organizationTypes = this.organizationTypes.filter(x => x.ID != id);
+                    this.organizationTypes = this.organizationTypes.filter((x) => x.ID != id);
                 }
 
                 this.showDelete = false;

@@ -126,20 +126,11 @@ namespace d360.model.DataAccessLayer
 
         public void DeleteMetric(MetricAsset model)
         {
-            var now = DateTime.UtcNow;
+            var now = DateTime.UtcNow.Date;
 
             var currentAssetVersion = model.Versions.OrderByDescending(x => x.EffectiveDate).FirstOrDefault();
             currentAssetVersion.State = State.Deleted;
-
-            var lastUsedMetric = GetMetricsLastUsedEffectiveDate(currentAssetVersion.Uid);
-            if (lastUsedMetric == null)
-            {
-                currentAssetVersion.EffectiveEndDate = (currentAssetVersion.EffectiveDate.Date == now.Date) ? now.Date.AddDays(-1) : now.Date;
-            }
-            else
-            {
-                currentAssetVersion.EffectiveEndDate = lastUsedMetric;
-            }
+            currentAssetVersion.EffectiveEndDate = now.AddDays(-1);
 
             model.State = State.Deleted;
             model.UpdatedOn = now;
@@ -149,7 +140,7 @@ namespace d360.model.DataAccessLayer
                 var childVersions = Company.Filter<MetricAssetVersion>(x => x.Asset.ParentUid != null && x.Asset.ParentUid == model.Uid && x.EffectiveEndDate == null).ToList();
                 childVersions.ForEach(v =>
                 {
-                    v.EffectiveEndDate = (v.EffectiveDate.Date == now.Date) ? now.Date.AddDays(-1) : now.Date;
+                    v.EffectiveEndDate = now.AddDays(-1);
                 });
                 children.ForEach(c => c.State = State.Deleted);
             }
@@ -164,7 +155,6 @@ namespace d360.model.DataAccessLayer
 
             // Send queue event to scoring engine.
             Company.SendScoreEventWithPayload(
-                Guid.NewGuid(),
                 ScoreQueueChangeType.MeasureRemoved,
                 new MeasureRemovedModel
                 {
@@ -1473,10 +1463,9 @@ delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metric
             if (metricAsset != null && metricAssetVersion != null && changeWillEffectScore)
             {
                 Company.SendScoreEventWithPayload(
-                    Guid.NewGuid(),
                     ScoreQueueChangeType.MeasureChanged,
                     new MeasureChangedModel { EffectiveDate = model.EffectiveDate, MetricAssetUid = metricAsset.Uid, MetricAssetVersionUid = metricAssetVersion.Uid }
-                    );
+                );
             }
 
             return new WorkHttpStatus(isNew ? HttpStatusCode.Created : HttpStatusCode.OK, "", "");
@@ -1586,17 +1575,19 @@ from	(
 				V.Name,
 				V.Description,
 				Ma.IsGroup,
-				SI.RunDate,
+				SI.Uid as ScoreItemUid,
+                SI.RunDate,
                 V.EffectiveDate, 
 				ROW_NUMBER() OVER(PARTITION BY Ma.Uid ORDER BY S.EffectiveDate DESC, SI.UpdatedOn desc) as RowNum,
 				V.EffectiveEndDate as EndDate,
 				V.[Weight],
-				SI.AdjustedWeight,
-				SI.AdjustedMaxWeight,
+				iif(SI.AdjustedWeight > 1, 1, SI.AdjustedWeight) as AdjustedWeight,
+				iif(SI.AdjustedMaxWeight > 1, 1, SI.AdjustedMaxWeight) as AdjustedMaxWeight,
 				iif(Ma.IsGroup = 1, null, SI.Value) as Value,
-                SI.DecimalValue,
+                iif(SI.DecimalValue > 1, 1, SI.DecimalValue) as DecimalValue,
 				cast(iif(SI.Evidence is not null and SI.Evidence <> '', 1, 0) as bit) as HasEvidence,
-				A.ScoreType
+				A.ScoreType,
+				V.MatchConditionsOnly
 		from    metrics.Score S 
 				inner join metrics.Allocation A on A.Uid = S.AllocationUid
                 inner join metrics.ScoreItemLink SIL on SIL.ScoreUid = S.Uid 
@@ -1624,7 +1615,7 @@ select		R.*,
 											from	FieldLookupValue
 											where	FieldTypeID = F.ID and LookupObjectType = F.LookupObjectType and LookupObjectID = F.LookupObjectID and AssetUid = CIV.Value
 										)
-									ELSE CIV.Value 
+									ELSE CIV.Value
 								end
 								) as [Value]
                     	from	[metrics].[AssetVersionCondition] C
@@ -1640,25 +1631,35 @@ select		R.*,
 			for json path
 			) as MeasuresJson,
 						(
-                    	select	F.FriendlyName as FieldName,
-                    			CI.Operator,
-                    			(
-									case when F.Type = 'Lookup' then 
-										(
-											select	top 1
-													[Text]
-											from	FieldLookupValue
-											where	FieldTypeID = F.ID and LookupObjectType = F.LookupObjectType and LookupObjectID = F.LookupObjectID and AssetUid = CIV.Value
-										)
-									ELSE CIV.Value 
-								end
-								) as [Value]
-                    	from	[metrics].[AssetVersionCondition] C
-                                inner join metrics.AssetVersionConditionItem CI on CI.AssetVersionConditionUid = C.Uid
-                                inner join metrics.AssetVersionConditionItemValue CIV on CIV.Uid = CI.Uid 
-                    			inner join FieldType F on F.ID = CI.ConditionFieldTypeID
-                    	where	C.AssetVersionUid = R.VersionUid
-                    	for json path
+                    	SELECT 
+							MatchType,
+							Position,
+							threshold,
+							Weight,
+							(
+                            select	F.FriendlyName as FieldName,
+                    					CI.Operator,
+                    					(
+											case when F.Type = 'Lookup' then 
+												(
+													select	top 1
+															[Text]
+													from	FieldLookupValue
+													where	FieldTypeID = F.ID and LookupObjectType = F.LookupObjectType and LookupObjectID = F.LookupObjectID and AssetUid = CIV.Value
+												)
+											ELSE CIV.Value
+										end
+										) as [Value]
+                    			from	[metrics].[AssetVersionCondition] C1
+										inner join metrics.AssetVersionConditionItem CI on CI.AssetVersionConditionUid = C.Uid
+										left join metrics.AssetVersionConditionItemValue CIV on CIV.Uid = CI.Uid 
+                    					inner join FieldType F on F.ID = CI.ConditionFieldTypeID
+                    			where	C.AssetVersionUid = R.VersionUid and CI.[AssetVersionConditionUid] = C1.[Uid]
+                    			for json path
+                                ) as ConditionItems
+							from metrics.AssetVersionCondition C
+							where	C.AssetVersionUid = R.VersionUid
+							for json path
 						) as ConditionsJson
 from		#results R
 where		R.ParentUid is null
@@ -1666,7 +1667,7 @@ order by	R.[Name]";
 
             if (cnn.State != ConnectionState.Open)
                 cnn.Open();
-
+            
             return cnn.Query<RootMetricAssetHierarchyModel>(sql, new { allocationUid, assetUid, effectiveDate = effectiveDate.Value }, commandTimeout: ApiTimeout).ToList();
         }
 
@@ -1745,11 +1746,6 @@ order by	R.[Name]";
                             from	AssetType A
                             		inner join FieldType F on F.AssetTypeID = A.ID and A.[uid] = @assetTypeUid and F.Type in ('Boolean', 'Decimal', 'Date', 'DateTime', 'Html', 'Lookup', 'Number', 'Text')", 
                                     new { assetTypeUid }, ApiTimeout).ToList();
-        }
-
-        public List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model, ApiExecution execution)
-        {
-            return Company.BulkMetricsImport(model, execution);
         }
 
         public async Task<List<MetricFieldTypeViewModel>> GetFieldsByRuleResultPath(Guid ruleResultPathUid)
@@ -2280,15 +2276,6 @@ for json path";
             return executionInfo;
         }
 
-        private DateTime? GetMetricsLastUsedEffectiveDate(Guid uid)
-        {
-            return Company.Query<DateTime?>(@"
-select  max(S.EffectiveDate) as EffectiveDate 
-from    metrics.ScoreItem I 
-        inner join metrics.ScoreItemLink L on L.ScoreItemUid = I.Uid and I.AssetVersionUid = @metricVersionUid 
-        inner join metrics.Score S on S.Uid = L.ScoreUid", new { metricVersionUid = uid }, ApiTimeout).FirstOrDefault();
-        }
-
         public List<MeasureVersionHistoryModel> GetMetricVersionHistory(Guid measureUid)
         {
             var fragments = Company.Query<string>($@"                    
@@ -2329,6 +2316,74 @@ from    metrics.ScoreItem I
             });
 
             return models;
+        }
+
+        internal class ReclaulatMeasureExecutionFields
+        {
+            public Guid measureUid { get; set; }
+            public string action { get; set; }
+        }
+        public void RecalculateMeasureScoreItems(Guid allocationUid, Guid measureUid) 
+        {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                throw new StatusCodeException(HttpStatusCode.Forbidden);
+            }
+
+            var measure = Company.GetByUid<MetricAsset>(measureUid, a => a.Versions, a => a.Allocation);
+
+            if (measure == null)
+            {
+                throw new GenericException(HttpStatusCode.NotFound, $"Measure with Uid of {measureUid} could not be found.");
+            }
+
+            if (measure.AllocationUid != allocationUid)
+            {
+                throw new GenericException(HttpStatusCode.NotFound, $"Measure does not belong to allocation with Uid of {allocationUid}.");
+            }
+
+            if (measure.Allocation == null)
+            {
+                throw new GenericException(HttpStatusCode.Conflict, $"Measure does not belong to a valid Allocation, indicating an invalid measure.");
+            }
+
+            if (measure.Allocation.ScoreType != ScoreType.Governance)
+            {
+                throw new GenericException(HttpStatusCode.BadRequest, $"Measure does not belong to a Governance score definition.");
+            }
+
+            if (measure.Versions == null)
+            {
+                throw new GenericException(HttpStatusCode.Conflict, $"Measure does not contain any versions, indicating an invalid measure.");
+            }
+
+            var latestVersion = measure.Versions.OrderByDescending(v => v.EffectiveDate).FirstOrDefault();
+
+            if (latestVersion == null)
+            {
+                throw new GenericException(HttpStatusCode.Conflict, $"Measure does not contain any versions, indicating an invalid measure.");
+            }
+
+            var startedOnLimit = DateTime.UtcNow.AddHours(-2);
+            var existingExecutions = Company
+                .Filter<ApiExecution>(e => e.Method == "SCORE" && e.StartedOn <= startedOnLimit && !e.CompletedOn.HasValue)
+                .ToList()
+                .Select(e => new { e.ExecutionID, Fields = JsonConvert.DeserializeObject<ReclaulatMeasureExecutionFields>(e.Fields ?? "{}") })
+                .ToList();
+
+            if (existingExecutions.Count > 0)
+            {
+                if (existingExecutions.Any(e => e.Fields.measureUid == measureUid && e.Fields.action == "recalculating"))
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, $"Measure is currently being recalculated. Please wait until we have completed this action then try again.");
+                }
+            }
+
+            Company.SendScoreEventWithPayload(
+                ScoreQueueChangeType.MeasureChanged,
+                new MeasureChangedModel { EffectiveDate = latestVersion.EffectiveDate, MetricAssetUid = measure.Uid, MetricAssetVersionUid = latestVersion.Uid },
+                new ReclaulatMeasureExecutionFields { measureUid = measureUid, action = "recalculating" }
+            );
         }
     }
 }

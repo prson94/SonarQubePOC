@@ -51,22 +51,41 @@
             </div>
         </ng-container>
 
+        <ng-container *ngIf="showConditionGroups()">
+            <div class="calculation-group">
+                <div class="title">Asset Conditions and Weighting</div>
+                <div>Measure Applied to <span *ngIf="selected.MatchConditionsOnly">all</span><span *ngIf="!selected.MatchConditionsOnly">any</span> Assets</div>
+                <div class="conditions">
+                    <div *ngFor="let condition of selected.Conditions;let i = index;">
+                        <div>Weight: {{formatWeight(condition.Weight)}} - Determined via match on Condition Group {{condition.Position}}</div>
+                        <span *ngFor="let item of condition.ConditionItems;let i = index;">
+                           <span *ngIf="i > 0">&nbsp;,</span> {{item.FieldName}} {{Operator[item.Operator]}} {{isDate(item) ? (item.Value | date: shortdate) : item.Value}}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+
         <ng-container *ngIf="!showPassTest()">
             <div class="calculation-group">
-                <div class="title">Measure Score</div>
+                <div class="title">Measure Score</div> 
 
-                <div class="indented-line" *ngIf="!selected._adjustedGroupWeight">= rule results score (operation) &#215; measure weight</div>
+                <div class="indented-line" *ngIf="!selected._adjustedGroupWeight">= rule results score ({{definition?.DataQuality?.ResultOperation}}) &#215; measure weight</div>
                 <div class="indented-line" *ngIf="!selected._adjustedGroupWeight">
                     = {{getAsPrecentage(selected.DecimalValue)}} &#215; {{getAsPrecentage(selected.AdjustedMaxWeight)}}
                 </div>
 
-                <div class="indented-line" *ngIf="selected._adjustedGroupWeight">= rule results score (operation) &#215; measure weight &#215; group weight</div>
+                <div class="indented-line" *ngIf="selected._adjustedGroupWeight">= rule results score ({{definition?.DataQuality?.ResultOperation}}) &#215; measure weight &#215; group weight</div>
                 <div class="indented-line" *ngIf="selected._adjustedGroupWeight">
                     = {{getAsPrecentage(selected.DecimalValue)}} &#215; {{getAsPrecentage(selected.AdjustedMaxWeight)}} &#215; {{getAsPrecentage(selected._adjustedGroupWeight)}}
                 </div>
 
                 <div class="indented-line">
                     = {{getAsPrecentage(selected._adjustedWeight)}}
+                </div>
+
+                <div style="margin-top: 16px;">
+                    <button class="link" (click)="showRuleResults(true)">Show rule results</button>
                 </div>
             </div>
         </ng-container>
@@ -102,3 +121,10 @@
     </ng-container>
 
 </div>
+
+<d3s-modal [title]="'Rule Results'" additionalClasses="xlarge-dialog modal-measure" (onClose)="showRuleResults(false)" [isVisible]="isRuleResultsModalVisible">
+    <div style="height: calc(100vh - 80px)">
+        <measure-rule-results (onClose)="showRuleResults(false);" [scoreItem]="selected" [assetTypeName]="assetTypeName" [assetName]="assetName">
+        </measure-rule-results>
+    </div>
+</d3s-modal>

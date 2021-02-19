@@ -33,7 +33,7 @@ export class GroupService extends BaseObservableService implements IGroupService
     getGroupList(): Observable<GroupSearchResultModel[]> {
         return this.http.get('api/groups').pipe(
             map(r => <GroupSearchResultModel[]>r),
-            catchError(err => this.handleError(err))
+            catchError((err) => this.handleError(err))
         );
     }
 
@@ -52,57 +52,57 @@ export class GroupService extends BaseObservableService implements IGroupService
         };
 
         return this.http.delete('api/v2/membership/groups', httpOptions).pipe(
-            map(response => <JsonResult>response),
-            catchError(err => this.handleError(err))
+            map((response) => <JsonResult>response),
+            catchError((err) => this.handleError(err))
         );
     }
 
     getGroupResourceList(uid: string): Observable<any> {
             return this.http.get(`api/v2/membership/groups/${uid}/members?_pageSize=100000`).pipe(
-                map(response => <GroupResourceInfo[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <GroupResourceInfo[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getGroupUid(id: number): Observable<any> {
         return this.http.get(`api/v2/membership/groups/${id}`).pipe(
-            map(response => <GroupResourceInfo[]>response),
-            catchError(err => this.handleError(err))
+            map((response) => <GroupResourceInfo[]>response),
+            catchError((err) => this.handleError(err))
         );
     }
 
     getGroup(id: number,uid:string): Observable<any> {
         return this.http.get(`form/Group?id=${id}&uid=${uid}`).pipe(
-            map(response => <any>response),
-            catchError(err => this.handleError(err))
+            map((response) => <any>response),
+            catchError((err) => this.handleError(err))
         );
     }
 
     putGroup(group: Group): Observable<any> {
         return this.http.put('api/v2/membership/groups', [group]).pipe(
-            map(response => <any>response),
-            catchError(err => this.handleError(err))
+            map((response) => <any>response),
+            catchError((err) => this.handleError(err))
         );
     }
 
     postGroup(group: Group): Observable<any> {
         return this.http.post('api/v2/membership/groups', [group]).pipe(
-            map(response => <any>response),
-            catchError(err => this.handleError(err))
+            map((response) => <any>response),
+            catchError((err) => this.handleError(err))
         );
     }
 
     addUsersToGroup(groupUid: string, users: AddUserToGroup[]): Observable<any> {
         return this.http.post(`api/v2/membership/groups/${groupUid}/members`, users).pipe(
-            map(response => <any>response),
-            catchError(err => this.handleError(err))
+            map((response) => <any>response),
+            catchError((err) => this.handleError(err))
         );
     }
 
     deleteUsersFromGroup(groupUid: string, userUid: string): Observable<any> {
         return this.http.delete(`api/v2/membership/groups/${groupUid}/${userUid}`).pipe(
-            map(response => <any>response),
-            catchError(err => this.handleError(err))
+            map((response) => <any>response),
+            catchError((err) => this.handleError(err))
         );
     }
 
@@ -114,15 +114,15 @@ export class GroupService extends BaseObservableService implements IGroupService
         sortOrder: string
     ): Observable<any> {
         return this.http.get(`form/GetGroupUserList?id=${id}&pagenum=${pagenum}&pagesize=${pagesize}&sortdatafield=${sortDataField}&sortorder=${sortOrder}`).pipe(
-            map(response => response),
-            catchError(err => this.handleError(err))
+            map((response) => response),
+            catchError((err) => this.handleError(err))
         );
     }
 
     getResponsibilityBreakdownByGroup(id: number): Observable<CountObject[]> {
         return this.http.get(`/api/v2/social//ResponsibilityBreakdownByGroup?id=${id}`).pipe(
-            map(response => <CountObject[]>response),
-            catchError(err => this.handleError(err))
+            map((response) => <CountObject[]>response),
+            catchError((err) => this.handleError(err))
         );
     }
 }

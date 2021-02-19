@@ -239,8 +239,9 @@ namespace d360.model.DataAccessLayer
 
             if (!Company.CurrentResourceIsAdmin)
             {
-                permissionsCriteria = $" and exists(select 1 from UserAssetPermissions(@r,a.AssetTypeID) u where u.PermissionsBitMask & 64 = 64 and (u.AssetID = a.ID or (u.AssetID = 0 and u.AssetTypeID = a.AssetTypeID)))";
+                permissionsCriteria = $" and exists(select 1 from UserAssetPermissions(@r,a.AssetTypeID) u where u.PermissionsBitMask & @p = @p and (u.AssetID = a.ID or (u.AssetID = 0 and u.AssetTypeID = a.AssetTypeID)))";
                 dbArgs.Add("r", Company.CurrentResourceID);
+                dbArgs.Add("p", (int)Permission.ReadResponsibilities);
             }
 
             var sql = $@"select 
@@ -528,10 +529,8 @@ where 1=1
             if (impactedMeasureVersions.Count > 0)
             {
                 Company.SendScoreEventWithPayload(
-                    Guid.NewGuid(),
                     ScoreQueueChangeType.CheckTypeDependencyRemoved,
-                    new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions },
-                    createApiExecution: true
+                    new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions }
                 );
             }
 
@@ -669,7 +668,7 @@ where 1=1
 
                         if (structuredMeasures.Count > 0)
                         {
-                            Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.AssetMeasures, structuredMeasures);
+                            Company.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, structuredMeasures);
                         }
 
                         #endregion
@@ -800,7 +799,7 @@ where 1=1
 
             if (structuredMeasures.Count > 0)
             {
-                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.AssetMeasures, structuredMeasures);
+                Company.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, structuredMeasures);
             }
         }
 
@@ -994,14 +993,14 @@ where   Success is null", transaction: trans);
                                 }).Distinct().ToList()
                             }).ToList();
 
+                    trans.Commit();
+
                     if (structuredMeasures.Count > 0)
                     {
-                        Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.AssetMeasures, structuredMeasures);
+                        Company.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, structuredMeasures);
                     }
-
-                    trans.Commit();
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     trans.Rollback();
                 }   

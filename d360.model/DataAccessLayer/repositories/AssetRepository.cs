@@ -64,7 +64,10 @@ namespace d360.model.DataAccessLayer
 
             return executionInfo;
         }
-
+        public Asset GetAssetByObjectId(string obj, int objId)
+        {
+            return CompanyContext.Filter<Asset>(i => i.Object == obj && i.ObjectID == objId).SingleOrDefault();
+        }
         public Asset GetAssetByUID(Guid assetUid)
         {
             return CompanyContext.Filter<Asset>(i => i.uid == assetUid, i => i.AssetType).SingleOrDefault();
@@ -365,11 +368,14 @@ namespace d360.model.DataAccessLayer
             {
                 var subjectAlias = "B";
                 var objectAlias = "A";
+                var ATsubjectAlias = "TB";
+                var ATobjectAlias = "T";
                 string relatedAssetUIDString = "";
                 Guid relatedAssetUID;
 
                 var predicateUID = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_predicateuid").Value;
                 var intersectJoin = "";
+                var intersecTypeJoin = "";
                 var IntersectTypeIDField = "";
                 var reverseIntersectJoin = "";
                 var relatedAssetSql = " 1=1 ";
@@ -386,7 +392,7 @@ namespace d360.model.DataAccessLayer
                         relatedAssetSql = $"{objectAlias}.[UID] = @relatedAssetUid";
                     }
                     intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and I.SubjectID = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and abs(I.ObjectID) = {subjectAlias}.ObjectID";
-
+                    intersecTypeJoin = $"IT.[Subject] = {ATobjectAlias}.[Object] and IT.SubjectID = {ATobjectAlias}.ObjectID and IT.[Object] = {ATsubjectAlias}.[Object] and abs(IT.ObjectID) = {ATsubjectAlias}.ObjectID";
                 }
                 else if (queryParams.ToList().Any(q => q.Key.ToLower() == "_subjectuid"))
                 {
@@ -397,6 +403,7 @@ namespace d360.model.DataAccessLayer
                         relatedAssetSql = $"{subjectAlias}.[UID] = @relatedAssetUid";
                     }
                     intersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and abs(I.SubjectID) = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
+                    intersecTypeJoin = $"IT.[Subject] = {ATsubjectAlias}.[Object] and abs(IT.SubjectID) = {ATsubjectAlias}.ObjectID and IT.[Object] = {ATobjectAlias}.[Object] and IT.ObjectID = {ATobjectAlias}.ObjectID";
                 }
                 else
                 {
@@ -427,7 +434,8 @@ namespace d360.model.DataAccessLayer
                     where { relatedAssetSql }
                     and exists (select 1 from IntersectType IT 
 	                inner join [Predicate] P on P.ID = IT.PredicateID 
-	                where IT.ID = I.IntersectTypeID and P.[UID] = @predicateUid)";
+	                where IT.ID = I.IntersectTypeID and P.[UID] = @predicateUid
+                    and {intersecTypeJoin})";
                 }
 
                 var innerCountSql = $@"
@@ -437,8 +445,7 @@ namespace d360.model.DataAccessLayer
 						and exists (select 1 from [Intersect] I
 							inner join IntersectType IT on IT.ID = I.IntersectTypeID
                             inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
-							where {intersectJoin})    
-";
+							where {intersectJoin})";
 
                 if (includeBoth)
                 {
@@ -511,7 +518,7 @@ namespace d360.model.DataAccessLayer
 
             var restrictions = (await CompanyContext.QueryAsync<UserGetAPIRestrictionModel>(@"select
                     case when exists(
-                    select AssetID from dbo.UserAssetPermissions(@userId,@assetTypeID) where ((PermissionsBitMask & 1)) = 0)
+                    select AssetID from dbo.UserAssetPermissions(@userId,@assetTypeID) where ((PermissionsBitMask & @p)) = 0)
                      then 1
                      else 0
                     end as HasAssetRestriction,
@@ -525,7 +532,7 @@ namespace d360.model.DataAccessLayer
                      then 1
                      else 0
                     end as HasAssetPermission
-                    ", new { userId = CompanyContext.CurrentResourceID, assetTypeID }
+                    ", new { userId = CompanyContext.CurrentResourceID, assetTypeID, p = (int)Permission.ReadAsset }
                     , ApiTimeout))
                     .FirstOrDefault();
 
@@ -547,7 +554,7 @@ namespace d360.model.DataAccessLayer
 
                 if (restrictions.HasAssetRestriction && !useAsAdmin)
                 {
-                    whereStatements.Add($"not exists (select AssetID from #PermissiondAssets where AssetID = A.ID and ((PermissionsBitMask & 1)) = 0)");
+                    whereStatements.Add($"not exists (select AssetID from #PermissiondAssets where AssetID = A.ID and ((PermissionsBitMask & {(int)Permission.ReadAsset})) = 0)");
                 }
             }
 
@@ -879,7 +886,9 @@ namespace d360.model.DataAccessLayer
                     A.[UID] as [AssetUid],
                     A.AssetTypeId,
                     T.[UID] as AssetTypeUid,
+                    UA.uid as UpdatedByUid,
                     A.UpdatedOn,
+                    CA.uid as CreatedByUid,
                     A.CreatedOn,
                     {(includeParent ? parentFieldSQL : "")}
                     {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
@@ -892,6 +901,8 @@ namespace d360.model.DataAccessLayer
                     {(includePermissionDetails ? includePermissionFields : "")}
                     {hierarchyParentUidCol}
                 from Asset A
+                left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
+				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {(assetType.Object == "FusionQueryAttributeType" ? " inner join FusionQueryAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
@@ -2765,7 +2776,7 @@ where	O.RowNum = 1";
         {
 
             string assetPermissionWhere = @" and ID NOT IN (select AssetId 
-                        from dbo.UserAssetPermissions(@resourceId,AT.Id) where ((PermissionsBitMask & 1)) = 0
+                        from dbo.UserAssetPermissions(@resourceId,AT.Id) where ((PermissionsBitMask & @p)) = 0
                         )";
 
             string assetTypePermissionWhere = @" and AT.ID not in (select AssetTypeID
@@ -2800,7 +2811,7 @@ where	O.RowNum = 1";
                          at.Class in @filterClasses
                          {assetTypePermissionWhere}
                     order by at.name";
-            return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses }, ApiTimeout);
+            return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses, p = (int)Permission.ReadAsset }, ApiTimeout);
         }
 
         public async Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid)
@@ -3202,6 +3213,253 @@ where   A.[uid] = @assetUid";
             }
 
             return templateList;
+        }
+
+        public async Task<AssetWatchers> GetAssetWatchers(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            int pageNum = 0;
+            int pageSize = 200;
+            string orderBy = "name";
+            string orderDirection = "asc";
+            string offsetSQL = "OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
+            string joinSQL = $@"
+                            from FollowDetail F
+                            inner join reporting.Global_Resource R on
+                            R.ResourceID = F.ResourceID
+						    inner join Asset A on F.ObjectID = A.ObjectID and F.ObjectType=A.[Object]
+						    where A.[uid]=@assetUid
+                            ";            
+
+            bool includeTotal = true;
+
+            int? count = 0;
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagesize"))
+            {
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagesize").Value, out int res))
+                {
+                    pageSize = res;
+                }
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagenum"))
+            {
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value, out int res))
+                {
+                    pageNum = res > 0 ? res - 1 : 0;
+                }
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includetotal"))
+            {
+                if (bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includetotal").Value, out bool res))
+                {
+                    includeTotal = res;
+                }
+            }
+
+            if (queryParams.Any(q => q.Key == "_order"))
+            {
+                string[] allowedValues = new string[] { "name", "resourceid" };
+                var order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value.Trim().ToLower();
+                if (allowedValues.Contains(order))
+                {
+                    orderBy = order;
+                }
+            }
+
+            if (queryParams.Any(q => q.Key == "_direction"))
+            {
+                string[] allowedValues = new string[] { "asc", "desc" };
+                var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value.Trim().ToLower();
+
+                if (allowedValues.Contains(directionFilter))
+                {
+                    orderDirection = directionFilter;
+                }
+            }
+
+            var orderBySQL = $"order by {orderBy} {orderDirection}";
+
+            var dbArgs = new DynamicParameters();
+            dbArgs.Add("@assetUid", assetUid);
+            dbArgs.Add("@pageSize", pageSize);
+            dbArgs.Add("@offset", (pageSize * pageNum));
+            
+            var itemsSQL = $@"
+                            select R.Uid as resourceUid, R.resourceId, F.FollowerName as 'name'
+                            {joinSQL}
+                            {orderBySQL}
+                            {offsetSQL}
+                            ";
+
+            var items = (await CompanyContext.QueryAsync<AssetWatcher>(itemsSQL, dbArgs, timeout: ApiTimeout));
+
+            if (includeTotal)
+            {
+                var countSQL = $@"
+                                SELECT count(*)
+                                    {joinSQL}
+                                ";
+                count = (await CompanyContext.QueryAsync<int>(countSQL, dbArgs, timeout: ApiTimeout)).FirstOrDefault();
+            }
+
+            count = includeTotal ? count : null;
+            
+            return new AssetWatchers { total = count, items = items};
+        }
+
+
+        public async Task<WatchedAssetTypeDetailModel> GetWatchedAssetDetails(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            int pageNum = 0;
+            int pageSize = 200;
+            string orderBy = "name";
+            string orderDirection = "asc";
+            string offsetSQL = "OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
+            string resourceSQL = "";
+
+            bool includeTotal = true;
+            var dbArgs = new DynamicParameters();
+
+            int? count = 0;
+
+            if (queryParams.Any(q => q.Key == "resourceUid"))
+            {
+                if (Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "resourceUid").Value.ToLower(), out Guid resourceUid) && CompanyContext.GlobalReportingResources.Any(u => u.Uid == resourceUid))
+                {
+                    resourceSQL = $@" and r.uid = @resourceUid";
+
+                    dbArgs.Add("@resourceUid", resourceUid);
+                }
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagesize"))
+            {
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagesize").Value, out int res))
+                {
+                    pageSize = res;
+                }
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagenum"))
+            {
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value, out int res))
+                {
+                    pageNum = res > 0 ? res - 1 : 0;
+                }
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includetotal"))
+            {
+                if (bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includetotal").Value, out bool res))
+                {
+                    includeTotal = res;
+                }
+            }
+
+            if (queryParams.Any(q => q.Key == "_order"))
+            {
+                string[] allowedValues = new string[] { "name", "resourceid", "assetdisplayvalue", "governancescore", "dataqualityscore" };
+                var order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value.Trim().ToLower();
+                if (allowedValues.Contains(order))
+                {
+                    orderBy = order;
+                }
+            }
+
+            if (queryParams.Any(q => q.Key == "_direction"))
+            {
+                string[] allowedValues = new string[] { "asc", "desc" };
+                var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value.Trim().ToLower();
+
+                if (allowedValues.Contains(directionFilter))
+                {
+                    orderDirection = directionFilter;
+                }
+            }
+
+            var orderBySQL = $"order by {orderBy} {orderDirection}";
+            
+            dbArgs.Add("@assetTypeUid", assetTypeUid);
+            dbArgs.Add("@pageSize", pageSize);
+            dbArgs.Add("@offset", (pageSize * pageNum));
+
+            var dataSQL = $@"
+                            SELECT
+	                            R.uid as resourceUid,
+	                            R.ResourceID,	
+	                            R.FirstName + ' ' + R.LastName as name,
+	                            a.[uid] as assetUid,
+	                            AName.DisplayValue as assetDisplayValue,
+	                            Governance.Score as governanceScore,
+	                            DataQuality.Score as dataQualityScore
+                            FROM
+	                            Follow f
+	                            inner join 
+	                            Asset a on a.ObjectID=f.ObjectID and a.[Object]=f.ObjectType and f.FollowTypeID=1
+	                            inner join 
+	                            AssetType ast on a.AssetTypeID=ast.ID and ast.[uid]=@assetTypeUid
+	                            inner join 
+	                            reporting.Global_Resource r on r.ResourceId = f.ResourceId {resourceSQL}
+	                            cross apply [dbo].[GetAssetDisplayValueById](A.ID) AName
+	                            outer apply (select cast(S.Value * 100 as decimal(18,1)) as Score from metrics.Score S
+					                            inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = {ScoreType.Governance.ToString("D")} and Al.OverrideName is null
+								                            and S.AssetUid = A.[Uid] and S.EffectiveDate <= getutcdate() and (S.EndDate >= getutcdate() or S.EndDate is null)) Governance
+	                            outer apply (select cast(S.Value * 100 as decimal(18,1)) as Score from metrics.Score S
+					                            inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = {ScoreType.DataQuality.ToString("D")} and Al.OverrideName is null
+								                            and S.AssetUid = A.[Uid] and S.EffectiveDate <= getutcdate() and (S.EndDate >= getutcdate() or S.EndDate is null)) DataQuality
+                            union
+                            select 
+                            R.uid as resourceUid,
+	                            R.ResourceID,	
+	                            R.FirstName + ' ' + R.LastName as name,  	
+	                            a.[uid] as assetUid,
+	                            AName.DisplayValue as assetDisplayValue,
+	                            Governance.Score as governanceScore,
+	                            DataQuality.Score as dataQualityScore	
+                            FROM
+		                            Follow f	
+		                            inner join 
+		                            AssetType ast on ast.ObjectID=f.ObjectID and ast.[Object]=f.ObjectType and f.FollowTypeID=3 and ast.[uid]=@assetTypeUid
+		                            inner join 
+		                            Asset a on a.AssetTypeID=ast.ID		
+		                            inner join 
+	                                reporting.Global_Resource r on r.ResourceId = f.ResourceId {resourceSQL}
+		                            cross apply [dbo].[GetAssetDisplayValueById](A.ID) AName
+		                            outer apply (select cast(S.Value * 100 as decimal(18,1)) as Score from metrics.Score S
+						                            inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = {ScoreType.Governance.ToString("D")} and Al.OverrideName is null
+									                            and S.AssetUid = A.[Uid] and S.EffectiveDate <= getutcdate() and (S.EndDate >= getutcdate() or S.EndDate is null)) Governance
+		                            outer apply (select cast(S.Value * 100 as decimal(18,1)) as Score from metrics.Score S
+						                            inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = {ScoreType.DataQuality.ToString("D")} and Al.OverrideName is null
+									                            and S.AssetUid = A.[Uid] and S.EffectiveDate <= getutcdate() and (S.EndDate >= getutcdate() or S.EndDate is null)) DataQuality";
+
+            var itemsSQL = $@"
+                            SELECT
+                                * 
+                            FROM 
+                            (
+                                {dataSQL}
+                            ) items
+                            {orderBySQL}
+                            {offsetSQL}
+                            ";
+
+            var items = (await CompanyContext.QueryAsync<WatchedAssetTypeDetailItemModel>(itemsSQL, dbArgs, timeout: ApiTimeout));
+
+            if (includeTotal)
+            {
+                var countSQL = $@"
+                                SELECT COUNT(*) FROM (
+                                    {dataSQL}
+                                ) items
+                                ";
+                count = (await CompanyContext.QueryAsync<int>(countSQL, dbArgs, timeout: ApiTimeout)).FirstOrDefault();
+            }
+
+            count = includeTotal ? count : null;
+
+            return new WatchedAssetTypeDetailModel { total = count, items = items };
         }
     }
 }

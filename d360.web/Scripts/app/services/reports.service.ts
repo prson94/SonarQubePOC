@@ -16,8 +16,8 @@ export class ReportsService extends BaseObservableService {
     getReports(): Observable<Report[]> {
         return this.http.get('reports/reports')
             .pipe(
-                map(response => <Report[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <Report[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -37,8 +37,8 @@ export class ReportsService extends BaseObservableService {
     getReportTargetTypes(): Observable<DropdownOption[]> {        
         return this.http.get('api/reports/targets')
             .pipe(
-            map(response => <DropdownOption[]>response),
-                catchError(err=>this.handleError(err))
+            map((response) => <DropdownOption[]>response),
+                catchError((err) =>this.handleError(err))
             );
     }  
 
@@ -50,8 +50,8 @@ export class ReportsService extends BaseObservableService {
         return this.http
             .post(`form/AddPowerBICredentials`, `Username=${user}&Password=${password}`, { headers: headers })
             .pipe(
-            map(response => response),
-               catchError(err=>this.handleError(err))
+            map((response) => response),
+               catchError((err) => this.handleError(err))
             );
     }
 }

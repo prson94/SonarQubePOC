@@ -97,7 +97,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
                 this.labels = res.sort((a, b) => a.Value.localeCompare(b.Value));
             }
             this.isLoading = false;
-        }, err => this.error = err);
+        }, (err) => this.error = err);
     }
 
     closeEditor() {
@@ -144,7 +144,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         }
 
         this.connectorLabelService.saveLabel(event.item)
-            .subscribe(result => {
+            .subscribe((result) => {
                 let msg: string = '';
                 if (event.item.uid == undefined) {
                     msg = `Connector label succesfully created`;

@@ -115,26 +115,39 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         if (this.menu && this.isScrollerVisable) {
             let elem = this.menu.nativeElement;
             let scrollDistance = (elem.offsetHeight - 120);
-            let timeToScroll = 300;
             if (this.scrollingUp) {
-                elem.scrollTop -= scrollDistance;;
+                elem.scrollTop -= scrollDistance;
             } else {
                 elem.scrollTop += scrollDistance;
             }
-            //need to delay until the scolling has finished for numbers to be correct
-            window.setTimeout(() => {
-                if (Math.ceil(elem.scrollTop) >= ((elem.scrollHeight - elem.offsetHeight)) && elem.scrollTop != 0) {
-                    this.scrollingUp = true;
-                    this.scrollTitle = "Scroll up";
-                    this.ref.markForCheck();
-                } else if (elem.scrollTop <= 0) {
-                    this.scrollingUp = false;
-                    this.scrollTitle = "Scroll down";
-                    this.ref.markForCheck();
-                } 
-            }, timeToScroll);
-
         }
+    }
+
+    delayedCheckScrollerPos = _.debounce(() => {
+        this.checkScrollerPos();
+    }, 50);
+
+    checkScrollerPos() {
+        let elem = this.menu.nativeElement;
+            let top = elem.scrollTop;
+            let max = this.menuOpen ? (elem.scrollHeight - elem.offsetHeight) - 5 : (elem.scrollHeight - elem.offsetHeight) - 45;
+            if (this.scrollingUp == true) {
+                top = Math.ceil(top);
+                max = Math.ceil(max);
+            } else {
+                top = Math.floor(top);
+                max = Math.floor(max);
+            }
+            if (top >= (max) && top != 0) {
+                this.scrollingUp = true;
+                this.scrollTitle = "Scroll up";
+                this.ref.markForCheck();
+            } else if (top <= 0) {
+                this.scrollingUp = false;
+                this.scrollTitle = "Scroll down";
+                this.ref.markForCheck();
+            }
+
     }
 
     checkScroller() {
@@ -143,7 +156,10 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
             this.isScrollerVisable = (elem.clientHeight < elem.scrollHeight);
         }
     }
-
+    @HostListener('scroll', ['$event'])
+    onElementScroll($event) {
+        this.delayedCheckScrollerPos();
+    }
     @HostListener('window:resize', ['$event'])
     onResize(event) {
         this.checkScroller();
@@ -183,9 +199,6 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
             this.siteMenuService.getMenu().subscribe(
                 result => {                                        
-
-                        // used to enable guard that allows access to administrative routes                                
-                        this.authenticationService.isAdmin = result.IsAdmin;
                         this.isAdmin = result.IsAdmin;
 
                         result.MenuItems = result.MenuItems.filter(x => (x.MenuID != '#Admin')); //remove admin menu it will get built later.

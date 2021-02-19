@@ -1,21 +1,20 @@
-﻿import { Component, Input, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
-import { LookupGrid, GridFilterColumn } from '../../../models/grid-definition.model';
-import { Router } from '@angular/router';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { BaseComponent } from '../base.component';
-import { DetailField } from '../../../models/object-detail.model';
-import { AssetService } from '../../../services/asset.service';
-import { Subscription } from 'rxjs';
-
+﻿import { Component, Input, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy } from "@angular/core";
+import { LookupGrid, GridFilterColumn } from "../../../models/grid-definition.model";
+import { Router } from "@angular/router";
+import { SiteUrlHelpers } from "../../../static/site-url-helpers";
+import { BaseComponent } from "../base.component";
+import { DetailField } from "../../../models/object-detail.model";
+import { AssetService } from "../../../services/asset.service";
+import { Subscription } from "rxjs";
 
 @Component({
-    selector: 'd3s-dynamic-lookup-grid',
-    templateUrl: './dynamic-lookup-grid.component.html',
+    selector: "d3s-dynamic-lookup-grid",
+    templateUrl: "./dynamic-lookup-grid.component.html",
     providers: [AssetService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class DynamicLookupGridComponent extends BaseComponent implements OnInit, OnDestroy {
+export class DynamicLookupGridComponent extends BaseComponent implements OnDestroy {
     @Input() data: LookupGrid;
     @Input() field: DetailField;
     @Input() hideFooter = false;
@@ -25,6 +24,7 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit,
 
     isComplex = false;
     showSimpleFilter = true;
+    isColumnsLoaded = false;
 
     visibleColumns: GridFilterColumn[] = [];
     private loadSubscription: Subscription;
@@ -47,7 +47,10 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit,
         }
     }
 
-    ngOnInit() {
+    private loadInitialInfo(): void {
+        if (this.isColumnsLoaded) {
+            return;
+        }
 
         this.isComplex = (this.data.Fields.find(f => f.name == 'Url') == null);
 
@@ -77,16 +80,12 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit,
 
         this.visibleColumns = this.data.Columns.filter(c => c.type != 'hidden');
 
-        this.isLoading = false;
+        this.isColumnsLoaded = true;
+
     }
 
     private formatAsNumber(val): string {
         return val != '' && val != null ? Number(val).toLocaleString() : "";
-    }
-
-    private getHeaderStyle(): string {
-        if (this.hideHeader) return "hidenHeader";
-        return "";
     }
 
     private columnDataType(column: GridFilterColumn): string {
@@ -167,6 +166,7 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit,
         this.loadSubscription = this.assetService.getAssetsComplexFieldValue(this.assetUid, this.field.FieldName, params)
             .subscribe(result => {
                 this.data = result;
+                this.loadInitialInfo();
                 this.isLoading = false;
                 this.cdRef.markForCheck();
             }, null, () => {

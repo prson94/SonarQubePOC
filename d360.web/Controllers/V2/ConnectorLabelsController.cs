@@ -77,7 +77,9 @@ namespace d360.web.Controllers.V2
             else
             {
                 if (!string.IsNullOrEmpty(q))
+                {
                     q = $"%{q}%";
+                }
 
                 labelsSql = $@"SELECT top 10 uid, Value                                
                                     {(getUseCount ? ", Labels.cnt as UseCount" : "")}
@@ -90,7 +92,7 @@ namespace d360.web.Controllers.V2
             }
             var response = Company.Query<dynamic>(labelsSql, new { q, exceptUid }, ApiTimeout);
 
-            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
+            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response))).ConfigureAwait(false);
 
         }
 
@@ -115,13 +117,13 @@ namespace d360.web.Controllers.V2
             {
                 if (labelUid == null || labelUid == Guid.Empty)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid connector label UID passed in the request"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid connector label UID passed in the request")).ConfigureAwait(false);
                 }
 
                 var label = Company.ConnectorLabels.FirstOrDefault(x => x.uid == labelUid);
                 if (label == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Connector label with UID '{labelUid}' does not exist!"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Connector label with UID '{labelUid}' does not exist!")).ConfigureAwait(false);
                 }
 
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
@@ -131,7 +133,7 @@ namespace d360.web.Controllers.V2
                 {
                     (byte[] bytes, string filename) = ConnectorLabelRepository.GetExcelFromConnectorLabelUsage(label, response);
                     var fileResponse = createFileResponseMessage(HttpStatusCode.OK, $"{filename}.xlsx", bytes);
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(fileResponse));
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(fileResponse)).ConfigureAwait(false);
 
                 }
                 else
@@ -147,7 +149,7 @@ namespace d360.web.Controllers.V2
                     { "LabelUid", labelUid.ToString() }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
             }
         }
         /// <summary>
@@ -171,17 +173,21 @@ namespace d360.web.Controllers.V2
 
 
             if (label == null || string.IsNullOrEmpty(label.Value) || label.Value.Trim() == "")
-                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "Label value cannot be empty.")));
+            {
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "Label value cannot be empty."))).ConfigureAwait(false);
+            }
 
             var labelValue = label.Value.Trim();
             var dbRecord = Company.ConnectorLabels.FirstOrDefault(x => x.Value.ToLower() == labelValue.ToLower());
             if (dbRecord != null)
-                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, dbRecord)));
+            {
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, dbRecord))).ConfigureAwait(false);
+            }
 
 
             if (labelValue.Length > 40)
             {
-                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "Maximum length of label is 40 characters.")));
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "Maximum length of label is 40 characters."))).ConfigureAwait(false);
             }
 
             dbRecord = new ConnectorLabel();
@@ -202,11 +208,11 @@ namespace d360.web.Controllers.V2
             HttpGet, MapToApiVersion("2.0"), Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("uid", "The Uid of a specific connector label to return.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "A full list of connector labels.", typeof(List<ConnectorLabelApiModelWrapper>)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied"),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
 
         ]
         public async Task<IHttpActionResult> Get()
@@ -219,7 +225,7 @@ namespace d360.web.Controllers.V2
 
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid)).ConfigureAwait(false);
                 }
 
                 var res = await ConnectorLabelRepository.GetLabels(queryParams);
@@ -244,12 +250,14 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "The specified label was saved, returns the properties of the created connector label.", typeof(ConnectorLabelApiModel)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public IHttpActionResult PostTag(ConnectorLabelPostModel model)
         {
             if (model == null)
+            {
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "You have submitted an invalid or empty request please check your request and try again."));
+            }
 
             ConnectorLabelApiModel result = new ConnectorLabelApiModel();
             try
@@ -289,12 +297,14 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "The specified tag was updated, returns the properties of the created tag.", typeof(ConnectorLabelApiModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public IHttpActionResult Put(Guid labelUid, ConnectorLabelPostModel model)
         {
             if (!ConnectorLabelRepository.DoesLabelExists(labelUid))
+            {
                 return errorMessageResponse(HttpStatusCode.NotFound, "Error updating connector label", $"Connector label with uid {labelUid} not found.");
+            }
 
 
             ConnectorLabelApiModel result = new ConnectorLabelApiModel();
@@ -338,7 +348,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the connector label provided is invalid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the connector label was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public IHttpActionResult DeleteByUid([FromBody]List<ConnectorLabelApiDeleteModel> labels)
         {
@@ -346,11 +356,15 @@ namespace d360.web.Controllers.V2
             foreach (var label in labels)
             {
                 if (!ConnectorLabelRepository.DoesLabelExists(label.uid))
+                {
                     return errorMessageResponse(HttpStatusCode.NotFound, "Error removing connector label", $"Connector Label with uid {label.uid} not found.");
+                }
             }
 
             if (!Company.CurrentResourceIsAdmin)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
+            }
 
             try
             {
@@ -380,7 +394,7 @@ namespace d360.web.Controllers.V2
             FileDownload,
             SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/vnd.ms-excel"),
             SwaggerResponse(HttpStatusCode.OK, "Exported connector labels to Excel.", typeof(List<ConnectorLabelApiModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> ExportToExcel()
         {
@@ -459,22 +473,30 @@ namespace d360.web.Controllers.V2
         public IHttpActionResult ConsolidateLabels(string parentUid, List<string> childrenUids)
         {
             if (!Company.CurrentResourceIsAdmin)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+            }
 
             try
             {
 
                 if (Guid.Parse(parentUid) == Guid.Empty)
+                {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error while consolidating connector labels", $"{parentUid} is not valid uid!");
+                }
 
                 foreach (var item in childrenUids)
                 {
                     if (Guid.Parse(item) == Guid.Empty)
+                    {
                         return errorMessageResponse(HttpStatusCode.BadRequest, "Error while consolidating connector labels", $"{item} is not valid uid!");
+                    }
                 }
 
                 if (childrenUids.Contains(parentUid))
+                {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error while consolidating connector labels", "Parent connector label should not be included in children connector labels!");
+                }
                 var parentGuid = Guid.Parse(parentUid);
 
                 var parentLabel = Company.ConnectorLabels.FirstOrDefault(x => x.uid == parentGuid);
@@ -492,7 +514,9 @@ namespace d360.web.Controllers.V2
                 var processes = Company.AssetProcessDiagrams.AsNoTracking().Where(x => assetUids.Contains(x.AssetId)).ToList();
 
                 if (Company.Database.Connection.State != ConnectionState.Open)
+                {
                     Company.Connection.Open();
+                }
 
                 using (var trans = Company.Connection.BeginTransaction())
                 {
@@ -534,7 +558,9 @@ namespace d360.web.Controllers.V2
                     catch (Exception ex)
                     {
                         if (trans != null)
+                        {
                             trans.Rollback();
+                        }
 
                         throw ex;
                     }

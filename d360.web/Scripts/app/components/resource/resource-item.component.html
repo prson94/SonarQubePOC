@@ -5,10 +5,10 @@
             <div class="tile tile-detail">
                 <div class="row">
                     <header>
-                        <d3s-tile-actions [hasApi]="isMe" [hasPassword]="isMe && allowChangePassword" [hasEdit]="isMe" (editClick)="action('edit')" (apiClick)="action('api')" (passwordClick)="action('password')"></d3s-tile-actions>
+                        <d3s-tile-actions [hasApi]="isMe && showAllUsersAPIKey" [hasPassword]="isMe && allowChangePassword" [hasEdit]="isMe" (editClick)="action('edit')" (apiClick)="action('api')" (passwordClick)="action('password')"></d3s-tile-actions>
                     </header>
                     <div class="col l3 m3 s12">
-                        <img [src]="'/resources/image/' + resourceId + '?size=200'" style="margin-top:5px;width:100%" />
+                        <img [src]="'/api/v2/membership/users/' + resourceUid + '/image?size=200'" style="margin-top:5px;width:100%" />
                     </div>
                     <div class="col l9 m9 s12">
                         <div style="padding-bottom:0">

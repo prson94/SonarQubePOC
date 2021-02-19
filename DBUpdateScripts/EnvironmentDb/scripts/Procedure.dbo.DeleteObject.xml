@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.DeleteObject-v12">
-    <comment>GOV-12420</comment>
+  <changeSet author="Pappas" id="Procedure.dbo.DeleteObject-v13">
+    <comment>GOV-13613</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -601,16 +601,16 @@ create or alter procedure [dbo].[DeleteObject]
 		  begin
 			  delete	O
 			  from	CommentRelation O
-					  inner join #items I on O.ObjectType = I.Object and I.ObjectID =  O.ObjectID;
+					  inner join #items I on O.AssetID = I.ID;
 
 			  delete	V
 			  from	CommentVote V
 					  inner join Comment O on O.ID = V.CommentID
-					  inner join #items I on O.OwnerObjectType = I.Object and I.ObjectID = O.OwnerObjectID;
+					  inner join #items I on O.AssetID = I.ID;
 
 			  delete	O
 			  from	Comment O
-					  inner join #items I on O.OwnerObjectType = I.Object and I.ObjectID = O.OwnerObjectID;
+					  inner join #items I on O.AssetID = I.ID;
 		  end;
  
 		  if @ClearSiteNav = 1

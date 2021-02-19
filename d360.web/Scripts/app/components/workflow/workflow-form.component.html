@@ -108,6 +108,15 @@
                                                    [style]="{width:'100%'}"
                                                    ngDefaultControl></p-multiSelect>
                                 </div>
+                                <div *ngSwitchCase="fieldType.Link">
+                                    <input [name]="'inputName_' + indx" ngModel style="width: 100%;" type="text">
+                                    <div>(Link Name)</div>
+                                    <input [name]="'inputUrl_' + indx" ngModel style="width: 100%;" type="text">
+                                    <div>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
+                                    <div class="col s12" *ngIf="field.FieldType == fieldType.Link && workflowFormGroup && workflowFormGroup.controls['inputUrl_'+indx ]">
+                                        <span *ngIf="!workflowFormGroup.controls['inputUrl_'+indx ].valid" class="error">&nbsp;&nbsp;&nbsp;* This field is required</span>
+                                    </div>
+                                </div>
                                 <div *ngSwitchCase="fieldType.HTML">
                                     <p-editor [name]="'input_'+indx" [(ngModel)]="field.Value" [style]="{'height':'150px'}" ngDefaultControl #ed>
                                         <header style="padding-bottom:0px !important">
@@ -167,63 +176,90 @@
                             label="Check here to re-assign this action."></p-checkbox>
                     </div>
                     <div class="col s12"
-                        *ngIf="isReassignEnabled">
+                         *ngIf="isReassignEnabled">
                         <div class="row">
-                            <div class="col l3 s4">
+                            <div>&nbsp;</div>
+                            <div class="col l3 s12">
                                 <div class="FieldName">Re-assign to:</div>
                                 <select name="reassignType"
-                                    [(ngModel)]="reassignType"
-                                    style="height:auto;width:100%;">
+                                        [(ngModel)]="reassignType"
+                                        style="height:auto;width:100%;">
                                     <option *ngFor="let opt of reassignAvailableTypes"
-                                        [value]="opt.value">{{opt.text}}</option>
+                                            [value]="opt.value">
+                                        {{opt.text}}
+                                    </option>
                                 </select>
                             </div>
-                            <div class="col l3 s4"
-                                *ngIf="reassignType == 'object'">
+                        </div>
+                        <div class="row">
+                            <div class="col l3 s12"
+                                 *ngIf="reassignType == 'object'">
                                 <div class="FieldName">Select object:</div>
                                 <p-autoComplete size="100"
-                                    scrollHeight="300px"
-                                    name="other"
-                                    appendTo="body"
-                                    [inputStyle]="{width:'100%'}"
-                                    [(ngModel)]="term"
-                                    [suggestions]="terms"
-                                    (completeMethod)="search($event)"
-                                    placeholder="Select an item"
-                                    field="TextPath"
-                                    [forceSelection]="true"
-                                    (onSelect)="selectItem()">
+                                                scrollHeight="300px"
+                                                name="other"
+                                                appendTo="body"
+                                                [inputStyle]="{width:'100%'}"
+                                                [(ngModel)]="term"
+                                                [suggestions]="terms"
+                                                (completeMethod)="search($event)"
+                                                placeholder="Select an item"
+                                                field="TextPath"
+                                                [forceSelection]="true"
+                                                (onSelect)="selectItem()">
                                     <ng-template let-item>
-                                        <span style="color:#999999;">{{userFriendlyObjectName(item.Object)}} - <span
-                                                *ngIf="item.ObjectTypeName">{{item.ObjectTypeName}} -</span></span>
+                                        <span style="color:#999999;">
+                                            {{userFriendlyObjectName(item.Object)}} - <span *ngIf="item.ObjectTypeName">{{item.ObjectTypeName}} -</span>
+                                        </span>
                                         {{item.TextPath}} <span *ngIf="item.GoverningDomain">({{item.GoverningDomain}})</span>
                                     </ng-template>
                                 </p-autoComplete>
                             </div>
-                            <div class="col l3 s4"
-                                *ngIf="reassignType == 'resource'">
+                        </div>
+                        <div class="row">
+                            <div class="col l3 s12"
+                                 *ngIf="reassignType == 'resource'">
                                 <div class="FieldName">Select user:</div>
                                 <select name="reassignResources"
-                                    [(ngModel)]="selectedReassignResource"
-                                    style="height:auto;width:100%;">
+                                        [(ngModel)]="selectedReassignResource"
+                                        style="height:auto;width:100%;">
                                     <option *ngFor="let opt of resources"
-                                        [value]="opt.ResourceID">{{opt.FirstName}} {{opt.LastName}}</option>
+                                            [value]="opt.ResourceID">
+                                        {{opt.FirstName}} {{opt.LastName}}
+                                    </option>
                                 </select>
                             </div>
-                            <div class="col l1 s4"
-                                *ngIf="reassignType">
-                                <div class="FieldName">&nbsp;</div>
-                                <button pButton
-                                    type="button"
-                                    (click)="reassign()"
-                                    [disabled]="selectedReassignResource == null && (term == null || term.ObjectID == null)"
-                                    style="width: 150px;"
-                                    label="Assign"></button>
+                        </div>
+                        <div class="row">
+                            <div class="col l3 s12">
+                                <p-checkbox *ngIf="IsClearAssignementsAllowed && reassignType == 'resource'"
+                                            [(ngModel)]="clearAssignments"
+                                            name="cleaAssignements"
+                                            binary="true"
+                                            label="Clear other assignments."
+                                            title="This will remove all other assignments of this form. The User selected will be the designated Assignee to work this issue"></p-checkbox>
                             </div>
                         </div>
-                    </div>
+                        <div class="row">
+                            <div class="col s12"
+                                 *ngIf="reassignType">
+                                <div class="FieldName">&nbsp;</div>
+                                <button pButton
+                                        type="button"
+                                        (click)="reassign()"
+                                        [disabled]="selectedReassignResource == null && (term == null || term.ObjectID == null)"
+                                        style="width: 150px;"
+                                        label="Assign"></button>
+                                <button pButton
+                                        type="button"
+                                        (click)="isReassignEnabled = false"
+                                        style="width: 150px;"
+                                        label="Cancel"></button>
+                            </div>
+                        </div>
+                     </div>
                     <div class="col s12">&nbsp;</div>
-                    <div class="col s12">
+                    <div class="col s12" *ngIf="!isReassignEnabled">
                         <button pButton
                             type="submit"
                             [disabled]="!workflowForm.valid || isReassignEnabled"

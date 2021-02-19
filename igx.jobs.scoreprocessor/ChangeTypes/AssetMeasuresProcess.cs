@@ -21,6 +21,186 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 {
     public class AssetMeasuresProcess : ProcessBase, IScoreProcess
     {
+        #region Sql Constants
+
+        const string ALLOCATION_SQL = @"
+select	Al.AllocationUid,
+		Mal.ScoreType,
+        Mal.CalculationMethod,
+        Mal.IsThresholdBased,
+        Al.EffectiveDate,
+		V.AssetUid as MetricAssetUid,
+		A.ParentUid as MetricParentAssetUid,
+		A.IsGroup,
+		V.Uid as MetricAssetVersionUid,
+		V.[Weight],
+		V.Threshold,
+		V.MatchConditionsOnly,
+		V.[Definition],
+        V.EffectiveEndDate,
+        V.UpdateFrequency,
+		(
+			select	C.Uid as ConditionUid,
+					C.MatchType,
+					C.Position,
+					C.Threshold,
+					C.Weight,
+					(
+					select	I.Uid as ItemUid,
+							I.ConditionType,
+							I.ConditionFieldTypeID,
+							I.ConditionIntersectTypeID,
+							I.Operator,
+                            (
+                            select  [Value] 
+                            from    metrics.AssetVersionConditionItemValue 
+                            where   Uid = I.Uid
+                            for json path
+                            ) as ValueItems
+                            --JSON_QUERY((SELECT CONCAT('[""',STRING_AGG([Value], '"",""'),'""]') FROM metrics.AssetVersionConditionItemValue where Uid = I.Uid)) as [Values]
+					from	[metrics].[AssetVersionConditionItem] I
+					where	AssetVersionConditionUid = C.Uid
+					for json path
+					) as Items
+			from	[metrics].[AssetVersionCondition] C
+			where	C.AssetVersionUid = V.Uid
+			order by C.Position asc
+			for json path
+		) as ConditionsJson,
+		(
+			select	C.Uid as AssetVersionRollupPathUid,
+					C.FilterMatchType,
+					(
+					select	I.IntersectTypeID,
+                            P.[Type] as PredicateType,
+							I.StartPosition,
+                            S.AssetTypeID as StartAssetTypeID,
+                            SA.Class as StartClass,
+                            I.EndPosition,
+                            E.AssetTypeID as EndAssetTypeID,
+                            EA.Class as EndClass
+					from	[metrics].[RollupPathLink] I
+                            inner join [metrics].[RollupPathSegment] S on S.RollupPathUid = I.RollupPathUid and S.Position = I.StartPosition
+                            inner join AssetType SA on SA.ID = S.AssetTypeID
+                            inner join [metrics].[RollupPathSegment] E on E.RollupPathUid = I.RollupPathUid and E.Position = I.EndPosition
+                            inner join AssetType EA on EA.ID = E.AssetTypeID
+                            inner join IntersectType IT on IT.ID = I.IntersectTypeID
+                            inner join [Predicate] P on P.ID = IT.PredicateID
+					where	I.RollupPathUid = C.RollupPathUid
+                    order by I.StartPosition, I.EndPosition
+					for json path
+					) as SegmentLinks,
+					(
+					select	I.Uid as AssetVersionRollupPathFilterUid,
+							I.AssetTypeID,
+							I.FieldTypeID,
+							I.Operator,
+							(
+							select	V.[Value]
+							from	[metrics].[AssetVersionRollupPathFilterValue] V
+							where	V.AssetVersionRollupPathFilterUid = I.Uid
+							for json path
+							) as [Values]
+					from	[metrics].[AssetVersionRollupPathFilter] I
+					where	AssetVersionRollupPathUid = C.Uid
+					for json path
+					) as Filters
+			from	[metrics].[AssetVersionRollupPath] C
+                    inner join [metrics].[RollupPath] RP on RP.Uid = C.RollupPathUid and RP.State = 1 and C.AssetVersionUid = V.Uid
+			for json path, WITHOUT_ARRAY_WRAPPER
+		) as RollupPathJson
+from	metrics.Asset A
+		inner join metrics.AssetVersion V on V.AssetUid = A.Uid and V.[State] = 1
+        inner join metrics.Allocation Mal on Mal.Uid = A.AllocationUid
+		inner join (
+			select		AllocationUid, EffectiveDate
+			from		#AssetAllocations		
+			group by	AllocationUid, EffectiveDate
+		) Al on Al.AllocationUid = A.AllocationUid and ( (Al.EffectiveDate between V.EffectiveDate and V.EffectiveEndDate) or (Al.EffectiveDate >= V.EffectiveDate and V.EffectiveEndDate is null) )";
+
+        const string SUPPORTING_DATA_SQL = @"
+select * from #AssetAllocations;
+
+select * from FieldType where AssetTypeID in (select AssetTypeID from #AssetAllocations group by AssetTypeID);
+
+select	A.Uid as AssetUid,
+		FT.ID as FieldTypeID,
+        FT.Name as FieldTypeName,
+		COALESCE (V.LookupValues, F.Value, F.FormattedValue, FT.DefaultValue) as [Values] 
+from	Asset A 
+        inner join (
+			select		AssetUid
+			from		#AssetAllocations		
+			group by	AssetUid
+		) Al on Al.AssetUid = A.Uid
+		inner join FieldType FT ON FT.AssetTypeID = A.AssetTypeID 
+		left join Field F ON F.FieldTypeID = FT.ID AND F.ObjectType = A.Object AND F.ObjectID = A.ObjectID
+		outer apply (
+			select	string_agg(lower(cast(LA.Uid as nvarchar(50))), ',') as LookupValues
+			from	STRING_SPLIT(COALESCE(F.Value, FT.DefaultValue),',') MV
+					inner join Asset LA on LA.ObjectID = MV.value
+					inner join AssetType LAT on LAT.Object = FT.LookupObjectType+'Type' and LAT.ObjectID = FT.LookupObjectID and LAT.ID = LA.AssetTypeID
+			where	FT.Type = 'Lookup'
+		) V
+where	(F.FormattedValue IS NOT NULL 
+		OR FT.DefaultValue IS NOT NULL 
+		OR FT.ShowIfEmpty = 1)
+		and FT.Type not in ('JSON','Path','Relationship','FieldFromRelationship','ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship','Tag','Score');
+
+select  *
+from    (
+        select  Al.AllocationUid,
+                Al.AssetUid,
+		        V.AssetUid as MetricAssetUid,
+                ROW_NUMBER() OVER(PARTITION BY Al.AssetUid, Al.EffectiveDate, Si.AssetVersionUid ORDER BY S.EffectiveDate DESC) as RowNum,
+		        L.*,
+                Si.AssetVersionUid as MetricAssetVersionUid,
+		        Si.ConditionUid,
+                S.EffectiveDate,
+                S.EndDate,
+		        Si.Value,
+		        Si.AdjustedWeight,
+		        Si.AdjustedMaxWeight,
+                iif(U.UseCount > 0, cast(1 as bit), cast(0 as bit)) as UsedInOtherScores
+        from    (
+			        select		AllocationUid, AssetUid, EffectiveDate, AssetTypeId
+			        from		#AssetAllocations		
+			        group by	AllocationUid, AssetUid, EffectiveDate, AssetTypeId
+		        ) Al
+                inner join metrics.Score S on S.AllocationUid = Al.AllocationUid 
+                    and S.AssetUid = Al.AssetUid 
+                    and ( (Al.EffectiveDate between S.EffectiveDate and S.EndDate) or (Al.EffectiveDate >= S.EffectiveDate and S.EndDate is null) ) 
+                inner join metrics.ScoreItemLink L on L.ScoreUid = S.Uid
+                inner join metrics.ScoreItem Si on Si.Uid = L.ScoreItemUid
+		        inner join metrics.AssetVersion V on V.Uid = Si.AssetVersionUid 
+                cross apply (
+                    select  count(1) as UseCount
+                    from    metrics.ScoreItemLink
+                    where   ScoreUid <> S.Uid
+                            and ScoreItemUid = Si.Uid
+                ) U
+        ) O
+where   O.RowNum = 1;
+
+select  *
+from    (
+select  S.Uid as ScoreUid,
+        Al.AllocationUid,
+        Al.AssetUid,
+        ROW_NUMBER() OVER(PARTITION BY Al.AllocationUid, Al.AssetUid ORDER BY S.EffectiveDate DESC) as RowNum,        
+        S.EffectiveDate,
+        S.VersionValueHash
+from    (
+			select		AllocationUid, AssetUid, EffectiveDate, AssetTypeId
+			from		#AssetAllocations		
+			group by	AllocationUid, AssetUid, EffectiveDate, AssetTypeId
+		) Al
+        inner join metrics.Score S on S.AllocationUid = Al.AllocationUid and S.AssetUid = Al.AssetUid and S.EffectiveDate <= Al.EffectiveDate
+        ) O
+where   O.RowNum = 1;";
+
+        #endregion
+
         public async Task Run()
         {
             var assetMeasures = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetMeasureModel>>(Info.StorageFolder, Info.StorageFile);
@@ -44,7 +224,6 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                         ResourceID = Info.ResourceID ?? 0,
                         Method = "SCORE",
                         State = State.Unknown,
-                        Route = "ScoreEngine",
                         Total = assetMeasures.Count
                     };
                     Db.Add(executionRecord);
@@ -52,17 +231,23 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 
                 if (executionRecord != null)
                 {
+                    if (executionRecord.Total != assetMeasures.Count)
+                    {
+                        executionRecord.Total = assetMeasures.Count;
+                        company.Execute("update api.Execution set Total = @Total where ExecutionID = @id", new { executionRecord.Total, id = executionRecord.ExecutionID });
+                    }
+
                     // This means that the original execution came in via one of the external measure/score endpoints.
                     // We need to check whether any other execution is running.
 
                     // Wait a moment in case there are multiple queue messages
-                    Thread.Sleep(new Random().Next(3000, 7000));
+                    Thread.Sleep(new Random().Next(2000, 7000));
 
                     var currentlyRunningExecutions = company.Query<bool>(@"
 select  cast(iif(count(1) > 0, 1, 0) as bit) 
-from    api.Execution 
+from    api.Execution
 where   ExecutionID <> @id 
-        and [Route] = 'ScoreEngine'
+        and [Method] = 'SCORE'
         and MarkedForProcessing = 1 
         and (
     (Total <= 1000 and ProcessingStartedOn > dateadd(mi, -10, getutcdate())) OR
@@ -166,86 +351,7 @@ where   ExecutionID <> @id
 
                     #endregion
 
-                    var supportingDataRequest = await company.QueryMultipleAsync(@"
-select * from #AssetAllocations;
-
-select * from FieldType where AssetTypeID in (select AssetTypeID from #AssetAllocations group by AssetTypeID);
-
-select	A.Uid as AssetUid,
-		FT.ID as FieldTypeID,
-        FT.Name as FieldTypeName,
-		COALESCE (V.LookupValues, F.Value, F.FormattedValue, FT.DefaultValue) as [Values] 
-from	Asset A 
-        inner join (
-			select		AssetUid
-			from		#AssetAllocations		
-			group by	AssetUid
-		) Al on Al.AssetUid = A.Uid
-		inner join FieldType FT ON FT.AssetTypeID = A.AssetTypeID 
-		left join Field F ON F.FieldTypeID = FT.ID AND F.ObjectType = A.Object AND F.ObjectID = A.ObjectID
-		outer apply (
-			select	string_agg(lower(cast(LA.Uid as nvarchar(50))), ',') as LookupValues
-			from	STRING_SPLIT(COALESCE(F.Value, FT.DefaultValue),',') MV
-					inner join Asset LA on LA.ObjectID = MV.value
-					inner join AssetType LAT on LAT.Object = FT.LookupObjectType+'Type' and LAT.ObjectID = FT.LookupObjectID and LAT.ID = LA.AssetTypeID
-			where	FT.Type = 'Lookup'
-		) V
-where	(F.FormattedValue IS NOT NULL 
-		OR FT.DefaultValue IS NOT NULL 
-		OR FT.ShowIfEmpty = 1)
-		and FT.Type not in ('JSON','Path','Relationship','FieldFromRelationship','ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship','Tag','Score');
-
-select  *
-from    (
-        select  Al.AllocationUid,
-                Al.AssetUid,
-		        V.AssetUid as MetricAssetUid,
-                ROW_NUMBER() OVER(PARTITION BY Al.AssetUid, Al.EffectiveDate, Si.AssetVersionUid ORDER BY S.EffectiveDate DESC) as RowNum,
-		        L.*,
-                Si.AssetVersionUid as MetricAssetVersionUid,
-		        Si.ConditionUid,
-                S.EffectiveDate,
-                S.EndDate,
-		        Si.Value,
-		        Si.AdjustedWeight,
-		        Si.AdjustedMaxWeight,
-                iif(U.UseCount > 0, cast(1 as bit), cast(0 as bit)) as UsedInOtherScores
-        from    (
-			        select		AllocationUid, AssetUid, EffectiveDate, AssetTypeId
-			        from		#AssetAllocations		
-			        group by	AllocationUid, AssetUid, EffectiveDate, AssetTypeId
-		        ) Al
-                inner join metrics.Score S on S.AllocationUid = Al.AllocationUid 
-                    and S.AssetUid = Al.AssetUid 
-                    and ( (Al.EffectiveDate between S.EffectiveDate and S.EndDate) or (Al.EffectiveDate >= S.EffectiveDate and S.EndDate is null) ) 
-                inner join metrics.ScoreItemLink L on L.ScoreUid = S.Uid
-                inner join metrics.ScoreItem Si on Si.Uid = L.ScoreItemUid
-		        inner join metrics.AssetVersion V on V.Uid = Si.AssetVersionUid 
-                cross apply (
-                    select  count(1) as UseCount
-                    from    metrics.ScoreItemLink
-                    where   ScoreUid <> S.Uid
-                            and ScoreItemUid = Si.Uid
-                ) U
-        ) O
-where   O.RowNum = 1;
-
-select  *
-from    (
-select  S.Uid as ScoreUid,
-        Al.AllocationUid,
-        Al.AssetUid,
-        ROW_NUMBER() OVER(PARTITION BY Al.AllocationUid, Al.AssetUid ORDER BY S.EffectiveDate DESC) as RowNum,        
-        S.EffectiveDate,
-        S.VersionValueHash
-from    (
-			select		AllocationUid, AssetUid, EffectiveDate, AssetTypeId
-			from		#AssetAllocations		
-			group by	AllocationUid, AssetUid, EffectiveDate, AssetTypeId
-		) Al
-        inner join metrics.Score S on S.AllocationUid = Al.AllocationUid and S.AssetUid = Al.AssetUid and S.EffectiveDate <= Al.EffectiveDate
-        ) O
-where   O.RowNum = 1;", transaction: trans, commandTimeout: 900);
+                    var supportingDataRequest = await company.QueryMultipleAsync(SUPPORTING_DATA_SQL, transaction: trans, commandTimeout: 900);
                     models = supportingDataRequest.Read<ExternalMeasureResultsCreatedModel>().ToList();
                     fieldTypes = supportingDataRequest.Read<FieldType>().ToList();
                     fields = supportingDataRequest.Read<AssetMeasuresProcessField>().ToList();
@@ -253,106 +359,13 @@ where   O.RowNum = 1;", transaction: trans, commandTimeout: 900);
                     matchingScores = supportingDataRequest.Read<MatchingScoreModel>().ToList();
 
                     // Get the full list of relevant measures based on the allocations and effective dates.
-                    var allocationRequest = await company.QueryAsync<AllocationDataModel>(@"
-select	Al.AllocationUid,
-		Mal.ScoreType,
-        Mal.CalculationMethod,
-        Mal.IsThresholdBased,
-        Al.EffectiveDate,
-		V.AssetUid as MetricAssetUid,
-		A.ParentUid as MetricParentAssetUid,
-		A.IsGroup,
-		V.Uid as MetricAssetVersionUid,
-		V.[Weight],
-		V.Threshold,
-		V.MatchConditionsOnly,
-		V.[Definition],
-        V.EffectiveEndDate,
-        V.UpdateFrequency,
-		(
-			select	C.Uid as ConditionUid,
-					C.MatchType,
-					C.Position,
-					C.Threshold,
-					C.Weight,
-					(
-					select	I.Uid as ItemUid,
-							I.ConditionType,
-							I.ConditionFieldTypeID,
-							I.ConditionIntersectTypeID,
-							I.Operator,
-                            (
-                            select  [Value] 
-                            from    metrics.AssetVersionConditionItemValue 
-                            where   Uid = I.Uid
-                            for json path
-                            ) as ValueItems
-                            --JSON_QUERY((SELECT CONCAT('[""',STRING_AGG([Value], '"",""'),'""]') FROM metrics.AssetVersionConditionItemValue where Uid = I.Uid)) as [Values]
-					from	[metrics].[AssetVersionConditionItem] I
-					where	AssetVersionConditionUid = C.Uid
-					for json path
-					) as Items
-			from	[metrics].[AssetVersionCondition] C
-			where	C.AssetVersionUid = V.Uid
-			order by C.Position asc
-			for json path
-		) as ConditionsJson,
-		(
-			select	C.Uid as AssetVersionRollupPathUid,
-					C.FilterMatchType,
-					(
-					select	I.IntersectTypeID,
-                            P.[Type] as PredicateType,
-							I.StartPosition,
-                            S.AssetTypeID as StartAssetTypeID,
-                            SA.Class as StartClass,
-                            I.EndPosition,
-                            E.AssetTypeID as EndAssetTypeID,
-                            EA.Class as EndClass
-					from	[metrics].[RollupPathLink] I
-                            inner join [metrics].[RollupPathSegment] S on S.RollupPathUid = I.RollupPathUid and S.Position = I.StartPosition
-                            inner join AssetType SA on SA.ID = S.AssetTypeID
-                            inner join [metrics].[RollupPathSegment] E on E.RollupPathUid = I.RollupPathUid and E.Position = I.EndPosition
-                            inner join AssetType EA on EA.ID = E.AssetTypeID
-                            inner join IntersectType IT on IT.ID = I.IntersectTypeID
-                            inner join [Predicate] P on P.ID = IT.PredicateID
-					where	I.RollupPathUid = C.RollupPathUid
-                    order by I.StartPosition, I.EndPosition
-					for json path
-					) as SegmentLinks,
-					(
-					select	I.Uid as AssetVersionRollupPathFilterUid,
-							I.AssetTypeID,
-							I.FieldTypeID,
-							I.Operator,
-							(
-							select	V.[Value]
-							from	[metrics].[AssetVersionRollupPathFilterValue] V
-							where	V.AssetVersionRollupPathFilterUid = I.Uid
-							for json path
-							) as [Values]
-					from	[metrics].[AssetVersionRollupPathFilter] I
-					where	AssetVersionRollupPathUid = C.Uid
-					for json path
-					) as Filters
-			from	[metrics].[AssetVersionRollupPath] C
-                    inner join [metrics].[RollupPath] RP on RP.Uid = C.RollupPathUid and RP.State = 1 and C.AssetVersionUid = V.Uid
-			for json path, WITHOUT_ARRAY_WRAPPER
-		) as RollupPathJson
-from	metrics.Asset A
-		inner join metrics.AssetVersion V on V.AssetUid = A.Uid and V.[State] = 1
-        inner join metrics.Allocation Mal on Mal.Uid = A.AllocationUid
-		inner join (
-			select		AllocationUid, EffectiveDate
-			from		#AssetAllocations		
-			group by	AllocationUid, EffectiveDate
-		) Al on Al.AllocationUid = A.AllocationUid and ( (Al.EffectiveDate between V.EffectiveDate and V.EffectiveEndDate) or (Al.EffectiveDate >= V.EffectiveDate and V.EffectiveEndDate is null) )", transaction: trans);
+                    var allocationRequest = await company.QueryAsync<AllocationDataModel>(ALLOCATION_SQL, transaction: trans);
                     allocations = allocationRequest.ToList();
 
                     trans.Commit();
                 }
                 
-                // Store the Governance check values and whetehr they are valid, so we do not have to check individual measure validity more than once.
+                // Store the Governance check values and whether they are valid, so we do not have to check individual measure validity more than once.
                 var assetVersionCheckObjectTypes = new AssetVersionCheckObjectTypes();
 
                 Action<MetricAssetDefinitionGovernanceViewModel, Guid, bool?> assetVersionCheckObjectTypeAction = (MetricAssetDefinitionGovernanceViewModel governance, Guid metricAssetVersionUid, bool? overrideBoolValue) => {
@@ -420,6 +433,7 @@ from	metrics.Asset A
                 uniqueAssetCombinations.ForEach(assetEffectiveDate =>
                 {
                     // The local lists below keep track of score items and links to add for a specific score (asset / effective date / allocation combination).
+                    var ignoredAssetScoreItems = new List<ScoreItem>();
                     var assetScoreItems = new List<ScoreItem>();
                     var assetScoreItemLinks = new List<ScoreItemLink>();
                     var assetScoreItemLinksToDelete = new List<ScoreItemLink>();
@@ -429,12 +443,19 @@ from	metrics.Asset A
                     var assetFields = fields.Where(f => f.Assetuid == assetEffectiveDate.AssetUid).ToList(); //company.Query<FieldDetail>("select F.* from FieldDetail F inner join Asset A on A.ID = F.AssetID and A.Uid = @AssetUid", new { assetEffectiveDate.AssetUid }).ToList();
                     var previousScoreItems = allPreviousScoreItems.Where(p => p.AssetUid == assetEffectiveDate.AssetUid && p.EffectiveDate.Date <= assetEffectiveDate.EffectiveDate.Date).ToList();
 
+                    // This list stored the measure Uids that we have already reviewed, and either the conditions were met or not.
+                    // This is used in the next step to determine whether we need to "pull" in an existing score item (GOV-13547).
+                    var alreadyProcessedMeasureUids = new List<AlreadyProcessedMeasureModel>();
+
                     providedMeasureResults.ForEach(n =>
                     {
                         var measure = allMeasures.FirstOrDefault(i => i.MetricAssetVersionUid == n.MetricAssetVersionUid);
                         if (measure != null)
                         {
-                            var conditionValidator = CheckMeasureConditions(assetFields, fieldTypes, measure);
+                            var conditionValidator = CheckMeasureConditions(assetFields, fieldTypes, measure, true);
+                            
+                            // This helps determine whether to remove the measure from an existing score IF there is a condition on a new version where it makes the measure no longer apply to an asset's score (GOV-13547).
+                            bool measureDeleted = false;
 
                             if (conditionValidator.ConditionMet) // Then we should be creating this score result (a conditon was met, or does not need to be met except to override weight)
                             {
@@ -447,7 +468,8 @@ from	metrics.Asset A
                                         AssetVersionUid = measure.MetricAssetVersionUid,
                                         RunDate = DateTime.UtcNow,
                                         UpdatedOn = DateTime.UtcNow,
-                                        ConditionUid = conditionValidator.SelectedConditionUid
+                                        ConditionUid = conditionValidator.SelectedConditionUid,
+                                        OtherConditions = JsonConvert.SerializeObject(conditionValidator.ExtraneousConditions)
                                     };
 
                                     var definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(measure.Definition ?? "{}");
@@ -479,36 +501,13 @@ from	metrics.Asset A
                                                     var dqQueryDetail = dqMeasureQueryLibrary.FirstOrDefault(dq => dq.AssetVersionRollupPathUid == measure.RollupPath.AssetVersionRollupPathUid);
                                                     if (dqQueryDetail == null)
                                                     {
-                                                        dqQueryDetail = BuildDataQualityMeasureQueryModel(measure.AllocationUid, measure.RollupPath.AssetVersionRollupPathUid);
+                                                        dqQueryDetail = Db.BuildDataQualityMeasureQueryModel(3, measure.RollupPath.AssetVersionRollupPathUid);
                                                         dqMeasureQueryLibrary.Add(dqQueryDetail); // Add to library for future reference.
                                                     }
 
                                                     try
                                                     {
-                                                        DateTime minimumDate = measure.EffectiveDate;
-                                                        switch (measure.UpdateFrequency)
-                                                        {
-                                                            case MetricUpdateFrequency.Annually:
-                                                                minimumDate = minimumDate.AddYears(-1);
-                                                                break;
-                                                            case MetricUpdateFrequency.Daily:
-                                                                minimumDate = minimumDate.AddDays(-1);
-                                                                break;
-                                                            case MetricUpdateFrequency.Hourly:
-                                                                minimumDate = minimumDate.AddHours(-1);
-                                                                break;
-                                                            case MetricUpdateFrequency.Monthly:
-                                                                minimumDate = minimumDate.AddMonths(-1);
-                                                                break;
-                                                            case MetricUpdateFrequency.Quarterly:
-                                                                minimumDate = minimumDate.AddMonths(-3);
-                                                                break;
-                                                            case MetricUpdateFrequency.None:
-                                                            case MetricUpdateFrequency.Weekly:
-                                                                minimumDate = minimumDate.AddDays(-7);
-                                                                break;
-                                                        }
-                                                        var rollupPathResults = GetDataQualityMeasureQueryResultModels(dqQueryDetail, n.AssetUid, minimumDate, measure.EffectiveEndDate);
+                                                        var rollupPathResults = Db.GetDataQualityMeasureQueryResultModels(dqQueryDetail, n.AssetUid, assetEffectiveDate.EffectiveDate);
 
                                                         if (rollupPathResults.Count > 0)
                                                         {
@@ -519,7 +518,7 @@ from	metrics.Asset A
                                                                     // We should only be getting one result back for each row anyway. This is just in case.
                                                                     o.ResultScoreValue = o.StructuredResults.Select(r => r.PassFraction).Average();
                                                                 }
-                                                                else 
+                                                                else
                                                                 {
                                                                     o.ResultScoreValue = 0;
                                                                 }
@@ -553,6 +552,7 @@ from	metrics.Asset A
                                                         else
                                                         {
                                                             scoreItem.Value = true;
+                                                            conditionValidator.ConditionMet = false; // GOV-13324 - Since no rules are linked via path, then this is not really a qualifying measure.
                                                         }
 
                                                         var evidence = rollupPathResults.Select(rp => new DataQualityEvidenceModel
@@ -564,6 +564,12 @@ from	metrics.Asset A
                                                         });
 
                                                         scoreItem.Evidence = JsonConvert.SerializeObject(evidence);
+
+                                                        // GOV-13324 - Keep track of this so we do not add a default below.
+                                                        if (!conditionValidator.ConditionMet)
+                                                        {
+                                                            ignoredAssetScoreItems.Add(scoreItem);
+                                                        }
                                                     }
                                                     catch (Exception ex)
                                                     {
@@ -670,13 +676,14 @@ from	metrics.Asset A
                                                             case Operator.Equals:
                                                                 parameters = new { gDefinition.Relation.IntersectTypeUid, n.AssetUid, ValueUid = Guid.Parse(gDefinition.Relation.Values[0]) };
                                                                 bitSql = "iif(sum(bit1) > 0, 1, 0)";
-                                                                operatorSql = 
+                                                                operatorSql =
                                                                     "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @AssetUid and ObjectUid = @ValueUid " +
                                                                     "union all " +
                                                                     "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @ValueUid and ObjectUid = @AssetUid ";
                                                                 break;
                                                             case Operator.In:
-                                                                parameters = new {
+                                                                parameters = new
+                                                                {
                                                                     gDefinition.Relation.IntersectTypeUid,
                                                                     n.AssetUid,
                                                                     Uids = gDefinition.Relation.Values.Select(u => new { Uid = Guid.Parse(u) }).AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" })
@@ -696,7 +703,8 @@ from	metrics.Asset A
                                                                     "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @ValueUid and ObjectUid = @AssetUid ";
                                                                 break;
                                                             case Operator.NotIn:
-                                                                parameters = new {
+                                                                parameters = new
+                                                                {
                                                                     gDefinition.Relation.IntersectTypeUid,
                                                                     n.AssetUid,
                                                                     Uids = gDefinition.Relation.Values.Select(u => new { Uid = Guid.Parse(u) }).AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" })
@@ -741,8 +749,10 @@ from	metrics.Asset A
                                             #endregion
                                     }
 
-                                    if (assetVersionCheckObjectTypes.ShouldContinueAnalysis(measure.MetricAssetVersionUid))
-                                    { 
+                                    #region Determine whether to update the existing score item, or create a new one, and whether to disconnect from a previous score.
+
+                                    if (conditionValidator.ConditionMet && assetVersionCheckObjectTypes.ShouldContinueAnalysis(measure.MetricAssetVersionUid))
+                                    {
                                         // Check to see if we have an existing scoreItem for this recalculated measure result.
                                         var previousScoreItem = previousScoreItems.FirstOrDefault(e => e.MetricAssetVersionUid == measure.MetricAssetVersionUid);
                                         Guid scoreItemUid = Guid.NewGuid();
@@ -774,21 +784,67 @@ from	metrics.Asset A
                                         scoreItem.Uid = scoreItemUid;
 
                                         assetScoreItems.Add(scoreItem);
-                                        assetScoreItemLinks.Add(new ScoreItemLink { ScoreItemUid = scoreItem.Uid });                                    
+                                        assetScoreItemLinks.Add(new ScoreItemLink { ScoreItemUid = scoreItem.Uid });
                                     }
+
+                                    #endregion
+                                }
+                                else 
+                                {
+                                    measureDeleted = true;
                                 }
                             }
+                            else 
+                            {
+                                measureDeleted = true;
+                            }
+
+                            alreadyProcessedMeasureUids.Add(new AlreadyProcessedMeasureModel { MetricAssetUid = measure.MetricAssetUid, Deleted = measureDeleted });
                         }
                     });
 
                     // Perform final score calculations for this asset/effective date combination. If no data for asset/effective date, then do not even bother to recalculate anything for it.
-                    if (assetScoreItems.Count > 0)
+                    if (assetScoreItems.Count > 0 || alreadyProcessedMeasureUids.Any(o => o.Deleted))
                     {
                         allMeasures.ForEach(aM =>
                         {
-                            // If no current results sent in for existing data load, then we need to carry forward the previous score items to create a complete score.
-                            if (!assetScoreItems.Any(nI => nI.AssetVersionUid == aM.MetricAssetVersionUid))
+                            var alreadyProcessedItem = alreadyProcessedMeasureUids.FirstOrDefault(nI => nI.MetricAssetUid == aM.MetricAssetUid);
+                            if (alreadyProcessedItem != null)
                             {
+                                if (alreadyProcessedItem.Deleted)
+                                {
+                                    // You need to remove this from the database.
+                                    var previousScoreItem = previousScoreItems.SingleOrDefault(p => p.MetricAssetUid == alreadyProcessedItem.MetricAssetUid);
+                                    if (previousScoreItem != null)
+                                    { 
+                                        // This is only relevant if we are deleting something on the same date we added it.
+                                        if (previousScoreItem.EffectiveDate == assetEffectiveDate.EffectiveDate)
+                                        {
+                                            scoreItemLinksToDelete.Add(new ScoreItemLink { ScoreItemUid = previousScoreItem.ScoreItemUid, ScoreUid = previousScoreItem.ScoreUid });
+
+                                            // Now see if we should delete the group, if no other children are present for it.
+                                            if (aM.MetricParentAssetUid.HasValue)
+                                            {
+                                                var groupScoreItem = previousScoreItems.FirstOrDefault(i => i.MetricAssetUid == aM.MetricParentAssetUid);
+                                                if (groupScoreItem != null)
+                                                {
+                                                    if (!(from a in assetScoreItems
+                                                          join all in allMeasures on a.MetricAssetUid equals all.MetricAssetUid
+                                                          where all.MetricParentAssetUid == aM.MetricParentAssetUid
+                                                          where all.MetricAssetUid != previousScoreItem.MetricAssetUid
+                                                          select all.MetricAssetUid).Any())
+                                                    {
+                                                        scoreItemLinksToDelete.Add(new ScoreItemLink { ScoreItemUid = groupScoreItem.ScoreItemUid, ScoreUid = previousScoreItem.ScoreUid });
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // If no current results sent in for existing data load, then we need to carry forward the previous score items to create a complete score.
                                 if (assetVersionCheckObjectTypes.OkToAddToList(aM.MetricAssetVersionUid))
                                 {
                                     // Check the measure validity.
@@ -810,14 +866,14 @@ from	metrics.Asset A
                                 if (assetVersionCheckObjectTypes.ShouldContinueAnalysis(aM.MetricAssetVersionUid))
                                 { 
                                     // We need to add a previous result for the missing measure, or create a new one as a failure.
-                                    var conditionValidator = CheckMeasureConditions(assetFields, fieldTypes, aM);
+                                    var conditionValidator = CheckMeasureConditions(assetFields, fieldTypes, aM, true);
+                                    var previousScoreItem = previousScoreItems.FirstOrDefault(e => e.MetricAssetUid == aM.MetricAssetUid);
                                     if (conditionValidator.ConditionMet)
                                     {
                                         // Look up to see if there is an existing score item for this measure, and use that value.
-                                        var previousScoreItem = previousScoreItems.FirstOrDefault(e => e.MetricAssetUid == aM.MetricAssetUid);
-                                        var scoreItemUid = Guid.Empty;//.NewGuid();
+                                        var scoreItemUid = Guid.Empty;
                                         bool scoreItemValue = false;
-                                        if (previousScoreItem != null) 
+                                        if (previousScoreItem != null)
                                         {
                                             // If a different measure version, then automatically generate a new guid.
                                             if (previousScoreItem.MetricAssetVersionUid != aM.MetricAssetVersionUid)
@@ -834,18 +890,27 @@ from	metrics.Asset A
                                             RunDate = DateTime.UtcNow,
                                             AssetVersionUid = aM.MetricAssetVersionUid,
                                             ConditionUid = conditionValidator.SelectedConditionUid,
+                                            OtherConditions = JsonConvert.SerializeObject(conditionValidator.ExtraneousConditions),
                                             UpdatedOn = DateTime.UtcNow,
                                             Value = scoreItemValue,
                                             Uid = scoreItemUid
                                         };
-                                        
+
                                         assetScoreItems.Add(scoreItem);
-                                        
-                                        if (scoreItemUid != Guid.Empty) 
+
+                                        if (scoreItemUid != Guid.Empty)
                                         {
                                             assetScoreItemLinks.Add(new ScoreItemLink { ScoreItemUid = scoreItem.Uid });
                                         }
-                                    }                                
+                                    }
+                                    else 
+                                    {
+                                        // If condition is not met at this point, you should remove the previous result and force a score recalculation.
+                                        if (previousScoreItem != null)
+                                        {
+                                            assetScoreItemLinksToDelete.Add(new ScoreItemLink { ScoreItemUid = previousScoreItem.ScoreItemUid });
+                                        }
+                                    }
                                 }
                             }
                         });
@@ -931,30 +996,14 @@ from	metrics.Asset A
                         assetScoreItemLinksToDelete.ForEach(l => {
                             l.ScoreUid = assetScore.Uid;
                         });
-                        
 
-                        var assetScoreGroupUids = allMeasures.Where(i => i.IsGroup).Select(i => new { i.MetricAssetUid, i.MetricAssetVersionUid }).ToList();
-                        assetScoreGroupUids.ForEach(g =>
+                        // Empty group deletion.
+                        var uidsToRemove = getEmptyMeasureGroups(allMeasures, assetScoreItems);
+                        if (uidsToRemove.Count > 0)
                         {
-                            if (assetScoreItems.Any(i => i.MetricAssetUid == g.MetricAssetUid))
-                            {
-                                // See if there are any child measures that we have. 
-                                // If not, we need to remove this measure group as it is not relevant and we should not create an entry for it.
-                                if (
-                                    !(
-                                    from am in allMeasures
-                                    join si in assetScoreItems on am.MetricAssetUid equals si.MetricAssetUid
-                                    where am.MetricParentAssetUid == g.MetricAssetUid
-                                    select si
-                                    ).Any()
-                                    )
-                                {
-                                    var uidsToRemove = assetScoreItems.Where(si => si.MetricAssetUid == g.MetricAssetUid).Select(i => i.Uid).ToList();
-                                    assetScoreItemLinks.RemoveAll(l => uidsToRemove.Contains(l.ScoreItemUid));
-                                    assetScoreItems.RemoveAll(si => uidsToRemove.Contains(si.Uid));
-                                }
-                            }
-                        });
+                            assetScoreItemLinks.RemoveAll(l => uidsToRemove.Contains(l.ScoreItemUid));
+                            assetScoreItems.RemoveAll(si => uidsToRemove.Contains(si.Uid));
+                        }
 
                         // Now add to master collection which will be sent to database.
                         scoreItemLinksToAdd.AddRange(assetScoreItemLinks);
@@ -964,7 +1013,7 @@ from	metrics.Asset A
                     }
                 });
 
-                //Now add scores via a transaction.
+                // Now add scores via a transaction.
                 if (scoresToAdd.Count > 0)
                 {
                     using (var trans = company.BeginTransaction())
@@ -990,6 +1039,7 @@ from	metrics.Asset A
                             scoreItems.Columns.Add("AssetVersionUid", typeof(Guid));
                             scoreItems.Columns.Add("Evidence", typeof(string));
                             scoreItems.Columns.Add("ConditionUid", typeof(Guid));
+                            scoreItems.Columns.Add("OtherConditions", typeof(string));
                             scoreItems.Columns.Add("DecimalValue", typeof(float));
                             scoreItems.Columns.Add("AdjustedMaxWeight", typeof(decimal));
 
@@ -1032,6 +1082,7 @@ from	metrics.Asset A
                                 scoreItemRow["Evidence"] = s.Evidence ?? "{}";
                                 if (s.ConditionUid.HasValue)
                                     scoreItemRow["ConditionUid"] = s.ConditionUid;
+                                scoreItemRow["OtherConditions"] = s.OtherConditions ?? "[]";
                                 if (s.AdjustedMaxWeight.HasValue)
                                     scoreItemRow["AdjustedMaxWeight"] = s.AdjustedMaxWeight.Value;
                                 scoreItems.Rows.Add(scoreItemRow);
@@ -1068,7 +1119,7 @@ from	metrics.Asset A
                                     Uid uniqueidentifier not null,
                                     AssetUid uniqueidentifier not null,
                                     EffectiveDate date not null,
-                                    Value decimal(5,3) null,
+                                    Value decimal(8,6) null,
                                     RunDate datetime not null,
                                     EndDate date null,
                                     AllocationUid uniqueidentifier null,
@@ -1082,12 +1133,13 @@ from	metrics.Asset A
 	                                Uid uniqueidentifier NOT NULL,
 	                                UpdatedOn datetime NOT NULL,
 	                                Value bit NOT NULL,
-	                                AdjustedWeight decimal(5, 3) NULL,
+	                                AdjustedWeight decimal(8,6) NULL,
 	                                RunDate datetime NULL,
 	                                AssetVersionUid uniqueidentifier NULL,
 	                                Evidence nvarchar(max) NULL,
 	                                ConditionUid uniqueidentifier NULL,
-	                                AdjustedMaxWeight decimal(5, 3) NULL,
+                                    OtherConditions nvarchar(max) NOT NULL,
+	                                AdjustedMaxWeight decimal(8,6) NULL,
                                     DecimalValue float NULL
                                 );
                                 create table #ScoreItemLinks (
@@ -1127,6 +1179,7 @@ from	metrics.Asset A
                                 bulkCopy.ColumnMappings.Add("AssetVersionUid", "AssetVersionUid");
                                 bulkCopy.ColumnMappings.Add("Evidence", "Evidence");
                                 bulkCopy.ColumnMappings.Add("ConditionUid", "ConditionUid");
+                                bulkCopy.ColumnMappings.Add("OtherConditions", "OtherConditions");
                                 bulkCopy.ColumnMappings.Add("AdjustedMaxWeight", "AdjustedMaxWeight");
 
                                 await bulkCopy.WriteToServerAsync(scoreItems);
@@ -1226,10 +1279,10 @@ where   N.ActualUid is null;", transaction: trans);
                                 "update set " +
                                 "T.RunDate = S.RunDate, T.UpdatedOn = S.UpdatedOn, " +
                                 "T.AssetVersionUid = S.AssetVersionUid, T.Value = S.Value, T.DecimalValue = S.DecimalValue, T.Evidence = S.Evidence, " +
-                                "T.ConditionUid = S.ConditionUid, T.AdjustedWeight = S.AdjustedWeight, T.AdjustedMaxWeight = S.AdjustedMaxWeight " +
+                                "T.ConditionUid = S.ConditionUid, T.OtherConditions = S.OtherConditions, T.AdjustedWeight = S.AdjustedWeight, T.AdjustedMaxWeight = S.AdjustedMaxWeight " +
                                 "when not matched then " +
-                                "insert (UpdatedOn, Value, DecimalValue, AdjustedWeight, RunDate, Uid, AssetVersionUid, Evidence, ConditionUid, AdjustedMaxWeight) " +
-                                "values (S.UpdatedOn, S.Value, S.DecimalValue, S.AdjustedWeight, S.RunDate, S.Uid, S.AssetVersionUid, S.Evidence, S.ConditionUid, S.AdjustedMaxWeight);", transaction: trans);
+                                "insert (UpdatedOn, Value, DecimalValue, AdjustedWeight, RunDate, Uid, AssetVersionUid, Evidence, ConditionUid, OtherConditions, AdjustedMaxWeight) " +
+                                "values (S.UpdatedOn, S.Value, S.DecimalValue, S.AdjustedWeight, S.RunDate, S.Uid, S.AssetVersionUid, S.Evidence, S.ConditionUid, S.OtherConditions, S.AdjustedMaxWeight);", transaction: trans);
 
                             // Merge score Item Links.
                             await company.ExecuteAsync(
@@ -1278,11 +1331,11 @@ from	metrics.ScoreItemLink T
 					) S on (S.ScoreUid = T.ScoreUid and S.ScoreItemUid = T.ScoreItemUid);", transaction: trans);
 
                             trans.Commit();
-
-                            Db.SendScoreEventWithPayload(
-                                Info.ExecutionUid,
+                            
+                            Db.SendContinuingScoreEventWithPayload(
                                 ScoreQueueChangeType.WorkflowCheck,
                                 scoresToAdd.Select(i => new ScoreCreatedModel { AllocationUid = i.AllocationUid, AssetUid = i.AssetUid, EffectiveDate = i.EffectiveDate }).ToList(),
+                                Info.ExecutionUid, 
                                 Info.StartedOn
                                 );
                         }
@@ -1297,6 +1350,34 @@ from	metrics.ScoreItemLink T
 
                 updateExecution(company, executionRecord, true);
             }
+        }
+
+        List<Guid> getEmptyMeasureGroups(List<AllocationDataModel> allMeasures, List<ScoreItem> assetScoreItems)
+        {
+            var uids = new List<Guid>();
+
+            var assetScoreGroups = allMeasures.Where(i => i.IsGroup).Select(i => new { i.MetricAssetUid }).ToList();
+            assetScoreGroups.ForEach(g =>
+            {
+                if (assetScoreItems.Any(i => i.MetricAssetUid == g.MetricAssetUid))
+                {
+                    // See if there are any child measures that we have. 
+                    // If not, we need to remove this measure group as it is not relevant and we should not create an entry for it.
+                    if (
+                        !(
+                        from am in allMeasures
+                        join si in assetScoreItems on am.MetricAssetUid equals si.MetricAssetUid
+                        where am.MetricParentAssetUid == g.MetricAssetUid
+                        select si
+                        ).Any()
+                        )
+                    {
+                        uids.AddRange(assetScoreItems.Where(si => si.MetricAssetUid == g.MetricAssetUid).Select(i => i.Uid));
+                    }
+                }
+            });
+
+            return uids;
         }
 
         void updateExecution(SqlConnection Db, ApiExecution executionRecord, bool completed) 

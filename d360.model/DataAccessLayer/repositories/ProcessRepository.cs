@@ -652,10 +652,14 @@ new
 
             try
             {
-                if(assetResults.Any())
+                if (assetResults.Any())
+                {
                     Company.SendAssetGraphEvents(assetResults);
-                if(intersectResults.Any())
+                }
+                if (intersectResults.Any())
+                {
                     Company.SendAssetGraphEvents(intersectResults, null, true);
+                }
             }
             catch
             {
@@ -919,7 +923,9 @@ new
                 foreach (var field in fields)
                 {
                     if (typesToAvoid.Contains(field.Type))
+                    {
                         continue;
+                    }
                     document.SetCellValue(1, index++, (string)field.FriendlyName);
                 }
 
@@ -941,7 +947,9 @@ new
                     {
                         var values = (relatedAsset as IDictionary<string, object>);
                         foreach (var item in values)
+                        {
                             exportItem.Add(item.Key, item.Value);
+                        }
                     }
                     data.Add(exportItem);
                 }

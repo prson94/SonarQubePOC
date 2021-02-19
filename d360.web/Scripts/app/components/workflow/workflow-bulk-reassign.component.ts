@@ -23,7 +23,6 @@ export class WorkflowBulkReassignComponent extends BaseComponent implements OnIn
 
     private items: any[] = [];
     private resource: any;
-
     field: EditorField;
     selectedResourceName: string = '';
     sendFormEmails: boolean = false;

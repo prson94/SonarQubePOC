@@ -61,7 +61,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="TKlok" id="Table.reporting.Global_Resource-ReportingGlobalResource_AfterUpsert-v2">
+  <changeSet author="TKlok" id="Table.reporting.Global_Resource-ReportingGlobalResource_AfterUpsert-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -94,6 +94,14 @@ BEGIN
 			when not matched by target then
 			insert	([AssetTypeID], [State], SourceID, [Object], [ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy],[uid])
 			values	(S.[AssetTypeID], S.[State], S.SourceID, S.[Object], S.[ObjectID], getutcdate(), 0, getutcdate(), 0, S.[uid]);
+			
+			
+		INSERT INTO graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn)
+		SELECT A.ID, O.[uid], a.AssetTypeID, AT.Uid as AssetTypeUid, O.[State], O.UpdatedOn
+		FROM	inserted O
+				INNER JOIN Asset A ON A.uid = O.uid
+				INNER JOIN AssetType AT on a.AssetTypeID = AT.ID
+				WHERE NOT EXISTS (SELECT 1 FROM graph.AssetNode WHERE [Uid] = O.Uid);
 			
 		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
 		SELECT 'ObjectIndex', 
@@ -141,6 +149,27 @@ BEGIN
 			insert	([AssetTypeID], [State], SourceID, [Object], [ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy],[uid])
 			values	(S.[AssetTypeID], S.[State], S.SourceID, S.[Object], S.[ObjectID], getutcdate(), 0, getutcdate(), 0, S.[uid]);
 END
+		]]>
+    </sql>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.reporting.Global_Resource-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE NONCLUSTERED INDEX [IX_ReportingGlobalResource_Uid] ON [reporting].[Global_Resource] ( [Uid] ASC )
+		]]>
+    </sql>
+	<rollback>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+
 		]]>
     </sql>
 	</rollback>

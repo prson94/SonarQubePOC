@@ -41,7 +41,7 @@ export class AdminLoadComponent extends AdminBaseComponent implements OnInit {
 
         this.isLoading = true;
         this.loadService.getLoads().subscribe(
-            data => {
+            (data) => {
                 this.loads = data;
 
                 this.selectedRow = this.loads.length > 0 ? this.loads[0] : null;

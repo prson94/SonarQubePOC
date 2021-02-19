@@ -6,44 +6,23 @@ using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
-    [JsonArray]
-    [DataContract(Name = "metrics")]
-    public class BulkMetricsImport : List<BulkMetricImport>
-    {
-
-    }
-
-    [DataContract(Name = "metric")]
-    public class BulkMetricImport : BaseObject
-    {
-        [DataMember]
-        public Guid AssetUid { get; set; }
-        [DataMember]
-        public Guid MetricAssetUid { get; set; }
-        [DataMember]
-        public DateTime? EffectiveDate { get; set; }
-        [DataMember]
-        public bool Result { get; set; }
-    }
-
-    [DataContract(Name = "metricItemResult")]
-    public class BulkMetricTemporaryTableModel
-    {
-        [DataMember]
-        public Guid AssetUid { get; set; }
-        [DataMember]
-        public Guid MetricAssetUid { get; set; }
-        [DataMember]
-        public DateTime EffectiveDate { get; set; }
-        [DataMember]
-        public bool Result { get; set; }
-        [DataMember]
-        public bool IsSuccess { get; set; }
-        [DataMember]
-        public string ErrorMessage { get; set; }
-    }
 
     #region Used in Metrics API to display the metric results by asset.
+
+    [DataContract]
+    public class MetricAssetHierarchyConditionsModel
+    {
+        [DataMember]
+        public string Weight { get; set; }
+        [DataMember]
+        public string MatchType { get; set; }
+        
+        [DataMember]
+        public string Position { get; set; }
+        
+        [DataMember]
+        public List<MetricAssetHierarchyConditionModel> ConditionItems { get; set; }
+    }
 
     [DataContract]
     public class MetricAssetHierarchyConditionModel 
@@ -53,7 +32,7 @@ namespace d360.core.entities
         
         [DataMember]
         public string Operator { get; set; }
-        
+
         [DataMember]
         public string Value { get; set; }
     }
@@ -65,6 +44,9 @@ namespace d360.core.entities
 
         [DataMember]
         public Guid? ParentUid { get; set; }
+
+        [DataMember]
+        public Guid ScoreItemUid { get; set; }
 
         [DataMember]
         public bool IsGroup { get; set; }
@@ -101,6 +83,8 @@ namespace d360.core.entities
 
         [DataMember]
         public DateTime? EndDate { get; set; }
+        [DataMember]
+        public bool? MatchConditionsOnly { get; set; }
 
 
     }
@@ -120,7 +104,7 @@ namespace d360.core.entities
         public string MeasuresJson { get; set; }
 
         [DataMember]
-        public List<MetricAssetHierarchyConditionModel> Conditions { get { return string.IsNullOrEmpty(ConditionsJson) ? null : JsonConvert.DeserializeObject<List<MetricAssetHierarchyConditionModel>>(ConditionsJson ?? "[]"); } }
+        public List<MetricAssetHierarchyConditionsModel> Conditions { get { return string.IsNullOrEmpty(ConditionsJson) ? null : JsonConvert.DeserializeObject<List<MetricAssetHierarchyConditionsModel>>(ConditionsJson ?? "[]"); } }
 
         [DataMember]
         public List<ChildMetricAssetHierarchyModel> Measures { get { return string.IsNullOrEmpty(MeasuresJson) ? null : JsonConvert.DeserializeObject<List<ChildMetricAssetHierarchyModel>>(MeasuresJson ?? "[]"); } }

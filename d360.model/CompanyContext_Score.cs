@@ -50,9 +50,27 @@ namespace d360.model
 
         #endregion
 
-        #region Engine Methods
+        #region Methods
 
-        public List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model, ApiExecution execution, ScoreType scoreType = ScoreType.Governance, bool useAllocation = false)
+        public List<InternalScoreResultApiResponseModel> BulkMetricsImport(List<InternalScoreResultApiRequestModel> model, ApiExecution execution, MetricAllocation allocation)
+        {
+            model.ForEach(m =>
+            {
+                m.allocationUid = allocation.Uid;
+            });
+            return BulkMetricsImport(model, execution, true);
+        }
+
+        public List<InternalScoreResultApiResponseModel> BulkMetricsImport(List<InternalScoreResultApiRequestModel> model, ApiExecution execution, ScoreType scoreType = ScoreType.Governance)
+        {
+            model.ForEach(m =>
+            {
+                m.scoreType = scoreType;
+            });
+            return BulkMetricsImport(model, execution, false);
+        }
+
+        private List<InternalScoreResultApiResponseModel> BulkMetricsImport(List<InternalScoreResultApiRequestModel> model, ApiExecution execution, bool isSpecificAllocation)
         {
             Add(execution);
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
@@ -60,20 +78,20 @@ namespace d360.model
             // Set effective date for any results that do not have a date set.
             model.ForEach(m =>
             {
-                if (!m.EffectiveDate.HasValue)
+                if (!m.effectiveDate.HasValue)
                 {
-                    m.EffectiveDate = DateTime.UtcNow.Date;
+                    m.effectiveDate = DateTime.UtcNow.Date;
                 }
             });
 
             var dupes = model
-                .GroupBy(i => new { i.AssetUid, i.MetricAssetUid, i.EffectiveDate })
+                .GroupBy(i => new { i.assetUid, i.metricAssetUid, i.effectiveDate })
                 .Where(i => i.Count() > 1)
                 .Any();
 
             if (dupes)
             {
-                var message = "The request contains duplicate combinations of AssetUid, MetricAssetUid, and EffectiveDate. You must send in unique combinations for those three fields.";
+                var message = "The request contains duplicate combinations of assetUid, metricAssetUid, and effectiveDate. You must send in unique combinations for those three fields.";
                 execution.Error = 1;
                 execution.Processed = 0;
                 execution.CompletedOn = DateTime.UtcNow;
@@ -91,6 +109,10 @@ namespace d360.model
 
                 table.Columns.Add("AssetUid", typeof(Guid));
                 table.Columns.Add("MetricAssetUid", typeof(Guid));
+                table.Columns.Add("AllocationUid", typeof(Guid));
+                table.Columns["AllocationUid"].AllowDBNull = true;
+                table.Columns.Add("ScoreType", typeof(int));
+                table.Columns["ScoreType"].AllowDBNull = true;
                 table.Columns.Add("EffectiveDate", typeof(DateTime));
                 table.Columns.Add("Result", typeof(bool));
 
@@ -99,10 +121,29 @@ namespace d360.model
                 foreach (var item in model)
                 {
                     var row = table.NewRow();
-                    row["AssetUid"] = item.AssetUid;
-                    row["MetricAssetUid"] = item.MetricAssetUid;
-                    row["EffectiveDate"] = item.EffectiveDate ?? DateTime.UtcNow.Date;
-                    row["Result"] = item.Result;
+                    row["AssetUid"] = item.assetUid;
+                    row["MetricAssetUid"] = item.metricAssetUid;
+
+                    if (item.scoreType.HasValue)
+                    {
+                        row["ScoreType"] = (int)item.scoreType.Value;
+                    }
+                    else
+                    {
+                        row["ScoreType"] = DBNull.Value;
+                    }
+
+                    if (item.allocationUid.HasValue)
+                    {
+                        row["AllocationUid"] = item.allocationUid.Value;
+                    }
+                    else
+                    {
+                        row["AllocationUid"] = DBNull.Value;
+                    }
+
+                    row["EffectiveDate"] = item.effectiveDate.Value;
+                    row["Result"] = item.result;
 
                     table.Rows.Add(row);
                 }
@@ -113,7 +154,7 @@ namespace d360.model
                     Connection.Open();
 
                 var trans = Connection.BeginTransaction();
-                List<BulkMetricTemporaryTableModel> results = null;
+                List<InternalScoreResultApiResponseModel> results = null;
 
                 try
                 {
@@ -126,6 +167,9 @@ CREATE TABLE #InternalMeasures (
 	MetricAssetUid uniqueidentifier NOT NULL,
 	EffectiveDate date NOT NULL,
 	Result bit NOT NULL,
+
+    ScoreType int null,
+    AllocationUid uniqueidentifier null,
 
     IsValidAllocation bit NULL,
 	IsValidAsset bit NULL,
@@ -147,6 +191,8 @@ CREATE NONCLUSTERED INDEX [IX_TempInternalMeasures_Success] ON #InternalMeasures
                     {
                         bulk.ColumnMappings.Add("AssetUid", "AssetUid");
                         bulk.ColumnMappings.Add("MetricAssetUid", "MetricAssetUid");
+                        bulk.ColumnMappings.Add("ScoreType", "ScoreType");
+                        bulk.ColumnMappings.Add("AllocationUid", "AllocationUid");
                         bulk.ColumnMappings.Add("EffectiveDate", "EffectiveDate");
                         bulk.ColumnMappings.Add("Result", "Result");
 
@@ -155,37 +201,46 @@ CREATE NONCLUSTERED INDEX [IX_TempInternalMeasures_Success] ON #InternalMeasures
 
                     #region Validation
 
-                    // Resolve Allocation
-                    Connection.Execute(@"
+                    // Resolve Allocation if scoreType is used.
+                    if (!isSpecificAllocation)
+                    {
+                        Connection.Execute(@"
 update  M
-set     M.IsValidAllocation = 0,
-        M.Message = coalesce(Message, '') + 'This asset does not have this score type allocated; '
+set     M.AllocationUid = L.Uid 
 from    #InternalMeasures M
-        left join AssetWithType A on A.uid = M.assetUid
-        left join metrics.Allocation L on L.ScoreType = @scoreType and L.AssetTypeUid = A.AssetTypeUid
-where   L.Uid is null;
+        inner join AssetWithType A on A.uid = M.AssetUid
+        inner join metrics.Allocation L on L.ScoreType = M.ScoreType and L.AssetTypeUid = A.AssetTypeUid and L.OverrideName is null;", transaction: trans);
+                    }
+
+                    Connection.Execute(@"
+update  #InternalMeasures 
+set     IsValidAllocation = 0, 
+        Message = coalesce(Message, '') + 'This asset does not have this score type allocated; ' 
+where   AllocationUid is null; 
 
 update  M
 set     M.IsValidAllocation = 0,
         M.Message = coalesce(Message, '') + 'This asset does not have this score type allocated for internal scores; '
 from    #InternalMeasures M
-        inner join AssetWithType A on A.uid = M.assetUid
-        inner join metrics.Allocation L on L.ScoreType = @scoreType and L.AssetTypeUid = A.AssetTypeUid and L.IsExternallyCalculated = 1",
-            new { scoreType = (int)scoreType }, transaction: trans);
+        inner join metrics.Allocation L on L.Uid = M.AllocationUid and L.IsExternallyCalculated = 1; 
 
-                    // Resolve Asset
-                    Connection.Execute(@"
-update  T 
-set     T.IsValidAsset = IIF(S.ID is not null, 1, 0) 
-from    #InternalMeasures T 
-        left join Asset S on S.[uid] = T.AssetUid", transaction: trans);
+update  #InternalMeasures 
+set     IsValidAllocation = 1 
+where   AllocationUid is not null 
+        and IsValidAllocation is null; 
+
+update  M
+set     M.IsValidAsset = IIF(A.ID is not null, 1, 0) 
+from    #InternalMeasures M
+        inner join metrics.Allocation L on L.Uid = M.AllocationUid and M.IsValidAllocation = 1
+        left join AssetWithType A on A.uid = M.AssetUid and A.AssetTypeUid = L.AssetTypeUid;", transaction: trans);
 
                     // Resolve Measure
                     Connection.Execute(@"
 update  T 
 set     T.IsValidMeasure = IIF(S.[Uid] is not null, 1, 0) 
 from    #InternalMeasures T 
-        left join metrics.[Asset] S on S.[Uid] = T.MetricAssetUid and S.[State] = 1", transaction: trans);
+        left join metrics.[Asset] S on S.AllocationUid = T.AllocationUid and T.IsValidAllocation = 1 and S.[Uid] = T.MetricAssetUid and S.[State] = 1", transaction: trans);
 
                     // Resolve Measure Check
                     Connection.Execute(@"
@@ -248,7 +303,7 @@ from    #InternalMeasures T
 
                     #endregion
 
-                    results = Connection.Query<BulkMetricTemporaryTableModel>(
+                    results = Connection.Query<InternalScoreResultApiResponseModel>(
                         $"select AssetUid, MetricAssetUid, EffectiveDate, Result, Success as IsSuccess, Message as ErrorMessage from #InternalMeasures",
                         new { execution.ExecutionID },
                         commandTimeout: 1200, transaction: trans
@@ -264,14 +319,14 @@ from    #InternalMeasures T
                     var queueResults = results.Where(r => r.IsSuccess).Select(r => new ExternalMeasureResultsCreatedModel
                     {
                         AssetUid = r.AssetUid,
-                        EffectiveDate = r.EffectiveDate,
+                        EffectiveDate = r.EffectiveDate.Value,
                         MetricAssetUid = r.MetricAssetUid,
                         Result = r.Result
                     }).ToList();
 
                     if (queueResults.Count > 0)
                     {
-                        SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.ExternalMeasureResultsCreated, queueResults, execution.StartedOn);
+                        SendScoreEventWithPayload(ScoreQueueChangeType.ExternalMeasureResultsCreated, queueResults, execution.ExecutionID);
                     }
                 }
                 catch (Exception ex)
@@ -291,7 +346,25 @@ from    #InternalMeasures T
             }
         }
 
-        public List<ExternalScoreResultsApiResultsModel> BulkExternalResultsImport(List<ExternalScoreResultsApiPostModel> model, ApiExecution execution, ScoreType scoreType)
+        public List<ExternalScoreResultApiResponseModel> BulkExternalResultsImport(List<ExternalScoreResultApiRequestModel> model, ApiExecution execution, MetricAllocation allocation) 
+        {
+            model.ForEach(m =>
+            {
+                m.allocationUid = allocation.Uid;
+            });
+            return BulkExternalResultsImport(model, execution, true);
+        }
+
+        public List<ExternalScoreResultApiResponseModel> BulkExternalResultsImport(List<ExternalScoreResultApiRequestModel> model, ApiExecution execution, ScoreType scoreType)
+        {
+            model.ForEach(m =>
+            {
+                m.scoreType = scoreType;
+            });
+            return BulkExternalResultsImport(model, execution, false);
+        }
+
+        private List<ExternalScoreResultApiResponseModel> BulkExternalResultsImport(List<ExternalScoreResultApiRequestModel> model, ApiExecution execution, bool isSpecificAllocation)
         {
             
             //Set effective date for any results that do not have a date set.
@@ -316,7 +389,10 @@ from    #InternalMeasures T
             scoreTable.Columns.Add("ItemNumber", typeof(int));
             scoreTable.Columns.Add("AssetUid", typeof(Guid));
             scoreTable.Columns.Add("EffectiveDate", typeof(DateTime));
+            scoreTable.Columns.Add("AllocationUid", typeof(Guid));
+            scoreTable.Columns["AllocationUid"].AllowDBNull = true;
             scoreTable.Columns.Add("ScoreType", typeof(int));
+            scoreTable.Columns["ScoreType"].AllowDBNull = true;
             scoreTable.Columns.Add("Score", typeof(decimal));
             scoreTable.Columns.Add("RunDate", typeof(DateTime));
             scoreTable.Columns["RunDate"].AllowDBNull = true;
@@ -330,16 +406,40 @@ from    #InternalMeasures T
             foreach (var item in model)
             {
                 var row = scoreTable.NewRow();
+                
                 row["ExecutionID"] = execution.ExecutionID;
                 row["ItemNumber"] = itemNumber;
                 row["AssetUid"] = item.assetUid;
                 row["EffectiveDate"] = item.effectiveDate;
-                row["ScoreType"] = (int)scoreType;
-                row["Score"] = item.score;
-                if (item.runDate.HasValue)
-                    row["RunDate"] = item.runDate;
+
+                if (item.scoreType.HasValue)
+                {
+                    row["ScoreType"] = (int)item.scoreType.Value;
+                }
                 else
+                {
+                    row["ScoreType"] = DBNull.Value;
+                }
+
+                if (item.allocationUid.HasValue)
+                {
+                    row["AllocationUid"] = item.allocationUid.Value;
+                }
+                else
+                {
+                    row["AllocationUid"] = DBNull.Value;
+                }
+
+                row["Score"] = item.score;
+
+                if (item.runDate.HasValue)
+                {
+                    row["RunDate"] = item.runDate;
+                }
+                else
+                {
                     row["RunDate"] = DBNull.Value;
+                }
 
                 scoreTable.Rows.Add(row);
 
@@ -373,6 +473,7 @@ from    #InternalMeasures T
                 bulk.ColumnMappings.Add("ExecutionID", "ExecutionID");
                 bulk.ColumnMappings.Add("ItemNumber", "ItemNumber");
                 bulk.ColumnMappings.Add("AssetUid", "AssetUid");
+                bulk.ColumnMappings.Add("AllocationUid", "AllocationUid");
                 bulk.ColumnMappings.Add("ScoreType", "ScoreType");
                 bulk.ColumnMappings.Add("EffectiveDate", "EffectiveDate");
                 bulk.ColumnMappings.Add("RunDate", "RunDate");
@@ -396,7 +497,24 @@ from    #InternalMeasures T
             #region Validation
 
             // Resolve Uids and key objects.
-            Connection.Execute(@"
+            if (isSpecificAllocation)
+            {
+                Connection.Execute(@"
+update  T 
+set     T.IsValidAllocation = iif(Al.Uid is null, 0, 1),
+        T.IsValidAsset = iif(A.Uid is null, 0, 1),
+        T.AllocationUid = Al.Uid,
+        T.ScoreUid = iif(S.Uid is null, newid(), S.Uid)
+from    api.ExecutionScore T 
+        left join dbo.Asset A on A.Uid = T.AssetUid
+        left join dbo.AssetType Ast on Ast.ID = A.AssetTypeID
+        left join metrics.Allocation Al on Al.AssetTypeUid = Ast.Uid and Al.Uid = T.AllocationUid and Al.IsExternallyCalculated = 1 and Al.OverrideName is null 
+        left join metrics.Score S on S.AllocationUid = Al.Uid and S.AssetUid = T.AssetUid and S.EffectiveDate = T.EffectiveDate
+where   T.ExecutionID = @ExecutionID
+        and T.AllocationUid is not null", new { execution.ExecutionID }, commandTimeout: timeout);
+            }
+            else {
+                Connection.Execute(@"
 update  T 
 set     T.IsValidAllocation = iif(Al.Uid is null, 0, 1),
         T.IsValidAsset = iif(A.Uid is null, 0, 1),
@@ -408,7 +526,10 @@ from    api.ExecutionScore T
         left join metrics.Allocation Al on Al.AssetTypeUid = Ast.Uid and Al.ScoreType = T.ScoreType and (Al.OverrideName is null or Al.OverrideName = '') and Al.IsExternallyCalculated = 1
         left join metrics.Score S on S.AllocationUid = Al.Uid and S.AssetUid = T.AssetUid and S.EffectiveDate = T.EffectiveDate
 where   T.ExecutionID = @ExecutionID
+        and T.AllocationUid is null", new { execution.ExecutionID }, commandTimeout: timeout);
+            }
 
+            Connection.Execute(@"
 update  T 
 set     T.IsValidMetric = iif(A.Uid is null, 0, 1), 
         T.IsValidVersion = iif(VUid.Uid is null, 0, 1), 
@@ -429,9 +550,7 @@ from    api.ExecutionMeasure T
                     ) VUid
         left join metrics.ScoreItemLink Sil on Sil.ScoreUid = S.ScoreUid
         left join metrics.ScoreItem Si on Si.Uid = Sil.ScoreItemUid and Si.AssetVersionUid = VUid.Uid
-where   T.ExecutionID = @ExecutionID"
-            , new { execution.ExecutionID, scoreType = (int)scoreType }
-            , commandTimeout: timeout);
+where   T.ExecutionID = @ExecutionID", new { execution.ExecutionID }, commandTimeout: timeout);
 
             // Validate date ranges
             Connection.Execute(@"
@@ -439,21 +558,21 @@ update  T
 set     T.Success = 0, 
         T.Message = coalesce(T.Message, '') + 'Effective date cannot be in the future; '
 from    api.ExecutionScore T 
-where   T.ExecutionID = @executionID and T.EffectiveDate > getutcdate()", new { execution.ExecutionID }, commandTimeout: timeout);
+where   T.ExecutionID = @ExecutionID and T.EffectiveDate > getutcdate()", new { execution.ExecutionID }, commandTimeout: timeout);
 
             Connection.Execute(@"
 update  T 
 set     T.Success = 0, 
         T.Message = coalesce(T.Message, '') + 'Run date cannot be in the future; '
 from    api.ExecutionScore T 
-where   T.ExecutionID = @executionID and T.RunDate > getutcdate()", new { execution.ExecutionID }, commandTimeout: timeout);
+where   T.ExecutionID = @ExecutionID and T.RunDate > getutcdate()", new { execution.ExecutionID }, commandTimeout: timeout);
 
             Connection.Execute(@"
 update  T 
 set     T.Success = 0, 
         T.Message = coalesce(T.Message, '') + 'Run date must be provided; '
 from    api.ExecutionScore T 
-where   T.ExecutionID = @executionID and T.RunDate is null", new { execution.ExecutionID }, commandTimeout: timeout);
+where   T.ExecutionID = @ExecutionID and T.RunDate is null", new { execution.ExecutionID }, commandTimeout: timeout);
 
             // Resolve measures
             Connection.Execute(@"
@@ -463,15 +582,14 @@ set     T.Success = 0,
 from    api.ExecutionScore T
         inner join metrics.Asset Ma on Ma.AllocationUid = T.AllocationUid and Ma.State = 1 and Ma.IsGroup = 0
         left join api.ExecutionMeasure Em on Em.ExecutionID = T.ExecutionID and Em.ItemNumber = T.ItemNumber and Em.MetricAssetUid = Ma.Uid
-where   Em.ItemNumber is null", new { execution.ExecutionID, scoreType = (int)scoreType }, commandTimeout: timeout);
+where   T.ExecutionID = @ExecutionID and Em.ItemNumber is null", new { execution.ExecutionID }, commandTimeout: timeout);
 
             // Validate score value
             Connection.Execute(@"
 update  api.ExecutionScore 
 set     Success = 0, 
         Message = coalesce(Message, '') + 'Score must be between 0 and 1; '
-where   ExecutionID = @executionID 
-        and ( [Score] is null or [Score] < 0 or [Score] > 1 )", new { execution.ExecutionID }, commandTimeout: timeout);
+where   ExecutionID = @ExecutionID and ( [Score] is null or [Score] < 0 or [Score] > 1 )", new { execution.ExecutionID }, commandTimeout: timeout);
 
             // Update success status
             Connection.Execute(@"
@@ -512,7 +630,7 @@ where   ExecutionID = @ExecutionID
             int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total) / loopSize);
             int beginItemNumber = 1;
             int endItemNumber = loopSize;
-            var results = new List<ExternalScoreResultsApiResultsModel>();
+            var results = new List<ExternalScoreResultApiResponseModel>();
 
             for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
             {
@@ -549,7 +667,7 @@ where   ExecutionID = @ExecutionID
                             using       (
                                         select      E.ScoreItemUid, E.Passed, M.RunDate, E.MetricAssetVersionUid 
                                         from        api.ExecutionMeasure E
-                                                    inner join api.ExecutionScore M on M.ExecutionID = E.ExecutionID and E.ExecutionID = @executionID and M.ItemNumber = E.ItemNumber
+                                                    inner join api.ExecutionScore M on M.ExecutionID = E.ExecutionID and E.ExecutionID = @ExecutionID and M.ItemNumber = E.ItemNumber
                                         where       E.ItemNumber between {beginItemNumber} and {endItemNumber}
                                                     and M.Success = 1
                                         ) S
@@ -567,7 +685,7 @@ where   ExecutionID = @ExecutionID
                             using       (
                                         select      E.ScoreUid, E.ScoreItemUid
                                         from        api.ExecutionMeasure E
-                                                    inner join api.ExecutionScore M on M.ExecutionID = E.ExecutionID and E.ExecutionID = @executionID and M.ItemNumber = E.ItemNumber
+                                                    inner join api.ExecutionScore M on M.ExecutionID = E.ExecutionID and E.ExecutionID = @ExecutionID and M.ItemNumber = E.ItemNumber
                                         where       E.ItemNumber between {beginItemNumber} and {endItemNumber}
                                                     and M.Success = 1
                                         ) S
@@ -584,7 +702,7 @@ where   ExecutionID = @ExecutionID
 		                    update  M
 		                    set     M.EndDate = dateadd(d, -1, R.EffectiveDate)
 		                    from    [metrics].[Score] M
-                                    inner join api.ExecutionScore E on  E.ExecutionId = @executionID 
+                                    inner join api.ExecutionScore E on  E.ExecutionId = @ExecutionID 
                                                                         and E.Success = 1 
                                                                         and E.ItemNumber between {beginItemNumber} and {endItemNumber}
                                                                         and E.ScoreUid = M.Uid 
@@ -604,7 +722,7 @@ update  T
 set     T.EndDate = DATEADD(d, -1, M.EffectiveDate) 
 from    metrics.Score T 
         inner join api.ExecutionScore S on S.AllocationUid = T.AllocationUid and S.AssetUid = T.AssetUid and S.EffectiveDate > T.EffectiveDate and T.EndDate is null 
-                                            and S.ExecutionId = @executionID and S.ItemNumber between {beginItemNumber} and {endItemNumber}
+                                            and S.ExecutionId = @ExecutionID and S.ItemNumber between {beginItemNumber} and {endItemNumber}
 		cross apply (
 			        select      min(EffectiveDate) as EffectiveDate 
                     from        metrics.Score
@@ -614,7 +732,7 @@ from    metrics.Score T
 		) M",
                             new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
 
-                            var batchResults = Connection.Query<ExternalScoreResultsApiResultsModel>( $@"
+                            var batchResults = Connection.Query<ExternalScoreResultApiResponseModel>( $@"
 select  E.ScoreUid, 
         E.AllocationUid,
         E.AssetUid, 
@@ -673,7 +791,7 @@ where   E.ExecutionID = @ExecutionID
                 var scores = results.Where(i => i.IsSuccess).Select(i => new ScoreCreatedModel { AllocationUid = i.AllocationUid, AssetUid = i.AssetUid, EffectiveDate = i.EffectiveDate }).ToList();
                 if (scores.Count > 0)
                 {
-                    SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.ExternalScoresCreated, scores);
+                    SendScoreEventWithPayload(ScoreQueueChangeType.ExternalScoresCreated, scores, execution.ExecutionID);
                 }
 
                 execution.Error = results.Count(i => !i.IsSuccess);
@@ -740,38 +858,61 @@ where   E.ExecutionID = @ExecutionID
             return model;
         }
 
-        public void SendScoreEventWithPayload<T>(Guid executionUid, ScoreQueueChangeType changeType, T item, DateTime? startedOn = null, bool createApiExecution = false)
+        public void SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid? fromExecutionUid = null, TimeSpan? timespan = null)
         {
-            if (!startedOn.HasValue)
-            {
-                startedOn = DateTime.UtcNow;
-            }
+            var fields = new { 
+                originalExecutionUid = fromExecutionUid ?? Guid.Empty
+            };
 
-            if (createApiExecution)
+            SendScoreEventWithPayload(changeType, item, fields, timespan);
+        }
+
+        public void SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, dynamic fields, TimeSpan? timespan = null)
+        {
+            var apiExecution = new ApiExecution
             {
-                var apiExecution = new ApiExecution
-                {
-                    ExecutionID = executionUid,
-                    StartedOn = startedOn.Value,
-                    ResourceID = CurrentResourceID,
-                    Method = "SCORE",
-                    State = State.Unknown,
-                    Route = "ScoreEngine", 
-                    Total = 0
-                };
-                Add(apiExecution);
-            }
+                ExecutionID = Guid.NewGuid(),
+                Fields = JsonConvert.SerializeObject(fields),
+                StartedOn = DateTime.UtcNow,
+                ResourceID = CurrentResourceID,
+                Method = "SCORE",
+                State = State.Unknown,
+                Total = 0
+            };
+            Add(apiExecution);
 
             var info = new ScoreQueueInfo
             {
                 CompanyID = CurrentCompanyID,
                 ResourceID = CurrentResourceID,
                 ChangeType = changeType,
-                ExecutionUid = executionUid,
-                StartedOn = startedOn.Value,
+                ExecutionUid = apiExecution.ExecutionID,
+                StartedOn = apiExecution.StartedOn,
                 Location = ScoreQueueExecutionDataLocation.File
             };
-            Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.StorageFile, item);
+            Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.StorageFile, item).Wait();
+            if (timespan.HasValue)
+            {
+                QueueSource.CreateMessageAsync(Config.GetValue<string>("ScoringQueue"), info, timespan.Value).Wait();
+            }
+            else
+            {
+                QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
+            }
+        }
+
+        public void SendContinuingScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid executionUid, DateTime startedOn)
+        {
+            var info = new ScoreQueueInfo
+            {
+                CompanyID = CurrentCompanyID,
+                ResourceID = CurrentResourceID,
+                ChangeType = changeType,
+                ExecutionUid = executionUid,
+                StartedOn = startedOn,
+                Location = ScoreQueueExecutionDataLocation.File
+            };
+            Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.StorageFile, item).Wait();
             QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
         }
 
@@ -844,6 +985,210 @@ from	metrics.AssetVersion V
                 list = Query<Guid>(sql, new { typeId }).ToList();
             }
             
+            return list;
+        }
+
+        #endregion
+
+        #region Score Engine Methods
+
+        public DataQualityMeasureQueryModel BuildDataQualityMeasureQueryModel(int queryType, Guid assetVersionRollupPathUid)
+        {
+            var dqQueryDetail = new DataQualityMeasureQueryModel
+            {
+                AssetVersionRollupPathUid = assetVersionRollupPathUid
+            };
+
+            if (Connection.State != ConnectionState.Open)
+                Connection.Open();
+
+            var dqQueryDetails = Connection.QueryMultiple(
+                "metrics.BuildDataQualityMeasureQuery @queryType, @assetVersionRollupPathUid",
+                new { queryType, assetVersionRollupPathUid }
+                );
+            var resultSqlQueryStatements = dqQueryDetails.Read<string>();
+            dqQueryDetail.FilterMatchType = dqQueryDetails.Read<MetricMatchType>().Single();
+            var resultFilters = dqQueryDetails.Read<DataQualityMeasureQueryFilterModel>();
+
+            dqQueryDetail.Sql = string.Join("", resultSqlQueryStatements);
+            dqQueryDetail.Filters = resultFilters.ToList();
+
+            var filterSql = "";
+            if (dqQueryDetail.Filters.Count > 0)
+            {
+
+                dqQueryDetail.Filters.ForEach(f =>
+                {
+                    var listFieldQuery = $" in (select FD.AssetID from FieldDetail FD inner join FieldLookupValue LV on LV.FieldTypeID = FD.FieldTypeID and LV.Value = FD.Value and FD.AssetTypeID = {f.AssetTypeID} and FD.FieldTypeID = {f.FieldTypeID} and ";
+                    var nonListFieldQuery = $" in (select AssetID from FieldDetail where AssetTypeID = {f.AssetTypeID} and FieldTypeID = {f.FieldTypeID} and ";
+
+                    f.WhereQuery += ((f.Type == "Lookup") ? listFieldQuery : nonListFieldQuery);
+                    var queryColumn = ((f.Type == "Lookup") ? "LV.AssetUid" : "FormattedValue");
+
+                    var paramName = $"@P{f.AssetTypeID}_{f.FieldTypeID}";
+                    var dbTypeToCastTo = "";
+                    switch (f.Type)
+                    {
+                        case "Date":
+                        case "DateTime":
+                            dbTypeToCastTo = "datetime";
+                            DateTime dt;
+                            if (DateTime.TryParse(f.Value, out dt))
+                            {
+                                f.Parameter = new SqlParameter(paramName, dt);
+                            }
+                            break;
+                        case "Decimal":
+                            dbTypeToCastTo = "decimal";
+                            decimal dc;
+                            if (decimal.TryParse(f.Value, out dc))
+                            {
+                                f.Parameter = new SqlParameter(paramName, dc);
+                            }
+                            break;
+                        case "Number":
+                            dbTypeToCastTo = "bigint";
+                            long lg;
+                            if (long.TryParse(f.Value, out lg))
+                            {
+                                f.Parameter = new SqlParameter(paramName, lg);
+                            }
+                            break;
+                        default:
+                            if (!string.IsNullOrEmpty(f.Value))
+                            {
+                                f.Parameter = new SqlParameter(paramName, f.Value);
+                            }
+                            break;
+                    }
+
+                    switch (f.Operator)
+                    {
+                        case Operator.After:
+                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) > {paramName}";
+                            break;
+                        case Operator.Before:
+                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) < {paramName}";
+                            break;
+                        case Operator.Contains:
+                            queryColumn = $"{queryColumn} like '%' + {paramName} + '%'";
+                            break;
+                        case Operator.EndsWith:
+                            queryColumn = $"{queryColumn} like '%' + {paramName}";
+                            break;
+                        case Operator.Equals:
+                            queryColumn = (string.IsNullOrEmpty(dbTypeToCastTo)) ?
+                                $"{queryColumn} = {paramName}" :
+                                $"try_cast({queryColumn} as {dbTypeToCastTo}) = {paramName}";
+                            break;
+                        case Operator.GreaterThan:
+                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) > {paramName}";
+                            break;
+                        case Operator.GreaterThanOrEquals:
+                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) >= {paramName}";
+                            break;
+                        case Operator.IsFalse:
+                            queryColumn = $"coalesce(try_cast({queryColumn} as bit), 1) = 0";
+                            break;
+                        case Operator.IsTrue:
+                            queryColumn = $"coalesce(try_cast({queryColumn} as bit), 0) = 1";
+                            break;
+                        case Operator.LessThan:
+                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) < {paramName}";
+                            break;
+                        case Operator.LessThanOrEquals:
+                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) <= {paramName}";
+                            break;
+                        case Operator.NotContains:
+                            queryColumn = $"{queryColumn} not like '%' + {paramName} + '%'";
+                            break;
+                        case Operator.NotEquals:
+                            queryColumn = (string.IsNullOrEmpty(dbTypeToCastTo)) ?
+                                $"{queryColumn} <> {paramName}" :
+                                $"try_cast({queryColumn} as {dbTypeToCastTo}) <> {paramName}";
+                            break;
+                        case Operator.NotPopulated:
+                            queryColumn = $"{queryColumn} is null";
+                            break;
+                        case Operator.OnOrAfter:
+                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) >= {paramName}";
+                            break;
+                        case Operator.OnOrBefore:
+                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) <= {paramName}";
+                            break;
+                        case Operator.Populated:
+                            queryColumn = $"{queryColumn} is not null";
+                            break;
+                        case Operator.StartsWith:
+                            queryColumn = $"{queryColumn} like {paramName} + '%'";
+                            break;
+                        default: //does the same thing as Equals
+                            queryColumn = (string.IsNullOrEmpty(dbTypeToCastTo)) ?
+                                $"{queryColumn} = {paramName}" :
+                                $"try_cast({queryColumn} as {dbTypeToCastTo}) = {paramName}";
+                            break;
+
+                    }
+
+                    f.WhereQuery += queryColumn + ")";
+                });
+
+                filterSql = " and (" + string.Join(
+                    dqQueryDetail.FilterMatchType == MetricMatchType.Any ? " or " : " and ",
+                    dqQueryDetail.Filters.Select(f => f.WhereQuery)
+                    ) + ") ";
+            }
+
+            dqQueryDetail.Sql = dqQueryDetail.Sql.Replace("{{FILTERS}}", filterSql);
+
+            return dqQueryDetail;
+        }
+
+        public List<DataQualityMeasureQueryResultModel> GetDataQualityMeasureQueryResultModels(DataQualityMeasureQueryModel query, Guid assetUid, DateTime? maxDate)
+        {
+            var args = new DynamicParameters();
+            args.Add("@AssetUid", assetUid, DbType.Guid);
+            args.Add("@MaximumEffectiveDate", maxDate ?? DateTime.UtcNow, DbType.Date);
+            foreach (var p in query.Filters.Where(p => p.Parameter != null).Select(p => p.Parameter))
+            {
+                args.Add(p.ParameterName, p.Value, p.DbType);
+            }
+
+            if (Connection.State != ConnectionState.Open)
+                Connection.Open();
+
+            var list = Connection.Query<DataQualityMeasureQueryResultModel>(query.Sql, args).ToList();
+
+            return list;
+        }
+
+        public List<AssetMeasureModel> GetDataQualityAssetEffectiveDateResultModels(DataQualityMeasureQueryModel query, Guid metricAssetUid, Guid metricAssetVersionUid, DateTime measureEffectiveDate)
+        {
+            var args = new DynamicParameters();
+            args.Add("@AssetVersionEffectiveDate", measureEffectiveDate, DbType.Date);
+            foreach (var p in query.Filters.Where(p => p.Parameter != null).Select(p => p.Parameter))
+            {
+                args.Add(p.ParameterName, p.Value, p.DbType);
+            }
+
+            if (Connection.State != ConnectionState.Open)
+                Connection.Open();
+
+            var list = Connection.Query<AssetMeasureModel>(query.Sql, args)
+                .ToList()
+                .Select(o => new AssetMeasureModel {
+                    AssetUid = o.AssetUid, 
+                    EffectiveDate = o.EffectiveDate, 
+                    Measures = new List<AssetMeasureChildModel> {
+                        new AssetMeasureChildModel { 
+                            MetricAssetUid = metricAssetUid, 
+                            MetricAssetVersionUid = metricAssetVersionUid, 
+                            Result = false
+                        }
+                    }
+                })
+                .ToList();
+
             return list;
         }
 

@@ -41,6 +41,12 @@ namespace igx.UnitTests
         {
             var mock = new Mock<ICompanyContext>();
             mock.Setup(x => x.CurrentResourceIsAdmin).Returns(true);
+            mock.Setup(x => x.HasAssetTypeReadPermission(It.IsAny<int>())).Returns(
+                (int id) =>
+                {
+                    return Task.FromResult(true);
+                }
+                );
             mock.Setup(x => x.GetTypeIdentifierInfoModel(It.IsAny<TypeIdentifierInfoModelType>(), It.IsAny<Guid>()))
                  .Returns((TypeIdentifierInfoModelType type, Guid uid) =>
                        {
@@ -223,7 +229,7 @@ namespace igx.UnitTests
                 .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new Predicate() { UID = uid, Type = PredicateType.InterTypeHierarchy } : null);
 
             mockRepo.Setup(x => x.PostAssets(It.IsAny<List<AssetInsert>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true, false, false))
-                .Returns((List<AssetInsert> assetInsertList, object o2, object o3,object o5, object o6, object o7) =>
+                .Returns((List<AssetInsert> assetInsertList, object o2, object o3, object o5, object o6, object o7) =>
                  {
                      if (assetInsertList.Count == 0) return null;
                      else return new List<DatabaseBulkAssetResult>() { };
@@ -295,7 +301,7 @@ namespace igx.UnitTests
                    StartedOn = DateTime.Now,
                    CompletedOn = DateTime.Now,
                    Results = new List<DatabaseBulkAssetResult>()
-               }) 
+               })
                : Task.FromResult<dynamic>(null));
             return mockRepo.Object;
         }
@@ -317,6 +323,13 @@ namespace igx.UnitTests
                 .Returns(new List<string>());
 
             return mockRepo.Object;
+        }
+
+        public ICommentRepository GetCommentRepository()
+        {
+            var mock = new Mock<ICommentRepository>();
+
+            return mock.Object;
         }
 
         public ICrossReferencesRepository GetCrossReferencesRepository()
@@ -555,9 +568,6 @@ namespace igx.UnitTests
             mock.Setup(x => x.AddOrUpdateMetrics(It.IsAny<MetricAssetEditModel>()))
                 .Returns(new WorkHttpStatus(HttpStatusCode.OK, "", ""));
 
-            mock.Setup(x => x.BulkMetricsImport(It.IsAny<BulkMetricsImport>(), It.IsAny<ApiExecution>()))
-                .Returns(new List<BulkMetricTemporaryTableModel>() { new BulkMetricTemporaryTableModel() });
-
             mock.Setup(x => x.DeleteMetric(It.IsAny<MetricAsset>()));
 
             mock.Setup(x => x.GetActiveMetric(It.IsAny<Guid>()))
@@ -574,8 +584,8 @@ namespace igx.UnitTests
 
             mock.Setup(x => x.GetMetricHierarchyByAsset(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<DateTime?>()))
                 .Returns(new List<RootMetricAssetHierarchyModel>());
-            
-            mock.Setup(x => x.GetMetricStructureByAllocation(It.IsAny<Guid>(),It.IsAny<List<State>>()))
+
+            mock.Setup(x => x.GetMetricStructureByAllocation(It.IsAny<Guid>(), It.IsAny<List<State>>()))
                 .Returns(
                 new List<MetricAssetViewModel>() {
                     new MetricAssetViewModel { Uid = Guid.Empty, Name = "Name" }

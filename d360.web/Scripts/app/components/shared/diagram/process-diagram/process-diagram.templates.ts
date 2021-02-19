@@ -176,12 +176,12 @@ export class ProcessDiagramTemplates {
 
     private static getRelBadge(type: string, component: ProcessDiagramComponent): go.Panel {
         var $ = go.GraphObject.make;
-        var margin = new go.Margin(5, 5, 0, 0);
+        var RectangleMargin = new go.Margin(5, 5, 0, 0);
         if (type == 'gateway') {
-            var margin = new go.Margin(28, 28, 0, 0);
+            var RectangleMargin = new go.Margin(28, 28, 0, 0);
         }
         if (type == 'event') {
-            var margin = new go.Margin(24, 38, 0, 0);
+            var RectangleMargin = new go.Margin(24, 38, 0, 0);
         }
 
         var badge = $(go.Panel, 'Spot',
@@ -195,7 +195,7 @@ export class ProcessDiagramTemplates {
             $(go.Shape, "Rectangle",
                 {
                     maxSize: new go.Size(NaN, 22),
-                    margin: margin,
+                    margin: RectangleMargin,
                     fill: '#006fba',
                     strokeWidth: 1,
                     stroke: "white"
@@ -779,7 +779,7 @@ export class ProcessDiagramTemplates {
             {
                 selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate(),
                 cursor: 'pointer',
-                toolTip: this.GetTooltip(),
+                toolTip: this.GetTooltip()
             },
             $(go.Panel, "Vertical",
                 $(go.Panel, "Auto",
@@ -981,25 +981,21 @@ export class ProcessDiagramTemplates {
     }
 
     private static showToolTip(obj: go.GraphObject, diagram: go.Diagram, tool: go.Tool) {
-        var category = obj['data'].category;
-        var toolTipDIV = document.getElementById('toolTipDIV-' + category);
+        var toolTipDIV = document.getElementById('toolTipDIV');
 
-        var scroll = +document.getElementById('myPaletteDiv').scrollTop;
+        var partPos = obj.part.diagram.transformDocToView(obj.part.position);
+        var diaPos = obj.diagram.div.getBoundingClientRect();
 
-        toolTipDIV.style.marginLeft = (obj.part.location.x + 10) + "px";
-        toolTipDIV.style.marginTop = (obj.part.location.y + 48 - scroll) + "px";
-        document.getElementById('toolTipParagraph-' + category).innerHTML = obj['data'].PopupDescription;
+        toolTipDIV.style.left = (partPos.x + diaPos.x - 28) + "px";
+        toolTipDIV.style.top = (partPos.y + diaPos.y) + "px";
+        document.getElementById('toolTipParagraph').innerHTML = obj['data'].PopupDescription;
         if (obj['data'].PopupDescription)
             toolTipDIV.style.display = "block";
     }
 
-    private static hideToolTip(diagram, tool) {
-        var toolTipDIV = document.getElementById('toolTipDIV-activity');
-        var toolTipDIV2 = document.getElementById('toolTipDIV-gateway');
-        var toolTipDIV3 = document.getElementById('toolTipDIV-event');
+    private static hideToolTip() {
+        var toolTipDIV = document.getElementById('toolTipDIV');
         toolTipDIV.style.display = "none";
-        toolTipDIV2.style.display = "none";
-        toolTipDIV3.style.display = "none";
     }
 
     private static GetTooltip() {
@@ -1007,7 +1003,7 @@ export class ProcessDiagramTemplates {
 
         return $(go.HTMLInfo, {
             show: this.showToolTip,
-            hide: this.hideToolTip
+            hide: this.hideToolTip,
         });
     }
 

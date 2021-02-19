@@ -45,7 +45,7 @@ export class FusionAgentHistoryComponent extends BaseComponent implements OnInit
             )
             .pipe(takeUntil(this.destroySubject$))
             .subscribe(
-                res => {
+                (res) => {
                     this.executions = res;
 
                     this.selected = this.executions.length > 0 ? this.executions[0] : null;

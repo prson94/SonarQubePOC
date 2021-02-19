@@ -55,7 +55,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
             this
                 .artifactTypeService
                 .getArtifactTypeDetails(artifactTypeId, true)
-                .subscribe(artifactType => {
+                .subscribe((artifactType) => {
                     let folderName: string = '#Business';
                     this.areaLink = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
 
@@ -64,7 +64,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
                         this.areaLink = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
                     }
 
-                    this.headerBreadcrumbService.getFolderTitle(folderName).then(res => {
+                    this.headerBreadcrumbService.getFolderTitle(folderName).then((res) => {
                         this.headerBreadcrumbService.clearBreadcrumbs();
 
                         this.folderTitle = res;
@@ -150,11 +150,11 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         }
 
         if (this.navigationItemsSubs) {
-            this.navigationItemsSubs.forEach(s => {
+            this.navigationItemsSubs.forEach((s) => {
                 s.unsubscribe();
             });
         }
 
         this.clearSidebar();
     }
-};
+}

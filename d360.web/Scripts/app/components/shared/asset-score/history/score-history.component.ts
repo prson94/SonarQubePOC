@@ -73,7 +73,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
         this.allLoadedPoints = [];
         this.scoresPoints = [];
         this.scoreService.getAssetScoreGraphPoints(this.assetUid, this.scoreType).
-            subscribe(res => {
+            subscribe((res) => {
                 this.allLoadedPoints = res;
                 this.scoresPoints = this.getDataForKey('score');
                 this.drawGraph();
@@ -88,12 +88,12 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
             if (this.selectedPoint && this.selectedPoint._adjustedGroupWeight) {
                 measureAdjustmentRatio = this.selectedPoint._adjustedGroupWeight;
             }
-            this.allLoadedPoints.forEach(dataSet => {
+            this.allLoadedPoints.forEach((dataSet) => {
                 if (dataSet['key'] == key) {
-                    (dataSet.data as []).forEach(pt => {
+                    (dataSet.data as []).forEach((pt) => {
                         var sp = new ScorePoint();
                         sp.EffectiveDate = pt['EffectiveDate'];
-                        var score = Math.ceil(+pt['Value'] * measureAdjustmentRatio * 1000) / 1000;
+                        var score = (+pt['Value'] * measureAdjustmentRatio * 1000) / 1000;
                         sp.Score = Math.round(score * 100 * 10) / 10;
                         arr.push(sp);
                     })
@@ -160,13 +160,13 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
 
         this.lastScorePoint = new Date(this.scoresPoints[0].EffectiveDate);
 
-        this.historicalData = this.scoresPoints.map(val => {
+        this.historicalData = this.scoresPoints.map((val) => {
             return [Date.parse(val.EffectiveDate), val.Score, this.getScoreType()];
         });
 
         if (this.selectedPoint && this.selectedPoint.Uid) {
             this.measurePoints = this.getDataForKey(this.selectedPoint.Uid);
-            this.historicalMeasureData = this.measurePoints.map(val => {
+            this.historicalMeasureData = this.measurePoints.map((val) => {
                 return [Date.parse(val.EffectiveDate), val.Score, this.getScoreType()];
             });
         }
@@ -256,7 +256,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                 formatter: function () {
                     var tooltipString = '';
                     var startIdx = historicalTempData.findIndex(x => x.x == this.points[0].x);
-                    this.points.forEach(point => {
+                    this.points.forEach((point) => {
                         tooltipString += `<div><span>${point.series.userOptions.name}<span style="padding-left: 4px;">${point.y}%</span></span></div>`;
                     });
 
@@ -420,7 +420,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                 if (this.chartInstance.series.length > 0) {
 
                     var ms = new Date(this.scoreDate.toString()).getTime();
-                    var idx = this.chartInstance.series[0].data.findIndex(p => { return p.x == ms });
+                    var idx = this.chartInstance.series[0].data.findIndex((p) => { return p.x == ms });
 
                     if (idx == -1) {
                         idx = 1;

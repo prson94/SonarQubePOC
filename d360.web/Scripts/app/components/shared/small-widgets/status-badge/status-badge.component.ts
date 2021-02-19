@@ -177,4 +177,4 @@ export class StatusBadgeComponent implements OnInit, OnChanges {
             }
         }
     }
-};
+}

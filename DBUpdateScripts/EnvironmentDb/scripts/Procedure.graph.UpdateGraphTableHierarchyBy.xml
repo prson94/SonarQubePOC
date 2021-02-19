@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.UpdateGraphTableHierarchyBy-v10">
+  <changeSet author="TKlok" id="Procedure.graph.UpdateGraphTableHierarchyBy-v12">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -40,11 +40,11 @@ begin
 
 		ID bigint,
 		[Level] int,
-		[Position] decimal(2,1),
+		[Position] decimal(5,3),
 
 		ParentID bigint,
 		ParentLevel int,
-		ParentPosition decimal(2,1),
+		ParentPosition decimal(5,3),
 
 		ColumnOrder int,
 		FormattedValue nvarchar(max)
@@ -220,7 +220,7 @@ begin
 						H.AssetTypeID,
 						H.ID,
 						[Level],
-						cast(cast([Level] as varchar) + '.1' as decimal(2,1)) as Position,
+						cast(cast([Level] as varchar) + '.1' as decimal(5,3)) as Position,
 						H.ParentID,
 						[Level] - 1,
 						1,
@@ -236,7 +236,7 @@ begin
 						AssetTypeID,
 						ID,
 						[Level],
-						cast(cast([Level] as varchar) + '.1' as decimal(2,1)) as Position,
+						cast(cast([Level] as varchar) + '.1' as decimal(5,3)) as Position,
 						ParentID,
 						[Level] - 1,
 						1,
@@ -252,7 +252,7 @@ begin
 						H.AssetTypeID,
 						H.ID,
 						[Level],
-						cast(cast([Level] as varchar) + '.1' as decimal(2,1)) as Position,
+						cast(cast([Level] as varchar) + '.1' as decimal(5,3)) as Position,
 						H.ParentID,
 						[Level] - 1,
 						1,
@@ -261,7 +261,25 @@ begin
 						inner join Asset A on A.ID = H.ID and A.Object = 'Resource'
 						inner join reporting.Global_Resource F on F.ResourceID = A.ObjectID
 		end
-		else
+		else if @class = 12
+		begin
+			create nonclustered index CIX_TempHierarchy on #hierarchy (ID)
+
+			insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
+				select	GroupID, 
+						H.AssetTypeID,
+						H.ID,
+						[Level],
+						cast(cast([Level] as varchar) + '.1' as decimal(5,3)) as Position,
+						H.ParentID,
+						[Level] - 1,
+						1,
+						F.Name
+				from	#hierarchy H
+						inner join Asset A on A.ID = H.ID and A.Object = 'Group'
+						inner join dbo.[Group] F on F.ID = A.ObjectID
+		end
+    else
 		begin
 			create nonclustered index CIX_TempHierarchy on #hierarchy (AssetTypeID)
 
@@ -271,7 +289,7 @@ begin
 						A.AssetTypeID,
 						A.ID,
 						A.[Level],
-						cast(cast(A.[Level] as varchar) + '.' + cast(FT.ColumnOrder as varchar) as decimal(2,1)) as Position,
+						cast(cast(A.[Level] as varchar) + '.' + cast(FT.ColumnOrder as varchar) as decimal(5,3)) as Position,
 						A.ParentID,
 						A.[Level] - 1,
 						FT.ColumnOrder,
@@ -330,7 +348,7 @@ end
     </sql>
 	<rollback>
 		<![CDATA[	
-create or alter procedure [graph].[UpdateGraphTableHierarchyBy]
+alter procedure [graph].[UpdateGraphTableHierarchyBy]
 	@executionId uniqueidentifier = null,
 	@assetTypeId int = null,
 	@assetId bigint = null
@@ -359,11 +377,11 @@ begin
 
 		ID bigint,
 		[Level] int,
-		[Position] decimal(2,1),
+		[Position] decimal(5,3),
 
 		ParentID bigint,
 		ParentLevel int,
-		ParentPosition decimal(2,1),
+		ParentPosition decimal(5,3),
 
 		ColumnOrder int,
 		FormattedValue nvarchar(max)
@@ -436,48 +454,99 @@ begin
 		from	Asset A 
 				inner join AssetType T on T.ID = A.AssetTypeID and A.ID = @assetId;
 
-		with hierarchy as (
-			select	A.ID as GroupID,
-					A.AssetTypeID,
-					A.ID,
-					I.Object,
-					I.ObjectID,
-					I.Subject as ParentObject,
-					I.SubjectID as ParentObjectID,
-					A.Code,
-					0 as [Level]
-			from	Asset A
-					left join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
-					inner join #incoming O on O.ID = A.ID
-			union all
-			select	c.GroupID,
-					A.AssetTypeID,
-					A.ID,
-					A.Object,
-					A.ObjectID,
-					I.Subject as ParentObject,
-					I.SubjectID as ParentObjectID,
-					A.Code,
-					c.[Level]-1 as [Level]
-			from	hierarchy c
-					inner join Asset A on c.ParentObject = A.Object and c.ParentObjectID = A.ObjectID
-					outer apply (
-						select	I.Subject,
-								I.SubjectID
-						from	PredicateIntersect I 
-						where	I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
-					) I
-		)
+		if @class = 15 --diagram asset, we need to go through a different relationship.
+		begin
+			with hierarchy as (
+				select	DA.ID as GroupID,
+						DA.AssetTypeID,
+						DA.ID,
+						DA.Object,
+						DA.ObjectID,
+						A.Object as ParentObject,
+						A.ObjectID as ParentObjectID,
+						DA.Code,
+						0 as [Level]
+				from	Asset A
+						inner join AssetProcessDiagram D on D.AssetID = A.ID
+						cross apply openjson(D.Diagram, '$.nodeDataArray') with (assetUid uniqueidentifier N'$.key') N 
+						inner join Asset DA on DA.Uid = N.assetUid
+						inner join #incoming O on O.ID = DA.ID
+				union all
+				select	c.GroupID,
+						A.AssetTypeID,
+						A.ID,
+						A.Object,
+						A.ObjectID,
+						I.Subject as ParentObject,
+						I.SubjectID as ParentObjectID,
+						A.Code,
+						c.[Level]-1 as [Level]
+				from	hierarchy c
+						inner join Asset A on c.ParentObject = A.Object and c.ParentObjectID = A.ObjectID
+						outer apply (
+							select	I.Subject,
+									I.SubjectID
+							from	PredicateIntersect I 
+							where	I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
+						) I
+			)
 
-		insert into #hierarchy (GroupID, AssetTypeID, ID, [Level], ParentID, Code)
-			select	A.GroupID,
-					A.AssetTypeID,
-					A.ID,
-					A.[Level],
-					P.ID,
-					A.Code
-			from	hierarchy A
-					left join Asset P on P.Object = A.ParentObject and P.ObjectID = A.ParentObjectID
+			insert into #hierarchy (GroupID, AssetTypeID, ID, [Level], ParentID, Code)
+				select	A.GroupID,
+						A.AssetTypeID,
+						A.ID,
+						A.[Level],
+						P.ID,
+						A.Code
+				from	hierarchy A
+						left join Asset P on P.Object = A.ParentObject and P.ObjectID = A.ParentObjectID
+		end
+		else
+		begin
+			with hierarchy as (
+				select	A.ID as GroupID,
+						A.AssetTypeID,
+						A.ID,
+						I.Object,
+						I.ObjectID,
+						I.Subject as ParentObject,
+						I.SubjectID as ParentObjectID,
+						A.Code,
+						0 as [Level]
+				from	Asset A
+						left join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
+						inner join #incoming O on O.ID = A.ID
+				union all
+				select	c.GroupID,
+						A.AssetTypeID,
+						A.ID,
+						A.Object,
+						A.ObjectID,
+						I.Subject as ParentObject,
+						I.SubjectID as ParentObjectID,
+						A.Code,
+						c.[Level]-1 as [Level]
+				from	hierarchy c
+						inner join Asset A on c.ParentObject = A.Object and c.ParentObjectID = A.ObjectID
+						outer apply (
+							select	I.Subject,
+									I.SubjectID
+							from	PredicateIntersect I 
+							where	I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
+						) I
+			)
+
+			insert into #hierarchy (GroupID, AssetTypeID, ID, [Level], ParentID, Code)
+				select	A.GroupID,
+						A.AssetTypeID,
+						A.ID,
+						A.[Level],
+						P.ID,
+						A.Code
+				from	hierarchy A
+						left join Asset P on P.Object = A.ParentObject and P.ObjectID = A.ParentObjectID
+		end
+
 
 		if @class = 4
 		begin
@@ -488,7 +557,7 @@ begin
 						H.AssetTypeID,
 						H.ID,
 						[Level],
-						cast(cast([Level] as varchar) + '.1' as decimal(2,1)) as Position,
+						cast(cast([Level] as varchar) + '.1' as decimal(5,3)) as Position,
 						H.ParentID,
 						[Level] - 1,
 						1,
@@ -504,7 +573,7 @@ begin
 						AssetTypeID,
 						ID,
 						[Level],
-						cast(cast([Level] as varchar) + '.1' as decimal(2,1)) as Position,
+						cast(cast([Level] as varchar) + '.1' as decimal(5,3)) as Position,
 						ParentID,
 						[Level] - 1,
 						1,
@@ -520,7 +589,7 @@ begin
 						H.AssetTypeID,
 						H.ID,
 						[Level],
-						cast(cast([Level] as varchar) + '.1' as decimal(2,1)) as Position,
+						cast(cast([Level] as varchar) + '.1' as decimal(5,3)) as Position,
 						H.ParentID,
 						[Level] - 1,
 						1,
@@ -539,7 +608,7 @@ begin
 						A.AssetTypeID,
 						A.ID,
 						A.[Level],
-						cast(cast(A.[Level] as varchar) + '.' + cast(FT.ColumnOrder as varchar) as decimal(2,1)) as Position,
+						cast(cast(A.[Level] as varchar) + '.' + cast(FT.ColumnOrder as varchar) as decimal(5,3)) as Position,
 						A.ParentID,
 						A.[Level] - 1,
 						FT.ColumnOrder,

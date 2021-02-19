@@ -32,6 +32,9 @@
                                                       [objectType]="objectType"
                                                       [objectId]="objectId">
                 </d3s-workflow-responsibility-selector>
+                <div>
+                    <input type="checkbox" [ngModel]="step.settings.SendToDefaultUsers" (ngModelChange)="step.settings.SendToDefaultUsers = $event; stepChange.emit(step)" /> Send to default users when no responsibility exists
+                </div>
             </div>
             <div *ngIf="step.settings.MessageRecipientType == 'Group'" class="col s12">
                 <div class="FieldName">

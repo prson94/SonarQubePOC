@@ -1,10 +1,15 @@
 ﻿using d360.core.entities.Contracts;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
+using d360.core.enums;
+using System.ComponentModel.DataAnnotations;
+using System;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), NotMapped]
+    [DataContract(Namespace = NAMESPACE)]
     public class CommentVote : BaseIntObject, IIntObject
     {
         #region Properties
@@ -16,9 +21,43 @@ namespace d360.core.entities
         public int ResourceID { get; set; }
 
         [DataMember]
-        public int Vote { get; set; }
+        public Emoji Emoji { get; set; }
 
         #endregion
 
+    }
+
+    [DataContract(Namespace = NAMESPACE)]
+    public class CommentAggregateVoteDetail : BaseObject
+    {
+        [DataMember, Key, Column(Order = 1)]
+        [JsonConverter(typeof(StringEnumConverter))]
+        public Emoji Emoji { get; set; }
+
+        [DataMember, Key, Column(Order = 2)]
+        public int Count { get; set; }
+    }
+
+    [DataContract(Namespace = NAMESPACE)]
+    public class CommentVoteDetail : BaseObject
+    {
+        [DataMember, Key, Column(Order = 1)]
+        public Emoji emoji { get; set; }
+
+        [DataMember, Key, Column(Order = 2)]
+        public Guid resourceUid { get; set; }
+
+        [DataMember]
+        public string userDisplayName { get; set; }
+    }
+
+    [DataContract(Namespace = NAMESPACE)]
+    public class CommentVoterDetail : BaseObject
+    {
+        [DataMember, Key, Column(Order = 1)]
+        public Guid resourceUid { get; set; }
+
+        [DataMember]
+        public string userDisplayName { get; set; }
     }
 }

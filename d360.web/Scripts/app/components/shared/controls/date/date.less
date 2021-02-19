@@ -42,9 +42,13 @@ ig-date {
 }
 
 
-.ig-date {
-    &.ng-trigger-overlayAnimation {
+.ig-date, p-calendar .ig-date {
+    &.ig-date-overlay-normal-index {
         z-index: 25000 !important;
+    }
+
+    &.ig-date-overlay-lower-index {
+        z-index: 899 !important;
     }
 
     .ig-input {
@@ -160,6 +164,7 @@ ig-date {
 
                     td {
                         border: none;
+                        background: @ig-white;
 
                         &.p-datepicker-today span {
                             border: none !important;
@@ -226,7 +231,6 @@ ig-date {
                                 background: @ig-grey-t4;
                                 border-radius: 2px;
                             }
-                            
                         }
                     }
                 }
@@ -235,7 +239,7 @@ ig-date {
     }
 
 
-    button.p-button {
+    button.p-button, button.p-button.p-button-icon-only {
         color: @ig-black;
         background: rgba(0,0,0,0.07);
         border-radius: 2px;

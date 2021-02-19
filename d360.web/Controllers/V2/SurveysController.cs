@@ -51,10 +51,10 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("AssetUid", "The Uid of a specific asset to return.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("AsOfDate", "Pull results up to a certain date.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "A full list of survey results.", typeof(SurveyApiResponseModel)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
 
@@ -74,7 +74,7 @@ namespace d360.web.Controllers.V2
                 var survey = SurveyRepository.GetSurveyTypeByUid(surveyUid);
                 if (survey == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Survey Type with Uid {surveyTypeUid} not found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Survey Type with Uid {surveyTypeUid} not found.")).ConfigureAwait(false);
                 }
                 var queryParams = Request.GetQueryNameValuePairs();
 
@@ -92,7 +92,7 @@ namespace d360.web.Controllers.V2
                     var asset = AssetRepository.GetAssetByUID(uid);
                     if (asset == null)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {uid} not found."));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {uid} not found.")).ConfigureAwait(false);
                     }
                 }
 
@@ -102,7 +102,7 @@ namespace d360.web.Controllers.V2
                     var paramDate = queryParams.FirstOrDefault(x => x.Key.ToLower() == "asofdate").Value;
                     if (!DateTime.TryParse(paramDate, out date))
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Invalid date value for AsOfDate parameter!"));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Invalid date value for AsOfDate parameter!")).ConfigureAwait(false);
                     }
                 }
 
@@ -130,7 +130,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(errorCode, errorTitle, errorMessage));
+                return await Task.FromResult(errorMessageResponse(errorCode, errorTitle, errorMessage)).ConfigureAwait(false);
             }
 
         }
@@ -147,11 +147,11 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("SurveyTypeUid", "This querystring parameter is optional and if specified it returns the properties of a single survey", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("HasResponses", "Default value(blank) returns all types. Set to true to return only those survey types to which users have responded, and set to false to return survey types without responses", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by. The acceptable fields are Name, CreatedOn, UpdatedOn, ValidForDays and NumberOfResponses. By default the results are ordered by CreatedOn ascending. Fields ValidForDays and NumberOfResponses are sorted descending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "A full list of survey types.", typeof(SurveyTypeApiResponseModel)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset type not found based on Uid provided.", typeof(ErrorResponse)),
         ]
@@ -169,14 +169,14 @@ namespace d360.web.Controllers.V2
 
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid)).ConfigureAwait(false);
                 }
 
                 var status = validator.ValidateGetSurveyTypesRequest(queryParams);
 
                 if (status != null)
                 {
-                    return await Task.FromResult(errorMessageResponse(status.StatusCode, status.Error, status.Message));
+                    return await Task.FromResult(errorMessageResponse(status.StatusCode, status.Error, status.Message)).ConfigureAwait(false);
                 }
 
                 if (queryParams.Any(x => x.Key.ToLower() == "assettypeuid"))
@@ -186,7 +186,7 @@ namespace d360.web.Controllers.V2
                     var assetType = AssetRepository.GetAssetTypeByUID(uid);
                     if (assetType == null)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type with Uid {uid} not found."));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type with Uid {uid} not found.")).ConfigureAwait(false);
                     }
                 }
 
@@ -197,14 +197,14 @@ namespace d360.web.Controllers.V2
                     var surveyType = SurveyRepository.GetSurveyTypeByUid(uid);
                     if (surveyType == null)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Survey type with Uid {uid} not found."));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Survey type with Uid {uid} not found.")).ConfigureAwait(false);
                     }
                 }
 
 
                 var response = SurveyRepository.GetSurveyTypes(queryParams);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response))).ConfigureAwait(false);
 
             }
 
@@ -236,11 +236,11 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("AssetUid", "The Uid of a specific asset to return.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("AsOfDate", "Pull results up to a certain date.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by. The acceptable fields are FirstRespondedOn, LastRespondedOn, NumberOfResponders. By default the results are ordered by FirstRespondedOn ascending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "A full list of survey results.", typeof(SurveyResultSummaryApiResponseModel)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
 
@@ -283,7 +283,7 @@ namespace d360.web.Controllers.V2
                     }
                     if(asset.AssetType.Object != survey.Object || asset.AssetType.ObjectID != survey.ObjectID)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type does not match with any survey."));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type does not match with any survey.")).ConfigureAwait(false);
                     }
                 }
 
@@ -346,7 +346,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("EndDateRange", "Remove results that were submitted ending on a specific date.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "Count of survey results deleted.", typeof(SurveyAPIDeleteResultsResponseModel)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to delete survey result is invalid, must populate either SurveyTypeUid / ResourceUid / AssetUid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Survey Type with Uid {uid} not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "User with Uid {uid} not found.", typeof(ErrorResponse)),
@@ -358,7 +358,9 @@ namespace d360.web.Controllers.V2
             var errorMessage = "";
 
             if (!Company.CurrentResourceIsAdmin)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+            }
 
             try
             {
@@ -366,37 +368,37 @@ namespace d360.web.Controllers.V2
 
                 if (!this.validator.IsRequiredGuidExistForDeleteSurveyResult(queryParams))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid", $"Either SurveyTypeUid or ResourceUid or AssetUid should populate"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid", $"Either SurveyTypeUid or ResourceUid or AssetUid should populate")).ConfigureAwait(false);
                 }
 
                 if (!this.validator.IsValidSurveyType(queryParams))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Survey Type with Uid {GetUidFromQueryParams(queryParams,"SurveyTypeUid")} not found"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Survey Type with Uid {GetUidFromQueryParams(queryParams,"SurveyTypeUid")} not found")).ConfigureAwait(false);
                 }
 
                 if (!this.validator.IsValidAsset(queryParams))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Asset with Uid {GetUidFromQueryParams(queryParams, "AssetUid")} not found"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Asset with Uid {GetUidFromQueryParams(queryParams, "AssetUid")} not found")).ConfigureAwait(false);
                 }
 
                 if (!this.validator.IsValidResource(queryParams))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"User with Uid {GetUidFromQueryParams(queryParams, "ResourceUid")} not found"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"User with Uid {GetUidFromQueryParams(queryParams, "ResourceUid")} not found")).ConfigureAwait(false);
                 }
 
                 if (!this.validator.IsValidDate(queryParams, "StartDateRange"))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid", $"Not a valid StartDateRange"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid", $"Not a valid StartDateRange")).ConfigureAwait(false);
                 }
 
                 if (!this.validator.IsValidDate(queryParams, "EndDateRange"))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid", $"Not a valid EndDateRange"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid", $"Not a valid EndDateRange")).ConfigureAwait(false);
                 }
 
                 int count = this.SurveyRepository.DeleteSurveyResults(queryParams);
                 var result = new SurveyAPIDeleteResultsResponseModel() { Message = $@"{count} results removed.", Success=true };
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result))).ConfigureAwait(false);
 
             }
 
@@ -424,7 +426,7 @@ namespace d360.web.Controllers.V2
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "The survey type Uid and name.", typeof(SurveyAssetApiResponseModel)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid.", typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> GetAssetSurveyAsync(string assetUid)
@@ -434,7 +436,7 @@ namespace d360.web.Controllers.V2
 
             if (!Guid.TryParse(assetUid, out Guid parsedAssetUid))
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid", $"Invalid asset uid provided"));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid", $"Invalid asset uid provided")).ConfigureAwait(false);
             }
 
             var asset = AssetRepository.GetAssetByUID(parsedAssetUid);
@@ -447,7 +449,7 @@ namespace d360.web.Controllers.V2
             try
             {
                 var survey = await SurveyRepository.GetAssetSurvey(parsedAssetUid);
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, survey)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, survey))).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -457,7 +459,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -474,7 +476,7 @@ namespace d360.web.Controllers.V2
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.Created, "The survey results were created successfully"),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Survey Type for the provided uid was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Question Survey Type for the provided uid was not found.", typeof(ErrorResponse)),
@@ -488,19 +490,19 @@ namespace d360.web.Controllers.V2
 
             if (model == null || model.Questions == null || model.Questions.Count == 0)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Request body is not formatted correctly"));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Request body is not formatted correctly")).ConfigureAwait(false);
             }
 
             if (!Guid.TryParse(surveyTypeUid, out Guid uid))
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid format for surveyTypeUid"));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid format for surveyTypeUid")).ConfigureAwait(false);
             }
 
             var surveyType = SurveyRepository.GetSurveyTypeByUid(uid);
 
             if (surveyType == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Survey type for uid {uid} not found"));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Survey type for uid {uid} not found")).ConfigureAwait(false);
             }
 
 
@@ -509,7 +511,7 @@ namespace d360.web.Controllers.V2
                 var questionType = SurveyRepository.GetSurveyQuestionTypeByUid(question.SurveyQuestionUid);
                 if (questionType == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Survey Question Type for uid {question.SurveyQuestionUid} not found"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Survey Question Type for uid {question.SurveyQuestionUid} not found")).ConfigureAwait(false);
                 }
 
                 var responses = await SurveyRepository.GetSurveyQuestionResponses(questionType.Uid);
@@ -517,7 +519,7 @@ namespace d360.web.Controllers.V2
 
                 if (invalidResponses.Any())
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Bad Request", $"Survey Question Type for uid {question.SurveyQuestionUid} contains invalid responses: [{string.Join(", ", invalidResponses)}]"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Bad Request", $"Survey Question Type for uid {question.SurveyQuestionUid} contains invalid responses: [{string.Join(", ", invalidResponses)}]")).ConfigureAwait(false);
                 }
             }
 
@@ -525,18 +527,18 @@ namespace d360.web.Controllers.V2
 
             if (asset == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Asset for uid {model.AssetUid} not found"));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Asset for uid {model.AssetUid} not found")).ConfigureAwait(false);
             }
 
             if (surveyType.Object != asset.AssetType.Object || surveyType.ObjectID != asset.AssetType.ObjectID)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Bad Request", $"Survey not valid for this asset type"));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Bad Request", $"Survey not valid for this asset type")).ConfigureAwait(false);
             }
 
             try
             {
                 await SurveyRepository.PostSurveyResults(model, asset, surveyType);
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.Created)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.Created))).ConfigureAwait(false);
 
             }
             catch (Exception ex)
@@ -560,7 +562,9 @@ namespace d360.web.Controllers.V2
             {
                 var uidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == parameterName.ToLower()).Value;
                 if (!Guid.TryParse(uidString, out uid))
+                {
                     uid = Guid.Empty;
+                }
 
             }
             return uid;

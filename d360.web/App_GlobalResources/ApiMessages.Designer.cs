@@ -70,6 +70,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error getting measure history.
+        /// </summary>
+        internal static string EndpointGettingMeasureHistoryHeading {
+            get {
+                return ResourceManager.GetString("EndpointGettingMeasureHistoryHeading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Not authorized.
         /// </summary>
         internal static string EndpointNotAuthorizedHeading {
@@ -88,6 +97,33 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error recalculating measure score items.
+        /// </summary>
+        internal static string EndpointRecalculatingMeasureScoreItemsHeading {
+            get {
+                return ResourceManager.GetString("EndpointRecalculatingMeasureScoreItemsHeading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error adding score results.
+        /// </summary>
+        internal static string ErrorAddingScoreResultsHeading {
+            get {
+                return ResourceManager.GetString("ErrorAddingScoreResultsHeading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You have submitted an invalid or empty data set. Please check your request and submit again..
+        /// </summary>
+        internal static string ErrorInvalidDatasetMessage {
+            get {
+                return ResourceManager.GetString("ErrorInvalidDatasetMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Forbidden.
         /// </summary>
         internal static string Forbidden {
@@ -102,6 +138,24 @@ namespace Resources {
         internal static string ForbiddenUserNotAuthorizedMessage {
             get {
                 return ResourceManager.GetString("ForbiddenUserNotAuthorizedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Request.
+        /// </summary>
+        internal static string InvalidRequest {
+            get {
+                return ResourceManager.GetString("InvalidRequest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid score type provided, please provide a valid score type..
+        /// </summary>
+        internal static string InvalidScoreType {
+            get {
+                return ResourceManager.GetString("InvalidScoreType", resourceCulture);
             }
         }
         
@@ -129,6 +183,15 @@ namespace Resources {
         internal static string UnknownError {
             get {
                 return ResourceManager.GetString("UnknownError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An unknown error occurred and has been logged for further investigation. Please try your request again later..
+        /// </summary>
+        internal static string UnknownErrorInvestigatingMessage {
+            get {
+                return ResourceManager.GetString("UnknownErrorInvestigatingMessage", resourceCulture);
             }
         }
     }

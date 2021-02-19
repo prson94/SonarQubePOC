@@ -39,15 +39,23 @@ namespace d360.web.Controllers
         [HttpPost, Route("Results"), NonNullableParameters]
         public async Task<JsonResult> Results(QueryRequest queryRequest)
         {
-            var o = new SearchResultsViewModel();
-
-            if (!string.IsNullOrEmpty(queryRequest.Term))
+            try
             {
-                queryRequest.FieldBoosters = Company.Query<FieldBoost>("SELECT Field, Boost FROM [dbo].[SearchBoost]").ToList();
-                o.Result = SearchSource.GetSearchResultsWithAggregation(Company.CurrentCompanyID, Company.CurrentResourceID, queryRequest, o.Categories, GetQueryLimitation());
-                await AugmentResults(o.Result.Results);
+                var o = new SearchResultsViewModel();
+
+                if (!string.IsNullOrEmpty(queryRequest.Term))
+                {
+                    queryRequest.FieldBoosters = Company.Query<FieldBoost>("SELECT Field, Boost FROM [dbo].[SearchBoost]").ToList();
+                    o.Result = SearchSource.GetSearchResultsWithAggregation(Company.CurrentCompanyID, Company.CurrentResourceID, queryRequest, o.Categories, GetQueryLimitation());
+                    await AugmentResults(o.Result.Results);
+                }
+                return Json(o);
             }
-            return Json(o);
+            catch (Exception ex)
+            {
+                Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
+                return jsonException(ex, System.Net.HttpStatusCode.InternalServerError);
+            }
         }
 
         [HttpGet, Route("AutoComplete"), NonNullableParameters]
@@ -110,21 +118,29 @@ namespace d360.web.Controllers
 
             //We have Grammatic Types if we have Nyms or any intersects with predicate type 6
             if (Company.Nyms.Any())
+            {
                 visibleCategories.Add("Synonym");
+            }
             else if (Company.Query<int>(@"select case when exists(select *
                     from[intersect] I
                     inner join IntersectType T on T.ID = I.IntersectTypeID
                     inner join Predicate P on P.ID = T.PredicateID and P.Type = 6) then 1
                     else 0 end").FirstOrDefault() == 1)
+            {
                 visibleCategories.Add("Synonym");
+            }
 
             if (Community.IsFusionEnabled())
             {
                 if (Company.FusionAttributes.Any())
+                {
                     visibleCategories.Add("FusionAttributes");
+                }
 
                 if (Company.FusionTypes.Any())
+                {
                     visibleCategories.Add("FusionType");
+                }
             }
 
             return Json(visibleCategories, JsonRequestBehavior.AllowGet);
@@ -215,9 +231,13 @@ namespace d360.web.Controllers
                     foreach (var r in results.Where(r => r.AssetTypeUid == m.AssetTypeUid))
                     {
                         if (!string.IsNullOrEmpty(m.ImageIconUrl))
+                        {
                             r.ImageUrl = constants.COMPANY_RESOURCES_URL + m.ImageIconUrl;
-                        else if(!string.IsNullOrEmpty(m.Icon))
+                        }
+                        else if (!string.IsNullOrEmpty(m.Icon))
+                        {
                             r.Icon = m.Icon;
+                        }
                     }
                 }
             }
@@ -231,13 +251,20 @@ namespace d360.web.Controllers
             //Assign icons from sitenav based on category
             if (results.Any(r => r.MissingIcon() && siteNavMap.Keys.Contains(r.Group)))
             {
-                var sql = "select Name, Icon FROM [dbo].[SiteNav] WHERE Name in @names";
+                var sql = "select Name, Icon, ImageIconUrl FROM [dbo].[SiteNav] WHERE Name in @names";
                 var names = siteNavMap.Values.ToList();
-                Dictionary<string, string> iconMap = Company.Query<(string Name, string Icon)>(sql, new { names }).ToDictionary(t => t.Name, t => t.Icon);
+                Dictionary<string, (string, string)> iconMap = Company.Query<(string Name, string Icon, string ImageIconUrl)>(sql, new { names }).ToDictionary(t => t.Name, t => (t.Icon, t.ImageIconUrl));
 
                 foreach (var r in results.Where(res => res.MissingIcon() && iconMap.ContainsKey(siteNavMap[res.Group])))
                 {
-                    r.Icon = iconMap[siteNavMap[r.Group]];
+                    if (!string.IsNullOrEmpty(iconMap[siteNavMap[r.Group]].Item2))
+                    {
+                        r.ImageUrl = constants.COMPANY_RESOURCES_URL + iconMap[siteNavMap[r.Group]].Item2;
+                    }
+                    else if (!string.IsNullOrEmpty(iconMap[siteNavMap[r.Group]].Item1))
+                    {
+                        r.Icon = iconMap[siteNavMap[r.Group]].Item1;
+                    }
                 }
             }
 
@@ -250,12 +277,14 @@ namespace d360.web.Controllers
 
         private async Task AppendPaths(IEnumerable<TypeaheadResult> results)
         {
-            Dictionary<Guid, List<PathComponent>> paths = await AssetRepository.GetAssetPathComponents(results.Select(r => r.Uid ?? Guid.Empty).ToList());
+            Dictionary<Guid, List<PathComponent>> paths = await AssetRepository.GetAssetPathComponents(results.Where(r => r.Uid.HasValue).Select(r => r.Uid ?? Guid.Empty).ToList());
             foreach(var r in results.Where(r => r.Uid.HasValue))
             {
                 Guid uid = r.Uid ?? Guid.Empty;
                 if (paths.ContainsKey(uid))
+                {
                     r.AssetPath = paths[uid];
+                }
             }
         }
 

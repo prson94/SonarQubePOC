@@ -301,6 +301,15 @@ order by wi.StartedOn desc";
             });
 
             @event.SettingsObject = XmlToDynamic(@event.Settings, false);
+            
+            //Augment existing schedule with only interval with defaults for days and type
+            if (@event.SettingsObject.Settings != null &&
+                @event.SettingsObject.Settings.ScheduleInterval != null &&
+                @event.SettingsObject.Settings.ScheduleType == null)
+            {
+                @event.SettingsObject.Settings.ScheduleType = "d";
+                @event.SettingsObject.Settings.ScheduleDays = 127;
+            }
 
             return new WorkflowDiagramModel
             {
@@ -313,8 +322,8 @@ order by wi.StartedOn desc";
             };
         }
 
-        [HttpPost, Route("ReassignWorkflowResource/{itemStepId:int}/{resourceId:int}")]
-        public async Task<HttpResponseMessage> ReassignWorkflowResource(int itemStepId, int resourceId)
+        [HttpPost, Route("ReassignWorkflowResource/{itemStepId:int}/{resourceId:int}/{clearAssignments:bool}")]
+        public async Task<HttpResponseMessage> ReassignWorkflowResource(int itemStepId, int resourceId, bool clearAssignments)
         {
             try
             {
@@ -324,7 +333,7 @@ order by wi.StartedOn desc";
                 else
                 {
                     var resource = Company.GlobalReportingResources.Where(x => x.ResourceID == resourceId).ToList().FirstOrDefault();
-                    await Company.BulkWorkflowFormReassign(new List<WorkflowItemStep> { itemStep }, resource, Company.CurrentResourceID, true);
+                    await Company.BulkWorkflowFormReassign(new List<WorkflowItemStep> { itemStep }, resource, Company.CurrentResourceID, true, clearAssignments);
                 }
                 return Request.CreateResponse(HttpStatusCode.Accepted, -1);
             }
@@ -770,11 +779,23 @@ order by wi.StartedOn desc";
 
                     if (reg == null) throw new Exception("RELATIONSHIP INPUT CANNOT IDENTIFY WORKFLOW EVENT REGISTRATION");
 
+                    var obj = reg.Object;
+                    var objId = reg.ObjectID;
+
+                    if (reg.Object == "IssueType")
+                    {
+                        var issue = Company.Issues.FirstOrDefault(i => i.ID == itemStep.Item.ObjectID);
+                        if (issue == null) throw new Exception("RELATIONSHIP INPUT CANNOT IDENTIFY ISSUE OBJECT");
+
+                        obj = issue.ObjectType;
+                        objId = issue.ObjectTypeID;
+                    }
+
                     var itemSql = "select A.DisplayValue as [Text], A.Object + '|' + cast(A.ObjectID as varchar) as [Value] from AssetDetail A where A.Type = @objectType and A.TypeID = @objectTypeId order by 1";
 
                     item.Values = new List<System.Web.Mvc.SelectListItem>();
 
-                    if (reg.Object == intersectType.Subject && reg.ObjectID == intersectType.SubjectID)
+                    if (obj == intersectType.Subject && objId == intersectType.SubjectID)
                     {
                         // load the object items into the values array                        
                         item.AllowMultipleValues = !(intersectType.ObjectCardinality == core.enums.Cardinality.One);
@@ -870,6 +891,14 @@ order by wi.StartedOn desc";
 
             // check if the user has access
             var IsUserAllowedToComplete = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID && x.ResourceObjectID == Company.CurrentResourceID).Any();
+            //See if there are more than one user and the response type is first response if so we can give option to reassign to a sigle user and clear other assignments.
+          
+            
+            var itemFields = (WorkflowItemStepDetail.FieldsModel)new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel)).Deserialize(new StringReader(itemStep.Fields));
+            var assignments = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID).Count();
+            var IsClearAssignementsAllowed = (assignments > 1)
+                && (formSettings.ResponseType == FormResponseType.FirstResponse);
+
 
 
             //replace any tokens in hte description            
@@ -895,7 +924,8 @@ order by wi.StartedOn desc";
                 IssueObjectName = issueItemDetails != null ? issueItemDetails.Name : "",
                 IssueTypeName = issueTypeName,
                 AllowReassignObject = allowReassignObject,
-                AllowReassignResource = allowReassignResource
+                AllowReassignResource = allowReassignResource,
+                IsClearAssignementsAllowed
             });
         }
 
@@ -973,11 +1003,23 @@ order by wi.StartedOn desc";
 
                         if (reg == null) throw new Exception("RELATIONSHIP INPUT CANNOT IDENTIFY WORKFLOW EVENT REGISTRATION");
 
+                        var obj = reg.Object;
+                        var objId = reg.ObjectID;
+
+                        if (reg.Object == "IssueType")
+                        {
+                            var issue = Company.Issues.FirstOrDefault(i => i.ID == itemStep.Item.ObjectID);
+                            if (issue == null) throw new Exception("RELATIONSHIP INPUT CANNOT IDENTIFY ISSUE OBJECT");
+
+                            obj = issue.ObjectType;
+                            objId = issue.ObjectTypeID;
+                        }
+
                         var itemSql = "select i.Name as Text, i.Object + '|' + cast(i.ObjectID as varchar) as Value from AssetType i where i.object = @objectType and i.objectid = @objectTypeId order by 1";
 
                         item.Values = new List<System.Web.Mvc.SelectListItem>();
 
-                        if (reg.Object == intersectType.Subject && reg.ObjectID == intersectType.SubjectID)
+                        if (obj == intersectType.Subject && objId == intersectType.SubjectID)
                         {
                             // load the object items into the values array                        
                             item.AllowMultipleValues = !(intersectType.ObjectCardinality == core.enums.Cardinality.One);
@@ -1406,6 +1448,7 @@ order by wi.StartedOn desc";
                 excludedTypes.Add("Html");
 
             excludedTypes.Remove(DataType.JsonElement.ToString());
+            excludedTypes.Remove(DataType.Link.ToString());
 
             fields = fields.Where(f => !excludedTypes.Contains(f.Type)).ToList();
 
@@ -2327,7 +2370,9 @@ order by wi.StartedOn desc";
                                     ,case when wi.[object] = 'Issue' then utility.getassetdisplayvalue(cod.id)
                                       when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)')
                                         else coalesce(utility.getassetdisplayvalue(ass.id),'(unknown)')
-                                    end as Name
+                                    end as Name,
+                                    wvs.Settings.query('settings/FormResponseType').value('.', 'varchar(50)') as 'responseType',
+	                                itemCount.assignedCount as 'countAssigned'
                                 from
 	                                [workflow].[type] wt
 	                                inner join [workflow].[version] wv on (wt.id = wv.typeid)
@@ -2337,6 +2382,10 @@ order by wi.StartedOn desc";
 	                                inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
 	                                inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
 	                                inner join [workflow].[itemassignment] wia on (wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r and (wia.itemstepid = wis.id or wia.itemstepid is null))
+                                    outer apply( 
+										SELECT count(*) as 'assignedCount' from [workflow].[itemassignment] 
+											WIC WHERE WIC.itemid = wi.id and (WIC.itemstepid = wis.id or WIC.itemstepid is null)
+										) itemCount(assignedCount)                                    
                                     inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid)
                                     left outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue')
                                     left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
@@ -2560,15 +2609,30 @@ order by wi.StartedOn desc";
         }
 
         [Route("versionstep/form/lookups/{objectType}/{objectId:int}"), HttpGet]
-        public HttpResponseMessage GetWorkflowVersionStepFormLookups(string objectType, int objectId)
+        public HttpResponseMessage GetWorkflowVersionStepFormLookups(string objectType, int objectId, string issueObject = null, int? issueObjectId = null)
         {
+            bool hasIssueObject = !string.IsNullOrEmpty(issueObject);
+
             var sql = @"select ft.ID as value, ft.FriendlyName + ' (' + coalesce( ri.Name, ft.LookupObjectType) + ')' as [label] from 
                  FieldType ft
                  left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
-                 where ft.Object = @objectType and ft.ObjectID = @objectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0
-                 order by ft.FriendlyName";
+                 where ft.Object = @objectType and ft.ObjectID = @objectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0";
 
-            var results = Company.Query<dynamic>(sql, new { objectType = objectType, objectId = objectId });
+            if (hasIssueObject)
+            {
+                sql += @" union all
+                select ft.ID as value, 'Action Field :: ' + ft.FriendlyName + ' (' + coalesce( ri.Name, ft.LookupObjectType) + ')' as [label] from 
+                 FieldType ft
+                 left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
+                 where ft.Object = @issueObject and ft.ObjectID = @issueObjectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0
+                order by 2";
+            }
+            else
+            {
+                sql += " order by ft.FriendlyName";
+            }
+
+            var results = Company.Query<dynamic>(sql, new { objectType,  objectId, issueObject, issueObjectId });
 
             return Request.CreateResponse(HttpStatusCode.OK, results);
         }
@@ -2647,88 +2711,9 @@ order by wi.StartedOn desc";
 
                 if (result.ActivityType == WorkflowActivityType.Form && result.Complete == false)
                 {
-                    if (result.MessageRecipientType == EmailTaskRecipientType.Responsibility.ToString() || result.MessageRecipientType == EmailTaskRecipientType.Group.ToString() || result.MessageRecipientType == EmailTaskRecipientType.None.ToString())
-                    {
-                        //get responsible users
-                        List<GlobalReportingResource> users = null;
-                        if (result.MessageRecipientType == EmailTaskRecipientType.Group.ToString())
-                        {
-                            int recipientGroup = Company.Query<int>(@"select ObjectID from [dbo].[Asset] a
-                                        inner join workflow.VersionStep vs
-	                                        on a.[Object] = 'Group' and a.uid = vs.Settings.query('settings/MessageToGroup').value('.', 'uniqueidentifier')
-                                        where vs.id = @stepId;", new { stepId = result.StepID }).FirstOrDefault();
-                            if (recipientGroup > 0)
-                            {
-                                users = Company.GetWorkflowUsersBasedOnGroup(recipientGroup).ToList();
-                            }
-                        }
-                        else
-                        {
-                            users = Company.GetWorkflowUsersBasedOnResponsibility(result.TypeID, result.StepID, result.ItemID).ToList();
-                        }
-
-                        if (fields?.Reassignments?.Any() ?? false)
-                        {
-                            foreach (var reassign in fields.Reassignments)
-                            {
-                                //continue if it's not a bulk resource reassignment
-                                if (reassign.ReassignType != "Resource" || reassign.ToResourceID == 0)
-                                    continue;
-
-                                //remove old assignee
-                                var ix = users.FindIndex(u => u.ResourceID == reassign.FromResourceID);
-                                if (ix > -1) users.RemoveAt(ix);
-
-                                //add new assignee
-                                var  dx= users.FindIndex(u => u.ResourceID == reassign.ToResourceID);
-                                if (dx == -1)
-                                {
-                                    var assignee = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == reassign.ToResourceID);
-                                    if (assignee != null)
-                                        users.Add(assignee);
-                                }
-                            }
-                        }
-
-                        //forms
-                        if (fields?.Forms?.Any() ?? false)
-                        {
-                            foreach (var form in fields.Forms)
-                            {
-                                var ix = users.FindIndex(u => u.ResourceID == form.ResourceID);
-                                if (ix > -1) users.RemoveAt(ix);
-                            }
-                        }
-
-                        result.Assignee = string.Join(", ", users.Select(u => u.FullName));
-                        result.IsAssignedLoginUser = users.Where(x => x.ResourceID == Company.CurrentResourceID).Count() == 0 ? bool.FalseString : bool.TrueString;
-                    }
-                    else if (result.MessageRecipientType == EmailTaskRecipientType.SpecificUser.ToString() || result.MessageRecipientType == EmailTaskRecipientType.Initiator.ToString())
-                    {
-                        var userList = (result.Assignee ?? "").Split(';');
-                        var formattedUserList = new List<string>();
-                        foreach (var u in userList)
-                        {
-                            var user = Company.GlobalReportingResources.FirstOrDefault(c => c.Email == u);
-
-                            if (user != null && (fields?.Reassignments?.Any(r => r.FromResourceID == user.ResourceID) ?? false))
-                            {
-                                var resId = fields.Reassignments.First().ToResourceID;
-                                var assignee = Company.GlobalReportingResources.FirstOrDefault(c => c.ResourceID == resId);
-                                if (assignee != null)
-                                    user = assignee;
-                            }
-
-                            if (user != null)
-                                formattedUserList.Add(user.FullName);
-                            else
-                                formattedUserList.Add(u);
-
-                            if (user != null && user.ResourceID == Company.CurrentResourceID)
-                                result.IsAssignedLoginUser = bool.TrueString;
-                        }
-                        result.Assignee = string.Join(", ", formattedUserList);
-                    }
+                    var assignmentIds = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == result.ID).Select(x => new { x.ResourceObject, x.ResourceObjectID });
+                    var formattedUserList = Company.GlobalReportingResources.Where(x => assignmentIds.Any(a=>a.ResourceObjectID == x.ResourceID)).ToList().Select(x => x.FullName);
+                    result.Assignee = string.Join(", ", formattedUserList);
 
                 }
             }
@@ -2976,7 +2961,14 @@ order by wi.StartedOn desc";
                         var actionFieldTypeId = int.Parse(fieldData[1]);
 
                         var actionField = Company.Fields.FirstOrDefault(x => x.FieldTypeID == actionFieldTypeId && x.ObjectID == detail.ObjectID);
-                        fieldChange.Value = actionField?.FormattedValue;
+                        if (fieldChange.Type == "Link")
+                        {
+                            fieldChange.Value = actionField?.Value;
+                        }
+                        else
+                        {
+                            fieldChange.Value = actionField?.FormattedValue;
+                        }
 
                     }
 
@@ -3029,6 +3021,20 @@ order by wi.StartedOn desc";
                                 userList.Add((int)reassigned["@byResourceId"]);
                             }
                         }
+                        else if (reassigned["@reassignType"] == "Resource" && reassigned["@objectType"] != null)
+                        {
+                            hasBulkReassignments = true;
+                            userList.Add((int)reassigned["@toResourceId"]);
+
+                            if (reassigned["@fromResourceId"] != null)
+                            {
+                                userList.Add((int)reassigned["@fromResourceId"]);
+                            }
+                            if (reassigned["@byResourceId"] != null)
+                            {
+                                userList.Add((int)reassigned["@byResourceId"]);
+                            }
+                        }
                     }
                 }
 
@@ -3041,7 +3047,7 @@ order by wi.StartedOn desc";
                     {
                         var reassigned = detail.ItemFields.Reassigned[i];
 
-                        if (reassigned["@reassignType"] == "Resource")
+                        if (reassigned["@reassignType"] == "Resource" && reassigned["@objectType"] == null)
                         {
                             if (reassigned["@byResourceId"] != null)
                             {
@@ -3059,6 +3065,46 @@ order by wi.StartedOn desc";
                             {
                                 var res = users.FirstOrDefault(r => r.ResourceID == (int)reassigned["@fromResourceId"]);
                                 reassigned["@fromResourceName"] = res == null ? "[unknown user]" : res.FullName;
+                            }
+                        }
+                        else
+                        {
+                            if (reassigned["@byResourceId"] != null)
+                            {
+                                var res = users.FirstOrDefault(r => r.ResourceID == (int)reassigned["@byResourceId"]);
+                                reassigned["@byResourceName"] = res == null ? "[unknown user]" : res.FullName;
+                            }
+
+                            if (reassigned["@toResourceId"] != null)
+                            {
+                                var res = users.FirstOrDefault(r => r.ResourceID == (int)reassigned["@toResourceId"]);
+                                reassigned["@toResourceName"] = res == null ? "[unknown user]" : res.FullName;
+                            }
+
+                            if (reassigned["@objectType"] != null)
+                            {
+                                int objectId = (int)reassigned["@objectId"];
+                                var objectType = (string)reassigned["@objectType"] ?? "";
+                                var previousObjectName = "";
+                                if (objectType == "ResponsibilityType")
+                                {
+                                    var resp = Company.ResponsibilityTypes.Where(x => x.ID == objectId).FirstOrDefault();
+                                    previousObjectName = resp != null ? (" - " + resp.Name) : "[unknown]";
+                                }else if(objectType == "Specific Users")
+                                {
+                                    previousObjectName = "";
+                                }
+                                else
+                                {
+                                    var sql = @"Select D.DisplayValue as ObjectName
+                                                From
+                                                Asset A
+                                                cross apply dbo.GetAssetDisplayValueById(A.ID) D
+                                                where   A.Object = @obj and A.ObjectID = @objId";
+                                    previousObjectName = (" - ") + Company.Query<string>(sql, new { obj = objectType, objId = objectId }).FirstOrDefault();
+
+                                }
+                                reassigned["@fromResourceName"] = $"{objectType}{previousObjectName}";
                             }
                         }
                     }
@@ -3501,6 +3547,14 @@ order by wi.StartedOn desc";
                                     if (assignee != null)
                                         users.Add(assignee);
                                 }
+
+                                if(res.ReassignType == "Resource")
+                                {
+                                    users = new List<GlobalReportingResource>();
+                                    var assignee = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == res.ToResourceID);
+                                    if (assignee != null)
+                                        users.Add(assignee);
+                                }
                             }
 
                             var userHasOpenAssignment = Company.WorkflowItemAssignments.Any(i => i.ItemID == detail.ItemID && (i.ItemStepID == detail.ItemStepID || i.ItemStepID == null) && i.ResourceObject == "Resource"
@@ -3510,53 +3564,53 @@ order by wi.StartedOn desc";
                         }
                     }
 
-                    foreach (var form in itemFields.Forms)
-                    {
-                        if (form.ResourceID != 0 && !resourceIds.Any(r => r == form.ResourceID))
-                            resourceIds.Add(form.ResourceID);
-                    }
-
-                    for (int i = 0; i < detail.ItemFields.form.Count; i++)
-                    {
-                        var form = detail.ItemFields.form[i];
-
-                        if (form.field != null)
+                        foreach (var form in itemFields.Forms)
                         {
-                            if (form.field.GetType() != typeof(JArray))
+                            if (form.ResourceID != 0 && !resourceIds.Any(r => r == form.ResourceID))
+                                resourceIds.Add(form.ResourceID);
+                        }
+
+                        for (int i = 0; i < detail.ItemFields.form.Count; i++)
+                        {
+                            var form = detail.ItemFields.form[i];
+
+                            if (form.field != null)
                             {
-                                form.field = new JArray(form.field);
+                                if (form.field.GetType() != typeof(JArray))
+                                {
+                                    form.field = new JArray(form.field);
+                                }
+                            }
+                            else
+                            {
+                                form.field = new JArray();
+                            }
+
+                            if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
+                            {
+                                if (!resourceIds.Any(r => r == resId))
+                                    resourceIds.Add(resId);
                             }
                         }
-                        else
+
+
+                        //get all relevant resource info
+                        var formResources = Company.GlobalReportingResources.Where(r => resourceIds.Contains(r.ResourceID)).ToList();
+
+                        for (int i = 0; i < detail.ItemFields.form.Count; i++)
                         {
-                            form.field = new JArray();
+                            var form = detail.ItemFields.form[i];
+
+                            if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
+                            {
+                                var res = formResources.FirstOrDefault(r => r.ResourceID == resId);
+                                if (res != null)
+                                    form.resourceName = res.FullName;
+                            }
+                            SetWorkFlowStepRelationshipAssets(form);
                         }
-
-                        if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
-                        {
-                            if (!resourceIds.Any(r => r == resId))
-                                resourceIds.Add(resId);
-                        }
-                    }
-
-
-                    //get all relevant resource info
-                    var formResources = Company.GlobalReportingResources.Where(r => resourceIds.Contains(r.ResourceID)).ToList();
-
-                    for (int i = 0; i < detail.ItemFields.form.Count; i++)
-                    {
-                        var form = detail.ItemFields.form[i];
-
-                        if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
-                        {
-                            var res = formResources.FirstOrDefault(r => r.ResourceID == resId);
-                            if (res != null)
-                                form.resourceName = res.FullName;
-                        }
-                        SetWorkFlowStepRelationshipAssets(form);
                     }
                 }
-            }
             catch (Exception ex)
             {
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, ex);
@@ -3687,7 +3741,7 @@ order by wi.StartedOn desc";
 
             try
             {
-                await Company.BulkWorkflowFormReassign(itemSteps, resource, model.OriginalAssigneeResourceID, model.SendFormEmails);
+                await Company.BulkWorkflowFormReassign(itemSteps, resource, model.OriginalAssigneeResourceID, model.SendFormEmails, model.ClearOtherAssignments);
             }
             catch (Exception ex)
             {

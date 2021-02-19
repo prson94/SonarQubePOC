@@ -133,17 +133,25 @@
                 <d3s-tile-actions hideTooltip="true" hasAdd="true" (addClick)="add()"></d3s-tile-actions>
             </header>
 
-            <p-table #dt [value]="step.fields.form.field" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="10" [rowsPerPageOptions]="defaultPagingOptions">
+            <p-table #dt 
+                     [value]="step.fields.form.field" 
+                     selectionMode="single" 
+                     [metaKeySelection]="true" 
+                     [pageLinks]="3" 
+                     [paginator]="true" 
+                     [rows]="10" 
+                     [rowsPerPageOptions]="defaultPagingOptions"
+                     [selection]="selectedRow"
+                     (onRowSelect)="select($event.index)">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Label</th>
                         <th>Type</th>
                         <th>Required?</th>
                         <th style="width: 40px"></th>
-                        <th style="width: 40px"></th>
                     </tr>
                 </ng-template>
-                <ng-template pTemplate="body" let-item>
+                <ng-template pTemplate="body" let-item let-i="rowIndex">
                     <tr [pSelectableRow]="item">
                         <td>{{item['@label']}}</td>
                         <td>
@@ -155,14 +163,11 @@
 
                         </td>
                         <td>
-                            <div class="RowTools">
-                                <a style="cursor:pointer;" (click)="edit(item)"><i class="fa fa-pencil"></i></a>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="RowTools">
-                                <a style="cursor:pointer;" (click)="remove(item)"><i class="fa fa-trash"></i></a>
-                            </div>
+                            <ng-container>
+                                <button type="button" icon="fa-ellipsis-v" igButton (click)="select(i);menu.toggle($event)" pTooltip="Form Field Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                                <ig-popup-menu (onSelect)="select(i);clickMenu($event)" [items]="menuItems(i != 0, i != (dt.totalRecords-1))" #menu [tabIndex]="1"></ig-popup-menu>
+                            </ng-container>
+
                         </td>
                     </tr>
                 </ng-template>

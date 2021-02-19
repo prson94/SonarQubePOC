@@ -1,4 +1,3 @@
-
 import {debounceTime} from 'rxjs/operators';
 import { Component, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../base.component';
@@ -19,7 +18,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                             placeholder="Tag an item"
                             (onSelect)="selectItem()">   
                             <ng-template let-item pTemplate="item">
-                                   <span style="color:#999999;">{{userFriendlyObjectName(item.Object)}} - <span *ngIf="item.ObjectTypeName">{{item.ObjectTypeName}} -</span></span> {{item.TextPath}} <span *ngIf="item.GoverningDomain">({{item.GoverningDomain}})</span>
+                                   <span style="color:#999999;">{{userFriendlyObjectName(item.Displayobject)}} - <span *ngIf="item.ObjectTypeName">{{item.ObjectTypeName}} -</span></span> {{item.TextPath}}
                             </ng-template>  
                     </p-autoComplete>
         `,
@@ -27,11 +26,11 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
 })
 
 export class SocialTagInputComponent extends BaseComponent  implements OnDestroy{
-    
     @Output() selectTag = new EventEmitter();
         
-    tags : Tag[] = [];
-    tag : Tag;
+    tags: Tag[] = [];
+    tag: Tag;
+
     private searchSub: ISubscription;
     constructor(private tagService: TagService) {
         super();

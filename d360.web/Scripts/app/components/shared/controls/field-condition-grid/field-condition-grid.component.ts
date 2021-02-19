@@ -5,6 +5,7 @@ import { Operator } from '../../../../models/operator.model';
 import { FieldTypeAPIModelFieldCondition, FieldCondition } from '../../../../models/field-condition-grid.models';
 import { settings } from 'cluster';
 import { Condition } from '../../../../models/metrics.model';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'field-condition-grid',
@@ -33,9 +34,13 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         this.formGroup = fb.group({});
     }
 
+    delayedClearUnusedConditions = _.debounce(() => {
+        this.clearUnusedFormControls();
+    }, 200);
+
     ngOnDestroy() {
         this.resetFormControls();
-        this.clearUnusedFormControls();
+        this.delayedClearUnusedConditions();
         this.conditions = null;
     }
 
@@ -60,7 +65,6 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         this.formGroup.valueChanges.subscribe(obs => {
             setTimeout(() => {
                 if (!this.conditions) return;
-
                 this.conditions.forEach(cond => {
                     if (this.disabledValuesOperators.some(x => (x === +cond.operator || Operator[x] == <any>cond.operator))) {
                         cond.disabled = true;
@@ -147,25 +151,27 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
             }
         }
 
-        window.setTimeout(() => { this.clearUnusedFormControls(); }, 100);
+        window.setTimeout(() => { this.delayedClearUnusedConditions(); }, 100);
         this.onChange.emit({ event: 'Value changed', value: this.conditions });
 
     }
 
     clearUnusedFormControls() {
         if (this.conditions) {
-            Object.keys(this.formGroup.controls).forEach(control => {
+            Object.keys(this.formGroup.controls).forEach((control) => {
                 if (control.startsWith(this.conditionPrefix)) {
                     if (control.indexOf(this.conditionPrefix + 'option_') !== -1
                         || control.indexOf(this.conditionPrefix + 'condition_') !== -1
                         || control.indexOf(this.conditionPrefix + 'value_1_') !== -1 ||
                         control.indexOf(this.conditionPrefix + 'value_2_') !== -1) {
+
                         let shouldDelete = true;
                         this.conditions.forEach(x => {
                             if (control.indexOf(x.hash) !== -1) {
                                 shouldDelete = false;
-                            }
+                             }
                         });
+
                         if (shouldDelete) {
                             this.removeFormControl(control);
                         }

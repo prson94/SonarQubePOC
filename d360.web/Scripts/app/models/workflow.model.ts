@@ -274,7 +274,8 @@ export class NodeSettings {
     MessageBodyTemplate: any;
     MessageSubjectTemplate: any;
     ResponsibilitySide: any;
-
+    SendToDefaultUsers: any;
+     
     IncludePreviousFormResponses: any;
     WaitForAllTransitions: any;
 }
@@ -351,6 +352,7 @@ export class WorkflowForm {
     TypeName: string;
     AllowReassignObject: boolean;
     AllowReassignResource: boolean;
+    IsClearAssignementsAllowed: boolean;
 }
 
 export class WorkflowTypeItem {
@@ -472,6 +474,7 @@ export enum WorkflowFormFieldType {
     List = 5,
     RelationshipType = 6,
     HTML = 7,
+    Link = 8,
 }
 
 export enum WorkflowActivityType {
@@ -568,6 +571,8 @@ export class WorkflowAssignmentDetail {
     StepName: string;
     StepType: StepType;    
     ActivityType: WorkflowActivityType;
+    responseType: string;
+    countAssigned: number;
 }
 
 export class WorkflowItemStep {
@@ -603,6 +608,8 @@ export class BulkWorkflowReassignModel {
     NewAssigneeResourceName: string = '';
     StepName: string = 'Form';
     SendFormEmails: boolean = true;
+    IsClearOtherAssignmentsAllowed: boolean = false;
+    ClearOtherAssignments: boolean = false ;
 }
 
 

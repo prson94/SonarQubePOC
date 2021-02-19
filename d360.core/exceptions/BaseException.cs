@@ -9,11 +9,11 @@ namespace d360.core.exceptions
         public string StatusMessage { get; internal set; }
         public string StatusDescription { get; internal set; }
 
-        protected BaseException(HttpStatusCode code, string message, string description)
+        protected BaseException(HttpStatusCode code, string message, string description = null)
         {
             StatusCode = code;
             StatusMessage = message;
-            StatusDescription = description;
+            StatusDescription = description ?? message;
         }
     }
 }

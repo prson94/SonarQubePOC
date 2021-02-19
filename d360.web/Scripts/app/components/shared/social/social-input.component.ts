@@ -15,7 +15,7 @@ import { Tag } from '../../../models/tag.model';
                 </div>               
                 <div class="row" *ngIf="isEditing" style="padding-top:15px;padding-botton:15px;">
                     <div class="col s12" style="padding-bottom:15px;" *ngIf="tags.length > 0">                        
-                        <d3s-preview-tooltip *ngFor="let tag of tags" class="comment-tag" (click)="changeUrl(tag.Url)" [objectType]="tag.Object" [objectId]="tag.ObjectID" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">{{tag.TextPath}} <i class="fa fa-times" (click)="removeTag(tag)"></i></d3s-preview-tooltip>
+                        <d3s-preview-tooltip *ngFor="let tag of tags" class="comment-tag" (click)="changeUrl(tag.Url)" [uid]="tag.AssetUid" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">{{tag.TextPath}} <i class="fa fa-times" (click)="removeTag(tag)"></i></d3s-preview-tooltip>
                     </div>
                     <div class="col s10">
                         <d3s-social-tag-input (selectTag)="addTag($event)"></d3s-social-tag-input>                                               
@@ -52,7 +52,7 @@ export class SocialInputComponent extends BaseComponent {
     tags: Tag[] = [];
      
     ngAfterViewInit() {
-        this.viewChildren.changes.subscribe(x => this.setFocus(x) );
+        this.viewChildren.changes.subscribe((x) => this.setFocus(x) );
     }
 
     handleCommentClick() {
@@ -87,4 +87,4 @@ export class SocialInputComponent extends BaseComponent {
         this.comment = "";
         this.isEditing = true;
     }
-};
+}

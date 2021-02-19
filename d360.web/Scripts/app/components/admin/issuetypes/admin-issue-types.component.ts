@@ -16,7 +16,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                             <header *ngIf="!showEditor && !showDelete">Action Types
                                 <d3s-tile-actions [hasAdd]="true" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" (addClick)="showAdd()"></d3s-tile-actions>                            
                             </header>  
-                            <d3s-loading [isLoading]="isLoading"></d3s-loading>
+                            <d3s-loading [isLoading]="isLoading && !showDelete"></d3s-loading>
                             <span *ngIf="!isLoading && !showEditor && !showDelete">
                                 <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
                                 <p-table #dt [value]="issueTypes" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','Description']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selected" (onRowSelect)="selectedItemChange()">
@@ -138,11 +138,13 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
         this.isLoading = true;
         this.workflowService.deleteWorkflowIssueType(uid)
             .subscribe(result => {
-                this.showMessageForApiResponse(this.messagesService, result);
-                if (result.Success) {
-                    this.issueTypes = this.issueTypes.filter(x => x.Uid != uid);
+                if (result) {
+                    this.showMessageForApiResponse(this.messagesService, result);
+                    if (result.Success) {
+                        this.issueTypes = this.issueTypes.filter(x => x.Uid != uid);
+                    }
+                    this.selected = this.issueTypes.length > 0 ? this.issueTypes[0] : null;
                 }
-                this.selected = this.issueTypes.length > 0 ? this.issueTypes[0] : null;
                 this.isLoading = false;
                 this.showDelete = false;
             });
@@ -211,4 +213,4 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
     private OnDelete() {
         this.selectedItemChange(() => this.showDelete = true);
     }
-};
+}

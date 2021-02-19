@@ -374,7 +374,7 @@ namespace d360.web.Controllers
             var PermissionJoins = "";
             if (!Company.CurrentResourceIsAdmin)
             {
-                PermissionJoins = @" and exists (select 1 from UserAssetPermissions(@userId,@targetAssetTypeId) P where P.PermissionsBitMask & 1024 = 1024 and P.AssetTypeID = A.AssetTypeID and (P.AssetID = A.ID or P.AssetID = 0)) ";
+                PermissionJoins = $@" and exists (select 1 from UserAssetPermissions(@userId,@targetAssetTypeId) P where P.PermissionsBitMask & {(int)Permission.ModifyRelationships} = {(int)Permission.ModifyRelationships} and P.AssetTypeID = A.AssetTypeID and (P.AssetID = A.ID or P.AssetID = 0)) ";
             }
 
             var subSql = $@"(
@@ -621,8 +621,8 @@ order by r.Name";
             }
 
             #endregion
-
-            var items = Company.Query<dynamic>(sql, new { targetAssetTypeId = targetAssetType.ID, targetType, targetTypeID, source = type.ToString(), id = objectId, it = intersectTypeId, userId = Company.CurrentResourceID }).Select(i => new { Text = i.Name, Value = $"{i.uid}", ObjectType = i.Object }).ToList();
+            
+            var items = Company.Query<dynamic>(sql, new { targetAssetTypeId = targetAssetType.ID, targetType, targetTypeID, source = type.ToString(), id = objectId, it = intersectTypeId, userId = Company.CurrentResourceID }).Select(i => new { Text = WebUtility.HtmlDecode(i.Name), Value = $"{i.uid}", ObjectType = i.Object }).ToList();
 
             return Json(items, JsonRequestBehavior.AllowGet);
         }
@@ -775,7 +775,7 @@ order by r.Name";
                 Company.UpsertIntersectType(model, lineageVersion);
                 var id = model.ID;
 
-                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = id });
+                Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = id });
 
                 return jsonSuccess("Relationship type successfully created.", id.ToString(), "add", HttpStatusCode.Created);
             }
@@ -832,14 +832,12 @@ order by r.Name";
                 if (impactedMeasureVersions.Count > 0)
                 {
                     Company.SendScoreEventWithPayload(
-                        Guid.NewGuid(),
                         ScoreQueueChangeType.CheckTypeDependencyRemoved,
-                        new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions },
-                        createApiExecution: true
+                        new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions }
                     );
                 }
 
-                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = id });
+                Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = id });
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -895,7 +893,7 @@ order by r.Name";
                 var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
 
                 Company.UpsertIntersectType(model, lineageVersion);
-                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = id });
+                Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = id });
 
                 return jsonSuccess("Relationship type  successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
