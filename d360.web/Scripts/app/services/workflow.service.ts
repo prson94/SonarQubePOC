@@ -29,6 +29,7 @@ import {
     WorkflowTypeItem,
     ActionEditorModel,
     AllocationAPIModel,
+    AllocationRequestModel,
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { SelectItem, FormHelper } from '../models/form.model';
@@ -619,10 +620,8 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-    postIssueTypeAllocation(actionTypeUid: string, item: any): Observable<JsonResult> {
-        let assetTypeUids: any = [];
-        assetTypeUids.push(item.AssetTypeUid);        
-        return this.http.post(`/api/v2/actions/allocations/${actionTypeUid}`, assetTypeUids)
+    postIssueTypeAllocation(actionTypeUid: string, allocation: AllocationRequestModel): Observable<JsonResult> { 
+        return this.http.post(`/api/v2/actions/allocation/${actionTypeUid}`, allocation)
             .pipe(
                 map(response => <ApiResult & ErrorResponse>response),
                 catchError(err => this.handleError(err))

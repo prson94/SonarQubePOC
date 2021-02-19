@@ -8,6 +8,7 @@ import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
+import { MultiSelectModule } from 'primeng/multiselect';
 
 import { TableModule } from 'primeng/table';
 
@@ -21,6 +22,7 @@ import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared
 
 import { AdminIssueTypesComponent } from './admin-issue-types.component';
 import { AdminIssueTypeAllocationComponent } from './admin-issue-type-allocation.component';
+import { AdminIssueTypeAllocationEditorComponent } from './admin-issue-type-allocation-editor.component';
 
 
 import { AdminIssueTypesRoutingModule } from './admin-issue-types.routes';
@@ -39,6 +41,7 @@ import { AdminIssueTypesRoutingModule } from './admin-issue-types.routes';
         InputTextModule,
         SharedModule,
         TableModule,
+        MultiSelectModule,
 
         //d3s                
         CoreModule,
@@ -51,7 +54,8 @@ import { AdminIssueTypesRoutingModule } from './admin-issue-types.routes';
     ],
     declarations: [
         AdminIssueTypesComponent,
-        AdminIssueTypeAllocationComponent
+        AdminIssueTypeAllocationComponent,
+        AdminIssueTypeAllocationEditorComponent
     ],
     providers: [
         {

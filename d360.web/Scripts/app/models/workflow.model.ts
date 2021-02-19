@@ -752,4 +752,15 @@ export class AllocationAPIModel {
     Class: number;
     Path: string;
     ClassName: string;
+    Responsibilities: AllocationResponsibilityModel[];
+}
+
+export class AllocationResponsibilityModel {
+    Name: string;
+    Uid: string;
+}
+
+export class AllocationRequestModel {
+    AssetTypeUid: string
+    ResponsibilityTypeUid: string[]
 }
