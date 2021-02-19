@@ -179,7 +179,7 @@ namespace d360.web.Controllers.V2
             HttpDelete,
             Route("{commentUid:Guid}/votes/{emoji}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Adding new comment.", null),
+            SwaggerResponse(HttpStatusCode.OK, "Unregister your vote for a comment.", null),
             SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
