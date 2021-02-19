@@ -4,6 +4,7 @@ using d360.extensions.queue;
 using d360.extensions.storage;
 using d360.model;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Data.Entity;
 using System.IO;
@@ -14,17 +15,12 @@ namespace igx.jobs.workflowdigestprocessor
 {
     class Program
     {
-        static void Main()
+        static async Task Main()
         {
-            var config = CoreFunction.GetJobHostConfiguration();
-            config.UseTimers();
-#if DEBUG
-            config.UseDevelopmentSettings();
-#endif
-
-            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
-            var host = new JobHost(config);
-            host.RunAndBlock();
+            using (var host = CoreFunction.JobHostConfig())
+            {
+                await host.RunAsync();
+            }
         }
     }
 

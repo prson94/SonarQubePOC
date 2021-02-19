@@ -7,22 +7,18 @@ using System.Threading.Tasks;
 using System.Data;
 using System.Data.SqlClient;
 using Dapper;
+using Microsoft.Extensions.Hosting;
 
 namespace igx.jobs.databasecleaner
 {
     class Program
     {
-        static void Main()
+        static async Task Main()
         {
-            var config = CoreFunction.GetJobHostConfiguration();
-#if DEBUG
-            config.UseDevelopmentSettings();
-#endif
-            config.UseTimers();
-            
-            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
-            var host = new JobHost(config);
-            host.RunAndBlock();
+            using(var host = CoreFunction.JobHostConfig())
+            {
+                await host.RunAsync();
+            }
         }
     }
 

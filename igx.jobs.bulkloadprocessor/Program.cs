@@ -24,21 +24,18 @@ using d360.extensions.storage;
 using d360.core;
 using System.Text;
 using d360.core.entities.Metric;
-
+using Microsoft.Extensions.Hosting;
 
 namespace igx.jobs.bulkloadprocessor
 {
     class Program
     {
-        static void Main()
+        static async Task Main()
         {
-            var config = CoreFunction.GetJobHostConfiguration();
-#if DEBUG
-            config.UseDevelopmentSettings();
-#endif
-            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
-            var host = new JobHost();
-            host.StartAsync().Wait();
+            using (var host = CoreFunction.JobHostConfig())
+            {
+                await host.RunAsync();
+            }
         }
     }
 

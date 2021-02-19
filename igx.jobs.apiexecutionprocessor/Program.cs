@@ -27,35 +27,10 @@ namespace igx.jobs.apiexecutionprocessor
     {
         static async Task  Main()
         {
-//            var config = CoreFunction.GetJobHostConfiguration();
-//#if DEBUG
-//            config.UseTimers();
-//            config.UseDevelopmentSettings();
-//#endif
-//            config.Queues.BatchSize = 2;
-//            config.Queues.VisibilityTimeout = TimeSpan.FromHours(6);
-
-//            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
-//            var host = new JobHost(config);
-//            host.RunAndBlock();
-
-            
-            
-            try
+            using (var host = CoreFunction.JobHostConfig())
             {
-                using (var host = CoreFunction.JobHostConfig())
-                {
-                    //while(true)
-                    //{
-                        await host.RunAsync();
-                    //}
-                }
+                    await host.RunAsync();
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            Console.WriteLine("exited");
         }
     }
 
@@ -64,9 +39,7 @@ namespace igx.jobs.apiexecutionprocessor
         //#if DEBUG
         //public static async Task Run([TimerTrigger("0 0 */5 * * *", RunOnStartup = true)]TimerInfo myTimer, CancellationToken token, TextWriter log)
         //#else
-        //[StorageAccount("QueueStorageAccount")]
-        [FunctionName("QueueTrigger")]
-        public async static Task Run([QueueTrigger("ApiExecutionQueue", Connection ="QueueStorageAccount")] string myQueueItem, TextWriter log)
+        public async static Task Run([QueueTrigger("ApiExecutionQueue", Connection = "QueueStorageAccount")] string myQueueItem, TextWriter log)
         //#endif
         {
             ApiExecutionInfo info = null;
@@ -84,7 +57,6 @@ namespace igx.jobs.apiexecutionprocessor
             //#endif
 
             //Should this job be allowed to run?
-
             var job = new ApiJobProcessor();
             await job.Run(info, log);
         }

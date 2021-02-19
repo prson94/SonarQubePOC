@@ -13,6 +13,8 @@ using d360.utils.company;
 using Dapper;
 using igx.jobs.igc;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -30,19 +32,15 @@ namespace igx.jobs
 {
     class Program
     {
-        static void Main()
+
+        static async Task Main()
         {
-            var config = CoreFunction.GetJobHostConfiguration();
-            config.UseTimers();
-            config.Queues.BatchSize = 4;
-            config.Queues.VisibilityTimeout = TimeSpan.FromDays(4);
-#if DEBUG
-            config.UseDevelopmentSettings();
-#endif
-            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
-            var host = new JobHost(config);
-            host.RunAndBlock();
+            using (var host = CoreFunction.JobHostConfig(4, TimeSpan.FromDays(6)))
+            {
+                await host.RunAsync();
+            }
         }
+
 
     }
 

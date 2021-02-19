@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.ApplicationInsights.Channel;
+using Microsoft.Azure.WebJobs.Host;
 
 namespace igx.jobs
 {
@@ -239,28 +240,6 @@ namespace igx.jobs
             }
         }
 
-        public static dynamic GetJobHostConfiguration()
-        {
-            //var config = new JobHostConfiguration
-            //{
-            //    DashboardConnectionString = CoreFunction.GetConfigValueByKey("WebJobsAccount"),
-            //    StorageConnectionString = CoreFunction.GetConfigValueByKey("WebJobsAccount"),
-            //    NameResolver = new QueueNameResolver()
-            //};
-
-            //if (config.IsDevelopment)
-            //{
-            //    config.UseDevelopmentSettings();
-            //}
-
-            //config.UseApplicationInsights();
-            //config.UseCore();
-
-            return new { };
-        }
-
-
-
         public class ConfigNameResolver : INameResolver
         {
             public string Resolve(string name)
@@ -277,14 +256,15 @@ namespace igx.jobs
             }
         }
 
-        public static IHost JobHostConfig()
+        public static IHost JobHostConfig(int? queueBatchSize = null, TimeSpan? queueVisibilityTimeout = null)
         {
             var builder = new HostBuilder();
             var env = GetConfigValueByKey("Environment");
             var configResolver = new ConfigNameResolver();
+
+
             builder
             .UseEnvironment(env)
-
             .ConfigureServices(s =>
             {
             })
@@ -302,10 +282,15 @@ namespace igx.jobs
                 c.AddAzureStorageCoreServices();
                 c.AddAzureStorage(a =>
                 {
-                    a.BatchSize = 8;
-                    a.NewBatchThreshold = 4;
-                    a.MaxDequeueCount = 4;
-                    a.MaxPollingInterval = TimeSpan.FromSeconds(15);
+                    if (queueBatchSize.HasValue)
+                    {
+                        a.BatchSize = (int)queueBatchSize;
+                    }
+
+                    if (queueVisibilityTimeout.HasValue)
+                    {
+                        a.VisibilityTimeout = (TimeSpan)queueVisibilityTimeout;
+                    }
                 });
                 c.AddServiceBus();
                 c.AddTimers();
@@ -322,32 +307,6 @@ namespace igx.jobs
             }).UseConsoleLifetime();
 
             return builder.Build();
-
-            //builder.ConfigureAppConfiguration((context, b) =>
-            //{
-            //    b.Sources.Add(context.Configuration.Source)
-            //});
-            //builder.ConfigureWebJobs(b =>
-            //{
-            //    b.AddAzureStorageCoreServices();
-            //});
-            //builder.ConfigureLogging((context, b) =>
-            //{
-            //    // Add logging providers.
-            //    b.AddConsole();
-
-            //    // If this key exists in any config, use it to enable Application Insights.
-            //    string appInsightsKey = context.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
-            //    if (!string.IsNullOrEmpty(appInsightsKey))
-            //    {
-            //        // This uses the options callback to explicitly set the instrumentation key.
-            //        b.AddApplicationInsights(o => o.InstrumentationKey = appInsightsKey);
-            //    }
-            //});
-            //builder.ConfigureServices(services =>
-            //{
-            //    services.AddSingleton<ITelemetryInitializer, CustomTelemetryInitializer>();
-            //});
         }
     }
 }

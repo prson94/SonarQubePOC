@@ -14,25 +14,21 @@ using Dapper;
 using d360.core.entities;
 using d360.core.enums;
 using d360.extensions.storage;
+using Microsoft.Extensions.Hosting;
 
 namespace igx.jobs.displayvalueupdateprocessor
 {
     class Program
     {
-        static void Main()
+        static async Task Main()
         {
-            var config = CoreFunction.GetJobHostConfiguration();
-
-#if DEBUG
-            config.UseDevelopmentSettings();
-#endif
-            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
-            var host = new JobHost(config);
-            host.RunAndBlock();
+            using (var host = CoreFunction.JobHostConfig())
+            {
+                await host.RunAsync();
+            }
         }
-    }
 
-    public static class DisplayValueUpdateProcessor
+        public static class DisplayValueUpdateProcessor
     {
         const string functionName = "DisplayValueUpdateProcessor";
         

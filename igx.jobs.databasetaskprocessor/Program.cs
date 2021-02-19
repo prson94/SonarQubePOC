@@ -18,21 +18,18 @@ using Dapper;
 using Mandrill;
 using Mandrill.Model;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Hosting;
 
 namespace igx.jobs.databasetaskprocessor
 {
     class Program
     {
-        static void Main()
+        static async Task Main()
         {
-            var config = CoreFunction.GetJobHostConfiguration();
-            config.UseTimers();
-#if DEBUG
-            config.UseDevelopmentSettings();
-#endif
-            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
-            var host = new JobHost(config);
-            host.RunAndBlock();
+            using (var host = CoreFunction.JobHostConfig())
+            {
+                await host.RunAsync();
+            }
         }
     }
 

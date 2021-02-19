@@ -4,6 +4,7 @@ using d360.model;
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -15,16 +16,12 @@ namespace igx.jobs.responsibilityruleprocessor
 {
     class Program
     {
-        static void Main()
+        static async Task Main()
         {
-            var config = CoreFunction.GetJobHostConfiguration();
-            config.UseTimers();
-#if DEBUG
-            config.UseDevelopmentSettings();
-#endif
-            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
-            var host = new JobHost(config);
-            host.RunAndBlock();
+            using (var host = CoreFunction.JobHostConfig())
+            {
+                await host.RunAsync();
+            }
         }
     }
 
