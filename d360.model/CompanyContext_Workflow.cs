@@ -1801,8 +1801,7 @@ namespace d360.model
 
                 foreach (var email in settings.SpecificUser.Split(';'))
                 {
-                    var res = GlobalReportingResources.Where(x => string.Compare(x.Email, email, true) == 0).FirstOrDefault();
-
+                    var res = GlobalReportingResources.Where(x => string.Compare(x.Email, email.Trim(), true) == 0).FirstOrDefault();
                     if (res == null)
                     {
                         Console.WriteLine("FORM EMAIL SPECIFIC USER SET HOWEVER THE USER EMAIL IS NOT A VALID D3S EMAIL ACCOUNT.  WONT BE ABLE TO ASSIGN FORM TO USER..");

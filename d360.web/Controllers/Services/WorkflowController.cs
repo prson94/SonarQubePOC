@@ -2711,88 +2711,9 @@ order by wi.StartedOn desc";
 
                 if (result.ActivityType == WorkflowActivityType.Form && result.Complete == false)
                 {
-                    if (result.MessageRecipientType == EmailTaskRecipientType.Responsibility.ToString() || result.MessageRecipientType == EmailTaskRecipientType.Group.ToString() || result.MessageRecipientType == EmailTaskRecipientType.None.ToString())
-                    {
-                        //get responsible users
-                        List<GlobalReportingResource> users = null;
-                        if (result.MessageRecipientType == EmailTaskRecipientType.Group.ToString())
-                        {
-                            int recipientGroup = Company.Query<int>(@"select ObjectID from [dbo].[Asset] a
-                                        inner join workflow.VersionStep vs
-	                                        on a.[Object] = 'Group' and a.uid = vs.Settings.query('settings/MessageToGroup').value('.', 'uniqueidentifier')
-                                        where vs.id = @stepId;", new { stepId = result.StepID }).FirstOrDefault();
-                            if (recipientGroup > 0)
-                            {
-                                users = Company.GetWorkflowUsersBasedOnGroup(recipientGroup).ToList();
-                            }
-                        }
-                        else
-                        {
-                            users = Company.GetWorkflowUsersBasedOnResponsibility(result.TypeID, result.StepID, result.ItemID).ToList();
-                        }
-
-                        if (fields?.Reassignments?.Any() ?? false)
-                        {
-                            foreach (var reassign in fields.Reassignments)
-                            {
-                                //continue if it's not a bulk resource reassignment
-                                if (reassign.ReassignType != "Resource" || reassign.ToResourceID == 0)
-                                    continue;
-
-                                //remove old assignee
-                                var ix = users.FindIndex(u => u.ResourceID == reassign.FromResourceID);
-                                if (ix > -1) users.RemoveAt(ix);
-
-                                //add new assignee
-                                var  dx= users.FindIndex(u => u.ResourceID == reassign.ToResourceID);
-                                if (dx == -1)
-                                {
-                                    var assignee = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == reassign.ToResourceID);
-                                    if (assignee != null)
-                                        users.Add(assignee);
-                                }
-                            }
-                        }
-
-                        //forms
-                        if (fields?.Forms?.Any() ?? false)
-                        {
-                            foreach (var form in fields.Forms)
-                            {
-                                var ix = users.FindIndex(u => u.ResourceID == form.ResourceID);
-                                if (ix > -1) users.RemoveAt(ix);
-                            }
-                        }
-
-                        result.Assignee = string.Join(", ", users.Select(u => u.FullName));
-                        result.IsAssignedLoginUser = users.Where(x => x.ResourceID == Company.CurrentResourceID).Count() == 0 ? bool.FalseString : bool.TrueString;
-                    }
-                    else if (result.MessageRecipientType == EmailTaskRecipientType.SpecificUser.ToString() || result.MessageRecipientType == EmailTaskRecipientType.Initiator.ToString())
-                    {
-                        var userList = (result.Assignee ?? "").Split(';');
-                        var formattedUserList = new List<string>();
-                        foreach (var u in userList)
-                        {
-                            var user = Company.GlobalReportingResources.FirstOrDefault(c => c.Email == u);
-
-                            if (user != null && (fields?.Reassignments?.Any(r => r.FromResourceID == user.ResourceID) ?? false))
-                            {
-                                var resId = fields.Reassignments.First().ToResourceID;
-                                var assignee = Company.GlobalReportingResources.FirstOrDefault(c => c.ResourceID == resId);
-                                if (assignee != null)
-                                    user = assignee;
-                            }
-
-                            if (user != null)
-                                formattedUserList.Add(user.FullName);
-                            else
-                                formattedUserList.Add(u);
-
-                            if (user != null && user.ResourceID == Company.CurrentResourceID)
-                                result.IsAssignedLoginUser = bool.TrueString;
-                        }
-                        result.Assignee = string.Join(", ", formattedUserList);
-                    }
+                    var assignmentIds = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == result.ID).Select(x => new { x.ResourceObject, x.ResourceObjectID });
+                    var formattedUserList = Company.GlobalReportingResources.Where(x => assignmentIds.Any(a=>a.ResourceObjectID == x.ResourceID)).ToList().Select(x => x.FullName);
+                    result.Assignee = string.Join(", ", formattedUserList);
 
                 }
             }
