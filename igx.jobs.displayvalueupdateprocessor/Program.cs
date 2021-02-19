@@ -27,6 +27,7 @@ namespace igx.jobs.displayvalueupdateprocessor
                 await host.RunAsync();
             }
         }
+    }
 
         public static class DisplayValueUpdateProcessor
     {

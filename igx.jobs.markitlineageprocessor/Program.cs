@@ -6,6 +6,7 @@ using d360.extensions.queue;
 using d360.extensions.storage;
 using d360.model;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Data.Entity;
 using System.IO;
