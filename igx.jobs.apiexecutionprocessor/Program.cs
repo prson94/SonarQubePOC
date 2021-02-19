@@ -19,6 +19,7 @@ using d360.core.entities.Metric;
 
 using System.Threading;
 using System.Net.Http;
+using Microsoft.Extensions.Hosting;
 
 namespace igx.jobs.apiexecutionprocessor
 {
@@ -38,9 +39,23 @@ namespace igx.jobs.apiexecutionprocessor
 //            var host = new JobHost(config);
 //            host.RunAndBlock();
 
-            var host = CoreFunction.JobHostConfig();
             
-            await host.StartAsync();
+            
+            try
+            {
+                using (var host = CoreFunction.JobHostConfig())
+                {
+                    //while(true)
+                    //{
+                        await host.RunAsync();
+                    //}
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            Console.WriteLine("exited");
         }
     }
 
@@ -49,7 +64,9 @@ namespace igx.jobs.apiexecutionprocessor
         //#if DEBUG
         //public static async Task Run([TimerTrigger("0 0 */5 * * *", RunOnStartup = true)]TimerInfo myTimer, CancellationToken token, TextWriter log)
         //#else
-        public async static Task Run([QueueTrigger("%ApiExecutionQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
+        //[StorageAccount("QueueStorageAccount")]
+        [FunctionName("QueueTrigger")]
+        public async static Task Run([QueueTrigger("ApiExecutionQueue", Connection ="QueueStorageAccount")] string myQueueItem, TextWriter log)
         //#endif
         {
             ApiExecutionInfo info = null;
@@ -58,7 +75,7 @@ namespace igx.jobs.apiexecutionprocessor
                         {
                             Action = ApiExecutionAction.PostAssets,
                             CompanyDomainPrefix = "mpappas.eng",
-                            CompanyID = 2,
+                            CompanyID = 2, 
                             ResourceID = 3,
                             ExecutionID = new Guid("d04067cc-18e4-44d9-a817-c13dfbc6c6a7")
                         };

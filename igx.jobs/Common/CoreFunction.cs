@@ -287,11 +287,6 @@ namespace igx.jobs
 
             .ConfigureServices(s =>
             {
-                //s.AddSingleton(configResolver);
-                //var a = ConfigurationManager.AppSettings;
-                //var b = ConfigurationManager.ConnectionStrings;
-
-                //s.AddSingleton(new ConnectionNameResolver());
             })
             .ConfigureAppConfiguration((context, b) =>
             {
@@ -305,7 +300,13 @@ namespace igx.jobs
             .ConfigureWebJobs(c =>
             {
                 c.AddAzureStorageCoreServices();
-                c.AddAzureStorage();
+                c.AddAzureStorage(a =>
+                {
+                    a.BatchSize = 8;
+                    a.NewBatchThreshold = 4;
+                    a.MaxDequeueCount = 4;
+                    a.MaxPollingInterval = TimeSpan.FromSeconds(15);
+                });
                 c.AddServiceBus();
                 c.AddTimers();
             })
@@ -318,7 +319,7 @@ namespace igx.jobs
                 {
                     b.AddApplicationInsights(appInsightsKey);
                 }
-            });
+            }).UseConsoleLifetime();
 
             return builder.Build();
 
