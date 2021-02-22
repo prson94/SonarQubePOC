@@ -24,7 +24,7 @@ import { CommonScreenReferencesModel } from './common-screen-references-model';
         .ig-badge.default {
             margin-top: 1px; 
         }
-        p-checkbox{
+        .action-box p-checkbox{
             margin-right: 32px; 
         }
         .badge-container{
