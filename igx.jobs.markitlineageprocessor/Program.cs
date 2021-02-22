@@ -1,16 +1,8 @@
-﻿using d360.core.enums;
-using d360.core.enums.Workflow;
-using d360.extensions.caching;
-using d360.extensions.info;
-using d360.extensions.queue;
-using d360.extensions.storage;
-using d360.model;
+﻿using d360.model;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Hosting;
 using System;
-using System.Data.Entity;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace igx.jobs.markitlineageprocessor
@@ -19,7 +11,15 @@ namespace igx.jobs.markitlineageprocessor
     {
         static async Task Main()
         {
-            using (var host = CoreFunction.JobHostConfig())
+            var builder = CoreFunction.JobHostConfigBuilder();
+            builder.ConfigureWebJobs(c =>
+            {
+                c.AddAzureStorageCoreServices()
+                .AddAzureStorage()
+                .AddTimers();
+            });
+
+            using (var host = builder.Build())
             {
                 await host.RunAsync();
             }

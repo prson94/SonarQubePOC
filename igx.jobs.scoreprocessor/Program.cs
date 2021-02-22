@@ -1,11 +1,4 @@
-﻿using d360.core;
-using d360.utils.company;
-using Dapper;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Extensions.Hosting;
-using System;
-using System.IO;
-using System.Linq;
+﻿using Microsoft.Extensions.Hosting;
 using System.Threading.Tasks;
 
 namespace igx.jobs.scoreprocessor
@@ -14,7 +7,7 @@ namespace igx.jobs.scoreprocessor
     {
         static async Task Main()
         {
-            using (var host = CoreFunction.JobHostConfig())
+            using (var host = CoreFunction.JobHostConfigBuilder().Build())
             {
                 await host.RunAsync();
             }

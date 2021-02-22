@@ -25,9 +25,16 @@ namespace igx.jobs.apiexecutionprocessor
 {
     class Program
     {
-        static async Task  Main()
+        static async Task Main()
         {
-            using (var host = CoreFunction.JobHostConfig())
+            var builder = CoreFunction.JobHostConfigBuilder();
+            builder.ConfigureWebJobs(c =>
+            {
+                c.AddAzureStorageCoreServices();
+                c.AddAzureStorage();
+            });
+
+            using (var host = builder.Build())
             {
                     await host.RunAsync();
             }

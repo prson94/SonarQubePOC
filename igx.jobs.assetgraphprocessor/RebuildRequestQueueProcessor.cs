@@ -5,13 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using d360.utils.company;
 using Dapper;
-using Newtonsoft.Json;
 using d360.core.queue;
 using d360.extensions.info;
 using d360.extensions.caching;
 using d360.extensions.queue;
 using d360.model;
-using d360.core.entities;
 using d360.core.enums;
 
 namespace igx.jobs.assetgraphprocessor
@@ -21,9 +19,9 @@ namespace igx.jobs.assetgraphprocessor
         const string functionName = "AssetGraphProcessor_RebuildQueueRequest";
 
 #if DEBUG
-        public static async Task Run([TimerTrigger("0 0 1 * * *", RunOnStartup = true)]TimerInfo myTimer, TextWriter log)
+        public static async Task RunRebuildProcessor([TimerTrigger("0 0 1 * * *", RunOnStartup = true)]TimerInfo myTimer, TextWriter log)
 #else
-        public static async Task Run([QueueTrigger("%AssetGraphQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
+        public static async Task RunRebuildProcessor([QueueTrigger("%AssetGraphQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
 #endif
         {
             RebuildAssetGraphModel queueInfo = null;

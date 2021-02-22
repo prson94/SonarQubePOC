@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using d360.utils.company;
 using Dapper;
@@ -16,7 +15,15 @@ namespace igx.jobs.databaseindexrebuilder
     {
         static async Task Main()
         {
-            using(var host = CoreFunction.JobHostConfig())
+            var builder = CoreFunction.JobHostConfigBuilder();
+            builder.ConfigureWebJobs(c =>
+            {
+                c.AddAzureStorageCoreServices()
+                .AddAzureStorage()
+                .AddTimers();
+            });
+
+            using (var host = builder.Build())
             {
                 await host.RunAsync();
             }

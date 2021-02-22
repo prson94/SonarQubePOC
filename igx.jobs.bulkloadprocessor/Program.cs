@@ -1,5 +1,4 @@
 ﻿using d360.core.entities;
-using d360.core.exceptions;
 using d360.core.queue;
 using d360.core.enums;
 using d360.extensions.caching;
@@ -17,7 +16,6 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Ganss.XSS;
 using System.Text.RegularExpressions;
 using d360.model.DataAccessLayer;
 using d360.extensions.storage;
@@ -32,7 +30,7 @@ namespace igx.jobs.bulkloadprocessor
     {
         static async Task Main()
         {
-            using (var host = CoreFunction.JobHostConfig())
+            using (var host = CoreFunction.JobHostConfigBuilder().Build())
             {
                 await host.RunAsync();
             }

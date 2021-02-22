@@ -1,11 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities.Workflow;
-using d360.core.enums.Workflow;
 using d360.core.queue;
-using d360.extensions.caching;
-using d360.extensions.info;
-using d360.extensions.queue;
-using d360.extensions.storage;
 using d360.model;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Hosting;
@@ -23,14 +18,25 @@ namespace igx.jobs.workflowsubscriber
     {
         static async Task Main()
         {
-            using (var host = CoreFunction.JobHostConfig())
+            var builder = CoreFunction.JobHostConfigBuilder();
+            builder.ConfigureWebJobs(c =>
+            {
+                c.AddAzureStorageCoreServices()
+                .AddServiceBus()
+                .AddAzureStorage()
+                .AddTimers()
+                .AddFiles();
+            });
+
+
+            using (var host = builder.Build())
             {
                 await host.RunAsync();
             }
         }
     }
 
-    public static class WorkflowSubscriber
+    public class WorkflowSubscriber
     {
         const string functionName = "Workflow_Subscriber";
         const int MAX_NUMBER_OF_WORKFLOW_EVENTS = 10000;

@@ -13,7 +13,6 @@ using d360.utils.company;
 using Dapper;
 using igx.jobs.igc;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -35,7 +34,13 @@ namespace igx.jobs
 
         static async Task Main()
         {
-            using (var host = CoreFunction.JobHostConfig(4, TimeSpan.FromDays(6)))
+            var builder = CoreFunction.JobHostConfigBuilder();
+            builder.ConfigureWebJobs(c =>
+            {
+                c.AddTimers();
+            });
+
+            using (var host = builder.Build())
             {
                 await host.RunAsync();
             }

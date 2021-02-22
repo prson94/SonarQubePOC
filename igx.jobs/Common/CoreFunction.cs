@@ -1,4 +1,4 @@
-using ApplicationInsights.Helpers.WebJobs;
+
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
@@ -8,20 +8,16 @@ using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Azure.Storage;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
-using Microsoft.Extensions.Configuration;
-using Microsoft.ApplicationInsights.Channel;
-using Microsoft.Azure.WebJobs.Host;
+
 
 namespace igx.jobs
 {
@@ -256,7 +252,7 @@ namespace igx.jobs
             }
         }
 
-        public static IHost JobHostConfig(int? queueBatchSize = null, TimeSpan? queueVisibilityTimeout = null)
+        public static IHostBuilder JobHostConfigBuilder()
         {
             var builder = new HostBuilder();
             var env = GetConfigValueByKey("Environment");
@@ -265,9 +261,6 @@ namespace igx.jobs
 
             builder
             .UseEnvironment(env)
-            .ConfigureServices(s =>
-            {
-            })
             .ConfigureAppConfiguration((context, b) =>
             {
                 b.AddConfiguration(context.Configuration)
@@ -279,21 +272,8 @@ namespace igx.jobs
             })
             .ConfigureWebJobs(c =>
             {
-                c.AddAzureStorageCoreServices();
-                c.AddAzureStorage(a =>
-                {
-                    if (queueBatchSize.HasValue)
-                    {
-                        a.BatchSize = (int)queueBatchSize;
-                    }
-
-                    if (queueVisibilityTimeout.HasValue)
-                    {
-                        a.VisibilityTimeout = (TimeSpan)queueVisibilityTimeout;
-                    }
-                });
-                c.AddServiceBus();
-                c.AddTimers();
+                c.AddAzureStorageCoreServices()
+                .AddAzureStorage();
             })
             .ConfigureLogging((context, b) =>
             {
@@ -304,9 +284,10 @@ namespace igx.jobs
                 {
                     b.AddApplicationInsights(appInsightsKey);
                 }
-            }).UseConsoleLifetime();
+            })
+            .UseConsoleLifetime();
 
-            return builder.Build();
+            return builder;
         }
     }
 }

@@ -25,7 +25,15 @@ namespace igx.jobs.indexer
     {
         static async Task Main()
         {
-            using (var host = CoreFunction.JobHostConfig(1))
+            var builder = CoreFunction.JobHostConfigBuilder();
+            builder.ConfigureWebJobs(c =>
+            {
+                c.AddAzureStorageCoreServices()
+                .AddAzureStorage()
+                .AddTimers();
+            });
+
+            using (var host = builder.Build())
             {
                 await host.RunAsync();
             }

@@ -1,10 +1,8 @@
 ﻿using d360.core.entities;
-using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using System;
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
@@ -15,7 +13,7 @@ namespace igx.jobs.fusionloadprocessor
     {
         static async Task Main()
         {
-            using (var host = CoreFunction.JobHostConfig())
+            using (var host = CoreFunction.JobHostConfigBuilder().Build())
             {
                 await host.RunAsync();
             }

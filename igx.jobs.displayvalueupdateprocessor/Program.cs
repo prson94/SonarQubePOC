@@ -11,7 +11,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
-using d360.core.entities;
 using d360.core.enums;
 using d360.extensions.storage;
 using Microsoft.Extensions.Hosting;
@@ -22,7 +21,7 @@ namespace igx.jobs.displayvalueupdateprocessor
     {
         static async Task Main()
         {
-            using (var host = CoreFunction.JobHostConfig())
+            using (var host = CoreFunction.JobHostConfigBuilder().Build())
             {
                 await host.RunAsync();
             }

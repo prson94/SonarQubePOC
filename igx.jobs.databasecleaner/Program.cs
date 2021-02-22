@@ -4,10 +4,9 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Data;
-using System.Data.SqlClient;
 using Dapper;
 using Microsoft.Extensions.Hosting;
+
 
 namespace igx.jobs.databasecleaner
 {
@@ -15,7 +14,17 @@ namespace igx.jobs.databasecleaner
     {
         static async Task Main()
         {
-            using(var host = CoreFunction.JobHostConfig())
+            var builder = CoreFunction.JobHostConfigBuilder();
+            builder
+            .ConfigureWebJobs(c =>
+            {
+                c.AddAzureStorageCoreServices()
+                .AddAzureStorage()
+                .AddTimers();
+            });
+            
+
+            using (var host = builder.Build())
             {
                 await host.RunAsync();
             }
