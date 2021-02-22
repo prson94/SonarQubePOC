@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnDestroy, EventEmitter, Output, OnChanges, SimpleChanges } from "@angular/core";
+﻿import { Component, Input, OnDestroy, EventEmitter, Output, OnChanges, SimpleChanges, OnInit } from "@angular/core";
 import * as _ from "lodash";
 import { LazyLoadEvent } from "primeng/api";
 import { ScoreType } from "../../../../models/metrics.model";
@@ -34,9 +34,9 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes["scoreItem"] && changes["scoreItem"].currentValue !== changes["scoreItem"].previousValue) {
+            this.selected = null;
+            this.currentSearchPhrase = null;
             if (this.scoreItem) {
-                this.selected = null;
-                this.currentSearchPhrase = null;
                 this.getResults(1, 250);
             }
         }
@@ -47,7 +47,7 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
     }
 
     cancel() {
-        this.selected = null;
+        //this.selected = null;
         this.onClose.emit(null);
     }
 
