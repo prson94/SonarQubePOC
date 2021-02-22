@@ -66,7 +66,7 @@ namespace d360.web
                 {
                     ancestor = companyAncestor.FrameAncestor;
                 }
-                cache.SetItem(FramesKey, ancestor);
+                cache.SetItem(FramesKey, ancestors);
 
                 //If company has a frame setting, a CSP header should be added to allow the frame ancestors
                 if(!string.IsNullOrEmpty(ancestor))
