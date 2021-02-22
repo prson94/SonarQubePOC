@@ -46,6 +46,7 @@ export class CompanySettings {
     FusionEnabled: boolean = true;
     MaxExcelExportRows: number;
     AllowedOrigins: string;
+    FramingDomains: string;
 }
 
 export class IpRestriction {

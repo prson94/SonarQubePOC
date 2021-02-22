@@ -61,6 +61,7 @@ namespace d360.web
             app.Use<ContractValidationMiddleware>();
             app.Use<CachingHeaderMiddleware>();
             app.Use<CorsMiddleware>();
+            app.Use<ContentSecurityPolicyMiddleware>();
         }
     }
 }
