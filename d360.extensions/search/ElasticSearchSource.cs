@@ -374,7 +374,7 @@ namespace d360.extensions.search
         }
 
         /// <summary>
-        /// Create an index if id doesnt exist
+        /// Create an index if it doesnt exist
         /// </summary>
         /// <param name="companyID"></param>
         private void CreateIndexIfNotExists(int companyID)
@@ -391,7 +391,13 @@ namespace d360.extensions.search
                 }
                 var response = client.LowLevel.IndicesCreate<CreateResponse>(indexName, esSettings);
                 if (!response.IsValid)
-                    throw new ApplicationException(response.OriginalException.Message);
+                {
+                    //If Resource already exist, no reason to complain
+                    if (response.ServerError.Error.Type != "resource_already_exists_exception")
+                    {
+                        throw new ApplicationException(response.OriginalException.Message);
+                    }
+                }
             }
 
         }
@@ -582,7 +588,13 @@ namespace d360.extensions.search
             var client = new ElasticClient(GetConnectionSettings(companyID));
             //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
             string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
-            StringResponse deleteResponse = client.LowLevel.DeleteByQuery<StringResponse>(GetCompanyIndexName(companyID), jsonString);
+
+            //Refresh all shards after the query delete to avoid 409 versioning conflicts
+            DeleteByQueryRequestParameters requestParameters = new DeleteByQueryRequestParameters
+            {
+                Refresh = true
+            };
+            StringResponse deleteResponse = client.LowLevel.DeleteByQuery<StringResponse>(GetCompanyIndexName(companyID), jsonString, requestParameters);
 
             if (!deleteResponse.Success)
                 throw new ApplicationException(deleteResponse.OriginalException.Message);
