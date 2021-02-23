@@ -1357,7 +1357,7 @@ for json path";
         }
 
         /// <summary>
-        /// Adds allocations to a workflow action type
+        /// Adds an allocation to a workflow action type with optional responsibilities
         /// </summary>
         /// <param name="actionTypeUid">Uid of the action type the allocations are to be added to</param>        
         [
