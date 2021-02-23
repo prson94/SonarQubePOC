@@ -942,7 +942,7 @@ for json path";
                     return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, model.AssetTypeUid.Value));
                 }
 
-                if (!Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, Permission.ReadAsset))
+                if (!Company.CurrentResourceIsAdmin && !Company.HasAssetTypeReadPermission(assetType.ID).Result)
                 {
                     return new WorkHttpStatus(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ActionApiMessages.AssetTypeAddActionPermissionsDenied);
                 }
