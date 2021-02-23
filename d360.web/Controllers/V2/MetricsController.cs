@@ -1186,7 +1186,7 @@ namespace d360.web.Controllers.V2
             List<DataQualityInsertModel> list = new List<DataQualityInsertModel>{ request };
             var execution = getApiExecution(list.Count);
 
-            List<DataQualityResponseModel> responseList = await Task.FromResult(MetricsRepository.InsertDataQualityResult(list, execution));
+            List<DataQualityResponseModel> responseList = await Task.FromResult(MetricsRepository.InsertDataQualityResult(list, execution)).ConfigureAwait(false);
 
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseList.FirstOrDefault()));
         }
