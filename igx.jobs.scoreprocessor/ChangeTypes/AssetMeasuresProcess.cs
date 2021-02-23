@@ -1009,7 +1009,10 @@ where   ExecutionID <> @id
                         scoreItemLinksToAdd.AddRange(assetScoreItemLinks);
                         scoreItemLinksToDelete.AddRange(assetScoreItemLinksToDelete);
                         scoresItemsToAdd.AddRange(assetScoreItems.Where(n => !scoresItemsToAdd.Any(e => e.Uid == n.Uid)));
-                        scoresToAdd.Add(assetScore);
+                        if (scoreItemLinksToAdd.Count > 0 || scoreItemLinksToDelete.Count > 0 || scoresItemsToAdd.Count > 0)
+                        {
+                            scoresToAdd.Add(assetScore);
+                        }
                     }
                 });
 
