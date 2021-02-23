@@ -20,7 +20,7 @@ export class CommentRelationDetail {
 
 export class CommentAggregateVoteDetail {
     Count: number;
-    Emoji: Emoji;
+    Emoji: Emoji | string;
 }
 
 export class CommentDetail {
