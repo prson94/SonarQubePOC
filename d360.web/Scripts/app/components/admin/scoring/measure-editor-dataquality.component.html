@@ -154,7 +154,7 @@
                                *ngIf="!metricForm.value.isGroup && !isExternallyCalculated" 
                                (isValid)="canAddNewGroup($event)">
                 <div inputs>
-                    <div class="row">
+                    <div class="row match-condition">
                         <p-radioButton igRadioButton formControlName="MatchConditionsOnly" [(ngModel)]="model.MatchConditionsOnly" value="1" label="Only apply this measure to assets that match a condition group"></p-radioButton>&nbsp;
                         <p-radioButton igRadioButton formControlName="MatchConditionsOnly" [(ngModel)]="model.MatchConditionsOnly" value="0" label="Apply this measure to all assets, using the first matching condition group to determine measure weight"></p-radioButton>
                     </div>
@@ -184,7 +184,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <button type="button" icon="fa-ellipsis-v" igButton (click)="menu.toggle($event)" pTooltip="Measure Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                                <button type="button" icon="fa-ellipsis-v" igButton (click)="menu.toggle($event)" pTooltip="Condition Group Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
                                 <ig-popup-menu (onSelect)="menuClicked($event, cg.DisplayOrder, cg.Position)" [items]="menuOptions(cg.DisplayOrder != 1, cg.DisplayOrder != conditionGroups.length)" #menu [tabIndex]="1"></ig-popup-menu>
                             </div>
                         </div>
@@ -196,9 +196,9 @@
                                                   [fields]="fields"
                                                   (onChange)="updateFormValidity($event)"></field-condition-grid>
                         </div>
-                        <div class="row" *ngIf="showConditionMatch(cg)">
+                        <div class="row match-type" *ngIf="showConditionMatch(cg)">
                             <p-radioButton igRadioButton formControlName="cg_{{cg.Position}}_matchType" [(ngModel)]="cg.MatchType" value="All" label="Match all conditions"></p-radioButton>&nbsp;
-                            <p-radioButton igRadioButton formControlName="cg_{{cg.Position}}_matchType" [(ngModel)]="cg.MatchType" value="Any" label="Match any conditions"></p-radioButton>
+                            <p-radioButton igRadioButton formControlName="cg_{{cg.Position}}_matchType" [(ngModel)]="cg.MatchType" value="Any" label="Match any condition"></p-radioButton>
                         </div>
                     </div>
                     <div class="row top-margin">
