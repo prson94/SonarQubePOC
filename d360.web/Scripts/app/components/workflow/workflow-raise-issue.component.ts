@@ -19,8 +19,10 @@ import { HeaderActionsService } from '../../services/header-actions.service';
 import { HeaderActions } from '../../models/header.model';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { StringConstants } from '../../static/string-constants';
+import { ResourcesService } from '../../services/resources.service';
 
 declare var CompanySettings;
+declare var CurrentResourceID;
 
 @Component({
     selector: 'd3s-workflow-raise-issue',
@@ -68,7 +70,7 @@ declare var CompanySettings;
             </div>
         </div>
     `,
-    providers: [WorkflowService, ObjectDetailService, TagService]
+    providers: [WorkflowService, ObjectDetailService, TagService, ResourcesService]
 })
 
 export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -86,6 +88,8 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     private issueTypes: WorkflowIssueType[] = [];
     private actionMessage: string = CompanySettings.ActionMessage;
     private searchSub: ISubscription;
+    private resourceId: number = CurrentResourceID;
+    private resourceUid: any;
 
     constructor(
         private tagService: TagService,
@@ -97,7 +101,8 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         private headerActionsService: HeaderActionsService,
         webAnalyticsService: WebAnalyticsService,
         private messagesService: MessagesObservableService,
-        secondaryNavService: SecondaryNavService) {
+        secondaryNavService: SecondaryNavService,
+        protected resourcesService: ResourcesService) {
         super();
         this.secondaryNavService = secondaryNavService;
         this.webAnalyticsService = webAnalyticsService;
@@ -111,7 +116,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
 
         if (this.headerBreadcrumbService.currentObject && this.headerBreadcrumbService.currentObject.type)
             this.objectType = this.headerBreadcrumbService.currentObject.type;
-                
+
         this.loadDetails(this.objectID, this.objectType);
         
         this.headerBreadcrumbService.clearBreadcrumbs();
@@ -119,7 +124,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Take Action'));
         this.clearSidebar();
         this.secondaryNavService.setCurrentArea('Take Action', 'fa-paper-plane-o', null);
-        this.secondaryNavService.showHeader(true);
+        this.secondaryNavService.showHeader(true);                
     }
 
     ngOnDestroy(): void {
@@ -139,32 +144,36 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         }
 
         this.isLoading = true;
+            this.resourcesService.getResource(this.resourceId)
+                .subscribe(res => {
+                    this.resourceUid = res.items[0].uid;      
+                    this.objectDetailService.getObject(objectId, objectType).subscribe(
+                        res => {
+                            this.objectDetail = res;
+                            this.selectedOption = 'current';
+                            this.selectedObjectId = this.objectID;
+                            this.selectedObjectType = this.objectType;
+                            if (this.selectedObjectType == StringConstants.ObjectArtifact || this.selectedObjectType == StringConstants.ObjectTaxonomy || this.selectedObjectType == StringConstants.ObjectRule || this.selectedObjectType == StringConstants.ObjectPolicy) {
+                                this.selectedAssetUid = res.UID ?? res['Uid'];
+                            }              
+                            if (this.selectedObjectType == StringConstants.ObjectArtifactType || this.selectedObjectType == StringConstants.ObjectTaxonomyType || this.selectedObjectType == StringConstants.ObjectRuleType || this.selectedObjectType == StringConstants.ObjectPolicyType) {
+                                this.selectedAssetTypeUid = res.UID ?? res['Uid'];
+                            } 
 
-        this.objectDetailService.getObject(objectId, objectType).subscribe(
-            res => {
-                this.objectDetail = res;
-                this.selectedOption = 'current';
-                this.selectedObjectId = this.objectID;
-                this.selectedObjectType = this.objectType;
-                if (this.selectedObjectType == StringConstants.ObjectArtifact || this.selectedObjectType == StringConstants.ObjectTaxonomy || this.selectedObjectType == StringConstants.ObjectRule || this.selectedObjectType == StringConstants.ObjectPolicy) {
-                    this.selectedAssetUid = res.UID ?? res['Uid'];
-                }              
-                if (this.selectedObjectType == StringConstants.ObjectArtifactType || this.selectedObjectType == StringConstants.ObjectTaxonomyType || this.selectedObjectType == StringConstants.ObjectRuleType || this.selectedObjectType == StringConstants.ObjectPolicyType) {
-                    this.selectedAssetTypeUid = res.UID ?? res['Uid'];
-                } 
+                            this.isLoading = false;
 
-                this.isLoading = false;
-
-                this.loadIssueTypes()   
-            }
-        );
+                            this.loadIssueTypes()   
+                        }
+                    );
+                });
     }
 
     private loadIssueTypes() {
         this.isLoading = true;
-        let params = { _assetUid: "", _assetTypeUid: "" };
+        let params = { _assetUid: "", _assetTypeUid: "", _resourceUid: "" };
         if (this.selectedAssetUid) {
-            params._assetUid = this.selectedAssetUid;            
+            params._assetUid = this.selectedAssetUid;
+            params._resourceUid = this.resourceUid;            
         }        
         this.workflowService.getWorkflowIssueTypes(this.selectedObjectType, this.selectedObjectId, params)
             .subscribe(result => {
