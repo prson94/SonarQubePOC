@@ -6936,9 +6936,9 @@ table {
 }
 
 .condition-group {
-    background: @ig-grey-t5;
+    background: @ig-slate-t5;
     border-radius: 8px;
-    padding: 24px;
+    padding: 16px;
     margin-right: 24px;
     margin-bottom: 8px;
 
@@ -6950,14 +6950,15 @@ table {
         }
 
         .field-condition-grid {
-            width: 101%;
+            width: 100%;
             overflow-x: hidden;
+            margin-right: 0px;
         }
     }
 
     .cg-header-row {
         display: inline-block;
-        line-height: 24px;
+        line-height: 32px;
         width: 100%;
 
         .condition-group-header {
@@ -6967,15 +6968,16 @@ table {
         .input-actions {
             float: right;
             display: flex;
+            margin-right: 15px;
 
             .ig-label {
-                line-height: 26px;
+                line-height: 30px;
                 padding-right: 16px;
             }
 
             .ig-number-field {
                 width: 80px !important;
-                 margin-right: 8px;
+                margin-right: 8px;
             }
 
             .ig-button-container {
@@ -6983,9 +6985,25 @@ table {
             }
         }
     }
-}
-.add-group-btn {
-    color: @ig-lightblue-t1;
-    background: white;
-    margin-top: 8px;
+
+    .match-condition {
+        p-radiobutton:first-of-type {
+            margin-bottom: 3px;
+        }
+    }
+
+    .match-type {
+        padding-bottom: 0px;
+        margin-top: 3px;
+
+        p-radioButton {
+            margin-right: 16px;
+        }
+    }
+
+    .add-group-btn {
+        color: @ig-lightblue-t1;
+        background: white;
+        margin-top: 8px;
+    }
 }

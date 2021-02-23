@@ -247,6 +247,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                 this.model.Definition = new MetricAssetDefinitionViewModel();
                 this.model.Definition.Governance = new MetricAssetDefinitionGovernanceViewModel();
                 this.model.Definition.Governance.Check = null;
+                this.model.MatchConditionsOnly = true;
             }
             this.isLoading = false;
         }

@@ -201,6 +201,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
             if (!this.model.Definition) {
                 this.model.Definition = new MetricAssetDefinitionViewModel();
                 this.model.Definition.DataQuality = new MetricAssetDefinitionDataQualityViewModel();
+                this.model.MatchConditionsOnly = true;
                 //this.model.Definition.DataQuality.ResultOperation = MetricRuleResultOperation.Average;
             }
             this.isLoading = false;
