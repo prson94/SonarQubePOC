@@ -59,7 +59,7 @@
                     </div>
                     <div *ngIf="showConditions" class="measure-details-item">
                         <div class="details-header">Asset Conditions and Weighting</div>
-                        <measure-conditions-details [screenReferences]="screenReferences" [conditionGroups]="selection?.ConditionGroups"></measure-conditions-details>
+                        <measure-conditions-details [screenReferences]="screenReferences" [conditionGroups]="selection?.ConditionGroups" [matchAll]="selection?.MatchConditionsOnly"></measure-conditions-details>
                     </div>
                     <div class="measure-details-item">
                         <div class="details-header">UID</div>

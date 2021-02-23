@@ -2290,7 +2290,8 @@ for json path";
                             {hasResultsSql("V.Uid")}, 
 							{conditionGroupsJsonSql("V.Uid")}, 
                             {dataQualityDefinitionSql("V.Definition", "V.Uid")},
-                            V.Definition as [DefinitionJson]
+                            V.Definition as [DefinitionJson],
+                            V.MatchConditionsOnly
                     from	metrics.Asset A                    		
                             cross apply (
                     			select	EffectiveDate as EffectiveDate

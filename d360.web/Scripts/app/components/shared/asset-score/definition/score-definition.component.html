@@ -29,7 +29,7 @@
         </div>
         <div *ngIf="showConditions" class="measure-details-item">
             <div class="details-header">Asset Conditions and Weighting</div>
-            <measure-conditions-details [screenReferences]="screenReferences" [conditionGroups]="selectedMetric?.ConditionGroups"></measure-conditions-details>
+            <measure-conditions-details [screenReferences]="screenReferences" [conditionGroups]="selectedMetric?.ConditionGroups" [matchAll]="selectedMetric?.MatchConditionsOnly"></measure-conditions-details>
         </div>
         <div *ngIf="!data?.isExternallyCalculated && !selectedMetric.IsGroup" class="measure-details-item">
             <d3s-admin-metric-pass-test-details #passTestComponent [assetTypeUid]="assetTypeUid"

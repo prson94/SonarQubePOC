@@ -30,6 +30,7 @@ export class MetricAssetHistoryViewModel {
     EffectiveDate: Date;
     EffectiveEndDate: Date;
     Weight: number;
+    MatchConditionsOnly: boolean = false;
     ConditionGroups: MetricAssetVersionConditionViewModel[] = [];
     HasResults: boolean;
     Definition: MetricAssetDefinitionViewModel;
