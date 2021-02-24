@@ -1266,6 +1266,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.groupTemplateMap.add("FocalPortGroup", this.template_FocalRootNode());
         this.diagram.groupTemplateMap.add("PortGroup", this.template_RootNode());
         this.diagram.groupTemplateMap.add("Group", this.template_AncestorNode());
+        this.diagram.groupTemplateMap.add("AncestorNodeOnlyText", this.template_AncestorNodeOnlyText());
 
         this.diagram.nodeTemplateMap.add("MoreData", this.template_RevealNode());
         this.diagram.groupTemplateMap.add("HiddenDisabledNode", this.template_HiddenDisabledNode());
@@ -2106,6 +2107,64 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 )
             ),
 
+            // end Vertical Panel
+        );
+    }
+
+    private template_AncestorNodeOnlyText(): go.Group {
+        var self = this;
+        return this.g(
+            go.Group,
+            "Auto",
+            {
+                background: "transparent",
+                contextMenu: this.template_ContextMenu(),
+                click: (e, obj) => this.helper_HighlightPath(e, obj as any),
+                computesBoundsAfterDrag: true,
+                handlesDragDropForMembers: true,
+                stretch: go.GraphObject.Horizontal,
+                movable: false,
+                layout:
+                    this.g(
+                        go.GridLayout,
+                        {
+                            wrappingColumn: 1, alignment: go.GridLayout.Position,
+                            cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4),
+                            comparer: (a, b) => this.helper_SortParts(a, b)
+                        }
+                    )
+            },
+            this.g(
+                go.Shape,
+                "Rectangle",
+                { fill: null, strokeWidth: 2, stretch: go.GraphObject.Horizontal },
+                new go.Binding("stroke", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount))
+            ),
+            this.g(
+                go.Panel,
+                "Vertical",   // title above Placeholder
+                new go.Binding("desiredSize", "", function (obj: go.GraphObject, target: go.GraphObject) {
+                    target.part.findTopLevelPart().part.data["predicateWidth"] = 400;
+                }).ofObject(),
+                new go.Binding("background", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount)),
+                new go.Binding("background", "", v => (v.isHighlighted) ?
+                    go.Brush.mix(this.selectionPathHighlightColor, this.selectionPathHighlightColor, v.backAmount) :
+                    go.Brush.mix(v.data.back, this.lightenBoxColor, v.data.backAmount)
+                ).ofObject(),
+                this.g(
+                    go.TextBlock,
+                    {
+                        margin: 5,
+                        editable: false,
+                        font: this.fontLabel,
+                        textAlign: "center",
+                        overflow: go.TextBlock.OverflowClip,
+                        width: 240
+                    },
+                    new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
+                    new go.Binding("text", "text").makeTwoWay()
+                ),// end of Title containing Panel
+            ),  // end Horizontal Panel
             // end Vertical Panel
         );
     }
