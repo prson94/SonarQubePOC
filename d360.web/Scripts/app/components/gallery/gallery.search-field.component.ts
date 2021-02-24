@@ -43,6 +43,7 @@ export class GallerySearchFieldComponent implements OnInit {
 
     ngOnInit(): void {
         this.properties = new Array();
+        this.properties.push({ Name: "maxLength", Type: "number", Description: "The maximum number of charatcers allowed.", Default: "2500" });
         this.properties.push({ Name: "mode", Type: "string", Description: "Mode that determines when search takes place. Valid values: Keypress, Enter", Default: "Enter" });
         this.properties.push({ Name: "placeholder", Type: "string", Description: "Placeholder text, shown when there is no input", Default: "Search" });
         this.properties.push({ Name: "tabindex", Type: "number", Description: "Index of the element in tabbing order.", Default: "0" });
