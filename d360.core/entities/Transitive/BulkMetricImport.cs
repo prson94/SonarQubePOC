@@ -13,6 +13,8 @@ namespace d360.core.entities
     public class MetricAssetHierarchyConditionsModel
     {
         [DataMember]
+        public Guid Uid { get; set; }
+        [DataMember]
         public string Weight { get; set; }
         [DataMember]
         public string MatchType { get; set; }
@@ -85,7 +87,8 @@ namespace d360.core.entities
         public DateTime? EndDate { get; set; }
         [DataMember]
         public bool? MatchConditionsOnly { get; set; }
-
+        [DataMember]
+        public Guid? ConditionUid { get; set; }
 
     }
 

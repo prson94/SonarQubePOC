@@ -1587,7 +1587,8 @@ from	(
                 iif(SI.DecimalValue > 1, 1, SI.DecimalValue) as DecimalValue,
 				cast(iif(SI.Evidence is not null and SI.Evidence <> '', 1, 0) as bit) as HasEvidence,
 				A.ScoreType,
-				V.MatchConditionsOnly
+				V.MatchConditionsOnly,
+                SI.ConditionUid
 		from    metrics.Score S 
 				inner join metrics.Allocation A on A.Uid = S.AllocationUid
                 inner join metrics.ScoreItemLink SIL on SIL.ScoreUid = S.Uid 
@@ -1632,6 +1633,7 @@ select		R.*,
 			) as MeasuresJson,
 						(
                     	SELECT 
+                            C.Uid,
 							MatchType,
 							Position,
 							threshold,
