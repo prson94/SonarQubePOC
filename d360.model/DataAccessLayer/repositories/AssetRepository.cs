@@ -2635,7 +2635,11 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 if (!string.IsNullOrWhiteSpace(node.Segments) && node.Segments.IndexOf('<') >= 0)
                 {
                     XElement segmentXML = XElement.Parse(node.Segments);
-                    List<XElement> segmentList = segmentXML.Descendants("segment").OrderBy(order => order.Attribute("level").Value).ThenBy(x => x.Attribute("position").Value).ToList();
+                    List<XElement> segmentList = segmentXML
+                        .Descendants("segment")
+                        .OrderBy(s => { int.TryParse(s.Attribute("level")?.Value, out int l); return l; })
+                        .ThenBy(s => { int.TryParse(s.Attribute("position")?.Value, out int p); return p; })
+                        .ToList();
                     int currentlevel = 1;
                     int level = 0;
                     int position = 0;
@@ -2644,22 +2648,22 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
                     foreach (XElement element in segmentList)
                     {
-                        if (int.TryParse(element.Attribute("level").Value, out level))
+                        if (int.TryParse(element.Attribute("level")?.Value, out level))
                         {
-                            if (int.TryParse(element.Attribute("position").Value, out position))
+                            if (int.TryParse(element.Attribute("position")?.Value, out position))
                             {
                                 if (level != currentlevel)
                                 {
                                     returnlist.Add(new PathComponent
                                     {
                                         Key = elementPath.ToArray(),
-                                        AssetType = CompanyContext.Filter<AssetType>(i => i.ID == assetTypeId).SingleOrDefault().Name
+                                        AssetType = CompanyContext.Filter<AssetType>(i => i.ID == assetTypeId).SingleOrDefault()?.Name
                                     });
                                     currentlevel = level;
                                     elementPath = new List<string>();
                                 }
                                 elementPath.Add(element.Value);
-                                int.TryParse(element.Attribute("assetTypeId").Value, out assetTypeId);
+                                int.TryParse(element.Attribute("assetTypeId")?.Value, out assetTypeId);
                             }
                         }
                     }
@@ -2669,7 +2673,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         returnlist.Add(new PathComponent
                         {
                             Key = elementPath.ToArray(),
-                            AssetType = CompanyContext.Filter<AssetType>(i => i.ID == assetTypeId).SingleOrDefault().Name
+                            AssetType = CompanyContext.Filter<AssetType>(i => i.ID == assetTypeId).SingleOrDefault()?.Name
                         });
                     }
                 }
