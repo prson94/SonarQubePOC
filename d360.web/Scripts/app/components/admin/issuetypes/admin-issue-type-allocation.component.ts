@@ -29,11 +29,17 @@ import { AssetTypeClass } from '../../../models/asset.model';
                                                 Object Name
                                                 <d3s-sortIcon [field]="'Path'"></d3s-sortIcon>
                                             </th>
+                                            <th *ngIf="showResponsibilities">
+                                                Responsibilities
+                                            </th>
+                                            <th style="width: 40px"></th>
                                             <th style="width: 40px"></th>
                                         </tr>
                                         <tr [hidden]="showSimpleFilter">
                                             <th><d3s-column-filter [field]="'ClassName'" [datatype]="'text'"></d3s-column-filter></th>
                                             <th><d3s-column-filter [field]="'Path'" [datatype]="'text'"></d3s-column-filter></th>
+                                            <th *ngIf="showResponsibilities"></th>
+                                            <th></th>
                                             <th></th>
                                         </tr>
                                     </ng-template>
@@ -41,6 +47,16 @@ import { AssetTypeClass } from '../../../models/asset.model';
                                         <tr [pSelectableRow]="item">
                                             <td>{{item.ClassName}}</td>
                                             <td>{{item.Path}}</td>
+                                            <td *ngIf="showResponsibilities">
+                                                <ul *ngFor="let responsibility of item.Responsibilities" style="padding: 0;">
+                                                    <li style="list-style-type:none;">{{ responsibility.Name }}</li>
+                                                </ul>
+                                            </td>
+                                            <td>
+                                                <div class="RowTools">
+                                                    <a style="cursor:pointer;" (click)="selection = item; formMode = FormMode.Adding"><i class="fa fa-pencil"></i></a>
+                                                </div>
+                                            </td>
                                             <td>
                                                 <div class="RowTools">
                                                     <a style="cursor:pointer;" (click)="selection = item; formMode = FormMode.Deleting"><i class="fa fa-trash-o"></i></a>
@@ -54,14 +70,12 @@ import { AssetTypeClass } from '../../../models/asset.model';
                                 </p-table>                 
                             </div>
                             <div *ngSwitchCase="FormMode.Adding" class="col s12">
-                                <d3s-dynamic-editor 
-                                    objectType="IssueTypeRelation"                                     
-                                    [objectTypeUid] = "issueTypeUid"
-                                    [useTypeUidForDefinition]="true"
-                                    title="Issue Type Allocation"  
-                                    (saveClick)="save($event)" 
-                                    (closeClick)="formMode = FormMode.Default">
-                                </d3s-dynamic-editor>
+                                <d3s-admin-issue-type-allocation-editor 
+                                    [issueTypeUid] = "issueTypeUid" 
+                                    [allocation]="selection" 
+                                    [allocations]="allocations"
+                                    (closeClick)="editorClose()">
+                                </d3s-admin-issue-type-allocation-editor>
                             </div>
                             <div *ngSwitchCase="FormMode.Deleting" class="col s12">
                                 <d3s-delete-form
@@ -86,6 +100,7 @@ export class AdminIssueTypeAllocationComponent extends BaseComponent implements 
     allocations = [];
     selection = null;
     deleteCallback: Function;
+    showResponsibilities: boolean;
 
     constructor(private workflowService: WorkflowService, protected messagesService: MessagesObservableService) {
         super();
@@ -108,23 +123,14 @@ export class AdminIssueTypeAllocationComponent extends BaseComponent implements 
         this.workflowService.getIssueTypeAllocations(this.issueTypeUid)
             .subscribe(r => {
                 this.allocations = r;
+                this.showResponsibilities = this.allocations.some((a) => a.Responsibilities && a.Responsibilities.length > 0);
                 this.isLoading = false;
-            });
-    }
-
-    save(e: any) {
-        this.isLoading = true;
-        this.workflowService.postIssueTypeAllocation(this.issueTypeUid, e.item)
-            .subscribe(r => {
-                this.formMode = FormMode.Default;
-                this.isLoading = false;
-                this.showMessageForResult(this.messagesService, r);
-                this.load();
             });
     }
 
     add() {
-        this.formMode = FormMode.Adding;
+        this.selection = null;
+        this.formMode = FormMode.Adding;        
     }
 
     delete() {
@@ -136,6 +142,11 @@ export class AdminIssueTypeAllocationComponent extends BaseComponent implements 
                 this.showMessageForResult(this.messagesService, r);
                 this.load();
             });
+    }
+
+    editorClose() {
+        this.formMode = FormMode.Default;
+        this.load();
     }
 
 }

@@ -822,7 +822,12 @@ for json path";
 
             foreach (var issueModel in issueModels)
             {
-
+                var assetType = Company.AssetTypes.FirstOrDefault(i => i.Object== issueModel.Issue.ObjectType && i.ObjectID == issueModel.Issue.ObjectTypeID);
+               
+                if (!Company.CurrentResourceIsAdmin && !(await Company.HasAssetTypeReadPermission(assetType.ID)))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ActionApiMessages.AssetTypeAddActionPermissionsDenied)).ConfigureAwait(false);
+                }
                 if (isWriteActionDescriptionEnabled)
                 {
                     var resourceAsset = assetRepository.GetAssetByObjectId(SystemObjects.Resource.ToString(), Company.CurrentResourceID);
@@ -940,11 +945,6 @@ for json path";
                 if (assetType == null)
                 {
                     return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, model.AssetTypeUid.Value));
-                }
-
-                if (!Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, Permission.ReadAsset))
-                {
-                    return new WorkHttpStatus(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ActionApiMessages.AssetTypeAddActionPermissionsDenied);
                 }
 
                 if (assetType.Class == AssetTypeClass.Reference)
@@ -1357,7 +1357,7 @@ for json path";
         }
 
         /// <summary>
-        /// Adds allocations to a workflow action type
+        /// Adds an allocation to a workflow action type with optional responsibilities
         /// </summary>
         /// <param name="actionTypeUid">Uid of the action type the allocations are to be added to</param>        
         [

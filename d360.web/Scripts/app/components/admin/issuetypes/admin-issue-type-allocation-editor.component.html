@@ -1,0 +1,44 @@
+﻿<header>
+    {{title}}
+</header>
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading">
+    <div class="row">
+        <div class="col s12">
+            <div class="FieldName">Asset Type</div>
+            <div>
+                <p-dropdown igDropdown
+                            required
+                            [required]="true"
+                            igSize="full"
+                            (onChange)="assetTypeChanged()"
+                            [(ngModel)]="selection.AssetTypeUid"
+                            [appendTo]="'body'"
+                            placeholder="Value required"
+                            [options]="assetTypes"></p-dropdown>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col s12">
+            <div class="FieldName">Responsibilities</div>
+            <div>
+                <p-multiSelect [options]="responsibilityList"
+                                placeholder="Optional"
+                                [(ngModel)]="selection.ResponsibilityTypeUid"
+                                [disabled]="!selection?.AssetTypeUid"
+                                [style]="{'width':'100%'}"
+                                name="responsibilities">
+                </p-multiSelect>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col s12">
+            <button pButton type="submit" [disabled]="!selection?.AssetTypeUid" (click)="save()" style="width: '150px';" label="Save"></button>
+            <button pButton type="button" (click)="closeClick.emit();" label="Close" style="width: '150px';"></button>
+        </div>
+    </div>
+</div>

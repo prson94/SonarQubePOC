@@ -730,6 +730,16 @@ namespace d360.web.Controllers.V2
                     throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
                 }
 
+               
+                foreach(var m in model)
+                {
+                    var isDistinct = m.measures.GroupBy(i => i.measureUid).Select(g => g.Key).ToList();
+                    if(isDistinct.Count() != m.measures.Count())
+                    {
+                        throw new GenericException(HttpStatusCode.BadRequest, "Duplicate measureUid specified in the payload.");
+                    }
+                }
+
                 var allocation = Company.GetByUid<MetricAllocation>(allocationUid);
 
                 if (allocation == null)
