@@ -25,6 +25,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
 import { SharedAssetTypeEditorModule } from '../../shared/assettypeeditor/shared-asset-type-editor.module';
+import { AssetTypeDeleteModule } from '../asset-type-delete/asset-type-delete.module';
 
 @NgModule({
     imports: [
@@ -52,6 +53,7 @@ import { SharedAssetTypeEditorModule } from '../../shared/assettypeeditor/shared
         SharedResponsibilitiesModule,    
         TilesModule,
         AdminModule,
+        AssetTypeDeleteModule,
         SharedAssetTypeEditorModule,
 
     ],

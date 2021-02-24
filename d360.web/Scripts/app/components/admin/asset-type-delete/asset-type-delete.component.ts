@@ -55,6 +55,12 @@ export class AssetTypeDeleteComponent extends BaseComponent implements OnInit {
                 case AssetTypeClass.DiagramAsset:
                     name = 'Diagram Asset';
                     break;
+                case AssetTypeClass.Rule:
+                    name = 'Rule';
+                    break;
+                case AssetTypeClass.Model:
+                    name = 'Model';
+                    break;
                 default: name = 'Business Asset';
                     break;
 

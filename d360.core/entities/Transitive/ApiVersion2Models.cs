@@ -217,6 +217,7 @@ namespace d360.core.entities
         public int IntersectTypeId { get; set; }
         public int Level { get; set; }
         public int ItemNumber { get; set; }
+        public AssetTypeClass Class { get; set; }
     }
 
     [DataContract]
