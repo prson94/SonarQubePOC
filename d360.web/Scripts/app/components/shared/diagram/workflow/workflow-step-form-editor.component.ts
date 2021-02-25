@@ -330,7 +330,6 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     }
 
     save() {
-        console.log(this.step.fields.form.field);
         //calculate the next id # based on existing fields
         let len = this.step.fields.form.field.filter((f) => f["@type"] === this.newField["@type"]).length;
         let count = len === 0 ? 1 : this.step.fields.form.field
