@@ -566,11 +566,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.diagram.model.insertArrayItem(node.owners, ix, owner);
                 this.diagram.model.setDataProperty(owner, 'expanded', false);
                 this.diagram.model.setDataProperty(owner, 'showLoading', false);
-                this.helper_UpdateDiagramLayout();
-                this.helper_HighlightPath(null, lastHighlightedPart);
-
+               
                 if (currentAnimation)
                     currentAnimation.stop();
+
+                this.helper_UpdateDiagramLayout();
+                this.helper_HighlightPath(null, lastHighlightedPart);
             }
             else {
 
@@ -1402,6 +1403,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     }
                 }
             }
+            this.diagram.rebuildParts();
         });
     }
 
@@ -1695,8 +1697,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private helper_ShowDetail(assetUid: string) {
+        if (assetUid === this.emptyUid) {
+            return;
+        }
         this.panel_TabIndex = 0;
-
         this.panel_Loading = true;
         this.browserService.getDetailByAsset(assetUid).subscribe(response => {
             try {
@@ -3296,12 +3300,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         },
                         new go.Binding("mouseEnter", "", (val) => {
                             return (ev: go.InputEvent, obj: go.GraphObject) => {
-                                this.setRelationshipBadgeHoverState(val.part.data["hierarchyKey"], ev, val.data, true, this);
+                                this.setRelationshipBadgeHoverState(val, ev, val.data, true, this);
                             }
                         }).ofObject(),
                         new go.Binding("mouseLeave", "", (val) => {
                             return (ev: go.InputEvent, obj: go.GraphObject) => {
-                                this.setRelationshipBadgeHoverState(val.part.data["hierarchyKey"], ev, val.data, false, this);
+                                this.setRelationshipBadgeHoverState(val, ev, val.data, false, this);
                             }
                         }).ofObject(),
                         this.g(go.Shape, "RoundedRectangle",
@@ -3387,12 +3391,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         },
                         new go.Binding("mouseEnter", "", (val) => {
                             return (ev: go.InputEvent, obj: go.GraphObject) => {
-                                this.setRelationshipBadgeHoverState(val.part.data["hierarchyKey"], ev, val.data, true, this);
+                                this.setRelationshipBadgeHoverState(val, ev, val.data, true, this);
                             }
                         }).ofObject(),
                         new go.Binding("mouseLeave", "", (val) => {
                             return (ev: go.InputEvent, obj: go.GraphObject) => {
-                                this.setRelationshipBadgeHoverState(val.part.data["hierarchyKey"], ev, val.data, false, this);
+                                this.setRelationshipBadgeHoverState(val, ev, val.data, false, this);
                             }
                         }).ofObject(),
                         this.g(go.Shape, "RoundedRectangle",
@@ -3435,43 +3439,50 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private isRelationshipBadgeTooltipVisible: boolean = false;
     private relationshipBadgeHtml = "The item in this collection has 'xx' relationships to x other item.";
     private showTooltipTimeout;
-    private setRelationshipBadgeHoverState(hierarchyKey: string, ev: go.InputEvent, data: go.ObjectData, isHover: boolean, self: AssetBrowserComponent) {
-        self.isRelationshipBadgeTooltipVisible = isHover;
-        var refHtmlElement = self.relationshipBadgesTooltipRef.nativeElement as HTMLElement;
-        if (!refHtmlElement) return;
-        if (isHover) {
-            self.relationshipBadgeHtml = self.getRelBadgeTooltip(data, hierarchyKey);
+    private setRelationshipBadgeHoverState(goObj: go.GraphObject, ev: go.InputEvent, data: go.ObjectData, isHover: boolean, self: AssetBrowserComponent) {
+        try {
+            self.isRelationshipBadgeTooltipVisible = isHover;
+            let hierarchyKey: string = goObj.part.data["hierarchyKey"];
+            var refHtmlElement = self.relationshipBadgesTooltipRef.nativeElement as HTMLElement;
+            if (!refHtmlElement) return;
+            if (isHover) {
+                self.relationshipBadgeHtml = self.getRelBadgeTooltip(data, hierarchyKey);
 
-            self.showTooltipTimeout = setTimeout(() => {
-                refHtmlElement.style.display = "block";
-                var diagramPos = (self.diagramRef as ElementRef).nativeElement.getBoundingClientRect();
-                var position = self.diagram.transformDocToView(ev.targetObject.getDocumentBounds().position);
+                self.showTooltipTimeout = setTimeout(() => {
+                    refHtmlElement.style.display = "block";
+                    var diagramPos = (self.diagramRef as ElementRef).nativeElement.getBoundingClientRect();
+                    var position = self.diagram.transformDocToView(ev.targetObject.getDocumentBounds().position);
 
-                var positionX = (diagramPos.x + position.x);
+                    var positionX = (diagramPos.x + position.x);
 
-                var leftDiff = positionX - refHtmlElement.clientWidth / 2;
-                if (leftDiff < 0) {
-                    positionX += Math.abs(leftDiff);
-                }
+                    var leftDiff = positionX - refHtmlElement.clientWidth / 2;
+                    if (leftDiff < 0) {
+                        positionX += Math.abs(leftDiff);
+                    }
 
-                var rightDiff = window.innerWidth - (positionX + refHtmlElement.clientWidth / 2);
-                if (rightDiff < 0) {
-                    positionX -= Math.abs(rightDiff);
-                }
+                    var rightDiff = window.innerWidth - (positionX + refHtmlElement.clientWidth / 2);
+                    if (rightDiff < 0) {
+                        positionX -= Math.abs(rightDiff);
+                    }
 
-                refHtmlElement.style.left = positionX + "px";
-                refHtmlElement.style.top = (diagramPos.y + position.y) + "px";
+                    refHtmlElement.style.left = positionX + "px";
+                    refHtmlElement.style.top = (diagramPos.y + position.y) + "px";
 
-                refHtmlElement.style.transform = "translateY(-100%) translateX(14px) translateX(-50%)";
-                refHtmlElement.style.position = "fixed";
-                self.cdRef.detectChanges();
-            }, 100);
-        }
-        else {
-            refHtmlElement.style.display = "none";
-            if (self.showTooltipTimeout) {
-                window.clearTimeout(self.showTooltipTimeout);
+                    refHtmlElement.style.transform = "translateY(-100%) translateX(14px) translateX(-50%)";
+                    refHtmlElement.style.position = "fixed";
+                    self.cdRef.detectChanges();
+                }, 100);
             }
+            else {
+                refHtmlElement.style.display = "none";
+                if (self.showTooltipTimeout) {
+                    window.clearTimeout(self.showTooltipTimeout);
+                }
+            }
+        }
+        catch (ex) {
+            //using try|catch as functions running under gojs scope can swallow expections but stop working making debugging difficult
+            console.log(ex);
         }
     }
 
@@ -3655,12 +3666,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 let totalCount: number = 0;
                                 (obj.part.data[propertyName] as Array<any>).forEach(d => totalCount += d.count);
                                 var data = { consolidated: true, count: totalCount };
-                                this.setRelationshipBadgeHoverState(val.part.data["hierarchyKey"], ev, data, true, this);
+                                this.setRelationshipBadgeHoverState(val, ev, data, true, this);
                             }
                         }).ofObject(),
                         new go.Binding("mouseLeave", "", (val) => {
                             return (ev: go.InputEvent, obj: go.GraphObject) => {
-                                this.setRelationshipBadgeHoverState(val.part.data["hierarchyKey"], ev, val.data, false, this);
+                                this.setRelationshipBadgeHoverState(val, ev, val.data, false, this);
                             }
                         }).ofObject(),
                         this.g(go.Shape, "RoundedRectangle",
@@ -3684,16 +3695,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 let totalCount: number = 0;
                                 (obj.part.data[propertyName] as Array<any>).forEach(d => totalCount += d.count);
                                 if (isNaN(totalCount)) {
-                                    //Handle ownership async loaded count data
                                     target.text = '-';
-                                    var interval = setInterval(() => {
-                                        totalCount = 0;
-                                        (obj.part.data[propertyName] as Array<any>).forEach(d => totalCount += d.count);
-                                        if (!isNaN(totalCount)) {
-                                            target.text = totalCount.toString();
-                                            window.clearInterval(interval);
-                                        }
-                                    }, 200);
                                     return;
                                 }
                                 target.text = totalCount.toString();
