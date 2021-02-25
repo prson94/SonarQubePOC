@@ -30,15 +30,11 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes["selected"] && changes["selected"].currentValue != null) {
-            if (this.selected.Conditions) {
-                let matchedCondition = this.selected.Conditions.find((x) => x.Uid === this.selected.ConditionUid);
-                if (matchedCondition) {
-                    this.matchedCondition = matchedCondition;
-                }
-                else {
-                    this.matchedCondition = null;
-                }
-            } else {
+            let matchedCondition = this.selected.Conditions?.find((x) => x.Uid === this.selected.ConditionUid);
+            if (matchedCondition) {
+                this.matchedCondition = matchedCondition;
+            }
+            else {
                 this.matchedCondition = null;
             }
         }
@@ -102,7 +98,7 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
         var matches = this.selected.Conditions.filter((x) => {
             return (this.selected.OtherConditions.indexOf(x.Uid) !== -1);
         });
-        return matches.map(x => x.Position).join(" and ");
+        return matches.map((x) => x.Position).join(" and ");
     }
 
     public getAsPrecentageNoMax(val: number): string {
