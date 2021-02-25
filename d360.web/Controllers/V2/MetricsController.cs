@@ -1165,33 +1165,6 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Create the data quality result for an asset / Rule
-        /// </summary>
-        /// <remarks>
-        /// This is a "single version" of the quality/results/ accepting only one input. See that endpoint for more documentation.
-        /// </remarks>
-        /// <returns>A data quality result including any error messages.</returns>
-        [
-            HttpPost,
-            Route("quality/result/"),
-            SwaggerRequestExample(typeof(DataQualityInsertModel), typeof(DataQualityInsertExample)),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.OK, "A response with the Uid of the new data quality result.", typeof(DataQualityResponseModel)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            ApiExplorerSettings(IgnoreApi = true)
-        ]
-        public async Task<IHttpActionResult> PostDataQualityResultSingleAsync(DataQualityInsertModel request)
-        {
-            List<DataQualityInsertModel> list = new List<DataQualityInsertModel>{ request };
-            var execution = getApiExecution(list.Count);
-
-            List<DataQualityResponseModel> responseList = await Task.FromResult(MetricsRepository.InsertDataQualityResult(list, execution)).ConfigureAwait(false);
-
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseList.FirstOrDefault()));
-        }
-
-        /// <summary>
         /// Delete data quality result(s) based on parameters provided
         /// </summary>
         /// <remarks>
