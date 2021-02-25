@@ -1,4 +1,5 @@
 ﻿import { Component, Input, OnChanges, OnInit, SimpleChanges } from "@angular/core";
+import { match } from "core-js/fn/symbol";
 import { MetricFieldTypeViewModel, ScoreType, MetricAssetDefinitionViewModel } from "../../../../models/metrics.model";
 import { Operator } from "../../../../models/operator.model";
 import { PointBreakdown, PointBreakDownConditionItem} from "../../../../models/score.model";
@@ -29,7 +30,6 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['selected'] && changes['selected'].currentValue != null) {
-            console.log(this.selected);
             if (this.selected.Conditions) {
                 let matchedCondition = this.selected.Conditions.find(x => x.Uid == this.selected.ConditionUid);
                 if (matchedCondition)
@@ -43,25 +43,25 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
         }
 
         this.summedMeasures = this.getSum();
-        console.log(this.summedMeasures);
     }
 
 
     private getSum(): number {
-        var res: number = 0;
-        this.measures.forEach((x) => {
-            let match = x.Conditions?.find((c) => c.Uid == x.ConditionUid);
-            let weight = 0;
-            if (match) {
-                weight = +match.Weight;
-            } else {
-                weight = +x.Weight;
-            }
-            res += +weight;
-            console.log(res);
-        });
+        if (this.measures && this.measures.length > 0) {
+            var res: number = 0;
+            this.measures.forEach((x) => {
+                let match = x.Conditions?.find((c) => c.Uid == x.ConditionUid);
+                let weight = 0;
+                if (match) {
+                    weight = +match.Weight;
+                } else {
+                    weight = +x.Weight;
+                }
+                res += +weight;
+            });
        
-        return res;
+            return res;
+        }
     }
 
     public showRuleResults(isVisible: boolean) {
@@ -96,6 +96,14 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
             return "(default)";
         }
     }
+
+    getOtherMatchedGroups(): string {
+        var matches = this.selected.Conditions.filter((x) => {
+            return (this.selected.OtherConditions.indexOf(x.Uid) !== -1);
+        });
+        return matches.map(x => x.Position).join(" and ");
+    }
+
     public getAsPrecentageNoMax(val: number): string {
 
         if (val == undefined || val == null)

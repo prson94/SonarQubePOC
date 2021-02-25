@@ -60,6 +60,7 @@ export class PointBreakdown {
     Conditions: PointBreakDownConditionItem[];
     Measures: PointBreakdown[];
     ConditionUid: string;
+    OtherConditions: string[];
 
     //ui data
     _finalScore: number = 0;
@@ -76,6 +77,7 @@ export class PointBreakDownConditionItem {
     Uid: string;
     Weight: number;
     MatchType: number;
+    Position: number;
     ConditionItems: PointBreakdownCondition[]; 
 }
 

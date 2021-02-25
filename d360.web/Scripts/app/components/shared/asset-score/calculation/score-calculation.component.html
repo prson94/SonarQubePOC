@@ -55,15 +55,23 @@
             <div class="calculation-group">
                 <div class="title">Asset Conditions and Weighting</div>
                 <div>
-                    <span *ngIf="selected.MatchConditionsOnly">Measure applied to all assets</span> 
+                    <span *ngIf="selected.MatchConditionsOnly">Measure applied to all assets</span>
                     <span *ngIf="!selected.MatchConditionsOnly">Apply only to assets which match a condition group</span>
                 </div>
                 <div class="conditions">
                     <div>
                         <div>Weight: {{formatWeight(matchedCondition.Weight)}} - Determined via match on Condition Group {{matchedCondition.Position}}</div>
                         <span *ngFor="let item of matchedCondition.ConditionItems;let i = index;">
-                           <span *ngIf="i > 0">&nbsp;,</span> {{item.FieldName}} {{Operator[item.Operator]}} {{isDate(item) ? (item.Value | date: shortdate) : item.Value}}
+                            <span *ngIf="i > 0">&nbsp;,</span> {{item.FieldName}} {{Operator[item.Operator]}} {{isDate(item) ? (item.Value | date: shortdate) : item.Value}}
                         </span>
+                    </div>
+                </div>
+            </div>
+            <div class="calculation-group">
+                <div class="conditions" *ngIf="selected.OtherConditions && selected.OtherConditions.length > 0">
+                    <div>
+                        <span class="fa fa-exclamation-triangle warning"></span> Also Matched on Condition Group<span *ngIf="selected.OtherConditions.length > 1">s</span> {{getOtherMatchedGroups()}}
+                        - the definition of this measure should be reviewed, as matching on multiple condition groups should be considered a configuration error
                     </div>
                 </div>
             </div>

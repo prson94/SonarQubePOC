@@ -105,12 +105,17 @@ namespace d360.core.entities
         public string ConditionsJson { get; set; }
 
         public string MeasuresJson { get; set; }
+        
+        public string OtherConditionsJSON { get; set; }
 
         [DataMember]
         public List<MetricAssetHierarchyConditionsModel> Conditions { get { return string.IsNullOrEmpty(ConditionsJson) ? null : JsonConvert.DeserializeObject<List<MetricAssetHierarchyConditionsModel>>(ConditionsJson ?? "[]"); } }
 
         [DataMember]
         public List<ChildMetricAssetHierarchyModel> Measures { get { return string.IsNullOrEmpty(MeasuresJson) ? null : JsonConvert.DeserializeObject<List<ChildMetricAssetHierarchyModel>>(MeasuresJson ?? "[]"); } }
+        
+        [DataMember]
+        public List<string> OtherConditions { get { return string.IsNullOrEmpty(OtherConditionsJSON) ? null : JsonConvert.DeserializeObject<List<string>>(OtherConditionsJSON ?? "[]"); } }
     }
 
     #endregion
