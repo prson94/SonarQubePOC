@@ -29,11 +29,12 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
     private isRuleResultsModalVisible: boolean = false;
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes['selected'] && changes['selected'].currentValue != null) {
+        if (changes["selected"] && changes["selected"].currentValue != null) {
             if (this.selected.Conditions) {
-                let matchedCondition = this.selected.Conditions.find(x => x.Uid == this.selected.ConditionUid);
-                if (matchedCondition)
+                let matchedCondition = this.selected.Conditions.find((x) => x.Uid === this.selected.ConditionUid);
+                if (matchedCondition) {
                     this.matchedCondition = matchedCondition;
+                }
                 else {
                     this.matchedCondition = null;
                 }
@@ -50,7 +51,7 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
         if (this.measures && this.measures.length > 0) {
             var res: number = 0;
             this.measures.forEach((x) => {
-                let match = x.Conditions?.find((c) => c.Uid == x.ConditionUid);
+                let match = x.Conditions?.find((c) => c.Uid === x.ConditionUid);
                 let weight = 0;
                 if (match) {
                     weight = +match.Weight;
@@ -106,26 +107,32 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
 
     public getAsPrecentageNoMax(val: number): string {
 
-        if (val == undefined || val == null)
-            return 'undefined';
+        if (val === undefined || val === null) {
+            return "undefined";
+        }
 
-        if (val == 0)
-            return '0%';
-        if (!val)
+        if (val === 0) {
+            return "0%";
+        }
+        if (!val) {
             return;
+        }
 
         if (val > 1) {
             return (val * 100).toFixed(2) + "%";
         }
 
-        let s = val + '0000';
-        s = s.replace('0.', '');
-        if (s.length > 6)
-            s = (s.substr(0, 2)) + '.' + s[2] + "%";
-        else
+        let s = val + "0000";
+        s = s.replace("0.", "");
+        if (s.length > 6) {
+            s = (s.substr(0, 2)) + "." + s[2] + "%";
+        }
+        else {
             s = (s.substr(0, 2)) + "%";
-        if (s.startsWith('0'))
+        }
+        if (s.startsWith("0")) {
             s = s.substr(1, s.length);
+        }
 
         return s;
     }
