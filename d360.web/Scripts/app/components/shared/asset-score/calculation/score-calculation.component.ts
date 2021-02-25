@@ -109,23 +109,6 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
         if (!val) {
             return;
         }
-
-        if (val > 1) {
-            return (val * 100).toFixed(2) + "%";
-        }
-
-        let s = val + "0000";
-        s = s.replace("0.", "");
-        if (s.length > 6) {
-            s = (s.substr(0, 2)) + "." + s[2] + "%";
-        }
-        else {
-            s = (s.substr(0, 2)) + "%";
-        }
-        if (s.startsWith("0")) {
-            s = s.substr(1, s.length);
-        }
-
-        return s;
+        return (val * 100).toFixed(2).replace(/(\.[0]*?)0+/g,"") + "%";
     }
 }
