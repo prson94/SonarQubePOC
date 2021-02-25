@@ -826,6 +826,8 @@ namespace d360.model.DataAccessLayer
                                                 rd.SecurityAssetUid in @ownerUids 
                                                 and 
                                                 a.ID=rd.AssetID 
+                                                and
+                                                rd.isVisible = 1
                                             UNION
                                             SELECT 1 
                                             FROM 
@@ -838,6 +840,8 @@ namespace d360.model.DataAccessLayer
                                                 rd.AssetID = 0 
                                                 and 
                                                 rd.AssetTypeId=a.AssetTypeId
+                                                and
+                                                rd.isVisible = 1
                                             )";
                     whereStatements.Add(ownershipSQL);
                 }
