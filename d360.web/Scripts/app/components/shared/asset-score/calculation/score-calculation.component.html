@@ -20,7 +20,7 @@
             <div class="indented-line">= adjusted measure weight</div>
             <div class="indented-line">= (defined weight &#247; sum of weights) x 100% </div>
             <div class="indented-line">
-                = ({{getAsPrecentage(selected.Weight)}} &#247; {{getAsPrecentage(getSum())}}) x 100%
+                = ({{getAsPrecentage(selected.Weight)}} &#247; {{getAsPrecentageNoMax(summedMeasures)}}) x 100%
             </div>
             <div class="indented-line">
                 = {{getAsPrecentage(selected.AdjustedMaxWeight)}}
@@ -51,14 +51,17 @@
             </div>
         </ng-container>
 
-        <ng-container *ngIf="showConditionGroups()">
+        <ng-container *ngIf="matchedCondition">
             <div class="calculation-group">
                 <div class="title">Asset Conditions and Weighting</div>
-                <div>Measure Applied to <span *ngIf="selected.MatchConditionsOnly">all</span><span *ngIf="!selected.MatchConditionsOnly">any</span> Assets</div>
+                <div>
+                    <span *ngIf="selected.MatchConditionsOnly">Measure applied to all assets</span> 
+                    <span *ngIf="!selected.MatchConditionsOnly">Apply only to assets which match a condition group</span>
+                </div>
                 <div class="conditions">
-                    <div *ngIf="matchedCondition">
+                    <div>
                         <div>Weight: {{formatWeight(matchedCondition.Weight)}} - Determined via match on Condition Group {{matchedCondition.Position}}</div>
-                        <span *ngFor="let item of condition.ConditionItems;let i = index;">
+                        <span *ngFor="let item of matchedCondition.ConditionItems;let i = index;">
                            <span *ngIf="i > 0">&nbsp;,</span> {{item.FieldName}} {{Operator[item.Operator]}} {{isDate(item) ? (item.Value | date: shortdate) : item.Value}}
                         </span>
                     </div>
@@ -95,8 +98,11 @@
                 <div class="title">Maximum Possible Score</div>
                 <div class="indented-line">= measure weight</div>
                 <div class="indented-line">= (defined weight &#247; sum of weights) &#215; 100% </div>
-                <div class="indented-line">
-                    = ({{getAsPrecentage(selected.Weight)}} &#247; {{getAsPrecentage(getSum())}}) &#215; 100%
+                <div *ngIf="!matchedCondition" class="indented-line">
+                    = ({{getAsPrecentage(selected.Weight)}} &#247; {{getAsPrecentageNoMax(summedMeasures)}}) &#215; 100%
+                </div>
+                <div *ngIf="matchedCondition" class="indented-line">
+                    = ({{getAsPrecentage(matchedCondition.Weight)}} &#247; {{getAsPrecentageNoMax(summedMeasures)}}) &#215; 100%
                 </div>
                 <div class="indented-line">
                     = {{getAsPrecentage(selected._adjustedMaxWeight)}}

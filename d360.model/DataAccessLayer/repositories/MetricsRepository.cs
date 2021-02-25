@@ -1606,7 +1606,9 @@ select		R.*,
 			(
 			select		M.*,
 						(
-                    	select	F.FriendlyName as FieldName,
+                    	select	
+                                C.Uid,
+                                F.FriendlyName as FieldName,
                     			CI.Operator,
                     			(
 									case when F.Type = 'Lookup' then 
