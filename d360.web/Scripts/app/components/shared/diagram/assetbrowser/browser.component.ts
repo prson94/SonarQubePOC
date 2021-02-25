@@ -841,6 +841,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     if (uid !== '' && uid != this.emptyUid) {
                         this.panel_InformationDisabled = false;
                         this.panel_InformationHasReadAccess = data.hasAssetReadAccess;
+
                         if (this.selectedDiagramAsset == null || this.selectedDiagramAsset.Uid != uid) {
                             if (this.panelModel.AlertVisible) {
                                 this.selectedAssetsWithAlerts = [uid];

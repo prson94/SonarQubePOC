@@ -51,7 +51,7 @@
                     <div class="asset-browser-button-group">
                         <d3s-assetbrowser-panels (click)="panels_Click($event)"
                                                  [diagramType]="displayConfiguration.DiagramType"
-                                                 [enableAdd]="helper_LineageDiagramApplies()"
+                                                 [enableAdd]="helper_LineageDiagramApplies() && panel_InformationHasReadAccess"
                                                  [enableDownload]="!isError"
                                                  [enableInformation]="!panel_InformationDisabled"
                                                  [isFullScreen]="isFullScreen"
@@ -110,7 +110,7 @@
                     <div #diagram id="LineageDiagram" style="overflow: hidden;" class="diagram"></div>
 
                     <div *ngIf="isWindowVisible()" class="asset-browser-window">
-                        <div class="empty-overlay" *ngIf="panel_TabIndex == 0 && !panel_InformationHasReadAccess">
+                        <div class="empty-overlay" *ngIf="panelModel.InformationVisible && !panel_InformationHasReadAccess">
                             <div class="content">
                                 <div class="icon-holder">
                                     <i class="fa fa-ban"></i>
