@@ -1,14 +1,16 @@
-﻿import { Component, Input } from "@angular/core";
+﻿import { Component, Input, OnChanges, OnInit, SimpleChanges } from "@angular/core";
+import { match } from "core-js/fn/symbol";
 import { MetricFieldTypeViewModel, ScoreType, MetricAssetDefinitionViewModel } from "../../../../models/metrics.model";
 import { Operator } from "../../../../models/operator.model";
-import { PointBreakdown} from "../../../../models/score.model";
+import { PointBreakdown, PointBreakDownConditionItem} from "../../../../models/score.model";
 import { BaseComponent } from "../../base.component";
 
 @Component({
     selector: "score-calculation",
     templateUrl: `score-calculation.component.html`
 })
-export class ScoreCalculationComponent extends BaseComponent {
+export class ScoreCalculationComponent extends BaseComponent implements OnChanges{
+    
     @Input() scoreType: ScoreType;
     @Input() definition: MetricAssetDefinitionViewModel;
     @Input() selected: PointBreakdown;
@@ -18,14 +20,45 @@ export class ScoreCalculationComponent extends BaseComponent {
     @Input() assetTypeName: string;
     @Input() fields: MetricFieldTypeViewModel[] = [];
 
+    matchedCondition: PointBreakDownConditionItem;
+
     Operator = Operator;
+
+    summedMeasures: number = 0;
 
     private isRuleResultsModalVisible: boolean = false;
 
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes["selected"] && changes["selected"].currentValue != null) {
+            let matchedCondition = this.selected.Conditions?.find((x) => x.Uid === this.selected.ConditionUid);
+            if (matchedCondition) {
+                this.matchedCondition = matchedCondition;
+            }
+            else {
+                this.matchedCondition = null;
+            }
+        }
+
+        this.summedMeasures = this.getSum();
+    }
+
+
     private getSum(): number {
-        var res = 0;
-        this.measures.forEach(x => res += x.Weight);
-        return res;
+        if (this.measures && this.measures.length > 0) {
+            var res: number = 0;
+            this.measures.forEach((x) => {
+                let match = x.Conditions?.find((c) => c.Uid === x.ConditionUid);
+                let weight = 0;
+                if (match) {
+                    weight = +match.Weight;
+                } else {
+                    weight = +x.Weight;
+                }
+                res += +weight;
+            });
+       
+            return res;
+        }
     }
 
     public showRuleResults(isVisible: boolean) {
@@ -50,13 +83,7 @@ export class ScoreCalculationComponent extends BaseComponent {
     }
 
     showConditionGroups(): boolean {
-        return false;
-        // Let this always be false until we know how to display the data properly here.
-        //let show = false;
-        //if (this.selected) {
-        //    show = (this.selected.Conditions.length > 0);
-        //}
-        //return show;
+        return this.selected && (this.selected.Conditions.length > 0);
     }
    
     formatWeight(num: number) {
@@ -67,4 +94,21 @@ export class ScoreCalculationComponent extends BaseComponent {
         }
     }
 
+    getOtherMatchedGroups(): string {
+        var matches = this.selected.Conditions.filter((x) => {
+            return (this.selected.OtherConditions.indexOf(x.Uid) !== -1);
+        });
+        return matches.map((x) => x.Position).join(" and ");
+    }
+
+    public getAsPrecentageNoMax(val: number): string {
+
+        if (val === 0) {
+            return "0%";
+        }
+        if (!val) {
+            return;
+        }
+        return (val * 100).toFixed(2).replace(/(\.[0]*?)0+/g,"") + "%";
+    }
 }
