@@ -103,10 +103,6 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
 
     public getAsPrecentageNoMax(val: number): string {
 
-        if (val === undefined || val === null) {
-            return "undefined";
-        }
-
         if (val === 0) {
             return "0%";
         }
