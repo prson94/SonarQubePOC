@@ -1991,7 +1991,7 @@ from	IntersectType I
                                                 var fusion = import.First();
                                                 sw.Restart();
                                                 var data = Connection.Query<dynamic>($@"
-                                                    drop table if exists
+                                                    drop table if exists #forDelete
 
                                                     create table #forDelete (ID int, Type varchar(50))
                                                     create nonclustered index cix_forDelete on #forDelete (Type, ID)
@@ -2012,7 +2012,7 @@ from	IntersectType I
                                                     insert into #forDelete
                                                     	select I.ID, 'Intersect' as Type
                                                     	from [Intersect] I where I.[Object] = 'FusionAttribute'
-                                                        and exist (select 1 from #forDelete FD where FD.Type = 'FusionAttribute' and FD.ID = I.[ObjectID])
+                                                        and exists (select 1 from #forDelete FD where FD.Type = 'FusionAttribute' and FD.ID = I.[ObjectID])
                                                     
                                                     insert into #forDelete
                                                     	select I.ID, 'Intersect' as Type
