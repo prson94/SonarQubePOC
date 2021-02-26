@@ -95,6 +95,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     panel_Loading = false;
     panel_InformationDisabled = true;
+    panel_InformationHasReadAccess = false;
     panel_TabIndex = 0;
 
     panelModel: AssetBrowserPanelModel = { selectedCommand: AssetBrowserPanelCommand.None, AddVisible: false, AlertVisible: false, FiltersVisible: false, InformationVisible: false, SettingsVisible: false };
@@ -839,7 +840,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     }
 
                     if (uid !== '' && uid != this.emptyUid) {
-                        this.panel_InformationDisabled = !data.hasAssetReadAccess;
+                        this.panel_InformationDisabled = false;
+                        this.panel_InformationHasReadAccess = data.hasAssetReadAccess;
+
                         if (this.selectedDiagramAsset == null || this.selectedDiagramAsset.Uid != uid) {
                             if (this.panelModel.AlertVisible) {
                                 this.selectedAssetsWithAlerts = [uid];
@@ -1701,6 +1704,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             return;
         }
         this.panel_TabIndex = 0;
+        if (!this.panel_InformationHasReadAccess)
+            return;
+
         this.panel_Loading = true;
         this.browserService.getDetailByAsset(assetUid).subscribe(response => {
             try {

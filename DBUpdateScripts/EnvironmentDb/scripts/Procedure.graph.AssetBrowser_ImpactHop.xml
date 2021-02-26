@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_ImpactHop-v8">
-    <comment>GOV-13177</comment>
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_ImpactHop-v9">
+    <comment>GOV-13719</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -237,6 +237,11 @@ begin
 			cross apply dbo.UserAssetPermissions(@resourceId,H.AssetTypeID) P 
 	where	P.AssetID = H.ID and P.PermissionsBitMask & 1 = 0;
 
+	update	H
+	set		HasAssetReadAccess = 0
+	from	#hierarchies H
+			cross apply dbo.UserAssetPermissions(@resourceId,H.AssetTypeID) P 
+	where	P.AssetID = 0 and P.PermissionsBitMask & 1 = 0;
 
 	if @ancestry = 3
 	begin	-- This is impact
@@ -571,6 +576,43 @@ begin
 
 	insert into #ids ([Key], ID)
 		select O.[Key], A.ID from @assets O inner join Asset A on A.Uid = O.Uid;
+ 
+     --Predicates of type 16 means that we want to see contents of process diagram, so lets unpack it and add diagram assets manually
+	if exists(select top 1 * from [Predicate] where uid = @predicateUid and [type] = 16)
+	begin
+		
+		drop table if exists #diagramIds;
+		create table #diagramIds ([Key] varchar(50), ID bigint);
+
+		insert into #diagramIds
+		select ass.[key], a.id from @assets ass
+			inner join asset a on a.uid = ass.uid
+		where a.object != 'Diagram'
+
+		;with asset_cte as(
+			select da.id, h.[key] from #diagramIds h
+				inner join assetprocessdiagram d on d.assetid = h.id
+				inner join asset a on a.id = h.id
+				inner join processexpandeddata pxd on pxd.diagramassetuid = a.uid
+				inner join asset da on da.uid = pxd.fromuid
+				inner join assettype at on at.id = da.assettypeid
+				inner join intersecttype it on at.uid = it.subjectuid 
+				inner join [predicate] p on it.predicateid = p.id
+			where h.id is not null and p.type = 16
+			union
+			select da.id, h.[key] from #diagramIds h
+				inner join assetprocessdiagram d on d.assetid = h.id
+				inner join asset a on a.id = h.id
+				inner join processexpandeddata pxd on pxd.diagramassetuid = a.uid
+				inner join asset da on da.uid = pxd.touid
+				inner join assettype at on at.id = da.assettypeid
+				inner join intersecttype it on at.uid = it.subjectuid 
+				inner join [predicate] p on it.predicateid = p.id
+			where h.id is not null and p.type = 16
+		)
+		insert into #ids
+		select [key],id from asset_cte 
+	end
 
 	declare @salt varchar(25) = graph.Hop_GenerateSalt()
 
