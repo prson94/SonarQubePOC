@@ -3649,16 +3649,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             margin: new go.Margin(2, 4, 0, 0),
                             editable: false,
                             font: this.badgeFont,
-                            stroke: this.badgeTextColor
+                            stroke: this.badgeTextColor,
                         },
                         new go.Binding("text", "", (obj) => {
                             return propertyName === "relations" ? "Relationships" : "Responsibilities";
                         }),
-                        new go.Binding("minSize", "", (obj: go.GraphObject, target: go.GraphObject) => {
+                        new go.Binding("width", "", (obj: go.GraphObject, target: go.GraphObject) => {
                             if (obj.part.data["predicateWidth"]) {
                                 var predicateWidth = +obj.part.data["predicateWidth"]
                                 var width = this.calculateBadgeTextWidth(predicateWidth);
-                                return new go.Size(width, NaN);
+                                return width;
                             }
                         }).ofObject()
                     ),
