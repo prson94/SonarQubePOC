@@ -1229,7 +1229,7 @@ where LI.LoadID = @loadId"
 , new { loadId = load.ID, updatedBy = load.UpdatedBy.GetValueOrDefault() }
 , transaction: trans);
 
-                        #region send score events
+                        #region get score events
 
                         var today = DateTime.UtcNow.Date;
                         var measureResults = await connection.QueryAsync<ResponsibilityAssetMeasureProcessedResult>(@"
@@ -1265,15 +1265,17 @@ where LI.LoadID = @loadId"
                                     MetricAssetVersionUid = o.MetricAssetVersionUid
                                 }).Distinct().ToList()
                             }).ToList();
-
-                        if (structuredMeasures.Count > 0)
-                        {
-                            company.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, structuredMeasures);
-                        }
+                                               
 
                         #endregion
 
                         trans.Commit();
+
+                        // if any scoring measures send them after the transaction is commited otherwise this will fail as it creates a new trans.
+                        if (structuredMeasures.Count > 0)
+                        {
+                            company.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, structuredMeasures);
+                        }
 
 
                     }
@@ -1282,7 +1284,18 @@ where LI.LoadID = @loadId"
                         try
                         {
                             CoreFunction.AITrackException(functionName, ex, companyId: company.CurrentCompanyID);
-                            trans.Rollback();
+
+                            try
+                            {
+                                if (trans != null)
+                                {
+                                    trans.Rollback();
+                                }
+                            }
+                            catch
+                            {
+
+                            }                            
 
                             //mark incomplete records as failed
                             (await company.QueryAsync(@"update LoadItem set Status = 0, StatusMessage = 'A fatal error occurred while attempting to load responsibilities.' where LoadID = @loadId and coalesce(Status,0) <> 1", new { loadId = load.ID })).FirstOrDefault();
