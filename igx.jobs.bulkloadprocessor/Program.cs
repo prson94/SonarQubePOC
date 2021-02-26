@@ -1294,7 +1294,7 @@ where LI.LoadID = @loadId"
                             }
                             catch
                             {
-
+                                // surpress exceptions raised by rollback we crashed any way so lets move on.
                             }                            
 
                             //mark incomplete records as failed
