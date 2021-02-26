@@ -153,7 +153,6 @@
     }
   }
 
-
   button.asset-browser-button,
   .asset-browser-button-group > button {
     display: inline-flex;
@@ -206,6 +205,50 @@
     &.right-margin-4 {
       margin-right: 4px;
     }
+  }
+
+  &.btn-small {
+    button {
+      line-height: 12px;
+      font-size: 12px;
+    }
+  }
+
+  button:active {
+    background-color: #ccc;
+  }
+
+  button:focus {
+    background: #f1f1f2;
+    outline: 0 none;
+    outline-offset: 0;
+    -webkit-box-shadow: 0 0 0 2px @ig-midblue-t3;
+    -moz-box-shadow: 0 0 0 2px @ig-midblue-t3;
+    box-shadow: 0 0 0 2px @ig-midblue-t3;
+  }
+
+  button:hover {
+    background-color: rgba(185, 192, 197, 0.5);
+  }
+
+  button.selected {
+    background: rgba(0, 0, 0, 0.14);
+  }
+
+  button.disabled,
+  button:disabled {
+    color: #888;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  button.disabled:hover {
+    background-color: transparent;
+  }
+
+  button.dark {
+    background: none;
+    color: @ig-black;
   }
 
   .asset-browser-window {
@@ -523,51 +566,6 @@
     }
   }
 
-
-  &.btn-small {
-    button {
-      line-height: 12px;
-      font-size: 12px;
-    }
-  }
-
-  button:active {
-    background-color: #ccc;
-  }
-
-  button:focus {
-    background: #f1f1f2;
-    outline: 0 none;
-    outline-offset: 0;
-    -webkit-box-shadow: 0 0 0 2px @ig-midblue-t3;
-    -moz-box-shadow: 0 0 0 2px @ig-midblue-t3;
-    box-shadow: 0 0 0 2px @ig-midblue-t3;
-  }
-
-  button:hover {
-    background-color: rgba(185, 192, 197, 0.5);
-  }
-
-  button.selected {
-    background: rgba(0, 0, 0, 0.14);
-  }
-
-  button.disabled, 
-  button:disabled {
-    color: #888;
-    cursor: default;
-    pointer-events: none;
-  }
-
-  button.disabled:hover {
-    background-color: transparent;
-  }
-
-  button.dark {
-    background: none;
-    color: @ig-black;
-  }
-
   .asset-browser-button-group {
     display: inline-block;
     height: 32px;
@@ -694,7 +692,7 @@
           color: #006fc0;
           padding: 5px 10px;
 
-          &.selected, 
+          &.selected,
           &:hover {
             border-bottom: 3px solid #006fc0;
           }
@@ -712,7 +710,7 @@
       flex-direction: row;
 
       button {
-        border: 1px solid #cccccc;
+        border: 1px solid #ccc;
         margin-left: 0;
 
         &:disabled {
@@ -742,11 +740,9 @@
       border-radius: 2px;
       width: 100%;
       padding: 10px 20px;
-      margin-top: 15px;
       color: #000;
       font-weight: normal;
       position: relative;
-      margin-top: 0;
       padding-left: 28px;
       padding-top: 4px;
       padding-bottom: 4px;
