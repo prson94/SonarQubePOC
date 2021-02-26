@@ -168,7 +168,7 @@ namespace d360.model.DataAccessLayer
                                 {baseIssueTypesSql} 
                                 {joinSQL}
                                 Inner Join IssueTypeRelationResponsibility RR on ITR.ID=RR.IssueTypeRelationID
-	                            inner join ResponsibilityDetail RD on RD.ResponsibilityTypeID=RR.ResponsibilityTypeId and RD.ResourceUid=@resourceUid
+	                            inner join ResponsibilityDetail RD on RD.ResponsibilityTypeID=RR.ResponsibilityTypeId and RD.ResourceUid=@resourceUid and ((RD.AssetID = A.ID) or (RD.AssetTypeID = A.AssetTypeID and RD.AssetID = 0))
                                 {assetConditionStr}";
 
                         assetConditionStr += string.IsNullOrWhiteSpace(assetConditionStr) ? " where RR.ID is null" : " and RR.ID is null";
@@ -204,6 +204,12 @@ namespace d360.model.DataAccessLayer
             {
                 assetSQL = $@"{assetSQL}
                               {conditionStr}";
+            }
+
+            if (resourceSQL.Trim() != "")
+            {
+                resourceSQL = $@"{resourceSQL}
+                                {conditionStr}";
             }
 
             var sql = $@"{issueTypeSQL} 
