@@ -232,13 +232,13 @@
           color: @ig-midblue;
           box-shadow: inset 0 -2px 0 0 @ig-white;
 
-          &:not(:disabled):hover, &.hover {
-            box-shadow: inset 0 -2px 0 0 @ig-black !important;
-          }
-
           &:disabled {
             color: @d3s-gray-7;
             cursor: not-allowed;
+          }
+
+          &:not(:disabled):hover, &.hover {
+            box-shadow: inset 0 -2px 0 0 @ig-black !important;
           }
         }
 
@@ -290,7 +290,6 @@
           .filter-row-short-label {
             vertical-align: top;
             height: 24px;
-            font-family: 'Source Sans Pro Bold';
             font-size: 14px;
             font-weight: bold;
             font-stretch: normal;
@@ -310,7 +309,6 @@
 
           .filter-row-control {
             vertical-align: top;
-            font-family: 'Source Sans Pro';
             font-size: 14px;
             font-weight: normal;
             font-stretch: normal;
@@ -334,7 +332,7 @@
       .browser-relationship-editor {
         .title {
           color: gray;
-          margin: 6px 0px;
+          margin: 6px 0;
           display: block;
         }
 
@@ -345,7 +343,7 @@
           }
 
           button {
-            border: 1px solid #cccccc;
+            border: 1px solid #ccc;
             border-radius: 4px;
             display: block;
             clear: both;
@@ -370,13 +368,13 @@
     margin-top: 10px;
     margin-bottom: 10px;
     padding: 3px 10px 3px 10px;
-    border: 2px solid #C09B9C;
+    border: 2px solid #c09b9c;
     border-radius: 3px;
-    background-color: #FFDFDF;
+    background-color: #ffdfdf;
     color: #000;
 
     &:hover {
-      border: 2px solid #000000;
+      border: 2px solid #000;
       cursor: pointer;
     }
 
@@ -391,13 +389,12 @@
         width: 32px;
         line-height: 32px;
         background-color: transparent;
-        border: 1px solid #FFCFCF;
+        border: 1px solid #ffcfcf;
         stroke-opacity: 0.4;
         border-radius: 2px;
         height: 32px;
         float: right;
         position: relative;
-        /*opacity: 0.5;*/
         text-align: center;
         vertical-align: middle;
 
@@ -416,7 +413,7 @@
         }
 
         &:hover {
-          background-color: rgb(200,200,200);
+          background-color: #c8c8c8;
           cursor: pointer;
           border-top-left-radius: 2px;
           border-top-right-radius: 2px;
@@ -427,7 +424,6 @@
           .popup-menu {
             display: inline-block;
             top: 1px;
-            /*right: 9px;*/
             width: 160px;
             z-index: 100;
 
@@ -471,7 +467,8 @@
     }
   }
 
-  button.asset-browser-button, .asset-browser-button-group > button {
+  button.asset-browser-button,
+  .asset-browser-button-group > button {
     display: inline-flex;
     position: relative;
     box-sizing: border-box;
@@ -497,7 +494,7 @@
 
     .has-alerts-count {
       padding: 1px 3px 1px 3px !important;
-      background-color: #CF1D49;
+      background-color: #cf1d49;
       border-radius: 2px;
       color: white;
       font-size: 10px;
@@ -545,7 +542,7 @@
   }
 
   button:hover {
-    background-color: rgba(185,192,197,0.5);
+    background-color: rgba(185, 192, 197, 0.5);
   }
 
   button.selected {
@@ -572,14 +569,13 @@
     height: 32px;
 
     &.zoom-controls {
-      padding: 12px 8px;
       border-radius: 4px;
       background-color: @ig-grey-t5;
       height: initial;
       padding: 4px;
 
       button {
-        margin: 0px;
+        margin: 0;
       }
 
       .diagram-zoom {
@@ -587,7 +583,7 @@
         position: relative;
         color: @igx-grey;
         font-weight: 600;
-        margin: 0px 4px;
+        margin: 0 4px;
         font-size: 14px;
         position: relative;
         top: -1px;
@@ -655,7 +651,7 @@
         color: white;
         line-height: 24px;
         position: absolute;
-        padding: 0px 5px;
+        padding: 0 5px;
         top: -2px;
       }
     }
@@ -669,10 +665,6 @@
 
   .relationship-editor {
     max-width: 380px;
-
-    .asset-browser-window-header {
-      height: 46px !important;
-    }
 
     .asset-browser-window-content {
       top: 54px !important;
@@ -696,11 +688,12 @@
         button {
           background: none;
           border: none;
-          border-bottom: 4px rgba(255,255,255,0);
+          border-bottom: 4px rgba(255, 255, 255, 0);
           color: #006fc0;
           padding: 5px 10px;
 
-          &.selected, &:hover {
+          &.selected, 
+          &:hover {
             border-bottom: 3px solid #006fc0;
           }
         }
