@@ -153,6 +153,61 @@
     }
   }
 
+
+  button.asset-browser-button,
+  .asset-browser-button-group > button {
+    display: inline-flex;
+    position: relative;
+    box-sizing: border-box;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    height: 32px;
+    font-size: 14px;
+    text-align: center;
+    white-space: nowrap;
+    background: #f0f0f0;
+    color: @ig-black;
+    border: none;
+    border-radius: 4px;
+
+    .has-alerts-label {
+      color: #cf1d49;
+      display: inline !important;
+    }
+
+    .has-alerts-count {
+      padding: 1px 3px 1px 3px !important;
+      background-color: #cf1d49;
+      border-radius: 2px;
+      color: white;
+      font-size: 10px;
+      font-weight: 600;
+      display: inline;
+      margin-left: 5px;
+    }
+
+    &:not(.icon) {
+      padding: 0 16px;
+
+      i.fa {
+        padding-right: 8px;
+      }
+    }
+
+    &.icon {
+      font-size: 16px;
+      width: 32px;
+    }
+
+    &.right-margin-4 {
+      margin-right: 4px;
+    }
+  }
+
   .asset-browser-window {
     position: absolute;
     right: 16px;
@@ -237,7 +292,8 @@
             cursor: not-allowed;
           }
 
-          &:not(:disabled):hover, &.hover {
+          &:not(:disabled):hover,
+          &.hover {
             box-shadow: inset 0 -2px 0 0 @ig-black !important;
           }
         }
@@ -280,7 +336,7 @@
 
         .scroll-panel {
           overflow-y: auto;
-          overflow-x: hidden
+          overflow-x: hidden;
         }
 
         .filter-row {
@@ -361,7 +417,7 @@
   }
 
   .alert-selected {
-    border: 2px solid #000000 !important;
+    border: 2px solid #000 !important;
   }
 
   .asset-browser-window-tabs-content-alert {
@@ -444,7 +500,7 @@
 
       .type {
         border-radius: 2px;
-        background-color: #006FBB;
+        background-color: #006fbb;
         color: @ig-white;
         padding: 2px 3px 2px 3px;
       }
@@ -467,59 +523,6 @@
     }
   }
 
-  button.asset-browser-button,
-  .asset-browser-button-group > button {
-    display: inline-flex;
-    position: relative;
-    box-sizing: border-box;
-    flex-wrap: nowrap;
-    justify-content: center;
-    align-items: center;
-    user-select: none;
-    cursor: pointer;
-    flex-shrink: 0;
-    height: 32px;
-    font-size: 14px;
-    text-align: center;
-    white-space: nowrap;
-    background: #f0f0f0;
-    color: @ig-black;
-    border: none;
-    border-radius: 4px;
-
-    .has-alerts-label {
-      color: #CF1D49;
-      display: inline !important;
-    }
-
-    .has-alerts-count {
-      padding: 1px 3px 1px 3px !important;
-      background-color: #cf1d49;
-      border-radius: 2px;
-      color: white;
-      font-size: 10px;
-      font-weight: 600;
-      display: inline;
-      margin-left: 5px;
-    }
-
-    &:not(.icon) {
-      padding: 0 16px;
-
-      i.fa {
-        padding-right: 8px;
-      }
-    }
-
-    &.icon {
-      font-size: 16px;
-      width: 32px;
-    }
-
-    &.right-margin-4 {
-      margin-right: 4px;
-    }
-  }
 
   &.btn-small {
     button {
@@ -549,7 +552,8 @@
     background: rgba(0, 0, 0, 0.14);
   }
 
-  button.disabled, button:disabled {
+  button.disabled, 
+  button:disabled {
     color: #888;
     cursor: default;
     pointer-events: none;
@@ -585,7 +589,6 @@
         font-weight: 600;
         margin: 0 4px;
         font-size: 14px;
-        position: relative;
         top: -1px;
         -webkit-touch-callout: none; /* iOS Safari */
         -webkit-user-select: none; /* Safari */
@@ -609,7 +612,7 @@
     align-items: center;
     box-sizing: border-box;
     background: white;
-    border: 1px solid #cccccc;
+    border: 1px solid #ccc;
     border-radius: 4px;
     height: 32px;
     width: 300px;
@@ -618,7 +621,6 @@
       background: none;
       border: none;
       flex-grow: 1;
-      padding-right: 10px;
       outline: none;
       min-width: 50px;
       padding: 0 10px;
@@ -634,13 +636,13 @@
       right: 28px;
 
       .fa-times-circle {
-        margin: 0px 8px;
+        margin: 0 8px;
         color: @ig-midblue;
         cursor: pointer;
       }
 
       .search-item-location {
-        color: #bbbbbb;
+        color: #bbb;
       }
 
       .fa-search {
@@ -659,7 +661,7 @@
 
   .asset-browser-body {
     .tile {
-      margin-bottom: 0px;
+      margin-bottom: 0;
     }
   }
 
@@ -669,7 +671,7 @@
     .asset-browser-window-content {
       top: 54px !important;
       padding: 10px;
-      padding-top: 0px;
+      padding-top: 0;
     }
 
     span.title {
@@ -705,13 +707,13 @@
     }
 
     .actions {
-      padding: 16px 0px;
+      padding: 16px 0;
       display: flex;
       flex-direction: row;
 
       button {
         border: 1px solid #cccccc;
-        margin-left: 0px;
+        margin-left: 0;
 
         &:disabled {
           opacity: 0.5;
@@ -744,11 +746,11 @@
       color: #000;
       font-weight: normal;
       position: relative;
-      margin-top: 0px;
+      margin-top: 0;
       padding-left: 28px;
       padding-top: 4px;
       padding-bottom: 4px;
-      margin: 10px 0px;
+      margin: 10px 0;
 
       .warning-icon {
         position: absolute;
@@ -759,12 +761,12 @@
       .segments {
         .arrow-right {
           font-size: 9px;
-          margin: 0px 5px;
+          margin: 0 5px;
         }
       }
 
       span.title {
-        margin: 0px 0px;
+        margin: 0;
         margin-top: 6px !important;
       }
     }
