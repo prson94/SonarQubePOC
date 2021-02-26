@@ -6,7 +6,7 @@ namespace d360.model
 {
     public static class QueryConstants
     {
-        public static string HighLevelTypeCaseStatement = $@"case 
+        public static readonly string HighLevelTypeCaseStatement = $@"case 
 				when T.Object = 'ArtifactType' and T.[Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()}: ' 
                 when T.Object = 'ArtifactType' and T.[Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()}: ' 
 				when T.Object = 'FusionAttributeType' then 'Fusion Attribute: ' 
@@ -23,7 +23,7 @@ namespace d360.model
 				when T.Object = 'ResourceType' then 'Resource: '
 				else ''
 			end ";
-        public static string AgentErrorList = @"
+        public static readonly string AgentErrorList = @"
 select	ER.Date,
         ERI.Message,
         ER.MachineName,                
@@ -35,7 +35,7 @@ from	fusion.AgentError ER
     inner join Fusion F on F.ID = ER.FusionID
     inner join FusionType FT on FT.ID = F.FusionTypeID";
 
-        public static string AgentHistoryList = @"
+        public static readonly string AgentHistoryList = @"
 select  S.DateStarted, 
         S.DateCompleted, 
         S.MachineQueuedOn, 
@@ -50,7 +50,7 @@ from    FusionStatusLog S
         inner join FusionType FT on FT.ID = F.FusionTypeID
         order by S.DateStarted desc";
 
-        public static string AgentHistoryExportList = @"
+        public static readonly string AgentHistoryExportList = @"
 select top {0}  S.DateStarted, 
         S.DateCompleted, 
         S.MachineQueuedOn, 
@@ -65,7 +65,7 @@ from    FusionStatusLog S
         inner join FusionType FT on FT.ID = F.FusionTypeID
         ";
 
-        public static string ArtifactActivitySpecificDateCountList = @"
+        public static readonly string ArtifactActivitySpecificDateCountList = @"
 select 
 	Name,
 	sum(New) as New,
@@ -89,7 +89,7 @@ from    Asset a
 where a.updatedon > dateadd(day, @d, CURRENT_TIMESTAMP)) T
 group by Name, Id";
 
-        public static string ArtifactActivityAllDateCountList = @"
+        public static readonly string ArtifactActivityAllDateCountList = @"
 select  at.Name,
 	    count(1) as New,        					
         count(1) as Total,
@@ -98,7 +98,7 @@ from    Asset a
         inner join AssetType at on a.assettypeid = at.id and at.Object = 'ArtifactType'                       
 group by at.name,at.id order by at.name";
 
-        public static string ObjectNymTypes = @"
+        public static readonly string ObjectNymTypes = @"
                                 select 
 	                                P.ID as [ID],
 	                                P.Name as [Name]
@@ -113,7 +113,7 @@ group by at.name,at.id order by at.name";
                                 from  [dbo].[NymRelation] R inner join [dbo].[predicate] P on P.ID = R.PredicateID where R.[Object] = @ot and R.ObjectID = @id
     ";
         
-        public static string ExecutionErrorList = @"
+        public static readonly string ExecutionErrorList = @"
 select  ER.Date,
         ER.Error,
         ER.ExecutionID,
@@ -126,7 +126,7 @@ from	fusion.Error ER
         inner join Fusion F on F.ID = EX.FusionID
         inner join FusionType FT on FT.ID = F.FusionTypeID";
 
-        public static string ExecutionErrorExportList = @"
+        public static readonly string ExecutionErrorExportList = @"
 select  ER.Date,
         ER.Error,
         ER.ExecutionID,
@@ -139,7 +139,7 @@ from	fusion.Error ER
         inner join Fusion F on F.ID = EX.FusionID
         inner join FusionType FT on FT.ID = F.FusionTypeID where EX.ID = {0}";
 
-        public static string ExecutionHistoryList = @"
+        public static readonly string ExecutionHistoryList = @"
 select	E.ID,
 		    E.RawLogFileName,
 		    E.DateStarted,
@@ -164,7 +164,7 @@ from	    fusion.Execution E
 			            ) R 
 order by    DateStarted desc";
 
-        public static string ExecutionHistoryExportList = @"
+        public static readonly string ExecutionHistoryExportList = @"
 select	top {0} E.ID,
 		    E.RawLogFileName,
 		    E.DateStarted,
@@ -188,7 +188,7 @@ from	    fusion.Execution E
 			            select count(1) as [C] from fusion.Result where ExecutionID = E.ID
 			            ) R";
 
-        public static string ExecutionResultList = @"
+        public static readonly string ExecutionResultList = @"
 select	A.TextPath as FusionAttribute,
         AT.TextPath as FusionAttributeType,
         E.ExecutionID,
@@ -211,7 +211,7 @@ from	fusion.Result E
         inner join FusionType FT on FT.ID = F.FusionTypeID
 where   ExecutionID = {0}";
 
-        public static string FusionConfigurationFromFusionAttributeItem = @"
+        public static readonly string FusionConfigurationFromFusionAttributeItem = @"
 select  f.name as 'ItemName',
 	    f.fusionID as 'ID',
 	    f.parentID as 'ParentID',
@@ -227,13 +227,13 @@ where   f.id = @id";
      
 
 
-        public static string FusionStatisticsItem = @"select
+        public static readonly string FusionStatisticsItem = @"select
 	(select count(1) from fusion.agenterror where [date] > Dateadd(Day, @days, CURRENT_TIMESTAMP )) as AgentErrors,
 	(select count(1) from fusion.execution where datestarted > Dateadd(Day, @days, CURRENT_TIMESTAMP )) as AgentExecutions,
     (select count(1) from fusion.execution where datestarted > Dateadd(Day, @days, CURRENT_TIMESTAMP )) as FusionExecutions,	
 	(select count(1) from fusion.error where [date] > Dateadd(Day, @days, CURRENT_TIMESTAMP )) as FusionErrors";
 
-        public static string GroupResourceInfoList = @"
+        public static readonly string GroupResourceInfoList = @"
 select  RG.GroupID,
         R.Email,
         R.FirstName,
@@ -249,7 +249,7 @@ from    [Group] G
         inner join reporting.Global_Resource R on R.ResourceID = RG.ResourceID
         Where R.State = @userStatus";
 
-        public static string InformationCatalogDiagramData = $@"
+        public static readonly string InformationCatalogDiagramData = $@"
 select	0 as ID, 
 		null as AssetID,
         null as ParentID,
@@ -271,7 +271,7 @@ from	AssetDetail A
 where   A.Type = 'TaxonomyType' and A.TypeID = @ID AND A.[State] = 1";
 
 
-        public static string LookupAllocations = @"
+        public static readonly string LookupAllocations = @"
 	SELECT	FT.Name as FieldTypeName,
 			FT.ObjectID,
 			coalesce(D.[Name], ITN.[Name]) as ObjectName,
@@ -286,7 +286,7 @@ where   A.Type = 'TaxonomyType' and A.TypeID = @ID AND A.[State] = 1";
 	WHERE	FT.LookupObjectType = @type
             AND FT.LookupObjectID = @id";
 
-        public static string MapItemsForMapSequenceManagement = @"
+        public static readonly string MapItemsForMapSequenceManagement = @"
 declare @objects table (Type varchar(50), ID int)
 
 insert into @objects values (@type, @id)
@@ -366,7 +366,7 @@ from	@points O
 		inner join IntersectDetail SI on SI.ID = O.SourceIntersectID
 		inner join IntersectDetail TI ON TI.ID = O.TargetIntersectID";
 
-        public static string FusionAttributeRelationshipAllCountsWithZero = @"
+        public static readonly string FusionAttributeRelationshipAllCountsWithZero = @"
 select	IT.ID as IntersectTypeID,
         IT.uid,
 		IT.Object,
@@ -440,7 +440,7 @@ where	fa.ID = @objId
 order by IT.[Name]
 ";
 
-        public static string FusionQueryAttributeRelationshipAllCountsWithZero = @"
+        public static readonly string FusionQueryAttributeRelationshipAllCountsWithZero = @"
 select	IT.ID as IntersectTypeID,
         IT.uid,
 		IT.Object,
@@ -514,7 +514,7 @@ where	fa.ID = @objId
 order by IT.[Name]
 ";
         
-		public static string ReferenceListTypeRelationshipsAllCountsWithZero = @"
+		public static readonly string ReferenceListTypeRelationshipsAllCountsWithZero = @"
 select	IT.ID as IntersectTypeID,
         IT.uid,
 		IT.Object,
@@ -587,7 +587,7 @@ select
 order by IT.[Name]
 ";
 
-        public static string ObjectRelationshipAllCountsWithZero = @"
+        public static readonly string ObjectRelationshipAllCountsWithZero = @"
 select	IT.[uid],
 		IT.ID as IntersectTypeID,
 		A.[UID] as ObjectUid, 
@@ -667,14 +667,14 @@ order by IT.[Name]
 ";
 
         
-        public static string ObjectRelationshipTypeIDs = @"
+        public static readonly string ObjectRelationshipTypeIDs = @"
 select	distinct
         I.IntersectTypeID
 from	[IntersectDetail] I
 where	(I.Subject = @obj and I.SubjectID = @objid and I.ObjectType = @objtype and I.ObjectTypeID = @objtypeid) OR
 		(I.Object = @obj and I.ObjectID = @objid and I.SubjectType = @objtype and I.SubjectTypeID = @objtypeid)";
 
-        public static string ObjectRelationships = @"
+        public static readonly string ObjectRelationships = @"
 select	ID,
         [Uid],
         IntersectTypeID,
@@ -693,7 +693,7 @@ where	(Subject = @type and SubjectID = @id) or (Object = @type and ObjectID = @i
 order by case when (Subject = @type and SubjectID = @id) then ObjectName else SubjectName end
 ";
 
-        public static string PolicySettingsItem = @"
+        public static readonly string PolicySettingsItem = @"
 select	T.Name, 
 		T.Description, 
 		T.HierarchyMaximumDepth,
@@ -702,7 +702,7 @@ select	T.Name,
 from	AssetType T 
 where T.[object]='PolicyType' and	T.ObjectID = @id";
 
-        public static string RuleSettingsItem = @"
+        public static readonly string RuleSettingsItem = @"
 select	T.*,
 			case 
 				when Work.[Count] > 0 then cast(1 as bit)
@@ -720,7 +720,7 @@ where T.[object]='RuleType' and		T.ObjectID = @id";
 
 
         
-        public static string SourceRuleList = @"
+        public static readonly string SourceRuleList = @"
 select	R.SubjectName + ' ' + coalesce(R.PredicateName, 'stores') + ' ' + R.ObjectName as SubjectName,
 		R.SubjectID,
 		R.SubjectUrl,
@@ -786,7 +786,7 @@ where	(
 		)
 order by MS.Sequence";
 
-        public static string SynonymTypes = @"
+        public static readonly string SynonymTypes = @"
         declare	@ot varchar(50),
 		        @otid int
 
@@ -828,7 +828,7 @@ order by MS.Sequence";
         where 
 	        ((IT.Subject = @ot and IT.SubjectID = @otid) OR (IT.Object = @ot and IT.ObjectID = @otid)) and IT.predicateid = @predicateId";
 
-        public static string SynonymOptions = @"
+        public static readonly string SynonymOptions = @"
 declare	@ot varchar(50),
 		@otid int 
 
@@ -868,7 +868,7 @@ order by	D.TypeName,
 			D.DisplayValue
 ";
 
-        public static string SynonymsByObjectList = @"
+        public static readonly string SynonymsByObjectList = @"
 select	I.ID as IntersectID,
 		S.[Object],
 		S.ObjectID,
@@ -924,7 +924,7 @@ from
 where s.[object] = @type and s.[objectID] = @id and s.PredicateID = @predicateId and s.Visible = 1
 ";
 
-        public static string TaxonomySettingsItem = @"
+        public static readonly string TaxonomySettingsItem = @"
 select	
 	T.ObjectID as ID,
 	T.Name,
@@ -951,7 +951,7 @@ from	AssetType T
 where	T.ObjectID = @id and T.Object='TaxonomyType'";
 
 
-        public static string ImpactAnalysisDiagram = @"
+        public static readonly string ImpactAnalysisDiagram = @"
 declare @links table ([from] varchar(250), [to] varchar(250), [text] varchar(50), predicateid int, intersectid int)
 declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] int, typeName nvarchar(250), typeNamePlural nvarchar(250), [type] nvarchar(250), typeId int, name nvarchar(500), back varchar(7), fore varchar(7), [predicate] nvarchar(250), predicateLabel nvarchar(250), predicateid int, intersectid int, isLeaf bit)
 
@@ -1083,7 +1083,7 @@ declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] 
 			) as 'nodes'
 	for json path, WITHOUT_ARRAY_WRAPPER";
 		
-        public static string MapItems = @"
+        public static readonly string MapItems = @"
 select	MI.ID as MapItemID,
 				
 		SI.ObjectTypeName as SourceType,
@@ -1118,7 +1118,7 @@ from	MapItem MI
 where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 		AND (TI.Subject = @target and TI.SubjectID = @targetID)";
 
-        public static string ShoppingCartItemList = @"
+        public static readonly string ShoppingCartItemList = @"
                 select 
 	                i.Object, 
 	                i.ObjectID, 
@@ -1132,7 +1132,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                 where 
 	                i.ShoppingCartID = @id";
 
-        public static string SiteNavPermissions = @"
+        public static readonly string SiteNavPermissions = @"
             select p.SiteNavID, p.Object, p.ObjectID, 
 			CASE p.Object WHEN 'Resource' then 'User' ELSE p.Object END
 			+ ' :: ' + coalesce(g.Name,r.FirstName + ' ' + r.Lastname) as Name from sitenavpermission p
@@ -1142,7 +1142,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 
         #region Workflow
 
-        public static string WorkflowDiagramNodes = @"
+        public static readonly string WorkflowDiagramNodes = @"
 	   select 
 	            cast(vs.ID as varchar) as [Key],
 	            vs.XPosition,
@@ -1171,7 +1171,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             where t.id = @id and vs.[State] = 1 and v.id = coalesce((select top 1 id from workflow.version where typeid = @id and version = @version), (select top 1 id from workflow.version where typeid = @id order by [version] desc))
 ";
 
-        public static string WorkflowDiagramLinks = @"
+        public static readonly string WorkflowDiagramLinks = @"
 			select 
 	            cast(vst.ID as varchar) as [Key],
 	            vst.FromVersionStepID as FromKey,
@@ -1189,7 +1189,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             where t.id = @id and vst.State = 1 and v.id = coalesce((select top 1 id from workflow.version where typeid = @id and version = @version), (select top 1 id from workflow.version where typeid = @id order by [version] desc))
 ";
 
-        public static string WorkflowObjectTypes = $@"
+        public static readonly string WorkflowObjectTypes = $@"
            	select * from (
                 select 
 		            [object] + '|' + cast(objectId as varchar) as [value],
@@ -1250,7 +1250,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                 order by o.label
 ";
 
-        public static string WorkflowList = @"
+        public static readonly string WorkflowList = @"
                   select t.ID
                     ,t.Name
                     ,t.Description
@@ -1303,7 +1303,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 				where t.State in (1,4)
                 order by t.Name asc";
 
-        public static string WorkflowVersionStepHistory = @"
+        public static readonly string WorkflowVersionStepHistory = @"
   select 
 	IST.ID as ItemStepID, 
 	convert(nvarchar(max),IST.Fields) as Fields,
@@ -1393,7 +1393,7 @@ where
 order by IST.StartedOn desc, IST.CompletedOn desc
 ";
 
-        public static string WorkflowTypeList = @"
+        public static readonly string WorkflowTypeList = @"
              with a as
             (
             select 
@@ -1462,7 +1462,7 @@ order by IST.StartedOn desc, IST.CompletedOn desc
             ) s on s.stepid = a.currentstepid
             order by a.Name asc, a.Version desc, a.UpdatedOn desc";
 
-        public static string WorkflowAssignments = @"
+        public static readonly string WorkflowAssignments = @"
 select
 	                                 WT.[Name] as 'WorkflowName'
                                     ,WT.ID as TypeID
@@ -1508,7 +1508,7 @@ select
                                 where
                                      WT.ID in ({0}) and WI.CompletedOn is null and WVS.StepType = 2 and WVS.ActivityType = 3";
 
-        public static string WorkflowItemSteps = @"
+        public static readonly string WorkflowItemSteps = @"
       select 
 	            IST.ID,
 	            IST.ItemID,
@@ -1601,7 +1601,7 @@ select
 				where ID = IST.ID
 			) Forms
             where IST.ItemID = @itemId
-			and ((VSSettings.WaitForAllTransitions = 'true' and (IST.CompletedOn is not null or IAR.ItemStepID is not null)) 
+			and ((VSSettings.WaitForAllTransitions = 'true' and (IST.CompletedOn is not null or IAR.ItemStepID is not null or exists(select 1 from workflow.ItemAssignment ia where ia.ItemStepID = IST.ID)  )) 
 				or (VSSettings.WaitForAllTransitions = 'false'))
             order by IST.StartedOn, IST.CompletedOn";
 

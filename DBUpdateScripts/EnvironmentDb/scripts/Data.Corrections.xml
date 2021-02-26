@@ -5,6 +5,26 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
+  <changeSet author="MDonato" id="Data.Corrections.GOV-13702">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+			--special case we can safely clean up 
+			--if flag 8 is set without 2, it must be an old attribute permission since we don't expose EditAsset yet
+			update R
+			set R.PermissionsBitMask = R.PermissionsBitMask ^ 8
+			from ResponsibilityTypeRelation R
+			where R.PermissionsBitMask & 8 = 8 and R.PermissionsBitMask & 2 = 0;
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+
+		]]>
+    </rollback>
+  </changeSet>
   <changeSet author="MDonato" id="Data.Corrections.GOV-13409">
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -36,6 +56,22 @@
 			*/
 
 
+			--clear old Attribute flags from last year 8,16,32
+			update R
+			set R.PermissionsBitMask = R.PermissionsBitMask ^ 8
+			from ResponsibilityTypeRelation R
+			where R.PermissionsBitMask & 8 = 8;
+			
+			update R
+			set R.PermissionsBitMask = R.PermissionsBitMask ^ 16
+			from ResponsibilityTypeRelation R
+			where R.PermissionsBitMask & 16 = 16;
+			
+			update R
+			set R.PermissionsBitMask = R.PermissionsBitMask ^ 32
+			from ResponsibilityTypeRelation R
+			where R.PermissionsBitMask & 32 = 32;
+			
 			--update ModifyAsset to AddAsset|EditAsset
 			update R
 			set R.PermissionsBitMask = R.PermissionsBitMask | 8
@@ -150,11 +186,6 @@
 		]]>
     </rollback>
   </changeSet>
-
-
-
-
-
   <changeSet author="MDonato" id="Data.Corrections.GOV-11768">
     <sql dbms="mssql"
             endDelimiter="\nGO"

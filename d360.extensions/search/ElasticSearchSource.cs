@@ -459,7 +459,16 @@ namespace d360.extensions.search
         {
             if (!string.IsNullOrEmpty(input))
             {
-                input = input.Replace("\r", "").Replace("\n", "").Replace("\v", "").Replace("\t", "").Replace("\\", "\\\\").Replace("\"", "\\\"");
+                input = input
+                    .Replace("\a", "")
+                    .Replace("\b", "")
+                    .Replace("\r", "")
+                    .Replace("\n", "")
+                    .Replace("\f", "")
+                    .Replace("\v", "")
+                    .Replace("\t", "")
+                    .Replace("\\", "\\\\")
+                    .Replace("\"", "\\\"");
                 if (removeTags && input.Contains("<") && input.Contains(">"))
                 {
                     input = core.helpers.HtmlHelper.RemoveTags(input);

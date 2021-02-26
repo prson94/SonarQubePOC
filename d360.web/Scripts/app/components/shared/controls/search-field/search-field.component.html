@@ -1,7 +1,7 @@
 ﻿<span class="ig-search-field">
     <input igInput #iginput
            [tabindex]="tabindex"
-           type="text" autocomplete="off" placeholder="{{placeholder}}"
+           type="text" autocomplete="off" placeholder="{{placeholder}}" maxlength="{{maxLength}}"
            [disabled]="disabled"
            [ngModel]="value"
            (ngModelChange)="writeValue($event)"
