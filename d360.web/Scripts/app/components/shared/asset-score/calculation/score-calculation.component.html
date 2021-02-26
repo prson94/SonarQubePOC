@@ -110,7 +110,7 @@
                     = ({{getAsPrecentage(selected.Weight)}} &#247; {{getAsPrecentageNoMax(summedMeasures)}}) &#215; 100%
                 </div>
                 <div *ngIf="matchedCondition" class="indented-line">
-                    = ({{getAsPrecentage(matchedCondition.Weight)}} &#247; {{getAsPrecentageNoMax(summedMeasures)}}) &#215; 100%
+                    = ({{getAsPrecentage(matchedCondition.Weight !== undefined ? matchedCondition.Weight : selected.Weight)}} &#247; {{getAsPrecentageNoMax(summedMeasures)}}) &#215; 100%
                 </div>
                 <div class="indented-line">
                     = {{getAsPrecentage(selected._adjustedMaxWeight)}}
