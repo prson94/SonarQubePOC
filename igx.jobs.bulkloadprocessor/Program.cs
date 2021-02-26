@@ -1294,8 +1294,8 @@ where LI.LoadID = @loadId"
                             }
                             catch
                             {
-                                // surpress exceptions raised by rollback we crashed any way so lets move on.
-                            }                            
+                                // supress exceptions raised by rollback we crashed any way so lets move on.
+                            }
 
                             //mark incomplete records as failed
                             (await company.QueryAsync(@"update LoadItem set Status = 0, StatusMessage = 'A fatal error occurred while attempting to load responsibilities.' where LoadID = @loadId and coalesce(Status,0) <> 1", new { loadId = load.ID })).FirstOrDefault();
