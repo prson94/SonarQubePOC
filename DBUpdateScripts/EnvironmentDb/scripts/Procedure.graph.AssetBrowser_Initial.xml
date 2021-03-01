@@ -1021,7 +1021,7 @@ end
     </sql>
 	<rollback>
 		<![CDATA[	
-CREATE OR ALTER procedure [graph].[AssetBrowser_Initial]
+CREATE OR ALTER   procedure [graph].[AssetBrowser_Initial]
 	@ancestry int, -- 1 = all, 2 = direct-parent, 3 = type-only
 	@uid uniqueidentifier,
 	@resourceId int,
@@ -1543,6 +1543,12 @@ if @ancestry = 3
 	from	#hierarchies H
 			cross apply dbo.UserAssetPermissions(@resourceId,H.AssetTypeID) P 
 	where	P.AssetID = H.ID and P.PermissionsBitMask & 1 = 0;
+	
+	update	H
+	set		HasAssetReadAccess = 0
+	from	#hierarchies H
+			cross apply dbo.UserAssetPermissions(@resourceId,H.AssetTypeID) P 
+	where	P.AssetID = 0 and P.PermissionsBitMask & 1 = 0;
 
 
 	if @ancestry = 3
