@@ -1,13 +1,13 @@
-﻿import { Input, Output, Component, EventEmitter, OnInit } from '@angular/core';
-import { ArtifactTypeService } from '../../../services/artifact-type.service';
-import { ArtifactService } from '../../../services/artifacts.service';
-import { BaseComponent } from '../../shared/base.component';
-import { AssetTypeClass } from '../../../models/asset.model';
-import { ActivatedRoute } from '@angular/router';
+﻿import { Input, Output, Component, EventEmitter, OnInit } from "@angular/core";
+import { ArtifactTypeService } from "../../../services/artifact-type.service";
+import { ArtifactService } from "../../../services/artifacts.service";
+import { BaseComponent } from "../../shared/base.component";
+import { AssetTypeClass } from "../../../models/asset.model";
+import { ActivatedRoute } from "@angular/router";
 
 @Component({
-    selector: 'd3s-asset-type-delete',
-    templateUrl: './asset-type-delete.component.html',
+    selector: "d3s-asset-type-delete",
+    templateUrl: "./asset-type-delete.component.html",
     providers: [ArtifactTypeService, ArtifactService]
 })
 
@@ -17,7 +17,7 @@ export class AssetTypeDeleteComponent extends BaseComponent implements OnInit {
     @Input() artifactTypeUid: string;
     @Input() assetTypeId: number;
     @Input() assetTypeClass: AssetTypeClass;
-    @Input() assetTypeName: string = 'Unknown';
+    @Input() assetTypeName: string = "Unknown";
     @Input() count: number = 0;
     @Output() onCancel = new EventEmitter();
 
@@ -35,7 +35,7 @@ export class AssetTypeDeleteComponent extends BaseComponent implements OnInit {
         this.sub = this.route.params.subscribe(params => {
             try {
                 if (!this.assetTypeClass) {
-                    let assetTypeClassString: keyof typeof AssetTypeClass = params['class'];
+                    let assetTypeClassString: keyof typeof AssetTypeClass = params["class"];
                     this.assetTypeClass = AssetTypeClass[assetTypeClassString];
                     if (!this.assetTypeClass) {
                         this.assetTypeClass = AssetTypeClass.BusinessAsset;
@@ -44,24 +44,24 @@ export class AssetTypeDeleteComponent extends BaseComponent implements OnInit {
             } catch (e) {
                 this.assetTypeClass = AssetTypeClass.BusinessAsset;
             }
-            let name: string = '';
+            let name: string = "";
             switch (this.assetTypeClass) {
                 case AssetTypeClass.BusinessAsset:
-                    name = 'Business Asset';
+                    name = "Business Asset";
                     break;
                 case AssetTypeClass.TechnicalAsset:
-                    name = 'Technical Asset';
+                    name = "Technical Asset";
                     break;
                 case AssetTypeClass.DiagramAsset:
-                    name = 'Diagram Asset';
+                    name = "Diagram Asset";
                     break;
                 case AssetTypeClass.Rule:
-                    name = 'Rule';
+                    name = "Rule";
                     break;
                 case AssetTypeClass.Model:
-                    name = 'Model';
+                    name = "Model";
                     break;
-                default: name = 'Business Asset';
+                default: name = "Business Asset";
                     break;
 
             }

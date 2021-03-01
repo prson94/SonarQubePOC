@@ -1,22 +1,22 @@
-﻿import { Component, OnInit, OnDestroy } from '@angular/core';
-import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { SecondaryNavService } from '../../../services/right-sidebar.service';
-import { RulesService } from '../../../services/rules.service';
-import { StateService } from '../../../services/state.service';
-import { AdminBaseComponent } from '../admin-base.component';
-import { RuleType } from '../../../models/rule.model';
-import { Title } from '@angular/platform-browser';
-import { SecondaryNavItem } from '../../../models/secondaryNav.model';
-import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { AssetTypeClass, AssetTypeApiModel } from '../../../models/asset.model';
-import { StringConstants } from '../../../static/string-constants';
-import { AssetTypeService } from '../../../services/asset-type.service';
-import { AssetService } from '../../../services/asset.service';
+﻿import { Component, OnInit, OnDestroy } from "@angular/core";
+import { HeaderBreadcrumbService } from "../../../services/header-breadcrumb.service";
+import { SecondaryNavService } from "../../../services/right-sidebar.service";
+import { RulesService } from "../../../services/rules.service";
+import { StateService } from "../../../services/state.service";
+import { AdminBaseComponent } from "../admin-base.component";
+import { RuleType } from "../../../models/rule.model";
+import { Title } from "@angular/platform-browser";
+import { SecondaryNavItem } from "../../../models/secondaryNav.model";
+import { MessagesObservableService } from "../../../services/messages-observable.service";
+import { AssetTypeClass, AssetTypeApiModel } from "../../../models/asset.model";
+import { StringConstants } from "../../../static/string-constants";
+import { AssetTypeService } from "../../../services/asset-type.service";
+import { AssetService } from "../../../services/asset.service";
 
 @Component({
-    selector: 'd3s-admin-rules-component',
+    selector: "d3s-admin-rules-component",
     providers: [RulesService, AssetTypeService, AssetService],
-    templateUrl: './admin-rules.component.html'
+    templateUrl: "./admin-rules.component.html"
 })
 
 export class AdminRulesComponent extends AdminBaseComponent implements OnInit, OnDestroy {
@@ -69,23 +69,23 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
 
         this.assetTypeService.deleteSingleAssetType(uid).subscribe(result => {
             this.showDelete = false;
-            if (result.type != 'error') {
-                result.title = 'Success!';
-                this.showMessageForResult(this.messagesService, result, 'Item successfully removed.');
-                this.ruleTypes = this.ruleTypes.filter((x) => x.uid != uid);
+            if (result.type != "error") {
+                result.title = "Success!";
+                this.showMessageForResult(this.messagesService, result, "Item successfully removed.");
+                this.ruleTypes = this.ruleTypes.filter((x) => x.uid !== uid);
                 this.selected = this.ruleTypes.length > 0 ? this.ruleTypes[0] : null;
             }
             else {
                 this.showMessageForResult(this.messagesService, result);
             }
             this.stateService.reloadLeftNavMenu();
-        })
+        });
 
         //this.rulesService.deleteRuleType(id)
         //    .subscribe(result => {
         //        this.showMessageForResult(this.messagesService, result);
         //        this.showDelete = false;
-        //        if (result.type != 'error') {
+        //        if (result.type != "error") {
         //            this.ruleTypes = this.ruleTypes.filter((x) => x.ID != id);
         //            this.selected = this.ruleTypes.length > 0 ? this.ruleTypes[0] : null;
         //        }
@@ -112,7 +112,7 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
     }
 
     protected showHideBreadcrumbItem(activatedItem: SecondaryNavItem) {
-        if (activatedItem.tag == 'dimensions') this.isDimensionsVisible = !this.isDimensionsVisible;
+        if (activatedItem.tag == "dimensions") this.isDimensionsVisible = !this.isDimensionsVisible;
     }
 
     selectedItemChange(objectId: number) {  
