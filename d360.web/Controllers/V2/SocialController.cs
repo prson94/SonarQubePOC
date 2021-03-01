@@ -119,8 +119,8 @@ select
 			inner join AssetType T on T.ObjectID = RD.TypeID and T.Object = RD.Type and T.Object = C.Type and T.ObjectID = C.TypeID
 			inner join Asset A on A.AssetTypeID = T.ID
 			where 
-				{(responsibilityTypeID.HasValue ? "and C.ResponsibilityTypeID = @rt" : "")}
 				ResourceID = @r and AssetID = 0 and ApplyToType = 1 and RD.IsVisible = 1
+				{(responsibilityTypeID.HasValue ? "and C.ResponsibilityTypeID = @rt" : "")}
 		
 			union all
 				select
@@ -128,13 +128,13 @@ select
 			from	ResponsibilityDetail RD
 					inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.ResourceID = @r and T.Object = C.Type and T.ObjectID = C.TypeID
 			where  
-				{(responsibilityTypeID.HasValue ? "and C.ResponsibilityTypeID = @rt" : "")}
 				RD.ApplyToType = 0 and RD.IsVisible = 1
+				{(responsibilityTypeID.HasValue ? "and C.ResponsibilityTypeID = @rt" : "")}
 		) A
 	) AC(Count)
      where
-		{(responsibilityTypeID.HasValue ? "and C.ResponsibilityTypeID = @rt" : "")}
 		C.IsVisible = 1 and C.ResourceID = @r
+		{(responsibilityTypeID.HasValue ? "and C.ResponsibilityTypeID = @rt" : "")}
  ) R on R.[Type] = T.Object and R.TypeID = T.ObjectID
  Group by T.Object, T.Class, t.[Name], R.[Type], r.TypeID, R.AssetCount
 ";
