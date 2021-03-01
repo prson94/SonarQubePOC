@@ -171,7 +171,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         newGroup.Position = this.getMaxPositionForGroups();
         newGroup.DisplayOrder = this.getMaxDisplayOrderForGroups();
         newGroup.MatchType = "All";
-        newGroup.DisplayWeight = this.displayWeight;
+        newGroup.DisplayWeight = null;
         newGroup.conditionItemFields = [];
         this.addConditionGroupFormControls(newGroup.Position);
 

@@ -2613,7 +2613,7 @@ order by wi.StartedOn desc";
         {
             bool hasIssueObject = !string.IsNullOrEmpty(issueObject);
 
-            var sql = @"select ft.ID as value, ft.FriendlyName + ' (' + coalesce( ri.Name, ft.LookupObjectType) + ')' as [label] from 
+            var sql = $@"select ft.ID as value, {(hasIssueObject ? " 'Action Field :: ' + " : "")} ft.FriendlyName + ' (' + coalesce( ri.Name, ft.LookupObjectType) + ')' as [label] from 
                  FieldType ft
                  left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
                  where ft.Object = @objectType and ft.ObjectID = @objectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0";
@@ -2621,7 +2621,7 @@ order by wi.StartedOn desc";
             if (hasIssueObject)
             {
                 sql += @" union all
-                select ft.ID as value, 'Action Field :: ' + ft.FriendlyName + ' (' + coalesce( ri.Name, ft.LookupObjectType) + ')' as [label] from 
+                select ft.ID as value, ft.FriendlyName + ' (' + coalesce( ri.Name, ft.LookupObjectType) + ')' as [label] from 
                  FieldType ft
                  left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
                  where ft.Object = @issueObject and ft.ObjectID = @issueObjectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0

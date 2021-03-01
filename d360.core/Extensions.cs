@@ -17,6 +17,11 @@ namespace d360.core
 {
     public static class JsonExtensions
     {
+        public static int GetNumberOfDecimalPlaces(this decimal d)
+        {
+            int count = BitConverter.GetBytes(decimal.GetBits(d)[3])[2];
+            return count;
+        }
         public static List<FieldJsonProperty> ParseJsonIntoJsonPropertiesCollection(this string o)
         {
             var token = JToken.Parse(o);

@@ -2828,8 +2828,11 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                 decimal filterNumber;
                                 if (decimal.TryParse(value, out filterNumber))
                                 {
-                                    wheres.Add($"{f.SqlExpression} = @S_{f.ApiName}");
-                                    dbs.Add($"@S_{f.ApiName}", filterNumber);
+                                    var places = filterNumber.GetNumberOfDecimalPlaces();
+                                    var ceil = decimal.Round(decimal.Parse(value + "9"), places);
+                                    wheres.Add($"{f.SqlExpression} between @S_{f.ApiName}_1 and @S_{f.ApiName}_2");
+                                    dbs.Add($"@S_{f.ApiName}_1", filterNumber);
+                                    dbs.Add($"@S_{f.ApiName}_2", ceil);
                                 }
                                 break;
                             case SqlFieldType.Guid:

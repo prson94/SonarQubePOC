@@ -1979,19 +1979,19 @@ where	T.ExecutionID = @ExecutionID
                             bool runCompleted = false;
                             int retryCount = 0;
 
-                            while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
-                            {
-                                var querySuffix = $"S.Success is null and S.ExecutionID = @ExecutionID and S.ItemNumber between @beginItemNumber and @endItemNumber";
-                                using (var trans = Connection.BeginTransaction())
+                                while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
                                 {
-                                    try
+                                    var querySuffix = $"S.Success is null and S.ExecutionID = @ExecutionID and S.ItemNumber between @beginItemNumber and @endItemNumber";
+                                    using (var trans = Connection.BeginTransaction())
                                     {
-                                        if (at.Object == "FusionType")
+                                        try
                                         {
-                                            var fusion = import.First();
-                                            sw.Restart();
-                                            var data = Connection.Query<dynamic>($@"
-                                                drop table if exists
+                                            if (at.Object == "FusionType")
+                                            {
+                                                var fusion = import.First();
+                                                sw.Restart();
+                                                var data = Connection.Query<dynamic>($@"
+                                                    drop table if exists #forDelete
 
                                                 create table #forDelete (ID int, Type varchar(50))
                                                 create nonclustered index cix_forDelete on #forDelete (Type, ID)
@@ -2009,10 +2009,10 @@ where	T.ExecutionID = @ExecutionID
                                                 insert into #forDelete
                                                 select ID as ID,'FusionAttribute' as Type from FusionAttribute where FusionID = @fusionId
                                                     
-                                                insert into #forDelete
-                                                    select I.ID, 'Intersect' as Type
-                                                    from [Intersect] I where I.[Object] = 'FusionAttribute'
-                                                    and exist (select 1 from #forDelete FD where FD.Type = 'FusionAttribute' and FD.ID = I.[ObjectID])
+                                                    insert into #forDelete
+                                                    	select I.ID, 'Intersect' as Type
+                                                    	from [Intersect] I where I.[Object] = 'FusionAttribute'
+                                                        and exists (select 1 from #forDelete FD where FD.Type = 'FusionAttribute' and FD.ID = I.[ObjectID])
                                                     
                                                 insert into #forDelete
                                                     select I.ID, 'Intersect' as Type

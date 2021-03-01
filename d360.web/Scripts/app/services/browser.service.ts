@@ -9,7 +9,9 @@ import {
     AssetBrowserDiagramAsset,
     AssetBrowserApiHopDirection,
     FilterAncestryMode,
-    FilterSelectionsModel,    StoredAssetBrowserFilterModel,
+    FilterSelectionsModel,
+    StoredAssetBrowserFilterModel,
+
     AssetBrowserOwnersModel,
     AssetBrowserAlert,
     AssetBrowserAlertRequest,
@@ -53,6 +55,12 @@ export class BrowserService extends BaseObservableService {
             if (n.group !== "") {
                 if (!n.leaf) {
                     templateName = "Group";
+
+                    if (n.assetUid === '00000000-0000-0000-0000-000000000000' && n.assetTypeUid === "00000000-0000-0000-0000-000000000000") {
+                        templateName = "AncestorNodeOnlyText";
+                        n.relations = [];
+                        n.owners = [];
+                    }
                 }
             }
             else {
@@ -75,7 +83,7 @@ export class BrowserService extends BaseObservableService {
         response.hierarchy.forEach(h => {
             try {
                 let rootNode = response.nodes.find(n => { return n.hierarchyKey === h.hierarchyKey && !n.group; });
-                if (rootNode) {                    
+                if (rootNode) {
                     rootNode.predictableId = h.predictableId;
                     rootNode.owners = h.owners;
                     rootNode.relations = h.relations;

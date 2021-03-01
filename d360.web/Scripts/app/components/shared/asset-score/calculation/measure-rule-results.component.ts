@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnDestroy, EventEmitter, Output, OnChanges, SimpleChanges } from "@angular/core";
+﻿import { Component, Input, OnDestroy, EventEmitter, Output, OnChanges, SimpleChanges, OnInit } from "@angular/core";
 import * as _ from "lodash";
 import { LazyLoadEvent } from "primeng/api";
 import { ScoreType } from "../../../../models/metrics.model";
@@ -25,6 +25,7 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
     currentSearchPhrase: string;
     previousEvent: LazyLoadEvent;
     totalRecords: number;
+    rowsPerPage: number = 25;
 
     constructor(
         private scoreService: ScoreService
@@ -33,10 +34,11 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
     }
 
     ngOnChanges(changes: SimpleChanges): void {
+        this.currentSearchPhrase = null;
         if (changes["scoreItem"] && changes["scoreItem"].currentValue !== changes["scoreItem"].previousValue) {
+            this.selected = null;
+            this.currentSearchPhrase = null;
             if (this.scoreItem) {
-                this.selected = null;
-                this.currentSearchPhrase = null;
                 this.getResults(1, 250);
             }
         }
@@ -47,7 +49,6 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
     }
 
     cancel() {
-        this.selected = null;
         this.onClose.emit(null);
     }
 
@@ -76,6 +77,7 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
         //event.rows = Number of rows per page
         //event.sortField = Field name to sort with
         //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
+        this.rowsPerPage = event.rows;
         this.getResults((event.first / event.rows), event.rows, event.sortField, ((event.sortOrder == 1) ? "asc" : "desc"));
     }
 
@@ -83,6 +85,10 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
         if (this.scoreItem) {
             if (this.scoreItem.ScoreType == ScoreType.DataQuality) {
                 this.isLoading = true;
+                if (this.currentSearchPhrase) {
+                    this.currentSearchPhrase = this.currentSearchPhrase.replace("&", "");
+                    this.currentSearchPhrase = encodeURI(this.currentSearchPhrase);
+                }
                 this.scoreService.getDataQualityEvidenceForScoreItem(this.scoreItem.ScoreItemUid, pageNum, pageSize, this.currentSearchPhrase, sortField, sortOrder)
                     .subscribe((result) => {
                         this.Evidence = result;
@@ -94,6 +100,24 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
                     });
             }
         }
+    }
+
+    downloadDisabled() {
+        let disabled = false;
+        if (this.Evidence) {
+            disabled = (this.totalRecords > 500);
+        }
+        return disabled;
+    }
+
+    downloadTooltip() {
+        let message = "";
+        if (this.totalRecords) {
+            message = (this.totalRecords > 500) ?
+                "Download is limited to 500 rows or less. Please filter this list and try your download again." :
+                "Download these rule results";
+        }
+        return message;
     }
 
     performDownload() {

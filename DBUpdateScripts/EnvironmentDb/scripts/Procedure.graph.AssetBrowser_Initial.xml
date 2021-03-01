@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Initial-v24">
-    <comment>GOV-13498</comment>
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Initial-v27.2">
+    <comment>GOV-13839</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -245,7 +245,8 @@ if @ancestry = 3
 								Salt varchar(50), Hop int, Uid uniqueidentifier, ID bigint, ParentID bigint, AssetTypeID int, [Key] varchar(50), [ParentKey] varchar(50),
 								UseAsTransformation bit default(0), IsSubjectInTransformation bit default(0), focal bit default(0), IsLeaf bit default(0),
 								HasAssetReadAccess bit default(1) not null,
-								Back varchar(25), BackAmount decimal(2,1), HierarchyKey varchar(50)
+								Back varchar(25), BackAmount decimal(2,1), HierarchyKey varchar(50),
+								HasTooManyChildren bit default(0)
 							  );
 							  	
 	create nonclustered index cix_TempHierarchies_Key on #hierarchies (HierarchyKey);
@@ -292,49 +293,84 @@ if @ancestry = 3
 						where	I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
 					) I
 		)
-
 		insert into #hierarchies (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal)
 			select distinct Salt, Hop, Uid, ID, ParentID, AssetTypeID, 0 from h;
 
-		-- GOV-13214 - Get children that may not be involved in lineage --------------------------------------
-		with h as (
-			select	L.Salt,
-					L.Hop,
-					C.Uid,
-					C.ID,
-					C.AssetTypeID,
-					I.Object,
-					I.ObjectID,
-					A.ID ParentID,
-					I.Subject as ParentObject,
-					I.SubjectID as ParentObjectID
-			from	Asset A
-					inner join #hopAssets L on L.ID = A.ID
-					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
-					inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
-			union all
-			select	h.Salt,
-					h.Hop,
-					C.Uid,
-					C.ID,
-					C.AssetTypeID,
-					C.Object,
-					C.ObjectID,
-					A.ID as ParentID,
-					I.Subject as ParentObject,
-					I.SubjectID as ParentObjectID
-			from	h
-					inner join Asset A on h.Object = A.Object and h.ObjectID = A.ObjectID
-					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
-					inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
-		)
 
-		insert into #hierarchies (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal)
-			select	distinct 
-					h.Salt, h.Hop, h.Uid, h.ID, h.ParentID, h.AssetTypeID, 0 
-			from	h
-					left join #hierarchies e on e.Uid = h.Uid and e.Salt = h.Salt
-			where	e.Uid is null--Uid not in (select Uid from #hierarchies)
+		declare @iterList TABLE(id int)
+		insert into @iterList select id from #hopAssets
+
+		declare @iterID int
+
+		drop table if exists #additionalLineage
+		create table #additionalLineage (Salt varchar(50), Hop int, Uid uniqueidentifier, ID bigint, ParentID bigint, AssetTypeID int, focal int);
+
+		while(1 = 1)
+		begin
+			truncate table #additionalLineage
+
+			SET @iterID = NULL
+			SELECT TOP(1) @iterID = id FROM @iterList
+    
+			IF @iterID IS NULL
+				BREAK
+
+			-- GOV-13214 - Get children that may not be involved in lineage --------------------------------------
+			;with h as (
+				select	L.Salt,
+						L.Hop,
+						C.Uid,
+						C.ID,
+						C.AssetTypeID,
+						I.Object,
+						I.ObjectID,
+						A.ID ParentID,
+						I.Subject as ParentObject,
+						I.SubjectID as ParentObjectID
+				from	Asset A
+						inner join #hopAssets L on L.ID = A.ID
+						inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
+						inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
+						where A.ID = @iterID
+				union all
+				select	h.Salt,
+						h.Hop,
+						C.Uid,
+						C.ID,
+						C.AssetTypeID,
+						C.Object,
+						C.ObjectID,
+						A.ID as ParentID,
+						I.Subject as ParentObject,
+						I.SubjectID as ParentObjectID
+				from	h
+						inner join Asset A on h.Object = A.Object and h.ObjectID = A.ObjectID
+						inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
+						inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
+			)
+			insert into #additionalLineage (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal)
+			select top(@maxLineageDescendants+1) h.Salt, h.Hop, h.Uid, h.ID, h.ParentID, h.AssetTypeID, 0 from h
+
+			declare @cnt int = (select count(1) from #additionalLineage)
+
+			if (@cnt <= @maxLineageDescendants)
+				insert into #hierarchies (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal)
+					select	distinct 
+							h.Salt, h.Hop, h.Uid, h.ID, h.ParentID, h.AssetTypeID, 0 
+					from	#additionalLineage h
+							left join #hierarchies e on e.Uid = h.Uid and e.Salt = h.Salt
+					where	e.Uid is null--Uid not in (select Uid from #hierarchies)
+
+			if (@cnt > @maxLineageDescendants)
+				insert into #hierarchies (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal, HasTooManyChildren)
+					select	top 1 
+							h.Salt, h.Hop, h.Uid, h.ID, h.ParentID, h.AssetTypeID, 0,1
+					from	#additionalLineage h
+
+			---
+		    DELETE TOP(1) FROM @iterList
+		end
+
 		------------------------------------------------------------------------------------------------------
 
 		if not exists (select 1 from #hierarchies)
@@ -498,6 +534,12 @@ if @ancestry = 3
 	from	#hierarchies H
 			cross apply dbo.UserAssetPermissions(@resourceId,H.AssetTypeID) P 
 	where	P.AssetID = H.ID and P.PermissionsBitMask & 1 = 0;
+	
+	update	H
+	set		HasAssetReadAccess = 0
+	from	#hierarchies H
+			cross apply dbo.UserAssetPermissions(@resourceId,H.AssetTypeID) P 
+	where	P.AssetID = 0 and P.PermissionsBitMask & 1 = 0;
 
 
 	if @ancestry = 3
@@ -669,6 +711,20 @@ if @ancestry = 3
 				inner join AssetTypeStyle S on S.ID = T.ID
 	order by	H.hierarchyKey
 
+
+	---handle nodes with too many children
+	update S
+		set 
+			S.leaf = 0,
+			S.backAmount = 0,
+			S.back = '#d73961',
+			S.[text] = 'Assets with over '+ TRY_CAST(@maxLineageDescendants AS nvarchar(max)) + ' descendants can''t be shown in lineage',
+			S.AssetUid = CONVERT(UNIQUEIDENTIFIER, 0x00),
+			S.AssetTypeUid = CONVERT(UNIQUEIDENTIFIER, 0x00)
+	from #flatNodeCollection S 
+		inner join #hierarchies h on S.hierarchykey = h.hierarchyKey and S.assetuid = h.uid and h.HasTooManyChildren = 1
+	---end handling nodes with too many children
+
 	--For assets which contains process diagram we should manually map its diagram nodes and underlaying Diagram Use relationship otherwise they wont be included
 	drop table if exists #hierarchyPredicates
 	create table #hierarchyPredicates ([key] nvarchar(50), Predicate nvarchar(200), ID int, Uid uniqueidentifier, AssetId int, Direction int, hierarchyKey nvarchar(50), SourceAssetId int);
@@ -738,14 +794,18 @@ if @ancestry = 3
 
 
 		--In case of Lineage create a `Diagram` group node, and add process diagrams nodes as leaf nodes
-		if @ancestry = 1
+		if @ancestry = 1 and exists (select top 1 [key] from #hierarchyPredicates)
 		begin
+				update #flatNodeCollection
+				set leaf = 0
+				where hierarchyKey = @hierarchyKey and [key] = @diagramAssetHash
+				
 				insert into #flatNodeCollection
 				select  @hierarchyKey as hierarchyKey,
 						1,
 						0 as leaf,
 						@diagramHash as [key],
-						@hierarchyKey as [group],
+						@diagramAssetHash as [group],
 						@uid as assetUid,
 						null,
 						@uid,
@@ -961,7 +1021,7 @@ end
     </sql>
 	<rollback>
 		<![CDATA[	
-CREATE OR ALTER procedure [graph].[AssetBrowser_Initial]
+CREATE OR ALTER   procedure [graph].[AssetBrowser_Initial]
 	@ancestry int, -- 1 = all, 2 = direct-parent, 3 = type-only
 	@uid uniqueidentifier,
 	@resourceId int,
@@ -1194,7 +1254,8 @@ if @ancestry = 3
 								Salt varchar(50), Hop int, Uid uniqueidentifier, ID bigint, ParentID bigint, AssetTypeID int, [Key] varchar(50), [ParentKey] varchar(50),
 								UseAsTransformation bit default(0), IsSubjectInTransformation bit default(0), focal bit default(0), IsLeaf bit default(0),
 								HasAssetReadAccess bit default(1) not null,
-								Back varchar(25), BackAmount decimal(2,1), HierarchyKey varchar(50)
+								Back varchar(25), BackAmount decimal(2,1), HierarchyKey varchar(50),
+								HasTooManyChildren bit default(0)
 							  );
 							  	
 	create nonclustered index cix_TempHierarchies_Key on #hierarchies (HierarchyKey);
@@ -1241,49 +1302,84 @@ if @ancestry = 3
 						where	I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
 					) I
 		)
-
 		insert into #hierarchies (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal)
 			select distinct Salt, Hop, Uid, ID, ParentID, AssetTypeID, 0 from h;
 
-		-- GOV-13214 - Get children that may not be involved in lineage --------------------------------------
-		with h as (
-			select	L.Salt,
-					L.Hop,
-					C.Uid,
-					C.ID,
-					C.AssetTypeID,
-					I.Object,
-					I.ObjectID,
-					A.ID ParentID,
-					I.Subject as ParentObject,
-					I.SubjectID as ParentObjectID
-			from	Asset A
-					inner join #hopAssets L on L.ID = A.ID
-					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
-					inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
-			union all
-			select	h.Salt,
-					h.Hop,
-					C.Uid,
-					C.ID,
-					C.AssetTypeID,
-					C.Object,
-					C.ObjectID,
-					A.ID as ParentID,
-					I.Subject as ParentObject,
-					I.SubjectID as ParentObjectID
-			from	h
-					inner join Asset A on h.Object = A.Object and h.ObjectID = A.ObjectID
-					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
-					inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
-		)
 
-		insert into #hierarchies (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal)
-			select	distinct 
-					h.Salt, h.Hop, h.Uid, h.ID, h.ParentID, h.AssetTypeID, 0 
-			from	h
-					left join #hierarchies e on e.Uid = h.Uid and e.Salt = h.Salt
-			where	e.Uid is null--Uid not in (select Uid from #hierarchies)
+		declare @iterList TABLE(id int)
+		insert into @iterList select id from #hopAssets
+
+		declare @iterID int
+
+		drop table if exists #additionalLineage
+		create table #additionalLineage (Salt varchar(50), Hop int, Uid uniqueidentifier, ID bigint, ParentID bigint, AssetTypeID int, focal int);
+
+		while(1 = 1)
+		begin
+			truncate table #additionalLineage
+
+			SET @iterID = NULL
+			SELECT TOP(1) @iterID = id FROM @iterList
+    
+			IF @iterID IS NULL
+				BREAK
+
+			-- GOV-13214 - Get children that may not be involved in lineage --------------------------------------
+			;with h as (
+				select	L.Salt,
+						L.Hop,
+						C.Uid,
+						C.ID,
+						C.AssetTypeID,
+						I.Object,
+						I.ObjectID,
+						A.ID ParentID,
+						I.Subject as ParentObject,
+						I.SubjectID as ParentObjectID
+				from	Asset A
+						inner join #hopAssets L on L.ID = A.ID
+						inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
+						inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
+						where A.ID = @iterID
+				union all
+				select	h.Salt,
+						h.Hop,
+						C.Uid,
+						C.ID,
+						C.AssetTypeID,
+						C.Object,
+						C.ObjectID,
+						A.ID as ParentID,
+						I.Subject as ParentObject,
+						I.SubjectID as ParentObjectID
+				from	h
+						inner join Asset A on h.Object = A.Object and h.ObjectID = A.ObjectID
+						inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
+						inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
+			)
+			insert into #additionalLineage (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal)
+			select top(@maxLineageDescendants+1) h.Salt, h.Hop, h.Uid, h.ID, h.ParentID, h.AssetTypeID, 0 from h
+
+			declare @cnt int = (select count(1) from #additionalLineage)
+
+			if (@cnt <= @maxLineageDescendants)
+				insert into #hierarchies (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal)
+					select	distinct 
+							h.Salt, h.Hop, h.Uid, h.ID, h.ParentID, h.AssetTypeID, 0 
+					from	#additionalLineage h
+							left join #hierarchies e on e.Uid = h.Uid and e.Salt = h.Salt
+					where	e.Uid is null--Uid not in (select Uid from #hierarchies)
+
+			if (@cnt > @maxLineageDescendants)
+				insert into #hierarchies (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal, HasTooManyChildren)
+					select	top 1 
+							h.Salt, h.Hop, h.Uid, h.ID, h.ParentID, h.AssetTypeID, 0,1
+					from	#additionalLineage h
+
+			---
+		    DELETE TOP(1) FROM @iterList
+		end
+
 		------------------------------------------------------------------------------------------------------
 
 		if not exists (select 1 from #hierarchies)
@@ -1447,6 +1543,12 @@ if @ancestry = 3
 	from	#hierarchies H
 			cross apply dbo.UserAssetPermissions(@resourceId,H.AssetTypeID) P 
 	where	P.AssetID = H.ID and P.PermissionsBitMask & 1 = 0;
+	
+	update	H
+	set		HasAssetReadAccess = 0
+	from	#hierarchies H
+			cross apply dbo.UserAssetPermissions(@resourceId,H.AssetTypeID) P 
+	where	P.AssetID = 0 and P.PermissionsBitMask & 1 = 0;
 
 
 	if @ancestry = 3
@@ -1487,30 +1589,6 @@ if @ancestry = 3
 		from	#hierarchies O
 				left join #hierarchies C on C.ParentID = O.ID and C.Hop = O.Hop
 		where	C.ID is null and O.ParentID is null and O.ID is not null;
-
-		-- This is for root assets that also link to the same targets as their leaf assets. VERY SPECIAL CASE.
-		insert into #hierarchies (Salt, Hop, AssetTypeID, [Key], Uid)
-			select		H.Salt,
-						H.Hop,
-						H.AssetTypeID,
-						utility.GetHash(H.Salt + '|T' + cast(H.AssetTypeID as varchar)),
-						CAST(0x0 AS UNIQUEIDENTIFIER)
-			from		#hierarchies H
-						inner join	(
-									select		O.*
-									from		#hierarchies O
-												inner join #hierarchies C on C.ParentKey = O.[Key] and C.Hop = O.Hop and O.ParentID is null
-									) A on A.ID = H.ID and A.[Key] <> H.[Key] and A.Hop = H.Hop;
-
-		-- Update parent key for single-level assets with key for asset type records added above.
-		update	H
-		set		H.ParentKey = utility.GetHash(H.Salt + '|T' + cast(H.AssetTypeID as varchar))
-		from	#hierarchies H
-				inner join	(
-							select		O.*
-							from		#hierarchies O
-										inner join #hierarchies C on C.ParentKey = O.[Key] and C.Hop = O.Hop and O.ParentID is null
-							) A on A.ID = H.ID and A.[Key] <> H.[Key] and A.Hop = H.Hop;
 	end
 
 	update	T
@@ -1641,6 +1719,20 @@ if @ancestry = 3
 				inner join AssetType T on T.ID = H.AssetTypeID
 				inner join AssetTypeStyle S on S.ID = T.ID
 	order by	H.hierarchyKey
+
+
+	---handle nodes with too many children
+	update S
+		set 
+			S.leaf = 0,
+			S.backAmount = 0,
+			S.back = '#d73961',
+			S.[text] = 'Assets with over '+ TRY_CAST(@maxLineageDescendants AS nvarchar(max)) + ' descendants can''t be shown in lineage',
+			S.AssetUid = CONVERT(UNIQUEIDENTIFIER, 0x00),
+			S.AssetTypeUid = CONVERT(UNIQUEIDENTIFIER, 0x00)
+	from #flatNodeCollection S 
+		inner join #hierarchies h on S.hierarchykey = h.hierarchyKey and S.assetuid = h.uid and h.HasTooManyChildren = 1
+	---end handling nodes with too many children
 
 	--For assets which contains process diagram we should manually map its diagram nodes and underlaying Diagram Use relationship otherwise they wont be included
 	drop table if exists #hierarchyPredicates
