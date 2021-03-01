@@ -67,7 +67,7 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
 
     deleteRuleType(uid: string) {
 
-        this.assetTypeService.deleteSingleAssetType(uid).subscribe(result => {
+        this.assetTypeService.deleteSingleAssetType(uid).subscribe((result) => {
             this.showDelete = false;
             if (result.type != "error") {
                 result.title = "Success!";
@@ -112,7 +112,9 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
     }
 
     protected showHideBreadcrumbItem(activatedItem: SecondaryNavItem) {
-        if (activatedItem.tag == "dimensions") this.isDimensionsVisible = !this.isDimensionsVisible;
+        if (activatedItem.tag == "dimensions") {
+            this.isDimensionsVisible = !this.isDimensionsVisible;
+        }
     }
 
     selectedItemChange(objectId: number) {  
