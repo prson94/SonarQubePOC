@@ -6,7 +6,7 @@
                 <div inputs>
                     <div class="row">
                         <label for="name" class="ig-label">Name</label>
-                        <input igInput tabindex="1" igSize="medium" [ngClass]="{'invalid': metricForm.get('name')?.errors?.empty}" type="text" [(ngModel)]="model.Name" formControlName="name" maxlength="250" required />
+                        <input igInput igAutoFocus tabindex="1" igSize="medium" [ngClass]="{'invalid': metricForm.get('name')?.errors?.empty}" type="text" [(ngModel)]="model.Name" formControlName="name" maxlength="250" required />
                         <div *ngIf="metricForm.get('name').invalid && (metricForm.get('name').dirty || metricForm.get('name').touched)">
                             <div *ngIf="metricForm.get('name').errors.empty" class="ig-text-required">
                                 Please enter a valid name
