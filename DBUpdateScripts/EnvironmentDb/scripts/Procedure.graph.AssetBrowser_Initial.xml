@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Initial-v26">
-    <comment>GOV-13719</comment>
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Initial-v27">
+    <comment>GOV-13839</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -794,7 +794,7 @@ if @ancestry = 3
 
 
 		--In case of Lineage create a `Diagram` group node, and add process diagrams nodes as leaf nodes
-		if @ancestry = 1
+		if @ancestry = 1 and exists (select top 1 [key] from #hierarchyPredicates)
 		begin
 				insert into #flatNodeCollection
 				select  @hierarchyKey as hierarchyKey,
