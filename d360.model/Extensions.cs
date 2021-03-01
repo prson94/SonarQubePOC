@@ -1004,8 +1004,7 @@ namespace d360.model
                         left = GenerateStringConcat(left, right);
                         break;
                     default:
-                        Console.WriteLine("no action for {0}", op.id);
-                        break;
+                        continue;
                 }
             }
             return left;
