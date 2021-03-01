@@ -24,10 +24,10 @@ using System.Data.Entity.Design.PluralizationServices;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Threading;
 using System.Threading.Tasks;
 using d360.core.entities.Metric;
 using d360.model.helpers;
+using System.Text;
 
 namespace d360.model
 {
@@ -55,7 +55,7 @@ namespace d360.model
 
         readonly CommunityContext Community;
 
-        bool IsEventingEnabled = false;
+        bool IsEventingEnabled;
 
         public int ApiTimeout
         {
@@ -326,16 +326,16 @@ namespace d360.model
             switch (type)
             {
                 case TypeIdentifierInfoModelType.ActionType:
-                    result = await QueryAsync<TypeIdentifierInfoModel>("select null, Uid, 'IssueType' as Object, ID as ObjectID from IssueType where Uid = @uid", new { uid = guid });
+                    result = await QueryAsync<TypeIdentifierInfoModel>("select null, Uid, 'IssueType' as Object, ID as ObjectID from IssueType where Uid = @uid", new { uid = guid }).ConfigureAwait(false);
                     break;
                 case TypeIdentifierInfoModelType.AssetType:
                     result = await QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, Object, ObjectID from AssetType where Uid = @uid", new { uid = guid });
                     break;
                 case TypeIdentifierInfoModelType.RelationshipType:
-                    result = await QueryAsync<TypeIdentifierInfoModel>("select null, Uid, 'IntersectType' as Object, ID as ObjectID from IntersectType where Uid = @uid", new { uid = guid });
+                    result = await QueryAsync<TypeIdentifierInfoModel>("select null, Uid, 'IntersectType' as Object, ID as ObjectID from IntersectType where Uid = @uid", new { uid = guid }).ConfigureAwait(false);
                     break;
                 default:
-                    throw new Exception("Invalid TypeIdentifierInfoModel.");
+                    throw new ArgumentNullException("Invalid TypeIdentifierInfoModel.");
             }
             return result;
         }
@@ -375,7 +375,7 @@ where	T.[Class] in ({classList})").ToList();
                 {
                     SourceType = new Dapper.DbString { Value = type, IsAnsi = true, IsFixedLength = true, Length = 50 },
                     SourceTypeID = id
-                });
+                }).ConfigureAwait(false);
         }
 
         public string GetFormattedFieldLookupValue(int fieldTypeID, string fieldValue)
@@ -474,7 +474,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             {
                 SourceType = new Dapper.DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = type.ToString() },
                 SourceTypeID = id
-            });
+            }).ConfigureAwait(false);
         }
 
         public IQueryable<FieldWithRelation> GetFieldRelationsByObject(SystemObjects type, int id)
@@ -500,7 +500,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 
             if (!ft.LookupObjectID.HasValue)
             {
-                throw new Exception("Invalid Relationship field encountered no relationship type to lookup found in definition.");
+                throw new ArgumentNullException("Invalid Relationship field encountered no relationship type to lookup found in definition.");
             }
 
             var sql = @"select
@@ -516,7 +516,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 
             if (intersectType == null)
             {
-                throw new Exception("Invalid Relationship field encountered invalid or deleted relationship type encountered.");
+                throw new ArgumentNullException("Invalid Relationship field encountered invalid or deleted relationship type encountered.");
             }
 
             int count = 0, objID = 0;
@@ -565,17 +565,6 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             string formattedCardinalityCheck = string.Format(cardinalityCheckSQL, $"'{obj.Replace("Type", "")}'", "AD.[ObjectId]");
             string formattedIntersectJoin = string.Format(intersectJoin, $"'{obj.Replace("Type", "")}'", "AD.[ObjectId]");
 
-
-            countSql = $@"select count(*) from AssetDetail AD with (nolock) 
-                    inner join IntersectType IT on IT.Id = @intersectTypeID
-                    left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-                    where [Type] = @obj and TypeID = @objID {formattedCardinalityCheck}";
-            sql = $@"select AD.ObjectID as Value, DisplayValue as Text, case when I.ID is not null then 1 else 0 end as Selected from AssetDetail AD with (nolock) 
-                    inner join IntersectType IT on IT.Id = @intersectTypeID
- left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-                    where [Type] = @obj and TypeID = @objID 
-                    {formattedCardinalityCheck}
-                    order by DisplayValue OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
             selectedSql = @"select 
 	                case when i.Subject = @obj and i.SubjectID = @objID then i.ObjectID else i.SubjectID end as [Value],
 	                P.TextPath as [Text],
@@ -1066,7 +1055,9 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
                     }
 
                     if (includeChildren || objectID == 0)
+                    {
                         followType = FollowType.Parent;
+                    }
 
                     var pObjectID = new SqlParameter("id", objectID);
                     var pType = new SqlParameter("type", sType);
@@ -1393,7 +1384,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
                 var subjectAssetType = Filter<AssetType>(i => i.Object == sSubject && i.ObjectID == subjectID).FirstOrDefault();
                 if (subjectAssetType == null)
                 {
-                    throw new ApplicationException("Subject asset type does not exist.");
+                    throw new ArgumentNullException("Subject asset type does not exist.");
                 }
                 allowedFunctionalTypes.RemoveAll(p => !p.SubjectAssetClassesSupported.Contains(subjectAssetType.Class));
             }
@@ -1620,7 +1611,7 @@ where	I.ID is null";
 
         public async Task<T> GetDatabaseJsonAsObjectAsync<T>(string query, DynamicParameters dbArgs, int timeout = 90)
         {
-            var jsonStrings = await QueryAsync<string>(query, dbArgs, timeout);
+            var jsonStrings = await QueryAsync<string>(query, dbArgs, timeout).ConfigureAwait(false);
             var json = string.Join("", jsonStrings);
 
             return JsonConvert.DeserializeObject<T>(json);
@@ -1678,17 +1669,17 @@ where	I.ID is null";
 
         public async Task<IEnumerable<TReturn>> QueryAsync<TFirst, TSecond, TReturn>(string sql, Func<TFirst, TSecond, TReturn> map, string splitOn, object param = null, int timeout = 90)
         {
-            return await Database.Connection.QueryAsync<TFirst, TSecond, TReturn>(sql, map: map, param: param, splitOn: splitOn);
+            return await Database.Connection.QueryAsync<TFirst, TSecond, TReturn>(sql, map: map, param: param, splitOn: splitOn).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<dynamic>> QueryAsync(string sql, object param = null, int timeout = 90)
         {
-            return await Database.Connection.QueryAsync(sql, param, null, timeout);
+            return await Database.Connection.QueryAsync(sql, param, null, timeout).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90)
         {            
-            return await Database.Connection.QueryAsync<T>(sql, param, null, timeout);
+            return await Database.Connection.QueryAsync<T>(sql, param, null, timeout).ConfigureAwait(false);
         }
         public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null, int timeout = 90)
         {
@@ -1725,7 +1716,7 @@ where	I.ID is null";
 
             if (exists)
             {
-                throw new ApplicationException($"{attr.Object} already exists.");
+                throw new ArgumentException($"{attr.Object} already exists.");
             }
 
 
@@ -1780,7 +1771,7 @@ where	I.ID is null";
 
             if (exists)
             {
-                throw new ApplicationException($"{asset.Object} already exists.");
+                throw new ArgumentException($"{asset.Object} already exists.");
             }
 
             bool returnValue = true;
@@ -1943,28 +1934,31 @@ where	I.ID is null";
                 {
                     var o = entry.Entity as FieldType;
 
-                    switch (entry.State)
+                    if(entry.State == EntityState.Added)
                     {
-                        case EntityState.Added:
-                            if (Any<FieldType>(i => i.Object == o.Object && i.ObjectID == o.ObjectID && i.Name == o.Name))
+
+                        if (Any<FieldType>(i => i.Object == o.Object && i.ObjectID == o.ObjectID && i.Name == o.Name))
+                        {
+                            throw new ArgumentException(Messages.Error_NameTaken);
+                        }
+                    }
+                    if (entry.State == EntityState.Deleted)
+                    {
+                        if (o.Type == DataType.JSON.ToString())
+                        {
+                            var count = Query<int>("select count(1) from FieldType T cross apply openjson(T.[Definition]) with (FieldTypeID int '$.FieldTypeID') D where AssetTypeID = @at and [Type] = 'JsonElement' and D.FieldTypeID = @ft", new { at = o.AssetTypeID, ft = o.ID }).Single();
+                            if (count > 0)
                             {
-                                throw new ArgumentException(Messages.Error_NameTaken);
+                                throw new ArgumentException(Messages.Error_Item_FieldJsonAttributeReferences);
                             }
-                            break;
-                        case EntityState.Deleted:
-                            if (o.Type == DataType.JSON.ToString())
-                            {
-                                var count = Query<int>("select count(1) from FieldType T cross apply openjson(T.[Definition]) with (FieldTypeID int '$.FieldTypeID') D where AssetTypeID = @at and [Type] = 'JsonElement' and D.FieldTypeID = @ft", new { at = o.AssetTypeID, ft = o.ID }).Single();
-                                if (count > 0)
-                                    throw new ArgumentException(Messages.Error_Item_FieldJsonAttributeReferences);
-                            }
-                            break;
-                        case EntityState.Modified:
-                            if (Any<FieldType>(i => i.Object == o.Object && i.ObjectID == o.ObjectID && i.Name == o.Name && i.ID != o.ID))
-                            {
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            }
-                            break;
+                        }
+                    }
+                    if (entry.State == EntityState.Modified)
+                    {
+                        if (Any<FieldType>(i => i.Object == o.Object && i.ObjectID == o.ObjectID && i.Name == o.Name && i.ID != o.ID))
+                        {
+                            throw new ArgumentException(Messages.Error_NameTaken);
+                        }
                     }
                 }
                 #endregion
@@ -1974,20 +1968,19 @@ where	I.ID is null";
                 {
                     var o = entry.Entity as FusionAttributeType;
 
-                    switch (entry.State)
+                    if(entry.State == EntityState.Added)
                     {
-                        case EntityState.Added:
-                            if (Any<FusionAttributeType>(i => i.FusionTypeID == o.FusionTypeID && i.ParentID == o.ParentID && i.Name == o.Name))
-                            {
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            }
-                            break;
-                        case EntityState.Modified:
-                            if (Any<FusionAttributeType>(i => i.FusionTypeID == o.FusionTypeID && i.Name == o.Name && i.ParentID == o.ParentID && i.ID != o.ID))
-                            {
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            }
-                            break;
+                        if (Any<FusionAttributeType>(i => i.FusionTypeID == o.FusionTypeID && i.ParentID == o.ParentID && i.Name == o.Name))
+                        {
+                            throw new ArgumentException(Messages.Error_NameTaken);
+                        }
+                    }
+                    if(entry.State == EntityState.Modified)
+                    {
+                        if (Any<FusionAttributeType>(i => i.FusionTypeID == o.FusionTypeID && i.Name == o.Name && i.ParentID == o.ParentID && i.ID != o.ID))
+                        {
+                            throw new ArgumentException(Messages.Error_NameTaken);
+                        }
                     }
                 }
                 #endregion
@@ -1996,23 +1989,19 @@ where	I.ID is null";
                 if (entry.Entity is Fusion)
                 {
                     var o = entry.Entity as Fusion;
-
-                    switch (entry.State)
+                    if (entry.State == EntityState.Added)
                     {
-                        case EntityState.Added:
-                            if (Any<Fusion>(i => i.Name == o.Name))
-                            {
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            }
-
-                            break;
-                        case EntityState.Modified:
-                            if (Any<Fusion>(i => i.Name == o.Name && i.ID != o.ID))
-                            {
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            }
-
-                            break;
+                        if (Any<Fusion>(i => i.Name == o.Name))
+                        {
+                            throw new ArgumentException(Messages.Error_NameTaken);
+                        }
+                    }
+                    if (entry.State == EntityState.Modified)
+                    {
+                        if (Any<Fusion>(i => i.Name == o.Name && i.ID != o.ID))
+                        {
+                            throw new ArgumentException(Messages.Error_NameTaken);
+                        }
                     }
                 }
                 #endregion
@@ -2021,23 +2010,19 @@ where	I.ID is null";
                 if (entry.Entity is FusionType)
                 {
                     var o = entry.Entity as FusionType;
-
-                    switch (entry.State)
+                    if (entry.State == EntityState.Added)
                     {
-                        case EntityState.Added:
-                            if (Any<FusionType>(i => i.Name == o.Name))
-                            {
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            }
-
-                            break;
-                        case EntityState.Modified:
-                            if (Any<FusionType>(i => i.Name == o.Name && i.ID != o.ID))
-                            {
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            }
-
-                            break;
+                        if (Any<FusionType>(i => i.Name == o.Name))
+                        {
+                            throw new ArgumentException(Messages.Error_NameTaken);
+                        }
+                    }
+                    if (entry.State == EntityState.Modified)
+                    {
+                        if (Any<FusionType>(i => i.Name == o.Name && i.ID != o.ID))
+                        {
+                            throw new ArgumentException(Messages.Error_NameTaken);
+                        }
                     }
                 }
                 #endregion
@@ -2046,30 +2031,26 @@ where	I.ID is null";
                 if (entry.Entity is Group)
                 {
                     var o = entry.Entity as Group;
-
-                    switch (entry.State)
+                    if (entry.State == EntityState.Added)
                     {
-                        case EntityState.Added:
-                            if (Any<Group>(i => i.Name == o.Name))
-                            {
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            }
-
-                            break;
-                        case EntityState.Modified:
-                            if (Any<Group>(i => i.Name == o.Name && i.ID != o.ID))
-                            {
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            }
-
-                            break;
-                        case EntityState.Deleted:
-                            if (Any<ResponsibilityTypeRelationOverrideItem>(i => i.SecurityAsset == "G" && i.SecurityAssetID == o.ID))
-                            {
-                                throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ResponsibilitiesAssignedToGroup);
-                            }
-
-                            break;
+                        if (Any<Group>(i => i.Name == o.Name))
+                        {
+                            throw new ArgumentException(Messages.Error_NameTaken);
+                        }
+                    }
+                    if (entry.State == EntityState.Modified)
+                    {
+                        if (Any<Group>(i => i.Name == o.Name && i.ID != o.ID))
+                        {
+                            throw new ArgumentException(Messages.Error_NameTaken);
+                        }
+                    }
+                    if (entry.State == EntityState.Deleted)
+                    {
+                        if (Any<ResponsibilityTypeRelationOverrideItem>(i => i.SecurityAsset == "G" && i.SecurityAssetID == o.ID))
+                        {
+                            throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ResponsibilitiesAssignedToGroup);
+                        }
                     }
                 }
                 #endregion
@@ -2080,16 +2061,20 @@ where	I.ID is null";
                     var o = entry.Entity as Intersect;
                     var id = o.ID.ToString();
                     var intersectTypeID = o.IntersectTypeID;
-
-                    switch (entry.State)
+                    if (entry.State == EntityState.Deleted)
                     {
-                        case EntityState.Deleted:
-                            var any = Any<Field>(f => f.FieldType.LookupObjectType == "Intersect" && f.FieldType.LookupObjectID == intersectTypeID && f.Value == id);
-                            if (any) throw new ConflictException("Relationship Could not be Removed", "One or more fields reference this relationship.");
-                            any = Any<Intersect>(i => (i.Subject == "Intersect" && i.SubjectID == o.ID) || (i.Object == "Intersect" && i.ObjectID == o.ID));
-                            if (any) throw new ConflictException("Relationship Could not be Removed", "One or more relationships reference this relationship.");
-                            break;
+                        var any = Any<Field>(f => f.FieldType.LookupObjectType == "Intersect" && f.FieldType.LookupObjectID == intersectTypeID && f.Value == id);
+                        if (any)
+                        {
+                            throw new ConflictException("Relationship Could not be Removed", "One or more fields reference this relationship.");
+                        }
+                        any = Any<Intersect>(i => (i.Subject == "Intersect" && i.SubjectID == o.ID) || (i.Object == "Intersect" && i.ObjectID == o.ID));
+                        if (any)
+                        {
+                            throw new ConflictException("Relationship Could not be Removed", "One or more relationships reference this relationship.");
+                        }
                     }
+                    
                 }
                 #endregion
 
@@ -2133,19 +2118,22 @@ end
 
 select @err";
 
-                    switch (entry.State)
+                    if (entry.State == EntityState.Added)
                     {
-                        case EntityState.Added:
-                            o.uid = Guid.NewGuid();
-                            var addCheck = Query<string>(sql).SingleOrDefault();
-                            if (!string.IsNullOrEmpty(addCheck))
-                                throw new ConflictException("Relationship Type Cannot Be Created", addCheck);
-                            break;
-                        case EntityState.Modified:
-                            var updateCheck = Query<string>(sql).SingleOrDefault();
-                            if (!string.IsNullOrEmpty(updateCheck))
-                                throw new ConflictException("Relationship Type Cannot Be Updated", updateCheck);
-                            break;
+                        o.uid = Guid.NewGuid();
+                        var addCheck = Query<string>(sql).SingleOrDefault();
+                        if (!string.IsNullOrEmpty(addCheck))
+                        {
+                            throw new ConflictException("Relationship Type Cannot Be Created", addCheck);
+                        }
+                    }
+                    else if (entry.State == EntityState.Modified)
+                    {
+                        var updateCheck = Query<string>(sql).SingleOrDefault();
+                        if (!string.IsNullOrEmpty(updateCheck))
+                        {
+                            throw new ConflictException("Relationship Type Cannot Be Updated", updateCheck);
+                        }
                     }
                 }
                 #endregion
@@ -2154,7 +2142,10 @@ select @err";
                 if (entry.Entity is AssetType)
                 {
                     var o = entry.Entity as AssetType;
-                    if (string.IsNullOrWhiteSpace(o.Name)) throw new ArgumentException(Messages.Error_Name_Required);
+                    if (string.IsNullOrWhiteSpace(o.Name)) 
+                    {
+                        throw new ArgumentException(Messages.Error_Name_Required);
+                    }
                 }
                 #endregion
 
@@ -2162,17 +2153,19 @@ select @err";
                 if (entry.Entity is QuestionType)
                 {
                     var o = entry.Entity as QuestionType;
-
-                    switch (entry.State)
+                    if (entry.State == EntityState.Added)
                     {
-                        case EntityState.Added:
-                            if (Any<QuestionType>(i => i.SurveyTypeID == o.SurveyTypeID && i.Name == o.Name))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                        case EntityState.Modified:
-                            if (Any<QuestionType>(i => i.SurveyTypeID == o.SurveyTypeID && i.Name == o.Name && i.ID != o.ID))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
+                        if (Any<QuestionType>(i => i.SurveyTypeID == o.SurveyTypeID && i.Name == o.Name))
+                        {
+                            throw new ArgumentException(Messages.Error_NameTaken);
+                        }
+                    }
+                    if (entry.State == EntityState.Modified)
+                    {
+                        if (Any<QuestionType>(i => i.SurveyTypeID == o.SurveyTypeID && i.Name == o.Name && i.ID != o.ID))
+                        {
+                            throw new ArgumentException(Messages.Error_NameTaken);
+                        }
                     }
                 }
                 #endregion
@@ -2181,15 +2174,19 @@ select @err";
                 if (entry.Entity is Report)
                 {
                     var o = entry.Entity as Report;
-
-                    switch (entry.State)
+                    if (entry.State == EntityState.Added)
                     {
-                        case EntityState.Added:
-                            if (Any<Report>(i => i.Name == o.Name)) throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                        case EntityState.Modified:
-                            if (Any<Report>(i => i.Name == o.Name && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
+                        if (Any<Report>(i => i.Name == o.Name)) 
+                        { 
+                            throw new ArgumentException(Messages.Error_NameTaken); 
+                        }
+                    }
+                    if (entry.State == EntityState.Modified)
+                    {
+                        if (Any<Report>(i => i.Name == o.Name && i.ID != o.ID)) 
+                        { 
+                           throw new ArgumentException(Messages.Error_NameTaken); 
+                        }
                     }
                 }
                 #endregion
@@ -2198,25 +2195,28 @@ select @err";
                 if (entry.Entity is ResponsibilityType)
                 {
                     var o = entry.Entity as ResponsibilityType;
-
-                    switch (entry.State)
+                    if (entry.State == EntityState.Added)
                     {
-                        case EntityState.Added:
-                            if (Any<ResponsibilityType>(i =>
-                                i.Name == o.Name
-                                )) throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                        case EntityState.Deleted:
-                            if (Any<ResponsibilityDetail>(i =>
-                                i.ResponsibilityTypeID == o.ID
-                                )) throw new ArgumentException(Messages.Error_ResponsibilityType_ExistingResponsibilities);
-                            break;
-                        case EntityState.Modified:
-                            if (Any<ResponsibilityType>(i =>
-                                i.Name == o.Name &&
-                                i.ID != o.ID
-                                )) throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
+                        if (Any<ResponsibilityType>(i => i.Name == o.Name)) 
+                        {
+                            throw new ArgumentException(Messages.Error_NameTaken);
+                        } 
+                    }
+                    if (entry.State == EntityState.Modified)
+                    {
+                        if (Any<ResponsibilityType>(i =>i.Name == o.Name && i.ID != o.ID))
+                        { 
+                            throw new ArgumentException(Messages.Error_NameTaken); 
+                        }
+
+                    } 
+                    if(entry.State == EntityState.Deleted)
+                    {
+                        if (Any<ResponsibilityDetail>(i => i.ResponsibilityTypeID == o.ID))
+                        {
+                            throw new ArgumentException(Messages.Error_ResponsibilityType_ExistingResponsibilities);
+                        }
+
                     }
                 }
                 #endregion
@@ -2226,17 +2226,19 @@ select @err";
                 if (entry.Entity is RuleType)
                 {
                     var o = entry.Entity as RuleType;
-
-                    switch (entry.State)
+                    if (entry.State == EntityState.Added)
                     {
-                        case EntityState.Added:
-                            if (Any<RuleType>(i => i.Name == o.Name))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                        case EntityState.Modified:
-                            if (Any<RuleType>(i => i.Name == o.Name && i.ID != o.ID))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
+                        if (Any<RuleType>(i => i.Name == o.Name))
+                        {
+                            throw new ArgumentException(Messages.Error_NameTaken);
+                        }
+                    }
+                    if (entry.State == EntityState.Modified)
+                    {
+                        if (Any<RuleType>(i => i.Name == o.Name && i.ID != o.ID))
+                        {
+                            throw new ArgumentException(Messages.Error_NameTaken);
+                        }
                     }
                 }
 
@@ -2246,19 +2248,19 @@ select @err";
                 if (entry.Entity is SurveyType)
                 {
                     var o = entry.Entity as SurveyType;
-
-                    switch (entry.State)
+                    if (entry.State == EntityState.Added)
                     {
-                        case EntityState.Added:
-                            if (Any<SurveyType>(i => i.Name == o.Name))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-
-                            break;
-                        case EntityState.Modified:
-                            if (Any<SurveyType>(i => i.Name == o.Name && i.ID != o.ID))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-
-                            break;
+                        if (Any<SurveyType>(i => i.Name == o.Name))
+                        {
+                            throw new ArgumentException(Messages.Error_NameTaken);
+                        }
+                    }
+                    if (entry.State == EntityState.Modified)
+                    {
+                        if (Any<SurveyType>(i => i.Name == o.Name && i.ID != o.ID))
+                        {
+                            throw new ArgumentException(Messages.Error_NameTaken);
+                        }
                     }
                 }
                 #endregion
@@ -2267,19 +2269,19 @@ select @err";
                 if (entry.Entity is Tag)
                 {
                     var o = entry.Entity as Tag;
-
-                    switch (entry.State)
+                    if (entry.State == EntityState.Added)
                     {
-                        case EntityState.Added:
-                            if (Any<Tag>(i => i.Value == o.Value && i.State == State.Active))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-
-                            break;
-                        case EntityState.Modified:
-                            if (Any<Tag>(i => i.Value == o.Value && i.ID != o.ID && i.State == State.Active))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-
-                            break;
+                        if (Any<Tag>(i => i.Value == o.Value && i.State == State.Active))
+                        {
+                            throw new ArgumentException(Messages.Error_NameTaken);
+                        }
+                    }
+                    if (entry.State == EntityState.Modified)
+                    {
+                        if (Any<Tag>(i => i.Value == o.Value && i.ID != o.ID && i.State == State.Active))
+                        {
+                            throw new ArgumentException(Messages.Error_NameTaken);
+                        }
                     }
                 }
                 #endregion
@@ -2309,24 +2311,24 @@ select @err";
             //check for changed field values before the new values are written tothe db
             if (fieldsToCheckForChanges.Any())
             {
-                var fieldSql = "";
+                var fieldSql = new StringBuilder();
 
                 foreach (var item in fieldsToCheckForChanges)
                 {
 
                     if (item.ObjectID > 0 && item.FieldTypeID > 0 && !string.IsNullOrEmpty(item.ObjectType))
                     {
-                        if (!string.IsNullOrEmpty(fieldSql))
+                        if (fieldSql.Length != 0)
                         {
-                            fieldSql += " or ";
+                            fieldSql.Append(" or ");
                         }
-                        fieldSql += $"(f.ObjectID = {item.ObjectID} and f.[ObjectType] = '{item.ObjectType}' and f.FieldTypeID = {item.FieldTypeID})";
+                        fieldSql.Append($"(f.ObjectID = {item.ObjectID} and f.[ObjectType] = '{item.ObjectType}' and f.FieldTypeID = {item.FieldTypeID})");
                     }
                 }
 
-                if (!string.IsNullOrEmpty(fieldSql))
+                if (fieldSql.Length != 0)
                 {
-                    var sql = $"select f.ObjectID, f.ObjectType, f.Value, f.FieldTypeID from field f where {fieldSql}";
+                    var sql = $"select f.ObjectID, f.ObjectType, f.Value, f.FieldTypeID from field f where {fieldSql.ToString()}";
 
                     var vals = Query<dynamic>(sql);
 
@@ -2346,8 +2348,9 @@ select @err";
             {
                 returnValue = base.SaveChanges();
             }
-            catch (OptimisticConcurrencyException)
+            catch (OptimisticConcurrencyException e)
             {
+                Console.WriteLine(e.Message);
             }
 
             // create events for the objects this needs to be done after save changes so we have new objects id's
@@ -2441,25 +2444,25 @@ select @err";
 
         public void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID", bool ruleMeansEvent = true, bool enableRelationshipFields = true, bool includeKeyColumnOnly = false)
         {
+            var columnbuilder = new StringBuilder();
             columns = "";
+            var joinbuilder = new StringBuilder();
             joins = "";
 
             var fieldTypeRelationType = type;
-            switch (type)
+            if(type == "Rule")
             {
-                case "Rule":
-                    if (ruleMeansEvent)
-                    {
-                        type = "Event";
-                    }
-                    else
-                    {
-                        fieldTypeRelationType += "Type";
-                    }
-                    break;
-                default:
+                if (ruleMeansEvent)
+                {
+                    type = "Event";
+                }else
+                {
                     fieldTypeRelationType += "Type";
-                    break;
+                }
+            }
+            else
+            {
+                fieldTypeRelationType += "Type";
             }
 
             if (fields == null)
@@ -2507,52 +2510,52 @@ select @err";
 
                             if (includeIdColumn)
                             {
-                                columns += $"{name}_T.ID as [{name}ID], ";
+                                columnbuilder.Append($"{name}_T.ID as [{name}ID], ");
                             }
 
                             if (isReferenceItemType || isFusionAttributeType)
                             {
-                                columns += $"{name}_OT.Name";
+                                columnbuilder.Append($"{name}_OT.Name");
                             }
                             else if (isTaxonomyType || isPolicyType)
                             {
-                                columns += $"{name}_OTT.TextPath";
+                                columnbuilder.Append($"{name}_OTT.TextPath");
                             }
                             else
                             {
-                                columns += $"{name}_OTD.DisplayValue";
+                                columnbuilder.Append($"{name}_OTD.DisplayValue");
                             }
 
-                            columns += $" as [{(useFriendlyName ? friendlyName : name)}],";
+                            columnbuilder.Append($" as [{(useFriendlyName ? friendlyName : name)}],");
 
-                            joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
-                            joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}";
+                            joinbuilder.Append($" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and");
+                            joinbuilder.Append(relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}");
                             if (!useAssetTable && !useAssetTypeTable)
                             {
-                                joins += $" left join [{tableName}] {name}_OT on {name}_OT.{typeIDColumnName} = {relationFieldInfo.ObjectID} AND ";
-                                joins += $"{name}_OT.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                                joinbuilder.Append($" left join [{tableName}] {name}_OT on {name}_OT.{typeIDColumnName} = {relationFieldInfo.ObjectID} AND ");
+                                joinbuilder.Append($"{name}_OT.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID"));
                             }
                             else if (useAssetTypeTable)
                             {
-                                joins += $" left join [AssetType] {name}_OT on ";
-                                joins += $" {name}_OT.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
-                                joins += $" and {name}_OT.Object ='{relationFieldInfo.Object}' and  {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject") + $"= '{relationFieldInfo.Object}'";
+                                joinbuilder.Append($" left join [AssetType] {name}_OT on ");
+                                joinbuilder.Append($" {name}_OT.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID"));
+                                joinbuilder.Append($" and {name}_OT.Object ='{relationFieldInfo.Object}' and  {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject") + $"= '{relationFieldInfo.Object}'");
                             }
                             else
                             {
-                                joins += $" left join dbo.asset {name}_OT on {name}_OT.[Object] = '{tableName}' and {name}_OT.ObjectID = {relationFieldInfo.ObjectID} AND ";
-                                joins += $"{name}_OT.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                                joinbuilder.Append($" left join dbo.asset {name}_OT on {name}_OT.[Object] = '{tableName}' and {name}_OT.ObjectID = {relationFieldInfo.ObjectID} AND ");
+                                joinbuilder.Append($"{name}_OT.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID"));
                             }
 
                             if (isTaxonomyType || isPolicyType)
                             {
-                                joins += $" left join asset {name}_AS on {name}_AS.Object = '{tableName}' and  {name}_AS.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
-                                joins += $" outer apply [dbo].GetAssetTextPathById({name}_AS.ID, '/') {name}_OTT";
+                                joinbuilder.Append($" left join asset {name}_AS on {name}_AS.Object = '{tableName}' and  {name}_AS.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID"));
+                                joinbuilder.Append($" outer apply [dbo].GetAssetTextPathById({name}_AS.ID, '/') {name}_OTT");
                             }
                             else if (!isReferenceItemType && !isFusionAttributeType)
                             {
-                                joins += $" left join asset {name}_AS on {name}_AS.Object = '{tableName}' and  {name}_AS.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
-                                joins += $" cross apply [dbo].GetAssetDisplayValueById({name}_AS.ID) {name}_OTD";
+                                joinbuilder.Append($" left join asset {name}_AS on {name}_AS.Object = '{tableName}' and  {name}_AS.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID"));
+                                joinbuilder.Append($" cross apply [dbo].GetAssetDisplayValueById({name}_AS.ID) {name}_OTD");
                             }
                         }
                     }
@@ -2575,32 +2578,32 @@ select @err";
 
                                     if (includeIdColumn)
                                     {
-                                        columns += $"{name}_T.ID as [{name}ID], ";
+                                        columnbuilder.Append($"{name}_T.ID as [{name}ID], ");
                                     }
-                                    columns += $"try_cast({name}_P.Value as {sqlType}) as [{(useFriendlyName ? friendlyName : name)}], ";
+                                    columnbuilder.Append($"try_cast({name}_P.Value as {sqlType}) as [{(useFriendlyName ? friendlyName : name)}], ");
 
-                                    joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
-                                    joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}";
-                                    joins += $" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {jsonElementDefinition.FieldTypeID}";
-                                    joins += $" and {name}_OT.ObjectType = {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject");
-                                    joins += $" and {name}_OT.ObjectID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
-                                    joins += $" left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_OT.ID and {name}_P.[Path] = '{jsonElementDefinition.Path.CleanForSql()}' ";
+                                    joinbuilder.Append($" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and");
+                                    joinbuilder.Append(relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}");
+                                    joinbuilder.Append($" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {jsonElementDefinition.FieldTypeID}");
+                                    joinbuilder.Append($" and {name}_OT.ObjectType = {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject"));
+                                    joinbuilder.Append($" and {name}_OT.ObjectID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID"));
+                                    joinbuilder.Append($" left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_OT.ID and {name}_P.[Path] = '{jsonElementDefinition.Path.CleanForSql()}' ");
 
                                 }
                                 else
                                 {
                                     if (includeIdColumn)
                                     {
-                                        columns += $"{name}_T.ID as [{name}ID], ";
+                                        columnbuilder.Append($"{name}_T.ID as [{name}ID], ");
                                     }
-                                    columns += $"{name}_OT.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ";
+                                    columnbuilder.Append($"{name}_OT.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ");
 
-                                    joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
-                                    joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}";
-                                    joins += $" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {relationshipLookupFieldType.ID}";
-                                    joins += $" and {name}_OT.ObjectType = {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject");
-                                    joins += $" and {name}_OT.ObjectID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
-                                    joins += " ";
+                                    joinbuilder.Append($" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and");
+                                    joinbuilder.Append(relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}");
+                                    joinbuilder.Append($" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {relationshipLookupFieldType.ID}");
+                                    joinbuilder.Append($" and {name}_OT.ObjectType = {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject"));
+                                    joinbuilder.Append($" and {name}_OT.ObjectID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID"));
+                                    joinbuilder.Append(" ");
                                 }
                             }
                         }
@@ -2610,31 +2613,31 @@ select @err";
                 {
                     if (includeIdColumn) 
                     { 
-                        columns += $"{name}_T.Value as [{name}ID], "; 
+                        columnbuilder.Append($"{name}_T.Value as [{name}ID], "); 
                     }
-                    columns += $@"case     
+                    columnbuilder.Append($@"case     
     when {name}_T.FormattedValue is not null then try_cast({name}_T.FormattedValue as decimal(38,6))
     when {name}_TT.DefaultValue is not null then try_cast({name}_TT.DefaultFormattedValue  as decimal(38,6))
     else null 
-end as [{(useFriendlyName ? friendlyName : name)}], ";
+end as [{(useFriendlyName ? friendlyName : name)}], ");
 
-                    joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
-left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
+                    joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
+left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
                 }
                 else if (f.Type == DataType.Number.ToString())
                 {
                     if (includeIdColumn)
                     {
-                        columns += $"{name}_T.Value as [{name}ID], ";
+                        columnbuilder.Append($"{name}_T.Value as [{name}ID], ");
                     }
-                    columns += $@"case     
+                    columnbuilder.Append($@"case     
     when {name}_T.FormattedValue is not null then try_cast({name}_T.FormattedValue as bigint)
     when {name}_TT.DefaultValue is not null then try_cast({name}_TT.DefaultFormattedValue  as bigint)
     else null 
-end as [{(useFriendlyName ? friendlyName : name)}], ";
+end as [{(useFriendlyName ? friendlyName : name)}], ");
 
-                    joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
-left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
+                    joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
+left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
                 }
                 else if (f.Type == DataType.JsonElement.ToString())
                 {
@@ -2642,21 +2645,21 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
                     var sqlType = DetermineSqlDataTypeForFieldType(f);
 
-                    columns += $@"try_cast({name}_P.FormattedValue as {sqlType}) as [{(useFriendlyName ? friendlyName : name)}], ";
+                    columnbuilder.Append($@"try_cast({name}_P.FormattedValue as {sqlType}) as [{(useFriendlyName ? friendlyName : name)}], ");
 
-                    joins += $@" 
+                    joinbuilder.Append($@" 
 left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {jsonElementDefinition.FieldTypeID} 
-left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name}_P.[Path] = '{jsonElementDefinition.Path.CleanForSql()}' ";
+left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name}_P.[Path] = '{jsonElementDefinition.Path.CleanForSql()}' ");
                 }
                 else if (f.Type == DataType.Path.ToString())
                 {
-                    columns += $@"graph.GetPath({name}_GAN.Segments, ' > ', ' / ') as [{(useFriendlyName ? friendlyName : name)}], ";
-                    joins += $@" inner join graph.AssetNode {name}_GAN on {name}_GAN.ID = A.ID ";
+                    columnbuilder.Append($@"graph.GetPath({name}_GAN.Segments, ' > ', ' / ') as [{(useFriendlyName ? friendlyName : name)}], ");
+                    joinbuilder.Append($@" inner join graph.AssetNode {name}_GAN on {name}_GAN.ID = A.ID ");
                 }
                 else if (f.Type == DataType.Score.ToString())
                 {
-                    columns += $@"{name}_SC.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ";
-                    joins += $@" outer apply dbo.GetAssetScoreById(A.ID, {f.ScoreType}) {name}_SC ";
+                    columnbuilder.Append($@"{name}_SC.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ");
+                    joinbuilder.Append($@" outer apply dbo.GetAssetScoreById(A.ID, {f.ScoreType}) {name}_SC ");
                 }
                 else if (f.Type == DataType.Tag.ToString())
                 {
@@ -2665,13 +2668,13 @@ left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name
 
                     if (includeIdColumn)
                     {
-                        columns += $"{name}_T.Value as [{name}ID], ";
+                        columnbuilder.Append($"{name}_T.Value as [{name}ID], ");
                     }
 
-                    columns += $@"(select string_agg(T.Value,'|') within group (order by T.Value) from AssetTag AT inner join Tag T on T.ID = AT.TagID  where AssetId = {assetIdPath}) as [{(useFriendlyName ? friendlyName : name)}], ";
+                    columnbuilder.Append($@"(select string_agg(T.Value,'|') within group (order by T.Value) from AssetTag AT inner join Tag T on T.ID = AT.TagID  where AssetId = {assetIdPath}) as [{(useFriendlyName ? friendlyName : name)}], ");
 
-                    joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
-left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
+                    joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
+left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
                 }
                 else if (f.Type == DataType.Lookup.ToString() && LookupFieldHasColorItem(f))
                 {
@@ -2679,8 +2682,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     string fieldclause = f.AllowMultipleValues ? "try_cast(SPFfi.value as int)" : "fi.Value";
                     string whereClause = (type == SystemObjects.Intersect.ToString()) ? $@" fi.ObjectID = A.ID and fi.ObjectType = '{type}'" : "fi.AssetID = A.Id";
 
-                    columns += $"{name}_T.value as [{name}],";
-                    joins += $@" outer apply(
+                    columnbuilder.Append($"{name}_T.value as [{name}],");
+                    joinbuilder.Append($@" outer apply(
                             select value = (
                                 SELECT
                                 COALESCE(ADV.DisplayValue, AC.Code) as name,
@@ -2692,26 +2695,27 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                 cross apply GetAssetDisplayValueByID(AC.ID) ADV
                                 where FieldTypeID = {f.ID} and {whereClause}
 								for json path)
-							){name}_T(value)";
+							){name}_T(value)");
                 }
                 else
                 {
                     if (includeIdColumn)
                     {
-                        columns += $"{name}_T.Value as [{name}ID], ";
+                        columnbuilder.Append($"{name}_T.Value as [{name}ID], ");
                     }
-                    columns += $@"case 
+                    columnbuilder.Append($@"case 
     when {name}_TT.AllowAllValue = 1 and {name}_T.Value = '0' then {name}_TT.AllowAllLabel 
     when {name}_T.FormattedValue is not null then {name}_T.FormattedValue 
     when {name}_TT.DefaultValue is not null then {name}_TT.DefaultFormattedValue 
     else '' 
-end as [{(useFriendlyName ? friendlyName : name)}], ";
+end as [{(useFriendlyName ? friendlyName : name)}], ");
 
-                    joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
-left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
+                    joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
+left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
                 }
             }
-
+            columns = columnbuilder.ToString();
+            joins = joinbuilder.ToString();
             fields = null;
         }
         public bool LookupFieldHasColorItem(FieldType fieldType)
@@ -2974,7 +2978,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == objectType.ToString())?.ObjectID ?? 0;
                     if (objectId <= 0)
                     {
-                        throw new Exception($"Method not implemented for object type '{objectType}'");
+                        throw new ArgumentNullException($"Method not implemented for object type '{objectType}'");
                     }
                     break;
             }
@@ -2989,7 +2993,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             }
             catch
             {
-                throw new Exception($"Object not part of assets table!");
+                throw new ArgumentNullException($"Object not part of assets table!");
             }
         }
 
