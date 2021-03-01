@@ -61,11 +61,11 @@ namespace igx.jobs.reportlayer
                 var name = cleanObjectName(f.Name);
                 var alias = getAliasedName(name, reservedNames);
 
-                if (!usedNames.Contains(name.ToLower()))
+                if (!usedNames.Contains(name.ToLowerInvariant()))
                 {
                     columns += (f.Type == "Lookup") ? $"[{name}].Value as [{alias}ID], [{name}].FormattedValue as [{alias}], " : $"[{name}].FormattedValue as [{alias}], ";
                     joins += $" left join FieldDetail [{name}] on [{name}].AssetID = {idColumn} and [{name}].FieldTypeID = {f.ID}";
-                    usedNames.Add(name.ToLower());
+                    usedNames.Add(name.ToLowerInvariant());
                 }
             }
 
