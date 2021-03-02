@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Initial-v26">
-    <comment>GOV-13719</comment>
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Initial-v27.2">
+    <comment>GOV-13839</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -794,14 +794,18 @@ if @ancestry = 3
 
 
 		--In case of Lineage create a `Diagram` group node, and add process diagrams nodes as leaf nodes
-		if @ancestry = 1
+		if @ancestry = 1 and exists (select top 1 [key] from #hierarchyPredicates)
 		begin
+				update #flatNodeCollection
+				set leaf = 0
+				where hierarchyKey = @hierarchyKey and [key] = @diagramAssetHash
+				
 				insert into #flatNodeCollection
 				select  @hierarchyKey as hierarchyKey,
 						1,
 						0 as leaf,
 						@diagramHash as [key],
-						@hierarchyKey as [group],
+						@diagramAssetHash as [group],
 						@uid as assetUid,
 						null,
 						@uid,
@@ -1017,7 +1021,7 @@ end
     </sql>
 	<rollback>
 		<![CDATA[	
-CREATE OR ALTER procedure [graph].[AssetBrowser_Initial]
+CREATE OR ALTER   procedure [graph].[AssetBrowser_Initial]
 	@ancestry int, -- 1 = all, 2 = direct-parent, 3 = type-only
 	@uid uniqueidentifier,
 	@resourceId int,
@@ -1539,6 +1543,12 @@ if @ancestry = 3
 	from	#hierarchies H
 			cross apply dbo.UserAssetPermissions(@resourceId,H.AssetTypeID) P 
 	where	P.AssetID = H.ID and P.PermissionsBitMask & 1 = 0;
+	
+	update	H
+	set		HasAssetReadAccess = 0
+	from	#hierarchies H
+			cross apply dbo.UserAssetPermissions(@resourceId,H.AssetTypeID) P 
+	where	P.AssetID = 0 and P.PermissionsBitMask & 1 = 0;
 
 
 	if @ancestry = 3

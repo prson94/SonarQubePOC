@@ -58,15 +58,7 @@ export class InputDirective implements AfterViewInit, OnDestroy {
             DomHandler.addMultipleClasses(this.el.nativeElement, "ig-input-full");
         }
     }
-    @HostListener('document:keydown', ['$event'])
-    onInputKeyDown(event) {
-        switch (event.which) {
-            case 13:
-                this.el.nativeElement.blur();
-                this.el.nativeElement.focus();
-                break;
-        }
-    }
+
     ngOnDestroy() {
         while (this.el.nativeElement.hasChildNodes()) {
             this.el.nativeElement.removeChild(this.el.nativeElement.lastChild);
