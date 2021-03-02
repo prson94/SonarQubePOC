@@ -45,7 +45,7 @@ import { AssetTypeClass } from '../../../models/asset.model';
                                     </ng-template>
                                     <ng-template pTemplate="body" let-item>
                                         <tr [pSelectableRow]="item">
-                                            <td>{{item.ClassName}}</td>
+                                            <td>{{parseClassName(item.ClassName)}}</td>
                                             <td>{{item.Path}}</td>
                                             <td *ngIf="showResponsibilities">
                                                 <ul *ngFor="let responsibility of item.Responsibilities" style="padding: 0;">
@@ -148,5 +148,28 @@ export class AdminIssueTypeAllocationComponent extends BaseComponent implements 
         this.formMode = FormMode.Default;
         this.load();
     }
-
+    parseClassName(className: string) {
+        var name = className;
+        switch (className) {
+            case "BusinessAsset":
+                name = "Business Asset";
+                break;
+            case "TechnicalAsset":
+                name = 'Technical Asset';
+                break;
+            case "FusionAttribute":
+                name = "Fusion Attribute";
+                break;
+            case "FusionQuery":
+                name = 'Fusion Query';
+                break;
+            case "DiagramAsset":
+                name = 'Diagram Asset';
+                break;
+            case "ReferenceItemType":
+                name = "Reference Item Type";
+                break;
+        }
+        return name;
+    }
 }
