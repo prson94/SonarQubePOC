@@ -1,16 +1,12 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange, ViewEncapsulation } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreTypeAllocation, MetricPathOptionViewModel, ScoreType } from '../../../models/metrics.model';
+import { MetricAssetViewModel, ScoreTypeAllocation, ScoreType } from '../../../models/metrics.model';
 import { TreeNode } from 'primeng/api';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from '../../../models/form.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AllocationService } from '../../../services/allocations.service';
-import { OperatorModel } from '../../../models/operator.model';
 import * as _ from 'lodash';
-import { ResponsibilityType } from '../../../models/responsibility-type.model';
-import { RelationshipType } from '../../../models/relationship.model';
-import { Predicate } from '../../../models/predicate.model';
 import { AssetTypeMetricModel } from '../../../models/asset.model';
 import { CurrentEnvironmentSettings } from '../../../static/environment-settings';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
@@ -117,7 +113,9 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
 
     ngOnInit() {
         this.delayedReload();
-        this.allocation.scoreType = ScoreType[this.allocation.scoreType+''];
+        if (this.allocation) {
+            this.allocation.scoreType = ScoreType[this.allocation.scoreType + ''];
+        }
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
