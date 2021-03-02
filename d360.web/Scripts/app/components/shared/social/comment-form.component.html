@@ -1,0 +1,33 @@
+﻿<div *ngIf="isVisible" class="comment-form">
+    <div class="row comment-input">
+        <div class="col s12">
+            <p-editor #editor
+                      igAutoFocus
+                      placeholder="Add a comment"
+                      name="Description"
+                      [style]="{'height':'50px'}"
+                      [(ngModel)]="comment.Body">
+            </p-editor>
+        </div>
+    </div>
+    <div class="row" style="padding-top:15px;padding-bottom:15px;">
+        <div class="col s12" style="padding-bottom:15px;" *ngIf="comment?.Tags?.length > 0">
+            <d3s-preview-tooltip *ngFor="let tag of comment?.Tags"
+                                 class="comment-tag"
+                                 (click)="changeUrl(tag.Url)"
+                                 [uid]="tag.AssetUid"
+                                 [iconColor]="tag.IconForeColor"
+                                 [foreColor]="tag.IconBackColor">
+                {{getTagName(tag)}}
+                <i class="fa fa-times" (click)="removeTag(tag)"></i>
+            </d3s-preview-tooltip>
+        </div>
+        <div class="col s10">
+            <d3s-social-tag-input (selectTag)="addTag($event)"></d3s-social-tag-input>
+        </div>
+        <div class="col s2">
+            <button class="right" pButton type="button" (click)="cancelClick()" label="Cancel"></button>
+            <button class="right" pButton type="button" (click)="saveClick();" label="{{comment.Uid ? 'Update' : 'Post'}}"></button>
+        </div>
+    </div>
+</div>

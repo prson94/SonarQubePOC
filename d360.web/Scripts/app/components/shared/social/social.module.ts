@@ -9,13 +9,13 @@ import { CoreModule } from '../core.module';
 
 import { SocialBoardComponent } from './social-board.component';
 import { SocialCommentComponent} from './social-comment.component';
-import { SocialInputComponent } from './social-input.component';
 import { SocialTagInputComponent } from './social-tag-input.component';
 
 import { ButtonModule } from 'primeng/button';
 import { EditorModule } from 'primeng/editor';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { ResourcesService } from "../../../services/resources.service";
+import { CommentFormComponent } from './comment-form.component';
 
 
 @NgModule({
@@ -37,8 +37,8 @@ import { ResourcesService } from "../../../services/resources.service";
     declarations: [
         SocialBoardComponent,
         SocialCommentComponent,
-        SocialInputComponent,       
         SocialTagInputComponent, 
+        CommentFormComponent
     ],
     exports: [
         SocialBoardComponent,                        

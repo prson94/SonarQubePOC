@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, HostBinding } from "@angular/core";
+﻿import { Input, Component, EventEmitter, Output, OnInit, HostBinding, ViewEncapsulation } from "@angular/core";
 import { BaseComponent } from "../base.component";
 import { SocialService } from "../../../services/social.service";
 import { CommentApiPostModel, CommentApiPutModel, CommentDetail, CommentType } from "../../../models/social.model";
@@ -8,8 +8,10 @@ import { AuthenticationService } from "../../../services/authentication.service"
 
 @Component({
     selector: "d3s-social-board",
-    templateUrl: "./social-board.component.html", 
-    providers: [SocialService],       
+    templateUrl: "./social-board.component.html",
+    encapsulation: ViewEncapsulation.None,
+    styleUrls: ['social-board.less'],
+    providers: [SocialService],
 })
 
 export class SocialBoardComponent extends BaseComponent implements OnInit {
@@ -22,7 +24,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
 
     @Output() countsChanged = new EventEmitter();
     @Output() close = new EventEmitter();
-    
+
     rowCount: number = 15;
     pageNumber: number = 1;
     hasMore: boolean = true;
@@ -103,7 +105,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
                     let index = this.comments.findIndex((x) => x.ID == comment.ID);
 
                     if (index >= 0 && !(comment.Comments && comment.Comments.length > 0)) {
-                        this.comments.splice(index,1);
+                        this.comments.splice(index, 1);
                     }
                     this.messagesService.showInfoMessage("Success", "Item deleted successfully");
                 }
@@ -111,95 +113,4 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
                 this.isLoading = false;
             });
     }
-
-    addComment(event) {
-        let commentContent = event.comment;
-
-        if (!commentContent) {
-            return;
-        }
-
-        this.isLoading = true;
-        let comment = new CommentApiPostModel();
-
-        comment.Body = commentContent;
-        comment.AssetUid = this.assetUid;
-        comment.Body = commentContent;
-        let taggedAssetUids: string[] = [];
-
-        if (event.tags) {
-            event.tags.forEach((t) => {
-                taggedAssetUids.push(t.AssetUid);
-            });
-        }
-
-        comment.Tags = taggedAssetUids;
-
-        this.socialService.addComment(comment).
-            subscribe(res => {                
-                if (res) {
-                    this.comments.unshift(res);                    
-                }
-                this.messagesService.showInfoMessage("Success", "Item added successfully");
-                this.countsChanged.emit({}); // counts have changed fire event
-                this.isLoading = false;
-            });
-    }
-
-    editComment(event) {
-        if (!event.comment) {
-            return;
-        }
-
-        this.isLoading = true;
-
-        let comment = new CommentApiPutModel();
-        comment.Body = event.comment.Body;
-        comment.Tags = event.tags;
-        comment.Uid = event.comment.Uid;
-        
-        this.socialService.editComment(comment).
-            subscribe(res => {       
-                this.messagesService.showInfoMessage("Success", "Item edited successfully");
-                this.isLoading = false;
-            });
-    }
-
-    replyToComment(event) {
-        if (!event) {
-            console.log("DEV ERROR - EVENT OBJECT IS NULL!");
-            return;
-        }
-        let replyText = event.reply;
-        let parentUid = event.parentUid;
-        
-        if (!replyText || !parentUid) {
-            return;
-        }
-
-        this.isLoading = true;
-
-        let comment = new CommentApiPostModel();
-
-        comment.Body = replyText;
-        comment.ParentUid = parentUid;
-        comment.AssetUid = this.assetUid;
-        comment.Tags = [];
-
-        this.socialService.addComment(comment).
-            subscribe(res => {
-                if (res) {
-                    let index = this.comments.findIndex(x => x.ID == res.ParentID);
-
-                    if (index >= 0) {
-                        if (!this.comments[index].Comments)
-                            this.comments[index].Comments = [];
-                        this.comments[index].Comments.push(res);
-                    }                           
-                }
-
-                this.isLoading = false;
-            });
-    }
-    
 }

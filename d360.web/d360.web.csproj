@@ -17,7 +17,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -907,6 +907,7 @@
     <Content Include="Scripts\app\components\shared\small-widgets\status-badge\status-badge.component.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\synonyms.tile.html" />
     <Content Include="Scripts\app\components\shared\social\social-board.component.html" />
+    <Content Include="Scripts\app\components\shared\social\comment-form.component.html" />
     <Content Include="Scripts\app\components\shared\tags\d3s-tag-view.html" />
     <Content Include="Scripts\app\components\shared\user\user-list.component.html" />
     <Content Include="Scripts\app\components\shared\where-used\where-used.component.html" />
@@ -1053,6 +1054,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dayofweek-input\dayofweek-input.component.ts" />
     <Content Include="Scripts\app\components\shared\social\social-comment.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\social\comment-form.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\info-tooltip.component.ts" />
     <Content Include="Scripts\app\components\workflow\workflow-view-details.component.html" />
     <Content Include="Scripts\dist\*.js" />
@@ -1282,6 +1284,7 @@
     <Content Include="Scripts\app\components\shared\asset-score\asset-score.less" />
     <Content Include="Scripts\app\components\shared\menu\site-menu.less" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\overview.component.less" />
+    <Content Include="Scripts\app\components\shared\social\social-board.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1890,7 +1893,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\social\social-board.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\social\social-comment.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\social\social-input.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\activity-details-tile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\activity-tile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assignments\assignments.component.ts" />
