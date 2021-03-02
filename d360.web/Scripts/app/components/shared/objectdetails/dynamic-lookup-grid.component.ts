@@ -174,4 +174,28 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
                 this.cdRef.markForCheck();
             });
     }
+
+    getScoreFieldHTML(data: any, colName: string): string {
+        var value = data[colName] as string;
+        if (!value) return '';
+
+        let cleanValue: number = parseFloat(value.replace("%", ""));
+        let fieldTypeID: number = parseInt(colName.split("_")[1]);
+        var className = "";
+        if (this.data?.ScoringInfo) {
+            className = "score-poor";
+            var allocInfo = this.data?.ScoringInfo?.filter(x => x["FieldTypeId"] == fieldTypeID);
+            if (allocInfo.length > 0) {
+                var alloc = allocInfo[0];
+                if (cleanValue > parseFloat(alloc.LowerThreshold)) {
+                    className = "score-average";
+                }
+                if (cleanValue > parseFloat(alloc.UpperThreshold)) {
+                    className = "score-good";
+                }
+            }
+        }
+
+        return `<div class="score-pill-small ${className}"></div><span>${value}</span>`;
+    }
 }
