@@ -41,14 +41,6 @@
                     <i class="fa fa-times-circle bad"></i> Failed
                 </ng-container>
             </div>
-
-            <div class="calculation-group">
-                <div class="title">Measure Score</div>
-                <div class="indented-line" *ngIf="selected._adjustedWeight > 0">= maximum possible score</div>
-                <div class="indented-line">
-                    = {{getAsPrecentage(selected._adjustedWeight)}}
-                </div>
-            </div>
         </ng-container>
 
         <ng-container *ngIf="matchedCondition">
@@ -67,8 +59,8 @@
                     </div>
                 </div>
             </div>
-            <div class="calculation-group">
-                <div class="conditions" *ngIf="selected.OtherConditions && selected.OtherConditions.length > 0">
+            <div class="calculation-group" *ngIf="selected.OtherConditions && selected.OtherConditions.length > 0">
+                <div class="conditions">
                     <div>
                         <span class="fa fa-exclamation-triangle warning"></span> Also Matched on Condition Group<span *ngIf="selected.OtherConditions.length > 1">s</span> {{getOtherMatchedGroups()}}
                         - the definition of this measure should be reviewed, as matching on multiple condition groups should be considered a configuration error
@@ -77,9 +69,25 @@
             </div>
         </ng-container>
 
+        <ng-container *ngIf="selected.AdjustedWeight != selected.Weight">            
+            <div class="calculation-group">
+                <div class="title">Adjusted Weight</div>
+                <div class="indented-line">= condition group weight &#247; weights total &#215; 100% </div>
+                <div *ngIf="!matchedCondition" class="indented-line">
+                    = {{getAsPrecentage(selected.Weight)}} &#247; {{getAsPrecentageNoMax(summedMeasures)}} &#215; 100%
+                </div>
+                <div *ngIf="matchedCondition" class="indented-line">
+                    = {{getAsPrecentage(matchedCondition.Weight !== undefined ? matchedCondition.Weight : selected.Weight)}} &#247; {{getAsPrecentageNoMax(summedMeasures)}} &#215; 100%
+                </div>
+                <div class="indented-line">
+                    = {{getAsPrecentage(selected._adjustedMaxWeight)}}
+                </div>
+            </div>
+        </ng-container>
+
         <ng-container *ngIf="!showPassTest()">
             <div class="calculation-group">
-                <div class="title">Measure Score</div> 
+                <div class="title">Measure Score</div>
 
                 <div class="indented-line" *ngIf="!selected._adjustedGroupWeight">= rule results score ({{definition?.DataQuality?.ResultOperation}}) &#215; measure weight</div>
                 <div class="indented-line" *ngIf="!selected._adjustedGroupWeight">
@@ -104,13 +112,18 @@
         <ng-container *ngIf="!selected._adjustedGroupWeight">
             <div class="calculation-group">
                 <div class="title">Maximum Possible Score</div>
-                <div class="indented-line">= measure weight</div>
-                <div class="indented-line">= (defined weight &#247; sum of weights) &#215; 100% </div>
-                <div *ngIf="!matchedCondition" class="indented-line">
-                    = ({{getAsPrecentage(selected.Weight)}} &#247; {{getAsPrecentageNoMax(summedMeasures)}}) &#215; 100%
+                <div *ngIf="selected.AdjustedWeight != selected.Weight">
+                    <div class="indented-line">= adjusted weight</div>
                 </div>
-                <div *ngIf="matchedCondition" class="indented-line">
-                    = ({{getAsPrecentage(matchedCondition.Weight !== undefined ? matchedCondition.Weight : selected.Weight)}} &#247; {{getAsPrecentageNoMax(summedMeasures)}}) &#215; 100%
+                <div *ngIf="selected.AdjustedWeight == selected.Weight">
+                    <div class="indented-line">= measure weight</div>
+                    <div class="indented-line">= (defined weight &#247; sum of weights) &#215; 100% </div>
+                    <div *ngIf="!matchedCondition" class="indented-line">
+                        = ({{getAsPrecentage(selected.Weight)}} &#247; {{getAsPrecentageNoMax(summedMeasures)}}) &#215; 100%
+                    </div>
+                    <div *ngIf="matchedCondition" class="indented-line">
+                        = ({{getAsPrecentage(matchedCondition.Weight !== undefined ? matchedCondition.Weight : selected.Weight)}} &#247; {{getAsPrecentageNoMax(summedMeasures)}}) &#215; 100%
+                    </div>
                 </div>
                 <div class="indented-line">
                     = {{getAsPrecentage(selected._adjustedMaxWeight)}}
@@ -128,6 +141,16 @@
                 </div>
                 <div class="indented-line">
                     = {{getAsPrecentage(selected._adjustedMaxWeight)}}
+                </div>
+            </div>
+        </ng-container>
+
+        <ng-container *ngIf="showPassTest()">
+            <div class="calculation-group">
+                <div class="title">Measure Score</div>
+                <div class="indented-line" *ngIf="selected._adjustedWeight > 0">= maximum possible score</div>
+                <div class="indented-line">
+                    = {{getAsPrecentage(selected._adjustedWeight)}}
                 </div>
             </div>
         </ng-container>
