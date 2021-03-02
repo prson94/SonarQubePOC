@@ -148,6 +148,7 @@ export class AdminIssueTypeAllocationComponent extends BaseComponent implements 
         this.formMode = FormMode.Default;
         this.load();
     }
+
     parseClassName(className: string) {
         var name = className;
         switch (className) {
@@ -155,16 +156,16 @@ export class AdminIssueTypeAllocationComponent extends BaseComponent implements 
                 name = "Business Asset";
                 break;
             case "TechnicalAsset":
-                name = 'Technical Asset';
+                name = "Technical Asset";
                 break;
             case "FusionAttribute":
                 name = "Fusion Attribute";
                 break;
             case "FusionQuery":
-                name = 'Fusion Query';
+                name = "Fusion Query";
                 break;
             case "DiagramAsset":
-                name = 'Diagram Asset';
+                name = "Diagram Asset";
                 break;
             case "ReferenceItemType":
                 name = "Reference Item Type";
