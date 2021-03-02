@@ -33,8 +33,8 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
 
             let matchedCondition = null;
             if (this.selected.IsGroup && this.selected.Measures && this.selected.Measures.length > 0) {
-                this.selected.Measures.forEach(m => {
-                    m.Conditions?.forEach(c => {
+                this.selected.Measures.forEach((m) => {
+                    m.Conditions?.forEach((c) => {
                         if (c.Uid === m.ConditionUid) {
                             matchedCondition = c;
                         }
@@ -47,7 +47,7 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
                     }
                 });
             }
-            console.log(matchedCondition);
+           
             if (matchedCondition) {
                 this.matchedCondition = matchedCondition;
             }
