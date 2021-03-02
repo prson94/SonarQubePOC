@@ -96,7 +96,7 @@ namespace d360.core.entities
     public class ChildMetricAssetHierarchyModel : BaseMetricAssetHierarchyModel
     {
         [DataMember]
-        public List<MetricAssetHierarchyConditionModel> Conditions { get; set; }
+        public List<MetricAssetHierarchyConditionsModel> Conditions { get; set; }
     }
 
     [DataContract(Name = "metric")]

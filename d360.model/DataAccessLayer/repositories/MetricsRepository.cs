@@ -1607,39 +1607,11 @@ select		R.*,
 			(
 			select		M.*,
 						(
-                    	select	
-                                C.Uid,
-                                F.FriendlyName as FieldName,
-                    			CI.Operator,
-                    			(
-									case when F.Type = 'Lookup' then 
-										(
-											select	top 1
-													[Text]
-											from	FieldLookupValue
-											where	FieldTypeID = F.ID and LookupObjectType = F.LookupObjectType and LookupObjectID = F.LookupObjectID and AssetUid = CIV.Value
-										)
-									ELSE CIV.Value
-								end
-								) as [Value]
-                    	from	[metrics].[AssetVersionCondition] C
-                                inner join metrics.AssetVersionConditionItem CI on CI.AssetVersionConditionUid = C.Uid
-                                inner join metrics.AssetVersionConditionItemValue CIV on CIV.Uid = CI.Uid 
-                    			inner join FieldType F on F.ID = CI.ConditionFieldTypeID
-                    	where	C.AssetVersionUid = M.VersionUid
-                    	for json path							
-						) as Conditions
-			from		#results M
-			where		M.ParentUid = R.Uid
-			order by	M.[Name]
-			for json path
-			) as MeasuresJson,
-						(
                     	SELECT 
                             C.Uid,
 							MatchType,
 							Position,
-							threshold,
+							Threshold,
 							Weight,
 							(
                             select	F.FriendlyName as FieldName,
@@ -1659,13 +1631,53 @@ select		R.*,
 										inner join metrics.AssetVersionConditionItem CI on CI.AssetVersionConditionUid = C.Uid
 										left join metrics.AssetVersionConditionItemValue CIV on CIV.Uid = CI.Uid 
                     					inner join FieldType F on F.ID = CI.ConditionFieldTypeID
-                    			where	C.AssetVersionUid = R.VersionUid and CI.[AssetVersionConditionUid] = C1.[Uid]
+                    			where	C.AssetVersionUid = M.VersionUid and CI.[AssetVersionConditionUid] = C1.[Uid]
                     			for json path
                                 ) as ConditionItems
-							from metrics.AssetVersionCondition C
-							where	C.AssetVersionUid = R.VersionUid
-							for json path
-						) as ConditionsJson
+                    	from	[metrics].[AssetVersionCondition] C
+                                inner join metrics.AssetVersionConditionItem CI on CI.AssetVersionConditionUid = C.Uid
+                                left join metrics.AssetVersionConditionItemValue CIV on CIV.Uid = CI.Uid 
+                    			inner join FieldType F on F.ID = CI.ConditionFieldTypeID
+                    	where	C.AssetVersionUid = M.VersionUid
+                    	for json path							
+						) as Conditions
+			from		#results M
+			where		M.ParentUid = R.Uid
+			order by	M.[Name]
+			for json path
+			) as MeasuresJson,
+		    (
+             SELECT 
+                C.Uid,
+		    	MatchType,
+		    	Position,
+		    	threshold,
+		    	Weight,
+		    	(
+                      select	F.FriendlyName as FieldName,
+                  				CI.Operator,
+                  				(
+		    					case when F.Type = 'Lookup' then 
+		    						(
+		    							select	top 1
+		    									[Text]
+		    							from	FieldLookupValue
+		    							where	FieldTypeID = F.ID and LookupObjectType = F.LookupObjectType and LookupObjectID = F.LookupObjectID and AssetUid = CIV.Value
+		    						)
+		    					ELSE CIV.Value
+		    				end
+		    				) as [Value]
+                  		from	[metrics].[AssetVersionCondition] C1
+		    				inner join metrics.AssetVersionConditionItem CI on CI.AssetVersionConditionUid = C.Uid
+		    				left join metrics.AssetVersionConditionItemValue CIV on CIV.Uid = CI.Uid 
+                  			inner join FieldType F on F.ID = CI.ConditionFieldTypeID
+                  		where	C.AssetVersionUid = R.VersionUid and CI.[AssetVersionConditionUid] = C1.[Uid]
+                  		for json path
+                        ) as ConditionItems
+		    	from metrics.AssetVersionCondition C
+		    	where	C.AssetVersionUid = R.VersionUid
+		    	for json path
+		    ) as ConditionsJson
 from		#results R
 where		R.ParentUid is null
 order by	R.[Name]";
