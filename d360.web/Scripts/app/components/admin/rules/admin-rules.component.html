@@ -53,13 +53,6 @@
                                    [assetTypeName]="selected?.name"
                                    [assetTypeClass]="assetTypeClass">
             </d3s-asset-type-delete>
-
-            <!--<d3s-delete-form *ngIf="showDelete"
-                             [callback]="theDeleteCallback"
-                             [itemId]="selected?.ID"
-                             [method]="'callback'"
-                             [prompt]="'Are you sure you want to delete the rule type [' + [selected?.Name] + ']?'"
-                             (onCancel)="showDelete=false;"></d3s-delete-form>-->
         </div>
     </div>
     <div class="col l8 s12" *ngIf="!showEditor && !showDelete && selected">

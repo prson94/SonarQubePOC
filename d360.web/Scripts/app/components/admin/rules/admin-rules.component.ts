@@ -15,7 +15,7 @@ import { AssetService } from "../../../services/asset.service";
 
 @Component({
     selector: "d3s-admin-rules-component",
-    providers: [RulesService, AssetTypeService, AssetService],
+    providers: [AssetTypeService, AssetService],
     templateUrl: "./admin-rules.component.html"
 })
 
@@ -29,7 +29,6 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
     private isDimensionsVisible: boolean = false;
 
     constructor(private stateService: StateService, protected secondaryNavService: SecondaryNavService,
-        private rulesService: RulesService,
         protected messagesService: MessagesObservableService,
         private assetTypeService: AssetTypeService,
         private assetsService: AssetService,
@@ -54,19 +53,17 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
     protected getRuleTypes() {
         this.isLoading = true;
         this.assetTypeService.getAssetTypesByClass(AssetTypeClass.Rule)
-            .subscribe(result => {
+            .subscribe((result) => {
                 this.ruleTypes = result;
                 this.isLoading = false;
                 if (this.ruleTypes.length > 0) {
                     this.selected = this.ruleTypes[0];
                     this.selectedItemChange(this.selected.ID);
                 }
-                
             });
     }
 
     deleteRuleType(uid: string) {
-
         this.assetTypeService.deleteSingleAssetType(uid).subscribe((result) => {
             this.showDelete = false;
             if (result.type != "error") {
@@ -80,17 +77,6 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
             }
             this.stateService.reloadLeftNavMenu();
         });
-
-        //this.rulesService.deleteRuleType(id)
-        //    .subscribe(result => {
-        //        this.showMessageForResult(this.messagesService, result);
-        //        this.showDelete = false;
-        //        if (result.type != "error") {
-        //            this.ruleTypes = this.ruleTypes.filter((x) => x.ID != id);
-        //            this.selected = this.ruleTypes.length > 0 ? this.ruleTypes[0] : null;
-        //        }
-        //        this.stateService.reloadLeftNavMenu();
-        //    });
     }
 
     saveRuleType($event) {
