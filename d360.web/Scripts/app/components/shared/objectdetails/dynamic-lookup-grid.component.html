@@ -53,8 +53,8 @@
                             <a (click)="navigate(item[column.urlfield])" [innerText]="item[column.datafield]"></a>
                         </d3s-lookup-tooltip>
                     </span>
-                    <span *ngSwitchCase="'preview'" style="display:block; word-wrap:break-word !important">
-                        <d3s-preview-tooltip [uid]="item[column.uidfield]">
+                    <span *ngSwitchCase="'preview'" style="display:block; word-wrap:break-word !important">X
+                        <d3s-preview-tooltip [uid]="item[column.uidfield]" [align]="'right'">
                             <a (click)="navigate(item[column.urlfield])" [innerText]="item[column.datafield]"></a>
                         </d3s-preview-tooltip>
                     </span>
