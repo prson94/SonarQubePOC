@@ -127,8 +127,9 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     }
 
     private getCommentUrl(comment: CommentDetail) {
-        if (!comment.CreatedByUid)
+        if (!comment.CreatedByUid) {
             return "";
+        }
 
         return `/api/v2/membership/users/${comment.CreatedByUid}/image?size=35`;
     }

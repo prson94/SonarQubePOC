@@ -1,20 +1,20 @@
-﻿import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommentApiPostModel, CommentApiPutModel, CommentDetail } from '../../../models/social.model';
-import { Tag } from '../../../models/tag.model';
-import { AuthenticationService } from '../../../services/authentication.service';
-import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { SocialService } from '../../../services/social.service';
-import { BaseComponent } from '../base.component';
+﻿import { Component, EventEmitter, Input, Output } from "@angular/core";
+import { CommentApiPostModel, CommentApiPutModel, CommentDetail } from "../../../models/social.model";
+import { Tag } from "../../../models/tag.model";
+import { AuthenticationService } from "../../../services/authentication.service";
+import { MessagesObservableService } from "../../../services/messages-observable.service";
+import { SocialService } from "../../../services/social.service";
+import { BaseComponent } from "../base.component";
 
 @Component({
-    selector: 'd3s-comment-form',
-    templateUrl: 'comment-form.component.html'
+    selector: "d3s-comment-form",
+    templateUrl: "comment-form.component.html"
 })
 
 export class CommentFormComponent extends BaseComponent {
     @Input() comment: CommentDetail;
-    @Input() parentUid: string = '';
-    @Input() assetUid: string = '';
+    @Input() parentUid: string = "";
+    @Input() assetUid: string = "";
     @Input() isVisible: boolean = false;
 
     @Output() onCancel = new EventEmitter();
@@ -29,13 +29,14 @@ export class CommentFormComponent extends BaseComponent {
     }
 
     addTag(event) {
-        if (!this.comment.Tags)
+        if (!this.comment.Tags) {
             this.comment.Tags = [];
+        }
         this.comment.Tags.push(event.tag);
     }
 
     removeTag(tag: Tag) {
-        let index = this.comment.Tags.findIndex(x => x.AssetUid == tag.AssetUid);
+        let index = this.comment.Tags.findIndex((x) => x.AssetUid === tag.AssetUid);
 
         if (index >= 0 && index < this.comment.Tags.length) {
             this.comment.Tags.splice(index, 1);
@@ -57,7 +58,7 @@ export class CommentFormComponent extends BaseComponent {
             putModel.Uid = this.comment.Uid;
 
             this.socialService.editComment(putModel).
-                subscribe(res => {
+                subscribe((res) => {
                     this.messagesService.showInfoMessage("Success", "Item edited successfully");
                     this.isLoading = false;
                     this.onSave.emit({ comment: this.comment, event: "edit" });
@@ -74,7 +75,7 @@ export class CommentFormComponent extends BaseComponent {
             }
 
             this.socialService.addComment(postModel).
-                subscribe(res => {
+                subscribe((res) => {
                     this.messagesService.showInfoMessage("Success", "Item added successfully");
                     this.isLoading = false;
                     this.onSave.emit({ comment: res, event: "add" });

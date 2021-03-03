@@ -12,7 +12,7 @@ import { forkJoin, Observable } from "rxjs";
     selector: "d3s-social-board",
     templateUrl: "./social-board.component.html",
     encapsulation: ViewEncapsulation.None,
-    styleUrls: ['social-board.less'],
+    styleUrls: ["social-board.less"],
     providers: [SocialService, ResourcesService],
 })
 
@@ -134,33 +134,37 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         this.isAddingNew = false;
         this.newComment = new CommentDetail();
         var comment = event.comment as CommentDetail;
-        if (event.event == "add") {
-            if (!comment.ParentID) {
-                this.comments = [comment].concat(this.comments);
-            }
-            else {
-                var parent = this.comments.find(x => x.ID == comment.ParentID);
-                if (!parent.Comments) {
-                    parent.Comments = [];
-                }
-                parent.Comments.push(comment);
-            }
+        if (event.event === "add") {
+            this.addComment(comment);
         }
-        if (event.event == "edit") {
+        if (event.event === "edit") {
             let idx: number = this.comments.findIndex(x => x.Uid == comment.Uid);
             this.comments[idx] = comment;
         }
         this.updateResourceData();
     }
 
+    private addComment(comment: CommentDetail) {
+        if (!comment.ParentID) {
+            this.comments = [comment].concat(this.comments);
+        }
+        else {
+            var parent = this.comments.find(x => x.ID === comment.ParentID);
+            if (!parent.Comments) {
+                parent.Comments = [];
+            }
+            parent.Comments.push(comment);
+        }
+    }
+
     private cachedResourceData: any = {};
     updateResourceData() {
         var obsArr: Observable<any>[] = [];
-        this.getUniqueResourcesFromComments().forEach(res => {
+        this.getUniqueResourcesFromComments().forEach((res) => {
             if (!this.cachedResourceData[res]) {
                 obsArr.push(this.resourcesService.getResource(res));
             }
-        })
+        });
 
         if (obsArr.length > 0) {
             forkJoin(obsArr).subscribe((results) => {
@@ -194,7 +198,9 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     getUniqueResourcesFromComments(): number[] {
         var allResources = [];
         this.comments.forEach((comment) => {
-            if (!allResources.some(x => x == comment.CreatedBy)) {
+            if (!allResources.some((x) => {
+                x === comment.CreatedBy
+            })) {
                 allResources.push(comment.CreatedBy);
             }
             if (comment.Comments && comment.Comments.length > 0) {
