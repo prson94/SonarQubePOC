@@ -2329,7 +2329,17 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             {
                 var parent = Company.GetParentObject(id, SystemObjects.ReferenceItem);
                 var sql = "select DisplayValue, uid from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
-                list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentUid", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.uid), Selected = i.uid == (parent != null ? parent.uid : Guid.Empty)  }).ToList() });
+                list.Add(new EditableField { 
+                    Row = row++, 
+                    Column = 1, 
+                    FieldName = "ParentUid", 
+                    Name = parentType.Name, 
+                    FieldType = DataType.Lookup.ToString(), 
+                    Required = true, 
+                    MultiSelect = false,
+                    Value = ((parent != null) ? (parent.uid.ToString() ?? "").ToLower() : ""),
+                    Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.uid), Selected = i.uid == (parent != null ? parent.uid : Guid.Empty)  }).ToList() 
+                });
             }
 
             list = loadDynamicFields(SystemObjects.ReferenceItem.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, a.AssetType.ObjectID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), row);
