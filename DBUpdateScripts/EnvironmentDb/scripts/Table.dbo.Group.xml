@@ -80,7 +80,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="TKlok" id="Table.dbo.Group-Group_AfterInsert-v2">
+  <changeSet author="TKlok" id="Table.dbo.Group-Group_AfterInsert-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -97,7 +97,7 @@ BEGIN
 		FROM	inserted O inner join  AssetType T on T.Object = 'GroupType' and T.ObjectID = 1;
 		
 	INSERT INTO graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn)
-	SELECT	 A.ID, A.[uid], a.AssetTypeID, AT.Uid as AssetTypeUid, A.[State], A.UpdatedOn
+	SELECT	 A.ID, A.[uid], a.AssetTypeID, AT.Uid as AssetTypeUid, A.[State], coalesce(A.UpdatedOn, getutcdate()) 
 	FROM	inserted O
 	INNER JOIN Asset A ON A.Object = 'Group' and A.ObjectID = O.ID
 	INNER JOIN  AssetType AT ON AT.Object = 'GroupType' and AT.ObjectID = 1
