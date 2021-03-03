@@ -1648,7 +1648,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             HttpGet,
             Route("users/me/watches/{assetTypeUid:Guid}/{assetUid:Guid}"),            
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "true/false based on whether the user is watching the given asset.", typeof(bool)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid parameters provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
@@ -1665,7 +1665,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             HttpGet,
             Route("users/me/watches/{assetTypeUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "true/false based on whether the user is watching the given asset type.", typeof(bool)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid parameters provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
