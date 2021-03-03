@@ -1,5 +1,5 @@
 ﻿import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommentApiPostModel, CommentApiPutModel, CommentDetail, CommentDetails } from '../../../models/social.model';
+import { CommentApiPostModel, CommentApiPutModel, CommentDetail } from '../../../models/social.model';
 import { Tag } from '../../../models/tag.model';
 import { AuthenticationService } from '../../../services/authentication.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -17,7 +17,8 @@ export class CommentFormComponent extends BaseComponent {
     @Input() assetUid: string = '';
     @Input() isVisible: boolean = false;
 
-    @Output() onCancel: EventEmitter<any> = new EventEmitter();
+    @Output() onCancel = new EventEmitter();
+    @Output() onSave = new EventEmitter();
 
     constructor(private authenticationService: AuthenticationService,
         private socialService: SocialService,
@@ -59,6 +60,7 @@ export class CommentFormComponent extends BaseComponent {
                 subscribe(res => {
                     this.messagesService.showInfoMessage("Success", "Item edited successfully");
                     this.isLoading = false;
+                    this.onSave.emit({ comment: this.comment, event: "edit" });
                 });
         }
         else {
@@ -75,11 +77,9 @@ export class CommentFormComponent extends BaseComponent {
                 subscribe(res => {
                     this.messagesService.showInfoMessage("Success", "Item added successfully");
                     this.isLoading = false;
+                    this.onSave.emit({ comment: res, event: "add" });
                 });
         }
-
-
-
     }
 
     private changeUrl(route) {

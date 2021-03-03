@@ -5,7 +5,7 @@
 </div>
 <div *ngIf="!comment.IsDeleted" class="row comment" (mouseenter)="showTools=true" (mouseleave)="showTools=false" [ngStyle]="{'background':(showTools ? '#EFEFEF': '')}">
     <div class="col s1 right-align">
-        <img class="user" height="35" [src]="'/api/v2/membership/users/' + comment.CreatedByUid + '/image?size=35'" width="35" />
+        <img class="user" height="35" [src]="getCommentUrl(comment)" width="35" />
     </div>
     <div class="col s11">
         <div class="row" *ngIf="!showEdit">
@@ -26,23 +26,30 @@
             <div class="col s12" *ngIf="comment.Tags && comment.Tags.length > 0">
                 <i class="fa fa-tag" aria-hidden="true"></i>
                 Comment Tags:
-                <d3s-preview-tooltip *ngFor="let tag of comment.Tags" class="comment-tag" (click)="changeUrl(tag.Url)" [uid]="tag.AssetUid" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">{{tag.Path}}</d3s-preview-tooltip>
+                <d3s-preview-tooltip *ngFor="let tag of comment.Tags" class="comment-tag" (click)="changeUrl(tag.Url)" [uid]="tag.AssetUid" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">
+                    {{getTagName(tag)}}
+                </d3s-preview-tooltip>
             </div>
         </div>
         <div class="row" *ngIf="showEdit">
-            <d3s-comment-form [isVisible]="showEdit" [comment]="comment" (onCancel)="showEdit = false"></d3s-comment-form>
+            <d3s-comment-form [isVisible]="showEdit" [comment]="comment" (onCancel)="showEdit = false" (onSave)="showEdit = false;edit.emit($event)"></d3s-comment-form>
         </div>
     </div>
 </div>
 <div class="row add-reply" *ngIf="showReply">
-    <d3s-comment-form [isVisible]="showReply" [assetUid]="assetUid" [parentUid]="comment.Uid" (onCancel)="showReply = false"></d3s-comment-form>
+    <div class="col s11 offset-s1" style="padding-top:15px">
+        <d3s-comment-form [isVisible]="showReply" [assetUid]="assetUid" [parentUid]="comment.Uid" (onSave)="showReply = false;edit.emit($event)" (onCancel)="showReply = false"></d3s-comment-form>
+    </div>
 </div>
 <div class="row reply" *ngFor="let response of comment?.Comments">
-    <div class="col s2 right-align"><img class="user" height="35" [src]="'/api/v2/membership/users/' + response.CreatedByUid + '/image?size=35'" width="35"></div>
+    <div class="col s2 right-align"><img class="user" height="35" [src]="getCommentUrl(comment)" width="35"></div>
     <div class="col s10">
         <div>
             <span class="user"><d3s-preview-tooltip [objectType]="'Resource'" [objectId]="response.CreatedBy">{{response.ResourceName}}</d3s-preview-tooltip></span>&nbsp;<span class="postDate">{{response.CreatedOn | date:'medium'}}</span>
             <div [innerHtml]="response.Body"></div>
+            <d3s-preview-tooltip *ngFor="let tag of response.Tags" class="comment-tag" (click)="changeUrl(tag.Url)" [uid]="tag.AssetUid" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">
+                {{getTagName(tag)}}
+            </d3s-preview-tooltip>
         </div>
     </div>
 </div>

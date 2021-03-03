@@ -26,8 +26,8 @@
             <d3s-social-tag-input (selectTag)="addTag($event)"></d3s-social-tag-input>
         </div>
         <div class="col s2">
-            <button class="right" pButton type="button" (click)="cancelClick()" label="Cancel"></button>
-            <button class="right" pButton type="button" (click)="saveClick();" label="{{comment.Uid ? 'Update' : 'Post'}}"></button>
+            <button class="right" pButton type="button" [disabled]="isLoading" (click)="cancelClick()" label="Cancel"></button>
+            <button class="right" pButton type="button" [disabled]="isLoading" (click)="saveClick();" label="{{comment.Uid ? 'Update' : 'Post'}}"></button>
         </div>
     </div>
 </div>

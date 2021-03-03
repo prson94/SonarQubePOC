@@ -45,9 +45,9 @@ export class CommentDetail {
     IsDeletable: boolean;
     IsEditable: boolean;
 
-    Comments: CommentDetail[];
-    Tags: CommentRelationDetail[];
-    Emojis: CommentAggregateVoteDetail[];
+    Comments: CommentDetail[] = [];
+    Tags: CommentRelationDetail[] = [];
+    Emojis: CommentAggregateVoteDetail[] = [];
 }
 
 export class CommentDetails {

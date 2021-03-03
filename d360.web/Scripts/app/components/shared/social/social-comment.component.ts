@@ -36,8 +36,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     isEditable: boolean = false;
     resourceUid: string = "";
 
-
-    constructor(private socialService: SocialService, private router: Router, private resourcesService: ResourcesService) {
+    constructor(private socialService: SocialService, private router: Router) {
         super();
         this.replyData = new CommentApiPostModel();
     }
@@ -45,21 +44,6 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     ngOnInit(): void {
         this.isDeletable = this.isAdmin || (this.comment.CreatedBy == CurrentResourceID);
         this.isEditable = this.comment.CreatedBy == CurrentResourceID;
-
-        if (this.comment) {
-            this.resourcesService.getResource(this.comment.CreatedBy)
-                .subscribe((r) => {
-                    this.comment.CreatedByUid = r.items[0].uid;
-                });
-            if (this.comment.Comments && this.comment.Comments.length > 0) {
-                this.comment.Comments.forEach((x) => {
-                    this.resourcesService.getResource(x.CreatedBy)
-                        .subscribe((i) => {
-                            x.CreatedByUid = i.items[0].uid;
-                        });
-                });
-            }
-        }
 
         this.calculateVotes();
     }
@@ -123,12 +107,6 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
         return "Other";
     }
 
-    handleEditClick() {
-        this.comment.UpdatedOn = new Date(0); //Just to show the modified symbol.
-        this.edit.emit({ comment: this.comment });
-        this.showEdit = false;
-    }
-
     isSocial(): boolean {
         return this.comment.CommentType == CommentType.Social;
     }
@@ -139,5 +117,19 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
 
     canReply(): boolean {
         return !CurrentCompanySettings.disableCommunityPosting;
+    }
+
+    private getTagName(tag: any) {
+        if (tag.Path) {
+            return tag.Path;
+        }
+        return tag.TextPath;
+    }
+
+    private getCommentUrl(comment: CommentDetail) {
+        if (!comment.CreatedByUid)
+            return "";
+
+        return `/api/v2/membership/users/${comment.CreatedByUid}/image?size=35`;
     }
 }

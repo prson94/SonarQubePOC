@@ -3,13 +3,13 @@
         <d3s-loading [isLoading]="isLoading" showTransparentLoader="true"></d3s-loading>
         <header>{{socialMessage}}</header>
 
-        <div class="row" *ngIf="!isEditing">
-            <input type="text" placeholder="Add a comment" class="fakeInput" (click)="isEditing = true">
+        <div class="row" *ngIf="!isAddingNew">
+            <input type="text" placeholder="Add a comment" class="fakeInput" (click)="isAddingNew = true">
         </div>
-        <d3s-comment-form [assetUid]="assetUid" [isVisible]="isEditing" (onCancel)="isEditing = false"></d3s-comment-form>
+        <d3s-comment-form [assetUid]="assetUid" [comment]="newComment" [isVisible]="isAddingNew" (onCancel)="closeEditor()" (onSave)="onSave($event)"></d3s-comment-form>
 
         <div *ngFor="let comment of comments">
-            <d3s-social-comment [comment]="comment" [assetUid]="assetUid" (delete)="deleteComment($event);" [isAdmin]="isAdmin" (edit)="editComment($event);"></d3s-social-comment>
+            <d3s-social-comment [comment]="comment" [assetUid]="assetUid" (delete)="deleteComment($event);" [isAdmin]="isAdmin" (edit)="onSave($event);"></d3s-social-comment>
         </div>
 
         <div style="margin-top:10px;">

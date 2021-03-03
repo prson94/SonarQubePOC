@@ -16,6 +16,7 @@ import { EditorModule } from 'primeng/editor';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { ResourcesService } from "../../../services/resources.service";
 import { CommentFormComponent } from './comment-form.component';
+import { DirectivesModule } from '../../../directives/directives.module';
 
 
 @NgModule({
@@ -32,6 +33,7 @@ import { CommentFormComponent } from './comment-form.component';
         
         //d3s
         CoreModule,
+        DirectivesModule
 
     ],
     declarations: [

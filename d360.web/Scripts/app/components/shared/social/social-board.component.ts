@@ -5,13 +5,16 @@ import { CommentApiPostModel, CommentApiPutModel, CommentDetail, CommentType } f
 import { CurrentCompanySettings } from "../../../static/company-settings"
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { AuthenticationService } from "../../../services/authentication.service";
+import { CompanySettings } from "../../../models/settings.model";
+import { ResourcesService } from "../../../services/resources.service";
+import { forkJoin, Observable } from "rxjs";
 
 @Component({
     selector: "d3s-social-board",
     templateUrl: "./social-board.component.html",
     encapsulation: ViewEncapsulation.None,
     styleUrls: ['social-board.less'],
-    providers: [SocialService],
+    providers: [SocialService, ResourcesService],
 })
 
 export class SocialBoardComponent extends BaseComponent implements OnInit {
@@ -32,9 +35,16 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     socialMessage: string;
 
     isAdmin: boolean = false;
+    isAddingNew: boolean = false;
 
-    constructor(private authenticationService: AuthenticationService, private socialService: SocialService, protected messagesService: MessagesObservableService) {
+    newComment: CommentDetail;
+
+    constructor(private authenticationService: AuthenticationService,
+        private socialService: SocialService,
+        protected messagesService: MessagesObservableService,
+        private resourcesService: ResourcesService) {
         super();
+        this.newComment = new CommentDetail();
     }
 
     ngOnInit() {
@@ -73,6 +83,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
                     this.comments = this.comments.concat(res.comments);
                     this.hasMore = (res.count > this.comments.length);
                     this.pageNumber++;
+                    this.updateResourceData();
                 });
         }
         else {
@@ -81,6 +92,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
                     this.isLoading = false;
                     this.comments = this.comments.concat(res.comments);
                     this.hasMore = (res.comments.length && res.comments.length > 0);
+                    this.updateResourceData();
                 });
         }
 
@@ -112,5 +124,89 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
                 this.countsChanged.emit({}); // counts changed fire event
                 this.isLoading = false;
             });
+    }
+
+    closeEditor() {
+        this.isAddingNew = false;
+        this.newComment = new CommentDetail();
+    }
+
+    onSave(event: any) {
+        this.isAddingNew = false;
+        this.newComment = new CommentDetail();
+        var comment = event.comment as CommentDetail;
+        if (event.event == "add") {
+            if (!comment.ParentID) {
+                this.comments = [comment].concat(this.comments);
+            }
+            else {
+                var parent = this.comments.find(x => x.ID == comment.ParentID);
+                if (!parent.Comments) {
+                    parent.Comments = [];
+                }
+                parent.Comments.push(comment);
+            }
+        }
+        if (event.event == "edit") {
+            let idx: number = this.comments.findIndex(x => x.Uid == comment.Uid);
+            this.comments[idx] = comment;
+        }
+        this.updateResourceData();
+    }
+
+    private cachedResourceData: any = {};
+    updateResourceData() {
+        console.log(this.getUniqueResourcesFromComments());
+        var obsArr: Observable<any>[] = [];
+        this.getUniqueResourcesFromComments().forEach(res => {
+            if (!this.cachedResourceData[res]) {
+                obsArr.push(this.resourcesService.getResource(res));
+            }
+        })
+
+        if (obsArr.length > 0) {
+            forkJoin(obsArr).subscribe((results) => {
+                results.forEach((result) => {
+                    var data = result.items[0];
+                    if (!this.cachedResourceData[data.ResourceID]) {
+                        this.cachedResourceData[data.ResourceID] = data.uid;
+                    }
+                });
+
+                this.updateCommentData();
+            });
+        }
+        else {
+            this.updateCommentData();
+        }
+    }
+
+    updateCommentData() {
+        this.comments.forEach((comment) => {
+            comment.CreatedByUid = this.cachedResourceData[comment.CreatedBy];
+
+            if (comment.Comments && comment.Comments.length > 0) {
+                comment.Comments.forEach((x) => {
+                    x.CreatedByUid = this.cachedResourceData[x.CreatedBy];
+                });
+            }
+        })
+    }
+
+    getUniqueResourcesFromComments(): number[] {
+        var allResources = [];
+        this.comments.forEach((comment) => {
+            if (!allResources.some(x => x == comment.CreatedBy)) {
+                allResources.push(comment.CreatedBy);
+            }
+            if (comment.Comments && comment.Comments.length > 0) {
+                comment.Comments.forEach((comm) => {
+                    if (!allResources.some(x => x == comm.CreatedBy)) {
+                        allResources.push(comm.CreatedBy);
+                    }
+                });
+            }
+        })
+        return allResources;
     }
 }
