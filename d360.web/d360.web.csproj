@@ -1874,7 +1874,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\messages-bar.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-followers.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\raise-issue-button.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\relationship\relationship-technical-relations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\survey\take-survey.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\core.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\social\social.module.ts" />
