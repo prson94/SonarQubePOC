@@ -138,7 +138,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
             this.addComment(comment);
         }
         if (event.event === "edit") {
-            let idx: number = this.comments.findIndex(x => x.Uid == comment.Uid);
+            let idx: number = this.comments.findIndex((x) => x.Uid === comment.Uid);
             this.comments[idx] = comment;
         }
         this.updateResourceData();
@@ -149,7 +149,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
             this.comments = [comment].concat(this.comments);
         }
         else {
-            var parent = this.comments.find(x => x.ID === comment.ParentID);
+            var parent = this.comments.find((x) => x.ID === comment.ParentID);
             if (!parent.Comments) {
                 parent.Comments = [];
             }
@@ -192,20 +192,20 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
                     x.CreatedByUid = this.cachedResourceData[x.CreatedBy];
                 });
             }
-        })
+        });
     }
 
     getUniqueResourcesFromComments(): number[] {
         var allResources = [];
         this.comments.forEach((comment) => {
             if (!allResources.some((x) => {
-                x === comment.CreatedBy
+                x === comment.CreatedBy;
             })) {
                 allResources.push(comment.CreatedBy);
             }
             if (comment.Comments && comment.Comments.length > 0) {
                 comment.Comments.forEach((comm) => {
-                    if (!allResources.some(x => x == comm.CreatedBy)) {
+                    if (!allResources.some((x) => x === comm.CreatedBy)) {
                         allResources.push(comm.CreatedBy);
                     }
                 });

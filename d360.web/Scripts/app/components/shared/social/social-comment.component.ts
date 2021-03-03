@@ -16,7 +16,7 @@ declare var CurrentResourceID;
 export class SocialCommentComponent extends BaseComponent implements OnInit {
     @Input() comment: CommentDetail;
     @Input() isAdmin: boolean;
-    @Input() assetUid: string = '';
+    @Input() assetUid: string = "";
 
     @Output() delete = new EventEmitter();
     @Output() edit = new EventEmitter();
