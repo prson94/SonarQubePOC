@@ -1,11 +1,10 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, HostBinding, ViewEncapsulation } from "@angular/core";
+﻿import { Input, Component, EventEmitter, Output, OnInit, ViewEncapsulation } from "@angular/core";
 import { BaseComponent } from "../base.component";
 import { SocialService } from "../../../services/social.service";
-import { CommentApiPostModel, CommentApiPutModel, CommentDetail, CommentType } from "../../../models/social.model";
+import { CommentDetail, CommentType } from "../../../models/social.model";
 import { CurrentCompanySettings } from "../../../static/company-settings"
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { AuthenticationService } from "../../../services/authentication.service";
-import { CompanySettings } from "../../../models/settings.model";
 import { ResourcesService } from "../../../services/resources.service";
 import { forkJoin, Observable } from "rxjs";
 
@@ -156,7 +155,6 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
 
     private cachedResourceData: any = {};
     updateResourceData() {
-        console.log(this.getUniqueResourcesFromComments());
         var obsArr: Observable<any>[] = [];
         this.getUniqueResourcesFromComments().forEach(res => {
             if (!this.cachedResourceData[res]) {

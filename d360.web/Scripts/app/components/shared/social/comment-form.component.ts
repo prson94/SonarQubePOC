@@ -82,12 +82,6 @@ export class CommentFormComponent extends BaseComponent {
         }
     }
 
-    private changeUrl(route) {
-        console.log("chaning route");
-        return;
-        //this.router.navigate([route]);
-    }
-
     private getTagName(tag: any) {
         if (tag.Path) {
             return tag.Path;

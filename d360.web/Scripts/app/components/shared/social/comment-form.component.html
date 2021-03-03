@@ -14,7 +14,6 @@
         <div class="col s12" style="padding-bottom:15px;" *ngIf="comment?.Tags?.length > 0">
             <d3s-preview-tooltip *ngFor="let tag of comment?.Tags"
                                  class="comment-tag"
-                                 (click)="changeUrl(tag.Url)"
                                  [uid]="tag.AssetUid"
                                  [iconColor]="tag.IconForeColor"
                                  [foreColor]="tag.IconBackColor">
