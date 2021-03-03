@@ -703,7 +703,7 @@ namespace d360.web.Controllers.V2
             try
             {
                 var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
-                if (!(await Company.HasAssetTypeReadPermission(assetType.ID)))
+                if (!Company.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))
                 {
                     return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to retrieve the fields for this asset type."));
                 }
@@ -987,7 +987,7 @@ namespace d360.web.Controllers.V2
             }
 
 
-            if (!Company.HasAssetDefaultReadPermission(ruleAsset.AssetType.Object, ruleAsset.AssetType.ObjectID))
+            if (!Company.HasAssetPermission(ruleAsset.AssetType.Object, ruleAsset.AssetType.ObjectID, Permission.ReadAsset))
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
             }

@@ -253,7 +253,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 //if the user is not an admin make sure they can read this asset type if not tell them they are forbidden
-                if (!Company.CurrentResourceIsAdmin && !(await Company.HasAssetTypeReadPermission(assetType.ID)))
+                if (!Company.CurrentResourceIsAdmin && !Company.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))//(await Company.HasAssetTypeReadPermission(assetType.ID)))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Invalid request", "You do not have permissions to read the specified asset type."));
                 }
@@ -2251,7 +2251,7 @@ namespace d360.web.Controllers.V2
                     resultList.Add(result);
                     continue;
                 }
-                if (!Company.HasAssetDefaultReadPermission(asset.Object, asset.ObjectID))
+                if (!Company.HasAssetPermission(asset.Object, asset.ObjectID, Permission.ReadAsset))
                 {
                     result = new AssetTagSuccessApiModel()
                     {

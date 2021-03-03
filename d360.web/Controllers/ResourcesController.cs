@@ -442,7 +442,7 @@ from	FollowDetail F
                 string workflowTypeUid = "";
                 string workflowVersionUid = "";
 
-                if (Company.HasAssetDefaultReadPermission(objectType, objectID))
+                if (Company.HasAssetPermission(objectType, objectID, Permission.ReadAsset))
                 {
                     det = Company.GetObjectDetail(objectType, objectID);
 
