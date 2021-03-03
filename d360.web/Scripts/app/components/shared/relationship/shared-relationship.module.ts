@@ -20,7 +20,6 @@ import { SharedFusionAttributeItemDetailsModule } from '../fusion-attribute-item
 import { SharedObjectDetailsModule } from '../objectdetails/shared-object-details.module';
 
 import { ObjectRelationshipsComponent } from './object-relationships.component';
-import { RelationshipTechnicalRelationsComponent } from './relationship-technical-relations.component';
 import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.component';
 import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { DirectivesModule } from '../../../directives/directives.module';
@@ -54,7 +53,6 @@ import { RelationshipsModalComponent } from './relationships-modal.component';
     ],
     declarations: [
         ObjectRelationshipsComponent,
-        RelationshipTechnicalRelationsComponent,
         DynamicRelationshipGridComponent,
         RelationshipsModalComponent,
     ],
