@@ -15,8 +15,6 @@ using d360.extensions.queue;
 using d360.extensions.search;
 using d360.utils.company;
 using Dapper;
-using Mandrill;
-using Mandrill.Model;
 using Microsoft.Azure.WebJobs;
 
 namespace igx.jobs.databasetaskprocessor
@@ -38,36 +36,6 @@ namespace igx.jobs.databasetaskprocessor
 
     public static class DatabaseTaskProcessor
     {
-        public static void SendMailToUser(string toName, string toEmail, string subject, string templateID, Dictionary<string, string> templateTags, string fromName = "Data3Sixty Workflow")
-        {
-            // Create the email object first, then add the properties.
-            var message = new MandrillMessage();
-
-            message.AddTo(toEmail, toName);
-            message.FromEmail = "no-reply@data3sixty.com";
-            message.FromName = fromName;
-            message.Subject = subject;
-
-            message.TrackOpens = false;
-            message.TrackClicks = false;
-
-
-            if (templateTags != null)
-            {
-                foreach (var k in templateTags.Keys)
-                {
-                    message.AddRcptMergeVars(toEmail, k, templateTags[k]);
-                }
-            }
-
-            //Add the HTML and Text bodies            
-            var api = new MandrillApi(CoreFunction.GetConfigValueByKey("MandrillApiKey"));
-            var resp = api.Messages.SendTemplateAsync(message, templateID).Result;
-
-            message = null;
-            api = null;
-        }
-
         const string functionName = "DatabaseTask_ProcessScheduled";
         const string timerSettings = "*/1 * * * * *";
         const int markitLineageSettingID = 62;
@@ -303,39 +271,10 @@ from    [queue].[Task] T
                                                     break;
                                                 #endregion
                                                 case "Notify":
-                                                    #region
-                                                    switch (q.Object)
-                                                        {
-                                                            case "FusionExecution":
-                                                            #region
-                                                            var execution = companyConnection.Query<FusionExecution>(@"select * from fusion.Execution where ID = @id", new { id = q.ObjectID }, null, true, 900).FirstOrDefault();
-
-                                                                if (execution != null)
-                                                                {
-                                                                    var fusionInfo = companyConnection.Query<dynamic>(Sql.FusionInfo, new { id = execution.FusionID }).FirstOrDefault();
-
-                                                                    var resourcesToNotify = companyConnection.Query<dynamic>(Sql.FusionResources, new { id = execution.FusionID }, null, true, 900).ToList();
-
-                                                                    resourcesToNotify.ForEach(r =>
-                                                                    {
-                                                                        var tags = new Dictionary<string, string>();
-                                                                        tags.Add("user", r.Name);
-                                                                        tags.Add("fusion", fusionInfo.Fusion);
-                                                                        tags.Add("fusionType", fusionInfo.FusionType);
-                                                                        tags.Add("adds", execution.Adds.HasValue ? execution.Adds.Value.ToString() : "None");
-                                                                        tags.Add("updates", execution.Updates.HasValue ? execution.Updates.Value.ToString() : "None");
-                                                                        tags.Add("deletes", execution.Deletes.HasValue ? execution.Deletes.Value.ToString() : "None");
-                                                                        tags.Add("fusionUrl", $"https://{c.UrlPrefix}.data3sixty.com/fusion/{fusionInfo.FusionID}");
-                                                                        tags.Add("executionUrl", $"https://{c.UrlPrefix}.data3sixty.com/fusion/history/{fusionInfo.FusionID}");
-                                                                        tags.Add("startDate", execution.DateStarted.Value.ToShortDateString());
-                                                                        tags.Add("startTime", execution.DateStarted.Value.ToShortTimeString());
-                                                                        SendMailToUser(r.Name, r.Email, "Data3Sixty - Fusion Update Notification", "fusion-update-notification-immediate", tags, "Data3Sixty Fusion");
-                                                                    });
-                                                                }
-                                                                break;
-                                                            #endregion
-                                                    }
-                                                        break;
+                                                    #region Email Notification
+                                                    // this can be used for the comment tag notifications in the future
+                                                    // fusion notifications used to use this but are no longer used
+                                                    break;
                                                 #endregion
                                                 case "ObjectIndex":
                                                     #region
