@@ -2870,11 +2870,19 @@ drop table if exists #temprestable2;",
                         // Data Quality Scoring - send to engine to determine what scores need to be recalculated.
                         if (at.Class == AssetTypeClass.Rule)
                         {
-                            var assetUids = Query<Guid>("select uid from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and Success = 1", new { execution.ExecutionID }).ToList();
-                            assetUids.ForEach(uid =>
+                            var anyActiveMeasureVersions = Query<bool>(@"
+select cast(iif(count(1) > 0, 1, 0) as bit) as [Any] 
+from metrics.RollupPathSegment Se 
+inner join metrics.AssetVersionRollupPath Ar on Ar.RollupPathUid = Se.RollupPathUid and Se.AssetTypeID = @ID 
+inner join metrics.AssetVersion Ve on Ve.Uid = Ar.AssetVersionUid and Ve.EffectiveEndDate is null", new { at.ID }).First();
+                            if (anyActiveMeasureVersions)
                             {
-                                SendScoreEventWithPayload(ScoreQueueChangeType.RuleAssetRemoved, new RuleAssetRemovedModel { AssetUid = uid });
-                            });
+                                var assetUids = Query<Guid>("select uid from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and Success = 1", new { execution.ExecutionID }).ToList();
+                                assetUids.ForEach(uid =>
+                                {
+                                    SendScoreEventWithPayload(ScoreQueueChangeType.RuleAssetRemoved, new RuleAssetRemovedModel { AssetUid = uid });
+                                });
+                            }
                         }
                     }
                 }
