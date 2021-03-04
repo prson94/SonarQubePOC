@@ -138,7 +138,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
                             this.comment.Emojis.forEach((e) => e.Count = 0);
 
                             v.forEach((i) => {
-                                let emojis = this.comment.Emojis.find((e) => e.Emoji === Emoji[i.emoji]);
+                                let emojis = this.comment.Emojis.find((e) => e.Emoji === i.emoji);
                                 if (emojis) {
                                     emojis.Count++;
                                 } else {
