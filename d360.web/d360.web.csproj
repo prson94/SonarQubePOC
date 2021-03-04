@@ -955,6 +955,7 @@
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
     <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-type-allocation-editor.component.ts" />
+    <Content Include="Scripts\app\components\admin\rules\admin-rules.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\admin-metric-pass-test-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\admin-metric-pass-test-details.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\common-screen-references-model.ts" />

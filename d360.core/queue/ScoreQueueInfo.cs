@@ -14,7 +14,8 @@ namespace d360.core.queue
         MeasureRemoved,
         RollupPathChanged,
         WorkflowCheck,
-        CheckTypeDependencyRemoved
+        CheckTypeDependencyRemoved,
+        RuleAssetRemoved
     }
 
     public enum ScoreQueueExecutionDataLocation
@@ -71,5 +72,10 @@ namespace d360.core.queue
     {
         public int? IntersectTypeId { get; set; }
         public int? AssetTypeId { get; set; }
+    }
+
+    public class RuleAssetRemovedModel
+    {
+        public Guid AssetUid { get; set; }
     }
 }
