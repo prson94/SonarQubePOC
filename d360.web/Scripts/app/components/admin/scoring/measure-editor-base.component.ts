@@ -27,7 +27,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
     public conditionGroupLink = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Conditio";
-    public conditionAndWeightLink = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Conditio";
+    public conditionAndWeightLink = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Asset_conditions";
     //#region Tooltip data
 
     measurestooltip: string = 'Asset conditions can be used to more specifically target assets of the chosen type to be scored by your measures. '
@@ -49,7 +49,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
     assetConditionsAndWeightingTooltip: string = "<div>Asset Conditions and Weighting allows you to target specific subsets of your scoring asset type, "
         + "either choosing to apply your measures to only those assets which match your conditions, or applying different weights to different matches.</div>"
-        + "<div style=\"padding-top: 8px;\"><a (click)=\"test()\" target=\"_blank\" href=\"" + this.conditionGroupLink + "\"><i class=\"fa fa-external-link\"></i> Read more about Asset Conditions and Weighting</a></div>";
+        + "<div style=\"padding-top: 8px;\"><a (click)=\"test()\" target=\"_blank\" href=\"" + this.conditionAndWeightLink + "\"><i class=\"fa fa-external-link\"></i> Read more about Asset Conditions and Weighting</a></div>";
 
 
     //#endregion
