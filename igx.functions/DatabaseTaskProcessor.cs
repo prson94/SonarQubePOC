@@ -11,7 +11,6 @@ using d360.extensions.search;
 using d360.extensions.queue;
 using d360.utils.company;
 using Dapper;
-using Mandrill.Model;
 using Microsoft.Azure.WebJobs;
 using System.Collections.Concurrent;
 
@@ -19,36 +18,6 @@ namespace igx.functions.databasetaskprocessor
 {    
     public static class DatabaseTaskProcessor
     {
-        public static void SendMailToUser(string toName, string toEmail, string subject, string templateID, System.Collections.Generic.Dictionary<string, string> templateTags, string fromName = "Data3Sixty Workflow")
-        {
-            // Create the email object first, then add the properties.
-            var message = new MandrillMessage();
-
-            message.AddTo(toEmail, toName);
-            message.FromEmail = "no-reply@data3sixty.com";
-            message.FromName = fromName;
-            message.Subject = subject;
-
-            message.TrackOpens = false;
-            message.TrackClicks = false;
-
-
-            if (templateTags != null)
-            {
-                foreach (var k in templateTags.Keys)
-                {
-                    message.AddRcptMergeVars(toEmail, k, templateTags[k]);
-                }
-            }
-
-            //Add the HTML and Text bodies            
-            var api = new Mandrill.MandrillApi(CoreFunction.GetConfigValueByKey("MandrillApiKey"));
-            var resp = api.Messages.SendTemplateAsync(message, templateID).Result;
-
-            message = null;
-            api = null;
-        }
-
         const string functionName = "DatabaseTask_ProcessScheduled";
         const string timerSettings = "*/1 * * * * *";
         const int markitLineageSettingID = 62;
@@ -285,38 +254,9 @@ from    [queue].[Task] T
                                                         break;
                                                     #endregion
                                                     case "Notify":
-                                                        #region
-                                                        switch (q.Object)
-                                                        {
-                                                            case "FusionExecution":
-                                                                #region
-                                                                var execution = companyConnection.Query<FusionExecution>(@"select * from fusion.Execution where ID = @id", new { id = q.ObjectID }, null, true, 900).FirstOrDefault();
-
-                                                                if (execution != null)
-                                                                {
-                                                                    var fusionInfo = companyConnection.Query<dynamic>(Sql.FusionInfo, new { id = execution.FusionID }).FirstOrDefault();
-
-                                                                    var resourcesToNotify = companyConnection.Query<dynamic>(Sql.FusionResources, new { id = execution.FusionID }, null, true, 900).ToList();
-
-                                                                    resourcesToNotify.ForEach(r =>
-                                                                    {
-                                                                        var tags = new Dictionary<string, string>();
-                                                                        tags.Add("user", r.Name);
-                                                                        tags.Add("fusion", fusionInfo.Fusion);
-                                                                        tags.Add("fusionType", fusionInfo.FusionType);
-                                                                        tags.Add("adds", execution.Adds.HasValue ? execution.Adds.Value.ToString() : "None");
-                                                                        tags.Add("updates", execution.Updates.HasValue ? execution.Updates.Value.ToString() : "None");
-                                                                        tags.Add("deletes", execution.Deletes.HasValue ? execution.Deletes.Value.ToString() : "None");
-                                                                        tags.Add("fusionUrl", $"https://{c.UrlPrefix}.data3sixty.com/fusion/{fusionInfo.FusionID}");
-                                                                        tags.Add("executionUrl", $"https://{c.UrlPrefix}.data3sixty.com/fusion/history/{fusionInfo.FusionID}");
-                                                                        tags.Add("startDate", execution.DateStarted.Value.ToShortDateString());
-                                                                        tags.Add("startTime", execution.DateStarted.Value.ToShortTimeString());
-                                                                        SendMailToUser(r.Name, r.Email, "Data3Sixty - Fusion Update Notification", "fusion-update-notification-immediate", tags, "Data3Sixty Fusion");
-                                                                    });
-                                                                }
-                                                                break;
-                                                                #endregion
-                                                        }
+                                                        #region Email Notification
+                                                        // this can be used for the comment tag notifications in the future
+                                                        // fusion notifications used to use this but are no longer used
                                                         break;
                                                     #endregion
                                                     case "ObjectIndex":
@@ -609,51 +549,4 @@ from    [queue].[Task] T
         public short Priority { get; set; }
         public long AssetID { get; set; }
     }
-
-    public static class Sql
-    {
-        #region Notification Task : SQL Statements
-
-        public static string Comment = @"
-select	C.ID,
-		C.Body,
-		C.DateCreated,
-		R.FirstName + ' ' + R.LastName as Author,
-		C.ParentID,
-		P.Body as ParentBody,
-		P.DateCreated as ParentDateCreated,
-		PR.FirstName + ' ' + PR.LastName as ParentAuthor,
-		utility.GetAssetDisplayValueWrapper(D.ID) as OwnerName,
-		dbo.GenerateAssetUrl(D.ID) as OwnerUrl,
-		T.Name as OwnerTypeName,
-		case when C.ParentID is null then 'comment' else 'reply' end as OriginationType
-from	Comment C
-		inner join reporting.Global_Resource R on R.ResourceID = C.CreatingResourceID and C.ID = @CommentID
-		inner join Asset D on D.[Object] = C.OwnerObjectType and D.ObjectID = C.OwnerObjectID
-		inner join AssetType T on T.ID = D.AssetTypeID
-		left join Comment P on P.ID = C.ParentID
-		left join reporting.Global_Resource PR on PR.ResourceID = P.CreatingResourceID
-where	(select count(*) from comment where parentID = @CommentID) > 0 OR C.DateCreated < (getdate() - (5 / 24.0 / 60.0)) ";
-
-
-        public static string FusionResources = @"
-select	R.ResourceID, 
-        RE.FirstName + ' ' + RE.LastName as Name, 
-        RE.Email 
-from	ResponsibilityDetail R 
-        inner join reporting.Global_Resource RE on RE.ResourceID = R.ResourceID and RE.Email not like '%?subject=%' 
-where   R.Object = 'Fusion' and R.ObjectID = @id;";
-
-        public static string FusionInfo = @"
-select  F.ID as FusionID, 
-        F.Name as Fusion, 
-        FT.ID as FusionTypeID,  
-        FT.Name as FusionType 
-from    Fusion F 
-        inner join FusionType FT on FT.ID = F.FusionTypeID and F.ID = @id";
-
-        #endregion
-    }
-
-
 }
