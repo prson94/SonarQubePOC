@@ -1032,7 +1032,7 @@ namespace d360.extensions.search
              *      0,1,2,3,4 = Search Type as defined by MapStrategyToType
              */
             int _defaultStrategy = 90; //'Original/current' is 90: best_fields, boosts included, no augment
-            char[] _strategy = _strategy = ((int?)queryRequest.FieldBoosters.FirstOrDefault(fb => fb.Field == "_strategy")?.Boost ?? _defaultStrategy).ToString().PadLeft(3, '0').ToCharArray();
+            char[] _strategy = ((int?)queryRequest.FieldBoosters.FirstOrDefault(fb => fb.Field == "_strategy")?.Boost ?? _defaultStrategy).ToString().PadLeft(3, '0').ToCharArray();
             
             //Search in the DYNAMIC_FIELD_PREFIX.* namespace
             List<Nest.Field> mainFields = new List<Nest.Field>
@@ -2157,7 +2157,7 @@ namespace d360.extensions.search
                 exMessage.Append("ES_DebugInformation: ");
                 exMessage.AppendLine(bulkResponse.DebugInformation);
 
-                throw new ArgumentException(exMessage.ToString()); ;
+                throw new ArgumentException(exMessage.ToString()); 
             }
 
             var result = JObject.Parse(bulkResponse.Body);
