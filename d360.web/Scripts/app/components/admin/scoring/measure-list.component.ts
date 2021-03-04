@@ -192,17 +192,19 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     }
 
     addChildren(node: TreeNode) {
-        let children = this.metrics.filter(g => g.ParentUid === node.data.Uid);
-        if (children.length > 0) {
-            children.forEach(c => {
-                let n = {
-                    data: c,
-                    children: [],
-                    expanded: true
-                }
-                node.children.push(n);
-                this.addChildren(n);
-            });
+        if (this.metrics) {
+            let children = this.metrics.filter(g => g.ParentUid === node.data.Uid);
+            if (children.length > 0) {
+                children.forEach(c => {
+                    let n = {
+                        data: c,
+                        children: [],
+                        expanded: true
+                    }
+                    node.children.push(n);
+                    this.addChildren(n);
+                });
+            }
         }
     }
 
@@ -295,13 +297,13 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     }
 
     showRulePathsError() {
-        return this.isDataQualityScoreType() && this.screenReferences.paths.length == 0; 
+        return this.isDataQualityScoreType() && ((this.screenReferences.paths && this.screenReferences.paths.length == 0) || !this.screenReferences.paths); 
     }
 
     getSelectedRuleResultPath() {
         let html = ';'
         const ruleResultPathUid = this.selection?.Definition.DataQuality.ResultPathUid;
-        if (ruleResultPathUid) {
+        if (ruleResultPathUid && this.screenReferences && this.screenReferences.paths) {
             const matches = this.screenReferences.paths.filter(p => { return p.value == ruleResultPathUid; });
             if (matches.length > 0) {
                 html = matches[0].label;
