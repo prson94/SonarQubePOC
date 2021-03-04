@@ -24,6 +24,7 @@ import { SpinnerModule } from 'primeng/spinner';
 import { EditorModule } from 'primeng/editor';
 import { TableModule } from 'primeng/table';
 
+import { AdminBaseComponent } from './admin-base.component';
 import { AdminAllocationComponent } from './admin-allocation.component';
 import { AdminComponent } from './admin.component';
 import { AdminNymAllocationsComponent } from './admin-nym-allocations.component';
@@ -35,7 +36,8 @@ import { DialogModule } from 'primeng/dialog';
     declarations: [        
         AdminAllocationComponent,        
         AdminComponent,                                 
-        AdminNymAllocationsComponent     
+        AdminNymAllocationsComponent,
+        AdminBaseComponent,
     ],
     exports: [
         AdminAllocationComponent,        

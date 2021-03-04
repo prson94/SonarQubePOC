@@ -55,7 +55,7 @@ var webpackConfig = {
             fallbackModuleFilenameTemplate: '[absolute-resource-path]'
         }),
         // Uncomment the following line to see the webpack bundle sizes for the SPA
-        //new BundleAnalyzerPlugin(),
+        new BundleAnalyzerPlugin(),
         new CleanWebpackPlugin()
     ],
 

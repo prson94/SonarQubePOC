@@ -11,7 +11,7 @@
     "lib": [
       "es2015",
       "dom"
-    ],
+    ],    
     "outDir": "lib",
     "skipLibCheck": true,
     "rootDir": ".",
@@ -29,6 +29,7 @@
   "angularCompilerOptions": {
     "genDir": "./app/ngfactory",
     "entryModule": "app/app.module#AppModule",
-    "preserveWhitespaces": false
+    "preserveWhitespaces": false,
+    "enableIvy": false
   } 
 }

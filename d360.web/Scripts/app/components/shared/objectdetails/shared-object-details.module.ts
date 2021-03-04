@@ -26,6 +26,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { SharedDeleteFormModule } from '../delete.form';
 import { ObjectDetailCategoryComponent } from './object-detail-category.component';
 
+
 @NgModule({
     imports: [
         ButtonModule,
