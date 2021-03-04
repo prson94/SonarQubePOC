@@ -77,8 +77,8 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     verb = "Add";
     canAddGroup: boolean = false;
     private baseMenuItems = [
-        { "title": "Delete" },
-        { "title": "Duplicate" }
+        { "title": "Duplicate" },
+        { "title": "Delete" }
     ];
 
 
