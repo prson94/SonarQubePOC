@@ -113,6 +113,17 @@
                             </div>
                         </div>
                     </ng-container>
+                    <ng-container *ngIf="showCanEditParentOption()">
+                        <div class="FieldName">Edit Parent?</div>
+                        <div class="row">
+                            <div class="col l1 m2 s12">
+                                <input pCheckbox type="checkbox" name="CanEditParent" [(ngModel)]="model.AssetType.CanEditParent" />
+                            </div>
+                            <div class="col l11 m10 s12">
+                                <div class="FieldInstructions">If enabled, the Parent can be edited on the asset definition page.</div>
+                            </div>
+                        </div>
+                    </ng-container>
                 </simple-accordion>
                 <simple-accordion header="Settings" active="true" *ngIf="showAssetDepthSettings">
                     <div class="FieldName">Maximum Depth</div>

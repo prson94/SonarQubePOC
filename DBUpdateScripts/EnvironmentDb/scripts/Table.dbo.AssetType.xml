@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Table.dbo.AssetType-v2">
+  <changeSet author="TDuric" id="Table.dbo.AssetType-v3.2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -51,14 +51,20 @@ BEGIN
 ALTER TABLE [dbo].[AssetType]
 ADD [FlowObjectType] int 
 END
+
+IF COL_LENGTH('[dbo].[AssetType]','CanEditParent') IS NULL
+BEGIN
+ALTER TABLE [dbo].[AssetType]
+ADD [CanEditParent] bit 
+END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-IF COL_LENGTH('[dbo].[AssetType]','FlowObjectType') IS NOT NULL
+IF COL_LENGTH('[dbo].[AssetType]','CanEditParent') IS NOT NULL
 BEGIN
 ALTER TABLE [dbo].[AssetType]
-DROP COLUMN [FlowObjectType]
+DROP COLUMN [CanEditParent]
 END
 		]]>
 	</rollback>

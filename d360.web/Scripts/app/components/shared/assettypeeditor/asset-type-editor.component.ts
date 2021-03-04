@@ -240,4 +240,14 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     public selectFlowObject($event) {
         console.log($event);
     }
+
+    showCanEditParentOption() {
+        if (this.assetTypeClass !== AssetTypeClass.BusinessAsset && this.assetTypeClass !== AssetTypeClass.TechnicalAsset) {
+            return false;
+        }
+        if (this.model.AssetType.ParentUid === null) {
+            return false;
+        }
+        return true;
+    }
 }

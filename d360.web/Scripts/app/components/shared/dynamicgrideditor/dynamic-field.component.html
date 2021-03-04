@@ -1,5 +1,10 @@
 ﻿<ng-container *ngIf="!useNewUI">
-    <div [formGroup]="form">
+    <div *ngIf="tooltipVisible && field.TooltipText" class="field-tooltip">
+        <div class="p-tooltip p-component p-tooltip-top ig-tooltip">
+            <div class="p-tooltip-text">{{field.TooltipText}}</div>
+        </div>
+    </div>
+    <div [formGroup]="form" (mouseenter)="tooltipVisible = true" (mouseleave)="tooltipVisible = false">
         <input *ngIf="field.FieldType=='Hidden'" [formControlName]="field.FieldName" type="hidden" />
         <div [ngSwitch]="field.FieldType" class="col s12" *ngIf="field.FieldType!='Hidden'">
             <div class="FieldName">

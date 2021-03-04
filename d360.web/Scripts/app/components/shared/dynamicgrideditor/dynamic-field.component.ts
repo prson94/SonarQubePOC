@@ -468,7 +468,6 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     get isValid() {
-
         if (this.doesAssetExists) {
             this.form.controls[this.field.FieldName].setErrors({ alreadyExists: true });
             return false;
@@ -536,6 +535,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             }
         }
 
+        //disabled fields are by default not valid
+        if (this.field.FieldName === "ParentUID" && this.field.ReadOnly === true) {
+            return true;
+        }
         return this.form.controls[this.field.FieldName].valid;
     }
 

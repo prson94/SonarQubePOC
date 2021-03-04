@@ -81,6 +81,7 @@ export class AssetType {
     Hierarchy: Hierarchy = new Hierarchy();
     FusionID: number;
     AutoDisplayParent: boolean;
+    CanEditParent: boolean;
 }
 
 export class AssetTypeClassApiModel {
