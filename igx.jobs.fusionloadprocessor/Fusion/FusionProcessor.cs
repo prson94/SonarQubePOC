@@ -136,7 +136,7 @@ namespace igx.jobs.fusionloadprocessor
             var sw = Stopwatch.StartNew();
             Log.WriteLine("STARTING JSON DATA READ");
 
-            string json = storageProvider.GetFileContentsAsString(folderName, fusionData.LogFileName, Encoding.UTF8);
+            string json = await storageProvider.GetFileContentsAsString(folderName, fusionData.LogFileName, Encoding.UTF8);
             data = JsonConvert.DeserializeObject<BulkFusionImport>(json);
 
             if (data == null)

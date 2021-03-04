@@ -64,7 +64,7 @@ namespace igx.jobs.assetgraphprocessor
                         case ApiExecutionAction.PutAssets:
                             var putFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostAssets>(execution.Fields);
                             typeUid = putFields.AssetTypeUid;
-                            string putAssetsJson = storage.GetFileContentsAsString(info.execution.StorageFolder, info.execution.RequestFileName, Encoding.UTF8);
+                            string putAssetsJson = await storage.GetFileContentsAsString(info.execution.StorageFolder, info.execution.RequestFileName, Encoding.UTF8);
                             
                             if (!string.IsNullOrEmpty(putAssetsJson))
                                 assets = JsonConvert.DeserializeObject<List<AssetUpdate>>(putAssetsJson);
@@ -77,7 +77,7 @@ namespace igx.jobs.assetgraphprocessor
                             typeUid = postFields.AssetTypeUid;
                             //we need the response here since the request doesn't contain uids. 
                             //Since this is a POST we don't need to check which fields were updated, we always populate the path
-                            string postAssetsJson = storage.GetFileContentsAsString(info.execution.StorageFolder, info.execution.ResponseFileName, Encoding.UTF8);
+                            string postAssetsJson = await storage.GetFileContentsAsString(info.execution.StorageFolder, info.execution.ResponseFileName, Encoding.UTF8);
                             
                             if (!string.IsNullOrEmpty(postAssetsJson))
                                 assets = JsonConvert.DeserializeObject<List<AssetUpdate>>(postAssetsJson);
@@ -98,7 +98,7 @@ namespace igx.jobs.assetgraphprocessor
                         case ApiExecutionAction.PostRelationships:
                             var postRelFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostRelationships>(execution.Fields);
                             typeUid = postRelFields.IntersectTypeUid;
-                            string postRelationsJson = storage.GetFileContentsAsString(info.execution.StorageFolder, info.execution.ResponseFileName, Encoding.UTF8);
+                            string postRelationsJson = await storage.GetFileContentsAsString(info.execution.StorageFolder, info.execution.ResponseFileName, Encoding.UTF8);
                             
                             if (!string.IsNullOrEmpty(postRelationsJson))
                                 relationships = JsonConvert.DeserializeObject<List<DatabaseBulkRelationshipResult>>(postRelationsJson);
@@ -110,7 +110,7 @@ namespace igx.jobs.assetgraphprocessor
                         case ApiExecutionAction.DeleteRelationships:
                             var deleteRelFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteRelationships>(execution.Fields);
                             typeUid = deleteRelFields.IntersectTypeUid;
-                            string deleteRelationsJson = storage.GetFileContentsAsString(info.execution.StorageFolder, info.execution.ResponseFileName, Encoding.UTF8);
+                            string deleteRelationsJson = await storage.GetFileContentsAsString(info.execution.StorageFolder, info.execution.ResponseFileName, Encoding.UTF8);
 
                             if (!string.IsNullOrEmpty(deleteRelationsJson))
                                 relationships = JsonConvert.DeserializeObject<List<DatabaseBulkRelationshipResult>>(deleteRelationsJson);
