@@ -16,6 +16,7 @@ namespace d360.model.DataAccessLayer
         Task<List<MetricFieldTypeViewModel>> GetFieldsByRuleResultPath(Guid ruleResultPathUid);
         MetricAsset GetMetricByUid(Guid uid);
         MetricAssetViewDetailModel GetMetricViewModelByUid(Guid uid, DateTime? effectiveDate);
+        [Obsolete] 
         MetricAssetTypeHierarchyModels GetMetricDefinitionHierarchyByAssetType(Guid assetTypeUid, DateTime? effectiveDate);
         List<MetricFieldTypeViewModel> GetMetricConditionsFields(Guid assetTypeUid);
         List<RootMetricAssetHierarchyModel> GetMetricHierarchyByAsset(Guid allocationUid, Guid assetUid, DateTime? effectiveDate);

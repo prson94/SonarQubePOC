@@ -412,7 +412,8 @@ namespace d360.model.DataAccessLayer
                             if (Guid.TryParse(v, out lookupUid) && lookupObjectID.HasValue)
                             {
                                 sb.Append("Type");
-                                if (!Company.Filter<AssetDetail>(i => i.Type == sb.ToString() && i.TypeID == lookupObjectID && i.uid == lookupUid).Any())
+                                string ot = sb.ToString();
+                                if (!Company.Filter<AssetDetail>(i => i.Type == ot && i.TypeID == lookupObjectID && i.uid == lookupUid).Any())
                                 {
                                     validForType = false;
                                 }
@@ -420,7 +421,8 @@ namespace d360.model.DataAccessLayer
                             else if (int.TryParse(v, out lookupId) && lookupObjectID.HasValue)
                             {
                                 sb.Append("Type");
-                                if (!Company.Filter<AssetDetail>(i => i.Type == sb.ToString() && i.TypeID == lookupObjectID && i.ObjectID == lookupId).Any())
+                                string ot = sb.ToString();
+                                if (!Company.Filter<AssetDetail>(i => i.Type == ot && i.TypeID == lookupObjectID && i.ObjectID == lookupId).Any())
                                 {
                                     validForType = false;
                                 }
@@ -1526,7 +1528,8 @@ delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metric
 
             return new WorkHttpStatus(isNew ? HttpStatusCode.Created : HttpStatusCode.OK, "", "");
         }
-
+        
+        [Obsolete]
         public MetricAssetTypeHierarchyModels GetMetricDefinitionHierarchyByAssetType(Guid assetTypeUid, DateTime? effectiveDate)
         {
             SqlConnection cnn = Company.Database.Connection as SqlConnection;
@@ -1582,19 +1585,7 @@ delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metric
                     		Weight,
                             EffectiveDate,
                             Description,
-                    		(
-                    			select	F.FriendlyName as FieldName,
-                    					CI.Operator,
-                    					(case WHEN F.Type = 'Lookup' THEN FL.Text ELSE CIV.Value END) as [Value]
-                    			from	[metrics].[AssetVersionCondition] C
-                                        inner join metrics.AssetVersionConditionItem CI on CI.AssetVersionConditionUid = C.Uid
-                                        inner join metrics.AssetVersionConditionItemValue CIV on CIV.Uid = CI.Uid 
-                    					inner join FieldType F on F.ID = CI.ConditionFieldTypeID
-                                        inner join FieldLookupValue FL on FL.FieldTypeID = F.ID and F.LookupObjectType = FL.LookupObjectType and F.LookupObjectID = FL.LookupObjectID 
-                                                                        and FL.[Value] = CIV.Value
-                    			where	C.AssetVersionUid = h.VersionUid
-                    			for json path
-                    		) as ConditionsJson
+                    		'[]' as ConditionsJson
                     from	h
                     order by [Level] asc";
 

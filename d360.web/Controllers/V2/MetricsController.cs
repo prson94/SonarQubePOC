@@ -450,7 +450,8 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset type based on the provided Uid was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metrics and conditions.", typeof(MetricAssetTypeHierarchyModels)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true), Obsolete
         ]
         public async Task<IHttpActionResult> GetMetricHierarchyByAssetTypeAsync(Guid assetTypeUid, DateTime? effectiveDate = null)
         {
