@@ -203,7 +203,7 @@ namespace d360.web.Controllers
         }
 
         [HttpPost, Route("RemoveFolder"), NonNullableParameters, AjaxValidateAntiForgeryToken]
-        public JsonNetResult RemoveFolder(int id)
+        public async Task<JsonNetResult> RemoveFolder(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return jsonNetException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
@@ -221,7 +221,7 @@ namespace d360.web.Controllers
                 string originalImage = folder.ImageIconUrl;
                 if (!string.IsNullOrEmpty(originalImage))
                 {
-                    Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, originalImage);
+                    await Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, originalImage);
                 }
                 //clear out permissions
                 folder.Permissions = new List<SiteNavPermission>();
@@ -248,7 +248,7 @@ namespace d360.web.Controllers
         }
 
         [HttpPost, Route("AddFolder"), AjaxValidateAntiForgeryToken]
-        public JsonNetResult AddFolder(AddSiteNavModel model)
+        public async Task<JsonNetResult> AddFolder(AddSiteNavModel model)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return jsonNetException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
@@ -275,7 +275,7 @@ namespace d360.web.Controllers
                     using (var imageStream = new MemoryStream(imageByteArray))
                     {
                         var imageFileName = string.Format("{0}.menuicon.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
-                        Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
+                        await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
 
                         model.Folder.ImageIconUrl = $"{imageFileName}";
 
@@ -388,7 +388,7 @@ namespace d360.web.Controllers
         }
 
         [HttpPut, Route("EditFolder")]
-        public JsonNetResult EditFolder(SiteNav folder)
+        public async Task<JsonNetResult> EditFolder(SiteNav folder)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
@@ -408,7 +408,7 @@ namespace d360.web.Controllers
                 {
                     try
                     {
-                        Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, originalImage);
+                        await Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, originalImage);
                     }
                     catch { }
                 }
@@ -426,7 +426,7 @@ namespace d360.web.Controllers
                     using (var imageStream = new MemoryStream(imageByteArray))
                     {
                         var imageFileName = string.Format("{0}.menuicon.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
-                        Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
+                        await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
 
                         folder.ImageIconUrl = $"{imageFileName}";
 

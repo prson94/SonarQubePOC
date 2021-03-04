@@ -3,17 +3,16 @@ using Microsoft.ServiceBus.Messaging;
 using d360.core.enums;
 using d360.core;
 using System;
-using Microsoft.WindowsAzure.Storage.Auth;
-using Microsoft.WindowsAzure.Storage.Queue;
+using Azure.Storage.Queues;
+using Azure.Storage.Blobs;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Collections.Generic;
 using d360.core.enums.Workflow;
 using System.Threading.Tasks;
-using System.Configuration;
 using Microsoft.Azure;
 using Microsoft.ServiceBus;
-using Microsoft.WindowsAzure.Storage.RetryPolicies;
+
 
 namespace d360.extensions.queue
 {
@@ -27,9 +26,10 @@ namespace d360.extensions.queue
         //256KB message size limit, minus 64KB for header
         private const long MAX_MESSAGE_SIZE = (1024 * 256) - (1024 * 64);
 
-        private CloudQueueClient cloudClient {
+        private QueueClient cloudClient {
             get
             {
+                return new Azure.Storage.Queues.QueueClient()
                 return new CloudQueueClient(
                     new Uri($"https://{QueueStorageName}.queue.core.windows.net/"),
                     getCredentials()

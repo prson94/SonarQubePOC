@@ -911,7 +911,7 @@ where	[AllowChangeDetection] = 0").ToList();
                     {
                         if ((ExecutionAssetTypeRetryLog.Begins.ProcessedFieldsPage.HasValue) ? requestNumber > ExecutionAssetTypeRetryLog.Begins.ProcessedFieldsPage.Value : true)
                         {
-                            var json = Storage.GetFileContentsAsString(path, p.Name, Encoding.UTF8);
+                            var json = Storage.GetFileContentsAsString(path, p.Name, Encoding.UTF8).GetAwaiter().GetResult();
                             if (p.Name.Contains("_error"))
                             {
                                 ParsePageSavedException(json);
@@ -982,7 +982,7 @@ where	[AllowChangeDetection] = 0").ToList();
                     {
                         if ((ExecutionAssetTypeRetryLog.Begins.ProcessedRelationsPage.HasValue) ? requestNumber > ExecutionAssetTypeRetryLog.Begins.ProcessedRelationsPage.Value : true)
                         {
-                            var json = Storage.GetFileContentsAsString(path, p.Name, Encoding.UTF8);
+                            var json = Storage.GetFileContentsAsString(path, p.Name, Encoding.UTF8).GetAwaiter().GetResult();
                             if (p.Name.Contains("_error"))
                             {
                                 ParsePageSavedException(json);
@@ -1113,7 +1113,7 @@ where	[AllowChangeDetection] = 0").ToList();
                     {
                         if ((ExecutionAssetTypeRetryLog.Begins.ProcessedResponsibilitiesPage.HasValue) ? requestNumber > ExecutionAssetTypeRetryLog.Begins.ProcessedResponsibilitiesPage.Value : true)
                         {
-                            var json = Storage.GetFileContentsAsString(path, p.Name, Encoding.UTF8);
+                            var json = Storage.GetFileContentsAsString(path, p.Name, Encoding.UTF8).GetAwaiter().GetResult();
                             if (p.Name.Contains("_error"))
                             {
                                 ParsePageSavedException(json);
@@ -1331,7 +1331,7 @@ where	[AllowChangeDetection] = 0").ToList();
                     {
                         if (fileNameBeginValue >= postModel.begin)
                         {
-                            Storage.DeleteFile($"igc-{companyID}/{folderName}", f.Name);
+                            Storage.DeleteFile($"igc-{companyID}/{folderName}", f.Name).Wait();
                         }
                     }
                 });
@@ -1365,7 +1365,7 @@ where	[AllowChangeDetection] = 0").ToList();
                                 $"igc",
                                 $@"{folderName}/{postModel.begin}.json",
                                 JsonConvert.SerializeObject(models, Formatting.None, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore })
-                            );
+                            ).Wait();
                             //Storage.CreateFile($"igc-{companyID}", $@"{postModel.begin}.json", JsonConvert.SerializeObject(models));
                             OnPageBeginValueUpdated(new PageBeginValueUpdatedEventArgs { Class = pageDataClass, Value = models.paging.end + 1 });
                             fShouldContinue = (models.paging.numTotal > models.paging.end + 1);
@@ -1391,7 +1391,7 @@ where	[AllowChangeDetection] = 0").ToList();
                 }
                 catch (Exception ex)
                 {
-                    Storage.CreateFile($"igc", $@"{folderName}/{postModel.begin}_error.json", JsonConvert.SerializeObject(ex, Formatting.None, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }));
+                    Storage.CreateFile($"igc", $@"{folderName}/{postModel.begin}_error.json", JsonConvert.SerializeObject(ex, Formatting.None, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore })).Wait();
 
                     // Move onto next page.
                     postModel.begin = postModel.begin + postModel.pageSize;
@@ -1750,14 +1750,14 @@ delete integration.ExecutionAssetField where SynchedAssetTypeID = @SynchedAssetT
                     {
                         // Error Code = 12
                         OnPageErrorCaptured(new PageErrorCapturedEventArgs { ErrorMessage = "IGC HTML Error recieved", StatusCode = System.Net.HttpStatusCode.InternalServerError });
-                        Storage.CreateFile($"igc", $@"{folderName}/{begin ?? 0}_error.html", jsonToReturn, "text/html");
+                        await Storage.CreateFile($"igc", $@"{folderName}/{begin ?? 0}_error.html", jsonToReturn, "text/html");
                     }
                 }
                 catch
                 {
                     // Error Code = 12
                     OnPageErrorCaptured(new PageErrorCapturedEventArgs { ErrorMessage = "IGC HTML Error recieved", StatusCode = System.Net.HttpStatusCode.InternalServerError });
-                    Storage.CreateFile($"igc", $@"{folderName}/{begin ?? 0}_error.html", jsonToReturn, "text/html");
+                    await Storage.CreateFile($"igc", $@"{folderName}/{begin ?? 0}_error.html", jsonToReturn, "text/html");
                 }
 
                 return model;

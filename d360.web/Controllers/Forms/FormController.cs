@@ -781,7 +781,7 @@ namespace d360.web.Controllers
         }
 
         [HttpPut, ValidateInput(false), Route("UpdateCompanySettings")]
-        public JsonResult UpdateCompanySettings(CompanySettingsEditorModel formModel)
+        public async Task<JsonResult> UpdateCompanySettings(CompanySettingsEditorModel formModel)
         {
             try
             {
@@ -816,7 +816,7 @@ namespace d360.web.Controllers
                         using (var iconStream = new MemoryStream(iconByteArray))
                         {
                             var iconFileName = string.Format("{0}{1}", Company.CurrentCompanyID, iconExtension);
-                            Storage.CreateFile(constants.COMPANY_ICON_FOLDER, iconFileName, iconStream);
+                            await Storage.CreateFile(constants.COMPANY_ICON_FOLDER, iconFileName, iconStream);
                             if (iconSetting == null)
                             {
                                 iconSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 3, Value = string.Format("{0}{1}", constants.COMPANY_ICON_URL, iconFileName) };
@@ -860,11 +860,11 @@ namespace d360.web.Controllers
                             var filesToDelete = Storage.ListFilenamesByPrefix(constants.COMPANY_LOGO_FOLDER, $"{Company.CurrentCompanyID}.");
                             filesToDelete.ForEach(f =>
                             {
-                                Storage.DeleteFile(constants.COMPANY_LOGO_FOLDER, f);
+                                Storage.DeleteFile(constants.COMPANY_LOGO_FOLDER, f).Wait();
                             });
 
                             var logoFileName = string.Format("{0}{1}", Company.CurrentCompanyID, logoExtension);
-                            Storage.CreateFile(constants.COMPANY_LOGO_FOLDER, logoFileName, logoStream);
+                            await Storage.CreateFile(constants.COMPANY_LOGO_FOLDER, logoFileName, logoStream);
 
                             if (logoSetting == null)
                             {
@@ -1018,11 +1018,11 @@ namespace d360.web.Controllers
                             var filesToDelete = Storage.ListFilenamesByPrefix(constants.COMPANY_RESOURCES_FOLDER, $"{Company.CurrentCompanyID}.home.");
                             filesToDelete.ForEach(f =>
                             {
-                                Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, f);
+                                Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, f).Wait();
                             });
 
                             var imageFileName = string.Format("{0}.home.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
-                            Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
+                            await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
 
                             //always delete and add for guid
                             if (homePageBackgroundSetting != null)
@@ -1703,7 +1703,7 @@ order by Sort, title";
         #endregion
 
         [HttpPost, AjaxValidateAntiForgeryToken, Route("AddLoad")]
-        public JsonResult AddLoad()
+        public async Task<JsonResult> AddLoad()
         {
             try
             {
@@ -1957,8 +1957,8 @@ order by Sort, title";
                 {
                     load.File = null;
                     Company.Add<Load>(load);
-                    Storage.CreateFolder($"{constants.COMPANY_BULK_LOAD_FOLDER}");
-                    Storage.CreateFile($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(byteArray));
+                    await Storage.CreateFolder($"{constants.COMPANY_BULK_LOAD_FOLDER}");
+                    await Storage.CreateFile($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(byteArray));
                     Company.Enqueue(Config.GetValue<string>("BulkLoadQueue"), new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
 
                     json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), "A", HttpStatusCode.Created);
@@ -2557,7 +2557,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         #region Shortcut
 
         [HttpPost, AjaxValidateAntiForgeryToken, Route("shortcut/add")]
-        public JsonResult AddShortcut(Shortcut shortcut)
+        public async Task<JsonResult> AddShortcut(Shortcut shortcut)
         {
             if (!Company.CurrentResourceIsAdmin)
             {
@@ -2589,7 +2589,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                     using (var imageStream = new MemoryStream(imageByteArray))
                     {
                         var imageFileName = string.Format("{0}.shortcut.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
-                        Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
+                        await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
 
                         shortcut.IconUrl = $"{imageFileName}";
 
@@ -2612,7 +2612,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         }
 
         [HttpPut, Route("shortcut/edit")]
-        public JsonResult EditShortcut(Shortcut shortcut)
+        public async Task<JsonResult> EditShortcut(Shortcut shortcut)
         {
 
             if (!Company.CurrentResourceIsAdmin)
@@ -2646,7 +2646,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                     {
                         try
                         {
-                            Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, new Uri(existing.IconUrl).Segments.Last());
+                            await Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, new Uri(existing.IconUrl).Segments.Last());
                         }
                         catch { }
                     }
@@ -2664,7 +2664,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                     using (var imageStream = new MemoryStream(imageByteArray))
                     {
                         var imageFileName = string.Format("{0}.shortcut.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
-                        Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
+                        await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
 
                         shortcut.IconUrl = $"{imageFileName}";
 
@@ -2674,7 +2674,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 {
                     try
                     {
-                        Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, new Uri(existing.IconUrl).Segments.Last());
+                        await Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, new Uri(existing.IconUrl).Segments.Last());
                     }
                     catch { }
                 }
@@ -2701,7 +2701,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         }
 
         [HttpDelete, Route("shortcut/delete/{id:int}")]
-        public JsonResult DeleteShortcut(int id)
+        public async Task<JsonResult> DeleteShortcut(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
             {
@@ -2721,7 +2721,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 {                    
                     try
                     {
-                        Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, new Uri(existing.FullURL).Segments.Last());
+                        await Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, new Uri(existing.FullURL).Segments.Last());
                     }
                     catch
                     {

@@ -353,7 +353,7 @@ namespace igx.jobs.apiexecutionprocessor
                                 break;
                             #endregion
                             case ApiExecutionAction.PostCrossReferences:
-                                string postCrossReferencesJson = storage.GetFileContentsAsString(Info.StorageFolder, Info.RequestFileName, Encoding.UTF8);
+                                string postCrossReferencesJson = await storage.GetFileContentsAsString(Info.StorageFolder, Info.RequestFileName, Encoding.UTF8);
                                 
                                 var postCrossReferences = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetCrossReference>>(Info.StorageFolder, Info.RequestFileName);
 

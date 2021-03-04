@@ -39,7 +39,7 @@ namespace d360.web.Controllers
         {
             var execution = Company.Query<dynamic>(@"select * from fusion.Execution where ID = @id", new { id }).SingleOrDefault();
             
-            return Content(Storage.GetFileContentsAsString($"bulk-fusion-{Company.CurrentCompanyID}", execution.RawLogFileName), "application/json");
+            return Content(Storage.GetFileContentsAsString($"bulk-fusion-{Company.CurrentCompanyID}", execution.RawLogFileName).Wait(), "application/json");
         }
 
         [Route("{typeID:int}/configurations/{id:int}/template/{attributeTypeID:int}"), FileDownload, HttpGet]

@@ -957,9 +957,9 @@ where A.FusionTypeID = @id", columns, joins);
             try
             {
                 var folder = $"bulk-fusion-{Company.CurrentCompanyID}";
-                Storage.CreateFolder(folder);
+                await Storage.CreateFolder(folder);
                 fileName = $"{typeID}.{fusionID}.{DateTime.UtcNow.ToString("yyyy-MM-dd_hh.mm.ss")}.json";
-                Storage.CreateFile(folder, fileName, json);
+                await Storage.CreateFile(folder, fileName, json);
 
                 Trace.TraceInformation("{0}{1}", prefix, "Saved raw json data to storage container.");
 
@@ -1219,9 +1219,9 @@ where A.FusionTypeID = @id", columns, joins);
                         var json = JsonConvert.SerializeObject(import);
 
                         var folder = $"bulk-fusion-{Company.CurrentCompanyID}";
-                        Storage.CreateFolder(folder);
+                        await Storage.CreateFolder(folder);
                         var fileName = $"{typeID}.{id}.{DateTime.UtcNow.ToString("yyyy-MM-dd_hh.mm.ss")}.json";
-                        Storage.CreateFile(folder, fileName, json);
+                        await Storage.CreateFile(folder, fileName, json);
 
                         await Queue.CreateMessageAsync(Config.GetValue<string>("FusionLoadQueue"), new FusionProcessingData
                         {
@@ -1306,7 +1306,7 @@ where A.FusionTypeID = @id", columns, joins);
 
                 var date = DateTime.UtcNow;
 
-                Storage.CreateFile("agent-log", $"{Company.CurrentCompanyID}/{date.ToString("yyyy-MM-dd_hh.mm.ss")}.json", json);
+                await Storage.CreateFile("agent-log", $"{Company.CurrentCompanyID}/{date.ToString("yyyy-MM-dd_hh.mm.ss")}.json", json);
                 
                 Trace.TraceInformation("{0}{1}", prefix, "Saved raw json data to storage container.");
 
