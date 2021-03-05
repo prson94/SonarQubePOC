@@ -1319,7 +1319,10 @@ namespace d360.web.Controllers
 
                     thisColumn = $@", try_cast({name}.FormattedValue as {dataType}) as [{(useFriendlyName ? friendlyName : name)}]";
                     columnBuilder.Append(thisColumn);
-                    if (includeIdColumn) columnBuilder.Append($"{name}.Value as [{name}ID], ");
+                    if (includeIdColumn)
+                    {
+                        columnBuilder.Append($"{name}.Value as [{name}ID], ");
+                    }
                 }
 
                 joinBuilder.Append(fieldJoinBuilder.ToString());
