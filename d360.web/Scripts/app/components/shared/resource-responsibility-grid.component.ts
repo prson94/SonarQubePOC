@@ -2,6 +2,7 @@
 import { ResponsibilityDetailForResource } from '../../models/resource.model';
 import { ResourcesService } from '../../services/resources.service';
 import { Router } from '@angular/router';
+import { BaseComponent } from '../shared/base.component';
 
 @Component({
     selector: 'd3s-resource-responsibility-grid-component',
@@ -9,7 +10,7 @@ import { Router } from '@angular/router';
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
     <input type="text" [hidden]="!simpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-    <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ObjectName','ResponsibilityTypeName','SecurityAssetName']" [paginator]="true" [rows]="10">
+    <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ObjectName','ResponsibilityTypeName','SecurityAssetName']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
         <ng-template pTemplate="header">
             <tr>
                 <th [pSortableColumn]="'ObjectName'">
@@ -49,7 +50,7 @@ import { Router } from '@angular/router';
 </div>
 `,
 })
-export class ResourceResponsibilityGridComponent implements OnChanges {
+export class ResourceResponsibilityGridComponent extends BaseComponent implements OnChanges {
     @Input() Id: number;
     @Input() objectId: number;
     @Input() objectType: string;
@@ -60,7 +61,7 @@ export class ResourceResponsibilityGridComponent implements OnChanges {
     private items: ResponsibilityDetailForResource[] = new Array<ResponsibilityDetailForResource>();
 
     constructor(private resourcesService: ResourcesService, private router: Router) {
-
+        super();
     }
     
     ngOnChanges() {
