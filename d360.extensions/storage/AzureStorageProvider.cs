@@ -29,7 +29,7 @@ namespace d360.extensions.storage
         public async Task CreateFolder(string name)
         {
             var container = GetContainer(name);
-            await container.CreateIfNotExistsAsync();
+            await container.CreateIfNotExistsAsync().ConfigureAwait(false);
         }
 
         public async Task CreateFile(string folderName, string fileName, Stream file, string contentType = null, bool cache = true)
@@ -46,12 +46,12 @@ namespace d360.extensions.storage
                 headers.ContentType = contentType;
             }
 
-            await blob.UploadAsync(file, headers);
+            await blob.UploadAsync(file, headers).ConfigureAwait(false);
         }
 
         public async Task CreateFile(string folderName, string fileName, string content, string contentType = null, bool cache = true)
         {
-            await CreateFile(folderName, fileName, new MemoryStream(Encoding.UTF8.GetBytes(content)), contentType, cache);
+            await CreateFile(folderName, fileName, new MemoryStream(Encoding.UTF8.GetBytes(content)), contentType, cache).ConfigureAwait(false);
         }
 
         
@@ -65,7 +65,7 @@ namespace d360.extensions.storage
                     {
                         JsonSerializer ser = new JsonSerializer();
                         ser.Serialize(jtw, obj);
-                        await CreateFile(folderName, fileName, ms);
+                        await CreateFile(folderName, fileName, ms).ConfigureAwait(false);
                     }
                 }
             }
@@ -77,7 +77,7 @@ namespace d360.extensions.storage
 
             using (MemoryStream ms = new MemoryStream())
             {
-                await blob.DownloadToAsync(ms);
+                await blob.DownloadToAsync(ms).ConfigureAwait(false);
                 using (StreamReader sr = new StreamReader(ms, Encoding.UTF8))
                 {
                     using (JsonTextReader jtr = new JsonTextReader(sr))
@@ -92,7 +92,7 @@ namespace d360.extensions.storage
         public async Task DeleteFile(string folderName, string fileName)
         {
             var blob = GetBlob(folderName, fileName);
-            await blob.DeleteIfExistsAsync();
+            await blob.DeleteIfExistsAsync().ConfigureAwait(false);
         }
 
 
@@ -107,13 +107,13 @@ namespace d360.extensions.storage
             using (var stream = new MemoryStream())
             {
                 var blob = GetBlob(folderName, fileName);
-                if (await blob.ExistsAsync())
+                if (await blob.ExistsAsync().ConfigureAwait(false))
                 {
                     using (MemoryStream ms = new MemoryStream())
                     {
                         using (StreamReader sr = new StreamReader(ms, encoding))
                         {
-                            await blob.DownloadToAsync(ms);
+                            await blob.DownloadToAsync(ms).ConfigureAwait(false);
                             str = await sr.ReadToEndAsync();
                         }
                     }
@@ -127,7 +127,7 @@ namespace d360.extensions.storage
             using (var stream = new MemoryStream())
             {
                 var blob = GetBlob(folderName, fileName);
-                var props = await blob.GetPropertiesAsync();
+                var props = await blob.GetPropertiesAsync().ConfigureAwait(false);
                 return props?.Value?.LastModified.UtcDateTime ?? DateTime.MinValue;
             }            
         }
