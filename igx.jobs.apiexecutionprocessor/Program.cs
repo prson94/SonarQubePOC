@@ -46,7 +46,7 @@ namespace igx.jobs.apiexecutionprocessor
         //#if DEBUG
         //public static async Task Run([TimerTrigger("0 0 */5 * * *", RunOnStartup = true)]TimerInfo myTimer, CancellationToken token, TextWriter log)
         //#else
-        public async static Task Run([QueueTrigger("ApiExecutionQueue", Connection = "QueueStorageAccount")] string myQueueItem, TextWriter log)
+        public async static Task Run([QueueTrigger("%ApiExecutionQueue%", Connection = "QueueStorageAccount")] string myQueueItem, TextWriter log)
         //#endif
         {
             ApiExecutionInfo info = null;

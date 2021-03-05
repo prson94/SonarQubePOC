@@ -59,7 +59,7 @@ namespace d360.extensions.storage
         {
             using (MemoryStream ms = new MemoryStream())
             {
-                using (StreamWriter sw = new StreamWriter(ms,Encoding.UTF8))
+                using (StreamWriter sw = new StreamWriter(ms, Encoding.UTF8))
                 {
                     using (JsonTextWriter jtw = new JsonTextWriter(sw))
                     {
@@ -78,6 +78,7 @@ namespace d360.extensions.storage
             using (MemoryStream ms = new MemoryStream())
             {
                 await blob.DownloadToAsync(ms).ConfigureAwait(false);
+                ms.Position = 0;
                 using (StreamReader sr = new StreamReader(ms, Encoding.UTF8))
                 {
                     using (JsonTextReader jtr = new JsonTextReader(sr))
@@ -114,6 +115,7 @@ namespace d360.extensions.storage
                         using (StreamReader sr = new StreamReader(ms, encoding))
                         {
                             await blob.DownloadToAsync(ms).ConfigureAwait(false);
+                            ms.Position = 0;
                             str = await sr.ReadToEndAsync().ConfigureAwait(false);
                         }
                     }
