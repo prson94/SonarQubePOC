@@ -380,64 +380,67 @@ namespace d360.model.DataAccessLayer
             {
                 var validForType = true;
                 StringBuilder sb = new StringBuilder();
-                for (int ix = 0; ix < values.Count; ix++)
-                {
-                    string v = values[ix];
-                    sb.Clear();
-                    sb.Append(lookupObject);
-
-                    switch (dataType)
+                if (values != null)
+                { 
+                    for (int ix = 0; ix < values.Count; ix++)
                     {
-                        case "Date":
-                        case "DateTime":
-                            DateTime tempDate;
-                            if (DateTime.TryParse(v, out tempDate))
-                            {
-                                values[ix] = tempDate.ToUniversalTime().ToString("yyyy-MM-ddT00:00:00.0000Z");
-                            }
-                            else
-                            {
-                                validForType = false;
-                            }
-                            break;
-                        case "Decimal":
-                            if (!decimal.TryParse(v, out _))
-                            {
-                                validForType = false;
-                            }
-                            break;
-                        case "Lookup":
-                            Guid lookupUid;
-                            int lookupId;
-                            if (Guid.TryParse(v, out lookupUid) && lookupObjectID.HasValue)
-                            {
-                                sb.Append("Type");
-                                if (!Company.Filter<AssetDetail>(i => i.Type == sb.ToString() && i.TypeID == lookupObjectID && i.uid == lookupUid).Any())
+                        string v = values[ix];
+                        sb.Clear();
+                        sb.Append(lookupObject);
+
+                        switch (dataType)
+                        {
+                            case "Date":
+                            case "DateTime":
+                                DateTime tempDate;
+                                if (DateTime.TryParse(v, out tempDate))
+                                {
+                                    values[ix] = tempDate.ToUniversalTime().ToString("yyyy-MM-ddT00:00:00.0000Z");
+                                }
+                                else
                                 {
                                     validForType = false;
                                 }
-                            }
-                            else if (int.TryParse(v, out lookupId) && lookupObjectID.HasValue)
-                            {
-                                sb.Append("Type");
-                                if (!Company.Filter<AssetDetail>(i => i.Type == sb.ToString() && i.TypeID == lookupObjectID && i.ObjectID == lookupId).Any())
+                                break;
+                            case "Decimal":
+                                if (!decimal.TryParse(v, out _))
                                 {
                                     validForType = false;
                                 }
-                            }
-                            else
-                            {
-                                validForType = false;
-                            }
-                            break;
-                        case "Number":
-                            if (!int.TryParse(v, out _))
-                            {
-                                validForType = false;
-                            }
-                            break;
-                        default:
-                            continue;
+                                break;
+                            case "Lookup":
+                                Guid lookupUid;
+                                int lookupId;
+                                if (Guid.TryParse(v, out lookupUid) && lookupObjectID.HasValue)
+                                {
+                                    sb.Append("Type");
+                                    if (!Company.Filter<AssetDetail>(i => i.Type == sb.ToString() && i.TypeID == lookupObjectID && i.uid == lookupUid).Any())
+                                    {
+                                        validForType = false;
+                                    }
+                                }
+                                else if (int.TryParse(v, out lookupId) && lookupObjectID.HasValue)
+                                {
+                                    sb.Append("Type");
+                                    if (!Company.Filter<AssetDetail>(i => i.Type == sb.ToString() && i.TypeID == lookupObjectID && i.ObjectID == lookupId).Any())
+                                    {
+                                        validForType = false;
+                                    }
+                                }
+                                else
+                                {
+                                    validForType = false;
+                                }
+                                break;
+                            case "Number":
+                                if (!int.TryParse(v, out _))
+                                {
+                                    validForType = false;
+                                }
+                                break;
+                            default:
+                                continue;
+                        }
                     }
                 }
 
