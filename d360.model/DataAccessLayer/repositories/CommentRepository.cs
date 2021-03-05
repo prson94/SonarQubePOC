@@ -107,7 +107,7 @@ namespace d360.model.DataAccessLayer
 
 			if (commentAsset != null)
 			{
-				if (!CompanyContext.HasAssetDefaultReadPermission(commentAsset.Object, commentAsset.ObjectID, Permission.ReadAsset))
+				if (!CompanyContext.HasAssetPermission(commentAsset.Object, commentAsset.ObjectID, Permission.ReadAsset))
 				{
 					throw new GenericException(System.Net.HttpStatusCode.Forbidden, "", "You do not have permissions to add a comment to this asset.");
 				}
