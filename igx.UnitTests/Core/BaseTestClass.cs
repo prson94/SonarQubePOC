@@ -41,10 +41,10 @@ namespace igx.UnitTests
         {
             var mock = new Mock<ICompanyContext>();
             mock.Setup(x => x.CurrentResourceIsAdmin).Returns(true);
-            mock.Setup(x => x.HasAssetTypeReadPermission(It.IsAny<int>())).Returns(
-                (int id) =>
+            mock.Setup(x => x.HasAssetTypePermission(It.IsAny<int>(), Permission.ReadAsset)).Returns(
+                (int id, Permission p) =>
                 {
-                    return Task.FromResult(true);
+                    return true;
                 }
                 );
             mock.Setup(x => x.GetTypeIdentifierInfoModel(It.IsAny<TypeIdentifierInfoModelType>(), It.IsAny<Guid>()))
