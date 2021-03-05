@@ -114,7 +114,7 @@ namespace d360.extensions.storage
                         using (StreamReader sr = new StreamReader(ms, encoding))
                         {
                             await blob.DownloadToAsync(ms).ConfigureAwait(false);
-                            str = await sr.ReadToEndAsync();
+                            str = await sr.ReadToEndAsync().ConfigureAwait(false);
                         }
                     }
                 }
