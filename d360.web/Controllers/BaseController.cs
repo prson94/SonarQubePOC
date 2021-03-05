@@ -54,11 +54,15 @@ namespace System.Net.Http
             // IEnumerable<KeyValuePair<string,string>> - right!
             var queryStrings = request.GetQueryNameValuePairs();
             if (queryStrings == null)
+            {
                 return null;
+            }
 
             var match = queryStrings.FirstOrDefault(kv => string.Compare(kv.Key, key, true) == 0);
             if (string.IsNullOrEmpty(match.Value))
+            {
                 return null;
+            }
 
             return match.Value;
         }
@@ -85,7 +89,9 @@ namespace d360.web.Controllers
         public override void ExecuteResult(ControllerContext context)
         {
             if (context == null)
+            {
                 throw new ArgumentNullException("context");
+            }
 
             HttpResponseBase response = context.HttpContext.Response;
 
@@ -232,9 +238,11 @@ namespace d360.web.Controllers
         protected internal void SendException(Exception ex, IDictionary<string, string> properties, IDictionary<string, double> metrics = null)
         {
             var telemetry = new TelemetryClient();
-            if (!properties.ContainsKey("CompanyID")) properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
+            if (!properties.ContainsKey("CompanyID"))
+            {
+                properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
+            }
             telemetry.TrackException(ex, properties, metrics);
-            telemetry = null;
         }
 
         protected internal System.Web.Http.IHttpActionResult errorMessageResponse(HttpStatusCode status, string title, string message)
@@ -259,11 +267,16 @@ namespace d360.web.Controllers
 
         protected internal void SendEvent(string eventName, IDictionary<string, string> properties = null, IDictionary<string, double> metrics = null)
         {
-            if (properties == null) properties = new Dictionary<string, string>();
+            if (properties == null)
+            {
+                properties = new Dictionary<string, string>();
+            }
             var telemetry = new TelemetryClient();
-            if (!properties.ContainsKey("CompanyID")) properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
+            if (!properties.ContainsKey("CompanyID"))
+            {
+                properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
+            }
             telemetry.TrackEvent(eventName, properties, metrics);
-            telemetry = null;
         }
 
         protected internal HttpResponseMessage createFileResponseMessage(HttpStatusCode status, string fileName, byte[] content)
@@ -291,7 +304,7 @@ namespace d360.web.Controllers
             var query = Request.GetQueryStrings();
 
             int filterscount = 0;
-            var filters = string.Empty;
+            var filters = new StringBuilder();
 
             if (query.ContainsKey("filterscount"))
             {
@@ -337,14 +350,17 @@ namespace d360.web.Controllers
                                 case "ENDS_WITH":
                                     fFormat = "[{0}] LIKE '%{1}'";
                                     break;
+                                default:
+                                    fFormat = "";
+                                    break;
                             }
 
                             filter = string.Format(fFormat, fField, fValue.Replace("--", "").Replace("'", "''"));   //SQL Injection check
 
                             if (!string.IsNullOrEmpty(filter))
                             {
-                                filters += (string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ";
-                                filters += filter;
+                                filters.Append(filters.Length > 0 ? " WHERE " : " AND ");
+                                filters.Append(filter);
                             }
                         }
                     }
@@ -366,7 +382,9 @@ namespace d360.web.Controllers
         protected internal string applySortSuffix(string sql, System.Net.Http.HttpRequestMessage Request, string sortDefaultField = "Name", string sortOrder = "asc", string sortFieldType = "string")
         {
             string sortDataField = "";
-
+            string _sortOrder = sortOrder;
+            var sqlBuilder = new StringBuilder();
+            sqlBuilder.Append(sql);
             var query = Request.GetQueryStrings();
 
             if (query.ContainsKey("sortDataField"))
@@ -375,31 +393,41 @@ namespace d360.web.Controllers
             }
             if (query.ContainsKey("sortOrder"))
             {
-                sortOrder = query["sortOrder"];
+                _sortOrder = query["sortOrder"];
             }
 
 
 
             if (string.IsNullOrEmpty(sortDataField))
+            {
                 sortDataField = sortDefaultField;
+            }
 
             // make sure its a valid field name
             if (!isValidFieldName(sortDataField))
             {
-                throw new Exception("Invalid sort field specified");
+                throw new ArgumentException("Invalid sort field specified");
             }
 
-            if ((sortFieldType ?? "").ToUpper() == "NUMBER")
-                sql += " ORDER BY TRY_CAST(+ [" + sortDataField + "] AS bigint)" + sortOrder;
-            else if ((sortFieldType ?? "").ToUpper() == "DATE")
-                sql += " ORDER BY TRY_CAST(+ [" + sortDataField + "] AS date)" + sortOrder;
-            else if ((sortFieldType ?? "").ToUpper() == "DATETIME")
-                sql += " ORDER BY TRY_CAST(+ [" + sortDataField + "] AS datetime)" + sortOrder;
+            if ((sortFieldType ?? "").ToUpperInvariant() == "NUMBER")
+            {
+                sqlBuilder.Append($" ORDER BY TRY_CAST(+ [{sortDataField}] AS bigint) {_sortOrder}");
+            }
+            else if ((sortFieldType ?? "").ToUpperInvariant() == "DATE")
+            {
+                sqlBuilder.Append($" ORDER BY TRY_CAST(+ [{sortDataField}] AS date) {_sortOrder}");
+            }
+            else if ((sortFieldType ?? "").ToUpperInvariant() == "DATETIME")
+            {
+                sqlBuilder.Append($" ORDER BY TRY_CAST(+ [{sortDataField}] AS datetime) {_sortOrder}");
+            }
             else
-                sql += " ORDER BY [" + sortDataField + "] " + sortOrder;
+            {
+                sqlBuilder.Append(" ORDER BY [" + sortDataField + "] " + _sortOrder);
+            }
 
 
-            return sql;
+            return sqlBuilder.ToString();
         }
 
         protected internal string applyPagingSuffix(string sql, System.Net.Http.HttpRequestMessage Request)
@@ -478,24 +506,24 @@ namespace d360.web.Controllers
 
         internal JsonNetResult jsonNetException(Exception ex, HttpStatusCode statusCode, string title = "Error Occurred!")
         {
-            return new JsonNetResult { Data = new { type = "error", title = title, message = ex.GetFullExceptionData() }, Formatting = Newtonsoft.Json.Formatting.None };
+            return new JsonNetResult { Data = new { type = "error", title, message = ex.GetFullExceptionData() }, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         internal JsonResult jsonException(Exception ex, HttpStatusCode statusCode, string title = "Error Occurred!")
         {
-            return Json(new { type = "error", title = title, message = ex.GetFullExceptionData() }, JsonRequestBehavior.AllowGet);
+            return Json(new { type = "error", title, message = ex.GetFullExceptionData() }, JsonRequestBehavior.AllowGet);
         }
 
         internal JsonResult jsonException(string message, HttpStatusCode statusCode, string title = "Error Occurred!")
         {
-            return Json(new { type = "error", title = title, message = message }, JsonRequestBehavior.AllowGet);
+            return Json(new { type = "error", title, message }, JsonRequestBehavior.AllowGet);
         }
 
         internal JsonNetResult jsonNetException(string message, HttpStatusCode statusCode, string title = "Error Occurred!")
         {
             return new JsonNetResult
             {
-                Data = new { type = "error", title = title, message = message },
+                Data = new { type = "error", title, message },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -512,7 +540,7 @@ namespace d360.web.Controllers
         {
             Response.StatusCode = (int)statusCode;
             Response.StatusDescription = message.Replace("\n", "  ");
-            return Json(new { type = "confirm", title = "Success!", action = action, message = message.Replace("\n", "  "), id = id, custom = customdata }, JsonRequestBehavior.AllowGet);
+            return Json(new { type = "confirm", title = "Success!", action, message = message.Replace("\n", "  "), id, custom = customdata }, JsonRequestBehavior.AllowGet);
         }
 
         internal JsonNetResult jsonNetResult(dynamic data)
@@ -526,7 +554,7 @@ namespace d360.web.Controllers
         /// </summary>        
         protected override JsonResult Json(object data, string contentType, System.Text.Encoding contentEncoding, JsonRequestBehavior behavior)
         {
-            return new JsonResult()
+            return new JsonResult
             {
                 Data = data,
                 ContentType = contentType,
@@ -558,14 +586,13 @@ namespace d360.web.Controllers
             {
                 if (string.IsNullOrEmpty(validationMessage))
                 {
-                    switch (fieldType)
+                    if(fieldType == "Number")
                     {
-                        case "Number":
-                            validationMessage = string.Format(Validation.Pattern_Tokenized, friendlyName, "must be a whole number");
-                            break;
-                        case "Decimal":
-                            validationMessage = string.Format(Validation.Pattern_Tokenized, friendlyName, "must be a decimal number");
-                            break;
+                        validationMessage = string.Format(Validation.Pattern_Tokenized, friendlyName, "must be a whole number");
+                    }
+                    if(fieldType == "Decimal")
+                    {
+                        validationMessage = string.Format(Validation.Pattern_Tokenized, friendlyName, "must be a decimal number");
                     }
                 }
 
@@ -658,14 +685,13 @@ namespace d360.web.Controllers
 
                         if (string.IsNullOrEmpty(f.ValidationDescription))
                         {
-                            switch (f.Type)
+                            if (f.Type == "Number")
                             {
-                                case "Number":
-                                    patternMessage = "must be a whole number";
-                                    break;
-                                case "Decimal":
-                                    patternMessage = "must be a decimal number";
-                                    break;
+                                patternMessage = "must be a whole number";
+                            }
+                            if (f.Type == "Decimal")
+                            {
+                                patternMessage = "must be a decimal number";
                             }
                         }
                         else
@@ -707,7 +733,10 @@ namespace d360.web.Controllers
                                 {
                                     var parent = Company.FieldTypes.Where(x => x.ID == f.ParentFieldTypeID).FirstOrDefault();
 
-                                    if (parent != null) fld.ParentFieldTypeName = parent.FriendlyName;
+                                    if (parent != null)
+                                    {
+                                        fld.ParentFieldTypeName = parent.FriendlyName;
+                                    }
                                 }
                                 else if (f.FilterFieldTypeID > 0 || f.FilterPredicateID > 0)
                                 {
@@ -730,10 +759,14 @@ namespace d360.web.Controllers
                                 else
                                 {
                                     if (!f.IsRequired && !f.AllowMultipleValues)
+                                    {
                                         fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
+                                    }
 
                                     if (f.AllowAllValue)
+                                    {
                                         fld.Items.Add(new SelectListItem { Text = f.AllowAllLabel, Value = "0" });
+                                    }
 
                                     bool hideData3SixtyUsers = HideData3SixtyUsers();
                                     var columns = $@"
@@ -836,9 +869,13 @@ namespace d360.web.Controllers
                                 var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
 
                                 if (cardinality != Cardinality.Many)
+                                {
                                     fld.MultiSelect = false;
+                                }
                                 else
+                                {
                                     fld.MultiSelect = true;
+                                }
 
                                 Predicate predicate = null;
                                 if (intersectType.PredicateID.HasValue)
@@ -853,7 +890,9 @@ namespace d360.web.Controllers
                         }
 
                         if (f.Type == DataType.Lookup.ToString())  // lookups dont set min / length properties
+                        {
                             fld.Required = (f.MinimumLength > 0 || f.Length > 0 || f.IsRequired);
+                        }
                         else
                         {
                             if (!new[] { "Number", "Decimal", "Text" }.Contains(f.Type))
@@ -891,14 +930,13 @@ namespace d360.web.Controllers
 
                         if (string.IsNullOrEmpty(ft.ValidationDescription))
                         {
-                            switch (ft.Type)
+                            if (ft.Type == "Number")
                             {
-                                case "Number":
-                                    patternMessage = "must be a whole number";
-                                    break;
-                                case "Decimal":
-                                    patternMessage = "must be a decimal number";
-                                    break;
+                                patternMessage = "must be a whole number";
+                            }
+                            if (ft.Type == "Decimal")
+                            {
+                                patternMessage = "must be a decimal number";
                             }
                         }
                         else
@@ -940,9 +978,13 @@ namespace d360.web.Controllers
                                     if (ft.AllowMultipleValues)
                                     {
                                         if (f != null && !string.IsNullOrWhiteSpace(f.Value))
+                                        {
                                             fld.Value = f.Value;
+                                        }
                                         else if (!string.IsNullOrWhiteSpace(ft.DefaultValue))
+                                        {
                                             fld.Value = ft.DefaultValue;
+                                        }
                                     }
                                 }
                                 else if (ft.FilterFieldTypeID > 0 || ft.FilterPredicateID > 0)
@@ -963,17 +1005,23 @@ namespace d360.web.Controllers
                                         fld.DelayedLoadType = "Predicate";
                                     }
                                     if (ft.AllowMultipleValues && f != null && !string.IsNullOrWhiteSpace(f.Value))
+                                    {
                                         fld.Value = f.Value;
+                                    }
                                 }
                                 else
                                 {
                                     if (!ft.IsRequired)
+                                    {
                                         fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
+                                    }
 
                                     if (ft.AllowAllValue)
+                                    {
                                         fld.Items.Add(new SelectListItem { Text = ft.AllowAllLabel, Value = "0" });
+                                    }
 
-                                    var items = new List<SelectListItem>();
+                                    List<SelectListItem> items;
                                     bool hideData3SixtyUsers = HideData3SixtyUsers();
 
                                     var columns = $@"
@@ -1033,7 +1081,10 @@ namespace d360.web.Controllers
 
                                         foreach (var item in items)
                                         {
-                                            if (selected.Contains(item.Value)) item.Selected = true;
+                                            if (selected.Contains(item.Value))
+                                            {
+                                                item.Selected = true;
+                                            }
                                         }
                                     }
                                     else
@@ -1125,7 +1176,9 @@ namespace d360.web.Controllers
                         #endregion Relationship
 
                         if (ft.Type == DataType.Lookup.ToString())
+                        {
                             fld.Required = (ft.MinimumLength > 0 || ft.Length > 0 || ft.IsRequired);
+                        }
                         else
                             if (!new[] { "Number", "Decimal", "Text" }.Contains(ft.Type))
                         {
@@ -1195,11 +1248,17 @@ namespace d360.web.Controllers
         
         internal List<FieldType> getDynamicFieldJoinStatements(int typeID, string type, List<string> filterFields, out string joins, out string filterjoins, out string columns, out string filtercolumns, DynamicParameters dbArgs, bool includeIdColumn = true, bool useFriendlyName = false, List<FieldType> fields = null, bool showSubsetColumns = false, List<int> subsetColumns = null, string idColumn = "A.ID")
         {
+            var columnBuilder = new StringBuilder();
+            var joinBuilder = new StringBuilder();
+            var filterJoinBuilder = new StringBuilder();
+            var filterColumnBuilder = new StringBuilder();
+            var fieldJoinBuilder = new StringBuilder();
+
             columns = "";
             joins = "";
 
-            filtercolumns = "";
             filterjoins = "";
+            filtercolumns = "";
 
             var fieldTypeRelationType = $"{type}Type";
             if (fields == null)
@@ -1227,24 +1286,24 @@ namespace d360.web.Controllers
                 var name = $"Field{f.ID}";
                 var friendlyName = f.FriendlyName.Replace("[", "").Replace("]", "");
                 string thisColumn;
-                string fieldJoin;
-                string dataType = "nvarchar(max)";
+                fieldJoinBuilder.Clear();
+                string dataType;
 
                 if (f.Type == dtJsonElement)
                 {
-                    fieldJoin = $" left join Field {name} on {name}.ObjectType = '{type}' and {name}.ObjectID = {idColumn} and {name}.FieldTypeID = {ftID} ";
-                    fieldJoin += $" left join FieldJsonProperty {name}_FJP on {name}_FJP.FieldID = {name}.ID and {name}_FJP.[Path] = @jsonPath{f.ID} ";
+                    fieldJoinBuilder.Append($" left join Field {name} on {name}.ObjectType = '{type}' and {name}.ObjectID = {idColumn} and {name}.FieldTypeID = {ftID} ");
+                    fieldJoinBuilder.Append($" left join FieldJsonProperty {name}_FJP on {name}_FJP.FieldID = {name}.ID and {name}_FJP.[Path] = @jsonPath{f.ID} ");
 
                     dbArgs.Add($"@jsonPath{f.ID}", jsonElementDefinition.Path);
 
                     dataType = jsonElementDefinition.DataType;
 
                     thisColumn = $", try_cast({name}_FJP.[Value] as {dataType}) as [{(useFriendlyName ? friendlyName : name)}]";
-                    columns += thisColumn;
+                    columnBuilder.Append(thisColumn);
                 }
                 else
                 {
-                    fieldJoin = $@" left join FieldDetail {name} on {name}.Object = '{type}' and {name}.ObjectID = {idColumn} and {name}.FieldTypeID = {f.ID} ";
+                    fieldJoinBuilder.Append($@" left join FieldDetail {name} on {name}.Object = '{type}' and {name}.ObjectID = {idColumn} and {name}.FieldTypeID = {f.ID} ");
 
                     dataType = f.Type;
 
@@ -1259,19 +1318,25 @@ namespace d360.web.Controllers
                     }
 
                     thisColumn = $@", try_cast({name}.FormattedValue as {dataType}) as [{(useFriendlyName ? friendlyName : name)}]";
-                    columns += thisColumn;
-                    if (includeIdColumn) columns += $"{name}.Value as [{name}ID], ";
+                    columnBuilder.Append(thisColumn);
+                    if (includeIdColumn)
+                    {
+                        columnBuilder.Append($"{name}.Value as [{name}ID], ");
+                    }
                 }
 
-                joins += fieldJoin;
+                joinBuilder.Append(fieldJoinBuilder.ToString());
 
                 if (filterFields.Contains(name))
                 {
-                    filtercolumns += thisColumn;
-                    filterjoins += fieldJoin;
+                    filterColumnBuilder.Append(thisColumn);
+                    filterJoinBuilder.Append(fieldJoinBuilder);
                 }
             }
-
+            columns = columnBuilder.ToString();
+            joins = joinBuilder.ToString();
+            filterjoins = filterJoinBuilder.ToString();
+            filtercolumns = filterColumnBuilder.ToString();
             return fields;
         }
 
@@ -1417,9 +1482,13 @@ namespace d360.web.Controllers
 
                     var fieldType = fields.Where(x => x.ID == fieldID).SingleOrDefault();
                     if (fieldType != null && fieldType.AllowMultipleValues)
+                    {
                         filter = applyMulitSelectFilteringSuffix(dbParams, fValue, tableId, i, fieldType, idColumn, v2ApiFilterValues);
+                    }
                     else
+                    {
                         filter = $" inner join field {tableId} on ({idColumn} = {tableId}.objectID and {tableId}.ObjectType = 'Artifact'  and {tableId}.fieldtypeid={fieldID} and {getFilteringConditionBind(tableId + ".FormattedValue", fCondition, i, dbParams, fValue, tableId, true)} )  ";
+                    }
 
                     if (!string.IsNullOrEmpty(filter))
                     {
