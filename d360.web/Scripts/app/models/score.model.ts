@@ -29,7 +29,7 @@ export class DataQualityEvidenceItemModel {
     TotalCount: number;
     PassCount: number;
     FailCount: number;
-    PassFraction: number;
+    PassFraction: number;    
 }
 
 export class DataQualityEvidenceModel {

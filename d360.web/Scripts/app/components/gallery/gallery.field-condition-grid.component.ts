@@ -27,15 +27,17 @@ import { FormGroup, FormBuilder } from '@angular/forms';
 })
 
 export class GalleryFieldConditionGridComponent implements OnInit {
-    protected properties: Array<any>;
-    protected sampleUsage: string = '<field-condition-grid [fields]="simpleExample" [conditions]="simpleValue" (onChange)="eventValue = $event"></field-condition-grid>';
-    protected isLoading: boolean = true;
+    properties: Array<any>;
+    sampleUsage: string = '<field-condition-grid [fields]="simpleExample" [conditions]="simpleValue" (onChange)="eventValue = $event"></field-condition-grid>';
+    isLoading: boolean = true;
 
     assetTypeUid: string = '';
     fields: FieldTypeAPIModelFieldCondition[] = null;
     operators: OperatorModel[] = [];
     blank: any[] = [];
     formGroup: FormGroup;
+    simpleValue: any;
+    eventValue: any;    
     constructor(
         private fieldsService: FieldsObservableService,
         private settingsService: CompanySettingsService,
@@ -58,7 +60,7 @@ export class GalleryFieldConditionGridComponent implements OnInit {
 
     }
 
-    private loadData() {
+    loadData() {
 
         this.settingsService.getOperators().subscribe(operators => {
             this.operators = operators;
@@ -104,7 +106,7 @@ export class GalleryFieldConditionGridComponent implements OnInit {
     }
 
 
-    private preselectedExample = [
+    preselectedExample = [
         {
             "field": "StepNo",
             "operator": 9,
@@ -124,7 +126,7 @@ export class GalleryFieldConditionGridComponent implements OnInit {
     ];
 
 
-    private simpleExample = [
+    simpleExample = [
         {
             "Name": "cstm_op",
             "FriendlyName": "Custom Operators Field",

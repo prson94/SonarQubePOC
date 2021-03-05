@@ -26,13 +26,13 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
     @Output() datePointChanged = new EventEmitter();
     @Output() measurePointsChanged = new EventEmitter();
 
-    private scoresPoints: ScorePoint[] = [];
+    scoresPoints: ScorePoint[] = [];
     private measurePoints: ScorePoint[];
 
     private historicalData: any[];
     private historicalMeasureData: any[];
 
-    private tableHasVerticalScrollbar: boolean = false;
+    tableHasVerticalScrollbar: boolean = false;
 
     private lastScorePoint: Date;
     private chartInstance: Highcharts.Chart;
@@ -45,8 +45,8 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
     measureScoreGraphColor = '#d2edf4';
 
     private graphHash: string = '';
-    private showMeasurePoints: boolean = false;
-    private isHistoryLoaded: boolean = false;
+    showMeasurePoints: boolean = false;
+    isHistoryLoaded: boolean = false;
 
     constructor(protected scoreService: ScoreService,
         protected objectStatisticsService: ObjectStatisticsService,

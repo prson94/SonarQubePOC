@@ -36,7 +36,7 @@ export class SearchFieldComponent implements ControlValueAccessor, OnInit, OnDes
 
     @Output() onSearch = new EventEmitter();
 
-    private hasValue: boolean = false;
+    hasValue: boolean = false;
     value: string;
     onModelChange: Function = () => { };
     onModelTouched: Function = () => { };

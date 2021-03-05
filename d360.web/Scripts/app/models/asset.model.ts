@@ -56,7 +56,8 @@ export enum AssetTypeClass {
     Reference = 9,
     Organization = 10,
     ReferenceItemType = 14,
-    DiagramAsset = 15
+    DiagramAsset = 15,
+    User = 11,
 }
 
 export enum FlowObjectType {

@@ -68,7 +68,7 @@ export class IgDate implements ControlValueAccessor, OnInit, AfterViewInit, OnDe
 
     @ViewChild("cal", { static: false }) calendar: Calendar;
 
-    protected value = null;
+    value = null;
 
     onModelChange: Function = () => { };
 

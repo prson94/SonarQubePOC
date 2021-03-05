@@ -22,12 +22,12 @@
 
 export class GalleryRadioButtonComponent implements OnInit {
     protected properties: Array<any>;
-    protected sampleUsage: string = ` <p-radioButton igRadioButton name="groupName" [(ngModel)]="val" value="Of Course!" label="Yes"></p-radioButton>`;
+    sampleUsage: string = ` <p-radioButton igRadioButton name="groupName" [(ngModel)]="val" value="Of Course!" label="Yes"></p-radioButton>`;
 
-    private val: any;
-    private val2: any;
-    private val3: any;
-    private formValue: any;
+    val: any;
+    val2: any;
+    val3: any;
+    formValue: any;
 
     constructor(private cdRef: ChangeDetectorRef) {}
 

@@ -31,7 +31,7 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
     @Input() ariaRequired: boolean;
     @Input() ariaInvalid: boolean;
 
-    private hasValue: boolean = false;
+    hasValue: boolean = false;
     value: number;
     onModelChange: Function = () => { };
     onModelTouched: Function = () => { };

@@ -43,7 +43,7 @@ export class GalleryPropertyGroupComponent implements OnInit {
 `;
     testForm: FormGroup = null;
     multiTestForm: FormGroup = null;
-    model: DummyformModel = new DummyformModel(null, null);
+    model: DummyformModel = new DummyformModel(null, null,null);
     defaultColors: SelectItem[] = [];
     formVal: any;
     formDateVal: any;
@@ -110,10 +110,15 @@ export class GalleryPropertyGroupComponent implements OnInit {
     get diagnostic() {
         return JSON.stringify(this.model);
     }
+
+    submitTemplateForm(form:any) {
+
+    }
 }
 export class DummyformModel {
     constructor(
         public theName: string,
-        public number: number
+        public number: number,
+        public theAddr: string,
     ) { }
 }

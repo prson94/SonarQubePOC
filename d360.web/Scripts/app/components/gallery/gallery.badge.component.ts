@@ -18,8 +18,8 @@
 })
 
 export class GalleryBadgeComponent implements OnInit {
-    protected properties: Array<any>;
-    protected sampleUsage: string = '<ig-badge [text]="\'Im a badge!\'"></ig-badge>';
+    properties: Array<any>;
+    sampleUsage: string = '<ig-badge [text]="\'Im a badge!\'"></ig-badge>';
     
     protected clicks: string[] = [];
 

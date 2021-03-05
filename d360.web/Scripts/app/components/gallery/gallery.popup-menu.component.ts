@@ -38,10 +38,12 @@
 })
 
 export class GalleryPopupMenuComponent implements OnInit {
-    protected properties: Array<any>;
-    protected sampleUsage: string = '<ig-popup-menu [items]="items"></ig-popup-menu>';
-    protected isLoading1: boolean = true;
-    protected isLoading2: boolean = false;
+    properties: Array<any>;
+    shortcutSelected: any;
+    item: any;
+    sampleUsage: string = '<ig-popup-menu [items]="items"></ig-popup-menu>';
+    isLoading1: boolean = true;
+    isLoading2: boolean = false;
 
     cleanJsonExamples: any = {};
     ngOnInit(): void {

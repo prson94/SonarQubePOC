@@ -163,6 +163,7 @@ export class DynamicGridDefinitionBase {
 export class LookupGrid extends DynamicGridDefinitionBase {
     Values: any[];
     ScoringInfo: any[];
+    total: number;
 }
 
 export class DynamicGridResultsInData extends DynamicGridDefinitionBase {

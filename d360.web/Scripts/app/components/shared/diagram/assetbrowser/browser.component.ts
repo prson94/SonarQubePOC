@@ -3442,8 +3442,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private relationshipData: any[];
     private transformOrigin: string = "0% 100%";
 
-    private isRelationshipBadgeTooltipVisible: boolean = false;
-    private relationshipBadgeHtml = "The item in this collection has 'xx' relationships to x other item.";
+    isRelationshipBadgeTooltipVisible: boolean = false;
+    relationshipBadgeHtml = "The item in this collection has 'xx' relationships to x other item.";
     private showTooltipTimeout;
     private setRelationshipBadgeHoverState(goObj: go.GraphObject, ev: go.InputEvent, data: go.ObjectData, isHover: boolean, self: AssetBrowserComponent) {
         try {

@@ -44,7 +44,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     private resourceUid = "";
     private items: any[] = [];
     private resource: any;
-    private isSavingProcess : boolean =  false;
+    isSavingProcess : boolean =  false;
     private isMe = false;
     private showAllUsersAPIKey = false;
     private totNumber = 0;
