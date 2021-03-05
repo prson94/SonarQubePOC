@@ -44,7 +44,6 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 export class HelpComponent extends BaseComponent implements OnInit {
 
     helpResources: HelpResource[] = [];
-    //showDefaultHelpVideos: boolean = false;
 
     constructor(
         protected titleService: Title,
@@ -59,10 +58,6 @@ export class HelpComponent extends BaseComponent implements OnInit {
 
     ngOnInit() {
         this.setBrowserTitle(this.titleService, 'Help');
-
-        //this.companySettingsService.getSettings().then(res => {
-        //    this.showDefaultHelpVideos = res.ShowDefaultHelpVideos;
-        //});
 
         this.resourceService.getHelpResources().subscribe(res => {
             this.helpResources = res;

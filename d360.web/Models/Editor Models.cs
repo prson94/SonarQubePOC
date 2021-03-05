@@ -89,8 +89,7 @@ namespace d360.web.Models
             SetLogoToDefault = false;
         }
 
-        public bool DisableCommunityPosting { get; set; }
-        public bool DisableIssuePosting { get; set; }
+        public bool DisableCommunityPosting { get; set; }     
         public bool DisableIssueManagement { get; set; }
         public string CompanyLogo { get; set; }
         public bool SetLogoToDefault { get; set; }
@@ -98,8 +97,6 @@ namespace d360.web.Models
         public string CompanyIcon { get; set; }
         public bool SetIconToDefault { get; set; }
         public string CurrentCompanyIconPath { get; set; }
-
-        public bool UseNewWorkflow { get; set; }
         public bool EnableShoppingCart { get; set; }
         public string DefaultRoute { get; set; }
         public bool EnableSearchExactMatch { get; set; }
@@ -109,8 +106,6 @@ namespace d360.web.Models
         public List<CompanySettingsIpRestrictionEditorModel> IpRestrictions { get; set; }
         public List<SiteNav> SiteNav { get; set; } = new List<SiteNav>();
         public string DefaultSearchTypes { get; set; }
-
-        public bool ShowDefaultHelpVideos { get; set; }
 
         public bool HideData3SixtyUsers { get; set; }
         public bool ShowAllUsersAPIKey { get; set; }
