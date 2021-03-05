@@ -136,9 +136,9 @@ namespace d360.extensions.search
         public const string DYNAMIC_FIELD_PREFIX = DYNAMIC_FIELD + ".";
 
         private const string D3S_FIELD = "d3s";
-        public const string D3S_FIELD_PREFIX = D3S_FIELD + ".";
+        public static readonly string D3S_FIELD_PREFIX = D3S_FIELD + ".";
 
-        private const string MAPPING_VERSION_5 = "{" +
+        private static readonly string MAPPING_VERSION_5 = "{" +
             "\"settings\": {" +
             "  \"index\": {" +
             "    \"number_of_shards\": 2," +
@@ -197,7 +197,7 @@ namespace d360.extensions.search
             "}}";
 
         //This complex intersect synonym query is used by both the indexer and and databasetaskprocessor jobs so we maintain the core of the query in one place
-        public const string INTERSECT_SYNONYM_QUERY = @"select 
+        public static readonly string INTERSECT_SYNONYM_QUERY = @"select 
                 I.ID,
                 'S' as 'Direction',
                 SubjectAdv.DisplayValue as 'Synonym',
@@ -365,7 +365,7 @@ namespace d360.extensions.search
 
             if (string.IsNullOrEmpty(SearchServerUrl))
             {
-                throw new Exception("DEV ERROR - NO SEARCH BASE URL SPECIFIED.");
+                throw new ArgumentException("DEV ERROR - NO SEARCH BASE URL SPECIFIED.");
             }
 
             var uri = new Uri("http://" + SearchServerUrl);
@@ -374,7 +374,7 @@ namespace d360.extensions.search
         }
 
         /// <summary>
-        /// Create an index if id doesnt exist
+        /// Create an index if it doesnt exist
         /// </summary>
         /// <param name="companyID"></param>
         private void CreateIndexIfNotExists(int companyID)
@@ -391,7 +391,13 @@ namespace d360.extensions.search
                 }
                 var response = client.LowLevel.IndicesCreate<CreateResponse>(indexName, esSettings);
                 if (!response.IsValid)
-                    throw new ApplicationException(response.OriginalException.Message);
+                {
+                    //If Resource already exist, no reason to complain
+                    if (response.ServerError.Error.Type != "resource_already_exists_exception")
+                    {
+                        throw new ArgumentException(response.OriginalException.Message);
+                    }
+                }
             }
 
         }
@@ -411,7 +417,7 @@ namespace d360.extensions.search
                 JObject result = JObject.Parse(response.Body);
                 if (!Version.TryParse((string)result.SelectToken("version.number"), out ver))
                 {
-                    throw new ApplicationException("Could not determine server version");
+                    throw new ArgumentException("Could not determine server version");
                 }
             }
             return ver;
@@ -444,7 +450,7 @@ namespace d360.extensions.search
                 var response = client.DeleteIndex(indexName);
                 if (!response.IsValid)
                 {
-                    throw new ApplicationException(response.OriginalException.Message);
+                    throw new ArgumentException(response.OriginalException.Message);
                 }
             }
         }
@@ -453,7 +459,16 @@ namespace d360.extensions.search
         {
             if (!string.IsNullOrEmpty(input))
             {
-                input = input.Replace("\r", "").Replace("\n", "").Replace("\v", "").Replace("\t", "").Replace("\\", "\\\\").Replace("\"", "\\\"");
+                input = input
+                    .Replace("\a", "")
+                    .Replace("\b", "")
+                    .Replace("\r", "")
+                    .Replace("\n", "")
+                    .Replace("\f", "")
+                    .Replace("\v", "")
+                    .Replace("\t", "")
+                    .Replace("\\", "\\\\")
+                    .Replace("\"", "\\\"");
                 if (removeTags && input.Contains("<") && input.Contains(">"))
                 {
                     input = core.helpers.HtmlHelper.RemoveTags(input);
@@ -494,7 +509,6 @@ namespace d360.extensions.search
 
                 var sb = new StringBuilder();
 
-                var indexName = GetCompanyIndexName(companyId);
                 foreach (var item in batch)
                 {
                     sb.Append("{\"index\":{\"_id\":\"");
@@ -513,14 +527,14 @@ namespace d360.extensions.search
 
                 if (!bulkResponse.Success)
                 {
-                    throw new ApplicationException(bulkResponse.OriginalException.Message);
+                    throw new ArgumentException(bulkResponse.OriginalException.Message);
                 }
 
                 var result = JObject.Parse(bulkResponse.Body);
 
                 if (result == null)
                 {
-                    throw new Exception("Invalid response no data");
+                    throw new ArgumentException("Invalid response no data");
                 }
 
                 var hasErrors = result.GetValue("errors");
@@ -542,7 +556,7 @@ namespace d360.extensions.search
             }
             if (postingErrors.Count > 0)
             {
-                throw new Exception("Add to index individual errors: " + string.Join(Environment.NewLine, postingErrors.ToArray()));
+                throw new ArgumentException("Add to index individual errors: " + string.Join(Environment.NewLine, postingErrors.ToArray()));
             }
         }
 
@@ -564,12 +578,14 @@ namespace d360.extensions.search
                 Field = new Nest.Field(D3S_FIELD_PREFIX + "Category"),
                 Value = category
             });
-            if(!string.IsNullOrEmpty(assetType))
+            if (!string.IsNullOrEmpty(assetType))
+            {
                 termQueries.Add(new TermQuery
                 {
                     Field = new Nest.Field(D3S_FIELD_PREFIX + "AssetType"),
                     Value = assetType
                 });
+            }
 
             SearchRequest sReq = new SearchRequest
             {
@@ -582,10 +598,18 @@ namespace d360.extensions.search
             var client = new ElasticClient(GetConnectionSettings(companyID));
             //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
             string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
-            StringResponse deleteResponse = client.LowLevel.DeleteByQuery<StringResponse>(GetCompanyIndexName(companyID), jsonString);
+
+            //Refresh all shards after the query delete to avoid 409 versioning conflicts
+            DeleteByQueryRequestParameters requestParameters = new DeleteByQueryRequestParameters
+            {
+                Refresh = true
+            };
+            StringResponse deleteResponse = client.LowLevel.DeleteByQuery<StringResponse>(GetCompanyIndexName(companyID), jsonString, requestParameters);
 
             if (!deleteResponse.Success)
-                throw new ApplicationException(deleteResponse.OriginalException.Message);
+            {
+                throw new ArgumentException(deleteResponse.OriginalException.Message);
+            }
         }
 
         public void ClearIndex(int companyID, Guid assetTypeGuid)
@@ -608,7 +632,7 @@ namespace d360.extensions.search
 
             if (!deleteResponse.Success)
             {
-                throw new ApplicationException(deleteResponse.OriginalException.Message);
+                throw new ArgumentException(deleteResponse.OriginalException.Message);
             }
         }
 
@@ -742,7 +766,8 @@ namespace d360.extensions.search
                 //deserialize advanced search parameters
                 var advFilters = JsonConvert.DeserializeObject<List<AdvancedSearchParameters>>(advancedFilterJSON);
 
-                var compositeSearchTerm = string.Empty;
+                
+                var compositeSearchTermBuilder = new StringBuilder();
                 SearchConnector con = SearchConnector.And;
 
                 foreach (var item in advFilters)
@@ -767,9 +792,9 @@ namespace d360.extensions.search
                         field = DYNAMIC_FIELD_PREFIX + field;
                     }
 
-                    if (!string.IsNullOrEmpty(compositeSearchTerm))
+                    if (!string.IsNullOrEmpty(compositeSearchTermBuilder.ToString()))
                     {
-                        compositeSearchTerm += $" {con.ToString().ToUpper()} ";
+                        compositeSearchTermBuilder.Append($" {con.ToString().ToUpper()} ");
                     }
                     con = item.connector;
 
@@ -785,11 +810,11 @@ namespace d360.extensions.search
                         searchTerm += "*";
                     }
 
-                    compositeSearchTerm += $"{field}:{searchTerm}";
+                    compositeSearchTermBuilder.Append($"{field}:{searchTerm}");
                 }
                 coreQuery = new QueryStringQuery
                 {
-                    Query = compositeSearchTerm,
+                    Query = compositeSearchTermBuilder.ToString(),
                     AnalyzeWildcard = true
                 };
             }
@@ -896,7 +921,7 @@ namespace d360.extensions.search
             var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
 
             if (!response.Success)
-                throw new ApplicationException(response.OriginalException.Message);
+                throw new ArgumentException(response.OriginalException.Message);
 
             var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
 
@@ -971,7 +996,7 @@ namespace d360.extensions.search
                 case '4':
                     return TextQueryType.PhrasePrefix;
                 default:
-                    throw new Exception("Cannot map " + strategy);
+                    throw new ArgumentException("Cannot map " + strategy);
             }
         }
 
@@ -1006,10 +1031,9 @@ namespace d360.extensions.search
              * Pos [2]: Core search
              *      0,1,2,3,4 = Search Type as defined by MapStrategyToType
              */
-            char[] _strategy = new[] { '0', '0', '0' };
             int _defaultStrategy = 90; //'Original/current' is 90: best_fields, boosts included, no augment
-            _strategy = ((int?)queryRequest.FieldBoosters.FirstOrDefault(fb => fb.Field == "_strategy")?.Boost ?? _defaultStrategy).ToString().PadLeft(3,'0').ToCharArray();
-
+            char[] _strategy = ((int?)queryRequest.FieldBoosters.FirstOrDefault(fb => fb.Field == "_strategy")?.Boost ?? _defaultStrategy).ToString().PadLeft(3, '0').ToCharArray();
+            
             //Search in the DYNAMIC_FIELD_PREFIX.* namespace
             List<Nest.Field> mainFields = new List<Nest.Field>
             {
@@ -1057,7 +1081,7 @@ namespace d360.extensions.search
             switch (mainStrategy)
             {
                 case STRATEGY_NONE:
-                    throw new Exception("Cannot use a search strategy of none");
+                    throw new ArgumentException("Cannot use a search strategy of none");
                 case STRATEGY_PartialUID:
                     shouldQueries.Add(new PrefixQuery
                     {
@@ -1153,7 +1177,7 @@ namespace d360.extensions.search
                     }
                     break;
                 default:
-                    throw new Exception("Unknown search strategy: "+mainStrategy);
+                    throw new ArgumentException("Unknown search strategy: "+mainStrategy);
             }
 
             foreach (FieldFilter fieldFilter in queryRequest.FieldFilters)
@@ -1237,7 +1261,6 @@ namespace d360.extensions.search
                             Query = tagSearch
                         });
                         break;
-                    case STRATEGY_QueryString:
                     default:
                         tagQueries.Add(new QueryStringQuery
                         {
@@ -1387,7 +1410,7 @@ namespace d360.extensions.search
 
             if (!response.Success)
             {
-                throw new ApplicationException(response.OriginalException.Message);
+                throw new ArgumentException(response.OriginalException.Message);
             }
 
             var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
@@ -1463,7 +1486,9 @@ namespace d360.extensions.search
             var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
 
             if (!response.Success)
-                throw new ApplicationException(response.OriginalException.Message);
+            {
+                throw new ArgumentException(response.OriginalException.Message);
+            }
 
             var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
 
@@ -1485,7 +1510,9 @@ namespace d360.extensions.search
             result.ElapsedMS = searchResults.took;
 
             if (searchResults.hits != null)
+            {
                 result.Matches = searchResults.hits.total;
+            }
 
             return result;
         }
@@ -1563,7 +1590,7 @@ namespace d360.extensions.search
                 return string.Empty;
             }
 
-            var temp = key.Trim().ToUpper();
+            var temp = key.Trim().ToUpperInvariant();
 
             switch (temp)
             {
@@ -1604,10 +1631,14 @@ namespace d360.extensions.search
         public IEnumerable<TypeaheadResult> GetTypeaheadResults(int companyID, int resourceID, string phrase, QueryLimitation queryLimit, int size = 10, string category = "")
         {
             if (string.IsNullOrEmpty(phrase))
+            {
                 return new List<TypeaheadResult>();
+            }
 
             if (phrase.Length > QueryRequest.SEARCH_TERM_MAX_LENGTH)
+            {
                 phrase = phrase.Substring(0, QueryRequest.SEARCH_TERM_MAX_LENGTH);
+            }
 
             Nest.Field fldName = new Nest.Field(DYNAMIC_FIELD_PREFIX + "Name");
             Nest.Field fldCategory = new Nest.Field(D3S_FIELD_PREFIX + "Category");
@@ -1622,20 +1653,20 @@ namespace d360.extensions.search
                 mustClauses.Add(new PrefixQuery
                 {
                     Field = new Nest.Field(D3S_FIELD_PREFIX + "Uid"),
-                    Value = phrase.ToLower()
+                    Value = phrase.ToLowerInvariant()
                 });
                 fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Uid");
-                tagSearch = phrase.ToLower();
+                tagSearch = phrase.ToLowerInvariant();
             }
             else if (isGuid == 2)
             {
                 mustClauses.Add(new TermQuery
                 {
                     Field = new Nest.Field(D3S_FIELD_PREFIX + "Uid"),
-                    Value = phrase.ToLower()
+                    Value = phrase.ToLowerInvariant()
                 });
                 fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Uid");
-                tagSearch = phrase.ToLower();
+                tagSearch = phrase.ToLowerInvariant();
             }
             else
             {
@@ -1643,8 +1674,8 @@ namespace d360.extensions.search
                  * queried using 'match' and the last word will be 'prefix' or 'match'
                  * For searching tags, an asterisk is appended and a regular 'query_string' query is used 
                  */
-                Queue<string> parts = new Queue<string>(phrase.ToLower().Split(' '));
-                tagSearch = EscapeSpecialCharacters(phrase.ToLower()) + (!phrase.EndsWith("*") ? "*" : "");
+                Queue<string> parts = new Queue<string>(phrase.ToLowerInvariant().Split(' '));
+                tagSearch = EscapeSpecialCharacters(phrase.ToLowerInvariant()) + (!phrase.EndsWith("*") ? "*" : "");
 
                 while (parts.Count > 0)
                 {
@@ -1757,7 +1788,7 @@ namespace d360.extensions.search
             var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
 
             if (!response.Success)
-                throw new ApplicationException(response.OriginalException.Message);
+                throw new ArgumentException(response.OriginalException.Message);
 
             var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
 
@@ -1777,7 +1808,7 @@ namespace d360.extensions.search
         private string GetTypeAheadSynonymDisplayType(SearchResultsHitModel h)
         {
             var type = GetPropertyValue<string>(h._source, "SynonymForObject");
-            if ((type ?? string.Empty).ToUpper() == "ARTIFACT")
+            if ((type ?? string.Empty).ToUpperInvariant() == "ARTIFACT")
             {
                 return $"{MapCategoryToFriendlyName(type)} - {GetPropertyValue<string>(h._source, "SynonymForObjectType")}";
             }
@@ -1851,7 +1882,7 @@ namespace d360.extensions.search
             var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
 
             if (!response.Success)
-                throw new ApplicationException(response.OriginalException.Message);
+                throw new ArgumentException(response.OriginalException.Message);
 
             var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
 
@@ -1887,8 +1918,10 @@ namespace d360.extensions.search
 
             if (string.IsNullOrEmpty(synonymFor))
             {
-                if ((h.d3sCategory ?? "").ToUpper() != "ARTIFACT")
+                if ((h.d3sCategory ?? "").ToUpperInvariant() != "ARTIFACT")
+                {
                     return name;
+                }
 
                 var taxonomy = GetPropertyValue<string>(h._source, DYNAMIC_FIELD_PREFIX + "Taxonomy");
 
@@ -1905,7 +1938,7 @@ namespace d360.extensions.search
             var synonymFor = GetPropertyValue<string>(h._source, DYNAMIC_FIELD_PREFIX + "SynonymFor");
             var taxonomy = "";
 
-            if ((h.d3sCategory ?? "").ToUpper() == "ARTIFACT")
+            if ((h.d3sCategory ?? "").ToUpperInvariant() == "ARTIFACT")
             {
                 taxonomy = GetPropertyValue<string>(h._source, DYNAMIC_FIELD_PREFIX + "Taxonomy");
 
@@ -1924,7 +1957,10 @@ namespace d360.extensions.search
 
             var highlightVal = GetPropertyValue<string>(h.highlight, DYNAMIC_FIELD_PREFIX + "Name");
 
-            if (!string.IsNullOrEmpty(highlightVal)) return highlightVal + (synonymFor ?? "") + (taxonomy ?? "");
+            if (!string.IsNullOrEmpty(highlightVal))
+            {
+                return highlightVal + (synonymFor ?? "") + (taxonomy ?? "");
+            }
 
             return GetPropertyValue<string>(h._source, DYNAMIC_FIELD_PREFIX + "Name") + (synonymFor ?? "") + (taxonomy ?? "");
         }
@@ -1940,10 +1976,11 @@ namespace d360.extensions.search
 
         private Guid? GetGuidPropertyIfExists(SearchResultsHitModel h, string propName)
         {
-            Guid result = new Guid();
-            Guid.TryParse(GetPropertyValue<string>(h._source, propName), out result);
+            Guid.TryParse(GetPropertyValue<string>(h._source, propName), out var result);
             if (result == Guid.Empty)
+            {
                 return null;
+            }
             return result;
         }
 
@@ -1953,16 +1990,20 @@ namespace d360.extensions.search
             List<IndexTag> highlights = new List<IndexTag>();
 
             if (h._source == null || (onlyHits && h.inner_hits == null))
+            {
                 return tags;
+            }
 
             if (h.inner_hits.TryGetValue(D3S_FIELD_PREFIX + "Tags", out JToken innerHits))
             {
 
                 if (highlightHits && h.inner_hits != null)
+                {
                     highlights = innerHits.SelectTokens("hits.hits[*]")
                         .Select(t => t.ToObject<SearchTagInnerHitsModel>())
                         .Select(hi => new IndexTag { Uid = hi._source.Uid, Value = hi._source.Value, Highlight = hi.GetHighLightValue() })
                         .ToList();
+                }
 
                 if (onlyHits && highlightHits)
                 {
@@ -1972,12 +2013,18 @@ namespace d360.extensions.search
 
                 //Find _source tags from either inner_hits or _source
                 if (onlyHits)
+                {
                     tags = innerHits.SelectTokens("hits.hits[*]._source").Select(t => t.ToObject<IndexTag>()).ToList();
+                }
                 else
+                {
                     tags = h._source.SelectTokens(D3S_FIELD_PREFIX + "Tags[*]").Select(t => t.ToObject<IndexTag>()).ToList();
+                }
 
                 if (highlightHits)
+                {
                     tags = highlights.Union(tags).ToList();
+                }
             }
 
             return tags.OrderBy(t => t.Value).ToList();
@@ -2011,7 +2058,10 @@ namespace d360.extensions.search
 
         public void RemoveFromIndex(IndexObjectModel item)
         {
-            if (item == null) return;
+            if (item == null)
+            {
+                return;
+            }
 
             CreateIndexIfNotExists(item.CompanyID);
 
@@ -2019,7 +2069,9 @@ namespace d360.extensions.search
             var response = client.Delete<StringResponse>(GetCompanyIndexName(item.CompanyID), "_doc", item.getObjectID());
 
             if (!response.Success)
-                throw new ApplicationException(response.OriginalException.Message);
+            {
+                throw new ArgumentException(response.OriginalException.Message);
+            }
         }
 
         public void RemoveFromIndex(IEnumerable<IndexObjectModel> items)
@@ -2043,16 +2095,23 @@ namespace d360.extensions.search
             var bulkResponse = client.Bulk<StringResponse>(GetCompanyIndexName(companyId), sb.ToString());
 
             if (!bulkResponse.Success)
-                throw new ApplicationException(bulkResponse.OriginalException.Message);
+            {
+                throw new ArgumentException(bulkResponse.OriginalException.Message);
+            }
 
             var result = JObject.Parse(bulkResponse.Body);
 
-            if (result == null) throw new Exception("Invalid response no data");
+            if (result == null)
+            {
+                throw new Exception("Invalid response no data");
+            }
 
             var hasErrors = result.GetValue("errors");
 
             if (hasErrors.Value<bool>())
+            {
                 throw new Exception(bulkResponse.Body);
+            }
         }
 
         public void UpdateInIndex(IndexObjectModel item)
@@ -2065,7 +2124,7 @@ namespace d360.extensions.search
             var response = client.Update<StringResponse>(GetCompanyIndexName(item.CompanyID), "_doc", item.getObjectID(), CreateDocument(item, true));
 
             if (!response.Success)
-                throw new ApplicationException(response.OriginalException.Message);
+                throw new ArgumentException(response.OriginalException.Message);
         }
 
         public void UpdateInIndex(IEnumerable<IndexObjectModel> items)
@@ -2098,7 +2157,7 @@ namespace d360.extensions.search
                 exMessage.Append("ES_DebugInformation: ");
                 exMessage.AppendLine(bulkResponse.DebugInformation);
 
-                throw new ApplicationException(exMessage.ToString()); ;
+                throw new ArgumentException(exMessage.ToString()); 
             }
 
             var result = JObject.Parse(bulkResponse.Body);

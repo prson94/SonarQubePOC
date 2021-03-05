@@ -35,7 +35,7 @@ namespace d360.model.helpers
             this.CompanyContext = ctx;
             this.parseType = type;
             this.registerTokensAsFields = registerTokensAsFields;
-            allowedDefaultFields.Add(new DefaultFilter("Code", "Code", SqlFieldType.Text));
+            allowedDefaultFields.Add(new DefaultFilter("Code", "A.Code", SqlFieldType.Text));
             allowedDefaultFields.Add(new DefaultFilter("Color", "JSON_VALUE((select top 1 * from dbo.GetAssetColorJsonByColor(A.Color)), '$.Name')", SqlFieldType.Text));
 
             if (includeParent)

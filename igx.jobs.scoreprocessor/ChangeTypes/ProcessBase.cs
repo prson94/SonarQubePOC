@@ -74,7 +74,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                             {
                                 if (fieldType.Type == DataType.Lookup.ToString() && fieldType.AllowMultipleValues)
                                 {
-                                    var fieldValues = fieldValue.Values.Split(',');
+                                    var fieldValues = (fieldValue.Values ?? "").Split(',');
                                     if (i.ConditionType == MetricConditionType.And)
                                     {
                                         if (i.Operator == Operator.NotEquals)

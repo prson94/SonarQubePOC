@@ -42,6 +42,7 @@ namespace d360.core.entities
     public class CommentVoteDetail : BaseObject
     {
         [DataMember, Key, Column(Order = 1)]
+        [JsonConverter(typeof(StringEnumConverter))]
         public Emoji emoji { get; set; }
 
         [DataMember, Key, Column(Order = 2)]

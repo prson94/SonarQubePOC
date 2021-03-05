@@ -142,7 +142,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
                                 if (emojis) {
                                     emojis.Count++;
                                 } else {
-                                    this.comment.Emojis.push({ Emoji: emoji, Count: 1 });
+                                    this.comment.Emojis.push({ Emoji: Emoji[emoji], Count: 1 });
                                 }
                             });
                             this.calculateVotes();
@@ -153,8 +153,8 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     }
 
     private calculateVotes() {
-        this.downVotes = this.comment.Emojis.filter((e) => e.Emoji === Emoji.ThumbsDown).reduce((prev, curr) => prev + curr.Count, 0);
-        this.upVotes = this.comment.Emojis.filter((e) => e.Emoji === Emoji.ThumbsUp).reduce((prev, curr) => prev + curr.Count, 0);
+        this.downVotes = this.comment.Emojis.filter((e) => e.Emoji === Emoji[Emoji.ThumbsDown]).reduce((prev, curr) => prev + curr.Count, 0);
+        this.upVotes = this.comment.Emojis.filter((e) => e.Emoji === Emoji[Emoji.ThumbsUp]).reduce((prev, curr) => prev + curr.Count, 0);
     }
 
     private deleteCommentClick() {

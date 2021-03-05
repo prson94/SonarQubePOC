@@ -27,7 +27,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
     public conditionGroupLink = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Conditio";
-    public conditionAndWeightLink = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Conditio";
+    public conditionAndWeightLink = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Asset_conditions";
     //#region Tooltip data
 
     measurestooltip: string = 'Asset conditions can be used to more specifically target assets of the chosen type to be scored by your measures. '
@@ -44,12 +44,12 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         + 'Grouping measures do not have asset conditions, as they are not applied directly to the assets.';
 
 
-    conditionWeightTootlip: string = "<div>You can override the <b>Weight</b> set in the <b>Detiail</b> section here, specifically for assets which meet the conditions of this group.</div>"
+    conditionWeightTootlip: string = "<div>You can override the <b>Weight</b> set in the <b>Detail</b> section here, specifically for assets which meet the conditions of this group.</div>"
         + "<div style=\"padding-top: 8px;\" ><a (click)=\"test()\" target=\"_blank\" href=\"" + this.conditionGroupLink + "\"><i class=\"fa fa-external-link\"></i> Read more about Asset Conditions and Weighting</a></div>";
 
     assetConditionsAndWeightingTooltip: string = "<div>Asset Conditions and Weighting allows you to target specific subsets of your scoring asset type, "
         + "either choosing to apply your measures to only those assets which match your conditions, or applying different weights to different matches.</div>"
-        + "<div style=\"padding-top: 8px;\"><a (click)=\"test()\" target=\"_blank\" href=\"" + this.conditionGroupLink + "\"><i class=\"fa fa-external-link\"></i> Read more about Asset Conditions and Weighting</a></div>";
+        + "<div style=\"padding-top: 8px;\"><a (click)=\"test()\" target=\"_blank\" href=\"" + this.conditionAndWeightLink + "\"><i class=\"fa fa-external-link\"></i> Read more about Asset Conditions and Weighting</a></div>";
 
 
     //#endregion
@@ -77,8 +77,8 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     verb = "Add";
     canAddGroup: boolean = false;
     private baseMenuItems = [
-        { "title": "Delete" },
-        { "title": "Duplicate" }
+        { "title": "Duplicate" },
+        { "title": "Delete" }
     ];
 
 
@@ -151,9 +151,11 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         let itemToDupe = this.conditionGroups.find(x => x.Position == pos);
         let newGroup = _.cloneDeep(itemToDupe);
         newGroup.Position = this.getMaxPositionForGroups();
+        newGroup.DisplayOrder = this.getMaxDisplayOrderForGroups();
         this.addConditionGroupFormControls(newGroup.Position);
         this.conditionGroups.push(newGroup);
     }
+
     moveGroupItems(from, to) {
         let temp = from;
         let fromitem = this.conditionGroups.find(x => x.DisplayOrder == from);
@@ -162,13 +164,14 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         fromitem.DisplayOrder = to
         toitem.DisplayOrder = temp;
         this.orderConditionGroups();
-}
+    }
+
     addNewGroup() {
         let newGroup = new MetricAssetVersionConditionViewModel();
         newGroup.Position = this.getMaxPositionForGroups();
-        newGroup.DisplayOrder = newGroup.Position;
+        newGroup.DisplayOrder = this.getMaxDisplayOrderForGroups();
         newGroup.MatchType = "All";
-        newGroup.DisplayWeight = this.displayWeight;
+        newGroup.DisplayWeight = null;
         newGroup.conditionItemFields = [];
         this.addConditionGroupFormControls(newGroup.Position);
 
@@ -178,6 +181,13 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     getMaxPositionForGroups(): number {
         if (this.conditionGroups.length > 0) {
             return (this.conditionGroups.map(x => x.Position).sort((a, b) => b - a)[0] + 1);
+        } else {
+            return 0;
+        }
+    }
+    getMaxDisplayOrderForGroups(): number {
+        if (this.conditionGroups.length > 0) {
+            return (this.conditionGroups.map(x => x.DisplayOrder).sort((a, b) => b - a)[0] + 1);
         } else {
             return 0;
         }

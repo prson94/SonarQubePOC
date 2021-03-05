@@ -138,14 +138,6 @@ export class RelationshipsService extends BaseObservableService {
             );
     }
 
-    getPossibleTechnicalRelations(id: number): Observable<PossibleTechnicalRelationship[]> {
-        return this.http.get(`relations/GetPossibleRelationshipsObjectByIntersect?id=${id}`)
-            .pipe(
-                map(response => <PossibleTechnicalRelationship[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     getObjectRelations(objectType: string, objectId: number): Observable<ObjectRelationship[]> {
         return this.http.get(`/api/${objectType}/${objectId}/relationshipTypes`)
             .pipe(
@@ -235,15 +227,6 @@ export class RelationshipsService extends BaseObservableService {
                 map(response => response),
                 catchError(err => this.handleError(err))
             );
-    }
-
-    getTechnicalRelationships(objectType: string, objectId: number): Observable<any> {
-        return this.http.get(`/api/${objectType}/${objectId}/relations`)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-
     }
 
     exportObjectRelationshipsToExcel(objectType: string, objectId: number, targetType: string, targetTypeId: number, intersectTypeID: number, queryString: string, criticalOnly?: boolean) {

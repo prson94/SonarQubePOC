@@ -27,6 +27,7 @@ export const SEARCH_VALUE_ACCESSOR: any = {
 
 export class SearchFieldComponent implements ControlValueAccessor, OnInit, OnDestroy {
     @Input() mode: string = 'Enter';
+    @Input() maxLength: number = 2500;
     @Input() placeholder: string = 'Search';
     @Input() tabindex: number = 0;
     @Input() disabled: boolean = false;

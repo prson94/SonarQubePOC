@@ -6,7 +6,7 @@
                 &nbsp; <d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>
             </header>
 
-            <p-table #dt [value]="fieldUpdate.Field" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="5" [rowsPerPageOptions]="defaultPagingOptions">
+            <p-table #dt [value]="fieldUpdate.Field" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="5" [rowsPerPageOptions]="[5,10,25,50,100]">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Field</th>

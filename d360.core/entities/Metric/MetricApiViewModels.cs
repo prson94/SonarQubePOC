@@ -585,8 +585,9 @@ namespace d360.core.entities.Metric
         
         public List<MetricAssetVersionConditionViewModel> ConditionGroups { get; set; } = new List<MetricAssetVersionConditionViewModel>();
         
-        public bool HasResults { get; set; } = false;        
-        
+        public bool HasResults { get; set; } = false;
+        public bool MatchConditionsOnly { get; set; } = false;
+
         public string DefinitionJson { get; set; }
         public MetricAssetDefinitionViewModel Definition { get; set; }
 

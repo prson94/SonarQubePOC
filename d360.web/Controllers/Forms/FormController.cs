@@ -775,6 +775,7 @@ namespace d360.web.Controllers
             model.HomePageBackgroundImage = (settings.Any(i => i.SettingID == 45) ? settings.Single(i => i.SettingID == 45).Value : "");
             model.BrowserTitlePrefix = (settings.Any(i => i.SettingID == 33) ? settings.Single(i => i.SettingID == 33).Value : "D3S");
             model.AllowedOrigins = (settings.Any(i => i.SettingID == 76) ? settings.Single(i => i.SettingID == 76).Value : "");
+            model.FramingDomains = (settings.Any(i => i.SettingID == 77) ? settings.Single(i => i.SettingID == 77).Value : "");
 
 
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
@@ -1053,6 +1054,21 @@ namespace d360.web.Controllers
                         .Where(o => !string.IsNullOrWhiteSpace(o) && o != "*")
                         .ToList();
                     updateCompanySetting(settings, 76, string.Join(",", origins));
+                }
+
+
+                if (string.IsNullOrWhiteSpace(formModel.FramingDomains))
+                {
+                    updateCompanySetting(settings, 77, null);
+                }
+                else
+                {
+                    var domains = formModel.FramingDomains
+                        .Split(',')
+                        .Select(o => o.Trim())
+                        .Where(o => !string.IsNullOrWhiteSpace(o) && o != "*")
+                        .ToList();
+                    updateCompanySetting(settings, 77, string.Join(",", domains));
                 }
 
                 #endregion
@@ -2313,7 +2329,17 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             {
                 var parent = Company.GetParentObject(id, SystemObjects.ReferenceItem);
                 var sql = "select DisplayValue, uid from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
-                list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentUid", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.uid), Selected = i.uid == (parent != null ? parent.uid : Guid.Empty)  }).ToList() });
+                list.Add(new EditableField { 
+                    Row = row++, 
+                    Column = 1, 
+                    FieldName = "ParentUid", 
+                    Name = parentType.Name, 
+                    FieldType = DataType.Lookup.ToString(), 
+                    Required = true, 
+                    MultiSelect = false,
+                    Value = ((parent != null) ? (parent.uid.ToString() ?? "").ToLower() : ""),
+                    Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.uid), Selected = i.uid == (parent != null ? parent.uid : Guid.Empty)  }).ToList() 
+                });
             }
 
             list = loadDynamicFields(SystemObjects.ReferenceItem.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, a.AssetType.ObjectID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), row);

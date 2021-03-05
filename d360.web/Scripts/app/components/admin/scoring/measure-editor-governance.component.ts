@@ -247,6 +247,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                 this.model.Definition = new MetricAssetDefinitionViewModel();
                 this.model.Definition.Governance = new MetricAssetDefinitionGovernanceViewModel();
                 this.model.Definition.Governance.Check = null;
+                this.model.MatchConditionsOnly = true;
             }
             this.isLoading = false;
         }
@@ -275,7 +276,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                 condition.value = this.model.Definition.Governance.Field.Values[0];
                 condition.value2 = this.model.Definition.Governance.Field.Values.length > 1 ? this.model.Definition.Governance.Field.Values[1] : null;
 
-                let field = this.screenReferences.fields.filter(x => x.ApiName == condition.field)[0]
+                let field = this.screenReferences.fields.filter((x) => x.ApiName === this.model.Definition.Governance.Field.FieldTypeName)[0]
 
                 if (field && (field.Type == "Date" || field.Type == "DateTime")) {
                     let date = new Date(condition.value);

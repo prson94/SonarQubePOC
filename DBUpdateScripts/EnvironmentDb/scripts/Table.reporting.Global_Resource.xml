@@ -61,7 +61,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="TKlok" id="Table.reporting.Global_Resource-ReportingGlobalResource_AfterUpsert-v3">
+  <changeSet author="TKlok" id="Table.reporting.Global_Resource-ReportingGlobalResource_AfterUpsert-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -97,7 +97,7 @@ BEGIN
 			
 			
 		INSERT INTO graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn)
-		SELECT A.ID, O.[uid], a.AssetTypeID, AT.Uid as AssetTypeUid, O.[State], O.UpdatedOn
+		SELECT A.ID, O.[uid], a.AssetTypeID, AT.Uid as AssetTypeUid, O.[State], coalesce(O.UpdatedOn, getutcdate())
 		FROM	inserted O
 				INNER JOIN Asset A ON A.uid = O.uid
 				INNER JOIN AssetType AT on a.AssetTypeID = AT.ID

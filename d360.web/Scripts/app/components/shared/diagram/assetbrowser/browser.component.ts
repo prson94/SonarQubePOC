@@ -95,6 +95,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     panel_Loading = false;
     panel_InformationDisabled = true;
+    panel_InformationHasReadAccess = false;
     panel_TabIndex = 0;
 
     panelModel: AssetBrowserPanelModel = { selectedCommand: AssetBrowserPanelCommand.None, AddVisible: false, AlertVisible: false, FiltersVisible: false, InformationVisible: false, SettingsVisible: false };
@@ -566,11 +567,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.diagram.model.insertArrayItem(node.owners, ix, owner);
                 this.diagram.model.setDataProperty(owner, 'expanded', false);
                 this.diagram.model.setDataProperty(owner, 'showLoading', false);
-                this.helper_UpdateDiagramLayout();
-                this.helper_HighlightPath(null, lastHighlightedPart);
-
+               
                 if (currentAnimation)
                     currentAnimation.stop();
+
+                this.helper_UpdateDiagramLayout();
+                this.helper_HighlightPath(null, lastHighlightedPart);
             }
             else {
 
@@ -838,7 +840,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     }
 
                     if (uid !== '' && uid != this.emptyUid) {
-                        this.panel_InformationDisabled = !data.hasAssetReadAccess;
+                        this.panel_InformationDisabled = false;
+                        this.panel_InformationHasReadAccess = data.hasAssetReadAccess;
+
                         if (this.selectedDiagramAsset == null || this.selectedDiagramAsset.Uid != uid) {
                             if (this.panelModel.AlertVisible) {
                                 this.selectedAssetsWithAlerts = [uid];
@@ -1266,6 +1270,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.groupTemplateMap.add("FocalPortGroup", this.template_FocalRootNode());
         this.diagram.groupTemplateMap.add("PortGroup", this.template_RootNode());
         this.diagram.groupTemplateMap.add("Group", this.template_AncestorNode());
+        this.diagram.groupTemplateMap.add("AncestorNodeOnlyText", this.template_AncestorNodeOnlyText());
 
         this.diagram.nodeTemplateMap.add("MoreData", this.template_RevealNode());
         this.diagram.groupTemplateMap.add("HiddenDisabledNode", this.template_HiddenDisabledNode());
@@ -1401,6 +1406,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     }
                 }
             }
+            this.diagram.rebuildParts();
         });
     }
 
@@ -1694,7 +1700,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private helper_ShowDetail(assetUid: string) {
+        if (assetUid === this.emptyUid) {
+            return;
+        }
         this.panel_TabIndex = 0;
+        if (!this.panel_InformationHasReadAccess)
+            return;
 
         this.panel_Loading = true;
         this.browserService.getDetailByAsset(assetUid).subscribe(response => {
@@ -2106,6 +2117,64 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 )
             ),
 
+            // end Vertical Panel
+        );
+    }
+
+    private template_AncestorNodeOnlyText(): go.Group {
+        var self = this;
+        return this.g(
+            go.Group,
+            "Auto",
+            {
+                background: "transparent",
+                contextMenu: this.template_ContextMenu(),
+                click: (e, obj) => this.helper_HighlightPath(e, obj as any),
+                computesBoundsAfterDrag: true,
+                handlesDragDropForMembers: true,
+                stretch: go.GraphObject.Horizontal,
+                movable: false,
+                layout:
+                    this.g(
+                        go.GridLayout,
+                        {
+                            wrappingColumn: 1, alignment: go.GridLayout.Position,
+                            cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4),
+                            comparer: (a, b) => this.helper_SortParts(a, b)
+                        }
+                    )
+            },
+            this.g(
+                go.Shape,
+                "Rectangle",
+                { fill: null, strokeWidth: 2, stretch: go.GraphObject.Horizontal },
+                new go.Binding("stroke", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount))
+            ),
+            this.g(
+                go.Panel,
+                "Vertical",   // title above Placeholder
+                new go.Binding("desiredSize", "", function (obj: go.GraphObject, target: go.GraphObject) {
+                    target.part.findTopLevelPart().part.data["predicateWidth"] = 400;
+                }).ofObject(),
+                new go.Binding("background", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount)),
+                new go.Binding("background", "", v => (v.isHighlighted) ?
+                    go.Brush.mix(this.selectionPathHighlightColor, this.selectionPathHighlightColor, v.backAmount) :
+                    go.Brush.mix(v.data.back, this.lightenBoxColor, v.data.backAmount)
+                ).ofObject(),
+                this.g(
+                    go.TextBlock,
+                    {
+                        margin: 5,
+                        editable: false,
+                        font: this.fontLabel,
+                        textAlign: "center",
+                        overflow: go.TextBlock.OverflowClip,
+                        width: 240
+                    },
+                    new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
+                    new go.Binding("text", "text").makeTwoWay()
+                ),// end of Title containing Panel
+            ),  // end Horizontal Panel
             // end Vertical Panel
         );
     }
@@ -3237,12 +3306,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         },
                         new go.Binding("mouseEnter", "", (val) => {
                             return (ev: go.InputEvent, obj: go.GraphObject) => {
-                                this.setRelationshipBadgeHoverState(val.part.data["hierarchyKey"], ev, val.data, true, this);
+                                this.setRelationshipBadgeHoverState(val, ev, val.data, true, this);
                             }
                         }).ofObject(),
                         new go.Binding("mouseLeave", "", (val) => {
                             return (ev: go.InputEvent, obj: go.GraphObject) => {
-                                this.setRelationshipBadgeHoverState(val.part.data["hierarchyKey"], ev, val.data, false, this);
+                                this.setRelationshipBadgeHoverState(val, ev, val.data, false, this);
                             }
                         }).ofObject(),
                         this.g(go.Shape, "RoundedRectangle",
@@ -3328,12 +3397,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         },
                         new go.Binding("mouseEnter", "", (val) => {
                             return (ev: go.InputEvent, obj: go.GraphObject) => {
-                                this.setRelationshipBadgeHoverState(val.part.data["hierarchyKey"], ev, val.data, true, this);
+                                this.setRelationshipBadgeHoverState(val, ev, val.data, true, this);
                             }
                         }).ofObject(),
                         new go.Binding("mouseLeave", "", (val) => {
                             return (ev: go.InputEvent, obj: go.GraphObject) => {
-                                this.setRelationshipBadgeHoverState(val.part.data["hierarchyKey"], ev, val.data, false, this);
+                                this.setRelationshipBadgeHoverState(val, ev, val.data, false, this);
                             }
                         }).ofObject(),
                         this.g(go.Shape, "RoundedRectangle",
@@ -3376,43 +3445,50 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private isRelationshipBadgeTooltipVisible: boolean = false;
     private relationshipBadgeHtml = "The item in this collection has 'xx' relationships to x other item.";
     private showTooltipTimeout;
-    private setRelationshipBadgeHoverState(hierarchyKey: string, ev: go.InputEvent, data: go.ObjectData, isHover: boolean, self: AssetBrowserComponent) {
-        self.isRelationshipBadgeTooltipVisible = isHover;
-        var refHtmlElement = self.relationshipBadgesTooltipRef.nativeElement as HTMLElement;
-        if (!refHtmlElement) return;
-        if (isHover) {
-            self.relationshipBadgeHtml = self.getRelBadgeTooltip(data, hierarchyKey);
+    private setRelationshipBadgeHoverState(goObj: go.GraphObject, ev: go.InputEvent, data: go.ObjectData, isHover: boolean, self: AssetBrowserComponent) {
+        try {
+            self.isRelationshipBadgeTooltipVisible = isHover;
+            let hierarchyKey: string = goObj.part.data["hierarchyKey"];
+            var refHtmlElement = self.relationshipBadgesTooltipRef.nativeElement as HTMLElement;
+            if (!refHtmlElement) return;
+            if (isHover) {
+                self.relationshipBadgeHtml = self.getRelBadgeTooltip(data, hierarchyKey);
 
-            self.showTooltipTimeout = setTimeout(() => {
-                refHtmlElement.style.display = "block";
-                var diagramPos = (self.diagramRef as ElementRef).nativeElement.getBoundingClientRect();
-                var position = self.diagram.transformDocToView(ev.targetObject.getDocumentBounds().position);
+                self.showTooltipTimeout = setTimeout(() => {
+                    refHtmlElement.style.display = "block";
+                    var diagramPos = (self.diagramRef as ElementRef).nativeElement.getBoundingClientRect();
+                    var position = self.diagram.transformDocToView(ev.targetObject.getDocumentBounds().position);
 
-                var positionX = (diagramPos.x + position.x);
+                    var positionX = (diagramPos.x + position.x);
 
-                var leftDiff = positionX - refHtmlElement.clientWidth / 2;
-                if (leftDiff < 0) {
-                    positionX += Math.abs(leftDiff);
-                }
+                    var leftDiff = positionX - refHtmlElement.clientWidth / 2;
+                    if (leftDiff < 0) {
+                        positionX += Math.abs(leftDiff);
+                    }
 
-                var rightDiff = window.innerWidth - (positionX + refHtmlElement.clientWidth / 2);
-                if (rightDiff < 0) {
-                    positionX -= Math.abs(rightDiff);
-                }
+                    var rightDiff = window.innerWidth - (positionX + refHtmlElement.clientWidth / 2);
+                    if (rightDiff < 0) {
+                        positionX -= Math.abs(rightDiff);
+                    }
 
-                refHtmlElement.style.left = positionX + "px";
-                refHtmlElement.style.top = (diagramPos.y + position.y) + "px";
+                    refHtmlElement.style.left = positionX + "px";
+                    refHtmlElement.style.top = (diagramPos.y + position.y) + "px";
 
-                refHtmlElement.style.transform = "translateY(-100%) translateX(14px) translateX(-50%)";
-                refHtmlElement.style.position = "fixed";
-                self.cdRef.detectChanges();
-            }, 100);
-        }
-        else {
-            refHtmlElement.style.display = "none";
-            if (self.showTooltipTimeout) {
-                window.clearTimeout(self.showTooltipTimeout);
+                    refHtmlElement.style.transform = "translateY(-100%) translateX(14px) translateX(-50%)";
+                    refHtmlElement.style.position = "fixed";
+                    self.cdRef.detectChanges();
+                }, 100);
             }
+            else {
+                refHtmlElement.style.display = "none";
+                if (self.showTooltipTimeout) {
+                    window.clearTimeout(self.showTooltipTimeout);
+                }
+            }
+        }
+        catch (ex) {
+            //using try|catch as functions running under gojs scope can swallow expections but stop working making debugging difficult
+            console.log(ex);
         }
     }
 
@@ -3573,16 +3649,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             margin: new go.Margin(2, 4, 0, 0),
                             editable: false,
                             font: this.badgeFont,
-                            stroke: this.badgeTextColor
+                            stroke: this.badgeTextColor,
                         },
                         new go.Binding("text", "", (obj) => {
                             return propertyName === "relations" ? "Relationships" : "Responsibilities";
                         }),
-                        new go.Binding("minSize", "", (obj: go.GraphObject, target: go.GraphObject) => {
+                        new go.Binding("width", "", (obj: go.GraphObject, target: go.GraphObject) => {
                             if (obj.part.data["predicateWidth"]) {
                                 var predicateWidth = +obj.part.data["predicateWidth"]
                                 var width = this.calculateBadgeTextWidth(predicateWidth);
-                                return new go.Size(width, NaN);
+                                return width;
                             }
                         }).ofObject()
                     ),
@@ -3596,12 +3672,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 let totalCount: number = 0;
                                 (obj.part.data[propertyName] as Array<any>).forEach(d => totalCount += d.count);
                                 var data = { consolidated: true, count: totalCount };
-                                this.setRelationshipBadgeHoverState(val.part.data["hierarchyKey"], ev, data, true, this);
+                                this.setRelationshipBadgeHoverState(val, ev, data, true, this);
                             }
                         }).ofObject(),
                         new go.Binding("mouseLeave", "", (val) => {
                             return (ev: go.InputEvent, obj: go.GraphObject) => {
-                                this.setRelationshipBadgeHoverState(val.part.data["hierarchyKey"], ev, val.data, false, this);
+                                this.setRelationshipBadgeHoverState(val, ev, val.data, false, this);
                             }
                         }).ofObject(),
                         this.g(go.Shape, "RoundedRectangle",
@@ -3625,16 +3701,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 let totalCount: number = 0;
                                 (obj.part.data[propertyName] as Array<any>).forEach(d => totalCount += d.count);
                                 if (isNaN(totalCount)) {
-                                    //Handle ownership async loaded count data
                                     target.text = '-';
-                                    var interval = setInterval(() => {
-                                        totalCount = 0;
-                                        (obj.part.data[propertyName] as Array<any>).forEach(d => totalCount += d.count);
-                                        if (!isNaN(totalCount)) {
-                                            target.text = totalCount.toString();
-                                            window.clearInterval(interval);
-                                        }
-                                    }, 200);
                                     return;
                                 }
                                 target.text = totalCount.toString();

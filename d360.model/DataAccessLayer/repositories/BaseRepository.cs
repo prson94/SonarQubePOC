@@ -413,7 +413,7 @@ namespace d360.model.DataAccessLayer.repositories
                             select '|' + T.Value from AssetTag AT
                                 inner join Tag T on AT.TagID = T.ID
                                 where AT.AssetID = A.ID
-                            for xml path ('')), 1, 1, '')
+                            for xml path (''), TYPE).value('.','NVARCHAR(MAX)'), 1, 1, '')
                          ){tableAlias}(FormattedValue) ");
                 }
                 else if(f.Type =="Lookup" && listColorsAsJSON && hasColor)
@@ -486,7 +486,7 @@ namespace d360.model.DataAccessLayer.repositories
 
                 if (queryParams.Any(x => x.Key == "_direction"))
                 {
-                    string[] allowedDirections = new string[] { "asc", "desc" };
+                    var allowedDirections = new [] { "asc", "desc" };
                     var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
 
                     orderDirection = allowedDirections.Contains(order.Trim().ToLower()) ? order : "";
@@ -861,8 +861,10 @@ namespace d360.model.DataAccessLayer.repositories
                     else
                     {
                         //dont autofit colums if there are > 2000 rows or json fields as this process is slow for these
-                        if(field.Type != "JSON" && totalRows< 2000)
+                        if (field.Type != "JSON" && totalRows < 2000)
+                        {
                             document.AutoFitColumn(index);
+                        }
                     }
                     index++;
                 }

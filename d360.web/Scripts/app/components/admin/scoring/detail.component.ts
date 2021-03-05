@@ -123,7 +123,9 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
             });
 
             this.assetTypeService.GetAssetTypeByUid(this.assetTypeUid).subscribe(res => {
-                this.selectedAssetType = { Class: res.Class.Name, Name: res.Name, Uid: res.uid };
+                if (res) {
+                    this.selectedAssetType = { Class: res.Class.Name, Name: res.Name, Uid: res.uid };
+                }
                 this.changeAssetType(this.selectedAssetType);
             });
 

@@ -49,7 +49,7 @@ export enum AssetTypeClass {
     Model = 2,
     Fusion = 3,
     FusionAttribute = 4,
-    FusionQuery = 4,
+    FusionQuery = 13,
     Policy = 6,
     Rule = 7,
     TechnicalAsset = 8,
@@ -107,6 +107,7 @@ export class AssetTypeApiModel {
     FlowObjectType: FlowObjectType;
     ID: number;
     AssetTypeID: number;
+    count: number = 0; //not currently loaded from API.
 }
 
 export class IconStyle {
