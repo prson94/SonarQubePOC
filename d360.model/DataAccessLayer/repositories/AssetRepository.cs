@@ -223,6 +223,7 @@ namespace d360.model.DataAccessLayer
                                     ,A.CanOwnFusion
                                     ,A.AutoDisplayParent
                                     ,A.FlowObjectType
+                                    ,A.CanEditParent
                                     ,P.[Path]
                                     ,AT.IconBackColor as BackColor
                                     ,AT.Icon as Icon
@@ -1795,7 +1796,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         UseAsTransformation = model.UseAsTransformation,
                         CanOwnFusion = model.CanOwnFusion ?? false,
                         Parent = parentAssetType,
-                        AutoDisplayParent = model.AutoDisplayParent
+                        AutoDisplayParent = model.AutoDisplayParent,
+                        CanEditParent = model.CanEditParent
                     };
                     CompanyContext.Add(a);
                     parentType = SystemObjects.ArtifactType;
@@ -2107,6 +2109,12 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     if (model.Class == AssetTypeClass.Diagram)
                     {
                         assetType.FlowObjectType = model.FlowObjectType;
+                    }
+
+
+                    if (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset)
+                    {
+                        assetType.CanEditParent = model.CanEditParent;
                     }
 
                     #endregion

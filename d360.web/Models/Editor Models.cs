@@ -26,7 +26,7 @@ namespace d360.web.Models
 
         public bool IsUsed { get; set; }
     }
-    
+
     public class PrimeSelectItem
     {
         public string label { get; set; }
@@ -58,7 +58,7 @@ namespace d360.web.Models
         public string title { get; set; }
         public string value { get; set; }
     }
-   
+
     public class NymAllocationModel
     {
         public SystemObjects Object { get; set; }
@@ -68,11 +68,11 @@ namespace d360.web.Models
         public int[] PredicateIDs { get; set; }
     }
 
-    public class CompanyRebuildJobRequest 
+    public class CompanyRebuildJobRequest
     {
         public CompanyRebuildJobToken Job { get; set; }
     }
-    
+
     public class CompanySettingsIpRestrictionEditorModel
     {
         public string Name { get; set; }
@@ -90,7 +90,7 @@ namespace d360.web.Models
         }
 
         public bool DisableCommunityPosting { get; set; }
-        public bool DisableIssuePosting { get; set; }        
+        public bool DisableIssuePosting { get; set; }
         public bool DisableIssueManagement { get; set; }
         public string CompanyLogo { get; set; }
         public bool SetLogoToDefault { get; set; }
@@ -103,7 +103,7 @@ namespace d360.web.Models
         public bool EnableShoppingCart { get; set; }
         public string DefaultRoute { get; set; }
         public bool EnableSearchExactMatch { get; set; }
-        
+
         public string HeaderBackgroundColor { get; set; }
 
         public List<CompanySettingsIpRestrictionEditorModel> IpRestrictions { get; set; }
@@ -136,7 +136,7 @@ namespace d360.web.Models
         public string FramingDomains { get; set; }
 
     }
-    
+
     public class DataQualityResult
     {
         public int PassCount { get; set; }
@@ -159,8 +159,8 @@ namespace d360.web.Models
     }
 
     public class DataQualityResultModel
-    {            
-        public List<DataQualityResultItem> Results{ get; set; }
+    {
+        public List<DataQualityResultItem> Results { get; set; }
 
         public int? Timeout { get; set; }
     }
@@ -187,6 +187,9 @@ namespace d360.web.Models
 
         [DataMember]
         public bool ReadOnly { get; set; }
+
+        [DataMember]
+        public string TooltipText { get; set; }
 
         [DataMember]
         public bool Required { get; set; }
@@ -223,13 +226,13 @@ namespace d360.web.Models
         [DataMember]
         public int RecordCount { get; set; }
         [DataMember]
-        public bool UseTypeahead{ get; set; }
+        public bool UseTypeahead { get; set; }
 
         [DataMember]
         public string DelayedLoadType { get; set; }
 
         [DataMember]
-        public bool IsSemantic{ get; set; }
+        public bool IsSemantic { get; set; }
         [DataMember]
         public bool VirtualScroll { get; set; }
         [DataMember]
@@ -273,7 +276,7 @@ namespace d360.web.Models
         public bool Selected { get; set; }
 
     }
-        
+
     public class FieldTypeItemDisplayFieldEditorModel
     {
         public int FieldTypeID { get; set; }
@@ -299,7 +302,7 @@ namespace d360.web.Models
         public bool Valid { get; set; }
         public string Message { get; set; }
     }
- 
+
     public class FieldTypeFusionItemEditorModel
     {
         public int ID { get; set; }
@@ -428,7 +431,7 @@ namespace d360.web.Models
         public int ObjectID { get; set; }
 
         public bool DisplayAssignmentSource { get; set; }
-        public bool ExpandGroupMembership { get; set; }       
+        public bool ExpandGroupMembership { get; set; }
 
         public FieldValidity Validation()
         {
@@ -483,7 +486,7 @@ namespace d360.web.Models
         /// <summary>
         /// The error message to display to the user.
         /// </summary>
-        public string message { get; set; }        
+        public string message { get; set; }
         /// <summary>
         /// required; length=3,12; right:0,0; phone; ssn; zipCode; email; inline javascript function
         /// </summary>
@@ -539,7 +542,7 @@ namespace d360.web.Models
         [Display(Name = "Job Title")]
         public string Title { get; set; }
     }
-    
+
     public class TermsModel
     {
         public TermsModel() { }
@@ -577,7 +580,7 @@ namespace d360.web.Models
             ContractAcceptance = new ContractAcceptance
             {
                 ContractID = contract.ID,
-                Accepted = false  
+                Accepted = false
             };
             Accept = false;
         }
@@ -596,7 +599,7 @@ namespace d360.web.Models
         }
 
     }
-        
+
     public class QuestionTypeItemEditorModel
     {
         public int ID { get; set; }
@@ -612,7 +615,7 @@ namespace d360.web.Models
                 valid.Valid = false;
                 valid.Message += $"{prefix} Name.";
             }
-            
+
 
             return valid;
         }
@@ -653,7 +656,7 @@ namespace d360.web.Models
             return valid;
         }
     }
-           
+
     public class LineageEditorModel
     {
         public SystemObjects Focal { get; set; }
@@ -662,7 +665,7 @@ namespace d360.web.Models
         public List<LineageEditorRow> Adds { get; set; }
         public List<LineageEditorRow> Deletes { get; set; }
     }
-         
+
     public class LineageEditorTechnicalModel
     {
         public SystemObjects Focal { get; set; }
@@ -677,7 +680,7 @@ namespace d360.web.Models
         public LineageEditorModel BusinessModel { get; set; }
         public LineageEditorTechnicalModel TechnicalModel { get; set; }
     }
-    
+
     public class LineageEditorRow
     {
 
@@ -760,7 +763,7 @@ namespace d360.web.Models
     }
 
     public enum AssetBrowserApiHopType
-    { 
+    {
         Lineage = 1,
         Impact = 2
     }
@@ -795,7 +798,7 @@ namespace d360.web.Models
 
         [DataMember]
         public Guid? PredicateUid { get; set; }
-        
+
         [DataMember]
         public int Hops { get; set; } = 3;
 
@@ -818,7 +821,7 @@ namespace d360.web.Models
     {
         [DataMember]
         public Guid Uid { get; set; }
-        
+
         [DataMember]
         public string Key { get; set; }
     }
