@@ -365,7 +365,7 @@ namespace d360.web.Controllers
                         }
                     }
 
-                    sql += filters.ToString();
+                    sql += filters;
                 }
             }
 
@@ -516,14 +516,14 @@ namespace d360.web.Controllers
 
         internal JsonResult jsonException(string message, HttpStatusCode statusCode, string title = "Error Occurred!")
         {
-            return Json(new { type = "error", title, message = message }, JsonRequestBehavior.AllowGet);
+            return Json(new { type = "error", title, message }, JsonRequestBehavior.AllowGet);
         }
 
         internal JsonNetResult jsonNetException(string message, HttpStatusCode statusCode, string title = "Error Occurred!")
         {
             return new JsonNetResult
             {
-                Data = new { type = "error", title, message = message },
+                Data = new { type = "error", title, message },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -540,7 +540,7 @@ namespace d360.web.Controllers
         {
             Response.StatusCode = (int)statusCode;
             Response.StatusDescription = message.Replace("\n", "  ");
-            return Json(new { type = "confirm", title = "Success!", action, message = message.Replace("\n", "  "), id = id, custom = customdata }, JsonRequestBehavior.AllowGet);
+            return Json(new { type = "confirm", title = "Success!", action, message = message.Replace("\n", "  "), id, custom = customdata }, JsonRequestBehavior.AllowGet);
         }
 
         internal JsonNetResult jsonNetResult(dynamic data)
@@ -1250,9 +1250,15 @@ namespace d360.web.Controllers
         {
             var columnBuilder = new StringBuilder();
             var joinBuilder = new StringBuilder();
+            var filterJoinBuilder = new StringBuilder();
+            var filterColumnBuilder = new StringBuilder();
             var fieldJoinBuilder = new StringBuilder();
-            filtercolumns = "";
+
+            columns = "";
+            joins = "";
+
             filterjoins = "";
+            filtercolumns = "";
 
             var fieldTypeRelationType = $"{type}Type";
             if (fields == null)
@@ -1320,12 +1326,14 @@ namespace d360.web.Controllers
 
                 if (filterFields.Contains(name))
                 {
-                    filtercolumns += thisColumn;
-                    filterjoins += fieldJoinBuilder.ToString();
+                    filterColumnBuilder.Append(thisColumn);
+                    filterJoinBuilder.Append(fieldJoinBuilder);
                 }
             }
             columns = columnBuilder.ToString();
             joins = joinBuilder.ToString();
+            filterjoins = filterJoinBuilder.ToString();
+            filtercolumns = filterColumnBuilder.ToString();
             return fields;
         }
 
