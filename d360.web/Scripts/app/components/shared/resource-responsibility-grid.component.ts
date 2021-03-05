@@ -2,7 +2,7 @@
 import { ResponsibilityDetailForResource } from '../../models/resource.model';
 import { ResourcesService } from '../../services/resources.service';
 import { Router } from '@angular/router';
-import { BaseComponent } from '../shared/base.component';
+import { BaseComponent } from "../shared/base.component";
 
 @Component({
     selector: 'd3s-resource-responsibility-grid-component',
