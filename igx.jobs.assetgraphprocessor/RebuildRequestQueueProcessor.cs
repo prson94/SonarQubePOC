@@ -11,6 +11,7 @@ using d360.extensions.caching;
 using d360.extensions.queue;
 using d360.model;
 using d360.core.enums;
+using Newtonsoft.Json;
 
 namespace igx.jobs.assetgraphprocessor
 {
