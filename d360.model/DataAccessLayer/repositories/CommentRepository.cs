@@ -476,6 +476,10 @@ or (C.ID in (select ParentID from Comment where ParentID is not null and Created
 				}
 			}
 
+			dbArgs.Add("@currentUser", CompanyContext.CurrentResourceID);
+			whereStatements.Add(@"O.ID not in (select AssetID from dbo.UserAssetPermissions(@currentUser,O.AssetTypeID) where ((PermissionsBitMask & 1)) = 0)");
+			whereStatements.Add(@"O.AssetTypeID not in (select AssetTypeID from dbo.AssetTypesUserCantRead(@currentUser))");
+
 			var cteSql = $@"
 with P as (
 	select		C.ID,

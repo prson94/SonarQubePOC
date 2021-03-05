@@ -84,18 +84,18 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
         if (this.selection.scoreType) {
             this.populateAssetTypesDDL();
 
-            // Remove this section when re-enabled.
-            if (this.selection.scoreType.toString() === "DataQuality")
-                this.selection.isExternallyCalculated = true;
+            //// Remove this section when re-enabled.
+            //if (this.selection.scoreType.toString() === "DataQuality")
+            //    this.selection.isExternallyCalculated = true;
 
-            if (!this.selection.uid && this.selection.scoreType.toString() === "Governance") {
-                this.selection.isExternallyCalculated = false;
-            }
-
-            // Put this section back when re-enabled.
-            //if (!this.selection.uid) {
+            //if (!this.selection.uid && this.selection.scoreType.toString() === "Governance") {
             //    this.selection.isExternallyCalculated = false;
             //}
+
+            // Put this section back when re-enabled.
+            if (!this.selection.uid) {
+                this.selection.isExternallyCalculated = false;
+            }
 
             this.hasModelChanged();
         }
@@ -103,9 +103,9 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
 
     isExtCalcDisabled(): boolean {
         // Remove this section when re-enabled.
-        if (this.selection.scoreType) {
-            return this.selection.scoreType.toString() === "DataQuality";
-        }
+        //if (this.selection.scoreType) {
+        //    return this.selection.scoreType.toString() === "DataQuality";
+        //}
         return false;
     }
 
