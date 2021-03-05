@@ -1,84 +1,27 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit } from "@angular/core";
 import { BaseComponent } from "../base.component";
 import { SocialService } from "../../../services/social.service";
-import { CommentAggregateVoteDetail, CommentDetail, CommentType, Emoji } from "../../../models/social.model";
+import { CommentApiPostModel, CommentDetail, CommentType, Emoji } from "../../../models/social.model";
 import { Router } from "@angular/router";
 import { CurrentCompanySettings } from "../../../static/company-settings"
-import { map } from "rxjs/operators";
 import { ResourcesService } from "../../../services/resources.service";
-import { forEach } from "core-js/fn/array";
 
 declare var CurrentResourceID;
 
 @Component({
-    selector: "d3s-social-comment",    
-    templateUrl: "./social-comment.component.html",    
-    styles: [`
-                span.user{
-                    font-weight:bold;
-                }
-                span.postDate{
-                    color: #AAAAAA;                    
-                }
-                img.user{
-                    border-radius:5px;
-                }                                              
-                .comment-removed {
-                    border-radius: 3px;
-                    padding: 5px;
-                    background: #EFEFEF;
-                    border: 1px solid #CCCCCC;
-                    font-size: 90%;
-                }       
-                .comment-modified {
-                    margin-left: 5px;
-                    font-style: oblique;
-                }
-                .comment-tag{
-                    border-radius: 5px;
-                    margin-right: 5px;
-                    padding: 3px 10px;
-                    cursor:pointer;
-                }
-                .comment, .reply{
-                    padding:5px 0;
-                }
-                .comment-tool-item :hover, .comment-tool-item-mid :hover{
-                    color:rgba(84,164,218,1);
-                }
-                .comment-tool-item, .comment-tool-item-mid{
-                    padding:5px;
-                    font-size:1.4em;
-                    color:#646464;
-                    cursor:pointer;
-                }
-                .comment-tool-item-mid{
-                    border-right:1px solid #AAAAAA;
-                }
-                .comment-tools{                                  
-                    display:inline-block;
-                    position:absolute;
-                    top: -.50rem;
-                    right: .25rem;
-                    border: 1px solid #AAAAAA;
-                    border-radius: 5px;
-                    box-sizing:border-box;
-                    overflow:hidden;
-                    background:white;                    
-                }
-                .toolbox{
-                    position:relative;
-                }
-            `]
+    selector: "d3s-social-comment",
+    templateUrl: "./social-comment.component.html",
 })
 
 export class SocialCommentComponent extends BaseComponent implements OnInit {
     @Input() comment: CommentDetail;
     @Input() isAdmin: boolean;
+    @Input() assetUid: string = "";
 
     @Output() delete = new EventEmitter();
-    @Output() reply = new EventEmitter();
     @Output() edit = new EventEmitter();
+
+
 
     upVotes: number = 0;
     downVotes: number = 0;
@@ -86,37 +29,21 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     showTools: boolean = false;
     showReply: boolean = false;
     showEdit: boolean = false;
-    
-    replyText: string = "";    
-    editText: string = "";
+
+    replyData: CommentApiPostModel;
 
     isDeletable: boolean = false;
     isEditable: boolean = false;
     resourceUid: string = "";
-    
 
-    constructor(private socialService: SocialService, private router: Router, private resourcesService: ResourcesService) {
-        super(); 
-    } 
+    constructor(private socialService: SocialService, private router: Router) {
+        super();
+        this.replyData = new CommentApiPostModel();
+    }
 
     ngOnInit(): void {
         this.isDeletable = this.isAdmin || (this.comment.CreatedBy == CurrentResourceID);
         this.isEditable = this.comment.CreatedBy == CurrentResourceID;
-
-        if (this.comment) {
-            this.resourcesService.getResource(this.comment.CreatedBy)
-                .subscribe((r) => {
-                    this.comment.CreatedByUid = r.items[0].uid;
-                });
-            if (this.comment.Comments && this.comment.Comments.length > 0) {
-                this.comment.Comments.forEach((x) => {
-                    this.resourcesService.getResource(x.CreatedBy)
-                        .subscribe((i) => {
-                            x.CreatedByUid = i.items[0].uid;
-                        });
-                });
-            }
-        }
 
         this.calculateVotes();
     }
@@ -162,7 +89,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     }
 
     private changeUrl(route) {
-        this.router.navigate([route]); 
+        this.router.navigate([route]);
     }
 
     isModified() {
@@ -180,19 +107,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
         return "Other";
     }
 
-    handleReplyClick() {
-        this.reply.emit({ reply: this.replyText, parentUid: this.comment.Uid });
-        this.showReply = false;
-    }
-
-    handleEditClick() {
-        this.comment.UpdatedOn = new Date(0); //Just to show the modified symbol.
-        this.comment.Body = this.editText;
-        this.edit.emit({ comment: this.comment });
-        this.showEdit = false;
-    }
-
-    isSocial(): boolean {        
+    isSocial(): boolean {
         return this.comment.CommentType == CommentType.Social;
     }
 
@@ -202,5 +117,20 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
 
     canReply(): boolean {
         return !CurrentCompanySettings.disableCommunityPosting;
+    }
+
+    private getTagName(tag: any) {
+        if (tag.Path) {
+            return tag.Path;
+        }
+        return tag.TextPath;
+    }
+
+    private getCommentUrl(comment: CommentDetail) {
+        if (!comment.CreatedByUid) {
+            return "";
+        }
+
+        return `/api/v2/membership/users/${comment.CreatedByUid}/image?size=35`;
     }
 }

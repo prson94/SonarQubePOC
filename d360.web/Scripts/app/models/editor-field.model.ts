@@ -1,4 +1,4 @@
-﻿export class FieldValidation {    
+﻿export class FieldValidation {
     message: string;
     regex: string;
     rule: string;
@@ -17,8 +17,9 @@ export class EditorField {
     FieldType: string;
     FieldDescription: string;
     Name: string;
-    Value: any;    
+    Value: any;
     ReadOnly: boolean;
+    TooltipText: boolean;
     Required: boolean;
     Items: any[];
     Row: number;

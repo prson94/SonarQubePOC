@@ -380,11 +380,13 @@ namespace d360.model.DataAccessLayer
             {
                 var validForType = true;
                 StringBuilder sb = new StringBuilder();
-                for (int ix = 0; ix < values.Count; ix++)
-                {
-                    string v = values[ix];
-                    sb.Clear();
-                    sb.Append(lookupObject);
+                if (values != null)
+                { 
+                    for (int ix = 0; ix < values.Count; ix++)
+                    {
+                        string v = values[ix];
+                        sb.Clear();
+                        sb.Append(lookupObject);
 
                     switch (dataType)
                     {

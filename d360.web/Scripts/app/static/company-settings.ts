@@ -6,7 +6,6 @@ export class CurrentCompanySettings {
     static disableCommunityPosting: boolean = CurrentCompanySettings.settings.DisableCommunityPosting === 'true';
     static defaultSearchTypes: string = CurrentCompanySettings.settings.DefaultSearchTypes;
     static headerBackgroundColor = CurrentCompanySettings.settings.HeaderBackgroundColor;
-    static headerProfileLinkColor = CurrentCompanySettings.settings.HeaderProfileLinkColor;
     static hideData3SixtyUsers = CurrentCompanySettings.settings.HideData3SixtyUsers;    
     static companyIcon = CurrentCompanySettings.settings.CompanyIcon;
     static companyLogo = CurrentCompanySettings.settings.CompanyLogo;

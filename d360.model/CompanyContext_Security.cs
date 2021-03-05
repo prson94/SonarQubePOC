@@ -121,9 +121,9 @@ order by RT.Name", new { id }).AsQueryable();
         }
 
         /// <summary>
-        /// Default to read unless the user explicitely has no read access to an asset.
+        /// Default to read unless the user explicitly has no read access to an asset.
         /// </summary>
-        public bool HasAssetDefaultReadPermission(string type, int id, Permission permission = Permission.ReadAsset)
+        private bool HasAssetDefaultReadPermission(string type, int id, Permission permission = Permission.ReadAsset)
         {
             bool hasPermission = CurrentResourceIsAdmin;
             if (!hasPermission)
@@ -141,22 +141,31 @@ order by RT.Name", new { id }).AsQueryable();
 
         public bool HasAssetPermission(string type, int id, Permission permission)
         {
-            bool hasPermission = CurrentResourceIsAdmin;
+            bool hasPermission = CurrentResourceIsAdmin;             
+            
             if (!hasPermission)
             {
-                int? assetTypeID = null;
 
-                if (type.EndsWith("Type"))
+                if (permission == Permission.ReadAsset)
                 {
-                    assetTypeID = Query<int?>("select ID from AssetType where Object = @type and ObjectID = @id", new { type, id }).SingleOrDefault();
+                    hasPermission = HasAssetDefaultReadPermission(type, id);
                 }
                 else
                 {
-                    assetTypeID = Query<int?>("select AssetTypeID from Asset where Object = @type and ObjectID = @id", new { type, id }).SingleOrDefault();
-                }
-                if (assetTypeID.HasValue)
-                {
-                    hasPermission = HasPermission(type, id, assetTypeID.Value, permission);                    
+                    int? assetTypeID = null;
+
+                    if (type.EndsWith("Type"))
+                    {
+                        assetTypeID = Query<int?>("select ID from AssetType where Object = @type and ObjectID = @id", new { type, id }).SingleOrDefault();
+                    }
+                    else
+                    {
+                        assetTypeID = Query<int?>("select AssetTypeID from Asset where Object = @type and ObjectID = @id", new { type, id }).SingleOrDefault();
+                    }
+                    if (assetTypeID.HasValue)
+                    {
+                        hasPermission = HasPermission(type, id, assetTypeID.Value, permission);
+                    }
                 }
             }
 
@@ -178,17 +187,17 @@ order by RT.Name", new { id }).AsQueryable();
                                                                                             select 0;
                                                                                         end", new { type, id = objectId, t = assetTypeId, r = CurrentResourceID });
         }
-
+        
         /// <summary>
         /// Used to determine if a user has read permissions on a given asset type.  Read is assumed to be present unless denied.
         /// </summary>        
         /// <param name="assetTypeId"></param>        
         /// <returns></returns>
-        public async Task<bool> HasAssetTypeReadPermission(int assetTypeId)
+        private bool HasAssetTypeReadPermission(int assetTypeId)
         {
             Permission permission = Permission.ReadAsset;
 
-            return await Database.Connection.QuerySingleAsync<bool>($@"	if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = 0 and ua.AssetTypeID = @t and ua.AssetID = 0)
+            return Database.Connection.QuerySingle<bool>($@"	if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = 0 and ua.AssetTypeID = @t and ua.AssetID = 0)
                                                                                         begin
                                                                                             select 0;
                                                                                         end				                                                                        
@@ -258,10 +267,17 @@ order by RT.Name", new { id }).AsQueryable();
         public bool HasAssetTypePermission(string type, int id, Permission permission)
         {
             bool hasPermission = CurrentResourceIsAdmin;
+
             if (!hasPermission)
             {
-                var assetTypeID = Query<int>("select ID from AssetType where [Object] = @type and [ObjectID] = @id", new { id, type }).Single();
-                hasPermission = Database.Connection.QuerySingle<bool>($@"if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission} and ua.AssetTypeID = @t)
+                if ((permission == Permission.ReadAsset))
+                {
+                    hasPermission = HasAssetTypeReadPermission(id);
+                }
+                else
+                {
+                    var assetTypeID = Query<int>("select ID from AssetType where [Object] = @type and [ObjectID] = @id", new { id, type }).Single();
+                    hasPermission = Database.Connection.QuerySingle<bool>($@"if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission} and ua.AssetTypeID = @t)
                                                                                         begin
                                                                                             select 1;
                                                                                         end				                                                                        
@@ -269,6 +285,7 @@ order by RT.Name", new { id }).AsQueryable();
 				                                                                        begin
                                                                                             select 0;
                                                                                         end", new { t = assetTypeID, r = CurrentResourceID });
+                }                    
             }
 
             return hasPermission;
@@ -277,6 +294,12 @@ order by RT.Name", new { id }).AsQueryable();
         public bool HasAssetTypePermission(SystemObjects type, int id, Permission permission)
         {
             return HasAssetTypePermission(type.ToString(), id, permission);
+        }
+
+        public bool HasAssetTypePermission(int assetTypeId, Permission permission)
+        {
+            var assetType = Query<AssetType>("select * from AssetType where ID = @id", new { id = assetTypeId }).Single();
+            return HasAssetTypePermission(assetType.Object, assetTypeId, permission);
         }
 
         public void RemoveResponsibilityTypeRelation(ResponsibilityTypeRelation relation)

@@ -112,7 +112,22 @@ namespace d360.web.Controllers
 
                     var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
                     var parents = Company.Query<SelectListItem>($"select lower(convert(nvarchar(36), A.uid)) as Value, AD.DisplayValue as Text from Asset A inner join AssetDisplayValue AD on A.ID = AD.AssetID   where A.AssetTypeID = {parentType.ID}").OrderBy(i => i.Text).ToList();
-                    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentUID", Name = $"Parent {pluralize.Singularize(parentType.Name)}", FieldType = DataType.Lookup.ToString(), Value = ((parent != null) ? (parent.uid.ToString() ?? "").ToLower() : ""), Items = parents, VirtualScroll = parents.Count > 9, ItemSize = 20 });
+
+                    list.Add(new EditableField
+                    {
+                        Row = 1,
+                        Column = 1,
+                        Required = true,
+                        FieldName = "ParentUID",
+                        Name = $"Parent {pluralize.Singularize(parentType.Name)}",
+                        FieldType = DataType.Lookup.ToString(),
+                        Value = ((parent != null) ? (parent.uid.ToString() ?? "").ToLower() : ""),
+                        Items = parents,
+                        VirtualScroll = parents.Count > 9,
+                        ItemSize = 20,
+                        ReadOnly = a.AssetType?.CanEditParent == false ? true : false,
+                        TooltipText = a.AssetType?.CanEditParent == false ? "The parent for this type of asset cannot be changed once set" : null
+                    });
                 }
             }
 
@@ -135,8 +150,6 @@ namespace d360.web.Controllers
         #endregion
 
         #region AssetType
-
-        #region Form Get/Post
 
         [HttpGet, ActionName("AssetType"), Route("AssetType")]
         public JsonNetResult GetAssetType(AssetTypeClass @class, int? id = null, int? parentID = null)
@@ -235,7 +248,8 @@ namespace d360.web.Controllers
                                 PredicateUid = null
                             },
                             AutoDisplayParent = assetType.AutoDisplayParent,
-                            FlowObjectType = assetType.FlowObjectType
+                            FlowObjectType = assetType.FlowObjectType,
+                            CanEditParent = assetType.CanEditParent
                         },
                         Tokens = Company.Filter<FieldType>(i => i.Object == assetType.Object && i.ObjectID == assetType.ObjectID && !this.limitedFieldTypes.Contains(i.Type)).OrderBy(i => i.FriendlyName).Select(i => new PrimeSelectItem { label = i.FriendlyName, value = "{" + i.Name + "}" }).ToList()
                     };
@@ -352,7 +366,6 @@ namespace d360.web.Controllers
                                 PredicateUid = null,
                                 MaximumDepth = 1
                             }
-
                         },
                         Tokens = new List<PrimeSelectItem>() { new PrimeSelectItem { label = "Name", value = "{Name}" } }
                     };
@@ -403,8 +416,6 @@ namespace d360.web.Controllers
                 return jsonNetException(ex);
             }
         }
-
-        #endregion
 
         #endregion
     }

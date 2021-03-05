@@ -234,14 +234,13 @@ namespace d360.model
         string GetUserHomePage();
         Task<IEnumerable<ObjectResult>> GetWhenResults(ResponsibilityTypeRelationRule rule, SqlTransaction trans = null);
         IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID, bool sendToDefaultUsers = true);
-        IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnGroup(int groupId);
-        bool HasAssetDefaultReadPermission(string type, int id, Permission permission = Permission.ReadAsset);
+        IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnGroup(int groupId);        
         bool HasAssetPermission(long id, Permission permission);
         bool HasAssetPermission(string type, int id, Permission permission);
         bool HasAssetPermission(SystemObjects type, int id, Permission permission);
         bool HasAssetTypePermission(string type, int id, Permission permission);
         bool HasAssetTypePermission(SystemObjects type, int id, Permission permission);
-        Task<bool> HasAssetTypeReadPermission(int assetTypeId);
+        bool HasAssetTypePermission(int id, Permission permission);        
         decimal? GetAssetScore(long assetId, ScoreType type);
         decimal? GetPreviousAssetScore(long assetId, ScoreType type);
         List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeInsert> import, int timeout = 3600);
