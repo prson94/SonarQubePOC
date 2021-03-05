@@ -81,6 +81,8 @@ namespace d360.model.DataAccessLayer
             var dbArgs = new DynamicParameters();
             string condition = string.Empty;
             string optionalJoin = string.Empty;
+            string permissionsJoin = string.Empty;
+            
             if (Class.HasValue)
             {
                 if (fusionTypeUid.HasValue && fusionTypeUid.Value != Guid.Empty && (Class == AssetTypeClass.FusionAttribute || Class == AssetTypeClass.FusionQuery))
@@ -203,6 +205,13 @@ namespace d360.model.DataAccessLayer
 
             }
 
+            if(!CompanyContext.CurrentResourceIsAdmin)
+            {
+                permissionsJoin = $"outer apply (select case when ua.PermissionsBitMask & {(int)Permission.ReadAsset} = 0 then 0 else 1 end as hasRead from UserAssetPermissions(@userId,a.id) ua where ua.AssetTypeID = a.id and ua.AssetID = 0) UserP";
+                condition += " and (UserP.hasRead is null or UserP.hasRead != 0)";
+                dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
+            }
+
             if (assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
             {
                 condition += " and A.uid=@assetTypeUid ";
@@ -232,6 +241,7 @@ namespace d360.model.DataAccessLayer
                                     {optionalJoin}
                                     cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
                                     left join [dbo].[AssetTypeStyle] AT on (A.ID = AT.ID)
+                                    {permissionsJoin}
                         where       A.[State] = 1 and A.ObjectID != 0
                         {condition}
                         order by    P.[Path]
