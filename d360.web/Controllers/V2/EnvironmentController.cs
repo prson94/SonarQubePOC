@@ -824,7 +824,7 @@ namespace d360.web.Controllers.V2
 	                    AssetTypeID int
                     )
                     insert into #AssetTypesWithResponsibilities 
-                    SELECT AT.ID from AssetType AT 
+                    SELECT DISTINCT AT.ID from AssetType AT 
                     left join [dbo].[ResponsibilityTypeRelation] RT on AT.Object = RT.ObjectType and RT.ObjectID = AT.ObjectID
                     left join [dbo].[ResponsibilityTypeRelationRule] RTR on AT.Object = RTR.Object and RTR.ObjectID = AT.ObjectID
                     left join [dbo].[ResponsibilityRuleResultAsset] RRA on RRA.AssetTypeID = AT.ID
@@ -833,15 +833,10 @@ namespace d360.web.Controllers.V2
                     WHERE A.ID = RTOR.AssetID
 
 
-                    SELECT count(*) from reporting.global_resource GR
+                    SELECT count(1) from reporting.global_resource GR
 	                    where exists (
 		                    SELECT 
-		                    AT.AssetTypeID,
-		                    GR.resourceid,
-		                    Case 
-		                                                       when permission.PermissionsBitMask is null then gr.IsAdministrator
-		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pm = @pm then 1
-		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pd = @pd then 1 END as Permissionsfound 
+                            1
 		                    from #AssetTypesWithResponsibilities AT
 			                    outer apply (Select * from UserAssetPermissions(GR.ResourceID,AT.AssetTypeID)) permission 
 			                    where 1 = Case 
