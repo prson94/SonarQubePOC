@@ -271,6 +271,7 @@ namespace d360.model.DataAccessLayer
             bool hasAssetPathField = false;
             string hierarchyParentUidCol = "";
             string hierarchyParentUidSelect = "";
+            bool includeCreatedByModifiedBy = false;
 
             if (assetType == null)
                 throw new Exception("Invalid assetType specified");
@@ -347,6 +348,11 @@ namespace d360.model.DataAccessLayer
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includecolor"))
             {
                 bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includecolor").Value, out includeColor);
+            }
+
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includecreatedmodifiedby"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includecreatedmodifiedby").Value, out includeCreatedByModifiedBy);
             }
 
             //check for asset path fields now after include fields have been filtered
@@ -901,9 +907,9 @@ namespace d360.model.DataAccessLayer
                     A.[UID] as [AssetUid],
                     A.AssetTypeId,
                     T.[UID] as AssetTypeUid,
-                    UA.uid as UpdatedByUid,
+                    {(includeCreatedByModifiedBy ? "UA.uid as UpdatedByUid,": "")}
                     A.UpdatedOn,
-                    CA.uid as CreatedByUid,
+                    {(includeCreatedByModifiedBy ? "CA.uid as CreatedByUid," : "")}                    
                     A.CreatedOn,
                     {(includeParent ? parentFieldSQL : "")}
                     {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
