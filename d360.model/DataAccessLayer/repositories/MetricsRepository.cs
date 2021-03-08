@@ -381,7 +381,7 @@ namespace d360.model.DataAccessLayer
                 var validForType = true;
                 StringBuilder sb = new StringBuilder();
                 if (values != null)
-                { 
+                {
                     for (int ix = 0; ix < values.Count; ix++)
                     {
                         string v = values[ix];
@@ -414,7 +414,8 @@ namespace d360.model.DataAccessLayer
                                 if (Guid.TryParse(v, out lookupUid) && lookupObjectID.HasValue)
                                 {
                                     sb.Append("Type");
-                                    if (!Company.Filter<AssetDetail>(i => i.Type == sb.ToString() && i.TypeID == lookupObjectID && i.uid == lookupUid).Any())
+                                    string ot = sb.ToString();
+                                    if (!Company.Filter<AssetDetail>(i => i.Type == ot && i.TypeID == lookupObjectID && i.uid == lookupUid).Any())
                                     {
                                         validForType = false;
                                     }
@@ -422,7 +423,8 @@ namespace d360.model.DataAccessLayer
                                 else if (int.TryParse(v, out lookupId) && lookupObjectID.HasValue)
                                 {
                                     sb.Append("Type");
-                                    if (!Company.Filter<AssetDetail>(i => i.Type == sb.ToString() && i.TypeID == lookupObjectID && i.ObjectID == lookupId).Any())
+                                    string ot = sb.ToString();
+                                    if (!Company.Filter<AssetDetail>(i => i.Type == ot && i.TypeID == lookupObjectID && i.ObjectID == lookupId).Any())
                                     {
                                         validForType = false;
                                     }
@@ -561,13 +563,13 @@ namespace d360.model.DataAccessLayer
 
                                 var dqFilterFieldTypes = Company.Query<dynamic>(@"
 select  distinct
-		A.ID as AssetTypeID, A.Uid as AssetTypeUid,
-		F.ID as FieldTypeID, F.Name as FieldTypeName, F.Type,
-		F.AllowMultipleValues, F.LookupObjectType, F.LookupObjectID
+	A.ID as AssetTypeID, A.Uid as AssetTypeUid,
+	F.ID as FieldTypeID, F.Name as FieldTypeName, F.Type,
+	F.AllowMultipleValues, F.LookupObjectType, F.LookupObjectID
 from	metrics.RollupPath P
-		inner join metrics.RollupPathSegment S on S.RollupPathUid = P.Uid and P.Uid = @ResultPathUid
-		inner join AssetType A on A.ID = S.AssetTypeID
-		inner join FieldType F on F.AssetTypeID = S.AssetTypeID", new { dq.ResultPathUid }).ToList();
+	inner join metrics.RollupPathSegment S on S.RollupPathUid = P.Uid and P.Uid = @ResultPathUid
+	inner join AssetType A on A.ID = S.AssetTypeID
+	inner join FieldType F on F.AssetTypeID = S.AssetTypeID", new { dq.ResultPathUid }).ToList();
 
                                 bool isSuccess = true;
                                 var dqFilterErrorMessage = "";
@@ -686,13 +688,13 @@ from	metrics.RollupPath P
                         else if (gov.Owner != null)
                         {
                             var governanceCheckResponsibilityTypeExists = (
-                                                                          from r in Company.ResponsibilityTypes
-                                                                          from a in r.ResponsibilityTypeRelations
-                                                                          where r.UID == gov.Owner.ResponsibilityTypeUid
-                                                                          where a.ObjectType == targetAssetType.Object
-                                                                          where a.ObjectID == targetAssetType.ObjectID
-                                                                          select r
-                                                                          ).Any();
+                                                                            from r in Company.ResponsibilityTypes
+                                                                            from a in r.ResponsibilityTypeRelations
+                                                                            where r.UID == gov.Owner.ResponsibilityTypeUid
+                                                                            where a.ObjectType == targetAssetType.Object
+                                                                            where a.ObjectID == targetAssetType.ObjectID
+                                                                            select r
+                                                                            ).Any();
                             if (!governanceCheckResponsibilityTypeExists)
                             {
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Uid Governance Owner Check does not correspond to a known responsibility type.");
@@ -707,12 +709,12 @@ from	metrics.RollupPath P
                         else if (gov.Predicate != null)
                         {
                             var governanceCheckPredicateExists = (
-                                                                 from p in Company.Predicates
-                                                                 join r in Company.IntersectTypeDetails on p.ID equals r.PredicateID
-                                                                 where p.UID == gov.Predicate.PredicateUid
-                                                                 where (r.SubjectAssetTypeID == targetAssetType.ID || r.ObjectAssetTypeID == targetAssetType.ID)
-                                                                 select r
-                                                                 ).Any();
+                                                                    from p in Company.Predicates
+                                                                    join r in Company.IntersectTypeDetails on p.ID equals r.PredicateID
+                                                                    where p.UID == gov.Predicate.PredicateUid
+                                                                    where (r.SubjectAssetTypeID == targetAssetType.ID || r.ObjectAssetTypeID == targetAssetType.ID)
+                                                                    select r
+                                                                    ).Any();
                             if (!governanceCheckPredicateExists)
                             {
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Uid Governance Predicate Check does not correspond to a known predicate.");
@@ -727,11 +729,11 @@ from	metrics.RollupPath P
                         else if (gov.Relation != null)
                         {
                             var governanceCheckIntersectTypeExists = (
-                                                                     from r in Company.IntersectTypeDetails
-                                                                     where r.Uid == gov.Relation.IntersectTypeUid
-                                                                     where (r.SubjectAssetTypeID == targetAssetType.ID || r.ObjectAssetTypeID == targetAssetType.ID)
-                                                                     select r
-                                                                     ).Any();
+                                                                        from r in Company.IntersectTypeDetails
+                                                                        where r.Uid == gov.Relation.IntersectTypeUid
+                                                                        where (r.SubjectAssetTypeID == targetAssetType.ID || r.ObjectAssetTypeID == targetAssetType.ID)
+                                                                        select r
+                                                                        ).Any();
                             if (!governanceCheckIntersectTypeExists)
                             {
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Uid Governance Relation Check does not correspond to a known relationship type.");
@@ -874,7 +876,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
             }
 
             if (Company.Connection.State != ConnectionState.Open)
-            { 
+            {
                 Company.Connection.Open();
             }
 
@@ -976,27 +978,27 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
 
                     var metricAssetVersionJsonFragments = Company.Connection.Query<string>(@"
 select	*,
-		(
-			select	G.*,
-					(
-						select	I.*,
-								(
-									select	*
-									from	metrics.AssetVersionConditionItemValue
-									where	Uid = I.Uid
-									for json path
-								) as [Values]
-						from	metrics.AssetVersionConditionItem I
-						where	I.AssetVersionConditionUid = G.Uid
-						for json path
-					) as Items
-			from	metrics.AssetVersionCondition G
-			where	G.AssetVersionUid = V.Uid
-			for json path
-		) as Conditions
+	(
+		select	G.*,
+				(
+					select	I.*,
+							(
+								select	*
+								from	metrics.AssetVersionConditionItemValue
+								where	Uid = I.Uid
+								for json path
+							) as [Values]
+					from	metrics.AssetVersionConditionItem I
+					where	I.AssetVersionConditionUid = G.Uid
+					for json path
+				) as Items
+		from	metrics.AssetVersionCondition G
+		where	G.AssetVersionUid = V.Uid
+		for json path
+	) as Conditions
 from	metrics.AssetVersion V
 where	V.AssetUid = @Uid
-		and V.EffectiveDate = @effectiveDate
+	and V.EffectiveDate = @effectiveDate
 for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transaction: trans);
                     metricAssetVersion = JsonConvert.DeserializeObject<MetricAssetVersion>(string.Join("", metricAssetVersionJsonFragments));
                     string newConditionHash = model.CurrentConditionHash;
@@ -1319,8 +1321,8 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
 
                                         if (item.ConditionFieldTypeID.HasValue)
                                         {
-                                            // Only one of the specific field per condition group.
-                                            if (usedFieldTypeIDs.Contains(item.ConditionFieldTypeID.Value))
+                                        // Only one of the specific field per condition group.
+                                        if (usedFieldTypeIDs.Contains(item.ConditionFieldTypeID.Value))
                                             {
                                                 okToSendItem = false;
                                             }
@@ -1333,8 +1335,8 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                                         }
                                         else if (item.ConditionIntersectTypeID.HasValue)
                                         {
-                                            // Only one of the specific relationship per condition group.
-                                            if (usedIntersectTypeIDs.Contains(item.ConditionFieldTypeID.Value))
+                                        // Only one of the specific relationship per condition group.
+                                        if (usedIntersectTypeIDs.Contains(item.ConditionFieldTypeID.Value))
                                             {
                                                 okToSendItem = false;
                                             }
@@ -1436,27 +1438,27 @@ create table #Values ( Uid uniqueidentifier not null, Value nvarchar(250) not nu
                                 Company.Connection.Execute(@"
 delete  T
 from    metrics.AssetVersionCondition T
-        left join #Groups S on S.AssetVersionUid = T.AssetVersionUid and S.Uid = T.Uid
+    left join #Groups S on S.AssetVersionUid = T.AssetVersionUid and S.Uid = T.Uid
 where   T.AssetVersionUid = @V
-        and S.Uid is null;
+    and S.Uid is null;
 
 merge   metrics.AssetVersionCondition as T
 using   #Groups as S
 on      (T.AssetVersionUid = S.AssetVersionUid and T.Uid = S.Uid)
 when    matched then
 update  set
-        T.MatchType = S.MatchType,
-        T.Position = S.Position,
-        T.Threshold = S.Threshold,
-        T.Weight = S.Weight
+    T.MatchType = S.MatchType,
+    T.Position = S.Position,
+    T.Threshold = S.Threshold,
+    T.Weight = S.Weight
 when    not matched by target then
 insert  (AssetVersionUid, Uid, MatchType, [Position], Threshold, Weight)
 values  (S.AssetVersionUid, S.Uid, S.MatchType, S.[Position], S.Threshold, S.Weight);
 
 delete  T
 from    metrics.AssetVersionConditionItem T
-        inner join #Groups G on G.Uid = T.AssetVersionConditionUid
-        left join #Items S on S.AssetVersionConditionUid = G.Uid and S.Uid = T.Uid
+    inner join #Groups G on G.Uid = T.AssetVersionConditionUid
+    left join #Items S on S.AssetVersionConditionUid = G.Uid and S.Uid = T.Uid
 where   S.Uid is null;
 
 merge   metrics.AssetVersionConditionItem as T
@@ -1464,18 +1466,18 @@ using   #Items as S
 on      (T.AssetVersionConditionUid = S.AssetVersionConditionUid and T.Uid = S.Uid)
 when    matched then
 update  set
-        T.ConditionType = S.ConditionType,
-        T.ConditionFieldTypeID = S.ConditionFieldTypeID,
-        T.ConditionIntersectTypeID = S.ConditionIntersectTypeID,
-        T.Operator = S.Operator
+    T.ConditionType = S.ConditionType,
+    T.ConditionFieldTypeID = S.ConditionFieldTypeID,
+    T.ConditionIntersectTypeID = S.ConditionIntersectTypeID,
+    T.Operator = S.Operator
 when    not matched by target then
 insert  (AssetVersionConditionUid, Uid, ConditionType, [ConditionFieldTypeID], ConditionIntersectTypeID, Operator)
 values  (S.AssetVersionConditionUid, S.Uid, S.ConditionType, S.[ConditionFieldTypeID], S.ConditionIntersectTypeID, S.Operator);
 
 delete  T
 from    metrics.AssetVersionConditionItemValue T
-        inner join #Items I on I.Uid = T.Uid
-        left join #Values S on S.Uid = I.Uid and S.Value = T.Value
+    inner join #Items I on I.Uid = T.Uid
+    left join #Values S on S.Uid = I.Uid and S.Value = T.Value
 where   S.Uid is null;
 
 merge   metrics.AssetVersionConditionItemValue as T
@@ -1494,8 +1496,8 @@ values  (S.Uid, S.Value);", new { V = metricAssetVersion.Uid }, transaction: tra
 update  T
 set     T.ConditionUid = null
 from    metrics.ScoreItem T
-        inner join metrics.AssetVersionCondition G on G.Uid = T.ConditionUid and G.AssetVersionUid = @Uid
-        left join metrics.AssetVersionConditionItem I on I.AssetVersionConditionUid = G.Uid
+    inner join metrics.AssetVersionCondition G on G.Uid = T.ConditionUid and G.AssetVersionUid = @Uid
+    left join metrics.AssetVersionConditionItem I on I.AssetVersionConditionUid = G.Uid
 where   I.Uid is null;
 
 delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metricAssetVersion.Uid }, transaction: trans);
@@ -1529,7 +1531,8 @@ delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metric
 
             return new WorkHttpStatus(isNew ? HttpStatusCode.Created : HttpStatusCode.OK, "", "");
         }
-
+        
+        [Obsolete]
         public MetricAssetTypeHierarchyModels GetMetricDefinitionHierarchyByAssetType(Guid assetTypeUid, DateTime? effectiveDate)
         {
             SqlConnection cnn = Company.Database.Connection as SqlConnection;
@@ -1585,19 +1588,7 @@ delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metric
                     		Weight,
                             EffectiveDate,
                             Description,
-                    		(
-                    			select	F.FriendlyName as FieldName,
-                    					CI.Operator,
-                    					(case WHEN F.Type = 'Lookup' THEN FL.Text ELSE CIV.Value END) as [Value]
-                    			from	[metrics].[AssetVersionCondition] C
-                                        inner join metrics.AssetVersionConditionItem CI on CI.AssetVersionConditionUid = C.Uid
-                                        inner join metrics.AssetVersionConditionItemValue CIV on CIV.Uid = CI.Uid 
-                    					inner join FieldType F on F.ID = CI.ConditionFieldTypeID
-                                        inner join FieldLookupValue FL on FL.FieldTypeID = F.ID and F.LookupObjectType = FL.LookupObjectType and F.LookupObjectID = FL.LookupObjectID 
-                                                                        and FL.[Value] = CIV.Value
-                    			where	C.AssetVersionUid = h.VersionUid
-                    			for json path
-                    		) as ConditionsJson
+                    		'[]' as ConditionsJson
                     from	h
                     order by [Level] asc";
 
