@@ -5254,9 +5254,15 @@ SELECT (
         }
 
         [Route("catalogs/{typeID:int}")]
-        public HttpResponseMessage GetTaxonomyType(int typeID)
+        public async Task<HttpResponseMessage> GetTaxonomyType(int typeID)
         {
-            var row = Company.Query<dynamic>(QueryConstants.TaxonomySettingsItem, new { id = typeID }).Single();
+            var row = await Company.QueryFirstOrDefaultAsync<dynamic>(QueryConstants.TaxonomySettingsItem, new { id = typeID });
+
+            if(row == null)
+            {
+                throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
+            }
+            
             return Request.CreateResponse<dynamic>(
                 new Dictionary<string, object> {
                     { "ID", row.ID },
