@@ -348,6 +348,7 @@ namespace d360.web.Controllers
                                     LastName = resource.LastName,
                                     IsAdministrator = false,
                                     ResourceID = resource.ID,
+                                    Uid = resource.Uid,
                                     State = companyResource.State,
                                     CreatedOn = DateTime.UtcNow                                    
                                 });
@@ -381,6 +382,7 @@ namespace d360.web.Controllers
                                         LastName = resource.LastName,
                                         IsAdministrator = false,
                                         ResourceID = resource.ID,
+                                        Uid = resource.Uid,
                                         State = companyResource.State,
                                         CreatedOn = DateTime.UtcNow
                                     });
