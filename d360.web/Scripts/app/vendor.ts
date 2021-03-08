@@ -21,6 +21,7 @@ import 'primeng/editor';
 import 'primeng/fileupload'
 import 'primeng/toast';
 import 'primeng/inputmask';
+import 'primeng/inputnumber';
 import 'primeng/inputswitch';
 import 'primeng/inputtext';
 import 'primeng/inputtextarea';
@@ -28,6 +29,7 @@ import 'primeng/listbox';
 import 'primeng/menubar';
 import 'primeng/multiselect';
 import 'primeng/overlaypanel';
+import 'primeng/ripple';
 import 'primeng/selectbutton';
 import 'primeng/spinner';
 import 'primeng/table';
