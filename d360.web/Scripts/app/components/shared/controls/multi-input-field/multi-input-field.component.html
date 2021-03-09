@@ -1,3 +1,20 @@
-﻿<div class="ig-multi-input-field">
-    multi field
+﻿<div class="{{getElementClass()}}" (click)="onControlClick($event)">
+    <div class="placeholder-text">
+        {{(required ? "Required" : "Optional")}}
+    </div>
+    <div class="inner-container">
+        <div class="chips">
+            <div class="chip" *ngFor="let item of chips">
+                <span class="name">{{item}}</span>
+                <i class="remove-chip fa fa-times-circle" (click)="removeChip(item)"></i>
+            </div>
+            <input tabindex="tabindex"
+                   type="text"
+                   size="{{getInputBoxSize()}}"
+                   [(ngModel)]="currentText"
+                   (keypress)="onKeyPress($event)"
+                   (focus)="hasFocus(true)"
+                   (focusout)="hasFocus(false)" />
+        </div>
+    </div>
 </div>

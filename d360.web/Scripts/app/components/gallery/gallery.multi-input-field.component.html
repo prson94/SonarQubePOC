@@ -1,6 +1,6 @@
 ﻿<div class="tile tile-detail">
-    <header>Icon Picker control</header>
-    <p>A dropdown input that allows choosing a govern icon.</p>
+    <header>Multi Input Field</header>
+    <p>The MultiInputField allows the user to type multiple individual phrases, each committed by hitting return on a typed phrase and represented by a token in the field. These tokens can individually be removed from the field.</p>
 </div>
 
 <div class="tile tile-detail">
@@ -10,10 +10,79 @@
 
 <div class="tile tile-detail">
     <header>Examples</header>
+
     <div class="gallery-section">
         <h4>Basic</h4>
         <div>
+            <ig-multi-input-field [(ngModel)]="multiValue"></ig-multi-input-field>
+        </div>
+        <div>
+            Value: {{multiValue}}
+        </div>
+    </div>
+
+    <div class="gallery-section">
+        <h4>Basic with sizes</h4>
+        <div class="row">
+            <div class="row">small(150px)</div>
+            <ig-multi-input-field igSize="small"></ig-multi-input-field>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="row">medium(308px)</div>
+            <ig-multi-input-field igSize="medium"></ig-multi-input-field>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="row">large(624px)</div>
+            <ig-multi-input-field igSize="large"></ig-multi-input-field>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="row">full(100%)</div>
+            <ig-multi-input-field igSize="full"></ig-multi-input-field>
+        </div>
+    </div>
+
+    <div class="gallery-section">
+        <h4>Optional</h4>
+        <div>
             <ig-multi-input-field></ig-multi-input-field>
+        </div>
+    </div>
+
+    <div class="gallery-section">
+        <h4>Required</h4>
+        <div>
+            <ig-multi-input-field [required]="true"></ig-multi-input-field>
+        </div>
+    </div>
+
+    <div class="gallery-section">
+        <h4>Disabled</h4>
+        <div>
+            <ig-multi-input-field [(ngModel)]="multiValue" (ngModelChange)="valueChanged($event)" [disabled]="true"></ig-multi-input-field>
+        </div>
+    </div>
+
+    <div class="gallery-section">
+        <h4>Invalid State</h4>
+        <div>
+            <form [formGroup]="myForm" (ngSubmit)="onSubmit()" novalidate>
+                <ig-multi-input-field name="multiInput" formControlName="multiInput"></ig-multi-input-field>
+                <div *ngIf="myForm.get('multiInput').invalid">
+                    <div *ngIf="myForm.get('multiInput').errors.duplicates" class="ig-text-required">
+                        Duplicate values are not permitted
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="gallery-section">
+        <h4>With Tooltip</h4>
+        <div>
+            <ig-multi-input-field [(ngModel)]="forTooltip"></ig-multi-input-field>
         </div>
     </div>
 </div>
