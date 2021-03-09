@@ -1,7 +1,5 @@
 ﻿import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core";
 import { AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn } from "@angular/forms";
-import { debug } from "util";
-
 
 @Component({
     selector: "gallery-multi-input-field",
