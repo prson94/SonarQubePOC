@@ -350,9 +350,9 @@ namespace d360.core.entities.Metric
         
         [DataMember] 
         public Operator Operator { get; set; }
-        
-        [DataMember] 
-        public List<string> Values { get; set; }
+
+        [DataMember]
+        public List<string> Values { get; set; } = new List<string>();
     }
 
     [DataContract]

@@ -92,6 +92,8 @@ namespace d360.core.entities
         public bool? AutoDisplayParent { get; set; }
         [DataMember]
         public FlowObjectType? FlowObjectType { get; set; }
+        [DataMember]
+        public bool? CanEditParent { get; set; }
     }
 
     public class AssetTypeSuccess
@@ -217,6 +219,7 @@ namespace d360.core.entities
         public int IntersectTypeId { get; set; }
         public int Level { get; set; }
         public int ItemNumber { get; set; }
+        public AssetTypeClass Class { get; set; }
     }
 
     [DataContract]

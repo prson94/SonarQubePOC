@@ -177,7 +177,7 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Type with Uid {assetTypeUid.ToString()} could not be found."));
             }
 
-            if (!(await Company.HasAssetTypeReadPermission(assetType.ID)))
+            if (!Company.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
             }

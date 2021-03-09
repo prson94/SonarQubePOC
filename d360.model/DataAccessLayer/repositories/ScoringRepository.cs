@@ -505,7 +505,7 @@ from	metrics.ScoreItem I
 
 		outer apply openjson(E.value, '$.ResultResultUids') R
 		left join AssetResult AR on AR.Uid = R.value
-where   {string.Join(" and ", whereStatements)} {simpleWhere}";
+where   {string.Join(" and ", whereStatements)} {simpleWhere} and JSON_VALUE(I.Evidence, N'$.IsError') is null ";
 
             var sql = $@"
 declare @exists bit = 0,

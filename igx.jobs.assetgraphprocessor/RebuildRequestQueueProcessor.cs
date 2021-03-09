@@ -21,6 +21,7 @@ namespace igx.jobs.assetgraphprocessor
         const string functionName = "AssetGraphProcessor_RebuildQueueRequest";
 
 #if DEBUG
+        [Disable]
         public static async Task Run([TimerTrigger("0 0 1 * * *", RunOnStartup = true)]TimerInfo myTimer, TextWriter log)
 #else
         public static async Task Run([QueueTrigger("%AssetGraphQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)

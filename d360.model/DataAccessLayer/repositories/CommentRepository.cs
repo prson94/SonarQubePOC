@@ -107,7 +107,7 @@ namespace d360.model.DataAccessLayer
 
 			if (commentAsset != null)
 			{
-				if (!CompanyContext.HasAssetDefaultReadPermission(commentAsset.Object, commentAsset.ObjectID, Permission.ReadAsset))
+				if (!CompanyContext.HasAssetPermission(commentAsset.Object, commentAsset.ObjectID, Permission.ReadAsset))
 				{
 					throw new GenericException(System.Net.HttpStatusCode.Forbidden, "", "You do not have permissions to add a comment to this asset.");
 				}
@@ -475,6 +475,10 @@ or (C.ID in (select ParentID from Comment where ParentID is not null and Created
 )");
 				}
 			}
+
+			dbArgs.Add("@currentUser", CompanyContext.CurrentResourceID);
+			whereStatements.Add($@"O.ID not in (select AssetID from dbo.UserAssetPermissions(@currentUser,O.AssetTypeID) where ((PermissionsBitMask & ${(int)Permission.ReadAsset})) = 0)");
+			whereStatements.Add(@"O.AssetTypeID not in (select AssetTypeID from dbo.AssetTypesUserCantRead(@currentUser))");
 
 			var cteSql = $@"
 with P as (

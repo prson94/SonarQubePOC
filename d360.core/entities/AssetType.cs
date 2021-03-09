@@ -76,6 +76,9 @@ namespace d360.core.entities
         [DataMember]
         public bool? AutoDisplayParent { get; set; }
 
+        [DataMember]
+        public bool? CanEditParent { get; set; }
+
     }
 
     public class AssetTypeBrowserApiViewModel
@@ -146,5 +149,7 @@ namespace d360.core.entities
         [DataMember]
         [JsonConverter(typeof(StringEnumConverter))]
         public FlowObjectType? FlowObjectType { get; set; }
+        [DataMember]
+        public bool? CanEditParent { get; set; }
     }
 }

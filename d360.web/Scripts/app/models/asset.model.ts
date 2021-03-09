@@ -81,6 +81,7 @@ export class AssetType {
     Hierarchy: Hierarchy = new Hierarchy();
     FusionID: number;
     AutoDisplayParent: boolean;
+    CanEditParent: boolean;
 }
 
 export class AssetTypeClassApiModel {
@@ -107,6 +108,7 @@ export class AssetTypeApiModel {
     FlowObjectType: FlowObjectType;
     ID: number;
     AssetTypeID: number;
+    count: number = 0; //not currently loaded from API.
 }
 
 export class IconStyle {

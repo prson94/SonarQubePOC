@@ -81,6 +81,8 @@ namespace d360.model.DataAccessLayer
             var dbArgs = new DynamicParameters();
             string condition = string.Empty;
             string optionalJoin = string.Empty;
+            string permissionsJoin = string.Empty;
+            
             if (Class.HasValue)
             {
                 if (fusionTypeUid.HasValue && fusionTypeUid.Value != Guid.Empty && (Class == AssetTypeClass.FusionAttribute || Class == AssetTypeClass.FusionQuery))
@@ -203,6 +205,13 @@ namespace d360.model.DataAccessLayer
 
             }
 
+            if(!CompanyContext.CurrentResourceIsAdmin)
+            {
+                permissionsJoin = $"outer apply (select case when ua.PermissionsBitMask & {(int)Permission.ReadAsset} = 0 then 0 else 1 end as hasRead from UserAssetPermissions(@userId,a.id) ua where ua.AssetTypeID = a.id and ua.AssetID = 0) UserP";
+                condition += " and (UserP.hasRead is null or UserP.hasRead != 0)";
+                dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
+            }
+
             if (assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
             {
                 condition += " and A.uid=@assetTypeUid ";
@@ -223,6 +232,7 @@ namespace d360.model.DataAccessLayer
                                     ,A.CanOwnFusion
                                     ,A.AutoDisplayParent
                                     ,A.FlowObjectType
+                                    ,A.CanEditParent
                                     ,P.[Path]
                                     ,AT.IconBackColor as BackColor
                                     ,AT.Icon as Icon
@@ -231,6 +241,7 @@ namespace d360.model.DataAccessLayer
                                     {optionalJoin}
                                     cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
                                     left join [dbo].[AssetTypeStyle] AT on (A.ID = AT.ID)
+                                    {permissionsJoin}
                         where       A.[State] = 1 and A.ObjectID != 0
                         {condition}
                         order by    P.[Path]
@@ -260,6 +271,7 @@ namespace d360.model.DataAccessLayer
             bool hasAssetPathField = false;
             string hierarchyParentUidCol = "";
             string hierarchyParentUidSelect = "";
+            bool includeCreatedByModifiedBy = false;
 
             if (assetType == null)
                 throw new Exception("Invalid assetType specified");
@@ -336,6 +348,11 @@ namespace d360.model.DataAccessLayer
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includecolor"))
             {
                 bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includecolor").Value, out includeColor);
+            }
+
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includecreatedmodifiedby"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includecreatedmodifiedby").Value, out includeCreatedByModifiedBy);
             }
 
             //check for asset path fields now after include fields have been filtered
@@ -890,9 +907,9 @@ namespace d360.model.DataAccessLayer
                     A.[UID] as [AssetUid],
                     A.AssetTypeId,
                     T.[UID] as AssetTypeUid,
-                    UA.uid as UpdatedByUid,
+                    {(includeCreatedByModifiedBy ? "UA.uid as UpdatedByUid,": "")}
                     A.UpdatedOn,
-                    CA.uid as CreatedByUid,
+                    {(includeCreatedByModifiedBy ? "CA.uid as CreatedByUid," : "")}                    
                     A.CreatedOn,
                     {(includeParent ? parentFieldSQL : "")}
                     {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
@@ -1795,7 +1812,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         UseAsTransformation = model.UseAsTransformation,
                         CanOwnFusion = model.CanOwnFusion ?? false,
                         Parent = parentAssetType,
-                        AutoDisplayParent = model.AutoDisplayParent
+                        AutoDisplayParent = model.AutoDisplayParent,
+                        CanEditParent = model.CanEditParent
                     };
                     CompanyContext.Add(a);
                     parentType = SystemObjects.ArtifactType;
@@ -2109,6 +2127,12 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         assetType.FlowObjectType = model.FlowObjectType;
                     }
 
+
+                    if (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset)
+                    {
+                        assetType.CanEditParent = model.CanEditParent;
+                    }
+
                     #endregion
                     break;
                 case AssetTypeClass.Organization:
@@ -2274,7 +2298,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             List<DatabaseBulkAssetResult> results = null;
             try
             {
-                results = CompanyContext.RemoveAssets(execution, assetType, assets, sendWorkflowEvents: sendWorkflowEvents, sendGraphEvents: false);
+                results = CompanyContext.RemoveAssets(execution, assetType, assets, sendWorkflowEvents: sendWorkflowEvents);
 
                 // Close execution record.
                 execution.Processed = results.Count;
