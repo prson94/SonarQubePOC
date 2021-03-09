@@ -1,11 +1,11 @@
-﻿import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn } from '@angular/forms';
-import { debug } from 'util';
+﻿import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core";
+import { AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn } from "@angular/forms";
+import { debug } from "util";
 
 
 @Component({
-    selector: 'gallery-multi-input-field',
-    templateUrl: './gallery.multi-input-field.component.html',
+    selector: "gallery-multi-input-field",
+    templateUrl: "./gallery.multi-input-field.component.html",
     styles: [
         `
         .gallery-section {
@@ -29,7 +29,7 @@ import { debug } from 'util';
 export class GalleryMultiInputFieldComponent implements OnInit {
     properties: Array<any>;
     events: Array<any>;
-    sampleUsage: string = '<ig-multi-input-field  [(ngModel)]="value" igSize="large"></ig-multi-input-field>';
+    sampleUsage: string = "<ig-multi-input-field  [(ngModel)]='value' igSize='large'></ig-multi-input-field>";
 
     value;
     formValue;
@@ -59,19 +59,10 @@ export class GalleryMultiInputFieldComponent implements OnInit {
     }
 }
 export function NoDuplicate(): ValidatorFn {
-
-    return (control: AbstractControl): ValidationErrors | null => {
-        let val: string[] = control.value;
-        if (hasDuplicates(val)) {
-            return { 'duplicates': true }
-        }
-        return null;
-
-    }
     function hasDuplicates(array) {
         var valuesSoFar = Object.create(null);
         for (var i = 0; i < array.length; ++i) {
-            var value = array[i];
+            var value = array[parseInt(i.toString())];
             if (value in valuesSoFar) {
                 return true;
             }
@@ -80,4 +71,13 @@ export function NoDuplicate(): ValidatorFn {
         return false;
     }
 
+    return (control: AbstractControl): ValidationErrors | null => {
+        let val: string[] = control.value;
+        if (hasDuplicates(val)) {
+            return { "duplicates": true };
+        }
+        return null;
+
+    }
+    
 }

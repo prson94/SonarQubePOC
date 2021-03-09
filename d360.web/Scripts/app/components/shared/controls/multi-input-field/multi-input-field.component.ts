@@ -4,7 +4,7 @@ import { TooltipModule } from "primeng/tooltip";
 import { FormsModule, ControlValueAccessor, ReactiveFormsModule, NG_VALUE_ACCESSOR } from "@angular/forms";
 import { IgBadgeModule } from "../badge/badge.module";
 
-export const IG_MultiInputField_ACCESSOR: any = {
+export const IG_MULTIINPUTFIELD_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
     useExisting: forwardRef(() => MultiInputField),
     multi: true
@@ -14,7 +14,7 @@ export const IG_MultiInputField_ACCESSOR: any = {
     selector: "ig-multi-input-field",
     templateUrl: "multi-input-field.component.html",
     encapsulation: ViewEncapsulation.None,
-    providers: [IG_MultiInputField_ACCESSOR],
+    providers: [IG_MULTIINPUTFIELD_ACCESSOR],
     changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ["./multi-input-field.component.less"]
 })
@@ -64,7 +64,7 @@ export class MultiInputField implements ControlValueAccessor {
     }
 
     onKeyPress(event: KeyboardEvent) {
-        if (event.keyCode == 13) {
+        if (event.keyCode === 13) {
             this.addChip(this.currentText);
         }
     }
@@ -94,13 +94,13 @@ export class MultiInputField implements ControlValueAccessor {
             classes.push("has-tooltip");
         }
 
-        if (this._size && this._size == "small") {
+        if (this._size && this._size === "small") {
             classes.push("ig-input-small");
-        } else if (this._size && this._size == "medium") {
+        } else if (this._size && this._size === "medium") {
             classes.push("ig-input-medium");
-        } else if (this._size && this._size == "large") {
+        } else if (this._size && this._size === "large") {
             classes.push("ig-input-large");
-        } else if (this._size && this._size == "full") {
+        } else if (this._size && this._size === "full") {
             classes.push("ig-input-full");
         }
 
@@ -146,7 +146,7 @@ export class MultiInputField implements ControlValueAccessor {
     }
 
     setDisabledState?(isDisabled: boolean): void {
-        this.disabled = isDisabled
+        this.disabled = isDisabled;
     }
 }
 
