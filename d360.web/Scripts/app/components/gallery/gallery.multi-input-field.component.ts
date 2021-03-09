@@ -33,9 +33,9 @@ export class GalleryMultiInputFieldComponent implements OnInit {
 
     value;
     formValue;
-    private multiValue: string[] = ["First Chip", "Earth"];
-    private forTooltip: string[] = ["First Chip", "Earth", "Moon", "Sun", "Uranus", "Mars"];
-    private multiValueInvalid: string[] = ["Duplicate", "NoN-Duplicate", "Duplicate"];
+    multiValue: string[] = ["First Chip", "Earth"];
+    forTooltip: string[] = ["First Chip", "Earth", "Moon", "Sun", "Uranus", "Mars"];
+    multiValueInvalid: string[] = ["Duplicate", "NoN-Duplicate", "Duplicate"];
 
     constructor(private ref: ChangeDetectorRef) { }
 
@@ -78,6 +78,6 @@ export function NoDuplicate(): ValidatorFn {
         }
         return null;
 
-    }
+    };
     
 }

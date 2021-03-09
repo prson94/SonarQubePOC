@@ -77,7 +77,7 @@ export class MultiInputField implements ControlValueAccessor {
     }
 
     getElementClass() {
-        let classes: string[] = ["ig-multi-input-field"]
+        let classes: string[] = ["ig-multi-input-field"];
         if (this.disabled) {
             classes.push("disabled");
         }
