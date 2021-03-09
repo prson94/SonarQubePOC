@@ -49,7 +49,7 @@ export class GalleryMultiInputFieldComponent implements OnInit {
         this.properties.push({ Name: "tabindex", Type: "number", Description: "Index of the element in tabbing order.", Default: "0" });
         this.properties.push({ Name: "disabled", Type: "boolean", Description: "Used to set the control to disabled state where the user cannot interact with it", Default: "false" });
         this.properties.push({ Name: "required", Type: "boolean", Description: "When this attribute is present the control must have a selected value to be valid", Default: "" });
-        this.properties.push({ Name: "style", Type: "string", Description: "Inline style of the component.", Default: "" });
+        this.properties.push({ Name: "infoTooltip", Type: "string", Description: "When this attribute is present the control will show a tooltip with 'i' icon", Default: "" });
 
         this.events = new Array();
         this.events.push({ Name: "ngModelChange", Description: "Fired when the selection changes" });

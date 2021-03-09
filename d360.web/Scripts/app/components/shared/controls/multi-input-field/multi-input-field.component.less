@@ -49,13 +49,35 @@ ig-multi-input-field {
       border-color: @ig-field-border-color;
     }
 
+
     .inner-container {
+      cursor: text;
+
       input {
         border: 0;
         outline: 0;
         background: none;
         padding: 6px 0 0 8px;
         max-width: calc(100% - 8px);
+      }
+    }
+
+
+    &.has-tooltip {
+      .inner-container {
+        display: inline-block;
+        width: calc(100% - 28px);
+      }
+
+      .multi-field-tooltip {
+        width: 28px;
+        display: inline-block;
+        color: #006fc0;
+        position: absolute;
+        top: 0;
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
       }
     }
 
@@ -69,6 +91,7 @@ ig-multi-input-field {
         border-radius: 4px;
         margin: 3px 0 0 3px;
         max-width: calc(100% - 8px);
+        cursor: default;
 
         .name {
           overflow: hidden;

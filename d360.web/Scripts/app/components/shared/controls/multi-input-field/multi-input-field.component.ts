@@ -1,4 +1,4 @@
-﻿import { Component, NgModule, ViewEncapsulation, ChangeDetectionStrategy, Input, ChangeDetectorRef, forwardRef } from "@angular/core";
+﻿import { Component, NgModule, ViewEncapsulation, ChangeDetectionStrategy, Input, ChangeDetectorRef, forwardRef, ElementRef } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { TooltipModule } from "primeng/tooltip";
 import { FormsModule, ControlValueAccessor, ReactiveFormsModule, NG_VALUE_ACCESSOR } from "@angular/forms";
@@ -21,7 +21,7 @@ export const IG_MultiInputField_ACCESSOR: any = {
 export class MultiInputField implements ControlValueAccessor {
     @Input() required: boolean = false;
     @Input() tabindex: number = 1;
-    @Input() tooltip: string = "";
+    @Input() infoTooltip: string = "";
     public _size: string;
 
 
@@ -35,7 +35,8 @@ export class MultiInputField implements ControlValueAccessor {
     onModelChange: Function = () => { };
     onModelTouched: Function = () => { };
 
-    constructor(public ref: ChangeDetectorRef) { }
+    constructor(public ref: ChangeDetectorRef,
+        public el: ElementRef) { }
 
     removeChip(item: string) {
         let idx: number = (this.value as string[]).indexOf(item);
@@ -89,6 +90,9 @@ export class MultiInputField implements ControlValueAccessor {
         if (this.isInFocus) {
             classes.push("in-focus");
         }
+        if (this.infoTooltip) {
+            classes.push("has-tooltip");
+        }
 
         if (this._size && this._size == "small") {
             classes.push("ig-input-small");
@@ -98,6 +102,10 @@ export class MultiInputField implements ControlValueAccessor {
             classes.push("ig-input-large");
         } else if (this._size && this._size == "full") {
             classes.push("ig-input-full");
+        }
+
+        if (this.required) {
+            this.el.nativeElement.setAttribute("aria-required", true);
         }
 
         return classes.join(" ");

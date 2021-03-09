@@ -17,4 +17,12 @@
                    (focusout)="hasFocus(false)" />
         </div>
     </div>
+    <div *ngIf="infoTooltip"
+         class="multi-field-tooltip"
+         pTooltip="{{infoTooltip}}"
+         [escape]="false"
+         tooltipPosition="top"
+         tooltipStyleClass="ig-tooltip">
+        <i class="fa fa-info-circle"></i>
+    </div>
 </div>
