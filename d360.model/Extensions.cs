@@ -47,7 +47,9 @@ namespace d360.model
                 PropertyInfo[] readableProperties = properties.Where
                     (w => w.CanRead).ToArray();
                 if (readableProperties.Length > 1 && orderedColumnNames == null)
+                {
                     throw new ArgumentException("Ordered list of column names must be provided when TVP contains more than one column");
+                }
     
                 var columnNames = (orderedColumnNames ??
                     readableProperties.Select(s => s.Name)).ToArray();
@@ -75,25 +77,37 @@ namespace d360.model
 
         public static IQueryable Where(this IQueryable source, string predicate, params object[] values)
         {
-            if (source == null) throw new ArgumentNullException("source");
-            if (predicate == null) throw new ArgumentNullException("predicate");
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
+            if (predicate == null)
+            {
+                throw new ArgumentNullException("predicate");
+            }
             LambdaExpression lambda = DynamicExpression.ParseLambda(source.ElementType, typeof(bool), predicate, values);
             return source.Provider.CreateQuery(
                 Expression.Call(
                     typeof(Queryable), "Where",
-                    new Type[] { source.ElementType },
+                    new [] { source.ElementType },
                     source.Expression, Expression.Quote(lambda)));
         }
 
         public static IQueryable Select(this IQueryable source, string selector, params object[] values)
         {
-            if (source == null) throw new ArgumentNullException("source");
-            if (selector == null) throw new ArgumentNullException("selector");
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
+            if (selector == null) 
+            { 
+                throw new ArgumentNullException("selector"); 
+            }
             LambdaExpression lambda = DynamicExpression.ParseLambda(source.ElementType, null, selector, values);
             return source.Provider.CreateQuery(
                 Expression.Call(
                     typeof(Queryable), "Select",
-                    new Type[] { source.ElementType, lambda.Body.Type },
+                    new [] { source.ElementType, lambda.Body.Type },
                     source.Expression, Expression.Quote(lambda)));
         }
 
@@ -104,7 +118,10 @@ namespace d360.model
 
         public static IQueryable OrderBy(this IQueryable source, string ordering, params object[] values)
         {
-            if (source == null) throw new ArgumentNullException("source");
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
             if (ordering == null) throw new ArgumentNullException("ordering");
             ParameterExpression[] parameters = new ParameterExpression[] {
             Expression.Parameter(source.ElementType, "") };
@@ -117,7 +134,7 @@ namespace d360.model
             {
                 queryExpr = Expression.Call(
                     typeof(Queryable), o.Ascending ? methodAsc : methodDesc,
-                    new Type[] { source.ElementType, o.Selector.Type },
+                    new [] { source.ElementType, o.Selector.Type },
                     queryExpr, Expression.Quote(Expression.Lambda(o.Selector, parameters)));
                 methodAsc = "ThenBy";
                 methodDesc = "ThenByDescending";
@@ -127,27 +144,36 @@ namespace d360.model
 
         public static IQueryable Take(this IQueryable source, int count)
         {
-            if (source == null) throw new ArgumentNullException("source");
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
             return source.Provider.CreateQuery(
                 Expression.Call(
                     typeof(Queryable), "Take",
-                    new Type[] { source.ElementType },
+                    new [] { source.ElementType },
                     source.Expression, Expression.Constant(count)));
         }
 
         public static IQueryable Skip(this IQueryable source, int count)
         {
-            if (source == null) throw new ArgumentNullException("source");
+            if (source == null) 
+            {
+                throw new ArgumentNullException("source");
+            }
             return source.Provider.CreateQuery(
                 Expression.Call(
                     typeof(Queryable), "Skip",
-                    new Type[] { source.ElementType },
+                    new [] { source.ElementType },
                     source.Expression, Expression.Constant(count)));
         }
 
         public static IQueryable GroupBy(this IQueryable source, string keySelector, string elementSelector, params object[] values)
         {
-            if (source == null) throw new ArgumentNullException("source");
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
             if (keySelector == null) throw new ArgumentNullException("keySelector");
             if (elementSelector == null) throw new ArgumentNullException("elementSelector");
             LambdaExpression keyLambda = DynamicExpression.ParseLambda(source.ElementType, null, keySelector, values);
@@ -155,26 +181,32 @@ namespace d360.model
             return source.Provider.CreateQuery(
                 Expression.Call(
                     typeof(Queryable), "GroupBy",
-                    new Type[] { source.ElementType, keyLambda.Body.Type, elementLambda.Body.Type },
+                    new [] { source.ElementType, keyLambda.Body.Type, elementLambda.Body.Type },
                     source.Expression, Expression.Quote(keyLambda), Expression.Quote(elementLambda)));
         }
 
         public static bool Any(this IQueryable source)
         {
-            if (source == null) throw new ArgumentNullException("source");
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
             return (bool)source.Provider.Execute(
                 Expression.Call(
                     typeof(Queryable), "Any",
-                    new Type[] { source.ElementType }, source.Expression));
+                    new [] { source.ElementType }, source.Expression));
         }
 
         public static int Count(this IQueryable source)
         {
-            if (source == null) throw new ArgumentNullException("source");
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
             return (int)source.Provider.Execute(
                 Expression.Call(
                     typeof(Queryable), "Count",
-                    new Type[] { source.ElementType }, source.Expression));
+                    new [] { source.ElementType }, source.Expression));
         }
     }
 
@@ -199,13 +231,19 @@ namespace d360.model
 
     public class DynamicProperty
     {
-        string name;
-        Type type;
+        readonly string name;
+        readonly Type type;
 
         public DynamicProperty(string name, Type type)
         {
-            if (name == null) throw new ArgumentNullException("name");
-            if (type == null) throw new ArgumentNullException("type");
+            if (name == null)
+            {
+                throw new ArgumentNullException("name");
+            }
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
             this.name = name;
             this.type = type;
         }
@@ -289,11 +327,16 @@ namespace d360.model
 
         public bool Equals(Signature other)
         {
-            if (properties.Length != other.properties.Length) return false;
+            if (properties.Length != other.properties.Length)
+            {
+                return false;
+            }
             for (int i = 0; i < properties.Length; i++)
             {
-                if (properties[i].Name != other.properties[i].Name ||
-                    properties[i].Type != other.properties[i].Type) return false;
+                if (properties[i].Name != other.properties[i].Name || properties[i].Type != other.properties[i].Type)
+                {
+                    return false;
+                }
             }
             return true;
         }
@@ -305,10 +348,10 @@ namespace d360.model
 
         static ClassFactory() { }  // Trigger lazy initialization of static fields
 
-        ModuleBuilder module;
-        Dictionary<Signature, Type> classes;
+        readonly ModuleBuilder module;
+        readonly Dictionary<Signature, Type> classes;
         int classCount;
-        ReaderWriterLock rwLock;
+        readonly ReaderWriterLock rwLock;
 
         private ClassFactory()
         {
@@ -401,7 +444,7 @@ namespace d360.model
                 genGet.Emit(OpCodes.Ret);
                 MethodBuilder mbSet = tb.DefineMethod("set_" + dp.Name,
                     MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig,
-                    null, new Type[] { dp.Type });
+                    null, new [] { dp.Type });
                 ILGenerator genSet = mbSet.GetILGenerator();
                 genSet.Emit(OpCodes.Ldarg_0);
                 genSet.Emit(OpCodes.Ldarg_1);
@@ -419,7 +462,7 @@ namespace d360.model
             MethodBuilder mb = tb.DefineMethod("Equals",
                 MethodAttributes.Public | MethodAttributes.ReuseSlot |
                 MethodAttributes.Virtual | MethodAttributes.HideBySig,
-                typeof(bool), new Type[] { typeof(object) });
+                typeof(bool), new [] { typeof(object) });
             ILGenerator gen = mb.GetILGenerator();
             LocalBuilder other = gen.DeclareLocal(tb);
             Label next = gen.DefineLabel();
@@ -441,7 +484,7 @@ namespace d360.model
                 gen.Emit(OpCodes.Ldfld, field);
                 gen.Emit(OpCodes.Ldloc, other);
                 gen.Emit(OpCodes.Ldfld, field);
-                gen.EmitCall(OpCodes.Callvirt, ct.GetMethod("Equals", new Type[] { ft, ft }), null);
+                gen.EmitCall(OpCodes.Callvirt, ct.GetMethod("Equals", new [] { ft, ft }), null);
                 gen.Emit(OpCodes.Brtrue_S, next);
                 gen.Emit(OpCodes.Ldc_I4_0);
                 gen.Emit(OpCodes.Ret);
@@ -466,7 +509,7 @@ namespace d360.model
                 gen.EmitCall(OpCodes.Call, ct.GetMethod("get_Default"), null);
                 gen.Emit(OpCodes.Ldarg_0);
                 gen.Emit(OpCodes.Ldfld, field);
-                gen.EmitCall(OpCodes.Callvirt, ct.GetMethod("GetHashCode", new Type[] { ft }), null);
+                gen.EmitCall(OpCodes.Callvirt, ct.GetMethod("GetHashCode", new [] { ft }), null);
                 gen.Emit(OpCodes.Xor);
             }
             gen.Emit(OpCodes.Ret);
@@ -475,7 +518,7 @@ namespace d360.model
 
     public sealed class ParseException : Exception
     {
-        int position;
+        readonly int position;
 
         public ParseException(string message, int position)
             : base(message)
@@ -496,11 +539,16 @@ namespace d360.model
 
     internal class ExpressionParser
     {
-        struct Token
+        struct Token : IEquatable<Token>
         {
             public TokenId id;
             public string text;
             public int pos;
+
+            public bool Equals(Token other)
+            {
+                return id == other.id && text == other.text && pos == other.pos;
+            }
         }
 
         enum TokenId
@@ -677,26 +725,35 @@ namespace d360.model
         static readonly string keywordIif = "iif";
         static readonly string keywordNew = "new";
 
-        static Dictionary<string, object> keywords;
+        static Dictionary<string, object> keywords = CreateKeywords();
 
-        Dictionary<string, object> symbols;
+        readonly Dictionary<string, object> symbols;
         IDictionary<string, object> externals;
-        Dictionary<Expression, string> literals;
+        readonly Dictionary<Expression, string> literals;
         ParameterExpression it;
-        string text;
+        readonly string text;
         int textPos;
-        int textLen;
+        readonly int textLen;
         char ch;
         Token token;
 
         public ExpressionParser(ParameterExpression[] parameters, string expression, object[] values)
         {
-            if (expression == null) throw new ArgumentNullException("expression");
-            if (keywords == null) keywords = CreateKeywords();
+            if (expression == null)
+            {
+                throw new ArgumentNullException("expression");
+            }
+          
             symbols = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             literals = new Dictionary<Expression, string>();
-            if (parameters != null) ProcessParameters(parameters);
-            if (values != null) ProcessValues(values);
+            if (parameters != null)
+            {
+                ProcessParameters(parameters);
+            }
+            if (values != null)
+            {
+                ProcessValues(values);
+            }
             text = expression;
             textLen = text.Length;
             SetTextPos(0);
@@ -706,10 +763,16 @@ namespace d360.model
         void ProcessParameters(ParameterExpression[] parameters)
         {
             foreach (ParameterExpression pe in parameters)
-                if (!String.IsNullOrEmpty(pe.Name))
+            {
+                if (!string.IsNullOrEmpty(pe.Name))
+                {
                     AddSymbol(pe.Name, pe);
-            if (parameters.Length == 1 && String.IsNullOrEmpty(parameters[0].Name))
+                }
+            }
+            if (parameters.Length == 1 && String.IsNullOrEmpty(parameters[0].Name)) 
+            { 
                 it = parameters[0];
+            }
         }
 
         void ProcessValues(object[] values)
@@ -731,7 +794,9 @@ namespace d360.model
         void AddSymbol(string name, object value)
         {
             if (symbols.ContainsKey(name))
+            {
                 throw ParseError(Res.DuplicateIdentifier, name);
+            }
             symbols.Add(name, value);
         }
 
@@ -740,8 +805,12 @@ namespace d360.model
             int exprPos = token.pos;
             Expression expr = ParseExpression();
             if (resultType != null)
+            {
                 if ((expr = PromoteExpression(expr, resultType, true)) == null)
+                {
                     throw ParseError(exprPos, Res.ExpressionTypeMismatch, GetTypeName(resultType));
+                }
+            }
             ValidateToken(TokenId.End, Res.SyntaxError);
             return expr;
         }
@@ -764,7 +833,10 @@ namespace d360.model
                     ascending = false;
                 }
                 orderings.Add(new DynamicOrdering { Selector = expr, Ascending = ascending });
-                if (token.id != TokenId.Comma) break;
+                if (token.id != TokenId.Comma)
+                {
+                    break;
+                }
                 NextToken();
             }
             ValidateToken(TokenId.End, Res.SyntaxError);
@@ -897,6 +969,8 @@ namespace d360.model
                     case TokenId.LessThanEqual:
                         left = GenerateLessThanEqual(left, right);
                         break;
+                    default:
+                        continue;
                 }
             }
             return left;
@@ -916,7 +990,9 @@ namespace d360.model
                 {
                     case TokenId.Plus:
                         if (left.Type == typeof(string) || right.Type == typeof(string))
+                        {
                             goto case TokenId.Amphersand;
+                        }
                         CheckAndPromoteOperands(typeof(IAddSignatures), op.text, ref left, ref right, op.pos);
                         left = GenerateAdd(left, right);
                         break;
@@ -927,6 +1003,8 @@ namespace d360.model
                     case TokenId.Amphersand:
                         left = GenerateStringConcat(left, right);
                         break;
+                    default:
+                        continue;
                 }
             }
             return left;
@@ -1041,14 +1119,19 @@ namespace d360.model
             while (true)
             {
                 int i = s.IndexOf(quote, start);
-                if (i < 0) break;
+                if (i < 0)
+                {
+                    break;
+                }
                 s = s.Remove(i, 1);
                 start = i + 1;
             }
             if (quote == '\'')
             {
                 if (s.Length != 1)
+                {
                     throw ParseError(Res.InvalidCharacterLiteral);
+                }
                 NextToken();
                 return CreateLiteral(s[0], s);
             }
@@ -1066,9 +1149,18 @@ namespace d360.model
                 if (!UInt64.TryParse(text, out value))
                     throw ParseError(Res.InvalidIntegerLiteral, text);
                 NextToken();
-                if (value <= (ulong)Int32.MaxValue) return CreateLiteral((int)value, text);
-                if (value <= (ulong)UInt32.MaxValue) return CreateLiteral((uint)value, text);
-                if (value <= (ulong)Int64.MaxValue) return CreateLiteral((long)value, text);
+                if (value <= (ulong)Int32.MaxValue) 
+                { 
+                    return CreateLiteral((int)value, text); 
+                }
+                if (value <= (ulong)UInt32.MaxValue)
+                {
+                    return CreateLiteral((uint)value, text);
+                }
+                if (value <= (ulong)Int64.MaxValue)
+                {
+                    return CreateLiteral((long)value, text);
+                }
                 return CreateLiteral(value, text);
             }
             else
@@ -1381,11 +1473,11 @@ namespace d360.model
             Type[] typeArgs;
             if (signature.Name == "Min" || signature.Name == "Max")
             {
-                typeArgs = new Type[] { elementType, args[0].Type };
+                typeArgs = new [] { elementType, args[0].Type };
             }
             else
             {
-                typeArgs = new Type[] { elementType };
+                typeArgs = new [] { elementType };
             }
             if (args.Length == 0)
             {
