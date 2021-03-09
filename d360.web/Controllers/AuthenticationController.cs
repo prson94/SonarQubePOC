@@ -1589,7 +1589,7 @@ namespace d360.web.Controllers
                 templateValues["request_url"] = strUrl;
 
                 //email user 
-                extensions.mail.TemplateMessage.SendMessage("Data360 Forgotten Password", resource.Email, resource.FullName, templateValues, "forgot-password-reset-request");
+                extensions.mail.SimpleMessage.SendMessage("Data360 Forgotten Password", resource.Email, resource.FullName, templateValues, "forgot-password-reset-request");
             }
             //redirect to login page
             FormsAuthentication.RedirectToLoginPage();
