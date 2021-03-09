@@ -367,7 +367,7 @@ namespace igx.jobs.bulkloadprocessor
                     {
                         case "M":
                             if (load.ObjectID == 0)
-                                BulkLoadMembership(companyConnection, load.ID);
+                                BulkLoadMembership(companyConnection, loadInfo.CompanyID, load.ID);
                             else
                                 BulkLoadUsers(companyConnection, loadInfo.CompanyID, load.ID);
                             break;
@@ -408,7 +408,7 @@ namespace igx.jobs.bulkloadprocessor
             }
         }
 
-        private static void BulkLoadMembership(SqlConnection company, int loadId)
+        private static void BulkLoadMembership(SqlConnection company, int companyID, int loadId)
         {
             var load = company.Query<Load>("select * from [Load] where ID = @loadId", new { loadId }).SingleOrDefault();
             if (load == null)
@@ -424,6 +424,8 @@ namespace igx.jobs.bulkloadprocessor
                 throw new Exception($"Bulk load data does not contain any columns in LoadColumn table.  Load ID [{loadId}]");
             }
             columns = null;
+
+            List<AssetEventInfo> assetEvents = new List<AssetEventInfo>();
 
             using (var trans = company.BeginTransaction())
             {
@@ -471,6 +473,21 @@ when not matched by target then
 	insert (Name, UpdatedOn, UpdatedBy)
 	values (S.Name, getutcdate(), 0)
 output inserted.ID into #GroupInsertResult;", transaction: trans);
+
+                    var results = company.Query<Guid>(@"
+select a.uid
+from asset a
+inner join #GroupInsertResult I on a.[object] = 'Group' and I.ID = a.ObjectID", transaction: trans);
+
+                    foreach (var result in results)
+                    {
+                        assetEvents.Add(new AssetEventInfo
+                        {
+                            CompanyID = companyID,
+                            Uid = result,
+                            Type = AssetEventType.Node
+                        });
+                    }
 
                     company.Execute(@"
 update	T
@@ -585,6 +602,7 @@ from	LoadItem T
                     catch { }
                 }
             }
+            SendAssetGraphEvents(assetEvents);
         }
                
         private static void BulkLoadUsers(SqlConnection company, int companyID, int loadId)
@@ -606,7 +624,9 @@ from	LoadItem T
             {
                 throw new Exception($"Bulk load data does not contain the correct number of columns in LoadColumn table.  Load ID [{loadId}]");
             }
-            
+
+            List<AssetEventInfo> assetEvents = new List<AssetEventInfo>();
+
             var usersToLoad = company.Query<CommunityUserAddModel>(@"
 select	I.LoadID,
 		I.RowIndex,
@@ -963,6 +983,19 @@ when not matched by target then
     insert  ([uid], ResourceID, LastName, FirstName, Email, [State], IsAdministrator)
     values  (S.[uid], S.ResourceID, S.LastName, S.FirstName, S.Email, S.[State], 0);", transaction: trans);
 
+                    var results = company.Query<Guid>("select uid from #Users where	Success = 1", transaction: trans);
+
+                    foreach (var result in results)
+                    {
+                        assetEvents.Add(new AssetEventInfo
+                        {
+                            CompanyID = companyID,
+                            Uid = result,
+                            Type = AssetEventType.Node
+                        });
+                    }
+
+
                     company.Execute(@"exec [bulkload].[UpdateDynamicLookupFieldColumns] @loadId", new { loadId }, transaction: trans);
 
                     company.Execute(@"
@@ -1019,6 +1052,7 @@ where	ID = @loadId", new { loadId }, transaction: trans);
                     catch { }
                 }
             }
+            SendAssetGraphEvents(assetEvents);
 
             #endregion
         }
@@ -1346,6 +1380,16 @@ where LI.LoadID = @loadId"
             {
                 CoreFunction.AITrackException(functionName, ex, companyID);
             }
+        }
+
+        private static void SendAssetGraphEvents(IEnumerable<AssetEventInfo> events, bool delayedDelivery = false)
+        {
+            if (events.Any())
+            {
+                var queue = new AzureQueueSource();
+                queue.CreateTopicMessages(Config.GetValue<string>("AssetBusTopicName"), events.ToList(), delayedDelivery ? new DateTime?(DateTime.UtcNow.AddSeconds(15)) : null);
+            }
+
         }
     }
 }
