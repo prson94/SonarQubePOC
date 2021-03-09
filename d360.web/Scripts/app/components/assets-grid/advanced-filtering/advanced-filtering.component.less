@@ -1,0 +1,43 @@
+﻿@import "../../../../../Content/styles/infogix-ui/infogix-ui.less";
+
+.advanced-filtering {
+  width: 100%;
+  max-width: 670px;
+  margin: -4px;
+  padding: 4px;
+  overflow-x: auto;
+
+  .condition-row {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    margin-bottom: 8px;
+
+    .condition-option {
+      margin-right: 8px;
+      flex-shrink: 0;
+      flex-grow: 0;
+      width: 100%;
+      max-width: 150px;
+
+
+      &.empty {
+        max-width: @ig-field-width-medium;
+        flex-grow: 1;
+      }
+
+      &.condition-field {
+        max-width: @ig-field-width-medium;
+        flex-grow: 1;
+      }
+
+      &.remove-condition {
+        max-width: 32px;
+      }
+    }
+  }
+
+  .p-dropdown-label {
+    padding-top: 5px;
+  }
+}
