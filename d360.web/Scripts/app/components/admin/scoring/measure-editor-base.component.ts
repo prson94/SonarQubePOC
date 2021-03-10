@@ -26,7 +26,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
-    public conditionGroupLink = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Conditio";
+    public conditionGroupLink = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Asset_conditions";
     public conditionAndWeightLink = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Asset_conditions";
     //#region Tooltip data
 
