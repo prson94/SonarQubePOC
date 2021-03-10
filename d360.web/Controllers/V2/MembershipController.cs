@@ -38,9 +38,9 @@ namespace d360.web.Controllers.V2
     ]
     public class MembershipController : BaseV2ApiController
     {
-        ICompanyContext _company;
-        IMembershipRepository membershipRepository;
-        IAssetRepository assetRepository;
+        readonly ICompanyContext _company;
+        readonly IMembershipRepository membershipRepository;
+        readonly IAssetRepository assetRepository;
         public MembershipController(ICommunityContext community, ICompanyContext company, IMembershipRepository membershipRepository, IAssetRepository assetRepository)
             : base(community, company)
         {
@@ -99,13 +99,23 @@ namespace d360.web.Controllers.V2
                 }
 
                 string finalSql = "";
-                string joinsSql = $@" outer apply (select object,objectid from Asset A1 where A1.Object = 'Resource' and A1.ObjectID = gr.ResourceID) A 
+                string countSql;
+                string orderBySQL;
+                long pageSize;
+                long pageNum;
+
+                var joinBulder = new StringBuilder();
+                joinBulder.Append($@" outer apply (select object,objectid from Asset A1 where A1.Object = 'Resource' and A1.ObjectID = gr.ResourceID) A 
                                         {(_includeOrganization ?
                                                     @" left join dbo.OrganizationResource org on org.ResourceID = GR.ResourceID 
                                                     left join dbo.asset ao on ao.Object like 'Organization' and ao.ObjectID = org.OrganizationID "
-                                    : "")}";
-                string whereSql = "";
-                string selectSql = $@"select
+                                    : "")}");
+               
+                var whereBuilder = new StringBuilder();
+               
+
+                var selectBuilder = new StringBuilder();
+                selectBuilder.Append($@"select
                     gr.uid,
                     {(_includeOrganization ? " ao.Uid as OrganizationUid, " : "")} 
                     gr.ResourceID, 
@@ -118,11 +128,10 @@ namespace d360.web.Controllers.V2
                          when 1 then 'Active'
                          when 2 then 'InActive'
                          when 3 then 'Deleted' end as State,
-                    gr.CreatedOn";
-                string countSql = "select count(*) from [reporting].[Global_Resource] gr ";
-                string orderBySQL = $"";
-                long pageSize;
-                long pageNum;
+                    gr.CreatedOn");
+
+                var countBuilder = new StringBuilder();
+                countBuilder.Append("select count(*) from [reporting].[Global_Resource] gr ");
 
                 DynamicParameters dbArgs = new DynamicParameters();
                 List<string> queries = new List<string>();
@@ -139,7 +148,6 @@ namespace d360.web.Controllers.V2
 
                 var fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
 
-                IDictionary<string, string> customFields = new Dictionary<string, string>();
                 var queryParams = Request.GetQueryNameValuePairs();
                 getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
 
@@ -178,11 +186,11 @@ namespace d360.web.Controllers.V2
                 }
                 foreach (var col in fieldColumns)
                 {
-                    selectSql += "," + col;
+                    selectBuilder.Append("," + col);
                 }
                 foreach (var join in fieldJoins)
                 {
-                    joinsSql += " " + join;
+                    joinBulder.Append(" " + join);
                 }
                 foreach (FieldType customField in fieldTypes)
                 {
@@ -260,42 +268,42 @@ namespace d360.web.Controllers.V2
 
                 if (queries.Count() > 0)
                 {
-                    whereSql += "where ";
+                    whereBuilder.Append("where ");
                 }
 
                 for (int i = 0; i < queries.Count(); i++)
                 {
-                    whereSql += queries[i].ToString();
+                    whereBuilder.Append(queries[i]);
                     if (i < queries.Count() - 1)
                     {
-                        whereSql += " and ";
+                        whereBuilder.Append(" and ");
                     }
                 }
                 List<string> validCols = new List<string> { "uid", "ResourceID", "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn", "State", "CreatedOn" };
                 validCols.AddRange(fieldTypes.Select(x => x.Name));
 
-                if (validCols.All(x => x.ToLower() != _order.ToLower()))
+                if (validCols.All(x => x.ToLowerInvariant() != _order.ToLowerInvariant()))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", "Invalid order by passed in the request")).ConfigureAwait(false);
                 }
 
-                if (!new string[] { "asc", "desc" }.Contains(_direction.ToLower()))
+                if (!new []{ "asc", "desc" }.Contains(_direction.ToLowerInvariant()))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", "Invalid order passed in the request")).ConfigureAwait(false);
                 }
 
-                orderBySQL = $"order by {_order} {_direction}";
-
-                finalSql = selectSql + " from[reporting].[Global_Resource] gr " + joinsSql + " " + whereSql;
-                countSql += joinsSql + " " + whereSql;
+                orderBySQL = $"order by {_order} {_direction}";                
 
                 long.TryParse(_pageSize, out pageSize);
                 long.TryParse(_pageNum, out pageNum);
-
                 model.pageNum = pageNum;
                 model.pageSize = pageSize;
+
                 string offsetSql = $" {orderBySQL} offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
-                finalSql += offsetSql;
+                selectBuilder.Append(" from [reporting].[Global_Resource] gr ");
+                
+                finalSql = $"{selectBuilder} {joinBulder} {whereBuilder} {offsetSql}";
+                countSql = $"{countBuilder} {joinBulder } {whereBuilder}";
 
                 var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs, ApiTimeout);
                 var countResults = await Company.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
@@ -323,7 +331,7 @@ namespace d360.web.Controllers.V2
             catch (FilterExpressionParserException ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Filter expression parse error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Filter expression parse error", errorMessage)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -392,7 +400,7 @@ namespace d360.web.Controllers.V2
 
             foreach (var user in users)
             {
-                var userUid = new Dictionary<string, string> { { "Uid", user.Uid.ToString() } }; ;
+                var userUid = new Dictionary<string, string> { { "Uid", user.Uid.ToString() } };
                 bool isValid = this.IsValidGuid(userUid, "uid");
 
                 if (!isValid)
@@ -454,31 +462,40 @@ namespace d360.web.Controllers.V2
        ]
         public async Task<HttpResponseMessage> GetMembers(Guid groupUid)
         {
-            string finalSql = "";
-            string joinsSql = " left join Asset A on A.Object = 'Resource' and A.ObjectID = gr.ResourceID ";
-            string whereSql = "";
+            string finalSql;
+            string countSql;
+           
+            var joinBuilder = new StringBuilder();
+            joinBuilder.Append(" left join Asset A on A.Object = 'Resource' and A.ObjectID = gr.ResourceID ");
+            var whereBuilder = new StringBuilder();
+
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
-            string selectSql = $@"select gr.uid, 
-                gr.ResourceID, gr.FirstName, gr.LastName, gr.Email, 
-                gr.IsAdministrator, gr.LastLoggedInOn, 
-                case 
-                    when g.PrimaryOwnerResourceID = gr.ResourceID then 'Primary' 
-                    when g.SecondaryOwnerResourceID = gr.ResourceID then 'Secondary' 
-                    else null end 
-                as [Owner],
-                case gr.State 
-                    when 1 then 'Active' 
-                    when 2 then 'InActive'
-                    when 3 then 'Deleted' end 
-                as State ";
-            string countSql = @"
+
+            var selectBuilder = new StringBuilder();
+            selectBuilder.Append($@"
+                            select gr.uid, 
+                                gr.ResourceID, gr.FirstName, gr.LastName, gr.Email, 
+                                gr.IsAdministrator, gr.LastLoggedInOn, 
+                                case 
+                                    when g.PrimaryOwnerResourceID = gr.ResourceID then 'Primary' 
+                                    when g.SecondaryOwnerResourceID = gr.ResourceID then 'Secondary' 
+                                    else null end 
+                                as [Owner],
+                                case gr.State 
+                                    when 1 then 'Active' 
+                                    when 2 then 'InActive'
+                                    when 3 then 'Deleted' end 
+                                as State ");
+            var countBuilder = new StringBuilder();
+            countBuilder.Append(@"
                            select count(*)
                                    from[reporting].[Global_Resource] as gr
                                        inner join [dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID
                                        inner join [dbo].[Group] g on g.ID = rg.GroupID
 									   inner join [dbo].[Asset] AB on AB.uid = '"
-                                    + groupUid + "'";
+                                    + groupUid + "'");
+
             var firstName = "";
             var lastName = "";
             string pageSize = "5";
@@ -488,7 +505,7 @@ namespace d360.web.Controllers.V2
             DynamicParameters dbArgs = new DynamicParameters();
             ResourceApiViewModel model = new ResourceApiViewModel();
             var queryParams = Request.GetQueryNameValuePairs();
-            queryParams.ToList().ForEach(q =>
+            foreach (var q in queryParams)
             {
                 var key = q.Key.ToLower();
                 if (key.StartsWith("_"))
@@ -498,14 +515,14 @@ namespace d360.web.Controllers.V2
                         case "_firstname":
                             firstName = q.Value;
                             dbArgs.Add("firstName", q.Value);
-                            whereSql += " and gr.FirstName = @firstName";
-                            countSql += " and gr.FirstName = @firstName";
+                            whereBuilder.Append(" and gr.FirstName = @firstName");
+                            countBuilder.Append(" and gr.FirstName = @firstName");
                             break;
                         case "_lastname":
                             lastName = q.Value;
                             dbArgs.Add("lastName", q.Value);
-                            whereSql += " and gr.lastName = @lastName";
-                            countSql += " and gr.LastName = @lastName";
+                            whereBuilder.Append(" and gr.lastName = @lastName");
+                            countBuilder.Append(" and gr.LastName = @lastName");
                             break;
                         case "_pagesize":
                             pageSize = q.Value;
@@ -513,9 +530,11 @@ namespace d360.web.Controllers.V2
                         case "_pagenum":
                             pageNum = q.Value;
                             break;
+                        default:
+                            continue;
                     }
                 }
-            });
+            }
 
             Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
             string isValid = isPageSizeAndNumValid(pageParams);
@@ -529,11 +548,11 @@ namespace d360.web.Controllers.V2
             getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
             foreach (var col in fieldColumns)
             {
-                selectSql += "," + col;
+                selectBuilder.Append("," + col);
             }
             foreach (var join in fieldJoins)
             {
-                joinsSql += join;
+                joinBuilder.Append(join);
             }
 
             foreach (FieldType customField in fieldTypes)
@@ -541,25 +560,26 @@ namespace d360.web.Controllers.V2
                 if (queryParams.Any(x => x.Key == customField.Name))
                 {
                     var paramval = queryParams.FirstOrDefault(x => x.Key == customField.Name).Value;
-                    whereSql += $" and F{customField.ID}.FormattedValue = @field{customField.ID}";
+                    whereBuilder.Append($" and F{customField.ID}.FormattedValue = @field{customField.ID}");
                     dbArgs.Add($"@field{customField.ID}", paramval);
                 }
             }
-            finalSql = selectSql + @" from[reporting].[Global_Resource] gr inner join [dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID 
-                                      inner join[dbo].[Group] g on g.ID = rg.GroupID
-                                      inner join[dbo].[Asset] AB on AB.uid = '"
-                                      + groupUid + "'" + joinsSql + " where g.ID = AB.ObjectID" + whereSql;
-            countSql += joinsSql + " where g.ID = AB.ObjectID" + whereSql;
 
             long.TryParse(pageSize, out _pageSize);
             long.TryParse(pageNum, out _pageNum);
-
             model.pageNum = _pageNum;
             model.pageSize = _pageSize;
+
             string offsetSql = $" Order by gr.ResourceID offset {_pageSize * (_pageNum - 1)} rows fetch next {_pageSize} rows only";
-            finalSql += offsetSql;
-            var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs, ApiTimeout);
-            var count = await Company.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
+        
+            finalSql = $@"{selectBuilder} from[reporting].[Global_Resource] gr inner join [dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID 
+                                      inner join[dbo].[Group] g on g.ID = rg.GroupID
+                                      inner join[dbo].[Asset] AB on AB.uid = '{groupUid}' {joinBuilder} where g.ID = AB.ObjectID {whereBuilder} {offsetSql}";
+
+            countSql = $"{countBuilder} {joinBuilder} where g.ID = AB.ObjectID {whereBuilder}";
+            
+            var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs, ApiTimeout).ConfigureAwait(false);
+            var count = await Company.QueryAsync<int>(countSql, dbArgs, ApiTimeout).ConfigureAwait(false);
             model.items = results;
             model.total = count.FirstOrDefault();
             return Request.CreateResponse(HttpStatusCode.OK, model);
@@ -616,7 +636,7 @@ namespace d360.web.Controllers.V2
             catch (Exception ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
+                SendException(ex, new Dictionary<string, string> {
                     { "Endpoint Method", prefix }
                 });
 
@@ -642,7 +662,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> DeleteGroupMember(Guid groupUid, Guid resourceUid)
         {
-            var prefix = "Membership.DeleteGroupMember => ";
 
             try
             {
@@ -682,7 +701,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix }
+                    { "Endpoint Method", "Membership.DeleteGroupMember => " }
                 });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
@@ -716,14 +735,14 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
                 if (users == null || users.Count() == 0)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", $"No users provided in request."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", $"No users provided in request.")).ConfigureAwait(false);
                 }
 
                 List<UserApiDeleteModel> resources = new List<UserApiDeleteModel>();
 
                 foreach (var u in users)
                 {
-                    resources.Add(new UserApiDeleteModel()
+                    resources.Add(new UserApiDeleteModel
                     {
                         Uid = u.Uid
                     });
@@ -733,7 +752,9 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 var result = membershipRepository.DeleteResources(execution, resources);
 
                 if (result.StatusCode != HttpStatusCode.OK)
+                {
                     return await Task.FromResult(errorMessageResponse(result.StatusCode, result.Error, result.Message));
+                }
 
                 return await Task.FromResult(successMessageResponse(result.StatusCode, "Success", result.Message));
 
@@ -745,7 +766,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -784,10 +805,14 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             var prefix = "Membership.PostUsers => ";
 
             if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied")).ConfigureAwait(false);
+            }
 
             if (users == null || users.Count == 0)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Format of the request is not valid"));
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Format of the request is not valid")).ConfigureAwait(false);
+            }
 
             users.ForEach(u => u.IsNew = true);
 
@@ -795,7 +820,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             {
                 var execution = getApiExecution(users.Count);
                 var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, true, false);
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -804,7 +829,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -869,31 +894,31 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             {
                 if (Community.CurrentCompanySsoModel.AuthenticationType != core.enums.AuthenticationType.Forms)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"IsChangePasswordReqeust set to true, Not allowed for authentication type other than Forms"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"IsChangePasswordReqeust set to true, Not allowed for authentication type other than Forms")).ConfigureAwait(false);
                 }
                 if (!IsCurrentUser)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"IsChangePasswordReqeust set to true only for current user"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"IsChangePasswordReqeust set to true only for current user")).ConfigureAwait(false);
                 }
                 if (users != null && users.Count > 1)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Only one request accepted for IsChangePasswordReqeust set to true."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Only one request accepted for IsChangePasswordReqeust set to true.")).ConfigureAwait(false);
                 }
             }
 
             if (!Company.CurrentResourceIsAdmin && IsCurrentUser == false)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied")).ConfigureAwait(false);
 
             if (users == null || users.Count == 0)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Format of the request is not valid"));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Format of the request is not valid")).ConfigureAwait(false);
 
             users.ForEach(u => u.IsNew = false);
 
             try
             {
                 var execution = getApiExecution(users.Count);
-                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, false, IsChangePasswordReqeust);
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, false, IsChangePasswordReqeust).ConfigureAwait(false);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -1017,7 +1042,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         ]
         public async Task<IHttpActionResult> ToggleFavorite(FavoriteApiModel favorite)
         {
-            return await ToggleFavoriteOrHomepage(favorite, false);
+            return await ToggleFavoriteOrHomepage(favorite).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1039,21 +1064,22 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             if (currentHome != null)
             {
                 if (currentHome.Name == favorite.Name && currentHome.Type == favorite.Type.ToString() && favorite.Route == currentHome.Route)
+                {
                     isNewHomePage = false;
+                }
             }
-            return await ToggleFavoriteOrHomepage(favorite, isNewHomePage);
+            return await ToggleFavoriteOrHomepage(favorite, isNewHomePage).ConfigureAwait(false);
         }
 
         private async Task<IHttpActionResult> ToggleFavoriteOrHomepage(FavoriteApiModel favorite, bool isHomepage = false)
         {
-            var prefix = "Membership.ToggleFavoriteOrHomepage => ";
 
             try
             {
                 if (string.IsNullOrWhiteSpace(favorite.Name))
                 {
                     string message = "Name is required.";
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Name.", message));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Name.", message)).ConfigureAwait(false);
                 }
                 else
                 {
@@ -1070,21 +1096,23 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 }
                 bool result = await membershipRepository.ToggleFavorite(_company.CurrentResourceID, favorite, isHomepage);
                 if (result)
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.Created)));
+                {
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.Created))).ConfigureAwait(false);
+                }
                 else
                 {
                     string message = "Uid Invalid for " + favorite.Type.ToString();
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid.", message));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid.", message)).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix }
+                    { "Endpoint Method", "Membership.ToggleFavoriteOrHomepage => " }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error.", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error.", errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -1159,7 +1187,9 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             var isValid = groups.All(x => x.Uid.HasValue);
 
             if (!isValid)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Uid must be provided in all requests"));
+            }
 
             var execution = getApiExecution(groups.Count);
 
@@ -1630,7 +1660,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 byte[] content = await res.Content.ReadAsByteArrayAsync();
                 var dataStream = new MemoryStream(content);
                 var response = createFileResponseMessage(HttpStatusCode.OK, $"user.png", content);
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
             }
         }
 
