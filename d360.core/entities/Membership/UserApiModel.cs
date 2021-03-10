@@ -33,15 +33,6 @@ namespace d360.core.entities.Membership
 
     }
 
-    public class AddGroupModel
-    {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public Guid PrimaryOwnerUid { get; set; }
-        public Nullable<Guid> SecondaryOwnerUid { get; set; }
-        public bool IsActiveDirectoryGroup { get; set; } = false;
-    }
-
     public class UpdateGroupModel
     {
         public Nullable<Guid> Uid { get; set; }
