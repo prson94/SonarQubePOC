@@ -464,8 +464,7 @@ namespace d360.web.Controllers.V2
         {
             string finalSql;
             string countSql;
-            //string joinsSql = " left join Asset A on A.Object = 'Resource' and A.ObjectID = gr.ResourceID ";
-            //string whereSql = "";
+           
             var joinBuilder = new StringBuilder();
             joinBuilder.Append(" left join Asset A on A.Object = 'Resource' and A.ObjectID = gr.ResourceID ");
             var whereBuilder = new StringBuilder();
@@ -1043,7 +1042,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         ]
         public async Task<IHttpActionResult> ToggleFavorite(FavoriteApiModel favorite)
         {
-            return await ToggleFavoriteOrHomepage(favorite);
+            return await ToggleFavoriteOrHomepage(favorite).ConfigureAwait(false);
         }
 
         /// <summary>
