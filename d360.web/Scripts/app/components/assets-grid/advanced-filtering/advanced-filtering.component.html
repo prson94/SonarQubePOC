@@ -1,7 +1,15 @@
-﻿
+﻿<br />
+<br />
 <div class="advanced-filtering" *ngIf="visible">
     <div class="filters-list">
-
+        <ng-container *ngFor="let item of conditions">
+            <filter-item [condition]="item" [fields]="fields" [operators]="operators"></filter-item>
+        </ng-container>
     </div>
-    {{assetTypeUid}}
+
 </div>
+<br />
+<br />
+<br />
+<br />
+<button (click)="getQuery()">Get Query</button>

@@ -443,7 +443,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetOperators()
         {
-            var response = Operator.Equals.GetAsList();
+            var response = Operator.Equals.GetAsList().OrderBy(x=> x.SortOrder);
             return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
 
         }

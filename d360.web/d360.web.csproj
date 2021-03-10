@@ -753,6 +753,7 @@
     <Content Include="Scripts\app\components\admin\hierarchies\admin-level-list.component.html" />
     <Content Include="Scripts\app\components\admin\hierarchies\admin-hierarchies.component.html" />
     <Content Include="Scripts\app\components\admin\hierarchies\admin-level-editor.component.html" />
+    <Content Include="Scripts\app\components\assets-grid\advanced-filtering\filter-item.component.html" />
     <Content Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.component.html" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.html" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid-column-filter.component.html" />
@@ -970,6 +971,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets-grid\advanced-filtering\filter-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.models.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.module.ts" />

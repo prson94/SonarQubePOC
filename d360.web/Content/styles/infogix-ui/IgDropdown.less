@@ -10,6 +10,11 @@
   width: 100%;
   border-radius: 4px;
 
+  .auto-open-dropdown {
+    opacity: 0;
+    height: 0;
+  }
+
   .p-dropdown {
     height: 32px;
     padding: 0px;
@@ -182,5 +187,20 @@
 
   .ig-input {
     width: 100%;
+  }
+
+  &.ig-dropdown-grouped {
+    li.p-dropdown-item {
+      padding: 6px 28px;
+    }
+
+    li.p-dropdown-item-group {
+      padding: 6px 12px !important;
+      font-weight: bold;
+    }
+  }
+
+  &.headerless {
+    transform: translateY(-35px);
   }
 }

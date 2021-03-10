@@ -8,6 +8,7 @@ import { DirectivesModule } from '../../../directives/directives.module';
 import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
 import { IgDateModule } from '../../shared/controls/date/date';
 import { IgNumberFieldModule } from '../../shared/controls/number-picker/number-input.component';
+import { FilterItemComponent } from './filter-item.component';
 
 
 @NgModule({
@@ -24,7 +25,7 @@ import { IgNumberFieldModule } from '../../shared/controls/number-picker/number-
         DropdownModule,
         DirectivesModule
     ],
-    declarations: [AdvancedFilteringComponent],
+    declarations: [AdvancedFilteringComponent, FilterItemComponent],
     exports: [AdvancedFilteringComponent]
 })
 export class AdvancedFiltersModule { }

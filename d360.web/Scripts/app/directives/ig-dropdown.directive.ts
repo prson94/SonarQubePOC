@@ -2,6 +2,7 @@
 import { DomHandler } from "primeng/dom";
 import { CommonModule } from "@angular/common";
 import { Dropdown } from "primeng/dropdown";
+import { Page } from "powerbi-client";
 
 @Directive({
     selector: "[igDropdown]"
@@ -76,8 +77,8 @@ export class DropdownDirective implements AfterContentInit {
 
             }
 
-
-            if (this.dropdownRef.options && this.dropdownRef.options.length > 10) {
+            let count: number = this.getItemsCount();
+            if (count > 10) {
                 this.dropdownRef.filter = true;
                 this.dropdownRef.filterPlaceholder = "Search fields";
             }
@@ -86,6 +87,22 @@ export class DropdownDirective implements AfterContentInit {
             }
         }, 10);
 
+    }
+
+    getItemsCount() {
+        if (!this.dropdownRef?.options?.length) {
+            return 0;
+        }
+        let count: number = 0;
+        this.dropdownRef.options.forEach(opt => {
+            if (!opt.items) {
+                count++;
+            }
+            else {
+                count += +opt.items.length;
+            }
+        });
+        return count;
     }
 
     getStyleClass(): string {

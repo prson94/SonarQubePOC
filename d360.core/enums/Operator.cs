@@ -15,23 +15,25 @@ namespace d360.core.enums
     public enum Operator
     {
         [
-            Name("is"), 
+            Name("is"),
             EnumMember(Value = "Equals"),
-            Description(""), 
+            Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Relation),
-            OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text), 
-            OperatorFieldTypeRequirements(false)
+            OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text),
+            OperatorFieldTypeRequirements(false),
+            SortOrder(300)
         ]
         Equals = 1,
         [
             Name("is not"),
             EnumMember(Value = "NotEquals"),
-            Description(""), 
+            Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Relation),
-            OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text), 
-            OperatorFieldTypeRequirements(false)
+            OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text),
+            OperatorFieldTypeRequirements(false),
+            SortOrder(400)
         ]
         NotEquals,
         [
@@ -39,11 +41,12 @@ namespace d360.core.enums
             //NotYetUsed,
             Name("contains"),
             EnumMember(Value = "Contains"),
-            Description(""), 
+            Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Text), 
-            OperatorFieldTypeRequirements(false)
+            OperatorAllowedDataTypes(DataType.Text),
+            OperatorFieldTypeRequirements(false),
+            SortOrder(100)
         ]
         Contains,
         [
@@ -51,11 +54,12 @@ namespace d360.core.enums
             //NotYetUsed,
             Name("does not contain"),
             EnumMember(Value = "NotContains"),
-            Description(""), 
+            Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Text), 
-            OperatorFieldTypeRequirements(false)
+            OperatorAllowedDataTypes(DataType.Text),
+            OperatorFieldTypeRequirements(false),
+            SortOrder(200)
         ]
         NotContains,
         [
@@ -63,11 +67,12 @@ namespace d360.core.enums
             //NotYetUsed,
             Name("starts with"),
             EnumMember(Value = "StartsWith"),
-            Description(""), 
+            Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Text), 
-            OperatorFieldTypeRequirements(false)
+            OperatorAllowedDataTypes(DataType.Text),
+            OperatorFieldTypeRequirements(false),
+            SortOrder(500)
         ]
         StartsWith,
         [
@@ -75,124 +80,136 @@ namespace d360.core.enums
             //NotYetUsed,
             Name("ends with"),
             EnumMember(Value = "EndsWith"),
-            Description(""), 
+            Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Text), 
-            OperatorFieldTypeRequirements(false)
+            OperatorAllowedDataTypes(DataType.Text),
+            OperatorFieldTypeRequirements(false),
+            SortOrder(600)
         ]
         EndsWith,
         [
             Name("is before"),
             EnumMember(Value = "Before"),
-            Description(""), 
+            Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Date /*, DataType.DateTime*/), 
-            OperatorFieldTypeRequirements(false)
+            OperatorAllowedDataTypes(DataType.Date /*, DataType.DateTime*/),
+            OperatorFieldTypeRequirements(false),
+            SortOrder(0)
         ]
         Before,
         [
             Name("is after"),
             EnumMember(Value = "After"),
-            Description(""), 
+            Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Date/*, DataType.DateTime*/), 
-            OperatorFieldTypeRequirements(false)
+            OperatorAllowedDataTypes(DataType.Date/*, DataType.DateTime*/),
+            OperatorFieldTypeRequirements(false),
+            SortOrder(0)
         ]
         After,
         [
-            NotYetUsed, 
+            NotYetUsed,
             Name("is between"),
             EnumMember(Value = "Between"),
-            Description(""), 
+            Description(""),
             OperatorValueCountRange(2, 2),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Date/*, DataType.Decimal, DataType.Number*/), 
-            OperatorFieldTypeRequirements(false)
+            OperatorAllowedDataTypes(DataType.Date/*, DataType.Decimal, DataType.Number*/),
+            OperatorFieldTypeRequirements(false),
+            SortOrder(0)
         ]
         Between,
         [
             Name("is populated"),
             EnumMember(Value = "Populated"),
-            Description(""), 
+            Description(""),
             OperatorValueCountRange(0, 0),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation, MetricGovernanceCheckType.Field), //remove field MetricGovernanceCheckType.Field before release  
             OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.Lookup, DataType.Number, DataType.Text), //comment out before release also 
-            OperatorFieldTypeRequirements(false)
+            OperatorFieldTypeRequirements(false),
+            SortOrder(2000)
         ]
         Populated,
         [
             Name("is not populated"),
             EnumMember(Value = "NotPopulated"),
-            Description(""), 
+            Description(""),
             OperatorValueCountRange(0, 0),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation, MetricGovernanceCheckType.Field), //remove field MetricGovernanceCheckType.Field before release  
             OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.Lookup, DataType.Number, DataType.Text),//comment out again before release 
-            OperatorFieldTypeRequirements(false)
+            OperatorFieldTypeRequirements(false),
+            SortOrder(2100)
         ]
         NotPopulated,
         [
             Name("is greater than"),
             EnumMember(Value = "GreaterThan"),
-            Description(""), 
+            Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Decimal, DataType.Number), 
-            OperatorFieldTypeRequirements(false)
+            OperatorAllowedDataTypes(DataType.Decimal, DataType.Number),
+            OperatorFieldTypeRequirements(false),
+            SortOrder(0)
             ]
         GreaterThan,
         [
             Name("is less than or equal to"),
             EnumMember(Value = "LessThanOrEquals"),
-            Description(""), 
+            Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Decimal, DataType.Number), 
-            OperatorFieldTypeRequirements(false)
+            OperatorAllowedDataTypes(DataType.Decimal, DataType.Number),
+            OperatorFieldTypeRequirements(false),
+            SortOrder(0)
         ]
         LessThanOrEquals,
         [
             Name("is less than"),
             EnumMember(Value = "LessThan"),
-            Description(""), 
+            Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Decimal, DataType.Number), 
-            OperatorFieldTypeRequirements(false)
+            OperatorAllowedDataTypes(DataType.Decimal, DataType.Number),
+            OperatorFieldTypeRequirements(false),
+            SortOrder(0)
         ]
         LessThan,
         [
             Name("is greater than or equal to"),
             EnumMember(Value = "GreaterThanOrEquals"),
-            Description(""), 
+            Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Decimal, DataType.Number), 
-            OperatorFieldTypeRequirements(false)
+            OperatorAllowedDataTypes(DataType.Decimal, DataType.Number),
+            OperatorFieldTypeRequirements(false),
+            SortOrder(0)
         ]
         GreaterThanOrEquals,
         [
-            NotYetUsed, 
+            NotYetUsed,
             Name("in"),
             EnumMember(Value = "In"),
-            Description(""), 
+            Description(""),
             OperatorValueCountRange(1, 1000),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation),
-            OperatorAllowedDataTypes(DataType.Lookup), 
-            OperatorFieldTypeRequirements(true)
+            OperatorAllowedDataTypes(DataType.Lookup),
+            OperatorFieldTypeRequirements(true),
+            SortOrder(0)
             ]
         In,
         [
-            NotYetUsed, 
+            NotYetUsed,
             Name("not in"),
             EnumMember(Value = "NotIn"),
-            Description(""), 
+            Description(""),
             OperatorValueCountRange(1, 1000),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation),
-            OperatorAllowedDataTypes(DataType.Lookup), 
-            OperatorFieldTypeRequirements(true)
+            OperatorAllowedDataTypes(DataType.Lookup),
+            OperatorFieldTypeRequirements(true),
+            SortOrder(0)
         ]
         NotIn,
         [
@@ -204,7 +221,8 @@ namespace d360.core.enums
             OperatorValueCountRange(0, 0),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Boolean),
-            OperatorFieldTypeRequirements(true)
+            OperatorFieldTypeRequirements(true),
+            SortOrder(100)
         ]
         IsTrue,
         [
@@ -216,7 +234,8 @@ namespace d360.core.enums
             OperatorValueCountRange(0, 0),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Boolean),
-            OperatorFieldTypeRequirements(true)
+            OperatorFieldTypeRequirements(true),
+            SortOrder(200)
         ]
         IsFalse,
         [
@@ -227,7 +246,8 @@ namespace d360.core.enums
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Date/*, DataType.DateTime*/),
-            OperatorFieldTypeRequirements(false)
+            OperatorFieldTypeRequirements(false),
+            SortOrder(0)
         ]
         OnOrBefore,
         [
@@ -238,7 +258,8 @@ namespace d360.core.enums
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Date/*, DataType.DateTime*/),
-            OperatorFieldTypeRequirements(false)
+            OperatorFieldTypeRequirements(false),
+            SortOrder(0)
         ]
         OnOrAfter
     }
@@ -252,6 +273,7 @@ namespace d360.core.enums
         public List<OperatorDataTypeInfo> AllowedDataTypes { get; set; }
         public List<OperatorMetricGovernanceCheckTypeInfo> AllowedMeasureChecks { get; set; }
         public bool FieldRequiresMultipleValueSupport { get; set; }
+        public int SortOrder { get; set; }
     }
     public class OperatorDataTypeInfo
     {
@@ -334,7 +356,8 @@ namespace d360.core.enums
                         MaximumValueCount = ((OperatorValueCountRangeAttribute)tm.GetCustomAttribute(typeof(OperatorValueCountRangeAttribute))).Max,
                         AllowedDataTypes = dataTypes,
                         AllowedMeasureChecks = checkTypes,
-                        FieldRequiresMultipleValueSupport = ((OperatorFieldTypeRequirementsAttribute)tm.GetCustomAttribute(typeof(OperatorFieldTypeRequirementsAttribute))).FieldRequiresMultipleValueSupport
+                        FieldRequiresMultipleValueSupport = ((OperatorFieldTypeRequirementsAttribute)tm.GetCustomAttribute(typeof(OperatorFieldTypeRequirementsAttribute))).FieldRequiresMultipleValueSupport,
+                        SortOrder = ((SortOrderAttribute)tm.GetCustomAttribute(typeof(SortOrderAttribute))).Order
                     });
                 }
             }
@@ -469,7 +492,8 @@ namespace d360.core.enums
                                 var valuesToCompare = (valueToCompare ?? "").Split(',');
                                 result = valuesToCompare.Intersect(values, new LowercaseStringEqualityComparer()).Any();
                             }
-                            else {
+                            else
+                            {
                                 result = (valueToCompare ?? "").Equals(values[0], StringComparison.OrdinalIgnoreCase);
                             }
                             break;
@@ -504,7 +528,7 @@ namespace d360.core.enums
                                         result = (fieldValue <= conditionValue);
                                         break;
                                 }
-                                
+
                             }
                             break;
                         case "Number":

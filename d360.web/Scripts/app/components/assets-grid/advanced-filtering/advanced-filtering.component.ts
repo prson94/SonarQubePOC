@@ -1,14 +1,12 @@
-﻿import { Component, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, OnChanges, SimpleChanges, OnInit, OnDestroy, Output, EventEmitter, AfterViewChecked } from '@angular/core';
-import { NgForm, FormGroup, FormBuilder, FormControl, Validators } from '@angular/forms';
-import { SelectItem } from 'primeng/api';
+﻿import { Component, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, OnChanges, SimpleChanges, OnInit, OnDestroy, Output, EventEmitter, AfterViewChecked, ViewChildren, ElementRef } from '@angular/core';
 import * as _ from 'lodash';
 import { FieldCondition, FieldTypeAPIModelFieldCondition } from '../../../models/field-condition-grid.models';
 import { Operator, OperatorModel } from '../../../models/operator.model';
-import { Condition } from '../../../models/metrics.model';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { FieldTypeHelper } from '../../../models/fieldtype-api.model';
 import { forkJoin } from 'rxjs';
+import { AdvancedFilterFieldCondition } from './advanced-filtering.models';
 
 @Component({
     selector: 'advanced-filtering',
@@ -18,34 +16,33 @@ import { forkJoin } from 'rxjs';
     styleUrls: ['./advanced-filtering.component.less'],
     providers: [FieldsObservableService, CompanySettingsService]
 })
-export class AdvancedFilteringComponent implements OnChanges, OnDestroy {
+export class AdvancedFilteringComponent implements OnChanges {
     @Input() assetTypeUid: string = '';
     @Output() onChange = new EventEmitter();
 
     fields: FieldTypeAPIModelFieldCondition[] = null;
     operators: OperatorModel[] = [];
 
+    conditions: AdvancedFilterFieldCondition[] = [];
+
     visible: boolean = false;
 
+    @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
+
     constructor(public cdRef: ChangeDetectorRef,
+        private elRef: ElementRef,
         private fieldsService: FieldsObservableService,
-        private settingsService: CompanySettingsService,) {
+        private settingsService: CompanySettingsService) {
     }
-
-    ngOnDestroy() {
-        //
-    }
-
     private initializeData() {
         this.visible = false;
-
         forkJoin(
             this.settingsService.getOperators(),
             this.fieldsService.getFieldsV2(this.assetTypeUid, null, null)
         ).subscribe((response) => {
             this.operators = response[0];
             let res = response[1];
-            var tempFields = [];
+            var tempFields: FieldTypeAPIModelFieldCondition[] = [];
             res.forEach(f => {
                 if (FieldTypeHelper.isFieldForOperator(f.Type)) {
                     tempFields.push(f as FieldTypeAPIModelFieldCondition);
@@ -66,6 +63,7 @@ export class AdvancedFilteringComponent implements OnChanges, OnDestroy {
                     }
                 });
 
+
             });
 
             this.fields = tempFields;
@@ -73,6 +71,8 @@ export class AdvancedFilteringComponent implements OnChanges, OnDestroy {
             this.visible = true;
         })
         this.cdRef.markForCheck();
+
+        this.conditions.push(new AdvancedFilterFieldCondition());
     }
 
 
@@ -84,34 +84,31 @@ export class AdvancedFilteringComponent implements OnChanges, OnDestroy {
         this.cdRef.detectChanges();
     }
 
-
-    getTypeForCondition(item: FieldCondition) {
-        var ft = this.getFieldType(item);
-        if (!ft) return '';
-        return Object.keys(ft.Type)[0];
+    getQuery() {
+        let queries: string[] = [];
+        this.conditions.filter(x => x.field).forEach((cond) => {
+            let fieldName: string = cond.field;
+            let operation: string = this.getOperatorString(cond.operator);
+            let value: string = this.getValue(cond.operator, cond.value);
+            queries.push(`(${fieldName} ${operation} ${value})`);
+        });
+        console.log(queries.join(" and "));
     }
 
-    getOperators(item: FieldCondition) {
-        var ft = this.getFieldType(item);
-        if (ft && ft.Operators && !item.operator) {
-            if (ft.Operators.length > 0) {
-                item.operator = ft.Operators[0].value;
-            }
-        }
-        return ft ? ft.Operators : [];
-    }
-
-    getValues(item: FieldCondition) {
-        if (item.disabled || !this.getFieldType(item)) return [];
-        return this.getFieldType(item).Values;
-    }
-
-    getFieldType(item: FieldCondition) {
-        if (this.fields) {
-            let fieldDataArray = item.field.split('.');
-            return this.fields.filter(x => x.AssetTypeUid === fieldDataArray[0] && x.Name === fieldDataArray[1])[0];
+    getOperatorString(o: Operator): string {
+        if (!o) {
+            return "ne null";
         }
 
-        return null;
+        switch (o) {
+            default:
+                return "";
+        }
+    }
+
+    getValue(o: Operator, val: string): string {
+        if (!val) {
+            return "";
+        }
     }
 }

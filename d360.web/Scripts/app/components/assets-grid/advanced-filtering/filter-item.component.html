@@ -1,0 +1,46 @@
+﻿<div class="filter-item">
+    <div class="add-filter">
+        <div class="ig-button filter-label" (click)="updateFilter()">{{getFilterLabel()}}</div>
+
+        <div class="field-selection" [hidden]="!isSelectingCurrentField">
+            <p-dropdown #dropdownRef
+                        igDropdown
+                        [styleClass]="'auto-open-dropdown'"
+                        [options]="allFieldsDropdown"
+                        [group]="true"
+                        [filter]="true"
+                        [(ngModel)]="condition.field"
+                        (onChange)="onFieldSelected($event)"
+                        igSize="medium"
+                        panelStyleClass="ig-dropdown-grouped headerless"
+                        appendTo="body">
+                <ng-template let-group pTemplate="group">
+                    <div class="group-item">
+                        <div>{{group.label}}</div>
+                    </div>
+                </ng-template>
+                <ng-template let-field pTemplate="item">
+                    <div class="field-item">
+                        <div>{{field.label}}</div>
+                    </div>
+                </ng-template>
+            </p-dropdown>
+        </div>
+
+        <div class="value-selection" [hidden]="!isSelectingValue">
+            <p-dropdown igDropdown
+                        [options]="getOperators(condition)"
+                        [(ngModel)]="currentOperator"
+                        igSize="full"
+                        appendTo="body">
+            </p-dropdown>
+            <input igInput igSize="full" *ngIf="needsValue()" type="text" [(ngModel)]="currentValue" required />
+            <div class="buttons flex">
+                <div class="flex-grow"></div>
+                <button igButton icon="fa-times" tooltip="Close" (click)="cancel()"></button>
+                <button igButton class="ig-button-primary" icon="fa-check" tooltip="Save" (click)="confirmValue()"></button>
+            </div>
+        </div>
+
+    </div>
+</div>
