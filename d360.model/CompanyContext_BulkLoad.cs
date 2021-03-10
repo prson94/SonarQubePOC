@@ -573,7 +573,7 @@ from	[Load] L
 		                        coalesce(FT.[Name], LC.[Name]) as FieldName,
 		                        I.[Value] as FieldValue,
 		                        FT.ID as FieldTypeID,
-		                        null as LookupValue,
+		                        I.LookupObjectID as LookupValue,
 		                        null as Ignore,
                                 I.ColumnIndex
                         from    [Load] L
@@ -766,7 +766,7 @@ from	[Load] L
                         else
                         {
 
-                            if ((intersectTypeId.HasValue || assetType.Class == AssetTypeClass.Model) && intersectTypeId.HasValue)
+                            if ((calculateParentHashByUid || assetType.Class == AssetTypeClass.Model) && intersectTypeId.HasValue)
                             {
                                 await Connection.ExecuteAsync(@"
                                 drop table if exists #AssetActiveKey;
