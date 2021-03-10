@@ -102,6 +102,9 @@ namespace d360.extensions.mail
 
             var api = new MandrillApi(CloudConfigurationManager.GetSetting("MandrillApiKey"));
             var result = api.Messages.SendTemplateAsync(message, templateID).Result;
+            if (result == null || result.Count < 1)
+            {
+            }
         }
     }
 }
