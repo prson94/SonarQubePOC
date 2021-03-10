@@ -10017,9 +10017,12 @@ SET DefinitionConverted = cd.[Definition];
                         var row = table.NewRow();
                         row["ExecutionID"] = execution.ExecutionID;
                         row["ItemNumber"] = itemNumber;
-                        if (item.Uid != null)
-                            row["GroupUid"] = item.Uid;
 
+                        if (item.Uid.HasValue && item.Uid.Value != Guid.Empty)
+                        {
+                            row["GroupUid"] = item.Uid;
+                        }
+                            
                         if (item.Name == null)
                             row["Name"] = "";
                         else
@@ -10077,7 +10080,7 @@ SET DefinitionConverted = cd.[Definition];
 
                 update	[api].[ExecutionGroup]
                 set		Success = 0,
-		                [Message] = coalesce([Message], '') + 'Already a group called this name;'
+		                [Message] = coalesce([Message], '') + 'Already a group called ' + EG.[Name] + ';'
 	            from [api].[ExecutionGroup] EG 
 	            inner join [Group] G on G.[Name] = EG.[Name]
                 left join [Asset] A on A.ObjectID = G.[ID] and A.Object = 'Group' and A.uid = EG.[GroupUid]
@@ -10087,8 +10090,17 @@ SET DefinitionConverted = cd.[Definition];
                 set		Success = 0,
 		                [Message] = coalesce([Message], '') + 'Uid provided is not a group uid;'
 	            from [api].[ExecutionGroup] EG 
+                Inner Join [api].[Execution] E on E.ExecutionID = EG.ExecutionID
 	            left join [Asset] A on A.[uid] = EG.[GroupUid] and A.Object = 'Group'
-                where	ExecutionID = @ExecutionID and A.uid is null and EG.[GroupUid] is not null;
+                where	E.Method = 'PUT' and EG.ExecutionID = @ExecutionID and A.uid is null and EG.[GroupUid] is not null;
+
+                update	[api].[ExecutionGroup]
+                set		Success = 0,
+		                [Message] = coalesce([Message], '') + 'Uid already exists;'
+	            from [api].[ExecutionGroup] EG 
+                Inner Join [api].[Execution] E on E.ExecutionID = EG.ExecutionID
+	            left join [Asset] A on A.[uid] = EG.[GroupUid]
+                where	E.Method = 'POST' and EG.ExecutionID = @ExecutionID and A.uid is not null and EG.[GroupUid] is not null;
 
                 update	[api].[ExecutionGroup]
                 set		Success = 0,
@@ -10150,7 +10162,8 @@ EG.Name,EG.Description,
 EG.ExecutionItemUid,
 EG.IsActiveDirectoryGroup,
 PO.ObjectID as PrimaryID,
-SO.ObjectID as SecondaryID
+SO.ObjectID as SecondaryID,
+EG.GroupUid
 	                from api.ExecutionGroup EG
 					left join Asset A on A.uid = EG.GroupUid and A.Object = 'Group'
 					left join Asset PO on PO.uid = EG.PrimaryOwnerUid and PO.Object = 'Resource'
@@ -10168,8 +10181,8 @@ SO.ObjectID as SecondaryID
 					G.SecondaryOwnerResourceID = SecondaryID,
                     G.IsActiveDirectoryGroup = S.IsActiveDirectoryGroup
                 when not matched then
-	                insert (Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID,IsActiveDirectoryGroup,UpdatedOn,UpdatedBy)
-	                values (TRIM(S.Name),S.Description, S.PrimaryID, S.SecondaryID,S.IsActiveDirectoryGroup,GETDATE(),@currentUser)
+	                insert ([Uid], Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID,IsActiveDirectoryGroup,UpdatedOn,UpdatedBy)
+	                values (ISNULL(S.GroupUid, NEWID()), TRIM(S.Name),S.Description, S.PrimaryID, S.SecondaryID,S.IsActiveDirectoryGroup,GETDATE(),@currentUser)
 	            output TRIM(S.Name), S.ExecutionItemUid into #mergeResultTable;
 
 

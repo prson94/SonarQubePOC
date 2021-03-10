@@ -1183,36 +1183,31 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 
         ]
-        public async Task<IHttpActionResult> AddGroup(List<AddGroupModel> groups)
+        public async Task<IHttpActionResult> AddGroup(List<UpdateGroupModel> groups)
         {
-            List<UpdateGroupModel> models = new List<UpdateGroupModel>();
-
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
             if (groups.Count < 1)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "There are no groups in this request."));
 
-            foreach (var i in groups)
-            {
-                if (i.Name == null)
-                {
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Name is missing in one or more of the groups in the payload. Name must be provided."));
-                }
 
-                models.Add(new UpdateGroupModel
+            if(groups.Any(x=>string.IsNullOrEmpty(x.Name)))
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Name is missing in one or more of the groups in the payload. Name must be provided."));
+            }
+            
+            foreach(var g in groups.FindAll(x=>x.Uid.HasValue && x.Uid!= Guid.Empty))
+            {
+                if(Company.Assets.Any(a=>a.uid == g.Uid))
                 {
-                    Description = i.Description,
-                    Name = i.Name,
-                    PrimaryOwnerUid = i.PrimaryOwnerUid,
-                    SecondaryOwnerUid = i.SecondaryOwnerUid,
-                    IsActiveDirectoryGroup = i.IsActiveDirectoryGroup
-                });
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "One or more of the Uids specified already exists."));
+                }
             }
 
             var execution = getApiExecution(groups.Count);
 
-            var result = membershipRepository.AddGroups(execution, models);
+            var result = membershipRepository.AddGroups(execution, groups);
 
             Company.CreateOrUpdateTypeDisplayValuesAsync(1, core.SystemObjects.GroupType.ToString());
 
