@@ -104,6 +104,7 @@ namespace d360.extensions.mail
             var result = api.Messages.SendTemplateAsync(message, templateID).Result;
             if (result == null || result.Count < 1)
             {
+                //...
             }
         }
     }
