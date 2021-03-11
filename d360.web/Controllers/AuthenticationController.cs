@@ -1551,7 +1551,7 @@ namespace d360.web.Controllers
             return true;
         }
 
-        [AllowAnonymous, Route("reset"), HttpPost]
+        [AllowAnonymous, Route("reset"), HttpPost, ValidateAntiForgeryToken]
         public ActionResult Reset(LoginModel model)
         {
             //add record with guid that the user requested password reset
