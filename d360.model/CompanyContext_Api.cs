@@ -751,15 +751,13 @@ where	ExecutionID = @executionID
                 Connection.Execute($@"
                     DELETE Field
                     FROM Field F
-                    	inner join {tableName} E on E.ExecutionID = @executionID 
-                    	inner join {ApiExecutionFieldTable} EF on EF.ExecutionId = E.ExecutionId and EF.ItemNumber = E.ItemNumber
-                    	inner join Asset A on A.uid = E.Uid                 
-                    WHERE E.ExecutionID = @executionID
-                     and EF.ItemNumber between @beginItemNumber and @endItemNumber
+                    	inner join {tableName} A on A.ExecutionID = @executionID 
+                    	inner join {ApiExecutionFieldTable} EF on EF.ExecutionId = A.ExecutionId and EF.ItemNumber = A.ItemNumber
+                    WHERE EF.ItemNumber between @beginItemNumber and @endItemNumber
                      and EF.Ignore is null
                      and EF.FieldTypeID is not null
-                     and F.ObjectID = A.ObjectID
-                     and F.ObjectType = A.Object
+                     and F.ObjectID = {objectIdSqlSyntax}
+                     and F.ObjectType = {objectSqlSyntax}
                      and F.FieldTypeID = EF.FieldTypeID
                      and EF.FieldValue is null 
                      and EF.LookupValue is null;",
