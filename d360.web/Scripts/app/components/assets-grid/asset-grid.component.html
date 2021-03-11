@@ -1,8 +1,10 @@
 <d3s-loading [isLoading]="isEditing"></d3s-loading>
 
 <div class="">
-    <advanced-filtering [assetTypeUid]="gridObject.AssetTypeUID"></advanced-filtering>
+    <advanced-filtering [assetTypeUid]="gridObject.AssetTypeUID" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
 </div>
+<button (click)="getData()">New Search</button>
+
 <header class="grid-header" *ngIf="!showEditor && !showDelete && !isEditing && !hasNoListableColumns">
     <d3s-tile-actions [hasAdd]="showAddButton && hasModifyAssetPermissions()"
                       [hasExport]="!gridObject.HasCustomExportTemplates"

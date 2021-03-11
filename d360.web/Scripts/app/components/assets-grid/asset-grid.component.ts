@@ -218,7 +218,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 else {
                     this.hasNoListableColumns = false;
                 }
-                
+
                 this.isDefinitionLoaded = true;
                 this.getData();
                 this.changeDetectorRef.markForCheck();
@@ -237,7 +237,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         params._loadPermissionDetails = true;
         params._pageSize = this.rowsPerPage;
         params._pageNum = this.stateService.artifactTypeFilters.currentPageNumber + 1;
-        params._listColorsAsJSON = true; 
+        params._listColorsAsJSON = true;
 
         if (this.stateService.artifactTypeFilters.sortField) {
             params._order = this.getFieldAPINameByOldName(this.stateService.artifactTypeFilters.sortField);
@@ -307,6 +307,11 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         else {
             delete params['usegraphforparent'];
         }
+        delete params['_filter'];
+        if (this.newAdvancedFilters) {
+            params._filter = this.newAdvancedFilters;
+
+        }
 
         return params;
     }
@@ -333,7 +338,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
                 this.statusHasColor = this.items.filter(x => {
                     let foundColorToken = false;
-                    for (var prop in x) { 
+                    for (var prop in x) {
                         if (Object.prototype.hasOwnProperty.call(x, prop) && prop.toLowerCase() == "status") {
                             if ((x[prop] + "").indexOf('"name":') > -1 && (x[prop] + "").indexOf('"color":') > -1) {
 
@@ -341,7 +346,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                             }
 
                         }
-                        
+
                     }
                     return foundColorToken;
                 }).length > 0;
@@ -540,5 +545,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         this.changeDetectorRef.markForCheck();
     }
 
-
+    private newAdvancedFilters: string = '';
+    private advancedFiltersChanged($event) {
+        this.newAdvancedFilters = $event;
+    }
 }

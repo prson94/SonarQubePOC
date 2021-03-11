@@ -418,7 +418,7 @@ namespace d360.web.Controllers.V2
                 #endregion
 
                 #region Validation
-                
+
                 var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel);
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                 {
@@ -619,7 +619,7 @@ namespace d360.web.Controllers.V2
                             value = i.Name
                         })
                         .OrderBy(i => i.title).ToList();
-                
+
                 if (ActionTypeUid != null || RelationshipTypeUid != null)
                 {
                     dataTypeOptions = dataTypeOptions.Where(x => x.value != "Path" && x.value != "Score").ToList();
@@ -2005,5 +2005,46 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
 
         #endregion
 
+
+        /// <summary>
+        /// Retrieves details about assets being watched for a given asset type.
+        /// </summary>
+        /// <returns>Returns a list of watched asset details</returns>        
+        /// <param name="assetTypeUid">Uid of the asset type</param>
+        /// <param name="fieldName">Field name</param>
+        [HttpGet,
+            Route("{assetTypeUid:Guid}/lookupvalues/{fieldName}"),
+             SwaggerResponse(HttpStatusCode.OK, "A list of filter values for a given asset type and field name.", typeof(List<string>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+            ]
+        public HttpResponseMessage GetFilterVales(Guid assetTypeUid, string fieldName)
+        {
+            var prefix = "Fields.GetFilterVales => ";
+            var errorMessage = "";
+            try
+            {
+
+                var data = Company.Query<string>(@"declare @fieldTypeId int = (
+                    select top 1 ft.ID from fieldtype ft
+                    inner join assettype at on at.object = ft.object and at.objectid = ft.objectid
+                    where at.uid = @assetTypeUid and ft.Name = @fieldName)
+
+                    select text from FieldLookupValue where @fieldTypeId = FieldTypeID
+                    order by text asc", new { assetTypeUid, fieldName }).ToList();
+
+                return Request.CreateResponse(HttpStatusCode.OK, data);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
     }
 }

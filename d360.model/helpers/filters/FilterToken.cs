@@ -220,9 +220,21 @@ namespace d360.model.helpers
         {
             CheckFieldValue();
 
-            if (@operator == "ct")
+            if (@operator == "ct" || @operator == "nct")
             {
-                value = $"%{wildcardValue(escapeForSQLLike(value.ToString()))}%";
+                bool isStartWith = value.ToString().Last() == '*';
+                bool isEndWith = value.ToString().First() == '*';
+                bool isBoth = (isStartWith && isEndWith) || (!isStartWith && !isEndWith);
+
+                if (isBoth)
+                {
+                    value = $"%{wildcardValue(escapeForSQLLike(value.ToString()))}%";
+                }
+                else
+                {
+                    //Wildcard will be present from request
+                    value = $"{wildcardValue(escapeForSQLLike(value.ToString()))}";
+                }
             }
 
             string[] lookupFieldTypes = new string[] { "Lookup", "Relationship" };
@@ -257,7 +269,7 @@ namespace d360.model.helpers
 
         private void UpdateTokenForNullValue()
         {
-            if (!(new []{ "eq", "ne" }.Contains(@operator)))
+            if (!(new[] { "eq", "ne" }.Contains(@operator)))
             {
                 throw new FormatException($"NULL value filter can be used only with 'eq' and 'ne' operator!");
             }
@@ -436,7 +448,7 @@ namespace d360.model.helpers
                 case "datetime":
                     return true;
                 default:
-                    return new string[] { "eq", "ne", "ct" }.Contains(operand);
+                    return new string[] { "eq", "ne", "ct", "nct" }.Contains(operand);
             }
         }
 
@@ -446,7 +458,7 @@ namespace d360.model.helpers
             {
                 return $"Node.DisplayPath";
             }
-            else 
+            else
             {
                 if (fieldColumn == null || fieldColumn.LastIndexOf(" as ") <= 0)
                 {
@@ -467,6 +479,7 @@ namespace d360.model.helpers
                 case "lt": return " < ";
                 case "le": return " <= ";
                 case "ct": return " like ";
+                case "nct": return " not like ";
                 default: throw new Exception($"Invalid comparison operator '{value}'");
             }
         }

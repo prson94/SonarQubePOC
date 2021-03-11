@@ -9,6 +9,7 @@ import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
 import { IgDateModule } from '../../shared/controls/date/date';
 import { IgNumberFieldModule } from '../../shared/controls/number-picker/number-input.component';
 import { FilterItemComponent } from './filter-item.component';
+import { TableModule } from 'primeng/table';
 
 
 @NgModule({
@@ -20,7 +21,7 @@ import { FilterItemComponent } from './filter-item.component';
         IgBadgeModule,
         IgDateModule,
         IgNumberFieldModule,
-
+        TableModule,
 
         DropdownModule,
         DirectivesModule

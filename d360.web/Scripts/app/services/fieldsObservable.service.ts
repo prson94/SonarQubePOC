@@ -85,7 +85,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get<any>(`api/v2/fields?${url}&Name=${name}`)
             .pipe(
-            map(response => <FieldTypeAPIModelField>response.items[0]),
+                map(response => <FieldTypeAPIModelField>response.items[0]),
                 catchError(err => this.handleError(err))
             );
     }
@@ -109,7 +109,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getRelationLookupDisplayFields(assetTypeUid: string,intersectTypeUid: string): Observable<SelectItem[]> {
+    getRelationLookupDisplayFields(assetTypeUid: string, intersectTypeUid: string): Observable<SelectItem[]> {
         return this
             .http
             .get<SelectItem[]>(`api/v2/fields/GetRelationLookupDisplayFields?assetTypeUid=${assetTypeUid}&intersectTypeUid=${intersectTypeUid}`)
@@ -146,7 +146,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
             url = `uid=${uid}&ActionTypeUid=${actionTypeUid}`;
         if (relationshipTypeUid)
             url = `uid=${uid}&RelationshipTypeUid=${relationshipTypeUid}`;
-                
+
         return this
             .http
             .get<any>(`api/v2/fields/GetLookupListFilter?${url}`)
@@ -203,7 +203,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
                         l.IntersectTypes = [];
 
                         i.forEach((j) => {
-                            l.IntersectTypes.push({value: j.value, label: j.label, id: null});
+                            l.IntersectTypes.push({ value: j.value, label: j.label, id: null });
                         });
 
                         l.Field_Relationships = this.ftItemToSelectItem(r.Field_Relationships);
@@ -242,26 +242,26 @@ export class FieldsObservableService extends BaseObservableService implements IF
 
     getFusionReferenceTypes(): SelectItem[] {
         return [
-            {label: 'Self Reference', value: '1'},
-            {label: 'Parent Reference', value: '2'},
-            {label: 'Child Reference', value: '3'},
-            {label: 'Relationship Reference', value: '4'},
+            { label: 'Self Reference', value: '1' },
+            { label: 'Parent Reference', value: '2' },
+            { label: 'Child Reference', value: '3' },
+            { label: 'Relationship Reference', value: '4' },
         ];
     }
 
     getReferenceTypes(): SelectItem[] {
         return [
-            {label: 'Self Reference', value: '1'},
-            {label: 'Child Reference', value: '2'},
+            { label: 'Self Reference', value: '1' },
+            { label: 'Child Reference', value: '2' },
         ];
     }
 
-    deleteFieldType(name: string, assetTypeUid?: string, actionTypeUid?: string, relationshipTypeUid?: string): Observable<ApiResult & ErrorResponse> {                
+    deleteFieldType(name: string, assetTypeUid?: string, actionTypeUid?: string, relationshipTypeUid?: string): Observable<ApiResult & ErrorResponse> {
         const options = {
             headers: new HttpHeaders({
                 'Content-Type': 'application/json',
             }),
-            body: {                
+            body: {
                 Fields: [{ Name: name }],
                 ActionTypeUid: actionTypeUid,
                 AssetTypeUid: assetTypeUid,
@@ -284,7 +284,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
 
         /* Empty value at beginning of list */
         items.forEach((i) => {
-            s.push({label: i.title, value: i.value});
+            s.push({ label: i.title, value: i.value });
         });
 
         return s;
@@ -313,7 +313,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
     }
 
     getStandardRelations(assetTypeUid: string): Observable<any> {
-        let url = `AssetTypeUid=${assetTypeUid}`;        
+        let url = `AssetTypeUid=${assetTypeUid}`;
         return this
             .http
             .get(`api/v2/fields/GetStandardRelations?${url}`)
@@ -381,7 +381,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getRelationshipFieldIsListable(intersectTypeUid:string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<any> {
+    getRelationshipFieldIsListable(intersectTypeUid: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<any> {
         let url = "";
         if (assetTypeUid)
             url = `intersectTypeUid=${intersectTypeUid}&assetTypeUid=${assetTypeUid}`;
@@ -417,7 +417,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
                         map(res => res),
                         map(
                             (res) => {
-                                return {fieldTypeID: event.fieldTypeID, results: res, event: event.event}
+                                return { fieldTypeID: event.fieldTypeID, results: res, event: event.event }
                             }
                         )
                     );
@@ -489,6 +489,17 @@ export class FieldsObservableService extends BaseObservableService implements IF
         return this
             .http
             .get(`api/v2/fields/GetAvailableScoreTypes?assetTypeUid=${assetTypeUid}`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
+
+    }
+
+    getLookupValues(assetTypeUid: string, fieldName: string): Observable<string[]> {
+        return this
+            .http
+            .get(`api/v2/fields/${assetTypeUid}/lookupvalues/${fieldName}`)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))

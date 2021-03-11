@@ -44,7 +44,7 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Text),
+            OperatorAllowedDataTypes(DataType.Text, DataType.Link, DataType.Html),
             OperatorFieldTypeRequirements(false),
             SortOrder(100)
         ]
@@ -57,7 +57,7 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Text),
+            OperatorAllowedDataTypes(DataType.Text, DataType.Link, DataType.Html),
             OperatorFieldTypeRequirements(false),
             SortOrder(200)
         ]
@@ -94,9 +94,9 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Date /*, DataType.DateTime*/),
+            OperatorAllowedDataTypes(DataType.Date, DataType.DateTime),
             OperatorFieldTypeRequirements(false),
-            SortOrder(0)
+            SortOrder(500)
         ]
         Before,
         [
@@ -105,21 +105,20 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Date/*, DataType.DateTime*/),
+            OperatorAllowedDataTypes(DataType.Date, DataType.DateTime),
             OperatorFieldTypeRequirements(false),
-            SortOrder(0)
+            SortOrder(600)
         ]
         After,
         [
-            NotYetUsed,
             Name("is between"),
             EnumMember(Value = "Between"),
             Description(""),
             OperatorValueCountRange(2, 2),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Date/*, DataType.Decimal, DataType.Number*/),
+            OperatorAllowedDataTypes(DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Number),
             OperatorFieldTypeRequirements(false),
-            SortOrder(0)
+            SortOrder(1200)
         ]
         Between,
         [
@@ -128,7 +127,7 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(0, 0),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation, MetricGovernanceCheckType.Field), //remove field MetricGovernanceCheckType.Field before release  
-            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.Lookup, DataType.Number, DataType.Text), //comment out before release also 
+            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.Lookup, DataType.Number, DataType.Text, DataType.Link), //comment out before release also 
             OperatorFieldTypeRequirements(false),
             SortOrder(2000)
         ]
@@ -139,7 +138,7 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(0, 0),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation, MetricGovernanceCheckType.Field), //remove field MetricGovernanceCheckType.Field before release  
-            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.Lookup, DataType.Number, DataType.Text),//comment out again before release 
+            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.Lookup, DataType.Number, DataType.Text, DataType.Link),//comment out again before release 
             OperatorFieldTypeRequirements(false),
             SortOrder(2100)
         ]
@@ -152,7 +151,7 @@ namespace d360.core.enums
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Decimal, DataType.Number),
             OperatorFieldTypeRequirements(false),
-            SortOrder(0)
+            SortOrder(900)
             ]
         GreaterThan,
         [
@@ -163,7 +162,7 @@ namespace d360.core.enums
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Decimal, DataType.Number),
             OperatorFieldTypeRequirements(false),
-            SortOrder(0)
+            SortOrder(1000)
         ]
         LessThanOrEquals,
         [
@@ -174,7 +173,7 @@ namespace d360.core.enums
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Decimal, DataType.Number),
             OperatorFieldTypeRequirements(false),
-            SortOrder(0)
+            SortOrder(700)
         ]
         LessThan,
         [
@@ -185,7 +184,7 @@ namespace d360.core.enums
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Decimal, DataType.Number),
             OperatorFieldTypeRequirements(false),
-            SortOrder(0)
+            SortOrder(1100)
         ]
         GreaterThanOrEquals,
         [
@@ -239,7 +238,6 @@ namespace d360.core.enums
         ]
         IsFalse,
         [
-            NotYetUsed,
             Name("is on or before"),
             EnumMember(Value = "OnOrBefore"),
             Description(""),
@@ -247,11 +245,10 @@ namespace d360.core.enums
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Date/*, DataType.DateTime*/),
             OperatorFieldTypeRequirements(false),
-            SortOrder(0)
+            SortOrder(700)
         ]
         OnOrBefore,
         [
-            NotYetUsed,
             Name("is on or after"),
             EnumMember(Value = "OnOrAfter"),
             Description(""),
@@ -259,7 +256,7 @@ namespace d360.core.enums
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Date/*, DataType.DateTime*/),
             OperatorFieldTypeRequirements(false),
-            SortOrder(0)
+            SortOrder(800)
         ]
         OnOrAfter
     }

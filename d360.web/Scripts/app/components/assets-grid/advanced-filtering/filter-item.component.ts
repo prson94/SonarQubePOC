@@ -1,22 +1,23 @@
 ﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, HostListener } from '@angular/core';
 import { SelectItemGroup } from 'primeng/api';
 import * as _ from 'lodash';
-import { FieldCondition, FieldTypeAPIModelFieldCondition } from '../../../models/field-condition-grid.models';
-import { Operator, OperatorModel } from '../../../models/operator.model';
+import { FieldTypeAPIModelFieldCondition } from '../../../models/field-condition-grid.models';
+import { OperatorModel } from '../../../models/operator.model';
 import { AdvancedFilterFieldCondition } from './advanced-filtering.models';
-import { DeclareFunctionStmt } from '@angular/compiler';
-import { FieldType } from '../../../models/fieldtype-api.model';
-import { valueOf } from 'core-js/fn/symbol/match';
+import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 
 @Component({
     selector: 'filter-item',
     templateUrl: 'filter-item.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    providers: [FieldsObservableService]
 })
 export class FilterItemComponent implements OnInit {
     @Input() condition: AdvancedFilterFieldCondition;
     @Input() fields: FieldTypeAPIModelFieldCondition[] = null;
     @Input() operators: OperatorModel[] = [];
+
+    currentField: FieldTypeAPIModelFieldCondition;
 
     allFieldsDropdown: SelectItemGroup[] = [];
 
@@ -25,11 +26,18 @@ export class FilterItemComponent implements OnInit {
 
     currentOperator: any;
     currentValue: any;
+    currentValue2: any;
+
+    tableSelection: any;
+
+    isLookupValuesLoading: boolean = false;
 
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
 
     constructor(public cdRef: ChangeDetectorRef,
-        private elRef: ElementRef) {
+        private elRef: ElementRef,
+        private fieldsService: FieldsObservableService
+    ) {
     }
 
     ngOnInit() {
@@ -87,50 +95,109 @@ export class FilterItemComponent implements OnInit {
         this.isSelectingCurrentField = false;
         var type = this.getFieldType(this.condition);
         this.condition.friendlyFieldName = type.FriendlyName;
+        this.condition.fieldType = this.getTypeForCondition(this.condition);
+        if (this.condition.fieldType === "Lookup") {
+            this.loadLookupValues();
+        }
+
         this.isSelectingValue = true;
     }
 
+    loadLookupValues() {
+        this.currentField = this.fields.filter(x => x.Name === this.condition.field)[0];
+        if (!this.currentField.Values) {
+            this.isLookupValuesLoading = true;
+
+            this.fieldsService.getLookupValues(this.currentField.AssetTypeUid, this.currentField.Name.trim())
+                .subscribe(res => {
+                    this.isLookupValuesLoading = false;
+                    this.currentField.Values = [];
+                    res.forEach(str => {
+                        this.currentField.Values.push({ title: str, value: str });
+                    })
+                })
+        }
+    }
+
     confirmValue() {
+
+        if (this.needsValue() && !this.currentValue) {
+            return;
+        }
         this.condition.operator = this.currentOperator;
+        if (this.needsValue()) {
+            this.condition.value = this.currentValue;
+            this.condition.value2 = this.currentValue2;
+        }
+        this.isSelectingValue = false;
     }
 
     cancel() {
         this.isSelectingValue = false
-        this.condition = new AdvancedFilterFieldCondition();
     }
 
-    getFilterLabel() {
-        if (!this.condition.field) {
-            return "Add filter";
-        }
-        else {
-            if (!this.condition.operator) {
-                return this.condition.friendlyFieldName + ": Any"
-            }
-            else {
-                switch (this.condition.operator) {
-                    case Operator.IsTrue:
-                        return this.condition.friendlyFieldName + ": True";
-                    case Operator.IsFalse:
-                        return this.condition.friendlyFieldName + ": False";
-                    default:
-                        return "Format not defined";
-                }
-
-            }
-        }
+    remove() {
+        this.condition.markForDeletion = true;
     }
 
     needsValue() {
+        if (!this.currentOperator) {
+            return false;
+        }
+
         switch (this.getTypeForCondition(this.condition)) {
             case "Boolean": return false;
         }
 
-        switch (this.currentOperator as Operator) {
-            case Operator.Populated:
-            case Operator.NotPopulated:
+        switch (this.currentOperator.toString()) {
+            case "Populated":
+            case "NotPopulated":
+                this.currentValue = null;
+                this.currentValue2 = null;
+                this.condition.value = null;
                 return false;
             default: return true;
         }
+    }
+
+    fieldInputType() {
+        var type = this.getTypeForCondition(this.condition);
+
+        if (type == "Number" || type == "Decimal") {
+            //First handle special case eq. Between
+            if (this.currentOperator.toString() === "Between") {
+                return "multi-number";
+            }
+
+            return "number";
+        }
+
+
+        if (type == "Date") {
+            //First handle special case eq. Between
+            if (this.currentOperator.toString() === "Between") {
+                return "multi-date";
+            }
+
+            return "date";
+        }
+
+        if (type == "DateTime") {
+            //First handle special case eq. Between
+            if (this.currentOperator.toString() === "Between") {
+                return "multi-date-time";
+            }
+
+            return "date-time";
+        }
+
+        if (type == "Lookup") {
+            if (this.currentField.Type.Lookup?.List?.AllowMultipleValues) {
+                return "lookup-multi";
+            }
+            return "lookup";
+        }
+
+        return "text";
     }
 }

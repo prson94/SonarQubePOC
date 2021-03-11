@@ -6,7 +6,9 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 import { CompanySettingsService } from '../../../services/settings.service';
 import { FieldTypeHelper } from '../../../models/fieldtype-api.model';
 import { forkJoin } from 'rxjs';
-import { AdvancedFilterFieldCondition } from './advanced-filtering.models';
+import { AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection } from './advanced-filtering.models';
+import { GallerySwitchComponent } from '../../gallery/gallery.switch.component';
+import { DatePipe } from '@angular/common';
 
 @Component({
     selector: 'advanced-filtering',
@@ -23,17 +25,38 @@ export class AdvancedFilteringComponent implements OnChanges {
     fields: FieldTypeAPIModelFieldCondition[] = null;
     operators: OperatorModel[] = [];
 
-    conditions: AdvancedFilterFieldCondition[] = [];
+    conditions: AdvancedFilterFieldConditionCollection;
 
     visible: boolean = false;
+    queryString: string = "";
 
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
 
     constructor(public cdRef: ChangeDetectorRef,
         private elRef: ElementRef,
         private fieldsService: FieldsObservableService,
-        private settingsService: CompanySettingsService) {
+        private settingsService: CompanySettingsService,
+        private datePipe: DatePipe) {
+        this.conditions = new AdvancedFilterFieldConditionCollection();
+        this.conditions.filters = [];
+        setInterval(() => {
+            this.getQuery();
+            this.customDoCheck();
+        }, 200);
     }
+
+    customDoCheck() {
+        var allHaveField = this.conditions.filters.filter(x => x.field).length === this.conditions.filters.length;
+        if (allHaveField) {
+            this.conditions.filters.push(new AdvancedFilterFieldCondition(this.datePipe));
+        }
+
+        this.conditions.filters = this.conditions.filters.filter(x => x.markForDeletion != true);
+
+
+        this.onChange.emit(this.queryString);
+    }
+
     private initializeData() {
         this.visible = false;
         forkJoin(
@@ -44,7 +67,7 @@ export class AdvancedFilteringComponent implements OnChanges {
             let res = response[1];
             var tempFields: FieldTypeAPIModelFieldCondition[] = [];
             res.forEach(f => {
-                if (FieldTypeHelper.isFieldForOperator(f.Type)) {
+                if (FieldTypeHelper.isFieldForOperatorAdvancedFilters(f.Type)) {
                     tempFields.push(f as FieldTypeAPIModelFieldCondition);
                 }
             });
@@ -72,12 +95,11 @@ export class AdvancedFilteringComponent implements OnChanges {
         })
         this.cdRef.markForCheck();
 
-        this.conditions.push(new AdvancedFilterFieldCondition());
+        this.conditions.filters.push(new AdvancedFilterFieldCondition(this.datePipe));
     }
 
 
     ngOnChanges(changes: SimpleChanges) {
-
         if (changes && changes.assetTypeUid && changes.assetTypeUid.currentValue != changes.assetTypeUid.previousValue) {
             this.initializeData();
         }
@@ -85,30 +107,9 @@ export class AdvancedFilteringComponent implements OnChanges {
     }
 
     getQuery() {
-        let queries: string[] = [];
-        this.conditions.filter(x => x.field).forEach((cond) => {
-            let fieldName: string = cond.field;
-            let operation: string = this.getOperatorString(cond.operator);
-            let value: string = this.getValue(cond.operator, cond.value);
-            queries.push(`(${fieldName} ${operation} ${value})`);
-        });
-        console.log(queries.join(" and "));
+        this.queryString = this.conditions.getQueryStringValue();
+        this.cdRef.markForCheck();
     }
 
-    getOperatorString(o: Operator): string {
-        if (!o) {
-            return "ne null";
-        }
 
-        switch (o) {
-            default:
-                return "";
-        }
-    }
-
-    getValue(o: Operator, val: string): string {
-        if (!val) {
-            return "";
-        }
-    }
 }

@@ -5,6 +5,55 @@
     padding-top: 0px !important;
   }
 
+  .ig-button-container {
+    top: 8px;
+  }
+
+  .p-datepicker-trigger {
+    top: 11px !important;
+  }
+
+  .p-selectable-row {
+    .p-checkbox {
+      pointer-events: auto;
+    }
+  }
+
+  .lookup-selection {
+    margin-top: 8px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+
+    thead {
+      border-bottom: 1px solid #ccc;
+    }
+
+    .p-datatable-tbody {
+      max-height: 300px;
+      display: block;
+      overflow: auto;
+      width: 289px;
+    }
+
+    tr, th {
+      background: white !important;
+      color: black;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+
+      td {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+
+        .item-value {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+    }
+  }
+
   .filters-list {
     border: 1px solid rgba(0, 0, 0, 0.2);
     height: 32px;
@@ -12,7 +61,11 @@
     border-radius: 4px;
     max-width: 100%;
 
-    .add-filter {
+    .filter-item {
+      display: inline-block;
+    }
+
+    .filter-block {
       margin-left: 4px;
       position: relative;
       max-height: 26px;
@@ -23,14 +76,14 @@
       }
 
       .field-selection {
-        position: relative;
+        position: absolute;
         min-width: 308px;
         z-index: 200;
       }
 
       .value-selection {
         position: absolute;
-        max-width: 308px;
+        width: 308px;
         top: 27px;
         z-index: 200;
         box-shadow: @ig-box-shadow;
