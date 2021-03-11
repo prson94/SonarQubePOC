@@ -135,7 +135,6 @@
     <Compile Include="caching\DummyCachingProvider.cs" />
     <Compile Include="info\UriSecurityContextProvider.cs" />
     <Compile Include="IQueueSource.cs" />
-    <Compile Include="IScheduledJob.cs" />
     <Compile Include="ISearchSource.cs" />
     <Compile Include="ISecurityContextProvider.cs" />
     <Compile Include="ICachingProvider.cs" />
