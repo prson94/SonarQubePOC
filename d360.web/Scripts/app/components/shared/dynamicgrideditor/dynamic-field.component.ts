@@ -592,7 +592,12 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         }
 
         if (errors["required"]) {
-            message += `${this.currentFieldName} is required. `;
+            if (this.currentFieldName.toLowerCase() === "what items are you relating?") {
+                message += `${this.currentFieldName} `;
+            }
+            else {
+                message += `${this.currentFieldName} is required. `;
+            }
         }
 
         if (errors["max"]) {
