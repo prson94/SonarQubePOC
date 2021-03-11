@@ -283,6 +283,23 @@ namespace d360.model.workflow
 
                         }
                         break;
+                    case WorkflowActivityType.HTTPResponse:
+                        var stepFields = versionStep.FieldsDocument;
+                        if (stepFields != null)
+                        {
+                            var outputs = stepFields.Element("Outputs").Elements("Output");
+                            if (outputs != null)
+                            {
+                                foreach (var output in outputs)
+                                {
+                                    if (output.Element("Id")?.Value == item.FormInputId)
+                                    {
+                                        item.IsValueMatch(output.Element("Value")?.Value ?? "");
+                                    }
+                                }
+                            }
+                        }
+                        break;
                     default:
                         return false;
                 }

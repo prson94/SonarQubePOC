@@ -33,6 +33,7 @@ import { WorkflowMonitorActionDetailsComponent } from './workflowmonitor-action-
 import { WorkflowMonitorStepFieldChangeDetailsComponent } from './workflowmonitor-step-field-change-details.component';
 import { WorkflowMonitorStepRelationshipChangeDetailsComponent } from './workflowmonitor-step-relationship-change-details';
 import { WorkflowMonitorStepHttpDetailsComponent } from './workflowmonitor-step-http-details.component';
+import { WorkflowMonitorStepHttpResponseDetailsComponent } from './workflowmonitor-step-http-response-details.component';
 
 
 @NgModule({
@@ -73,6 +74,7 @@ import { WorkflowMonitorStepHttpDetailsComponent } from './workflowmonitor-step-
         WorkflowMonitorStepFieldChangeDetailsComponent,
         WorkflowMonitorStepRelationshipChangeDetailsComponent,
         WorkflowMonitorStepHttpDetailsComponent,
+        WorkflowMonitorStepHttpResponseDetailsComponent,
       
     ],
     exports: [

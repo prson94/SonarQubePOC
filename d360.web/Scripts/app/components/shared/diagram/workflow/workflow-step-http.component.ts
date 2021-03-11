@@ -1,7 +1,8 @@
-﻿import { Component, Output, EventEmitter, Input } from '@angular/core';
+﻿import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
 import * as _ from 'lodash';
 import { NodeModel } from '../../../../models/workflow.model';
+import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 
 @Component({
     selector: 'd3s-workflow-step-http',
@@ -22,13 +23,15 @@ import { NodeModel } from '../../../../models/workflow.model';
     `]
 })
 
-export class WorkflowStepHttpComponent extends BaseComponent {
+export class WorkflowStepHttpComponent extends BaseComponent implements OnInit  {
     @Input() step: NodeModel;
+    @Input() diagram: go.Diagram;
     @Output() stepChange: EventEmitter<NodeModel> = new EventEmitter<NodeModel>();
     @Input() objectId: number;
     @Input() objectType: string;
     @Input() formFields = [];
     @Input() httpFields = [];
+    @Input() outputFields = [];
     @Input() issueObject: string;
 
     methods = [
@@ -38,8 +41,11 @@ export class WorkflowStepHttpComponent extends BaseComponent {
         'DELETE'
     ];
 
-    constructor() {
+    constructor(private workflowFieldsService: WorkflowFieldsService) {
         super();
+    }
+
+    ngOnInit() {
     }
 
     removeHeader(i: number) {

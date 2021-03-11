@@ -36,8 +36,10 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
 
     private fieldsSub: any;
     private httpFieldsSub: any;
+    private outputFieldsSub: any;
     private formFields: any[] = [];
     private httpFields: any[] = [];
+    private outputFields: any[] = [];
     private formMode = FormMode.Default;
 
     FormMode = FormMode;
@@ -56,6 +58,7 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
 
         this.filterFormFields();
         this.filterHttpFields();
+        this.filterOutputFields();
 
         this.fieldsSub = this.workflowFieldsService.formFields$.subscribe(s => {
             this.filterFormFields();
@@ -64,6 +67,10 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
         this.httpFieldsSub = this.workflowFieldsService.httpFields$.subscribe(s => {
             this.filterHttpFields();
         });
+
+        this.outputFieldsSub = this.workflowFieldsService.outputFields$.subscribe(s => {
+            this.filterOutputFields();
+        });
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -71,9 +78,11 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
             this.formMode = FormMode.Default;
             this.filterFormFields();
             this.filterHttpFields();
+            this.filterOutputFields();
         } else if (!changes['transition'].isFirstChange()) {
             this.filterFormFields();
             this.filterHttpFields();
+            this.filterOutputFields();
         }
     }
 
@@ -81,12 +90,20 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
         if (this.fieldsSub) {
             this.fieldsSub.unsubscribe();
         }
+        if (this.httpFieldsSub) {
+            this.httpFieldsSub.unsubscribe();
+        }
+        if (this.outputFieldsSub) {
+            this.outputFieldsSub.unsubscribe();
+        }
     }
 
     add() {
         this.condition = null;
         this.filterFormFields();
         this.filterHttpFields();
+        this.filterOutputFields();
+
         this.formMode = FormMode.Adding;
     }
 
@@ -127,6 +144,7 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
         this.transitionChange.emit(this.transition);
         this.filterFormFields();
         this.filterHttpFields();
+        this.filterOutputFields();
     }
 
     filterFormFields() {
@@ -137,5 +155,10 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
     filterHttpFields() {
         this.httpFields = this.workflowFieldsService.getHttpFields();
         this.httpFields = this.httpFields.filter(f => this.transition.httpInputs.indexOf(f['@stepId']) > -1);
+    }
+
+    filterOutputFields() {
+        this.outputFields = this.workflowFieldsService.getOutputFields();
+        this.outputFields = this.outputFields.filter(f => this.transition.httpResponseInputs.findIndex(r => r == f.StepId) > -1);
     }
 }

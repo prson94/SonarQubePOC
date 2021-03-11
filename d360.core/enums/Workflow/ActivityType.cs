@@ -31,6 +31,8 @@ namespace d360.core.enums.Workflow
         Delete = 8,
         [Name("HTTP Request"), Description("HTTP Request"), BackColor("#597897"), ForeColor("#fff"), Icon("\uf0ac")]
         HTTPRequest = 9,
+        [Name("HTTP Response"), Description("HTTP Response"), BackColor("#d11947"), ForeColor("#fff"), Icon("\uf085")]
+        HTTPResponse = 10,
     }
 
     public class ActivityTypeInfo

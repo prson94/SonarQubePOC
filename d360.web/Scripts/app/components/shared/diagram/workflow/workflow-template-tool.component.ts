@@ -2,7 +2,7 @@
 import * as _ from 'lodash';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
-import { NodeModel } from '../../../../models/workflow.model';
+import { HTTPResponseOutput, NodeModel } from '../../../../models/workflow.model';
 
 @Component({
     selector: 'd3s-workflow-template-tool',
@@ -23,6 +23,8 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
     fields = [];
     httpFields = [];
     httpFieldsSub: any;
+    outputFields: HTTPResponseOutput[] = [];
+    outputFieldsSub: any;
 
     private defaultFields = [
         { value: '[OBJECT_NAME]', label: 'Object Name' },
@@ -59,6 +61,12 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
 
         this.httpFieldsSub = this.workflowFieldsService.httpFields$.subscribe(s => {
             this.filterHttpFields();
+            this.load();
+        });
+
+        this.outputFieldsSub = this.workflowFieldsService.outputFields$.subscribe(s => {
+            this.filterOutputFields();
+            this.load();
         });
 
     }
@@ -70,6 +78,8 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
 
         if (objectTypeChanged || objectIdChanged || stepChanged) {
             this.filterHttpFields();
+            this.filterOutputFields();
+            this.load();
         }
 
     }
@@ -77,6 +87,9 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
     ngOnDestroy() {
         if (this.httpFieldsSub) {
             this.httpFieldsSub.unsubscribe();
+        }
+        if (this.outputFieldsSub) {
+            this.outputFieldsSub.unsubscribe();
         }
     }
 
@@ -86,8 +99,9 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
                 this.fields = [];
                 this.fields = _.cloneDeep(this.defaultFields);
 
-                if (this.objectType == 'IntersectType')
+                if (this.objectType == 'IntersectType') {
                     this.fields = this.fields.concat(_.cloneDeep(this.relationshipFields));
+                }
 
                 r.forEach(f => {
                     let fieldType = f.Object == "IssueType" ? "Action Field" : "Asset Field";
@@ -102,6 +116,14 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
                     let label = 'HTTP Request :: ' + f['@label'];
                     this.fields.push({
                         value: '[HTTPREQUEST|' + f['@stepId'] + '|' + f['@id'] + ']',
+                        label: label
+                    });
+                });
+
+                this.outputFields.forEach(f => {
+                    let label = 'HTTP Response :: ' + f.Name;
+                    this.fields.push({
+                        value: '[HTTPRESPONSE|' + f.StepId + '|' + f.Id+ ']',
                         label: label
                     });
                 });
@@ -144,8 +166,27 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
                 this.httpFields.push(f);
             }
         });
+    }
 
-        this.load();
+    filterOutputFields() {
+        this.outputFields = [];
+        if (this.step == null || this.diagram == null) {
+            this.load();
+            return;
+        }
+
+        let fields = this.workflowFieldsService.getOutputFields();
+        let upstreamSteps = [];
+        this.traverseDiagram(this.step.key, upstreamSteps);
+
+        fields.forEach(f => {
+            let k = upstreamSteps.filter(u => u == f.StepId);
+            if (k != null && k.length > 0) {
+                f['@FormFieldId'] = f.Id + '|' + f.StepId;
+                f['@FormLabel'] = 'HTTP Response :: ' + f.Name;
+                this.outputFields.push(f);
+            }
+        });
     }
 
     traverseDiagram(key: any, upstreamSteps: any[]) {

@@ -166,6 +166,7 @@ namespace d360.web
             ViewEngines.Engines.Add(new RazorViewEngine()); //only use razor view engine
 
             Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration.Active.InstrumentationKey = System.Web.Configuration.WebConfigurationManager.AppSettings["AppInsightsInstrumentationKey"];
+            Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration.Active.DisableTelemetry = true;
             #region Autofac
 
             Trace.WriteLine("Begin - Dependency Injection With Autofac");

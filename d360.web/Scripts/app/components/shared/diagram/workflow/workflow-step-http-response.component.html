@@ -1,0 +1,82 @@
+﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading">
+    <div class="row">
+        <div class="col s12">
+            <div class="FieldName">HTTP Request</div>
+            <div>
+                <select [ngModel]="step.settings.HTTPResponse.InputStepId" (ngModelChange)="step.settings.HTTPResponse.InputStepId = $event; stepChange.emit(step)" style="width: 95%">
+                    <option value=""></option>
+                    <option *ngFor="let h of httpRequests" [value]="h.key">{{h.name}}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12">
+            <div class="FieldName">
+                Outputs
+            </div>
+            <div>
+                <header class="FieldName">
+                   &nbsp;
+                    <d3s-tile-actions hideTooltip="true" hasAdd="true" (addClick)="showAdd()"></d3s-tile-actions>
+                </header>
+                <p-table #dt [value]="step.settings.HTTPResponse.Outputs" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="10" [rowsPerPageOptions]="defaultPagingOptions">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>Name</th>
+                            <th>Path</th>
+                            <th style="width: 40px"></th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-item let-i="rowIndex">
+                        <tr [pSelectableRow]="item">
+                            <td>
+                                {{item.Name}}
+                            </td>
+                            <td>
+                                {{item.Path}}
+                            </td>
+                            <td>
+                                <ng-container>
+                                    <button type="button" icon="fa-ellipsis-v" igButton (click)="select(i);menu.toggle($event)" pTooltip="Output Field Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                                    <ig-popup-menu (onSelect)="select(i);clickMenu($event)" [items]="menuItems" #menu [tabIndex]="1"></ig-popup-menu>
+                                </ng-container>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="summary">
+                        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                    </ng-template>
+                </p-table>
+            </div>
+        </div>
+    </div>
+    <div class="row" *ngIf="isAdding || isEditing">
+        <div class="col s12">
+            <div class="FieldName">Name</div>
+            <div>
+                <input type="text" style="width: 95%" [ngModel]="selectedRow.Name" (ngModelChange)="selectedRow.Name = $event;" />
+            </div>
+        </div>
+        <div class="col s12">
+            <div class="FieldName">Json Path</div>
+            <div>
+                <input type="text" style="width: 95%" [ngModel]="selectedRow.Path" (ngModelChange)="selectedRow.Path = $event;" />
+            </div>
+        </div>
+        <div class="col s12" style="padding-top: 8px;">
+            <button *ngIf="isAdding" pButton label="Add" (click)="addOutput()"></button>
+            <button *ngIf="isEditing" pButton label="Edit" (click)="editOutput()"></button>
+            <button pButton label="Cancel" (click)="cancel()"></button>
+        </div>
+    </div>
+    <div class="row" *ngIf="isDeleting">
+        <div class="col s12">
+            Are you sure you want to delete {{selectedRow.Name}}?
+        </div>
+        <div class="col s12">
+            <button pButton label="Delete" (click)="removeOutput()"></button>
+            <button pButton label="Cancel" (click)="cancel()"></button>
+        </div>
+    </div>

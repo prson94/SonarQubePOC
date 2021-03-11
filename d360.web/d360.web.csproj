@@ -879,6 +879,7 @@
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-technical-relationships.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\model-diagram.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\addpanel.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-step-http-response.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-step-http.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-template-tool.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-editor-v2.component.html" />
@@ -1033,6 +1034,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\tools\overview.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-list-view.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-step-http-response.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-step-http.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\directives\delayed-input.directive.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-label-editor.component.ts" />
@@ -1563,6 +1565,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-field-change-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-form-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-grid.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-http-response-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-http-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflow\shared-workflow.module.ts" />
