@@ -1,9 +1,0 @@
-﻿{
-
-
-    "AzureWebJobsDashboard": "DefaultEndpointsProtocol=https;AccountName=govlocalengintjobstorage;AccountKey=HsXiyBpYbqTVIbOBwqVzWWYQ22QBpxvpnFJDtCsx7CEM68iS9/qwqDvZr8AobZ0hB3Wny7je+PpZhxv/7pBXDA==;EndpointSuffix=core.windows.net",
-    "AzureWebJobsQueueStorageAccount": "DefaultEndpointsProtocol=https;AccountName=govengqueuestorage;AccountKey=0FUh4RBtuU9zqDRupeY6cSwsF7gwB9Qs2sp5zzAkQPj+kN13GlBgsfzaU2AXWpvy52a6RiG8qbUtKrYkUPRoUA==;EndpointSuffix=core.windows.net",
-    "AzureWebJobsServiceBus": "Endpoint=sb://gov-int-events.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=2fR7nULjArv1/KKaqKSast5OoLAXL6NXUIt0ecMKztk=",
-    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=govlocalengintjobstorage;AccountKey=HsXiyBpYbqTVIbOBwqVzWWYQ22QBpxvpnFJDtCsx7CEM68iS9/qwqDvZr8AobZ0hB3Wny7je+PpZhxv/7pBXDA==;EndpointSuffix=core.windows.net"
-  
-}

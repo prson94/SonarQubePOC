@@ -236,44 +236,24 @@ namespace igx.jobs
             }
         }
 
-        public class ConfigNameResolver : INameResolver
-        {
-            public string Resolve(string name)
-            {
-                return ConfigurationManager.AppSettings[name];
-            }
-        }
-
-        public class ConnectionNameResolver : INameResolver
-        {
-            public string Resolve(string name)
-            {
-                return ConfigurationManager.ConnectionStrings[name].ConnectionString;
-            }
-        }
-
         public static IHostBuilder JobHostConfigBuilder()
         {
             var builder = new HostBuilder();
             var env = GetConfigValueByKey("Environment");
-            var configResolver = new ConfigNameResolver();
 
 
             builder
             .UseEnvironment(env)
-            .ConfigureAppConfiguration((context, b) =>
-            {
-                b.AddConfiguration(context.Configuration)
-                .AddJsonFile("commonAppSettings.json")
-                .AddJsonFile("commonConnectionSettings.json")
-                .AddEnvironmentVariables()
-                .Build();
-
-            })
             .ConfigureWebJobs(c =>
             {
                 c.AddAzureStorageCoreServices()
                 .AddAzureStorage();
+            })
+            .ConfigureAppConfiguration((context, b) =>
+            {
+                b.AddConfiguration(context.Configuration)
+                .AddEnvironmentVariables()
+                .Build();
             })
             .ConfigureLogging((context, b) =>
             {
