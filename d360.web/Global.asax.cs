@@ -165,6 +165,9 @@ namespace d360.web
             ViewEngines.Engines.Clear();
             ViewEngines.Engines.Add(new RazorViewEngine()); //only use razor view engine
 
+            //GOV-14022 remove the X-Frame-Options from the forms / password reset we add this in the web.config this avoids it appearing 2x
+            System.Web.Helpers.AntiForgeryConfig.SuppressXFrameOptionsHeader = true;
+
             Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration.Active.InstrumentationKey = System.Web.Configuration.WebConfigurationManager.AppSettings["AppInsightsInstrumentationKey"];
             #region Autofac
 
