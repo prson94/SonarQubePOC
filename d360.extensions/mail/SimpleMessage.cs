@@ -26,12 +26,7 @@ namespace d360.extensions.mail
             else
                 message.Html = content;
 
-            var subaccount = CloudConfigurationManager.GetSetting("MandrillSubAccount");
-
-            if (subaccount != null && subaccount.Trim() != string.Empty)
-            {
-                message.Subaccount = subaccount;
-            }
+            GetMandrillsubAccount(ref message);
 
             var api = new MandrillApi(CloudConfigurationManager.GetSetting("MandrillApiKey"));
 
@@ -57,12 +52,8 @@ namespace d360.extensions.mail
             else
                 message.Html = content;
 
-            var subaccount = CloudConfigurationManager.GetSetting("MandrillSubAccount");
+            GetMandrillsubAccount(ref message);
 
-            if (subaccount != null && subaccount.Trim() != string.Empty)
-            {
-                message.Subaccount = subaccount;
-            }
 
             var api = new MandrillApi(CloudConfigurationManager.GetSetting("MandrillApiKey"));
 
@@ -93,18 +84,23 @@ namespace d360.extensions.mail
                 }
             }
 
-            var subaccount = CloudConfigurationManager.GetSetting("MandrillSubAccount");
-
-            if (subaccount != null && subaccount.Trim() != string.Empty)
-            {
-                message.Subaccount = subaccount;
-            }
+            GetMandrillsubAccount(ref message);
 
             var api = new MandrillApi(CloudConfigurationManager.GetSetting("MandrillApiKey"));
             var result = api.Messages.SendTemplateAsync(message, templateID).Result;
             if (result == null || result.Count < 1)
             {
                 //...
+            }
+        }
+
+        private static void GetMandrillsubAccount(ref MandrillMessage message)
+        {
+            var subaccount = CloudConfigurationManager.GetSetting("MandrillSubAccount");
+
+            if (subaccount != null && subaccount.Trim() != string.Empty)
+            {
+                message.Subaccount = subaccount;
             }
         }
     }
