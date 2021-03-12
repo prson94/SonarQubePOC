@@ -1,5 +1,5 @@
-﻿<div class="filter-block" pTooltip="{{condition.getTooltipValue()}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip" [escape]="false">
-    <div class="ig-button filter-label" (click)="updateFilter()" [innerHTML]="condition.getFilterLabel()"></div>
+﻿<div class="filter-block" pTooltip="{{uiTooltipValue}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip" [escape]="false">
+    <div class="ig-button filter-label" (click)="updateFilter()" [innerHTML]="uiFilterLabel"></div>
 
     <div class="field-selection" [hidden]="!isSelectingCurrentField">
         <p-dropdown #dropdownRef
@@ -28,53 +28,59 @@
 
     <div class="value-selection" [hidden]="!isSelectingValue">
         <p-dropdown igDropdown
-                    [options]="getOperators(condition)"
-                    [(ngModel)]="currentOperator"
+                    [options]="uiCurrentOperatorsList"
+                    [(ngModel)]="condition.operator"
+                    (onChange)="onOperatorSelected($event)"
                     igSize="full"
                     appendTo="body">
         </p-dropdown>
         <ng-container *ngIf="needsValue()">
-            <input *ngIf="fieldInputType() === 'text'" igInput igSize="full" type="text" [(ngModel)]="currentValue" required />
-            <ig-number-input *ngIf="fieldInputType() === 'number'" igSize="full" [(ngModel)]="currentValue" required></ig-number-input>
+            <input *ngIf="fieldInputType() === 'text'" igInput igSize="full" type="text" [(ngModel)]="condition.value" required />
+            <ig-number-input *ngIf="fieldInputType() === 'number'" igSize="full" [(ngModel)]="condition.value" required></ig-number-input>
 
             <ng-container *ngIf="fieldInputType() === 'multi-number'">
-                <ig-number-input igSize="full" [(ngModel)]="currentValue" required></ig-number-input>
+                <ig-number-input igSize="full" [(ngModel)]="condition.value" required></ig-number-input>
                 <div class="value-separator">and</div>
-                <ig-number-input igSize="full" [(ngModel)]="currentValue2" required></ig-number-input>
+                <ig-number-input igSize="full" [(ngModel)]="condition.value2" required></ig-number-input>
             </ng-container>
 
-            <ig-date *ngIf="fieldInputType() === 'date'" [(ngModel)]="currentValue" required></ig-date>
+            <ig-date *ngIf="fieldInputType() === 'date'" [(ngModel)]="condition.value" required></ig-date>
             <ng-container *ngIf="fieldInputType() === 'multi-date'">
-                <ig-date [(ngModel)]="currentValue" required></ig-date>
+                <ig-date [(ngModel)]="condition.value" required></ig-date>
                 <div class="value-separator">and</div>
-                <ig-date [(ngModel)]="currentValue2" required></ig-date>
+                <ig-date [(ngModel)]="condition.value2" required></ig-date>
             </ng-container>
 
-            <ig-date *ngIf="fieldInputType() === 'date-time'" [(ngModel)]="currentValue" [showTime]="true" required></ig-date>
+            <ig-date *ngIf="fieldInputType() === 'date-time'" [(ngModel)]="condition.value" [showTime]="true" required></ig-date>
             <ng-container *ngIf="fieldInputType() === 'multi-date-time'">
-                <ig-date [(ngModel)]="currentValue" required [showTime]="true"></ig-date>
+                <ig-date [(ngModel)]="condition.value2" required [showTime]="true"></ig-date>
                 <div class="value-separator">and</div>
-                <ig-date [(ngModel)]="currentValue2" required [showTime]="true"></ig-date>
+                <ig-date [(ngModel)]="condition.value2" required [showTime]="true"></ig-date>
             </ng-container>
 
             <ng-container *ngIf="fieldInputType() === 'lookup' && currentField">
                 <div class="lookup-selection">
-                    <p-table [metaKeySelection]="true"
-                             selectionMode="single"
+                    <p-table #dt1
+                             tableStyleClass="ig-filter-table"
+                             [metaKeySelection]="true"
                              [value]="currentField.Values"
-                             [(selection)]="currentValue"
+                             (onRowSelect)="onItemSelected($event)"
+                             [(selection)]="condition.value"
+                             [globalFilterFields]="['value']"
                              dataKey="value">
                         <ng-template pTemplate="header">
                             <tr>
-                                <th style="width: 3rem">
+                                <th class="first-col">
                                     <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
                                 </th>
-                                <th>Code</th>
+                                <th>
+                                    <input type="text" (input)="dt1.filterGlobal($event.target.value, 'contains')" placeholder="Search list" />
+                                </th>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="body" let-item>
                             <tr [pSelectableRow]="item">
-                                <td>
+                                <td class="first-col">
                                     <p-tableCheckbox [value]="item"></p-tableCheckbox>
                                 </td>
                                 <td>
@@ -83,6 +89,11 @@
                             </tr>
                         </ng-template>
                     </p-table>
+                </div>
+
+                <div class="any-all-picker">
+                    <p-radioButton [disabled]="uiIsAllDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="and" label="Match all"></p-radioButton>
+                    <p-radioButton [disabled]="uiIsAnyDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="or" label="Match any"></p-radioButton>
                 </div>
             </ng-container>
 

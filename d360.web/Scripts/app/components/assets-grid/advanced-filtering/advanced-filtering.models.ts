@@ -1,5 +1,7 @@
 ﻿import { DatePipe } from "@angular/common";
+import * as _ from "lodash";
 import { SelectItem } from "primeng/api";
+import { debug } from "util";
 import { FieldTypeAPIModelField } from "../../../models/fieldtype-api.model";
 import { Operator } from "../../../models/operator.model";
 
@@ -17,6 +19,9 @@ export class AdvancedFilterFieldCondition {
     friendlyFieldName: string = '';
     markForDeletion: boolean = false;
     fieldType: string = "";
+
+    connectingOperator: string = "or";
+
 
     constructor(private datePipe: DatePipe) {
 
@@ -122,9 +127,9 @@ export class AdvancedFilterFieldCondition {
             case "NotContains":
                 return `${this.friendlyFieldName} &#8800; *${this.getTypedValue()}*`;
             case "Equals":
-                return `${this.friendlyFieldName} : ${this.getTypedValue()}`;
+                return `${this.friendlyFieldName} : ${this.getTypedValue(this.value, true)}`;
             case "NotEquals":
-                return `${this.friendlyFieldName} &#8800; ${this.getTypedValue()}`;
+                return `${this.friendlyFieldName} &#8800; ${this.getTypedValue(this.value, true)}`;
             case "StartsWith":
                 return `${this.friendlyFieldName} : ${this.getTypedValue()}*`;
             case "EndsWith":
@@ -196,7 +201,7 @@ export class AdvancedFilterFieldCondition {
         }
     }
 
-    getTypedValue(value: any = null): any {
+    getTypedValue(value: any = null, isForLabel: boolean = false): any {
         try {
             if (value == null) {
                 value = this.value;
@@ -213,8 +218,31 @@ export class AdvancedFilterFieldCondition {
                 return `${this.parseDateTimeToString(value)}`
             }
             if (this.fieldType == "Lookup") {
-                if (value.value) {
-                    return `'${value.value}'`
+                let valueAsString = "";
+                if (Array.isArray(value)) {
+                    var arr = value as SelectItem[];
+                    if (arr.length === 1) {
+                        return arr[0].title;
+                    }
+                    if (isForLabel === true && arr.length > 2) {
+                        return arr.length + " items";
+                    }
+
+                    for (let i = 0; i < arr.length - 1; i++) {
+                        if (i !== arr.length - 2) {
+                            valueAsString += arr[i].title + ", ";
+                        }
+                        else {
+                            if (this.operator.toString() === "Equals") {
+                                valueAsString += arr[i].title + " or " + arr[i + 1].title;
+                            }
+                            else {
+                                valueAsString += arr[i].title + " nor " + arr[i + 1].title;
+                            }
+                        }
+                    }
+
+                    return valueAsString.trim();
                 }
             }
             return value;
@@ -283,6 +311,23 @@ export class AdvancedFilterFieldCondition {
         }
         return this.datePipe.transform(value, "shortDate") + " " + this.datePipe.transform(value, "HH:mm");
     }
+
+    public getCopyWithNewValue(newValue: string): AdvancedFilterFieldCondition {
+        var newObj = _.cloneDeep(this);
+        newObj.value = newValue;
+        return newObj;
+    }
+
+    public getQueryString() {
+        if (this.operator.toString() === "Between") {
+            return `(${this.field} gt ${this.getValue()} and ${this.field} lt ${this.getValue2()})`;
+        }
+        else {
+            let operation: string = this.getOperatorString();
+            let value: string = this.getValue();
+            return `(${this.field} ${operation} ${value})`;
+        }
+    }
 }
 
 export class AdvancedFilterFieldConditionCollection {
@@ -293,19 +338,25 @@ export class AdvancedFilterFieldConditionCollection {
         if (this.filters.length === 0) {
             return "";
         }
-
         let queries: string[] = [];
-        this.filters.filter(x => x.field && x.operator).forEach((cond) => {
-            let fieldName: string = cond.field;
-            if (cond.operator.toString() === "Between") {
-                queries.push(`(${fieldName} gt ${cond.getValue()} and ${fieldName} lt ${cond.getValue2()})`);
+        this.filters.filter(x => x.field && x.operator && x.value).forEach((cond) => {
+            if (cond.fieldType === "Lookup") {
+                let subConditions: AdvancedFilterFieldCondition[] = [];
+                var valuesArr = cond.value as SelectItem[];
+                valuesArr.forEach(r => {
+                    subConditions.push(cond.getCopyWithNewValue(r.value));
+                });
+
+                let subQueries: string[] = [];
+                subConditions.forEach((sc) => {
+                    subQueries.push(sc.getQueryString());
+                });
+                queries.push(subQueries.join(" " + cond.connectingOperator + " "));
             }
             else {
-                let operation: string = cond.getOperatorString();
-                let value: string = cond.getValue();
-                queries.push(`(${fieldName} ${operation} ${value})`);
+                queries.push(cond.getQueryString());
             }
         });
-        return queries.join(" and ");
+        return queries.join(this.connector);
     }
 }

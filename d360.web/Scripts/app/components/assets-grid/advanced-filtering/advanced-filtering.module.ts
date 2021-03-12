@@ -10,6 +10,9 @@ import { IgDateModule } from '../../shared/controls/date/date';
 import { IgNumberFieldModule } from '../../shared/controls/number-picker/number-input.component';
 import { FilterItemComponent } from './filter-item.component';
 import { TableModule } from 'primeng/table';
+import { SearchFieldModule } from '../../shared/controls/search-field/search-field.component';
+import { RadioButtonDirective } from '../../../directives/ig-radio-button-directive';
+import { RadioButtonModule } from 'primeng/radiobutton';
 
 
 @NgModule({
@@ -22,6 +25,8 @@ import { TableModule } from 'primeng/table';
         IgDateModule,
         IgNumberFieldModule,
         TableModule,
+        SearchFieldModule,
+        RadioButtonModule,
 
         DropdownModule,
         DirectivesModule

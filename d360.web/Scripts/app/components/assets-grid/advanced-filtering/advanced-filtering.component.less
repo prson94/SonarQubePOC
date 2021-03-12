@@ -23,34 +23,18 @@
     margin-top: 8px;
     border: 1px solid #cccccc;
     border-radius: 4px;
+  }
 
-    thead {
-      border-bottom: 1px solid #ccc;
+  .any-all-picker {
+    padding-bottom: 8px;
+
+    p-radiobutton {
+      margin-right: 8px;
     }
 
-    .p-datatable-tbody {
-      max-height: 300px;
-      display: block;
-      overflow: auto;
-      width: 289px;
-    }
-
-    tr, th {
-      background: white !important;
-      color: black;
-      padding-top: 0 !important;
-      padding-bottom: 0 !important;
-
-      td {
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
-
-        .item-value {
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-      }
+    &.disabled {
+      pointer-events: none;
+      opacity: 0.33;
     }
   }
 
@@ -103,6 +87,89 @@
         input {
           margin-top: 8px;
         }
+      }
+    }
+  }
+}
+
+.ig-filter-table {
+
+  thead {
+    border-bottom: 1px solid #ccc;
+  }
+
+  .p-datatable-tbody {
+    max-height: 300px;
+    display: block;
+    overflow: auto;
+    width: 289px;
+  }
+
+  .p-checkbox-box {
+    width: 16px;
+    height: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    margin-right: 5px;
+  }
+
+
+
+  tr {
+    color: black;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    outline: 0;
+
+    td, th {
+      background: white !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+
+      .item-value {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 230px;
+        display: block;
+      }
+
+      input {
+        margin: 0px;
+        border: 0;
+        outline: 0;
+        padding: 0;
+        color: black;
+        font-weight: normal;
+      }
+    }
+
+    th.first-col {
+      width: 26px;
+    }
+
+    td.first-col {
+      max-width: 28px;
+      padding-left: 10px;
+    }
+
+    &:hover {
+      td, .p-checkbox {
+        background-color: @ig-orange-t4 !important;
+      }
+    }
+
+    &.p-highlight {
+      td, .p-checkbox {
+        background-color: @ig-orange-t3 !important;
+      }
+    }
+
+    .p-checkbox-box {
+      &.p-highlight {
+        color: black;
+        background: white;
+        background: white;
       }
     }
   }

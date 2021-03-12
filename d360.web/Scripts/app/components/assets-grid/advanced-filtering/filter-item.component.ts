@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, HostListener } from '@angular/core';
+﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, HostListener, OnChanges } from '@angular/core';
 import { SelectItemGroup } from 'primeng/api';
 import * as _ from 'lodash';
 import { FieldTypeAPIModelFieldCondition } from '../../../models/field-condition-grid.models';
@@ -12,7 +12,7 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [FieldsObservableService]
 })
-export class FilterItemComponent implements OnInit {
+export class FilterItemComponent implements OnInit, OnChanges {
     @Input() condition: AdvancedFilterFieldCondition;
     @Input() fields: FieldTypeAPIModelFieldCondition[] = null;
     @Input() operators: OperatorModel[] = [];
@@ -24,13 +24,17 @@ export class FilterItemComponent implements OnInit {
     isSelectingCurrentField: boolean = false;
     isSelectingValue: boolean = false;
 
-    currentOperator: any;
-    currentValue: any;
-    currentValue2: any;
-
     tableSelection: any;
 
     isLookupValuesLoading: boolean = false;
+
+    uiCurrentOperatorsList: any[] = [];
+
+    uiTooltipValue: string = "";
+    uiFilterLabel: string = "";
+
+    uiIsAllDisabled: boolean = true;
+    uiIsAnyDisabled: boolean = true;
 
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
 
@@ -40,6 +44,11 @@ export class FilterItemComponent implements OnInit {
     ) {
     }
 
+    ngOnChanges() {
+        if (this.condition) {
+            this.uiFilterLabel = this.condition.getFilterLabel();
+        }
+    }
     ngOnInit() {
         this.allFieldsDropdown = [];
         let assetFieldGroup: SelectItemGroup = { value: "asset-field", label: "Asset Fields", items: [] };
@@ -99,8 +108,13 @@ export class FilterItemComponent implements OnInit {
         if (this.condition.fieldType === "Lookup") {
             this.loadLookupValues();
         }
-
+        this.uiCurrentOperatorsList = this.getOperators(this.condition);
+        this.uiFilterLabel = this.condition.getFilterLabel();
         this.isSelectingValue = true;
+    }
+
+    onOperatorSelected($event) {
+        this.updateAllAnyData();
     }
 
     loadLookupValues() {
@@ -120,16 +134,10 @@ export class FilterItemComponent implements OnInit {
     }
 
     confirmValue() {
-
-        if (this.needsValue() && !this.currentValue) {
-            return;
-        }
-        this.condition.operator = this.currentOperator;
-        if (this.needsValue()) {
-            this.condition.value = this.currentValue;
-            this.condition.value2 = this.currentValue2;
-        }
         this.isSelectingValue = false;
+
+        this.uiTooltipValue = this.condition.getTooltipValue();
+        this.uiFilterLabel = this.condition.getFilterLabel();
     }
 
     cancel() {
@@ -141,7 +149,7 @@ export class FilterItemComponent implements OnInit {
     }
 
     needsValue() {
-        if (!this.currentOperator) {
+        if (!this.condition.operator) {
             return false;
         }
 
@@ -149,23 +157,53 @@ export class FilterItemComponent implements OnInit {
             case "Boolean": return false;
         }
 
-        switch (this.currentOperator.toString()) {
+        switch (this.condition.operator.toString()) {
             case "Populated":
             case "NotPopulated":
-                this.currentValue = null;
-                this.currentValue2 = null;
                 this.condition.value = null;
+                this.condition.value2 = null;
                 return false;
             default: return true;
         }
     }
+
+    onItemSelected($event) {
+        this.updateAllAnyData();
+    }
+
+    private updateAllAnyData() {
+        if (this.condition.fieldType !== "Lookup") {
+            return;
+        }
+        if (this.currentField.Type.Lookup?.List?.AllowMultipleValues) {
+            this.uiIsAllDisabled = false;
+            this.uiIsAnyDisabled = false;
+        }
+        else {
+            this.condition.connectingOperator = "or";
+            if (this.condition.operator.toString() === "NotEquals") {
+                this.condition.connectingOperator = "and";
+            }
+
+            this.uiIsAllDisabled = true;
+            this.uiIsAnyDisabled = true;
+        }
+    }
+
+    isSingleOrMultiSelect() {
+        var type = this.getTypeForCondition(this.condition);
+        if (type !== "Lookup") {
+            return null;
+        }
+    }
+
 
     fieldInputType() {
         var type = this.getTypeForCondition(this.condition);
 
         if (type == "Number" || type == "Decimal") {
             //First handle special case eq. Between
-            if (this.currentOperator.toString() === "Between") {
+            if (this.condition.operator.toString() === "Between") {
                 return "multi-number";
             }
 
@@ -175,7 +213,7 @@ export class FilterItemComponent implements OnInit {
 
         if (type == "Date") {
             //First handle special case eq. Between
-            if (this.currentOperator.toString() === "Between") {
+            if (this.condition.operator.toString() === "Between") {
                 return "multi-date";
             }
 
@@ -184,7 +222,7 @@ export class FilterItemComponent implements OnInit {
 
         if (type == "DateTime") {
             //First handle special case eq. Between
-            if (this.currentOperator.toString() === "Between") {
+            if (this.condition.operator.toString() === "Between") {
                 return "multi-date-time";
             }
 
@@ -192,9 +230,6 @@ export class FilterItemComponent implements OnInit {
         }
 
         if (type == "Lookup") {
-            if (this.currentField.Type.Lookup?.List?.AllowMultipleValues) {
-                return "lookup-multi";
-            }
             return "lookup";
         }
 
