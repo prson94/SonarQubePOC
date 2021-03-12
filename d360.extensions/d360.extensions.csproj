@@ -141,7 +141,6 @@
     <Compile Include="ICachingProvider.cs" />
     <Compile Include="IStorageProvider.cs" />
     <Compile Include="mail\SimpleMessage.cs" />
-    <Compile Include="mail\TemplateMessage.cs" />
     <Compile Include="powerbi\PowerBI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="queue\AzureQueueSource.cs" />

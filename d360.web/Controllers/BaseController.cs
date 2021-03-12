@@ -1918,7 +1918,7 @@ namespace d360.web.Controllers
             templateValues["request_url"] = strUrl;
 
             //email user 
-            extensions.mail.TemplateMessage.SendMessage("Data360 Password Reset", email, fullName, templateValues, "forms-password-reset");
+            extensions.mail.SimpleMessage.SendMessage("Data360 Password Reset", email, fullName, templateValues, "forms-password-reset");
         }
 
         #endregion
