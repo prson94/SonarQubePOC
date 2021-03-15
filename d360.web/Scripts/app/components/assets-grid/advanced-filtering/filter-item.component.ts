@@ -1,18 +1,21 @@
 ﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, HostListener, OnChanges } from '@angular/core';
-import { SelectItemGroup } from 'primeng/api';
+import { SelectItem, SelectItemGroup } from 'primeng/api';
 import * as _ from 'lodash';
 import { FieldTypeAPIModelFieldCondition } from '../../../models/field-condition-grid.models';
 import { OperatorModel } from '../../../models/operator.model';
 import { AdvancedFilterFieldCondition, SystemFields } from './advanced-filtering.models';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
+import { AssetService } from '../../../services/asset.service';
+import { AssetTypeService } from '../../../services/asset-type.service';
 
 @Component({
     selector: 'filter-item',
     templateUrl: 'filter-item.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [FieldsObservableService]
+    providers: [FieldsObservableService, AssetTypeService]
 })
 export class FilterItemComponent implements OnInit, OnChanges {
+    @Input() assetTypeUid: string = "";
     @Input() condition: AdvancedFilterFieldCondition;
     @Input() fields: FieldTypeAPIModelFieldCondition[] = null;
     @Input() operators: OperatorModel[] = [];
@@ -40,7 +43,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     constructor(public cdRef: ChangeDetectorRef,
         private elRef: ElementRef,
-        private fieldsService: FieldsObservableService
+        private fieldsService: FieldsObservableService,
+        private assetTypeService: AssetTypeService
     ) {
     }
 
@@ -66,12 +70,22 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     getTypeForCondition(item: AdvancedFilterFieldCondition) {
+        if (this.condition.field === SystemFields.OwnedByFieldCode) {
+            return "";
+        }
         var ft = this.getFieldType(item);
         if (!ft) return '';
         return Object.keys(ft.Type)[0];
     }
 
     getOperators(item: AdvancedFilterFieldCondition) {
+        if (this.condition.field === SystemFields.OwnedByFieldCode) {
+            var options: SelectItem[] = [];
+            options.push({ label: "contains", value: "Contains" });
+            options.push({ label: "not contains", value: "NotContains" });
+            return options;
+        }
+
         var ft = this.getFieldType(item);
         return ft ? ft.Operators : [];
     }
@@ -109,13 +123,24 @@ export class FilterItemComponent implements OnInit, OnChanges {
     onFieldSelected($event) {
         this.isSelectingCurrentField = false;
         var type = this.getFieldType(this.condition);
-        this.condition.friendlyFieldName = type.FriendlyName;
-        this.condition.fieldType = this.getTypeForCondition(this.condition);
-        if (this.condition.fieldType === "Lookup") {
-            this.loadLookupValues();
+        if (type.Type) {
+            this.condition.friendlyFieldName = type.FriendlyName;
+            this.condition.fieldType = this.getTypeForCondition(this.condition);
+            if (this.condition.fieldType === "Lookup") {
+                this.loadLookupValues();
+            }
+            this.uiCurrentOperatorsList = this.getOperators(this.condition);
+            this.uiFilterLabel = this.condition.getFilterLabel();
         }
-        this.uiCurrentOperatorsList = this.getOperators(this.condition);
-        this.uiFilterLabel = this.condition.getFilterLabel();
+        else {
+            if (this.condition.field === SystemFields.OwnedByFieldCode) {
+                this.condition.friendlyFieldName = "Owned By";
+                this.condition.fieldType = null;
+                this.loadLookupValuesForOwners();
+                this.uiCurrentOperatorsList = this.getOperators(this.condition);
+                this.uiFilterLabel = this.condition.getFilterLabel();
+            }
+        }
         this.isSelectingValue = true;
     }
 
@@ -138,6 +163,21 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 })
         }
     }
+
+    loadLookupValuesForOwners() {
+        this.currentField = this.fields.filter(x => x.Name === this.condition.field)[0];
+        if (!this.currentField.Values || this.currentField.Values.length == 0) {
+            this.isLookupValuesLoading = true;
+            this.assetTypeService.GetAssetTypePossibleOwners(this.assetTypeUid).subscribe((res) => {
+                this.isLookupValuesLoading = false;
+                this.currentField.Values = [];
+                res.forEach(str => {
+                    this.currentField.Values.push({ title: str.Name, value: str.Uid });
+                })
+            });
+        }
+    }
+
 
     confirmValue() {
         this.isSelectingValue = false;
@@ -171,6 +211,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 return false;
             default: return true;
         }
+
     }
 
     onItemSelected($event) {
@@ -196,15 +237,11 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
     }
 
-    isSingleOrMultiSelect() {
-        var type = this.getTypeForCondition(this.condition);
-        if (type !== "Lookup") {
-            return null;
-        }
-    }
-
-
     fieldInputType() {
+        if (this.condition.field === SystemFields.OwnedByFieldCode) {
+            return "lookup";
+        }
+
         var type = this.getTypeForCondition(this.condition);
 
         if (type == "Number" || type == "Decimal") {

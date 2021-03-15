@@ -6,6 +6,8 @@ import { FieldType, FieldTypeAPIModelField } from "../../../models/fieldtype-api
 import { Operator } from "../../../models/operator.model";
 
 export class SystemFields {
+    public static OwnedByFieldCode: string = "#OwnedBy";
+
     public static GetSystemFieldDefinition(): FieldTypeAPIModelFieldCondition[] {
         var fields: FieldTypeAPIModelFieldCondition[] = [];
 
@@ -28,6 +30,19 @@ export class SystemFields {
             Values: []
         });
 
+        var owner: FieldTypeAPIModelFieldCondition = {
+            Category: "System Fields",
+            FriendlyName: "Owned By",
+            Name: this.OwnedByFieldCode,
+            Type: null,
+            Operators: [],
+            Values: [],
+            IsOwnerField: true
+        };
+
+
+        fields.push(owner);
+
         return fields;
     }
 }
@@ -35,6 +50,8 @@ export class SystemFields {
 export class FieldTypeAPIModelFieldCondition extends FieldTypeAPIModelField {
     Values: SelectItem[];
     Operators: SelectItem[];
+
+    IsOwnerField?: boolean = false;
 }
 
 export class AdvancedFilterFieldCondition {
@@ -361,7 +378,13 @@ export class AdvancedFilterFieldConditionCollection {
     connector: string = " and ";
     filters: AdvancedFilterFieldCondition[] = [];
 
-    public getQueryStringValue(): string {
+    public getFilters(): Filters {
+        var f = new Filters();
+        f.filter = this.getQueryStringValue();
+        return f;
+    }
+
+    private getQueryStringValue(): string {
         if (this.filters.length === 0) {
             return "";
         }
@@ -386,4 +409,10 @@ export class AdvancedFilterFieldConditionCollection {
         });
         return queries.join(this.connector);
     }
+}
+
+export class Filters {
+    filter: string = "";
+    owners: string = "";
+    relationships: string = "";
 }

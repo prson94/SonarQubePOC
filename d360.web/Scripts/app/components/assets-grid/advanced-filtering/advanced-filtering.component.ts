@@ -1,12 +1,11 @@
 ﻿import { Component, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, OnChanges, SimpleChanges, OnInit, OnDestroy, Output, EventEmitter, AfterViewChecked, ViewChildren, ElementRef } from '@angular/core';
 import * as _ from 'lodash';
-import { FieldCondition, FieldTypeAPIModelFieldCondition } from '../../../models/field-condition-grid.models';
 import { Operator, OperatorModel } from '../../../models/operator.model';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { FieldTypeHelper } from '../../../models/fieldtype-api.model';
 import { forkJoin } from 'rxjs';
-import { AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, SystemFields } from './advanced-filtering.models';
+import { AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, FieldTypeAPIModelFieldCondition, Filters, SystemFields } from './advanced-filtering.models';
 import { GallerySwitchComponent } from '../../gallery/gallery.switch.component';
 import { DatePipe } from '@angular/common';
 
@@ -22,14 +21,15 @@ export class AdvancedFilteringComponent implements OnChanges {
     @Input() assetTypeUid: string = '';
     @Output() onChange = new EventEmitter();
 
+    filters: Filters;
+
     fields: FieldTypeAPIModelFieldCondition[] = null;
     operators: OperatorModel[] = [];
 
     conditions: AdvancedFilterFieldConditionCollection;
 
     visible: boolean = false;
-    queryString: string = "";
-
+    
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
 
     constructor(public cdRef: ChangeDetectorRef,
@@ -54,7 +54,7 @@ export class AdvancedFilteringComponent implements OnChanges {
         this.conditions.filters = this.conditions.filters.filter(x => x.markForDeletion != true);
 
 
-        this.onChange.emit(this.queryString);
+        this.onChange.emit(this.filters);
     }
 
     private initializeData() {
@@ -79,30 +79,31 @@ export class AdvancedFilteringComponent implements OnChanges {
             tempFields.forEach(f => {
                 f.Operators = [];
                 this.operators.forEach(op => {
-                    if (op.AllowedDataTypes.some(x => x.Name === FieldTypeHelper.getFieldType(f.Type))) {
-                        f.Operators.push({ label: op.Name, value: op.ID });
-                    }
+                    if (f.Type) {
 
-                    if (FieldTypeHelper.getFieldType(f.Type) === 'Boolean') {
-                        f.Values = [];
-                        f.Values.push({ value: 'true', label: 'True' });
-                        f.Values.push({ value: 'false', label: 'False' });
-                    }
-                    if (FieldTypeHelper.getFieldType(f.Type) === 'Date'
-                        && f.Category === "System Fields") {
-                        f.Operators = f.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
-                        f.Operators.forEach((item) => {
-                            if (item.value === "Equals") {
-                                item.value = "Contains";
-                            }
-                            if (item.value === "NotEquals") {
-                                item.value = "NotContains";
-                            }
-                        });
+                        if (op.AllowedDataTypes.some(x => x.Name === FieldTypeHelper.getFieldType(f.Type))) {
+                            f.Operators.push({ label: op.Name, value: op.ID });
+                        }
+
+                        if (FieldTypeHelper.getFieldType(f.Type) === 'Boolean') {
+                            f.Values = [];
+                            f.Values.push({ value: 'true', label: 'True' });
+                            f.Values.push({ value: 'false', label: 'False' });
+                        }
+                        if (FieldTypeHelper.getFieldType(f.Type) === 'Date'
+                            && f.Category === "System Fields") {
+                            f.Operators = f.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
+                            f.Operators.forEach((item) => {
+                                if (item.value === "Equals") {
+                                    item.value = "Contains";
+                                }
+                                if (item.value === "NotEquals") {
+                                    item.value = "NotContains";
+                                }
+                            });
+                        }
                     }
                 });
-
-
             });
 
 
@@ -125,7 +126,8 @@ export class AdvancedFilteringComponent implements OnChanges {
     }
 
     getQuery() {
-        this.queryString = this.conditions.getQueryStringValue();
+        this.filters = this.conditions.getFilters();
+        
         this.cdRef.markForCheck();
     }
 
