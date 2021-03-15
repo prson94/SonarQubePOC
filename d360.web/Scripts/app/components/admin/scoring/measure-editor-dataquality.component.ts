@@ -69,6 +69,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
     //#endregion
 
     originalRuleResultFilters: FieldCondition[] = [];
+
     showRuleResultMatchPicker: boolean = false;
     ruleResultFields: FieldTypeAPIModelFieldCondition[] = [];
     ruleResultFilters: FieldCondition[] = [];
@@ -115,7 +116,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
             ruleResultOperation: ['', [Validators.required]],
             ruleResultMatchType: null,
             matchType: null,
-            MatchConditionsOnly: null
+            MatchConditionsOnly: [this.matchConditionsOnly]
         });
 
         this.metricForm.updateValueAndValidity();
@@ -196,6 +197,9 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
         this.setFormPropertiesBasedOnMode();
         if (this.isEditBasedOnUid()) {
             this.onGroupChange(this.model.IsGroup);
+            if (this.model) {
+                this.matchConditionsOnly = (this.model.MatchConditionsOnly ? "true" : "false");
+            }
         }
         else {
             if (!this.model.Definition) {
@@ -306,6 +310,8 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
             this.model.Definition.DataQuality.Filters.push(filter);
         });
 
+        this.model.MatchConditionsOnly = (this.matchConditionsOnly === "true");
+
         // Common
         this.saveMeasure();
     }
@@ -314,6 +320,11 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
         this.load();
         this.onCancel.emit(this.model.Name);
         this.model = null;
+    }
+
+    onMatchConditionsOnlyClicked() {
+        console.log('yo');
+        this.model.MatchConditionsOnly = (this.matchConditionsOnly === "true");
     }
 
     checkModelChanged() {
@@ -342,7 +353,10 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
             if (this.displayEffectiveDate && this.getFormattedEffectiveDate(this.originalEffectiveDate).getTime() !== this.getFormattedEffectiveDate(this.displayEffectiveDate).getTime()) {
                 this.hasModelChanged = true;
             }
-            if (this.originalModel.IsGroup != this.model.IsGroup) {
+            if (!(this.originalModel.IsGroup === this.model.IsGroup)) {
+                this.hasModelChanged = true;
+            }
+            if (!(this.originalModel.MatchConditionsOnly === (this.matchConditionsOnly === "true"))) {
                 this.hasModelChanged = true;
             }
             if (this.haveConditionsChanged(this.conditionGroups, this.originalConditions)) {
