@@ -34,7 +34,7 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <TypeScriptToolsVersion>3.9</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>4.0</TypeScriptToolsVersion>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -798,7 +798,6 @@
     <Content Include="Scripts\app\components\hierarchy\hierarchy-item-structure.component.html" />
     <Content Include="Scripts\app\components\hierarchy\hierarchy-item.component.html" />
     <Content Include="Scripts\app\components\hierarchy\hierarchy-list.component.html" />
-    <Content Include="Scripts\app\components\mapping\mapping.component.html" />
     <Content Include="Scripts\app\components\reference\reference-item-list.component.html" />
     <Content Include="Scripts\app\components\reference\reference-item-type-list.component.html" />
     <Content Include="Scripts\app\components\rule\rule-column-filter.component.html" />
@@ -1609,9 +1608,6 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-query-attribute-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-query-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\itemown\itemown.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\itemown\itemown.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\itemown\itemown.routes.ts" />

@@ -120,7 +120,7 @@ namespace d360.web.Controllers
                 Column = 1,
                 Required = true,
                 FieldName = "Items",
-                Name = "What Items Are You Relating?",
+                Name = "What items are you relating?",
                 MultiSelect = (targetCardinality == Cardinality.Many),
                 FieldType = DataType.DataTableSelect.ToString(),
                 TypeaheadUri = $"/form/Relationship_DataTable?intersectTypeId={it}&type={type}&objectId={id}"
