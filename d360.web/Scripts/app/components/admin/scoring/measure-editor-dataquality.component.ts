@@ -322,11 +322,6 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
         this.model = null;
     }
 
-    onMatchConditionsOnlyClicked() {
-        console.log('yo');
-        this.model.MatchConditionsOnly = (this.matchConditionsOnly === "true");
-    }
-
     checkModelChanged() {
         if (!this.model)
             return false;
