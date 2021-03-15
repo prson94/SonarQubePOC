@@ -469,16 +469,17 @@ order by u.CommentTypeName";
 				if (follower != null)
 				{
 					dbArgs.Add("@followerId", follower.ResourceID);
+
 					baseCommentWheres.Add(@"(
-(C.AssetID in (select f.AssetID from FollowDetail f where f.ResourceID = @followerId union select r.AssetID from ResponsibilityDetail r where r.ResourceID = @followerId)) 
-or (C.ID in (select ParentID from Comment where ParentID is not null and CreatedBy = @followerId))
+(exists (select f.AssetID from FollowDetail f where f.ResourceID = @followerId and f.AssetID = C.AssetID  union all select r.AssetID from ResponsibilityDetail r where r.ResourceID = @followerId and r.AssetID = C.AssetID)) 
+or (exists (select cp.ParentID from Comment cp where cp.ParentID is not null and cp.CreatedBy = @followerId and cp.ParentID = C.ID ))
 )");
 				}
 			}
 
 			dbArgs.Add("@currentUser", CompanyContext.CurrentResourceID);
-			whereStatements.Add($@"O.ID not in (select AssetID from dbo.UserAssetPermissions(@currentUser,O.AssetTypeID) where ((PermissionsBitMask & {(int)Permission.ReadAsset})) = 0)");
-			whereStatements.Add(@"O.AssetTypeID not in (select AssetTypeID from dbo.AssetTypesUserCantRead(@currentUser))");
+			whereStatements.Add($@"O.ID not in (select AssetID from dbo.UserAssetPermissions(@currentUser,T.ID) where ((PermissionsBitMask & {(int)Permission.ReadAsset})) = 0)");
+			whereStatements.Add(@"T.ID not in (select AssetTypeID from dbo.AssetTypesUserCantRead(@currentUser))");
 
 			var cteSql = $@"
 with P as (
