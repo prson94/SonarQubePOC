@@ -3,7 +3,7 @@ import { SelectItemGroup } from 'primeng/api';
 import * as _ from 'lodash';
 import { FieldTypeAPIModelFieldCondition } from '../../../models/field-condition-grid.models';
 import { OperatorModel } from '../../../models/operator.model';
-import { AdvancedFilterFieldCondition } from './advanced-filtering.models';
+import { AdvancedFilterFieldCondition, SystemFields } from './advanced-filtering.models';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 
 @Component({
@@ -52,11 +52,17 @@ export class FilterItemComponent implements OnInit, OnChanges {
     ngOnInit() {
         this.allFieldsDropdown = [];
         let assetFieldGroup: SelectItemGroup = { value: "asset-field", label: "Asset Fields", items: [] };
+        let systemFieldsGroup: SelectItemGroup = { value: "asset-field", label: "System Fields", items: [] };
         this.allFieldsDropdown.push(assetFieldGroup);
+        this.allFieldsDropdown.push(systemFieldsGroup);
 
         this.fields.forEach((f) => {
             assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
-        })
+        });
+
+        SystemFields.GetSystemFieldDefinition().forEach((f) => {
+            systemFieldsGroup.items.push({ value: f.Name, label: f.FriendlyName });
+        });
     }
 
     getTypeForCondition(item: AdvancedFilterFieldCondition) {

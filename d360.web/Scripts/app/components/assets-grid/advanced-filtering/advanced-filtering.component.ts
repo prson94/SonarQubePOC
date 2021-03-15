@@ -6,7 +6,7 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 import { CompanySettingsService } from '../../../services/settings.service';
 import { FieldTypeHelper } from '../../../models/fieldtype-api.model';
 import { forkJoin } from 'rxjs';
-import { AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection } from './advanced-filtering.models';
+import { AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, SystemFields } from './advanced-filtering.models';
 import { GallerySwitchComponent } from '../../gallery/gallery.switch.component';
 import { DatePipe } from '@angular/common';
 
@@ -72,6 +72,10 @@ export class AdvancedFilteringComponent implements OnChanges {
                 }
             });
 
+            SystemFields.GetSystemFieldDefinition().forEach((f) => {
+                tempFields.push(f as FieldTypeAPIModelFieldCondition);
+            });
+
             tempFields.forEach(f => {
                 f.Operators = [];
                 this.operators.forEach(op => {
@@ -84,10 +88,16 @@ export class AdvancedFilteringComponent implements OnChanges {
                         f.Values.push({ value: 'true', label: 'True' });
                         f.Values.push({ value: 'false', label: 'False' });
                     }
+                    if (FieldTypeHelper.getFieldType(f.Type) === 'Date'
+                        && f.Category === "System Fields") {
+                        f.Operators = f.Operators.;
+                    }
                 });
 
 
             });
+
+
 
             this.fields = tempFields;
             this.cdRef.markForCheck();

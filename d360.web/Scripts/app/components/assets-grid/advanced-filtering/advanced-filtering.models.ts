@@ -2,8 +2,35 @@
 import * as _ from "lodash";
 import { SelectItem } from "primeng/api";
 import { debug } from "util";
-import { FieldTypeAPIModelField } from "../../../models/fieldtype-api.model";
+import { FieldType, FieldTypeAPIModelField } from "../../../models/fieldtype-api.model";
 import { Operator } from "../../../models/operator.model";
+
+export class SystemFields {
+    public static GetSystemFieldDefinition(): FieldTypeAPIModelFieldCondition[] {
+        var fields: FieldTypeAPIModelFieldCondition[] = [];
+
+        fields.push({
+            Category: "System Fields",
+            FriendlyName: "Date Created",
+            Name: "CreatedOn",
+            Type: new FieldType("Date"),
+            Operators: [],
+            Values: []
+        });
+
+
+        fields.push({
+            Category: "System Fields",
+            FriendlyName: "Date Last Modified",
+            Name: "UpdatedOn",
+            Type: new FieldType("Date"),
+            Operators: [],
+            Values: []
+        });
+
+        return fields;
+    }
+}
 
 export class FieldTypeAPIModelFieldCondition extends FieldTypeAPIModelField {
     Values: SelectItem[];
