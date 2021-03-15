@@ -116,7 +116,7 @@ namespace d360.model.helpers
             CheckFieldValue(filter);
 
             value = value.ToString().Trim('\'');
-            if (this.@operator == "ct")
+            if (this.@operator == "ct" || this.@operator == "nct")
             {
                 value = $"%{wildcardValue(escapeForSQLLike(value.ToString()))}%";
             }
@@ -326,7 +326,7 @@ namespace d360.model.helpers
                     DateTime date = new DateTime();
                     if (!DateTime.TryParse(value.ToString().Trim('\''), out date))
                     {
-                        if (@operator == "ct")
+                        if (@operator == "ct" || @operator == "nct")
                         {
                             value = value.ToString().Trim('\'').Replace("&apos;", "'");
                             this.convertToNVarChar = true;
@@ -339,7 +339,7 @@ namespace d360.model.helpers
                     else
                     {
                         value = date;
-                        if (@operator == "ct")
+                        if (@operator == "ct" || @operator == "nct")
                         {
                             this.convertToNVarChar = true;
 

@@ -90,7 +90,15 @@ export class AdvancedFilteringComponent implements OnChanges {
                     }
                     if (FieldTypeHelper.getFieldType(f.Type) === 'Date'
                         && f.Category === "System Fields") {
-                        f.Operators = f.Operators.;
+                        f.Operators = f.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
+                        f.Operators.forEach((item) => {
+                            if (item.value === "Equals") {
+                                item.value = "Contains";
+                            }
+                            if (item.value === "NotEquals") {
+                                item.value = "NotContains";
+                            }
+                        });
                     }
                 });
 
