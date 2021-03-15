@@ -766,7 +766,7 @@ from    #changes C
                             {
                                 thenSql.Append((thenFieldType.AllowMultipleValues) ?
                                     $"where FT.ID = {rc.FieldTypeID} and '{rc.Value}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) FV{tCount}" :
-                                    $"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, FT.DefaultValue, F.FormattedValue) = '{rc.Value}' ) FV{tCount}");
+                                    $"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{rc.Value}' ) FV{tCount}");
                             }
                             else
                             {
