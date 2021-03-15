@@ -837,6 +837,7 @@
     <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.woff" />
     <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.woff2" />
     <Content Include="Scripts\app\components\shared\asset-score\calculation\measure-rule-results.less" />
+    <Content Include="angular.json" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
@@ -1058,7 +1059,6 @@
     <Content Include="Scripts\app\components\workflow\workflow-view-details.component.html" />
     <Content Include="Scripts\dist\*.js" />
     <Content Include="Views\Shared\Unsupported.cshtml" />
-    <Content Include="webpack.aot.config.js" />
     <Content Include="webpack.config.js" />
     <Content Include="webpack.prod.config.js" />
     <Content Include="fonts\material-design-icons\LICENSE.txt" />
@@ -1246,7 +1246,6 @@
     <Content Include="Scripts\app\components\admin\groups\admin-groups.component.html" />
     <Content Include="Scripts\app\components\admin\settings\admin-settings.component.html" />
     <Content Include="Scripts\app\components\home\home.component.html" />
-    <Content Include="Scripts\app\tsconfig.json" />
     <None Include="Content\styles\Root.less" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
@@ -1283,12 +1282,19 @@
     <Content Include="Scripts\app\components\shared\asset-score\asset-score.less" />
     <Content Include="Scripts\app\components\shared\menu\site-menu.less" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\overview.component.less" />
+    <Content Include="Scripts\tsconfig.aot.json" />
+    <Content Include="Scripts\tsconfig.json" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
     <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
+    <TypeScriptCompile Include="Scripts\environments\environment.prod.ts" />
+    <TypeScriptCompile Include="Scripts\environments\environment.ts" />
+    <TypeScriptCompile Include="Scripts\main.ts" />
+    <TypeScriptCompile Include="Scripts\polyfills.ts" />
+    <TypeScriptCompile Include="Scripts\vendor.ts" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App_GlobalResources\PageInfo.resx">
@@ -1912,7 +1918,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\delete.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-item.form.ts" />
     <Content Include="Scripts\app\main.aot.txt" />
-    <TypeScriptCompile Include="Scripts\app\main.ts" />
     <TypeScriptCompile Include="Scripts\app\models\artifacts.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\audit.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\counts.model.ts" />
@@ -1991,7 +1996,6 @@
     <TypeScriptCompile Include="Scripts\app\pipes\model-type.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\score-display.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\technical-to-display.pipe.ts" />
-    <TypeScriptCompile Include="Scripts\app\polyfills.ts" />
     <TypeScriptCompile Include="Scripts\app\services\audit.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\authentication.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\dashboard.service.ts" />
@@ -2037,12 +2041,10 @@
     <TypeScriptCompile Include="Scripts\app\services\uri-based.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\web-analytics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\workflow.service.ts" />
-    <None Include="Scripts\app\tsconfig.aot.json" />
     <TypeScriptCompile Include="Scripts\app\static\font-awesome-helper.ts" />
     <TypeScriptCompile Include="Scripts\app\static\keyboard-key-helper.ts" />
     <TypeScriptCompile Include="Scripts\app\static\string-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\static\workflow-helpers.ts" />
-    <TypeScriptCompile Include="Scripts\app\vendor.ts" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App_GlobalResources\Core.resx">

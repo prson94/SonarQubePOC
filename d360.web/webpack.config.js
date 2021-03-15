@@ -8,9 +8,9 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 var webpackConfig = {
     mode: 'development',
     entry: {
-        'polyfills': './scripts/app/polyfills.ts',
-        'vendor': './scripts/app/vendor.ts',
-        'main': './scripts/app/main.ts',
+        'polyfills': './scripts/polyfills.ts',
+        'vendor': './scripts/vendor.ts',
+        'main': './scripts/main.ts',
     },
     performance: {
         hints: false
