@@ -160,6 +160,6 @@
 </div>
 
 <d3s-modal [title]="'Rule Results'" additionalClasses="xlarge-dialog modal-measure" (onClose)="showRuleResults(false)" [isVisible]="isRuleResultsModalVisible">
-    <measure-rule-results (onClose)="showRuleResults(false);" [scoreItem]="selected" [assetTypeName]="assetTypeName" [assetName]="assetName">
+    <measure-rule-results (onClose)="showRuleResults(false);" [scoreItem]="selected" [definition]="definition" [assetTypeName]="assetTypeName" [assetName]="assetName">
     </measure-rule-results>
 </d3s-modal>
