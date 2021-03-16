@@ -54,7 +54,7 @@
                     <div>
                         <div>Weight: {{formatWeight(matchedCondition.Weight)}} - Determined via match on Condition Group {{matchedCondition.Position}}</div>
                         <span *ngFor="let item of matchedCondition.ConditionItems;let i = index;">
-                            <span *ngIf="i > 0">&nbsp;,</span> {{item.FieldName}} {{Operator[item.Operator]}} {{isDate(item) ? (item.Value | date: shortdate) : item.Value}}
+                            <span *ngIf="i > 0">&nbsp;,</span> {{item.FieldName}} {{Operator[item.Operator]}} {{isDate(item) ? (item.Value | utcDate | date: shortdate) : item.Value}}
                         </span>
                     </div>
                 </div>
