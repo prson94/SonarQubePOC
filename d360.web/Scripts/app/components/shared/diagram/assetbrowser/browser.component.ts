@@ -3800,8 +3800,18 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             var data = part.diagram.nodes.filter(x => x.data['hierarchyKey'] == part.data['hierarchyKey']);
             var maxCharCount = 0;
             data.each(d => {
-                if (d.data && d.data["text"] && d.data['text'].length > maxCharCount)
-                    maxCharCount = d.data['text'].length;
+                if (d.data && d.data["text"]) {
+                    let currentCharCount: number = d.data["text"].length;
+
+                    //Additional size for leaf assets for padding
+                    if (d.data["leaf"]) {
+                        currentCharCount += 6;
+                    }
+
+                    if (currentCharCount > maxCharCount) {
+                        maxCharCount = currentCharCount;
+                    }
+                }
             });
 
             //set max top width depending on max character count withing hierarchy
