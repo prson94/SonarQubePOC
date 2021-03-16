@@ -459,7 +459,7 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> GetMembers(Guid groupUid)
         {
             string finalSql;
-           
+            string countSql;
             var joinBuilder = new StringBuilder();
             joinBuilder.Append(" left join Asset A on A.Object = 'Resource' and A.ObjectID = gr.ResourceID ");
             var whereBuilder = new StringBuilder();
@@ -482,6 +482,14 @@ namespace d360.web.Controllers.V2
                                     when 2 then 'InActive'
                                     when 3 then 'Deleted' end 
                                 as State ");
+            var countBuilder = new StringBuilder();
+            countBuilder.Append(@"
+                           select count(*)
+                                   from[reporting].[Global_Resource] as gr
+                                       inner join [dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID
+                                       inner join [dbo].[Group] g on g.ID = rg.GroupID
+									   inner join [dbo].[Asset] AB on AB.uid = '"
+                                    + groupUid + "'");
 
             string pageSize = "5";
             string pageNum = "1";
@@ -500,11 +508,12 @@ namespace d360.web.Controllers.V2
                         case "_firstname":
                             dbArgs.Add("firstName", q.Value);
                             whereBuilder.Append(" and gr.FirstName = @firstName");
-                          
+                            countBuilder.Append(" and gr.FirstName = @firstName");
                             break;
                         case "_lastname":
                             dbArgs.Add("lastName", q.Value);
                             whereBuilder.Append(" and gr.lastName = @lastName");
+                            countBuilder.Append(" and gr.LastName = @lastName");
                             break;
                         case "_pagesize":
                             pageSize = q.Value;
@@ -553,15 +562,16 @@ namespace d360.web.Controllers.V2
             model.pageSize = _pageSize;
 
             string offsetSql = $" Order by gr.ResourceID offset {_pageSize * (_pageNum - 1)} rows fetch next {_pageSize} rows only";
-        
+            countSql = $"{countBuilder} {joinBuilder} where g.ID = AB.ObjectID {whereBuilder}";
             finalSql = $@"{selectBuilder} from[reporting].[Global_Resource] gr inner join [dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID 
                                       inner join[dbo].[Group] g on g.ID = rg.GroupID
                                       inner join[dbo].[Asset] AB on AB.uid = '{groupUid}' {joinBuilder} where g.ID = AB.ObjectID {whereBuilder} {offsetSql}";
 
             
-            var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs, ApiTimeout).ConfigureAwait(false);
+            var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs, ApiTimeout);
+            var count = await Company.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
             model.items = results;
-            model.total = results.Count();
+            model.total = count.FirstOrDefault();
             return Request.CreateResponse(HttpStatusCode.OK, model);
         }
 
