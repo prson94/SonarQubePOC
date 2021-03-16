@@ -1458,7 +1458,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 obs.complete();
             };
 
-            console.log(this.displayConfiguration.DisplayDescendantAssets);
             if (isLineage) {
                 this.browserService.getInitialLineage(this.displayConfiguration.AncestryMode, this.assetUid, this.helper_NumberOfHops(), this.displayConfiguration.IncludeNonLeaf, this.displayConfiguration.DisplayDescendantAssets).subscribe(subscriber);
             }
