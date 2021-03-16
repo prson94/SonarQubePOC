@@ -3241,7 +3241,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             },
             new go.Binding("visible", "", (obj: go.GraphObject) => {
                 var arrData = (obj.part.data[propertyName] as Array<any>)
-                    .filter((x) => x["showBadge"]);
+                    .filter((x) => x["showBadge"] != false);
                 return arrData.length < this.autoCollapseRelationshipCount;
             }).ofObject(),
             new go.Binding("itemArray", propertyName),
@@ -3257,7 +3257,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             },
             new go.Binding("visible", "", (obj: go.GraphObject) => {
                 var arrData = (obj.part.data[propertyName] as Array<any>)
-                    .filter((x) => x["showBadge"]);
+                    .filter((x) => x["showBadge"] != false);
                 return arrData.length < this.autoCollapseRelationshipCount;
             }).ofObject(),
             new go.Binding("itemArray", propertyName),
@@ -3561,7 +3561,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.followPart = obj.part;
             this.isRelationshipSelectorAvailable = obj.part.data["relExpanded" + propName];
             this.relationshipData = (obj.part.data[propName] as Array<any>)
-                .filter((x) => x["showBadge"]);
+                .filter((x) => x["showBadge"] != false);
             this.relationshipSelectorType = propName;
             if (propName === "relations") {
                 this.relationshipData.forEach(rel => {
@@ -3624,7 +3624,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         },
             new go.Binding("visible", "", (obj: go.GraphObject) => {
                 var arrData = (obj.part.data[propertyName] as Array<any>)
-                    .filter((x) => x["showBadge"]);
+                    .filter((x) => x["showBadge"] != false);
                 return arrData.length >= this.autoCollapseRelationshipCount;
             }).ofObject(),
             this.g(go.Panel, "Auto",
@@ -3729,7 +3729,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             new go.Binding("", "", (obj: go.GraphObject, target: go.TextBlock) => {
                                 let totalCount: number = 0;
 
-                                (obj.part.data[propertyName] as Array<any>).filter((x) => x["showBadge"]).forEach(d => totalCount += d.count);
+                                (obj.part.data[propertyName] as Array<any>).filter((x) => x["showBadge"] != false).forEach(d => totalCount += d.count);
                                 if (isNaN(totalCount)) {
                                     target.text = '-';
                                     return;
