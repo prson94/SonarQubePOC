@@ -28,3 +28,4 @@ export class GalleryAccordionComponent implements OnInit {
         this.properties.push({ Name: "tooltip", Type: "string", Description: "Text for optional tooltip", Default: "" });
     }
 }
+ 

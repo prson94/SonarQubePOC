@@ -54,14 +54,14 @@
     <div class="gallery-section">
         <h4>Required</h4>
         <div>
-            <ig-multi-input-field [required]="true"></ig-multi-input-field>
+            <ig-multi-input-field [required]="true" (ngModelChange)="valueChanged($event)" ></ig-multi-input-field>
         </div>
     </div>
 
     <div class="gallery-section">
         <h4>Disabled</h4>
         <div>
-            <ig-multi-input-field [(ngModel)]="multiValue" (ngModelChange)="valueChanged($event)" [disabled]="true"></ig-multi-input-field>
+            <ig-multi-input-field [(ngModel)]="multiValue" [disabled]="true"></ig-multi-input-field>
         </div>
     </div>
 
