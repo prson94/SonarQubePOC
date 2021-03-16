@@ -261,7 +261,7 @@ export class AdvancedFilterFieldCondition {
             if (this.fieldType == "DateTime") {
                 return `${this.parseDateTimeToString(value)}`
             }
-            if (this.fieldType == "Lookup") {
+            if (this.fieldType == "Lookup" || this.field === SystemFields.OwnedByFieldCode) {
                 let valueAsString = "";
                 if (Array.isArray(value)) {
                     var arr = value as SelectItem[];
@@ -381,6 +381,7 @@ export class AdvancedFilterFieldConditionCollection {
     public getFilters(): Filters {
         var f = new Filters();
         f.filter = this.getQueryStringValue();
+        f.owners = this.getOwnerFilter();
         return f;
     }
 
@@ -389,7 +390,8 @@ export class AdvancedFilterFieldConditionCollection {
             return "";
         }
         let queries: string[] = [];
-        this.filters.filter(x => x.field && x.operator && x.value).forEach((cond) => {
+
+        this.filters.filter(x => x.field && x.operator && x.value && x.field !== SystemFields.OwnedByFieldCode).forEach((cond) => {
             if (cond.fieldType === "Lookup") {
                 let subConditions: AdvancedFilterFieldCondition[] = [];
                 var valuesArr = cond.value as SelectItem[];
@@ -408,6 +410,18 @@ export class AdvancedFilterFieldConditionCollection {
             }
         });
         return queries.join(this.connector);
+    }
+
+    private getOwnerFilter(): string {
+        if (this.filters.length === 0) {
+            return "";
+        }
+        let value: string = "";
+
+        this.filters.filter(x => x.field === SystemFields.OwnedByFieldCode && x.operator && x.value).forEach((cond) => {
+            value += (cond.value as SelectItem[]).map(x => x.value).join(", ");
+        });
+        return value;
     }
 }
 

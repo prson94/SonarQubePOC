@@ -158,7 +158,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
                     this.isLookupValuesLoading = false;
                     this.currentField.Values = [];
                     res.forEach(str => {
-                        this.currentField.Values.push({ title: str, value: str });
+                        this.currentField.Values.push({ title: str, value: str});
                     })
                 })
         }
@@ -171,8 +171,29 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.assetTypeService.GetAssetTypePossibleOwners(this.assetTypeUid).subscribe((res) => {
                 this.isLookupValuesLoading = false;
                 this.currentField.Values = [];
-                res.forEach(str => {
-                    this.currentField.Values.push({ title: str.Name, value: str.Uid });
+                let mapped: any[] = [];
+                res.forEach((item) => {
+                    if (item.Name.indexOf("] - ")) {
+                        var data = (item.Name as string).split("] - ");
+                        mapped.push({ value: item.Uid, title: data[1], group: data[0] });
+                    }
+                    else {
+                        mapped.push({ value: item.Uid, title: item.Name });
+                    }
+                });
+
+                mapped.filter(x => !x.group).forEach(str => {
+                    this.currentField.Values.push({ title: str.title, value: str.value });
+                })
+
+                var grouped = _.mapValues(_.groupBy(mapped, "group"),
+                    clist => clist.map(item => _.omit(item, "group")));
+
+                var keys = Object.keys(grouped);
+                keys.forEach((key) => {
+                    console.log(key);
+                    console.log(grouped[key]);
+                    this.currentField.Values.push({ title: key, value: key, });
                 })
             });
         }
