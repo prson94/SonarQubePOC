@@ -126,6 +126,6 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
         if (!val) {
             return;
         }
-        return (val * 100).toFixed(2).replace(/(\.[0]*?)0+/g,"") + "%";
+        return (val * 100).toFixed(2).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
     }
 }
