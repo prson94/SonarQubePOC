@@ -1458,8 +1458,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 obs.complete();
             };
 
+            console.log(this.displayConfiguration.DisplayDescendantAssets);
             if (isLineage) {
-                this.browserService.getInitialLineage(this.displayConfiguration.AncestryMode, this.assetUid, this.helper_NumberOfHops(), this.displayConfiguration.IncludeNonLeaf).subscribe(subscriber);
+                this.browserService.getInitialLineage(this.displayConfiguration.AncestryMode, this.assetUid, this.helper_NumberOfHops(), this.displayConfiguration.IncludeNonLeaf, this.displayConfiguration.DisplayDescendantAssets).subscribe(subscriber);
             }
             else {
                 this.browserService.getInitialImpact(this.assetUid, this.helper_NumberOfHops(), this.displayConfiguration.IncludeNonLeaf).subscribe(subscriber);
@@ -1582,7 +1583,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let preloadedIntersects = this.helper_GetDiagramIntersectIds(null);
             let direction: AssetBrowserApiHopDirection = data.direction as AssetBrowserApiHopDirection;
 
-            this.browserService.getLineageHop(this.displayConfiguration.AncestryMode, data.hierarchyKey, direction, this.displayConfiguration.IncludeNonLeaf, assets, preloadedIntersects)
+            this.browserService.getLineageHop(this.displayConfiguration.AncestryMode, data.hierarchyKey, direction, this.displayConfiguration.IncludeNonLeaf, assets, preloadedIntersects, this.displayConfiguration.DisplayDescendantAssets)
                 .subscribe((response: AssetBrowserResponseModel) => {
 
                     if (response.hierarchy && response.hierarchy.length > 0) {

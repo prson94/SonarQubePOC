@@ -5,20 +5,21 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Initial-v27.2">
-    <comment>GOV-13839</comment>
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Initial-v28">
+    <comment>GOV-14051</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE OR ALTER procedure [graph].[AssetBrowser_Initial]
+create or alter procedure [graph].[AssetBrowser_Initial]
 	@ancestry int, -- 1 = all, 2 = direct-parent, 3 = type-only
 	@uid uniqueidentifier,
 	@resourceId int,
 	@isAdmin bit,
 	@hopCount int,
-	@includeNonLeaf bit = 1
+	@includeNonLeaf bit = 1,
+	@includeDescendantAssets bit = 1
 as
 begin
 	set nocount on;
@@ -297,81 +298,86 @@ if @ancestry = 3
 			select distinct Salt, Hop, Uid, ID, ParentID, AssetTypeID, 0 from h;
 
 
-		declare @iterList TABLE(id int)
-		insert into @iterList select id from #hopAssets
-
-		declare @iterID int
-
-		drop table if exists #additionalLineage
-		create table #additionalLineage (Salt varchar(50), Hop int, Uid uniqueidentifier, ID bigint, ParentID bigint, AssetTypeID int, focal int);
-
-		while(1 = 1)
+		if @includeDescendantAssets = 1
 		begin
-			truncate table #additionalLineage
+			declare @iterList TABLE(id int)
+			insert into @iterList select id from #hopAssets
 
-			SET @iterID = NULL
-			SELECT TOP(1) @iterID = id FROM @iterList
+			declare @iterID int
+
+			drop table if exists #additionalLineage
+			create table #additionalLineage (Salt varchar(50), Hop int, Uid uniqueidentifier, ID bigint, ParentID bigint, AssetTypeID int, focal int);
+
+			while(1 = 1)
+			begin
+				truncate table #additionalLineage
+
+				SET @iterID = NULL
+				SELECT TOP(1) @iterID = id FROM @iterList
     
-			IF @iterID IS NULL
-				BREAK
+				IF @iterID IS NULL
+					BREAK
 
-			-- GOV-13214 - Get children that may not be involved in lineage --------------------------------------
-			;with h as (
-				select	L.Salt,
-						L.Hop,
-						C.Uid,
-						C.ID,
-						C.AssetTypeID,
-						I.Object,
-						I.ObjectID,
-						A.ID ParentID,
-						I.Subject as ParentObject,
-						I.SubjectID as ParentObjectID
-				from	Asset A
-						inner join #hopAssets L on L.ID = A.ID
-						inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
-						inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
-						where A.ID = @iterID
-				union all
-				select	h.Salt,
-						h.Hop,
-						C.Uid,
-						C.ID,
-						C.AssetTypeID,
-						C.Object,
-						C.ObjectID,
-						A.ID as ParentID,
-						I.Subject as ParentObject,
-						I.SubjectID as ParentObjectID
-				from	h
-						inner join Asset A on h.Object = A.Object and h.ObjectID = A.ObjectID
-						inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
-						inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
-			)
-			insert into #additionalLineage (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal)
-			select top(@maxLineageDescendants+1) h.Salt, h.Hop, h.Uid, h.ID, h.ParentID, h.AssetTypeID, 0 from h
+				-- GOV-13214 - Get children that may not be involved in lineage --------------------------------------
+				;with h as (
+					select	L.Salt,
+							L.Hop,
+							C.Uid,
+							C.ID,
+							C.AssetTypeID,
+							I.Object,
+							I.ObjectID,
+							A.ID ParentID,
+							I.Subject as ParentObject,
+							I.SubjectID as ParentObjectID
+					from	Asset A
+							inner join #hopAssets L on L.ID = A.ID
+							inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
+							inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
+							where A.ID = @iterID
+					union all
+					select	h.Salt,
+							h.Hop,
+							C.Uid,
+							C.ID,
+							C.AssetTypeID,
+							C.Object,
+							C.ObjectID,
+							A.ID as ParentID,
+							I.Subject as ParentObject,
+							I.SubjectID as ParentObjectID
+					from	h
+							inner join Asset A on h.Object = A.Object and h.ObjectID = A.ObjectID
+							inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
+							inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
+				)
+				insert into #additionalLineage (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal)
+				select top(@maxLineageDescendants+1) h.Salt, h.Hop, h.Uid, h.ID, h.ParentID, h.AssetTypeID, 0 from h
 
-			declare @cnt int = (select count(1) from #additionalLineage)
+				declare @cnt int = (select count(1) from #additionalLineage)
 
-			if (@cnt <= @maxLineageDescendants)
-				insert into #hierarchies (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal)
-					select	distinct 
-							h.Salt, h.Hop, h.Uid, h.ID, h.ParentID, h.AssetTypeID, 0 
-					from	#additionalLineage h
-							left join #hierarchies e on e.Uid = h.Uid and e.Salt = h.Salt
-					where	e.Uid is null--Uid not in (select Uid from #hierarchies)
+				if (@cnt <= @maxLineageDescendants)
+					insert into #hierarchies (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal)
+						select	distinct 
+								h.Salt, h.Hop, h.Uid, h.ID, h.ParentID, h.AssetTypeID, 0 
+						from	#additionalLineage h
+								left join #hierarchies e on e.Uid = h.Uid and e.Salt = h.Salt
+						where	e.Uid is null--Uid not in (select Uid from #hierarchies)
 
-			if (@cnt > @maxLineageDescendants)
-				insert into #hierarchies (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal, HasTooManyChildren)
-					select	top 1 
-							h.Salt, h.Hop, h.Uid, h.ID, h.ParentID, h.AssetTypeID, 0,1
-					from	#additionalLineage h
+				if (@cnt > @maxLineageDescendants)
+					insert into #hierarchies (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal, HasTooManyChildren)
+						select	top 1 
+								h.Salt, h.Hop, h.Uid, h.ID, h.ParentID, h.AssetTypeID, 0,1
+						from	#additionalLineage h
 
-			---
-		    DELETE TOP(1) FROM @iterList
-		end
+				---
+				DELETE TOP(1) FROM @iterList
+			end
 
 		------------------------------------------------------------------------------------------------------
+		end
+
+		
 
 		if not exists (select 1 from #hierarchies)
 		begin
