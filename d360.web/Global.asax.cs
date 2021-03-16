@@ -106,7 +106,7 @@ namespace d360.web
             {
                 foreach (string s in Request.Cookies.AllKeys)
                 {
-                    if (s.ToLower() == "__requestverificationtoken")
+                    if (s.ToLower(System.Globalization.CultureInfo.InvariantCulture) == "__requestverificationtoken")
                     {
                         HttpCookie c = Request.Cookies[s];
                         c.SameSite = SameSiteMode.Strict;
