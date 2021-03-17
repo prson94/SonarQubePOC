@@ -100,21 +100,6 @@ namespace d360.web
     {
         protected void Application_PreSendRequestHeaders(object sender, EventArgs e)
         {
-            // This code will mark the __RequestVerificationToken cookie SameSite=Strict 
-            // this addresses the forms login page having a cookie without samesite set. GOV-14063
-            if (Request.Cookies.Count > 0)
-            {
-                foreach (string s in Request.Cookies.AllKeys)
-                {
-                    if (s.ToLower(System.Globalization.CultureInfo.InvariantCulture) == "__requestverificationtoken")
-                    {
-                        HttpCookie c = Request.Cookies[s];
-                        c.SameSite = SameSiteMode.Strict;
-                        Response.Cookies.Set(c);
-                    }
-                }
-            }
-
             /*
              * If Govern is accessed in a frame, cookies will be considered 3rd party cookies by the ancestor page
              * so to work, the SameSite flag needs to be set to "None", and when SameSite is set to none, the Secure flag
