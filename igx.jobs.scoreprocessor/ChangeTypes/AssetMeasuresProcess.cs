@@ -765,19 +765,16 @@ where   ExecutionID <> @id
                                             }
                                             else
                                             {
-                                                if (previousScoreItem.EffectiveDate.Date == assetEffectiveDate.EffectiveDate.Date)
+                                                // The value for an existing effective date is the now different.
+                                                if (previousScoreItem.UsedInOtherScores)
                                                 {
-                                                    // The value for an existing effective date is the now different.
-                                                    if (previousScoreItem.UsedInOtherScores)
-                                                    {
-                                                        // The score item is used in an earlier score, so we need to create a new score item, AND detach this score from the now old score item.
-                                                        assetScoreItemLinksToDelete.Add(new ScoreItemLink { ScoreItemUid = previousScoreItem.ScoreItemUid });
-                                                    }
-                                                    else
-                                                    {
-                                                        // Not used in any other score, so we are OK to update the value on this score item.
-                                                        scoreItemUid = previousScoreItem.ScoreItemUid;
-                                                    }
+                                                    // The score item is used in an earlier score, so we need to create a new score item, AND detach this score from the now old score item.
+                                                    assetScoreItemLinksToDelete.Add(new ScoreItemLink { ScoreItemUid = previousScoreItem.ScoreItemUid });
+                                                }
+                                                else
+                                                {
+                                                    // Not used in any other score, so we are OK to update the value on this score item.
+                                                    scoreItemUid = previousScoreItem.ScoreItemUid;
                                                 }
                                             }
                                         }
