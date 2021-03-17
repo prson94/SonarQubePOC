@@ -51,6 +51,7 @@ const routes: Routes = [
     { path: 'sidebar/connectorLabels', loadChildren: () => import('./components/sidebar/connector-labels/connector-labels-sidebar.module').then((m) => m.ConnectorLabelsModule) },    
     {
         path: '**',
+        redirectTo: 'home'
       //  redirectTo: SiteUrlHelpers.getDefaultRoute()
     },
 ];

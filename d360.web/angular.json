@@ -17,12 +17,14 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "scripts/dist/govern",
+            "deployUrl": "/scripts/dist/",
+            "outputPath": "scripts/dist",
             "index": "index.html",
             "main": "Scripts/main.ts",
             "polyfills": "Scripts/polyfills.ts",
             "tsConfig": "Scripts/tsconfig.aot.json",
             "aot": true,
+            "namedChunks": false,
             "assets": [],
             "styles": [
               "Content/styles/angular.less"
@@ -39,7 +41,7 @@
                 }
               ],
               "optimization": true,
-              "outputHashing": "all",
+              "outputHashing": "none",
               "sourceMap": false,
               "namedChunks": false,
               "extractLicenses": true,

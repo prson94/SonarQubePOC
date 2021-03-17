@@ -19,7 +19,7 @@ else {
 }
 
 console.log("Govern Assembly Version: " + VersionNumber)
-console.log("Govern Build Date: " + __BUILD_DATE);
+//console.log("Govern Build Date: " + __BUILD_DATE);
 console.log("Browser Language: " + navigator.language);
 
 
