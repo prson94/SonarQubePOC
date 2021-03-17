@@ -11,13 +11,14 @@ import { IgNumberFieldModule } from '../../shared/controls/number-picker/number-
 import { FilterItemComponent } from './filter-item.component';
 import { TableModule } from 'primeng/table';
 import { SearchFieldModule } from '../../shared/controls/search-field/search-field.component';
-import { RadioButtonDirective } from '../../../directives/ig-radio-button-directive';
 import { RadioButtonModule } from 'primeng/radiobutton';
+import { CoreModule } from '../../shared/core.module';
 
 
 @NgModule({
     imports: [
         CommonModule,
+        CoreModule,
         TooltipModule,
         FormsModule,
         ReactiveFormsModule,

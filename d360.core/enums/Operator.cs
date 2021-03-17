@@ -44,7 +44,7 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Text, DataType.Link, DataType.Html),
+            OperatorAllowedDataTypes(DataType.Text, DataType.Link, DataType.Html, DataType.Tag),
             OperatorFieldTypeRequirements(false),
             SortOrder(100)
         ]
@@ -57,7 +57,7 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Text, DataType.Link, DataType.Html),
+            OperatorAllowedDataTypes(DataType.Text, DataType.Link, DataType.Html, DataType.Tag),
             OperatorFieldTypeRequirements(false),
             SortOrder(200)
         ]
@@ -127,7 +127,7 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(0, 0),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation, MetricGovernanceCheckType.Field), //remove field MetricGovernanceCheckType.Field before release  
-            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.Lookup, DataType.Number, DataType.Text, DataType.Link), //comment out before release also 
+            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.Lookup, DataType.Number, DataType.Text, DataType.Link, DataType.Tag), //comment out before release also 
             OperatorFieldTypeRequirements(false),
             SortOrder(2000)
         ]
@@ -138,7 +138,7 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(0, 0),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation, MetricGovernanceCheckType.Field), //remove field MetricGovernanceCheckType.Field before release  
-            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.Lookup, DataType.Number, DataType.Text, DataType.Link),//comment out again before release 
+            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.Lookup, DataType.Number, DataType.Text, DataType.Link, DataType.Tag),//comment out again before release 
             OperatorFieldTypeRequirements(false),
             SortOrder(2100)
         ]

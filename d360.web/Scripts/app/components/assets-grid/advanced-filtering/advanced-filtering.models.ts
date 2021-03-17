@@ -17,7 +17,8 @@ export class SystemFields {
             Name: "CreatedOn",
             Type: new FieldType("Date"),
             Operators: [],
-            Values: []
+            Values: [],
+            IsSystemField: true
         });
 
 
@@ -27,7 +28,8 @@ export class SystemFields {
             Name: "UpdatedOn",
             Type: new FieldType("Date"),
             Operators: [],
-            Values: []
+            Values: [],
+            IsSystemField: true
         });
 
         var owner: FieldTypeAPIModelFieldCondition = {
@@ -37,7 +39,8 @@ export class SystemFields {
             Type: null,
             Operators: [],
             Values: [],
-            IsOwnerField: true
+            IsOwnerField: true,
+            IsSystemField: true
         };
 
 
@@ -52,6 +55,7 @@ export class FieldTypeAPIModelFieldCondition extends FieldTypeAPIModelField {
     Operators: SelectItem[];
 
     IsOwnerField?: boolean = false;
+    IsSystemField?: boolean = false;
 }
 
 export class AdvancedFilterFieldCondition {
@@ -261,7 +265,7 @@ export class AdvancedFilterFieldCondition {
             if (this.fieldType == "DateTime") {
                 return `${this.parseDateTimeToString(value)}`
             }
-            if (this.fieldType == "Lookup" || this.field === SystemFields.OwnedByFieldCode) {
+            if (this.fieldType === "Lookup" || this.fieldType === "Tag" || this.field === SystemFields.OwnedByFieldCode) {
                 let valueAsString = "";
                 if (Array.isArray(value)) {
                     var arr = value as SelectItem[];
@@ -269,7 +273,12 @@ export class AdvancedFilterFieldCondition {
                         return arr[0].title;
                     }
                     if (isForLabel === true && arr.length > 2) {
-                        return arr.length + " items";
+                        if (this.field === SystemFields.OwnedByFieldCode) {
+                            return arr.length + " users";
+                        }
+                        else {
+                            return arr.length + " items";
+                        }
                     }
 
                     for (let i = 0; i < arr.length - 1; i++) {
@@ -277,7 +286,7 @@ export class AdvancedFilterFieldCondition {
                             valueAsString += arr[i].title + ", ";
                         }
                         else {
-                            if (this.operator.toString() === "Equals") {
+                            if (this.operator.toString() === "Equals" || this.operator.toString() === "Contains") {
                                 valueAsString += arr[i].title + " or " + arr[i + 1].title;
                             }
                             else {
@@ -391,8 +400,8 @@ export class AdvancedFilterFieldConditionCollection {
         }
         let queries: string[] = [];
 
-        this.filters.filter(x => x.field && x.operator && x.value && x.field !== SystemFields.OwnedByFieldCode).forEach((cond) => {
-            if (cond.fieldType === "Lookup") {
+        this.filters.filter(x => x.field && x.operator && x.field !== SystemFields.OwnedByFieldCode).forEach((cond) => {
+            if ((cond.fieldType === "Lookup" || cond.fieldType === "Tag") && cond.value) {
                 let subConditions: AdvancedFilterFieldCondition[] = [];
                 var valuesArr = cond.value as SelectItem[];
                 valuesArr.forEach(r => {
@@ -403,7 +412,7 @@ export class AdvancedFilterFieldConditionCollection {
                 subConditions.forEach((sc) => {
                     subQueries.push(sc.getQueryString());
                 });
-                queries.push(subQueries.join(" " + cond.connectingOperator + " "));
+                queries.push("(" + subQueries.join(" " + cond.connectingOperator + " ") + ")");
             }
             else {
                 queries.push(cond.getQueryString());

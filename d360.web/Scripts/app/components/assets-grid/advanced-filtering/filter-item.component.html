@@ -27,84 +27,99 @@
     </div>
 
     <div class="value-selection" [hidden]="!isSelectingValue">
-        <p-dropdown igDropdown
-                    [options]="uiCurrentOperatorsList"
-                    [(ngModel)]="condition.operator"
-                    (onChange)="onOperatorSelected($event)"
-                    igSize="full"
-                    appendTo="body">
-        </p-dropdown>
-        <ng-container *ngIf="needsValue()">
-            <input *ngIf="fieldInputType() === 'text'" igInput igSize="full" type="text" [(ngModel)]="condition.value" required />
-            <ig-number-input *ngIf="fieldInputType() === 'number'" igSize="full" [(ngModel)]="condition.value" required></ig-number-input>
+        <d3s-loading [isLoading]="isLookupValuesLoading"></d3s-loading>
 
-            <ng-container *ngIf="fieldInputType() === 'multi-number'">
-                <ig-number-input igSize="full" [(ngModel)]="condition.value" required></ig-number-input>
-                <div class="value-separator">and</div>
-                <ig-number-input igSize="full" [(ngModel)]="condition.value2" required></ig-number-input>
+        <div class="selectors" *ngIf="!isLookupValuesLoading">
+            <p-dropdown igDropdown
+                        [options]="uiCurrentOperatorsList"
+                        [(ngModel)]="condition.operator"
+                        (onChange)="onOperatorSelected($event)"
+                        igSize="full"
+                        appendTo="body">
+            </p-dropdown>
+            <ng-container *ngIf="needsValue()">
+                <input *ngIf="fieldInputType() === 'text'" igInput igSize="full" type="text" [(ngModel)]="condition.value" required />
+                <ig-number-input *ngIf="fieldInputType() === 'number'" igSize="full" [(ngModel)]="condition.value" required></ig-number-input>
+
+                <ng-container *ngIf="fieldInputType() === 'multi-number'">
+                    <ig-number-input igSize="full" [(ngModel)]="condition.value" required></ig-number-input>
+                    <div class="value-separator">and</div>
+                    <ig-number-input igSize="full" [(ngModel)]="condition.value2" required></ig-number-input>
+                </ng-container>
+
+                <ig-date *ngIf="fieldInputType() === 'date'" [(ngModel)]="condition.value" required></ig-date>
+                <ng-container *ngIf="fieldInputType() === 'multi-date'">
+                    <ig-date [(ngModel)]="condition.value" required></ig-date>
+                    <div class="value-separator">and</div>
+                    <ig-date [(ngModel)]="condition.value2" required></ig-date>
+                </ng-container>
+
+                <ig-date *ngIf="fieldInputType() === 'date-time'" [(ngModel)]="condition.value" [showTime]="true" required></ig-date>
+                <ng-container *ngIf="fieldInputType() === 'multi-date-time'">
+                    <ig-date [(ngModel)]="condition.value2" required [showTime]="true"></ig-date>
+                    <div class="value-separator">and</div>
+                    <ig-date [(ngModel)]="condition.value2" required [showTime]="true"></ig-date>
+                </ng-container>
+
+                <ng-container *ngIf="fieldInputType() === 'lookup' && currentField">
+                    <div class="lookup-selection">
+                        <p-table #dt1
+                                 tableStyleClass="ig-filter-table"
+                                 [metaKeySelection]="true"
+                                 [value]="currentField.Values"
+                                 (onRowSelect)="onItemSelected($event)"
+                                 [(selection)]="condition.value"
+                                 [globalFilterFields]="['value']"
+                                 dataKey="value">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th class="first-col">
+                                        <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                                    </th>
+                                    <th>
+                                        <input type="text" (input)="dt1.filterGlobal($event.target.value, 'contains')" placeholder="Search list" />
+                                    </th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item>
+                                <ng-container *ngIf="item.styleClass === 'group-name'; else elseBlock">
+                                    <tr class="{{item.styleClass}}">
+                                        <td class="first-col" colspan="2">
+                                            <span class="item-value">{{item.title}}</span>
+                                        </td>
+                                    </tr>
+                                </ng-container>
+                                <ng-template #elseBlock>
+                                    <tr [pSelectableRow]="item">
+                                        <td class="first-col">
+                                            <p-tableCheckbox [value]="item"></p-tableCheckbox>
+                                        </td>
+                                        <td>
+                                            <span class="item-value">{{item.title}}</span>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </ng-template>
+                        </p-table>
+                    </div>
+
+                    <div class="any-all-picker">
+                        <p-radioButton [disabled]="uiIsAllDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="and" label="Match all"></p-radioButton>
+                        <p-radioButton [disabled]="uiIsAnyDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="or" label="Match any"></p-radioButton>
+                    </div>
+                </ng-container>
+
             </ng-container>
+            <div class="buttons flex">
+                <button igButton icon="fa-trash" style="margin-left:0px;" tooltip="Close" (click)="remove()"></button>
 
-            <ig-date *ngIf="fieldInputType() === 'date'" [(ngModel)]="condition.value" required></ig-date>
-            <ng-container *ngIf="fieldInputType() === 'multi-date'">
-                <ig-date [(ngModel)]="condition.value" required></ig-date>
-                <div class="value-separator">and</div>
-                <ig-date [(ngModel)]="condition.value2" required></ig-date>
-            </ng-container>
-
-            <ig-date *ngIf="fieldInputType() === 'date-time'" [(ngModel)]="condition.value" [showTime]="true" required></ig-date>
-            <ng-container *ngIf="fieldInputType() === 'multi-date-time'">
-                <ig-date [(ngModel)]="condition.value2" required [showTime]="true"></ig-date>
-                <div class="value-separator">and</div>
-                <ig-date [(ngModel)]="condition.value2" required [showTime]="true"></ig-date>
-            </ng-container>
-
-            <ng-container *ngIf="fieldInputType() === 'lookup' && currentField">
-                <div class="lookup-selection">
-                    <p-table #dt1
-                             tableStyleClass="ig-filter-table"
-                             [metaKeySelection]="true"
-                             [value]="currentField.Values"
-                             (onRowSelect)="onItemSelected($event)"
-                             [(selection)]="condition.value"
-                             [globalFilterFields]="['value']"
-                             dataKey="value">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th class="first-col">
-                                    <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
-                                </th>
-                                <th>
-                                    <input type="text" (input)="dt1.filterGlobal($event.target.value, 'contains')" placeholder="Search list" />
-                                </th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-item>
-                            <tr [pSelectableRow]="item">
-                                <td class="first-col">
-                                    <p-tableCheckbox [value]="item"></p-tableCheckbox>
-                                </td>
-                                <td>
-                                    <span class="item-value">{{item.label}}</span>
-                                </td>
-                            </tr>
-                        </ng-template>
-                    </p-table>
-                </div>
-
-                <div class="any-all-picker">
-                    <p-radioButton [disabled]="uiIsAllDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="and" label="Match all"></p-radioButton>
-                    <p-radioButton [disabled]="uiIsAnyDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="or" label="Match any"></p-radioButton>
-                </div>
-            </ng-container>
-
-        </ng-container>
-        <div class="buttons flex">
-            <button igButton icon="fa-trash" style="margin-left:0px;" tooltip="Close" (click)="remove()"></button>
-
-            <div class="flex-grow"></div>
-            <button igButton icon="fa-times" tooltip="Close" (click)="cancel()"></button>
-            <button igButton class="ig-button-primary" icon="fa-check" tooltip="Save" (click)="confirmValue()"></button>
+                <div class="flex-grow"></div>
+                <button igButton icon="fa-times" tooltip="Close" (click)="cancel()"></button>
+                <button igButton class="ig-button-primary" icon="fa-check" tooltip="Save" (click)="confirmValue()"></button>
+            </div>
         </div>
+
+
     </div>
 
 </div>

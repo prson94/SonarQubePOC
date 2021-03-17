@@ -1,4 +1,4 @@
-﻿import { SelectItem } from "primeng/api";
+﻿import { SelectItem, SelectItemGroup } from "primeng/api";
 import { FieldTypeAPIModelField } from "./fieldtype-api.model";
 import { Operator } from "./operator.model";
 
@@ -6,6 +6,8 @@ export class FieldTypeAPIModelFieldCondition extends FieldTypeAPIModelField {
     AssetTypeUid: string;
     Values: SelectItem[];
     Operators: SelectItem[];
+
+    IsSystemField?: boolean = false;
 }
 
 export class FieldCondition {

@@ -29,7 +29,7 @@ export class AdvancedFilteringComponent implements OnChanges {
     conditions: AdvancedFilterFieldConditionCollection;
 
     visible: boolean = false;
-    
+
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
 
     constructor(public cdRef: ChangeDetectorRef,
@@ -73,14 +73,15 @@ export class AdvancedFilteringComponent implements OnChanges {
             });
 
             SystemFields.GetSystemFieldDefinition().forEach((f) => {
-                tempFields.push(f as FieldTypeAPIModelFieldCondition);
+                var fModel = f as FieldTypeAPIModelFieldCondition;
+                fModel.IsSystemField = true;
+                tempFields.push(fModel);
             });
 
             tempFields.forEach(f => {
                 f.Operators = [];
                 this.operators.forEach(op => {
                     if (f.Type) {
-
                         if (op.AllowedDataTypes.some(x => x.Name === FieldTypeHelper.getFieldType(f.Type))) {
                             f.Operators.push({ label: op.Name, value: op.ID });
                         }
@@ -127,7 +128,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 
     getQuery() {
         this.filters = this.conditions.getFilters();
-        
+
         this.cdRef.markForCheck();
     }
 

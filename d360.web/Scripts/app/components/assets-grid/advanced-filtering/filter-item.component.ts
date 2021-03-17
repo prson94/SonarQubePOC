@@ -7,12 +7,13 @@ import { AdvancedFilterFieldCondition, SystemFields } from './advanced-filtering
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { AssetService } from '../../../services/asset.service';
 import { AssetTypeService } from '../../../services/asset-type.service';
+import { TagService } from '../../../services/tag.service';
 
 @Component({
     selector: 'filter-item',
     templateUrl: 'filter-item.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [FieldsObservableService, AssetTypeService]
+    providers: [FieldsObservableService, AssetTypeService, TagService]
 })
 export class FilterItemComponent implements OnInit, OnChanges {
     @Input() assetTypeUid: string = "";
@@ -44,7 +45,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
     constructor(public cdRef: ChangeDetectorRef,
         private elRef: ElementRef,
         private fieldsService: FieldsObservableService,
-        private assetTypeService: AssetTypeService
+        private assetTypeService: AssetTypeService,
+        private tagService: TagService
     ) {
     }
 
@@ -60,7 +62,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.allFieldsDropdown.push(assetFieldGroup);
         this.allFieldsDropdown.push(systemFieldsGroup);
 
-        this.fields.forEach((f) => {
+        this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
             assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
         });
 
@@ -81,8 +83,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
     getOperators(item: AdvancedFilterFieldCondition) {
         if (this.condition.field === SystemFields.OwnedByFieldCode) {
             var options: SelectItem[] = [];
-            options.push({ label: "contains", value: "Contains" });
-            options.push({ label: "not contains", value: "NotContains" });
+            options.push({ label: "contains", value: "Equals" });
+            options.push({ label: "not contains", value: "NotEquals" });
             return options;
         }
 
@@ -129,6 +131,9 @@ export class FilterItemComponent implements OnInit, OnChanges {
             if (this.condition.fieldType === "Lookup") {
                 this.loadLookupValues();
             }
+            if (this.condition.fieldType === "Tag") {
+                this.loadTagValues();
+            }
             this.uiCurrentOperatorsList = this.getOperators(this.condition);
             this.uiFilterLabel = this.condition.getFilterLabel();
         }
@@ -155,12 +160,34 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
             this.fieldsService.getLookupValues(this.currentField.AssetTypeUid, this.currentField.Name.trim())
                 .subscribe(res => {
-                    this.isLookupValuesLoading = false;
                     this.currentField.Values = [];
                     res.forEach(str => {
-                        this.currentField.Values.push({ title: str, value: str});
+                        this.currentField.Values.push({ title: str, value: str });
                     })
+
+                    this.isLookupValuesLoading = false;
+                    this.cdRef.markForCheck();
                 })
+        }
+    }
+
+
+    loadTagValues() {
+        this.currentField = this.fields.filter(x => x.Name === this.condition.field)[0];
+        if (!this.currentField.Values) {
+            this.isLookupValuesLoading = true;
+
+            this.tagService.getTagsList(true).subscribe((res) => {
+                this.currentField.Values = [];
+                res.forEach(str => {
+                    this.currentField.Values.push({ title: str.Value, value: str.Value });
+                })
+
+                this.isLookupValuesLoading = false;
+                this.cdRef.markForCheck();
+            });
+
+
         }
     }
 
@@ -169,13 +196,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
         if (!this.currentField.Values || this.currentField.Values.length == 0) {
             this.isLookupValuesLoading = true;
             this.assetTypeService.GetAssetTypePossibleOwners(this.assetTypeUid).subscribe((res) => {
-                this.isLookupValuesLoading = false;
                 this.currentField.Values = [];
                 let mapped: any[] = [];
                 res.forEach((item) => {
                     if (item.Name.indexOf("] - ")) {
                         var data = (item.Name as string).split("] - ");
-                        mapped.push({ value: item.Uid, title: data[1], group: data[0] });
+                        mapped.push({ value: item.Uid, title: data[1], group: data[0].replace("[", "") });
                     }
                     else {
                         mapped.push({ value: item.Uid, title: item.Name });
@@ -191,10 +217,15 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
                 var keys = Object.keys(grouped);
                 keys.forEach((key) => {
-                    console.log(key);
-                    console.log(grouped[key]);
-                    this.currentField.Values.push({ title: key, value: key, });
+                    this.currentField.Values.push({ title: key, value: key, disabled: true, styleClass: "group-name" });
+                    grouped[key].forEach((d: SelectItem) => {
+                        this.currentField.Values.push({ title: d.title, value: d.value });
+                    });
+
                 })
+
+                this.isLookupValuesLoading = false;
+                this.cdRef.markForCheck();
             });
         }
     }
@@ -240,21 +271,33 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     private updateAllAnyData() {
-        if (this.condition.fieldType !== "Lookup") {
-            return;
-        }
-        if (this.currentField.Type.Lookup?.List?.AllowMultipleValues) {
-            this.uiIsAllDisabled = false;
-            this.uiIsAnyDisabled = false;
-        }
-        else {
-            this.condition.connectingOperator = "or";
-            if (this.condition.operator.toString() === "NotEquals") {
-                this.condition.connectingOperator = "and";
+        if (this.condition.fieldType === "Lookup") {
+            if (this.currentField.Type.Lookup?.List?.AllowMultipleValues) {
+                this.uiIsAllDisabled = false;
+                this.uiIsAnyDisabled = false;
             }
+            else {
+                this.condition.connectingOperator = "or";
+                if (this.condition.operator.toString() === "NotEquals") {
+                    this.condition.connectingOperator = "and";
+                }
 
-            this.uiIsAllDisabled = true;
-            this.uiIsAnyDisabled = true;
+                this.uiIsAllDisabled = true;
+                this.uiIsAnyDisabled = true;
+            }
+        }
+
+        if (this.condition.fieldType === "Tag") {
+            if (this.condition.operator.toString() === "NotContains") {
+                this.condition.connectingOperator = "and";
+                this.uiIsAllDisabled = true;
+                this.uiIsAnyDisabled = true;
+            }
+            var count = (this.condition.value as any[]).length;
+            if (count > 1) {
+                this.uiIsAllDisabled = false;
+                this.uiIsAnyDisabled = false;
+            }
         }
     }
 
@@ -293,7 +336,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             return "date-time";
         }
 
-        if (type == "Lookup") {
+        if (type == "Lookup" || type === "Tag") {
             return "lookup";
         }
 
