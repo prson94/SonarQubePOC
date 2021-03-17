@@ -322,9 +322,8 @@ namespace d360.model.DataAccessLayer
 			from	Comment C
 			where	C.ID in	(
 					select	O.CommentID as ID
-					from	Follow F
-							inner join Asset A on A.Object = F.ObjectType and A.ObjectID = F.ObjectID 
-							inner join CommentRelation O on O.AssetID = A.ID
+					from	FollowDetail F
+							inner join CommentRelation O on O.AssetID = F.AssetID
 					where	F.ResourceID = @resourceId
 					union all
 					select	ID 
@@ -418,6 +417,44 @@ order by u.CommentTypeName";
 				followerUidPresent = Guid.TryParse(follower, out followerUid);
 			}
 
+			#region "Ng additional filter: set variable"
+
+			var followerCurrResUidPresent = false;
+			
+			if (queryParams.Any(qp => qp.Key.ToLower() == "followeruidiscurrentresourceuid"))
+            {
+				var followerCurrentResourceUid = queryParams.FirstOrDefault(x => x.Key.ToLower() == "followeruidiscurrentresourceuid").Value;
+				if (followerCurrentResourceUid.ToLower() == "true")
+				{
+					followerCurrResUidPresent = true;
+				}
+			}
+
+			int CommentTypeID = 0;
+			bool CommentTypeIDPresent = false;
+			if (queryParams.Any(qp => qp.Key.ToLower() == "commenttypeid"))
+			{
+				var CommentTypeIDValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "commenttypeid").Value;
+				CommentTypeIDPresent = int.TryParse(CommentTypeIDValue, out CommentTypeID);
+			}
+
+			bool IsShowDeleteComment = true;
+			bool DeletedCommentPresent = false;
+			if (queryParams.Any(qp => qp.Key.ToLower() == "showdeletecomment"))
+			{
+				var ShowDeleteCommentValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "showdeletecomment").Value;
+				DeletedCommentPresent = bool.TryParse(ShowDeleteCommentValue, out IsShowDeleteComment);
+			}
+
+			int Days = 0;
+			bool daysToLookBackPresent = false;
+			if (queryParams.Any(qp => qp.Key.ToLower() == "daystolookback"))
+			{
+				var daysToLookBackValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "daystolookback").Value;
+				daysToLookBackPresent = int.TryParse(daysToLookBackValue, out Days);
+			}
+			#endregion
+
 			var orderColumn = CompanyContext.ParseOrderColumn(queryParams, queryFieldOptions, "C.CreatedOn");
 			var orderDirection = CompanyContext.ParseOrderDirection(queryParams, "desc");
 			var orderBySql = $" order by {orderColumn} {orderDirection} ";
@@ -427,6 +464,45 @@ order by u.CommentTypeName";
 			string offset = CompanyContext.ParsePageOffsetSql(pageNum, pageSize);
 
 			var baseCommentWheres = new List<string> { "C.ParentID is null" };
+
+			#region "Ng additional Filter : Apply"
+				if (CommentTypeIDPresent)
+				{
+					dbArgs.Add("@CommentTypeID", CommentTypeID);
+					baseCommentWheres.Add(@"(C.CommentType = @CommentTypeID)");
+				}
+
+				if (DeletedCommentPresent)
+				{
+					baseCommentWheres.Add(@"(C.IsDeleted = 0)");
+				}
+
+				if (followerCurrResUidPresent)
+				{
+					baseCommentWheres.Add(@"(iif(C.CreatedBy = @currentUser, 1, 0) = 1)");
+				}
+
+				if (daysToLookBackPresent)
+				{
+					DateTime dateStart;
+					DateTime dateEnd = DateTime.UtcNow;
+					Days *= -1;
+					if (Days == 0)
+					{
+						dateStart = new DateTime(2000, 1, 1);
+					}
+					else
+					{
+						dateStart = (Days < 0) ? dateEnd.AddDays(Days) : dateEnd.AddDays(-Days);
+					}
+
+					dbArgs.Add("@rangeStart", dateStart);
+					dbArgs.Add("@rangeEnd", dateEnd);
+
+					baseCommentWheres.Add(@"(C.CreatedOn between @rangeStart and @rangeEnd)");
+				}
+			#endregion
+
 			if (assetUidPresent)
 			{
 				var asset = CompanyContext.Filter<Asset>(o => o.uid == assetUid).FirstOrDefault();
@@ -463,18 +539,29 @@ order by u.CommentTypeName";
 					) 
 				)");
 			}
+			int followerresourceID = -1;
 			if (followerUidPresent)
 			{
 				var follower = CompanyContext.Filter<GlobalReportingResource>(o => o.Uid == followerUid).FirstOrDefault();
 				if (follower != null)
 				{
-					dbArgs.Add("@followerId", follower.ResourceID);
+					followerresourceID = follower.ResourceID;
+				}
+			}
+			else if (followerCurrResUidPresent)
+			{
+				followerresourceID = CompanyContext.CurrentResourceID;
+			}
+
+			if (followerresourceID > -1)
+			{
+					dbArgs.Add("@followerId", followerresourceID);
 
 					baseCommentWheres.Add(@"(
 (exists (select f.AssetID from FollowDetail f where f.ResourceID = @followerId and f.AssetID = C.AssetID  union all select r.AssetID from ResponsibilityDetail r where r.ResourceID = @followerId and r.AssetID = C.AssetID)) 
 or (exists (select cp.ParentID from Comment cp where cp.ParentID is not null and cp.CreatedBy = @followerId and cp.ParentID = C.ID ))
+or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 )");
-				}
 			}
 
 			dbArgs.Add("@currentUser", CompanyContext.CurrentResourceID);
