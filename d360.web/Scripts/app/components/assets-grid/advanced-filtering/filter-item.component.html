@@ -109,6 +109,15 @@
                     </div>
                 </ng-container>
 
+                <ng-container *ngIf="fieldInputType() === 'score-band'">
+                    <p-dropdown igDropdown
+                                [options]="currentField.Values"
+                                (onChange)="onItemSelected($event)"
+                                igSize="full"
+                                appendTo="body">
+                    </p-dropdown>
+                </ng-container>
+
             </ng-container>
             <div class="buttons flex">
                 <button igButton icon="fa-trash" style="margin-left:0px;" tooltip="Close" (click)="remove()"></button>

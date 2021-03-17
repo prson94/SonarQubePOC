@@ -419,7 +419,7 @@ namespace d360.model.helpers
         private void ValidateTokenForType()
         {
             bool hasApostrophe = value.ToString().First() == '\'' && value.ToString().Last() == '\'';
-            if (!hasApostrophe && !(fieldType.Type == "Number" || fieldType.Type == "Decimal" || fieldType.Type == "Boolean"))
+            if (!hasApostrophe && !(fieldType.Type == "Number" || fieldType.Type == "Decimal" || fieldType.Type == "Boolean" || fieldType.Type == "Score"))
             {
                 throw new Exception("Text values should be placed within quotations.");
             }
@@ -443,7 +443,8 @@ namespace d360.model.helpers
                     return new string[] { "eq", "ne", "ct" }.Contains(operand);
                 case "number":
                 case "decimal":
-                    return !(new string[] { "ct" }.Contains(operand));
+                case "score":
+                    return !(new string[] { "ct", "nct" }.Contains(operand));
                 case "date":
                 case "datetime":
                     return true;

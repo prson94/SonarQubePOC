@@ -80,6 +80,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 
             tempFields.forEach(f => {
                 f.Operators = [];
+
                 this.operators.forEach(op => {
                     if (f.Type) {
                         if (op.AllowedDataTypes.some(x => x.Name === FieldTypeHelper.getFieldType(f.Type))) {
@@ -106,6 +107,7 @@ export class AdvancedFilteringComponent implements OnChanges {
                     }
                 });
             });
+
 
 
 

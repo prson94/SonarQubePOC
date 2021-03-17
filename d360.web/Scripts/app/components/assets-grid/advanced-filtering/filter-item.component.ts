@@ -128,6 +128,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
         if (type.Type) {
             this.condition.friendlyFieldName = type.FriendlyName;
             this.condition.fieldType = this.getTypeForCondition(this.condition);
+            this.currentField = this.fields.filter(x => x.Name === this.condition.field)[0];
+
             if (this.condition.fieldType === "Lookup") {
                 this.loadLookupValues();
             }
@@ -154,7 +156,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     loadLookupValues() {
-        this.currentField = this.fields.filter(x => x.Name === this.condition.field)[0];
         if (!this.currentField.Values) {
             this.isLookupValuesLoading = true;
 
@@ -173,7 +174,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
 
     loadTagValues() {
-        this.currentField = this.fields.filter(x => x.Name === this.condition.field)[0];
         if (!this.currentField.Values) {
             this.isLookupValuesLoading = true;
 
@@ -192,7 +192,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     loadLookupValuesForOwners() {
-        this.currentField = this.fields.filter(x => x.Name === this.condition.field)[0];
         if (!this.currentField.Values || this.currentField.Values.length == 0) {
             this.isLookupValuesLoading = true;
             this.assetTypeService.GetAssetTypePossibleOwners(this.assetTypeUid).subscribe((res) => {
@@ -293,10 +292,13 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.uiIsAllDisabled = true;
                 this.uiIsAnyDisabled = true;
             }
-            var count = (this.condition.value as any[]).length;
-            if (count > 1) {
-                this.uiIsAllDisabled = false;
-                this.uiIsAnyDisabled = false;
+
+            if (this.condition) {
+                var count = (this.condition.value as any[]).length;
+                if (count > 1) {
+                    this.uiIsAllDisabled = false;
+                    this.uiIsAnyDisabled = false;
+                }
             }
         }
     }
@@ -308,7 +310,16 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
         var type = this.getTypeForCondition(this.condition);
 
-        if (type == "Number" || type == "Decimal") {
+        if (type == "Number" || type == "Decimal" || type == "Score") {
+
+            if (this.condition.operator.toString() === "IsInBand") {
+                this.currentField.Values = [];
+                this.currentField.Values.push({ value: "poor", title: "Poor" });
+                this.currentField.Values.push({ value: "average", title: "Average" });
+                this.currentField.Values.push({ value: "good", title: "Good" });
+                return "score-band";
+            }
+
             //First handle special case eq. Between
             if (this.condition.operator.toString() === "Between") {
                 return "multi-number";

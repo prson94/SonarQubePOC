@@ -116,7 +116,7 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(2, 2),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Number),
+            OperatorAllowedDataTypes(DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Number, DataType.Score),
             OperatorFieldTypeRequirements(false),
             SortOrder(1200)
         ]
@@ -127,7 +127,7 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(0, 0),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation, MetricGovernanceCheckType.Field), //remove field MetricGovernanceCheckType.Field before release  
-            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.Lookup, DataType.Number, DataType.Text, DataType.Link, DataType.Tag), //comment out before release also 
+            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.Lookup, DataType.Number, DataType.Text, DataType.Link, DataType.Tag, DataType.Score), //comment out before release also 
             OperatorFieldTypeRequirements(false),
             SortOrder(2000)
         ]
@@ -138,7 +138,7 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(0, 0),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation, MetricGovernanceCheckType.Field), //remove field MetricGovernanceCheckType.Field before release  
-            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.Lookup, DataType.Number, DataType.Text, DataType.Link, DataType.Tag),//comment out again before release 
+            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.Lookup, DataType.Number, DataType.Text, DataType.Link, DataType.Tag, DataType.Score),//comment out again before release 
             OperatorFieldTypeRequirements(false),
             SortOrder(2100)
         ]
@@ -149,7 +149,7 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Decimal, DataType.Number),
+            OperatorAllowedDataTypes(DataType.Decimal, DataType.Number, DataType.Score),
             OperatorFieldTypeRequirements(false),
             SortOrder(900)
             ]
@@ -171,7 +171,7 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Decimal, DataType.Number),
+            OperatorAllowedDataTypes(DataType.Decimal, DataType.Number, DataType.Score),
             OperatorFieldTypeRequirements(false),
             SortOrder(700)
         ]
@@ -258,7 +258,18 @@ namespace d360.core.enums
             OperatorFieldTypeRequirements(false),
             SortOrder(800)
         ]
-        OnOrAfter
+        OnOrAfter,
+        [
+            Name("is in band"),
+            EnumMember(Value = "IsInBand"),
+            Description(""),
+            OperatorValueCountRange(1, 1),
+            OperatorAllowedMeasureChecks(),
+            OperatorAllowedDataTypes(DataType.Score),
+            OperatorFieldTypeRequirements(false),
+            SortOrder(0)
+        ]
+        IsInBand
     }
     public class OperatorInfo
     {
