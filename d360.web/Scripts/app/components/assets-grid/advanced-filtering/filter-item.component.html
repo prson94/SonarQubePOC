@@ -112,9 +112,18 @@
                 <ng-container *ngIf="fieldInputType() === 'score-band'">
                     <p-dropdown igDropdown
                                 [options]="currentField.Values"
+                                [(ngModel)]="condition.value"
                                 (onChange)="onItemSelected($event)"
                                 igSize="full"
                                 appendTo="body">
+                        <ng-template let-item pTemplate="selectedItem">
+                            <div class="score-pill-small-rounded score-{{item.value}}"></div>
+                            {{item.title}}
+                        </ng-template>
+                        <ng-template let-item pTemplate="item">
+                            <div class="score-pill-small-rounded score-{{item.value}}"></div>
+                            {{item.title}}
+                        </ng-template>
                     </p-dropdown>
                 </ng-container>
 

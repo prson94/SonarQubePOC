@@ -21,6 +21,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
     @Input() fields: FieldTypeAPIModelFieldCondition[] = null;
     @Input() operators: OperatorModel[] = [];
 
+
     currentField: FieldTypeAPIModelFieldCondition;
 
     allFieldsDropdown: SelectItemGroup[] = [];
@@ -129,7 +130,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.condition.friendlyFieldName = type.FriendlyName;
             this.condition.fieldType = this.getTypeForCondition(this.condition);
             this.currentField = this.fields.filter(x => x.Name === this.condition.field)[0];
-
+            this.condition.type = this.currentField;
             if (this.condition.fieldType === "Lookup") {
                 this.loadLookupValues();
             }

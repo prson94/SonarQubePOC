@@ -19,7 +19,8 @@
     IsTrue = 18,
     IsFalse = 19,
     OnOrBefore = 20,
-    OnOrAfter = 21
+    OnOrAfter = 21,
+    IsInBand = 22
 }
 export class OperatorDataTypeModel {
     ID: number;

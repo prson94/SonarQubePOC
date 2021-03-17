@@ -3,6 +3,7 @@ import * as _ from "lodash";
 import { SelectItem } from "primeng/api";
 import { debug } from "util";
 import { FieldType, FieldTypeAPIModelField } from "../../../models/fieldtype-api.model";
+import { ScoreType, ScoreTypeAllocation } from "../../../models/metrics.model";
 import { Operator } from "../../../models/operator.model";
 
 export class SystemFields {
@@ -67,6 +68,8 @@ export class AdvancedFilterFieldCondition {
     friendlyFieldName: string = '';
     markForDeletion: boolean = false;
     fieldType: string = "";
+
+    type?: FieldTypeAPIModelField;
 
     connectingOperator: string = "or";
 
@@ -145,6 +148,9 @@ export class AdvancedFilterFieldCondition {
             case "Between":
                 str += " is between ";
                 break;
+            case "IsInBand":
+                str += " is in band ";
+                break;
             default:
                 return "Description Text not defined";
         }
@@ -200,8 +206,10 @@ export class AdvancedFilterFieldCondition {
                 return `${this.friendlyFieldName} &#8805; ${this.getTypedValue()}`;
             case "Between":
                 return `${this.friendlyFieldName} : ${this.getTypedValue()} - ${this.getTypedValue2()}`;
+            case "IsInBand":
+                return `${this.friendlyFieldName} is in band ${this.getTypedValue()}`;
             default:
-                return "Format not defined 11";
+                return "Format not defined";
         }
 
     }
@@ -258,13 +266,21 @@ export class AdvancedFilterFieldCondition {
             if (this.fieldType == "Number" || this.fieldType == "Decimal") {
                 return +value;
             }
-
             if (this.fieldType == "Date") {
                 return `${this.parseDateToString(value)}`
             }
             if (this.fieldType == "DateTime") {
                 return `${this.parseDateTimeToString(value)}`
             }
+
+            if (this.fieldType == "Score") {
+                if (this.operator.toString() === "IsInBand") {
+                    var stringValue = this.value as string;
+                    return "'" + stringValue.slice(0, 1).toUpperCase() + stringValue.slice(1, stringValue.length) + "'";
+                }
+                return +value;
+            }
+
             if (this.fieldType === "Lookup" || this.fieldType === "Tag" || this.field === SystemFields.OwnedByFieldCode) {
                 let valueAsString = "";
                 if (Array.isArray(value)) {
@@ -386,8 +402,10 @@ export class AdvancedFilterFieldCondition {
 export class AdvancedFilterFieldConditionCollection {
     connector: string = " and ";
     filters: AdvancedFilterFieldCondition[] = [];
+    allocations: ScoreTypeAllocation[] = [];
 
-    public getFilters(): Filters {
+    public getFilters(allocations: ScoreTypeAllocation[]): Filters {
+        this.allocations = allocations;
         var f = new Filters();
         f.filter = this.getQueryStringValue();
         f.owners = this.getOwnerFilter();
@@ -414,6 +432,9 @@ export class AdvancedFilterFieldConditionCollection {
                 });
                 queries.push("(" + subQueries.join(" " + cond.connectingOperator + " ") + ")");
             }
+            else if (cond.fieldType === "Score" && cond.operator.toString() === "IsInBand") {
+                queries.push(this.getInBandQuery(cond));
+            }
             else {
                 queries.push(cond.getQueryString());
             }
@@ -431,6 +452,31 @@ export class AdvancedFilterFieldConditionCollection {
             value += (cond.value as SelectItem[]).map(x => x.value).join(", ");
         });
         return value;
+    }
+
+    private getInBandQuery(cond: AdvancedFilterFieldCondition): string {
+        if (cond.value) {
+            let minValue: number = 0;
+            let maxValue: number = 99.999999;
+            let alloc = this.allocations.filter(x => x.scoreType === cond.type.Type.Score.ScoreType)[0];
+            switch (cond.value) {
+                case "poor":
+                    minValue = 0;
+                    maxValue = alloc.lowerThreshold;
+                    break;
+                case "average":
+                    minValue = alloc.lowerThreshold;
+                    maxValue = alloc.upperThreshold;
+                    break;
+                case "good":
+                    minValue = alloc.upperThreshold;
+                    maxValue = 99.999999;
+                    break;
+            }
+
+            return `(${cond.field} ge '${minValue}' and ${cond.field} lt '${maxValue}')`;
+        }
+        return "";
     }
 }
 

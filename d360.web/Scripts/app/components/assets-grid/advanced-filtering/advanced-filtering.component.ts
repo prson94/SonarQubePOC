@@ -1,13 +1,14 @@
 ﻿import { Component, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, OnChanges, SimpleChanges, OnInit, OnDestroy, Output, EventEmitter, AfterViewChecked, ViewChildren, ElementRef } from '@angular/core';
 import * as _ from 'lodash';
-import { Operator, OperatorModel } from '../../../models/operator.model';
+import { OperatorModel } from '../../../models/operator.model';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { FieldTypeHelper } from '../../../models/fieldtype-api.model';
 import { forkJoin } from 'rxjs';
 import { AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, FieldTypeAPIModelFieldCondition, Filters, SystemFields } from './advanced-filtering.models';
-import { GallerySwitchComponent } from '../../gallery/gallery.switch.component';
 import { DatePipe } from '@angular/common';
+import { AllocationService } from '../../../services/allocations.service';
+import { ScoreTypeAllocation } from '../../../models/metrics.model';
 
 @Component({
     selector: 'advanced-filtering',
@@ -15,12 +16,13 @@ import { DatePipe } from '@angular/common';
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['./advanced-filtering.component.less'],
-    providers: [FieldsObservableService, CompanySettingsService]
+    providers: [FieldsObservableService, CompanySettingsService, AllocationService]
 })
 export class AdvancedFilteringComponent implements OnChanges {
     @Input() assetTypeUid: string = '';
     @Output() onChange = new EventEmitter();
 
+    allocations: ScoreTypeAllocation[] = [];
     filters: Filters;
 
     fields: FieldTypeAPIModelFieldCondition[] = null;
@@ -36,6 +38,7 @@ export class AdvancedFilteringComponent implements OnChanges {
         private elRef: ElementRef,
         private fieldsService: FieldsObservableService,
         private settingsService: CompanySettingsService,
+        private allocationService: AllocationService,
         private datePipe: DatePipe) {
         this.conditions = new AdvancedFilterFieldConditionCollection();
         this.conditions.filters = [];
@@ -61,14 +64,18 @@ export class AdvancedFilteringComponent implements OnChanges {
         this.visible = false;
         forkJoin(
             this.settingsService.getOperators(),
-            this.fieldsService.getFieldsV2(this.assetTypeUid, null, null)
+            this.fieldsService.getFieldsV2(this.assetTypeUid, null, null),
+            this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid)
         ).subscribe((response) => {
             this.operators = response[0];
+            this.allocations = response[2];
             let res = response[1];
+
             var tempFields: FieldTypeAPIModelFieldCondition[] = [];
             res.forEach(f => {
                 if (FieldTypeHelper.isFieldForOperatorAdvancedFilters(f.Type)) {
-                    tempFields.push(f as FieldTypeAPIModelFieldCondition);
+                    var fModel = f as FieldTypeAPIModelFieldCondition;
+                    tempFields.push(fModel);
                 }
             });
 
@@ -129,7 +136,7 @@ export class AdvancedFilteringComponent implements OnChanges {
     }
 
     getQuery() {
-        this.filters = this.conditions.getFilters();
+        this.filters = this.conditions.getFilters(this.allocations);
 
         this.cdRef.markForCheck();
     }
