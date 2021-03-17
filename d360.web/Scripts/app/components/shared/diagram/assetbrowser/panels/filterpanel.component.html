@@ -13,16 +13,22 @@
         </td>
     </tr>
     <tr class="filter-row">
+        <td class="filter-row-label">Display Descendant Assets</td>
+        <td class="filter-row-control">
+            <p-checkbox (ngModelChange)="current.DisplayDescendantAssets = $event;ancestryChange()" [(ngModel)]="current.DisplayDescendantAssets" [binary]="true"></p-checkbox>
+        </td>
+    </tr>
+    <tr class="filter-row">
         <td class="filter-row-label" *ngIf="options?.FilterAssetTypes && options?.FilterAssetTypes.length > 0">Hide by Asset Type:</td>
         <td class="filter-row-control">
             <p-listbox [options]="options?.FilterAssetTypes"
-                        [(ngModel)]="selectedFilterAssetTypes"
-                        multiple="multiple"
-                        [showToggleAll]="false"
-                        styleClass="filter-dropdown"
-                        checkbox="checkbox"
-                        optionLabel="label"
-                        (onChange)="selectedFilterAssetTypes = $event.value; assetTypeChange($event)">
+                       [(ngModel)]="selectedFilterAssetTypes"
+                       multiple="multiple"
+                       [showToggleAll]="false"
+                       styleClass="filter-dropdown"
+                       checkbox="checkbox"
+                       optionLabel="label"
+                       (onChange)="selectedFilterAssetTypes = $event.value; assetTypeChange($event)">
             </p-listbox>
         </td>
     </tr>
@@ -30,13 +36,13 @@
         <td class="filter-row-label" *ngIf="options?.FilterPredicates && options?.FilterPredicates.length > 0">Hide by Impact Predicate:</td>
         <td class="filter-row-control">
             <p-listbox [options]="options?.FilterPredicates"
-                        [(ngModel)]="selectedFilterPredicates"
-                        multiple="multiple"
-                        [showToggleAll]="false"
-                        styleClass="filter-dropdown"
-                        checkbox="checkbox"
-                        optionLabel="label"
-                        (onChange)="selectedFilterPredicates = $event.value; predicateChange($event)">
+                       [(ngModel)]="selectedFilterPredicates"
+                       multiple="multiple"
+                       [showToggleAll]="false"
+                       styleClass="filter-dropdown"
+                       checkbox="checkbox"
+                       optionLabel="label"
+                       (onChange)="selectedFilterPredicates = $event.value; predicateChange($event)">
             </p-listbox>
         </td>
     </tr>
@@ -44,13 +50,13 @@
         <td class="filter-row-label" *ngIf="options?.FilterResponsibilityTypes && options?.FilterResponsibilityTypes.length > 0">Hide by Responsible Party:</td>
         <td class="filter-row-control">
             <p-listbox [options]="options?.FilterResponsibilityTypes"
-                        [(ngModel)]="selectedFilterResponsibilityTypes"
-                        multiple="multiple"
-                        [showToggleAll]="false"
-                        styleClass="filter-dropdown"
-                        checkbox="checkbox"
-                        optionLabel="label"
-                        (onChange)="selectedFilterResponsibilityTypes = $event.value; responsibilityTypeChange($event)">
+                       [(ngModel)]="selectedFilterResponsibilityTypes"
+                       multiple="multiple"
+                       [showToggleAll]="false"
+                       styleClass="filter-dropdown"
+                       checkbox="checkbox"
+                       optionLabel="label"
+                       (onChange)="selectedFilterResponsibilityTypes = $event.value; responsibilityTypeChange($event)">
             </p-listbox>
         </td>
     </tr>

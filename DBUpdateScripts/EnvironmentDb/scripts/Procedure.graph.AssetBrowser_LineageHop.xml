@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_LineageHop-v6">
-    <comment>GOV-13214</comment>
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_LineageHop-v7">
+    <comment>GOV-14051</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -20,7 +20,8 @@ create or alter procedure [graph].[AssetBrowser_LineageHop]
 	@direction char(1) = 'F', -- (F)orward, (B)ackward
 	@resourceId int,
 	@isAdmin bit,
-	@includeNonLeaf bit = 1
+	@includeNonLeaf bit = 1,
+	@includeDescendantAssets bit = 1
 as
 begin
 	set nocount on;
@@ -152,41 +153,45 @@ begin
 			select distinct Uid, ID, ParentID, AssetTypeID from h;
 
 		-- GOV-13214 - Get children that may not be involved in lineage --------------------------------------
-		with h as (
-			select	C.Uid,
-					C.ID,
-					C.AssetTypeID,
-					I.Object,
-					I.ObjectID,
-					A.ID ParentID,
-					I.Subject as ParentObject,
-					I.SubjectID as ParentObjectID
-			from	Asset A
-					inner join #hopAssets L on L.ID = A.ID
-					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
-					inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
-			union all
-			select	C.Uid,
-					C.ID,
-					C.AssetTypeID,
-					C.Object,
-					C.ObjectID,
-					A.ID as ParentID,
-					I.Subject as ParentObject,
-					I.SubjectID as ParentObjectID
-			from	h
-					inner join Asset A on h.Object = A.Object and h.ObjectID = A.ObjectID
-					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
-					inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
-		)
+		if @includeDescendantAssets = 1
+		begin
+			with h as (
+				select	C.Uid,
+						C.ID,
+						C.AssetTypeID,
+						I.Object,
+						I.ObjectID,
+						A.ID ParentID,
+						I.Subject as ParentObject,
+						I.SubjectID as ParentObjectID
+				from	Asset A
+						inner join #hopAssets L on L.ID = A.ID
+						inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
+						inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
+				union all
+				select	C.Uid,
+						C.ID,
+						C.AssetTypeID,
+						C.Object,
+						C.ObjectID,
+						A.ID as ParentID,
+						I.Subject as ParentObject,
+						I.SubjectID as ParentObjectID
+				from	h
+						inner join Asset A on h.Object = A.Object and h.ObjectID = A.ObjectID
+						inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
+						inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
+			)
 
-		insert into #hierarchies (Uid, ID, ParentID, AssetTypeID)
-			select	distinct 
-					h.Uid, h.ID, h.ParentID, h.AssetTypeID
-			from	h
-					left join #hierarchies e on e.Uid = h.Uid
-			where	e.Uid is null
+			insert into #hierarchies (Uid, ID, ParentID, AssetTypeID)
+				select	distinct 
+						h.Uid, h.ID, h.ParentID, h.AssetTypeID
+				from	h
+						left join #hierarchies e on e.Uid = h.Uid
+				where	e.Uid is null
+		end
 		------------------------------------------------------------------------------------------------------
+
 	end
 	else 
 	begin
