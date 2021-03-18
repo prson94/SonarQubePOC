@@ -33,6 +33,7 @@ export class SearchFieldComponent implements ControlValueAccessor, OnInit, OnDes
     @Input() disabled: boolean = false;
     @Input() debounce: number = 200;
     @Input() style: any;
+    @Input() infoTooltip: string = "";
 
     @Output() onSearch = new EventEmitter();
 
@@ -94,7 +95,7 @@ export class SearchFieldComponent implements ControlValueAccessor, OnInit, OnDes
     performsearch() {
         this.onSearch.emit(this.value);
     }
-    onInputKey(event:KeyboardEvent) {
+    onInputKey(event: KeyboardEvent) {
         if (event.which == 13 && this.isEnter()) {
             event.preventDefault();
             event.stopImmediatePropagation();

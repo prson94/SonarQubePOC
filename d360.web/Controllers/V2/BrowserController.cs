@@ -44,7 +44,7 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var sql = "exec graph.AssetBrowser_Initial @ancestry, @uid, @resourceId, @isAdmin, @hopCount, @includeNonLeaf";
+                var sql = "exec graph.AssetBrowser_Initial @ancestry, @uid, @resourceId, @isAdmin, @hopCount, @includeNonLeaf, @includeDescendantAssets";
                 var reader = await Company.QueryMultipleAsync(
                     sql,
                     new
@@ -54,7 +54,8 @@ namespace d360.web.Controllers.V2
                         resourceId = Company.CurrentResourceID,
                         isAdmin = Company.CurrentResourceIsAdmin,
                         postModel.hopCount,
-                        postModel.includeNonLeaf
+                        postModel.includeNonLeaf,
+                        postModel.includeDescendantAssets
                     },
                     timeout: 120
                 );
@@ -68,8 +69,10 @@ namespace d360.web.Controllers.V2
                     dataLimitReached = reader.Read<bool>().FirstOrDefault()
                 };
 
-                if (model.reveals.Count == 1) {
-                    if (model.reveals[0].direction == AssetBrowserApiHopDirection.None) {
+                if (model.reveals.Count == 1)
+                {
+                    if (model.reveals[0].direction == AssetBrowserApiHopDirection.None)
+                    {
                         model.reveals = null;
                     }
                 }
@@ -106,7 +109,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<HttpResponseMessage> GetInitialLineage(AssetBrowserLineageInitialModel model)
         {
-            var o = new AssetBrowserInitialModel { ancestry = model.ancestry, hopCount = model.hopCount, uid = model.uid, includeNonLeaf = model.includeNonLeaf };
+            var o = new AssetBrowserInitialModel { ancestry = model.ancestry, hopCount = model.hopCount, uid = model.uid, includeNonLeaf = model.includeNonLeaf, includeDescendantAssets = model.includeDescendantAssets };
             return await getInitial(o);
         }
 
@@ -200,7 +203,7 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var sql = "exec graph.AssetBrowser_LineageHop @ancestry, @hierarchyKey, @assets, @preloadedIntersects, @direction, @resourceId, @isAdmin, @includeNonLeaf";
+                var sql = "exec graph.AssetBrowser_LineageHop @ancestry, @hierarchyKey, @assets, @preloadedIntersects, @direction, @resourceId, @isAdmin, @includeNonLeaf, @includeDescendantAssets";
                 var reader = await Company.QueryMultipleAsync(
                     sql,
                     new
@@ -209,10 +212,11 @@ namespace d360.web.Controllers.V2
                         hopModel.hierarchyKey,
                         assets = hopModel.assets.AsTableValuedParameter("dbo.AssetBrowserImpactTable", new List<string>() { "Key", "Uid" }),
                         preloadedIntersects = hopModel.preloadedIntersects.AsTableValuedParameter("dbo.Ids", new List<string>() { "Id" }),
-                        direction = (hopModel.direction == AssetBrowserApiHopDirection.Backward) ? "B" : "F", 
+                        direction = (hopModel.direction == AssetBrowserApiHopDirection.Backward) ? "B" : "F",
                         resourceId = Company.CurrentResourceID,
                         isAdmin = Company.CurrentResourceIsAdmin,
-                        hopModel.includeNonLeaf
+                        hopModel.includeNonLeaf,
+                        hopModel.includeDescendantAssets
                     },
                     timeout: 60
                 );
@@ -341,7 +345,7 @@ order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).T
             MapToApiVersion("2.0"),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public async Task<HttpResponseMessage> GetOwnershipCounts(Guid uid, int hopCount, bool includeNonLeaf, AssetBrowserAncestry ancestry )
+        public async Task<HttpResponseMessage> GetOwnershipCounts(Guid uid, int hopCount, bool includeNonLeaf, AssetBrowserAncestry ancestry)
         {
             try
             {
@@ -360,7 +364,8 @@ order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).T
                     timeout: 120
                 );
 
-                foreach (var item in res){
+                foreach (var item in res)
+                {
                     if (!string.IsNullOrEmpty(item.owners))
                     {
                         item.owners = JsonConvert.DeserializeObject(item.owners);

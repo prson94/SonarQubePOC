@@ -361,7 +361,7 @@ step?.settings?.ResponsibilitySide != null ? step?.settings?.ResponsibilitySide 
                              [pageLinks]="3"
                              [paginator]="true"
                              [rows]="5"
-                             [rowsPerPageOptions]="defaultPagingOptions">
+                             [rowsPerPageOptions]="[5,10,25,50,100]">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th>Field</th>

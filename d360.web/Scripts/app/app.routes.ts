@@ -1,5 +1,5 @@
 ﻿import { NgModule } from '@angular/core';
-import { Routes, RouterModule, Route } from '@angular/router';
+import { Routes, RouterModule } from '@angular/router';
 import { SiteUrlHelpers } from './static/site-url-helpers';
 
 
@@ -27,8 +27,7 @@ const routes: Routes = [
     { path: SiteUrlHelpers.SITE_URL_HOME_ROOT, loadChildren: () => import('./components/home/home.module').then((m) => m.HomeModule) },
     { path: SiteUrlHelpers.SITE_URL_GALLERY_ROOT, loadChildren: () => import('./components/gallery/gallery.module').then((m) => m.GalleryModule) },
     { path: SiteUrlHelpers.SITE_URL_SEARCH_ROOT, loadChildren: () => import('./components/search/search.module').then((m) => m.SearchModule) },
-    { path: SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT, loadChildren: () => import('./components/workflow/workflow.module').then((m) => m.WorkflowModule) },
-    { path: SiteUrlHelpers.SITE_URL_MAPPING_ROOT, loadChildren: () => import('./components/mapping/mapping.module').then((m) => m.MappingModule) },
+    { path: SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT, loadChildren: () => import('./components/workflow/workflow.module').then((m) => m.WorkflowModule) },    
     { path: SiteUrlHelpers.SITE_URL_AUDIT_ROOT, loadChildren: () => import('./components/sidebar/audit/audit.module').then((m) => m.AuditModule) },
     { path: SiteUrlHelpers.SITE_URL_DASHBOARD_ROOT, loadChildren: () => import('./components/sidebar/dashboard/dashboard.module').then((m) => m.DashboardModule) },
     { path: SiteUrlHelpers.SITE_URL_FOLLOWERS_ROOT, loadChildren: () => import('./components/sidebar/followers/followers.module').then((m) => m.FollowersModule) },

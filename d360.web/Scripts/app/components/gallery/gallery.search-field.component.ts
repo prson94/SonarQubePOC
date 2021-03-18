@@ -36,8 +36,15 @@ export class GallerySearchFieldComponent implements OnInit {
     events: Array<any>;
     sampleUsage: string = '<ig-search-field></ig-search-field>';
 
-    value:string = 'Test search';
+    value: string = 'Test search';
     formValue;
+
+    tooltipHTML: string = `Type to provide a search term. Matches will be found where the value of any column starts with the termo or terms provided.
+    You can also use wildcards for more control over how the term is matched.
+*account* : Match on values which contain 'account'
+*account : Match on values which end with 'account'
+All matches are case insensitive.
+`;
 
     constructor(private ref: ChangeDetectorRef) { }
 
@@ -50,6 +57,7 @@ export class GallerySearchFieldComponent implements OnInit {
         this.properties.push({ Name: "debounce", Type: "number", Description: "Debounce time on keypress detection.", Default: "200" });
         this.properties.push({ Name: "disabled", Type: "boolean", Description: "Used to set the control to disabled state where the user cannot interact with it", Default: "false" });
         this.properties.push({ Name: "style", Type: "string", Description: "Inline style of the component.", Default: "" });
+        this.properties.push({ Name: "infoTooltip", Type: "string", Description: "Tooltip in HTML format", Default: "" });
 
         this.events = new Array();
         this.events.push({ Name: "onSearch", Description: "Fired when a search is invoked according to the set mode" });
@@ -60,11 +68,13 @@ export class GallerySearchFieldComponent implements OnInit {
         let el = document.getElementById(elem);
         let child = document.createElement('div');
         child.className = 'searchexpression';
-        child.innerText = 'onSearch fired for "' + e+ '"';
+        child.innerText = 'onSearch fired for "' + e + '"';
         el.appendChild(child);
         setTimeout(function () {
             child.remove();
-        }, 2000); 
+        }, 2000);
         console.log(e, elem);
     }
+
+
 }

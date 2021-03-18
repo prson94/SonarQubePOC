@@ -98,10 +98,75 @@ namespace d360.web
 
     public class MvcApplication : HttpApplication
     {
+        protected void Application_PreSendRequestHeaders(object sender, EventArgs e)
+        {
+            /*
+             * If Govern is accessed in a frame, cookies will be considered 3rd party cookies by the ancestor page
+             * so to work, the SameSite flag needs to be set to "None", and when SameSite is set to none, the Secure flag
+             * must be set.
+             * Cookie settings only needs to be downgraded when Response is setting new cookies and if the request originated
+             * from a frame. To track if the session is "framed", a separate Frame cookie is set on the first request when it's
+             * possible to deduct that it originated in a frame. The frame-cookie settings are derived from the authentication cookie
+             */
+            if (Response.Cookies.Count == 0)
+            {
+                return;
+            }
+
+            string frameRequestCookieId = System.Web.Security.FormsAuthentication.FormsCookieName + "Frame";
+            bool framedRequest = false;
+
+            if (Request.Cookies.AllKeys.Contains(frameRequestCookieId))
+            {
+                framedRequest = true;
+            }
+            else
+            {
+                try
+                {
+                    var req = HttpContext.Current?.Request;
+                    if (req != null)
+                    {
+                        var ctx = req.GetOwinContext();
+                        if (ctx.Get<bool>("CompanyFrameRequestStart"))
+                        {
+                            //Request comes from a valid frame, set cookie to indicate a framed session
+                            framedRequest = true;
+                            HttpCookie framecookie = new HttpCookie(frameRequestCookieId, "1")
+                            {
+                                HttpOnly = true,
+                                Secure = true,
+                                SameSite = SameSiteMode.None,
+                                Path = System.Web.Security.FormsAuthentication.FormsCookiePath,
+                                Domain = System.Web.Security.FormsAuthentication.CookieDomain
+                            };
+                            Response.AppendCookie(framecookie);
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                }
+            }
+
+            if(framedRequest)
+            {
+                foreach (string s in Response.Cookies.AllKeys)
+                {
+                    HttpCookie c = Response.Cookies.Get(s);
+                    c.SameSite = SameSiteMode.None;
+                    c.Secure = true;
+                }
+            }
+        }
+
         protected void Application_Start()
         {
             ViewEngines.Engines.Clear();
             ViewEngines.Engines.Add(new RazorViewEngine()); //only use razor view engine
+
+            //GOV-14022 remove the X-Frame-Options from the forms / password reset we add this in the web.config this avoids it appearing 2x
+            System.Web.Helpers.AntiForgeryConfig.SuppressXFrameOptionsHeader = true;
 
             Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration.Active.InstrumentationKey = System.Web.Configuration.WebConfigurationManager.AppSettings["AppInsightsInstrumentationKey"];
             #region Autofac

@@ -745,29 +745,36 @@ where   ExecutionID <> @id
                                             #endregion
                                     }
 
-                                    Guid scoreItemUid = Guid.NewGuid();
-                                    if (previousScoreItem != null)
+                                    #region Determine whether to update the existing score item, or create a new one, and whether to disconnect from a previous score.
+
+                                    if (conditionValidator.ConditionMet && assetVersionCheckObjectTypes.ShouldContinueAnalysis(measure.MetricAssetVersionUid))
                                     {
-                                        if (previousScoreItem.Value == scoreItem.Value && previousScoreItem.AdjustedWeight == scoreItem.AdjustedWeight)
-                                        {   // Since value is the same, just link the existing score item to score.
-                                            scoreItemUid = previousScoreItem.ScoreItemUid;
-                                        }
-                                        else
+                                        // Check to see if we have an existing scoreItem for this recalculated measure result.
+                                        var previousScoreItem = previousScoreItems.FirstOrDefault(e => e.MetricAssetVersionUid == measure.MetricAssetVersionUid);
+                                        Guid scoreItemUid = Guid.NewGuid();
+                                        if (previousScoreItem != null)
                                         {
-                                            if (previousScoreItem.EffectiveDate.Date == assetEffectiveDate.EffectiveDate.Date)
-                                            {   // The value for an existing effective date is the now different.
+                                            if (previousScoreItem.Value == scoreItem.Value && previousScoreItem.AdjustedWeight == scoreItem.AdjustedWeight)
+                                            {
+                                                // Since value is the same, just link the existing score item to score.
+                                                scoreItemUid = previousScoreItem.ScoreItemUid;
+                                            }
+                                            else
+                                            {
+                                                // The value for an existing effective date is the now different.
                                                 if (previousScoreItem.UsedInOtherScores)
-                                                {   // The score item is used in an earlier score, so we need to create a new score item, AND detach this score from the now old score item.
+                                                {
+                                                    // The score item is used in an earlier score, so we need to create a new score item, AND detach this score from the now old score item.
                                                     assetScoreItemLinksToDelete.Add(new ScoreItemLink { ScoreItemUid = previousScoreItem.ScoreItemUid });
                                                 }
                                                 else
-                                                {   // Not used in any other score, so we are OK to update the value on this score item.
+                                                {
+                                                    // Not used in any other score, so we are OK to update the value on this score item.
                                                     scoreItemUid = previousScoreItem.ScoreItemUid;
                                                 }
                                             }
                                         }
-                                    }
-                                    scoreItem.Uid = scoreItemUid;
+                                        scoreItem.Uid = scoreItemUid;
 
                                     assetScoreItems.Add(scoreItem);
                                     assetScoreItemLinks.Add(new ScoreItemLink { ScoreItemUid = scoreItem.Uid });

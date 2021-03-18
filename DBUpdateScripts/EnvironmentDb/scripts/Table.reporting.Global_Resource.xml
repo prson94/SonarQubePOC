@@ -61,7 +61,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="TKlok" id="Table.reporting.Global_Resource-ReportingGlobalResource_AfterUpsert-v3">
+  <changeSet author="TKlok" id="Table.reporting.Global_Resource-ReportingGlobalResource_AfterUpsert-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -95,13 +95,22 @@ BEGIN
 			insert	([AssetTypeID], [State], SourceID, [Object], [ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy],[uid])
 			values	(S.[AssetTypeID], S.[State], S.SourceID, S.[Object], S.[ObjectID], getutcdate(), 0, getutcdate(), 0, S.[uid]);
 			
-			
-		INSERT INTO graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn)
-		SELECT A.ID, O.[uid], a.AssetTypeID, AT.Uid as AssetTypeUid, O.[State], O.UpdatedOn
-		FROM	inserted O
+		merge	graph.AssetNode as T
+		using	(
+				SELECT A.ID, O.[uid], a.AssetTypeID, AT.Uid as AssetTypeUid, O.[State], coalesce(O.UpdatedOn, getutcdate()) as UpdatedOn
+				FROM	inserted O
 				INNER JOIN Asset A ON A.uid = O.uid
 				INNER JOIN AssetType AT on a.AssetTypeID = AT.ID
-				WHERE NOT EXISTS (SELECT 1 FROM graph.AssetNode WHERE [Uid] = O.Uid);
+				) S
+		on		(T.ID = S.ID)
+		when	matched then
+		update	set
+					T.[uid] = S.[uid],
+					T.UpdatedOn = S.UpdatedOn,
+					T.State = S.State
+		when not matched by target then
+		INSERT	(ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn)
+		values	(S.ID, S.[Uid], S.AssetTypeID, S. AssetTypeUid, S.State, S.UpdatedOn);
 			
 		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
 		SELECT 'ObjectIndex', 

@@ -5,12 +5,18 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.dbo.GetAllowedIntersectionTypesByIntersect-v1">
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.GetAllowedIntersectionTypesByIntersect_Drop-v2">
+  <comment>GOV-13855</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+			DROP PROCEDURE IF EXISTS [dbo].[GetAllowedIntersectionTypesByIntersect]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [dbo].[GetAllowedIntersectionTypesByIntersect]        
 	@IntersectID int
 AS
@@ -83,11 +89,6 @@ with h as (
     
  select * from @tbl order by TargetName    
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

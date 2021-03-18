@@ -1,6 +1,6 @@
 ﻿<d3s-loading [isLoading]="isGridLoading || isDataLoading"></d3s-loading>
 <div *ngIf="!isDataLoading && !isGridLoading">
-    <div *ngIf="!isDataLoading && !isGridLoading && relations.length > 0 && !shouldShowEditor() && !showTechnical && !showDelete">
+    <div *ngIf="!isDataLoading && !isGridLoading && relations.length > 0 && !shouldShowEditor() && !showDelete">
 
         <input type="text" [hidden]="!simpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
         <p-table #dt
@@ -20,13 +20,11 @@
                     <col style="width: 30px">
                     <col style="width: 30px">
                     <col style="width: 30px">
-                    <col style="width: 30px">
                     <col *ngFor="let col of columns">
                 </colgroup>
             </ng-template>
             <ng-template pTemplate="header">
                 <tr>
-                    <th style="width: 30px"></th>
                     <th style="width: 30px"></th>
                     <th style="width: 30px"></th>
                     <th style="width: 30px"></th>
@@ -36,7 +34,6 @@
                     </th>
                 </tr>
                 <tr [hidden]="simpleFilter">
-                    <th style="width: 30px"></th>
                     <th style="width: 30px"></th>
                     <th style="width: 30px"></th>
                     <th style="width: 30px"></th>
@@ -62,11 +59,6 @@
                             <a style="cursor:pointer;" (click)="selected=item;doDelete();" title="Remove"><i class="fa fa-trash-o"></i></a>
                         </div>
                     </td>
-                    <td>
-                        <div class="RowTools" [ngClass]="{'RowTools': item.HasTechnicalRelationships, 'InActiveRowTools': !item.HasTechnicalRelationships}">
-                            <a style="cursor:pointer;" (click)="selected=item;showTechnical=true;" title="Technical Relationships"><i class="fa fa-bolt"></i></a>
-                        </div>
-                    </td>
                     <td *ngFor="let column of columns">                        
                             <d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" (click)="selectObject(item)" [align]="'right'">
                                 <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>
@@ -78,9 +70,6 @@
                 <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
             </ng-template>
         </p-table>
-    </div>
-    <div *ngIf="showTechnical && !shouldShowEditor()">
-        <d3s-relationship-technical-relations [objectName]="objectName" [relationship]="selected" [addTechnicalRelationship]="addRelationship" (allTechnicalRelationshipsDeleted)="selected.HasTechnicalRelationships=false;" (addTechnicalRelationshipChange)="addRelationship=false;addRelationshipChange.emit(addRelationship);selected.HasTechnicalRelationships=true;" (closeClick)="showTechnical=false" [hasEdit]="hasEdit" [hasDelete]="hasDelete"></d3s-relationship-technical-relations>
     </div>
     <d3s-dynamic-editor *ngIf="shouldShowEditor()"
                         [objectID]="intersectTypeID"

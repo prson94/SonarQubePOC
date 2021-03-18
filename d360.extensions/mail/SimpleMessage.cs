@@ -2,6 +2,7 @@
 using Mandrill.Model;
 using Microsoft.Azure;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace d360.extensions.mail
 {
@@ -24,6 +25,8 @@ namespace d360.extensions.mail
                 message.Text = content;
             else
                 message.Html = content;
+
+            GetMandrillsubAccount(ref message);
 
             var api = new MandrillApi(CloudConfigurationManager.GetSetting("MandrillApiKey"));
 
@@ -49,11 +52,56 @@ namespace d360.extensions.mail
             else
                 message.Html = content;
 
+            GetMandrillsubAccount(ref message);
+
+
             var api = new MandrillApi(CloudConfigurationManager.GetSetting("MandrillApiKey"));
 
             await api.Messages.SendAsync(message);
             
         }
 
+        public static void SendMessage(string subject, string toEmail, string toName,
+        Dictionary<string, string> templateTags, string templateID
+    )
+        {
+            // Create the email object first, then add the properties.
+            var message = new MandrillMessage();
+
+            message.AddTo(toEmail, toName);
+            message.FromEmail = "no-reply@data3sixty.com";
+            message.FromName = "Data360";
+
+            message.Subject = subject;
+
+            message.TrackOpens = false;
+            message.TrackClicks = false;
+            if (templateTags != null)
+            {
+                foreach (var k in templateTags.Keys)
+                {
+                    message.AddRcptMergeVars(toEmail, k, templateTags[k]);
+                }
+            }
+
+            GetMandrillsubAccount(ref message);
+
+            var api = new MandrillApi(CloudConfigurationManager.GetSetting("MandrillApiKey"));
+            var result = api.Messages.SendTemplateAsync(message, templateID).Result;
+            if (result == null || result.Count < 1)
+            {
+                //...
+            }
+        }
+
+        private static void GetMandrillsubAccount(ref MandrillMessage message)
+        {
+            var subaccount = CloudConfigurationManager.GetSetting("MandrillSubAccount");
+
+            if (subaccount != null && subaccount.Trim() != string.Empty)
+            {
+                message.Subaccount = subaccount;
+            }
+        }
     }
 }

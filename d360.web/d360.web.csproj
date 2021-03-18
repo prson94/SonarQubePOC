@@ -34,7 +34,7 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <TypeScriptToolsVersion>3.9</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>4.0</TypeScriptToolsVersion>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -725,7 +725,6 @@
     </EmbeddedResource>
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-700.svg" />
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.svg" />
-    <Content Include="Scripts\ai.0.22.9-build00167.min.js" />
     <Content Include="Scripts\app\components\admin\issuetypes\admin-issue-type-allocation-editor.component.html" />
     <Content Include="Scripts\app\components\admin\scoring\admin-metric-pass-test-details.component.html" />
     <Content Include="Scripts\app\components\admin\scoring\detail.component.html" />
@@ -766,6 +765,7 @@
     <Content Include="Scripts\app\components\fusion\fusion-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.multi-input-field.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.radio-button.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.property-group.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.checkbox.component.html" />
@@ -796,7 +796,6 @@
     <Content Include="Scripts\app\components\hierarchy\hierarchy-item-structure.component.html" />
     <Content Include="Scripts\app\components\hierarchy\hierarchy-item.component.html" />
     <Content Include="Scripts\app\components\hierarchy\hierarchy-list.component.html" />
-    <Content Include="Scripts\app\components\mapping\mapping.component.html" />
     <Content Include="Scripts\app\components\reference\reference-item-list.component.html" />
     <Content Include="Scripts\app\components\reference\reference-item-type-list.component.html" />
     <Content Include="Scripts\app\components\rule\rule-column-filter.component.html" />
@@ -842,9 +841,11 @@
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
     <Content Include="Scripts\app\components\shared\controls\message-box\message-box.less" />
     <Content Include="Scripts\app\components\shared\controls\field-condition-grid\field-condition-grid.component.html" />
+    <Content Include="Scripts\app\components\shared\controls\multi-input-field\multi-input-field.component.html" />
     <Content Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.less" />
     <Content Include="Scripts\app\components\shared\controls\property-group\property-group.less" />
     <Content Include="Scripts\app\components\shared\controls\search-field\search-field.component.less" />
+    <Content Include="Scripts\app\components\shared\controls\multi-input-field\multi-input-field.component.less" />
     <None Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.less" />
     <Content Include="Scripts\app\components\shared\controls\number-picker\number-input.component.html" />
     <Content Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.html" />
@@ -907,6 +908,7 @@
     <Content Include="Scripts\app\components\shared\small-widgets\status-badge\status-badge.component.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\synonyms.tile.html" />
     <Content Include="Scripts\app\components\shared\social\social-board.component.html" />
+    <Content Include="Scripts\app\components\shared\social\comment-form.component.html" />
     <Content Include="Scripts\app\components\shared\tags\d3s-tag-view.html" />
     <Content Include="Scripts\app\components\shared\user\user-list.component.html" />
     <Content Include="Scripts\app\components\shared\where-used\where-used.component.html" />
@@ -955,6 +957,7 @@
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
     <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-type-allocation-editor.component.ts" />
+    <Content Include="Scripts\app\components\admin\rules\admin-rules.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\admin-metric-pass-test-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\admin-metric-pass-test-details.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\common-screen-references-model.ts" />
@@ -969,6 +972,7 @@
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.multi-input-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.radio-button.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.propery-group.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.checkbox.component.ts" />
@@ -1021,6 +1025,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\message-box\message-box.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\message-box\message-box.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\field-condition-grid\field-condition-grid.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\multi-input-field\multi-input-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\property-group\property-group.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\search-field\search-field.component.ts" />
@@ -1053,6 +1058,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dayofweek-input\dayofweek-input.component.ts" />
     <Content Include="Scripts\app\components\shared\social\social-comment.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\social\comment-form.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\info-tooltip.component.ts" />
     <Content Include="Scripts\app\components\workflow\workflow-view-details.component.html" />
     <Content Include="Scripts\dist\*.js" />
@@ -1282,6 +1288,7 @@
     <Content Include="Scripts\app\components\shared\asset-score\asset-score.less" />
     <Content Include="Scripts\app\components\shared\menu\site-menu.less" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\overview.component.less" />
+    <Content Include="Scripts\app\components\shared\social\social-board.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1594,9 +1601,6 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-query-attribute-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-query-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\itemown\itemown.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\itemown\itemown.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\itemown\itemown.routes.ts" />
@@ -1874,7 +1878,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\messages-bar.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-followers.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\raise-issue-button.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\relationship\relationship-technical-relations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\survey\take-survey.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\core.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\social\social.module.ts" />
@@ -1890,7 +1893,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\social\social-board.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\social\social-comment.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\social\social-input.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\activity-details-tile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\activity-tile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assignments\assignments.component.ts" />

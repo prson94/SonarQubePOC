@@ -567,7 +567,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.diagram.model.insertArrayItem(node.owners, ix, owner);
                 this.diagram.model.setDataProperty(owner, 'expanded', false);
                 this.diagram.model.setDataProperty(owner, 'showLoading', false);
-               
+
                 if (currentAnimation)
                     currentAnimation.stop();
 
@@ -929,9 +929,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 break;
             case AssetBrowserFilterChangeEventType.Predicate:
                 this.helper_HideDeselectedPredicates();
+                this.helper_UpdateParts();
                 break;
             case AssetBrowserFilterChangeEventType.ResponsibilityType:
                 this.helper_HideDeselectedResponsibilityTypes();
+                this.helper_UpdateParts();
                 break;
         }
     }
@@ -1102,7 +1104,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private helper_HideDeselectedPredicates() {
         let hiddenIds = this.displayConfiguration.SelectedPredicates;
-
         this.diagram.startTransaction('HideDeselectedPredicates');
 
         this.diagram.findTopLevelGroups().each(g => {
@@ -1458,7 +1459,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             };
 
             if (isLineage) {
-                this.browserService.getInitialLineage(this.displayConfiguration.AncestryMode, this.assetUid, this.helper_NumberOfHops(), this.displayConfiguration.IncludeNonLeaf).subscribe(subscriber);
+                this.browserService.getInitialLineage(this.displayConfiguration.AncestryMode, this.assetUid, this.helper_NumberOfHops(), this.displayConfiguration.IncludeNonLeaf, this.displayConfiguration.DisplayDescendantAssets).subscribe(subscriber);
             }
             else {
                 this.browserService.getInitialImpact(this.assetUid, this.helper_NumberOfHops(), this.displayConfiguration.IncludeNonLeaf).subscribe(subscriber);
@@ -1488,6 +1489,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.helper_HideDeselectedPredicates();
             this.helper_HideDeselectedResponsibilityTypes();
             this.helper_CalculateAlertCount();
+        });
+    }
+
+    /**
+    * Refreshes the diagram parts. Used when changing object properties and change detection on gojs is not triggered.
+    * @returns Nothing
+    */
+    private helper_UpdateParts() {
+        setTimeout(() => {
+            this.diagram.rebuildParts();
         });
     }
 
@@ -1571,7 +1582,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let preloadedIntersects = this.helper_GetDiagramIntersectIds(null);
             let direction: AssetBrowserApiHopDirection = data.direction as AssetBrowserApiHopDirection;
 
-            this.browserService.getLineageHop(this.displayConfiguration.AncestryMode, data.hierarchyKey, direction, this.displayConfiguration.IncludeNonLeaf, assets, preloadedIntersects)
+            this.browserService.getLineageHop(this.displayConfiguration.AncestryMode, data.hierarchyKey, direction, this.displayConfiguration.IncludeNonLeaf, assets, preloadedIntersects, this.displayConfiguration.DisplayDescendantAssets)
                 .subscribe((response: AssetBrowserResponseModel) => {
 
                     if (response.hierarchy && response.hierarchy.length > 0) {
@@ -3229,7 +3240,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 alignment: go.Spot.Left,
             },
             new go.Binding("visible", "", (obj: go.GraphObject) => {
-                var arrData = obj.part.data[propertyName] as Array<any>;
+                var arrData = (obj.part.data[propertyName] as Array<any>)
+                    .filter((x) => x["showBadge"] != false);
                 return arrData.length < this.autoCollapseRelationshipCount;
             }).ofObject(),
             new go.Binding("itemArray", propertyName),
@@ -3244,7 +3256,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 alignment: go.Spot.Left
             },
             new go.Binding("visible", "", (obj: go.GraphObject) => {
-                var arrData = obj.part.data[propertyName] as Array<any>;
+                var arrData = (obj.part.data[propertyName] as Array<any>)
+                    .filter((x) => x["showBadge"] != false);
                 return arrData.length < this.autoCollapseRelationshipCount;
             }).ofObject(),
             new go.Binding("itemArray", propertyName),
@@ -3275,6 +3288,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     }).ofObject()
                 ),
                 new go.Binding("visible", "", function (part: go.Part) {
+                    if (part.data['showBadge']) {
+                        part.height = 26;
+                    }
+                    else {
+                        part.height = 0;
+                    }
+
                     return part.data['showBadge'];
                 }).ofObject(),
                 this.g(go.Panel, "Horizontal",
@@ -3366,6 +3386,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     }).ofObject()
                 ),
                 new go.Binding("visible", "", function (part: go.Part) {
+                    if (part.data['showBadge']) {
+                        part.height = 26;
+                    }
+                    else {
+                        part.height = 0;
+                    }
+
                     return part.data['showBadge'];
                 }).ofObject(),
                 this.g(go.Panel, "Horizontal",
@@ -3533,7 +3560,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         setTimeout(() => {
             this.followPart = obj.part;
             this.isRelationshipSelectorAvailable = obj.part.data["relExpanded" + propName];
-            this.relationshipData = obj.part.data[propName] as Array<any>;
+            this.relationshipData = (obj.part.data[propName] as Array<any>)
+                .filter((x) => x["showBadge"] != false);
             this.relationshipSelectorType = propName;
             if (propName === "relations") {
                 this.relationshipData.forEach(rel => {
@@ -3595,7 +3623,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             }
         },
             new go.Binding("visible", "", (obj: go.GraphObject) => {
-                var arrData = obj.part.data[propertyName] as Array<any>;
+                var arrData = (obj.part.data[propertyName] as Array<any>)
+                    .filter((x) => x["showBadge"] != false);
                 return arrData.length >= this.autoCollapseRelationshipCount;
             }).ofObject(),
             this.g(go.Panel, "Auto",
@@ -3699,7 +3728,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             },
                             new go.Binding("", "", (obj: go.GraphObject, target: go.TextBlock) => {
                                 let totalCount: number = 0;
-                                (obj.part.data[propertyName] as Array<any>).forEach(d => totalCount += d.count);
+
+                                (obj.part.data[propertyName] as Array<any>).filter((x) => x["showBadge"] != false).forEach(d => totalCount += d.count);
                                 if (isNaN(totalCount)) {
                                     target.text = '-';
                                     return;
@@ -3770,8 +3800,18 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             var data = part.diagram.nodes.filter(x => x.data['hierarchyKey'] == part.data['hierarchyKey']);
             var maxCharCount = 0;
             data.each(d => {
-                if (d.data && d.data["text"] && d.data['text'].length > maxCharCount)
-                    maxCharCount = d.data['text'].length;
+                if (d.data && d.data["text"]) {
+                    let currentCharCount: number = d.data["text"].length;
+
+                    //Additional size for leaf assets for padding
+                    if (d.data["leaf"]) {
+                        currentCharCount += 6;
+                    }
+
+                    if (currentCharCount > maxCharCount) {
+                        maxCharCount = currentCharCount;
+                    }
+                }
             });
 
             //set max top width depending on max character count withing hierarchy

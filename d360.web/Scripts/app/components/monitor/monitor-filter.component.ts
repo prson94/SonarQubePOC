@@ -12,7 +12,7 @@ import { State } from '../../models/asset.model';
             <div class="col s9">
                 <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
                 <div *ngIf="!isLoading">
-                    <table style="width: 100%">
+                    <table style="table-layout: fixed">
                         <tbody>
                             <tr>
                                 <td>

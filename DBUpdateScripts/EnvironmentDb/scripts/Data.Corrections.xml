@@ -4,7 +4,26 @@
     xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+  <changeSet author="TDuric" id="Data.Corrections.GOV-11816-2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+update AssetType
+set CanEditParent = 1
+from assettype at
+	inner join [intersecttype] it on it.object = at.object and it.objectid = at.objectid
+	inner join [predicate] p on it.predicateid = p.id
+where p.type in (3,4)
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
 
+		]]>
+    </rollback>
+  </changeSet>
   <changeSet author="MDonato" id="Data.Corrections.GOV-13702">
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -1454,5 +1473,18 @@ delete T from CommentRelation T inner join Comment C on C.ID = T.CommentID and C
 delete Comment where CommentType not in (1,2,5);
 ]]>
 		</sql>
-	</changeSet>	
+	</changeSet>
+	<changeSet author="bquinlivan" id="Data.Corrections.GOV-13585">
+			<sql dbms="mssql" splitStatements="false" stripComments="false">
+	<![CDATA[
+			UPDATE G
+				set G.[Uid] = A.Uid
+			from 
+				[Group] G
+				Inner Join Asset A on A.SourceID = G.ID and A.Object = 'Group'
+			Where 
+				G.[Uid] is null		
+	]]>
+		</sql>
+	</changeSet>		
 </databaseChangeLog>

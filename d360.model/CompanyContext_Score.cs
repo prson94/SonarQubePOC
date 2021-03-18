@@ -858,16 +858,16 @@ where   E.ExecutionID = @ExecutionID
             return model;
         }
 
-        public void SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid? fromExecutionUid = null, TimeSpan? timespan = null)
+        public Guid SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid? fromExecutionUid = null, TimeSpan? timespan = null)
         {
             var fields = new { 
                 originalExecutionUid = fromExecutionUid ?? Guid.Empty
             };
 
-            SendScoreEventWithPayload(changeType, item, fields, timespan);
+            return SendScoreEventWithPayload(changeType, item, fields, timespan);
         }
 
-        public void SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, dynamic fields, TimeSpan? timespan = null)
+        public Guid SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, dynamic fields, TimeSpan? timespan = null)
         {
             var apiExecution = new ApiExecution
             {
@@ -899,6 +899,8 @@ where   E.ExecutionID = @ExecutionID
             {
                 QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
             }
+            
+            return apiExecution.ExecutionID;
         }
 
         public void SendContinuingScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid executionUid, DateTime startedOn)

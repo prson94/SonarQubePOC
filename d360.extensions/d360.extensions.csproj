@@ -135,13 +135,11 @@
     <Compile Include="caching\DummyCachingProvider.cs" />
     <Compile Include="info\UriSecurityContextProvider.cs" />
     <Compile Include="IQueueSource.cs" />
-    <Compile Include="IScheduledJob.cs" />
     <Compile Include="ISearchSource.cs" />
     <Compile Include="ISecurityContextProvider.cs" />
     <Compile Include="ICachingProvider.cs" />
     <Compile Include="IStorageProvider.cs" />
     <Compile Include="mail\SimpleMessage.cs" />
-    <Compile Include="mail\TemplateMessage.cs" />
     <Compile Include="powerbi\PowerBI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="queue\AzureQueueSource.cs" />

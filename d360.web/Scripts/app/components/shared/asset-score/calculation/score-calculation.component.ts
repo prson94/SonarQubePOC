@@ -30,7 +30,24 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes["selected"] && changes["selected"].currentValue != null) {
-            let matchedCondition = this.selected.Conditions?.find((x) => x.Uid === this.selected.ConditionUid);
+
+            let matchedCondition = null;
+            if (this.selected.IsGroup && this.selected.Measures && this.selected.Measures.length > 0) {
+                this.selected.Measures.forEach((m) => {
+                    m.Conditions?.forEach((c) => {
+                        if (c.Uid === m.ConditionUid) {
+                            matchedCondition = c;
+                        }
+                    });
+                });
+            } else {
+                this.selected.Conditions?.forEach((x) => {
+                    if (x.Uid === this.selected.ConditionUid) {
+                        matchedCondition = x;
+                    }
+                });
+            }
+           
             if (matchedCondition) {
                 this.matchedCondition = matchedCondition;
             }
@@ -109,6 +126,6 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
         if (!val) {
             return;
         }
-        return (val * 100).toFixed(2).replace(/(\.[0]*?)0+/g,"") + "%";
+        return (val * 100).toFixed(2).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
     }
 }

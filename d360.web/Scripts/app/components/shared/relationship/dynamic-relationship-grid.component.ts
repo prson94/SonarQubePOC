@@ -57,8 +57,6 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     isDataLoading: boolean = false;
     theDeleteCallback: Function;
 
-    private showTechnical: boolean = false;
-
     @ViewChild("dt", { static: false }) datatable;
 
     constructor(private router: Router,
@@ -89,7 +87,6 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
                 && this.intersectTypeID != null
                 && this.isSubject != null)) {
             this.load();
-            this.showTechnical = false;
         }
     }
 
@@ -147,7 +144,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }
 
     private shouldShowEditor(): boolean {
-        return (this.addRelationship || this.showEditor) && !this.showTechnical;
+        return (this.addRelationship || this.showEditor);
     }
 
     public export() {

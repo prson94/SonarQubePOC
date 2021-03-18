@@ -387,7 +387,7 @@ export class AssetBrowserTranslationOwnerCount {
     id: string;
 }
 
-export class AssetBrowserTranslationRelationCount { 
+export class AssetBrowserTranslationRelationCount {
     key: string;
     predicate: string;
     predicateId: number;
@@ -426,7 +426,7 @@ export class AssetBrowserTranslationLink {
 
     links: AssetBrowserTranslationChildLink[] = [];
 
-    badgeIdentifier: string; 
+    badgeIdentifier: string;
 }
 
 export class AssetBrowserTranslationLinkIdentifier {
@@ -626,6 +626,7 @@ export class AssetBrowserFilterModel {
     SelectedAssetTypes: number[] = [];
     SelectedPredicates: number[] = [];
     SelectedResponsibilityTypes: number[] = [];
+    DisplayDescendantAssets: boolean = true;
 }
 
 export enum AssetBrowserFilterChangeEventType {

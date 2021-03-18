@@ -150,7 +150,7 @@ export class PreviewTooltipComponent {
             }
 
             if (maxWidth > windowWidth) {
-                var leftOffset = windowWidth - dims.width - 30;
+                var leftOffset = Math.max(windowWidth - dims.width - 30, 0);
                 if (this.isRightAligned()) {
                     leftOffset += 30;
                     element.style.width = dims.width + 'px';

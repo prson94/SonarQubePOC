@@ -84,7 +84,6 @@ namespace d360.core.helpers
                 DataType.Relationship.ToString(),
                 DataType.RefListRelationship.ToString(),
                 DataType.Tag.ToString(),
-                DataType.Score.ToString(),
                 DataType.FieldFromRelationship.ToString(),
             };
 

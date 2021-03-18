@@ -21,19 +21,6 @@ namespace d360.web.Controllers
                 
         #region Json
         
-        [HttpGet, Route("GetPossibleRelationshipsObjectByIntersect"), NonNullableParameters]
-        public JsonNetResult GetPossibleRelationshipsObjectByIntersect(int id)
-        {
-            var list = Company.Query<AllowedIntersectionType>("GetAllowedIntersectionTypesByIntersect @intersectID", new { intersectID = id }).ToList().Select(i => new 
-            {                
-                Title = i.TargetName,                
-                IntersectTypeID = i.IntersectTypeID,
-                ParentIntersectID = i.ParentIntersectID,
-                ObjectType = i.TargetType
-            });
-            return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-             
         [HttpGet, Route("ChildRelationshipsBySourceAndTarget"), NonNullableParameters]
         public JsonNetResult ChildRelationshipsBySourceAndTarget(SystemObjects s, int sID, SystemObjects t, int tID)
         {

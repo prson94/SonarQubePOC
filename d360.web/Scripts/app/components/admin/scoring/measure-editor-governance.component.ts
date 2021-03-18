@@ -276,7 +276,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                 condition.value = this.model.Definition.Governance.Field.Values[0];
                 condition.value2 = this.model.Definition.Governance.Field.Values.length > 1 ? this.model.Definition.Governance.Field.Values[1] : null;
 
-                let field = this.screenReferences.fields.filter(x => x.ApiName == condition.field)[0]
+                let field = this.screenReferences.fields.filter((x) => x.ApiName === this.model.Definition.Governance.Field.FieldTypeName)[0]
 
                 if (field && (field.Type == "Date" || field.Type == "DateTime")) {
                     let date = new Date(condition.value);
@@ -421,6 +421,8 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                 break;
         }
 
+        this.model.MatchConditionsOnly = (this.matchConditionsOnly === "true");
+
         // Common
         this.saveMeasure();
     }
@@ -446,7 +448,8 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                 || (!this.originalModel.Description && !(!this.model.Description || this.model.Description == null || this.model.Description.trim() == ""))
                 || (this.displayWeight && (this.originalModel.Weight * 100) != this.displayWeight)
                 || (this.displayEffectiveDate && this.getFormattedEffectiveDate(this.originalEffectiveDate).getTime() !== this.getFormattedEffectiveDate(this.displayEffectiveDate).getTime())
-                || (this.originalModel.IsGroup != this.model.IsGroup)
+                || (!(this.originalModel.IsGroup === this.model.IsGroup))
+                || (!(this.originalModel.MatchConditionsOnly === (this.matchConditionsOnly === "true")))
                 || this.haveConditionsChanged(this.conditionGroups, this.originalConditions)
                 || this.havePassTestCriteriaChanged(this.model.Definition, this.originalModel.Definition)
             )

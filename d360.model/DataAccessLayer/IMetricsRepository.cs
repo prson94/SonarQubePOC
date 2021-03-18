@@ -16,6 +16,7 @@ namespace d360.model.DataAccessLayer
         Task<List<MetricFieldTypeViewModel>> GetFieldsByRuleResultPath(Guid ruleResultPathUid);
         MetricAsset GetMetricByUid(Guid uid);
         MetricAssetViewDetailModel GetMetricViewModelByUid(Guid uid, DateTime? effectiveDate);
+        [Obsolete] 
         MetricAssetTypeHierarchyModels GetMetricDefinitionHierarchyByAssetType(Guid assetTypeUid, DateTime? effectiveDate);
         List<MetricFieldTypeViewModel> GetMetricConditionsFields(Guid assetTypeUid);
         List<RootMetricAssetHierarchyModel> GetMetricHierarchyByAsset(Guid allocationUid, Guid assetUid, DateTime? effectiveDate);
@@ -29,6 +30,6 @@ namespace d360.model.DataAccessLayer
         List<DataQualityDeleteResponseModel> DeleteDataQualityResult(List<DataQualityDeleteModel> list, ApiExecution execution);
         Task<ApiExecutionInfo> PostBulkDataQualityResults(List<DataQualityInsertModel> request, ApiExecution execution, bool sendWorkflowEvents = true);
         List<MeasureVersionHistoryModel> GetMetricVersionHistory(Guid measureUid);
-        void RecalculateMeasureScoreItems(Guid allocationUid, Guid measureUid);
+        Guid RecalculateMeasureScoreItems(Guid allocationUid, Guid measureUid);
     }
 }

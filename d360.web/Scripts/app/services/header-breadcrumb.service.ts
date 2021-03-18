@@ -164,33 +164,30 @@ export class HeaderBreadcrumbService extends BaseObservableService {
 
 
     }
+
+    iconFromSiteNav(nav: SiteNav = null): string {
+        let retVal = "fa-folder";
+        if (nav !== null) {
+            if (nav.Icon === null && nav.FullURL) {
+                retVal = "URL-" + nav.FullURL;
+            } else {
+                retVal = nav.Icon;
+            }
+        }
+        return retVal;
+    }
+
     getFolderIcon(menuID: string): Observable<string> {
         let icon = "fa-folder";
         let promise = new Promise<string>((resolve, reject) => {
             if (this.SiteNavItemsCache && this.SiteNavItemsCache.length > 0) {
-                this.SiteNavItemsCache.forEach(s => {
-                    if (s.Title.indexOf(menuID) !== -1) {
-                        icon = s.Icon;
-                        if (icon == null && s.FullURL)
-                            icon = "URL-" + s.FullURL;
-                        else if (icon == null)
-                            icon = "fa-folder";
-                    }
-                });
+                const nav = this.SiteNavItemsCache.find((s) => s.Title === menuID);
+                icon = this.iconFromSiteNav(nav);
                 if (icon) resolve(icon);
-
             } else {
                 this.sitenavservice.getSiteNavItems().subscribe(res => {
-
-                    res.forEach(s => {
-                        if (s.Title.indexOf(menuID) !== -1) {
-                            icon = s.Icon;
-                            if (icon == null && s.FullURL)
-                                icon = "URL-" + s.FullURL;
-                            else if (icon == null)
-                                icon = "fa-folder";
-                        }
-                    });
+                    const nav = res.find((s) => s.Title === menuID);
+                    icon = this.iconFromSiteNav(nav);
                 }).add(() => {
                     if (icon) resolve(icon);
                 });

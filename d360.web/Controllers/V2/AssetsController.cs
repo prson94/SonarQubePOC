@@ -213,6 +213,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_assetUid", "Filter by provided asset Uid. Multiple asset Uids can be provided delimited by comma", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an asset. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_ownedBy", "The parameter takes a comma separated list of user or group uids. Only assets which are owned by any one or more of the provided owners are returned.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_notOwnedBy", "The parameter takes a comma separated list of user or group uids. Only assets which are not owned by any one or more of the provided owners are returned.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_relationFilter", "The filter expression used to filter assets by relation to other asset.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("useTypeLevelDefaultSorts", "If the value is False and the _order parameter is not specified the results will be ordered by Asset ID by default. If True, results are sorted by sort field defined in Asset Type field definition.", DataType = "boolean", ParameterType = "query", Required = false),
@@ -223,6 +224,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_includeFields", "A comma delimited list of fields to include in the results. By default all fields are included.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_includeColor", "Allows you to disable returning the Color value for assets. The default value is true.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_exporttemplateuid", "The Uid of the template which will be used when exporting results.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeCreatedModifiedBy", "Include the CreatedByUid, and ModifiedByUid fields in the response. The default value is false meaning these values are not returned.", DataType = "boolean", ParameterType = "query", Required = false),            
         ]
         public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid)
         {
@@ -253,7 +255,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 //if the user is not an admin make sure they can read this asset type if not tell them they are forbidden
-                if (!Company.CurrentResourceIsAdmin && !(await Company.HasAssetTypeReadPermission(assetType.ID)))
+                if (!Company.CurrentResourceIsAdmin && !Company.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))//(await Company.HasAssetTypeReadPermission(assetType.ID)))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Invalid request", "You do not have permissions to read the specified asset type."));
                 }
@@ -1406,7 +1408,7 @@ namespace d360.web.Controllers.V2
 
                 var dbArgs = new DynamicParameters();
 
-                dbArgs.Add("object", asset.Object,DbType.AnsiString,size:50);
+                dbArgs.Add("object", asset.Object, DbType.AnsiString, size: 50);
                 dbArgs.Add("objectId", asset.ObjectID);
                 dbArgs.Add("fieldTypeId", fieldType.ID);
                 dbArgs.Add("resourceId", Company.CurrentResourceID);
@@ -1425,6 +1427,7 @@ namespace d360.web.Controllers.V2
 
                 var Columns = reader.Read<GridColumn>().ToList();
                 var Fields = reader.Read<GridField>().ToList();
+
                 List<dynamic> Values = new List<dynamic>();
                 try
                 {
@@ -1438,6 +1441,21 @@ namespace d360.web.Controllers.V2
                         throw ex;
                     }
 
+                }
+
+                //additional data e.g. scoring allocation data
+                List<dynamic> scoringInfo = new List<dynamic>();
+                try
+                {
+                    scoringInfo = reader.Read<dynamic>().ToList();
+                }
+                catch (Exception ex)
+                {
+                    //if reader is disposed there are no additional data returned
+                    if (!ex.Message.Contains("has been disposed"))
+                    {
+                        throw ex;
+                    }
                 }
 
                 foreach (IDictionary<string, object> value in Values)
@@ -1480,7 +1498,7 @@ namespace d360.web.Controllers.V2
 
                 var dbArgsCount = new DynamicParameters();
 
-                dbArgsCount.Add("object", asset.Object,DbType.AnsiString, size: 50);
+                dbArgsCount.Add("object", asset.Object, DbType.AnsiString, size: 50);
                 dbArgsCount.Add("objectId", asset.ObjectID);
                 dbArgsCount.Add("fieldTypeId", fieldType.ID);
                 dbArgsCount.Add("resourceId", Company.CurrentResourceID);
@@ -1594,6 +1612,10 @@ namespace d360.web.Controllers.V2
                     {
                         result.Add("Columns", Columns);
                         result.Add("Fields", Fields);
+                        if (scoringInfo.Count > 0)
+                        {
+                            result.Add("ScoringInfo", scoringInfo);
+                        }
                     }
                     var response = Request.CreateResponse(HttpStatusCode.OK, result);
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
@@ -2251,7 +2273,7 @@ namespace d360.web.Controllers.V2
                     resultList.Add(result);
                     continue;
                 }
-                if (!Company.HasAssetDefaultReadPermission(asset.Object, asset.ObjectID))
+                if (!Company.HasAssetPermission(asset.Object, asset.ObjectID, Permission.ReadAsset))
                 {
                     result = new AssetTagSuccessApiModel()
                     {
@@ -2716,7 +2738,7 @@ namespace d360.web.Controllers.V2
 
             if (string.IsNullOrEmpty(isValid) && queryParams.Any(q => q.Key == "_order"))
             {
-                string[] allowedValues = new string[] { "name", "resourceid"};
+                string[] allowedValues = new string[] { "name", "resourceid" };
                 var order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value.ToLower();
                 if (!allowedValues.Contains(order))
                 {
@@ -2742,7 +2764,7 @@ namespace d360.web.Controllers.V2
                 if (!bool.TryParse(val.Value, out _))
                 {
                     isValid = "Invalid _includeTotal value passed in the request";
-                }                    
+                }
             }
 
             var asset = AssetRepository.GetAssetByUID(assetUid);
@@ -2856,7 +2878,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("resourceUid", "Optional Uid of a resource. If provided returns assets relevant to that specific resource. If null asset details returned will be for all watchers.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerConsumes("application/json", "application/xml"),
-            SwaggerResponse(HttpStatusCode.OK, "A list of watchers for a given asset.", typeof(WatchedAssetTypeDetailModel)),            
+            SwaggerResponse(HttpStatusCode.OK, "A list of watchers for a given asset.", typeof(WatchedAssetTypeDetailModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
         ]
@@ -2868,18 +2890,18 @@ namespace d360.web.Controllers.V2
             if (!string.IsNullOrEmpty(isValid))
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, isValid));
-            }         
+            }
 
             if (queryParams.Any(q => q.Key == "resourceUid"))
             {
-                if(!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "resourceUid").Value.ToLower(), out Guid resourceUid) || !Company.GlobalReportingResources.Any(u => u.Uid == resourceUid))
+                if (!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "resourceUid").Value.ToLower(), out Guid resourceUid) || !Company.GlobalReportingResources.Any(u => u.Uid == resourceUid))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format(AssetTypeErrors.InvalidParameterProvided, "resourceUid")));
-                }                
+                }
             }
 
             if (queryParams.Any(q => q.Key == "_order"))
-            {                
+            {
                 string[] allowedValues = new string[] { "name", "resourceid", "assetdisplayvalue", "governancescore", "dataqualityscore" };
                 var order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value.ToLower();
                 if (!allowedValues.Contains(order))
@@ -2913,7 +2935,7 @@ namespace d360.web.Controllers.V2
             if (assetType == null)
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.NotFoundBasedOnUid));
-            }            
+            }
 
             try
             {
