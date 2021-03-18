@@ -3,34 +3,37 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using d360.core;
 using d360.core.entities;
-using d360.core.enums;
 using d360.core.queue;
 using d360.extensions.queue;
 using d360.extensions.search;
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Hosting;
 
 namespace igx.jobs.databasetaskprocessor
 {
     class Program
     {
-        static void Main()
+        static async Task Main()
         {
-            var config = CoreFunction.GetJobHostConfiguration();
-            config.UseTimers();
-#if DEBUG
-            config.UseDevelopmentSettings();
-#endif
-            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
-            var host = new JobHost(config);
-            host.RunAndBlock();
+            var builder = CoreFunction.JobHostConfigBuilder();
+            builder.ConfigureWebJobs(c =>
+            {
+                c.AddAzureStorageCoreServices()
+                .AddAzureStorage()
+                .AddTimers();
+            });
+
+            using (var host = builder.Build())
+            {
+                await host.RunAsync();
+            }
         }
     }
 

@@ -1,13 +1,9 @@
 ﻿using d360.core;
 using d360.core.entities.Workflow;
-using d360.core.enums.Workflow;
 using d360.core.queue;
-using d360.extensions.caching;
-using d360.extensions.info;
-using d360.extensions.queue;
-using d360.extensions.storage;
 using d360.model;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Hosting;
 using Microsoft.ServiceBus.Messaging;
 using System;
 using System.Collections.Generic;
@@ -20,26 +16,32 @@ namespace igx.jobs.workflowsubscriber
 {
     class Program
     {
-        static void Main()
+        static async Task Main()
         {
-            var config = CoreFunction.GetJobHostConfiguration();
-            config.UseServiceBus();
-#if DEBUG
-            config.UseDevelopmentSettings();
-#endif
+            var builder = CoreFunction.JobHostConfigBuilder();
+            builder.ConfigureWebJobs(c =>
+            {
+                c.AddAzureStorageCoreServices()
+                .AddServiceBus()
+                .AddAzureStorage()
+                .AddTimers()
+                .AddFiles();
+            });
 
-            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
-            var host = new JobHost(config);
-            host.RunAndBlock();
+
+            using (var host = builder.Build())
+            {
+                await host.RunAsync();
+            }
         }
     }
 
-    public static class WorkflowSubscriber
+    public class WorkflowSubscriber
     {
         const string functionName = "Workflow_Subscriber";
         const int MAX_NUMBER_OF_WORKFLOW_EVENTS = 10000;
 
-        public static async Task Run([ServiceBusTrigger("%EventBusTopicName%", "Workflow", AccessRights.Manage)]BrokeredMessage brokeredMessage, TextWriter log)
+        public static async Task Run([ServiceBusTrigger("%EventBusTopicName%", "Workflow")]BrokeredMessage brokeredMessage, TextWriter log)
         {
             var companyId = 0;
             try

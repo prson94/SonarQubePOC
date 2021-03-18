@@ -1,19 +1,16 @@
 ﻿using d360.core.queue;
 using Microsoft.ServiceBus.Messaging;
-using d360.core.enums;
-using d360.core;
 using System;
-using Microsoft.WindowsAzure.Storage.Auth;
-using Microsoft.WindowsAzure.Storage.Queue;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Collections.Generic;
 using d360.core.enums.Workflow;
 using System.Threading.Tasks;
-using System.Configuration;
 using Microsoft.Azure;
 using Microsoft.ServiceBus;
-using Microsoft.WindowsAzure.Storage.RetryPolicies;
+using Microsoft.Azure.Storage.Queue;
+using Microsoft.Azure.Storage.Auth;
+using Microsoft.Azure.Storage.RetryPolicies;
 
 namespace d360.extensions.queue
 {

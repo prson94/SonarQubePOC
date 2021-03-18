@@ -126,7 +126,7 @@ namespace d360.web.Controllers.V2
         }
 
         [HttpPut, Route("styles"), ApiExplorerSettings(IgnoreApi = true)]
-        public HttpResponseMessage UpdateStyleCustomizations(UpdateCss UpdateCss)
+        public async Task<HttpResponseMessage> UpdateStyleCustomizations(UpdateCss UpdateCss)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return ReturnApiError(HttpStatusCode.Forbidden, "You do not have permissions to update this.");
@@ -134,7 +134,7 @@ namespace d360.web.Controllers.V2
             //delete the old css file
             try
             {
-                _storage.DeleteFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css");
+                await _storage.DeleteFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css");
             }
             catch { }
 
@@ -159,7 +159,7 @@ namespace d360.web.Controllers.V2
                         Community.SaveChanges();
                     }
 
-                    _storage.CreateFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css", UpdateCss.css, "text/css", false);
+                    await _storage.CreateFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css", UpdateCss.css, "text/css", false);
                 }
                 else
                 {
