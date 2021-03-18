@@ -5,7 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="sDooley" id="Procedure.fusion.ProcessFusionCacheInQueue-v4">
+  <changeSet author="Puneet Gupta" id="Procedure.fusion.ProcessFusionCacheInQueue-v5">
+	 <comment>GOV-11771</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -32,10 +33,6 @@ begin
 	if @fusionTypeId = 13
 	begin
 		exec fusion.GenerateMarkitMapLineageData @FusionID, @UseNewMarkitLineage
-	end
-	else if @fusionTypeId = 16
-	begin
-		exec [fusion].[GenerateEagleLineageData] @FusionID
 	end
 	
 	declare @executionUid uniqueidentifier = newid(),
@@ -146,10 +143,6 @@ begin
 	else if @fusionTypeId = 16
 	begin
 		exec [fusion].[GenerateEagleLineageData] @FusionID
-	end
-	else if @fusionTypeId = 111
-	begin
-		exec [fusion].[GenerateFoundationLineage] @FusionID
 	end
 	
 	declare @executionUid uniqueidentifier = newid(),
