@@ -210,7 +210,7 @@ export class BrowserService extends BaseObservableService {
         return newResponse;
     }
 
-    public getInitialLineage(ancestry: FilterAncestryMode, uid: string, numberOfHops: number, includeNonLeaf: boolean): Observable<AssetBrowserResponseModel> {
+    public getInitialLineage(ancestry: FilterAncestryMode, uid: string, numberOfHops: number, includeNonLeaf: boolean, includeDescendantAssets: boolean): Observable<AssetBrowserResponseModel> {
         const url = `api/v2/browser/lineage/initial`;
         if (numberOfHops <= 0 || numberOfHops > 5)
             numberOfHops = 3;
@@ -219,7 +219,8 @@ export class BrowserService extends BaseObservableService {
             ancestry: +ancestry,
             uid: uid,
             hopCount: numberOfHops,
-            includeNonLeaf: includeNonLeaf
+            includeNonLeaf: includeNonLeaf,
+            includeDescendantAssets: includeDescendantAssets
         }).pipe(
             map((response: AssetBrowserResponseModel) => {
                 this.processResponse(response);
@@ -267,7 +268,7 @@ export class BrowserService extends BaseObservableService {
         );
     }
 
-    public getLineageHop(ancestry: FilterAncestryMode, hierarchyKey: string, direction: AssetBrowserApiHopDirection, includeNonLeaf: boolean, assets: AssetBrowserApiHopAssetRequestModel[], preloadedIntersects: number[]): Observable<AssetBrowserResponseModel> {
+    public getLineageHop(ancestry: FilterAncestryMode, hierarchyKey: string, direction: AssetBrowserApiHopDirection, includeNonLeaf: boolean, assets: AssetBrowserApiHopAssetRequestModel[], preloadedIntersects: number[], includeDescendantAssets: boolean): Observable<AssetBrowserResponseModel> {
         const url = `api/v2/browser/lineage/hop`;
 
         return this.http.post(url, {
@@ -276,7 +277,8 @@ export class BrowserService extends BaseObservableService {
             assets: assets,
             preloadedIntersects: preloadedIntersects,
             direction: direction,
-            includeNonLeaf: includeNonLeaf
+            includeNonLeaf: includeNonLeaf,
+            includeDescendantAssets: includeDescendantAssets
         }).pipe(
             map((response: AssetBrowserResponseModel) => {
                 this.processResponse(response);

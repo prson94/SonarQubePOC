@@ -76,14 +76,35 @@ namespace d360.model.workflow
                 }
             }
 
-            foreach (var item in expression)
+            //system expressions are checked separately from user expressions and are always ANDed together
+            List<string> systemContextualFields = new List<string>
+            {
+                "IssueObject",
+                "IssueObjectID",
+                "ScoreType"
+            };
+
+            var systemExpressions = expression.Where(x => systemContextualFields.Contains(x.ContextualFieldID));
+            var userExpressions = expression.Where(x => !systemContextualFields.Contains(x.ContextualFieldID));
+
+            foreach(var item in systemExpressions)
+            {
+                item.IsCriteriaChecked = EvaluateField(context, item, fields, @object, objectId, itemId, issueObjectType, issueObjectTypeId, changedFields, scoreType);
+            }
+
+            if (!systemExpressions.All(x => x.IsCriteriaChecked))
+            {
+                return false;
+            }
+
+            foreach (var item in userExpressions)
             {
                 item.IsCriteriaChecked = EvaluateField(context, item, fields, @object, objectId, itemId, issueObjectType, issueObjectTypeId, changedFields, scoreType);
                 if (satisfyAll && item.IsCriteriaChecked == false) return false;
                 if (!satisfyAll && item.IsCriteriaChecked == true) return true;
             }
 
-            return satisfyAll ? expression.All(x => x.IsCriteriaChecked) : expression.Any(x => x.IsCriteriaChecked);
+            return satisfyAll ? userExpressions.All(x => x.IsCriteriaChecked) : userExpressions.Any(x => x.IsCriteriaChecked);
         }
 
         private static bool EvaluateField(ICompanyContext context, WorkflowCriteriaExpressionModel item, IQueryable<Field> fields, string @object, int objectId, long itemId, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null, int? scoreType = null)

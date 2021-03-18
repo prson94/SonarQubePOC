@@ -22,8 +22,12 @@ export class SocialService extends BaseObservableService  {
     }
 
     getCommentForFollowers(followerUid: string, daysToLookBack: number, page?: number, count?: number, typeFilter?: number): Observable<CommentDetails> {
+        var qString = `&followerUidIsCurrentResourceUID=true&daysToLookBack=${daysToLookBack}&ShowDeleteComment=false`;
+        if (typeFilter != null && typeFilter > 0) {
+            qString = qString + `&CommentTypeID=${typeFilter}`;
+        }
         return this.http
-            .get(`api/v2/comments?followerUid=${followerUid}&_pageNum=${page ? page : 0}&_pageSize=${count ? count : 10}`)
+            .get(`api/v2/comments?followerUid=${followerUid}&_pageNum=${page ? page : 0}&_pageSize=${count ? count : 10}${qString}`)
             .pipe(
                 map((res) => <CommentDetails>res),
                 catchError((err) => this.handleError(err))

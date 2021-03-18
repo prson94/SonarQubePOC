@@ -70,8 +70,12 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                         {
                             var fieldType = assetFieldTypes.SingleOrDefault(f => f.ID == i.ConditionFieldTypeID);
                             var fieldValue = assetFields.FirstOrDefault(f => f.FieldTypeID == i.ConditionFieldTypeID);
-                            if (fieldValue != null && fieldType != null)
+                            if (fieldType != null)
                             {
+                                if (fieldValue == null)
+                                {
+                                    fieldValue = new AssetMeasuresProcessField();
+                                }
                                 if (fieldType.Type == DataType.Lookup.ToString() && fieldType.AllowMultipleValues)
                                 {
                                     var fieldValues = (fieldValue.Values ?? "").Split(',');

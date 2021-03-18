@@ -108,7 +108,7 @@ namespace d360.web
              * from a frame. To track if the session is "framed", a separate Frame cookie is set on the first request when it's
              * possible to deduct that it originated in a frame. The frame-cookie settings are derived from the authentication cookie
              */
-            if(Response.Cookies.Count == 0)
+            if (Response.Cookies.Count == 0)
             {
                 return;
             }

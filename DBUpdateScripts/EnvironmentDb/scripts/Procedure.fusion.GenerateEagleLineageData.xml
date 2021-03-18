@@ -5,12 +5,19 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.fusion.GenerateEagleLineageData-v1">
-    <sql dbms="mssql"
+  <changeSet author="Puneet Gupta" id="Procedure.fusion.GenerateEagleLineageData-Drop-v2">
+	  <comment>GOV-11771</comment>
+      <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+DROP PROCEDURE IF EXISTS [fusion].[GenerateEagleLineageData]
+	
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [fusion].[GenerateEagleLineageData]
 	@fusionId int,
 	@includeEagleToBloomberg bit = 1
@@ -564,11 +571,6 @@ begin
 
 	delete from mapruleitem where [owner] = 'EAGLE LINEAGE' and id not in(select m.mapruleitemid from #maps m);
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

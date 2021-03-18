@@ -2440,7 +2440,7 @@ for json path";
             public Guid measureUid { get; set; }
             public string action { get; set; }
         }
-        public void RecalculateMeasureScoreItems(Guid allocationUid, Guid measureUid) 
+        public Guid RecalculateMeasureScoreItems(Guid allocationUid, Guid measureUid) 
         {
             if (!Company.CurrentResourceIsAdmin)
             {
@@ -2496,7 +2496,7 @@ for json path";
                 }
             }
 
-            Company.SendScoreEventWithPayload(
+            return Company.SendScoreEventWithPayload(
                 ScoreQueueChangeType.MeasureChanged,
                 new MeasureChangedModel { EffectiveDate = latestVersion.EffectiveDate, MetricAssetUid = measure.Uid, MetricAssetVersionUid = latestVersion.Uid },
                 new ReclaulatMeasureExecutionFields { measureUid = measureUid, action = "recalculating" }

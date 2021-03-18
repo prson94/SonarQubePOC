@@ -960,8 +960,18 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                MetricsRepository.RecalculateMeasureScoreItems(allocationUid, measureUid);
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
+                var executionUid = MetricsRepository.RecalculateMeasureScoreItems(allocationUid, measureUid);
+                return ResponseMessage(
+                    Request.CreateResponse(
+                        HttpStatusCode.OK, 
+                        new ApiExecutionRecievedResponse
+                        {
+                            ExecutionID = executionUid,
+                            Message = "Now processing request. Please check back with this ExecutionID for status.",
+                            Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{executionUid}"
+                        }
+                    )
+                );
             }
             catch (Exception ex)
             {
