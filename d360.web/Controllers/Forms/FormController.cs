@@ -2092,7 +2092,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             if (bytes == null)
             {
-                var fileString = Storage.GetFileContentsAsString($"{constants.COMPANY_BULK_LOAD_FOLDER}/{Company.CurrentCompanyID}", $"load_{load.ID}.{load.Extension}");
+                var fileString = Storage.GetFileContentsAsString($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}");
                 bytes = Encoding.Default.GetBytes(fileString);
             }
             return File(bytes, "application/vnd.ms-excel", $"{load.DateCompleted.ToString()}.xlsx");
