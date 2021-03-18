@@ -136,9 +136,9 @@ namespace d360.model.DataAccessLayer
 					var taggedAssets = CompanyContext.Filter<Asset>(o => comment.Tags.Contains(o.uid)).Select(o => o.ID).ToList();
 					foreach (var r in taggedAssets)
 					{
-						CompanyContext.CommentRelations.Add(new CommentRelation { CommentID = commentId, AssetID = r });
+						CompanyContext.CommentRelations.Add(new CommentRelation { CommentID = commentId, AssetID = r });						
 					}
-					await CompanyContext.SaveChangesAsync();
+					await CompanyContext.SaveChangesAsync();										
 				}
 				CompanyContext.Connection.Execute("delete C from CommentRelation C left join Asset A on A.ID = C.AssetID where C.CommentID = @commentId and A.ID is null", new { commentId });
 
@@ -543,7 +543,11 @@ order by u.CommentTypeName";
 			if (followerUidPresent)
 			{
 				var follower = CompanyContext.Filter<GlobalReportingResource>(o => o.Uid == followerUid).FirstOrDefault();
-				if (follower != null)
+				if (follower == null)
+                {
+					throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "User with provided Uid does not exist.");
+				}
+				else
 				{
 					followerresourceID = follower.ResourceID;
 				}
