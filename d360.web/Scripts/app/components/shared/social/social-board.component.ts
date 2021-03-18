@@ -1,15 +1,19 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, HostBinding } from "@angular/core";
+﻿import { Input, Component, EventEmitter, Output, OnInit, ViewEncapsulation } from "@angular/core";
 import { BaseComponent } from "../base.component";
 import { SocialService } from "../../../services/social.service";
-import { CommentApiPostModel, CommentApiPutModel, CommentDetail, CommentType } from "../../../models/social.model";
+import { CommentDetail, CommentType } from "../../../models/social.model";
 import { CurrentCompanySettings } from "../../../static/company-settings"
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { AuthenticationService } from "../../../services/authentication.service";
+import { ResourcesService } from "../../../services/resources.service";
+import { forkJoin, Observable } from "rxjs";
 
 @Component({
     selector: "d3s-social-board",
-    templateUrl: "./social-board.component.html", 
-    providers: [SocialService],       
+    templateUrl: "./social-board.component.html",
+    encapsulation: ViewEncapsulation.None,
+    styleUrls: ["social-board.less"],
+    providers: [SocialService, ResourcesService],
 })
 
 export class SocialBoardComponent extends BaseComponent implements OnInit {
@@ -22,7 +26,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
 
     @Output() countsChanged = new EventEmitter();
     @Output() close = new EventEmitter();
-    
+
     rowCount: number = 15;
     pageNumber: number = 1;
     hasMore: boolean = true;
@@ -30,9 +34,16 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     socialMessage: string;
 
     isAdmin: boolean = false;
+    isAddingNew: boolean = false;
 
-    constructor(private authenticationService: AuthenticationService, private socialService: SocialService, protected messagesService: MessagesObservableService) {
+    newComment: CommentDetail;
+
+    constructor(private authenticationService: AuthenticationService,
+        private socialService: SocialService,
+        protected messagesService: MessagesObservableService,
+        private resourcesService: ResourcesService) {
         super();
+        this.newComment = new CommentDetail();
     }
 
     ngOnInit() {
@@ -71,6 +82,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
                     this.comments = this.comments.concat(res.comments);
                     this.hasMore = (res.count > this.comments.length);
                     this.pageNumber++;
+                    this.updateResourceData();
                 });
         }
         else {
@@ -79,6 +91,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
                     this.isLoading = false;
                     this.comments = this.comments.concat(res.comments);
                     this.hasMore = (res.comments.length && res.comments.length > 0);
+                    this.updateResourceData();
                 });
         }
 
@@ -103,7 +116,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
                     let index = this.comments.findIndex((x) => x.ID == comment.ID);
 
                     if (index >= 0 && !(comment.Comments && comment.Comments.length > 0)) {
-                        this.comments.splice(index,1);
+                        this.comments.splice(index, 1);
                     }
                     this.messagesService.showInfoMessage("Success", "Item deleted successfully");
                 }
@@ -112,94 +125,92 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
             });
     }
 
-    addComment(event) {
-        let commentContent = event.comment;
-
-        if (!commentContent) {
-            return;
-        }
-
-        this.isLoading = true;
-        let comment = new CommentApiPostModel();
-
-        comment.Body = commentContent;
-        comment.AssetUid = this.assetUid;
-        comment.Body = commentContent;
-        let taggedAssetUids: string[] = [];
-
-        if (event.tags) {
-            event.tags.forEach((t) => {
-                taggedAssetUids.push(t.AssetUid);
-            });
-        }
-
-        comment.Tags = taggedAssetUids;
-
-        this.socialService.addComment(comment).
-            subscribe(res => {                
-                if (res) {
-                    this.comments.unshift(res);                    
-                }
-                this.messagesService.showInfoMessage("Success", "Item added successfully");
-                this.countsChanged.emit({}); // counts have changed fire event
-                this.isLoading = false;
-            });
+    closeEditor() {
+        this.isAddingNew = false;
+        this.newComment = new CommentDetail();
     }
 
-    editComment(event) {
-        if (!event.comment) {
-            return;
+    onSave(event: any) {
+        this.isAddingNew = false;
+        this.newComment = new CommentDetail();
+        var comment = event.comment as CommentDetail;
+        if (event.event === "add") {
+            this.addComment(comment);
         }
-
-        this.isLoading = true;
-
-        let comment = new CommentApiPutModel();
-        comment.Body = event.comment.Body;
-        comment.Tags = event.tags;
-        comment.Uid = event.comment.Uid;
-        
-        this.socialService.editComment(comment).
-            subscribe(res => {       
-                this.messagesService.showInfoMessage("Success", "Item edited successfully");
-                this.isLoading = false;
-            });
+        if (event.event === "edit") {
+            let idx: number = this.comments.findIndex((x) => x.Uid === comment.Uid);
+            this.comments[idx] = comment;
+        }
+        this.updateResourceData();
     }
 
-    replyToComment(event) {
-        if (!event) {
-            console.log("DEV ERROR - EVENT OBJECT IS NULL!");
-            return;
+    private addComment(comment: CommentDetail) {
+        if (!comment.ParentID) {
+            this.comments = [comment].concat(this.comments);
         }
-        let replyText = event.reply;
-        let parentUid = event.parentUid;
-        
-        if (!replyText || !parentUid) {
-            return;
+        else {
+            var parent = this.comments.find((x) => x.ID === comment.ParentID);
+            if (!parent.Comments) {
+                parent.Comments = [];
+            }
+            parent.Comments.push(comment);
         }
-
-        this.isLoading = true;
-
-        let comment = new CommentApiPostModel();
-
-        comment.Body = replyText;
-        comment.ParentUid = parentUid;
-        comment.AssetUid = this.assetUid;
-        comment.Tags = [];
-
-        this.socialService.addComment(comment).
-            subscribe(res => {
-                if (res) {
-                    let index = this.comments.findIndex(x => x.ID == res.ParentID);
-
-                    if (index >= 0) {
-                        if (!this.comments[index].Comments)
-                            this.comments[index].Comments = [];
-                        this.comments[index].Comments.push(res);
-                    }                           
-                }
-
-                this.isLoading = false;
-            });
     }
-    
+
+    private cachedResourceData: any = {};
+    updateResourceData() {
+        var obsArr: Observable<any>[] = [];
+        this.getUniqueResourcesFromComments().forEach((res) => {
+            if (!this.cachedResourceData[res]) {
+                obsArr.push(this.resourcesService.getResource(res));
+            }
+        });
+
+        if (obsArr.length > 0) {
+            forkJoin(obsArr).subscribe((results) => {
+                results.forEach((result) => {
+                    var data = result.items[0];
+                    if (!this.cachedResourceData[data.ResourceID]) {
+                        this.cachedResourceData[data.ResourceID] = data.uid;
+                    }
+                });
+
+                this.updateCommentData();
+            });
+        }
+        else {
+            this.updateCommentData();
+        }
+    }
+
+    updateCommentData() {
+        this.comments.forEach((comment) => {
+            comment.CreatedByUid = this.cachedResourceData[comment.CreatedBy];
+
+            if (comment.Comments && comment.Comments.length > 0) {
+                comment.Comments.forEach((x) => {
+                    x.CreatedByUid = this.cachedResourceData[x.CreatedBy];
+                });
+            }
+        });
+    }
+
+    getUniqueResourcesFromComments(): number[] {
+        var allResources = [];
+        this.comments.forEach((comment) => {
+            if (!allResources.some((x) => {
+                x === comment.CreatedBy;
+            })) {
+                allResources.push(comment.CreatedBy);
+            }
+            if (comment.Comments && comment.Comments.length > 0) {
+                comment.Comments.forEach((comm) => {
+                    if (!allResources.some((x) => x === comm.CreatedBy)) {
+                        allResources.push(comm.CreatedBy);
+                    }
+                });
+            }
+        })
+        return allResources;
+    }
 }

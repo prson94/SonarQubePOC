@@ -27,6 +27,7 @@ import { HeaderProfileComponent } from './header-profile.component';
 import { HeaderMiniMenuComponent } from './header-mini-menu-component';
 import { TypeaheadSearchModule } from '../search/typeahead-search.component';
 import { SiteModalModule } from '../modal/gov-modal.module';
+import { CoreModule } from "../../shared/core.module";
 
 
 @NgModule({
@@ -37,6 +38,7 @@ import { SiteModalModule } from '../modal/gov-modal.module';
         RouterModule,
 
         //d3s
+        CoreModule,
         PipesModule,
         TypeaheadSearchModule,
 

@@ -5,12 +5,11 @@
 @searchfield-iconpadding: 4px;
 
 ig-search-field {
-    display: inline-block;
-    min-width: 200px;
-    flex-grow: 1;
-}
+  display: inline-block;
+  min-width: 200px;
+  flex-grow: 1;
 
-.ig-search-field {
+  .ig-search-field {
     position: relative;
     display: inline-block;
     min-width: 200px;
@@ -18,47 +17,78 @@ ig-search-field {
     flex-grow: 1;
 
     .ig-input {
-        width: 100%;
-        padding-right: 2 * @searchfield-iconsize + 3 * @searchfield-iconpadding;
+      width: 100%;
+      padding-right: 2 * @searchfield-iconsize + 3 * @searchfield-iconpadding;
     }
-}
 
-.ig-search-field-button {
-    border: none;
-    color: @ig-black;
-    background: @ig-color-field-button;
-    border-radius: 2px;
-    position: absolute;
-    right: @searchfield-iconpadding;
-    top: @searchfield-iconpadding;
-    height: @searchfield-iconsize;
-    width: @searchfield-iconsize;
+    .ig-search-field-button {
+      border: none;
+      color: @ig-black;
+      background: @ig-color-field-button;
+      border-radius: 2px;
+      position: absolute;
+      right: @searchfield-iconpadding;
+      top: @searchfield-iconpadding;
+      height: @searchfield-iconsize;
+      width: @searchfield-iconsize;
 
-    &.clear {
+      &.clear {
         right: @searchfield-iconsize + 2 * @searchfield-iconpadding;
-    }
+      }
 
-    &:hover {
+      &:hover {
         background: @ig-color-field-button-hover;
-    }
+      }
 
-    &:active {
+      &:active {
         background: @ig-color-field-button-active;
-    }
+      }
 
-    &:disabled, &[disabled] {
+      &:disabled, &[disabled] {
         color: @ig-black;
         background: @ig-color-field-button;
         opacity: 0.33;
+      }
     }
-}
-.ig-search-field-keypress {
-    color: @ig-grey;
-    text-align: center;
-    position: absolute;
-    right: @searchfield-iconpadding;
-    top: @searchfield-iconpadding;
-    height: @searchfield-iconsize;
-    width: @searchfield-iconsize;
-    padding-top: 2px;
+
+    .ig-search-field-keypress {
+      color: @ig-grey;
+      text-align: center;
+      position: absolute;
+      right: @searchfield-iconpadding;
+      top: @searchfield-iconpadding;
+      height: @searchfield-iconsize;
+      width: @searchfield-iconsize;
+      padding-top: 2px;
+    }
+
+    &.has-tooltip {
+      width: -webkit-calc(100% - 26px);
+      width: -moz-calc(100% - 26px);
+      width: calc(100% - 26px);
+
+      .ig-search-field-tooltip {
+        display: block;
+        position: absolute;
+        width: 32px;
+        height: 32px;
+        color: #006fc0;
+        top: 0;
+        right: 28px;
+        text-align: center;
+        line-height: 32px;
+        cursor: pointer;
+      }
+
+      .ig-search-field-button {
+        &.clear {
+          right: @searchfield-iconsize + 2 * @searchfield-iconpadding + 26;
+        }
+      }
+
+      .ig-input {
+        padding-right: 2 * @searchfield-iconsize + 3 * @searchfield-iconpadding + 26;
+      }
+    }
+  }
 }

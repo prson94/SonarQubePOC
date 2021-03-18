@@ -60,7 +60,7 @@
                 <span>&nbsp;</span>
             </div>
             <div class="col s12 no-padding">
-                <p-radioButton name="calc-group" [value]="false" label="Internally calculated" [(ngModel)]="selection.isExternallyCalculated" [disabled]="disabled || isExtCalcDisabled()" (onClick)="hasModelChanged()"></p-radioButton>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <p-radioButton name="calc-group" [value]="false" label="Internally calculated" [(ngModel)]="selection.isExternallyCalculated" [disabled]="disabled" (onClick)="hasModelChanged()"></p-radioButton>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 <p-radioButton name="calc-group" [value]="true" label="Externally calculated" [(ngModel)]="selection.isExternallyCalculated" [disabled]="disabled" (onClick)="hasModelChanged()"></p-radioButton>
             </div>
             <div class="col s12 light-text" *ngIf="selection.isExternallyCalculated">
