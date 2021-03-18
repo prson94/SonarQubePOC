@@ -351,7 +351,7 @@ namespace d360.model
         /// 2 => Impacted Asset/Effective Dates By Provided Uid.
         /// 3 => Get Measure Results For Calculation.
         /// </param>
-        DataQualityMeasureQueryModel BuildDataQualityMeasureQueryModel(int queryType, Guid assetVersionRollupPathUid);
+        DataQualityMeasureQueryModel BuildDataQualityMeasureQueryModel(MetricDataQualityQueryType queryType, Guid assetVersionRollupPathUid);
 
         /// <summary>
         /// Used where BuildDataQualityMeasureQueryModel uses QueryType = 2

@@ -994,7 +994,7 @@ from	metrics.AssetVersion V
 
         #region Score Engine Methods
 
-        public DataQualityMeasureQueryModel BuildDataQualityMeasureQueryModel(int queryType, Guid assetVersionRollupPathUid)
+        public DataQualityMeasureQueryModel BuildDataQualityMeasureQueryModel(MetricDataQualityQueryType queryType, Guid assetVersionRollupPathUid)
         {
             var dqQueryDetail = new DataQualityMeasureQueryModel
             {
@@ -1006,7 +1006,7 @@ from	metrics.AssetVersion V
 
             var dqQueryDetails = Connection.QueryMultiple(
                 "metrics.BuildDataQualityMeasureQuery @queryType, @assetVersionRollupPathUid",
-                new { queryType, assetVersionRollupPathUid }
+                new { queryType = (int)queryType, assetVersionRollupPathUid }
                 );
             var resultSqlQueryStatements = dqQueryDetails.Read<string>();
             dqQueryDetail.FilterMatchType = dqQueryDetails.Read<MetricMatchType>().Single();

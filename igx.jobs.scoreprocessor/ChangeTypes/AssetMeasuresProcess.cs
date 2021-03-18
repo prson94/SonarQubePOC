@@ -455,7 +455,12 @@ where   ExecutionID <> @id
 
                             if (assetVersionCheckObjectTypes.ShouldContinueAnalysis(allMeasure.MetricAssetVersionUid))
                             {
-                                var definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(allMeasure.Definition ?? "{}");
+                                string definitionJson = allMeasure.Definition;
+                                if (string.IsNullOrEmpty(definitionJson))
+                                {
+                                    definitionJson = "{}";
+                                }
+                                var definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(definitionJson);
 
                                 var scoreItem = new ScoreItem
                                 {
@@ -469,8 +474,7 @@ where   ExecutionID <> @id
                                 };
 
                                 if (incomingMeasureResult != null)
-                                {
-                                    // Now perform analysis based on score type.
+                                {   // Now perform analysis based on score type.
                                     switch (allMeasure.ScoreType)
                                     {
                                         case ScoreType.DataQuality:
@@ -497,7 +501,7 @@ where   ExecutionID <> @id
                                                     var dqQueryDetail = dqMeasureQueryLibrary.FirstOrDefault(dq => dq.AssetVersionRollupPathUid == allMeasure.RollupPath.AssetVersionRollupPathUid);
                                                     if (dqQueryDetail == null)
                                                     {
-                                                        dqQueryDetail = Db.BuildDataQualityMeasureQueryModel(3, allMeasure.RollupPath.AssetVersionRollupPathUid);
+                                                        dqQueryDetail = Db.BuildDataQualityMeasureQueryModel(MetricDataQualityQueryType.MeasureResults_For_Calculation, allMeasure.RollupPath.AssetVersionRollupPathUid);
                                                         dqMeasureQueryLibrary.Add(dqQueryDetail); // Add to library for future reference.
                                                     }
 
@@ -667,6 +671,15 @@ where   ExecutionID <> @id
                                                         var bitSql = "";
                                                         object parameters = null;
 
+                                                        if (gDefinition.Relation.Values == null)
+                                                        {
+                                                            gDefinition.Relation.Values = new List<string>();
+                                                        }
+                                                        if (gDefinition.Relation.Values.Count == 0)
+                                                        {
+                                                            gDefinition.Relation.Values.Add(Guid.Empty.ToString());
+                                                        }
+
                                                         switch (gDefinition.Relation.Operator)
                                                         {
                                                             case Operator.Equals:
@@ -742,39 +755,36 @@ where   ExecutionID <> @id
                                                     break;
                                             }
                                             break;
-                                            #endregion
+                                        #endregion
+                                        default:
+                                            scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = true, ErrorMessage = "Unknown score type." });
+                                            scoreItem.Value = false;
+                                            break;
                                     }
 
-                                    #region Determine whether to update the existing score item, or create a new one, and whether to disconnect from a previous score.
-
-                                    if (conditionValidator.ConditionMet && assetVersionCheckObjectTypes.ShouldContinueAnalysis(measure.MetricAssetVersionUid))
+                                    Guid scoreItemUid = Guid.NewGuid();
+                                    if (previousScoreItem != null)
                                     {
-                                        // Check to see if we have an existing scoreItem for this recalculated measure result.
-                                        var previousScoreItem = previousScoreItems.FirstOrDefault(e => e.MetricAssetVersionUid == measure.MetricAssetVersionUid);
-                                        Guid scoreItemUid = Guid.NewGuid();
-                                        if (previousScoreItem != null)
+                                        if (previousScoreItem.Value == scoreItem.Value && previousScoreItem.AdjustedWeight == scoreItem.AdjustedWeight)
+                                        {   // Since value is the same, just link the existing score item to score.
+                                            scoreItemUid = previousScoreItem.ScoreItemUid;
+                                        }
+                                        else
                                         {
-                                            if (previousScoreItem.Value == scoreItem.Value && previousScoreItem.AdjustedWeight == scoreItem.AdjustedWeight)
+                                            if (previousScoreItem.EffectiveDate.Date == assetEffectiveDate.EffectiveDate.Date) 
                                             {
-                                                // Since value is the same, just link the existing score item to score.
-                                                scoreItemUid = previousScoreItem.ScoreItemUid;
-                                            }
-                                            else
-                                            {
-                                                // The value for an existing effective date is the now different.
                                                 if (previousScoreItem.UsedInOtherScores)
-                                                {
-                                                    // The score item is used in an earlier score, so we need to create a new score item, AND detach this score from the now old score item.
+                                                {   // The score item is used in an earlier score, so we need to create a new score item, AND detach this score from the now old score item.
                                                     assetScoreItemLinksToDelete.Add(new ScoreItemLink { ScoreItemUid = previousScoreItem.ScoreItemUid });
                                                 }
                                                 else
-                                                {
-                                                    // Not used in any other score, so we are OK to update the value on this score item.
+                                                {   // Not used in any other score, so we are OK to update the value on this score item.
                                                     scoreItemUid = previousScoreItem.ScoreItemUid;
                                                 }
                                             }
                                         }
-                                        scoreItem.Uid = scoreItemUid;
+                                    }
+                                    scoreItem.Uid = scoreItemUid;
 
                                     assetScoreItems.Add(scoreItem);
                                     assetScoreItemLinks.Add(new ScoreItemLink { ScoreItemUid = scoreItem.Uid });
@@ -796,7 +806,7 @@ where   ExecutionID <> @id
                                     {
                                         // Look up to see if there is an existing score item for this measure, and use that value.
                                         scoreItem.Uid = Guid.NewGuid();
-                                        
+
                                         // If same measure version, then use existing Guid.
                                         if (previousScoreItem.MetricAssetVersionUid == allMeasure.MetricAssetVersionUid)
                                         {
@@ -819,7 +829,6 @@ where   ExecutionID <> @id
                             measureDeleted = true;
                         }
 
-
                         if (measureDeleted && previousScoreItem != null && previousScoreItem.EffectiveDate == assetEffectiveDate.EffectiveDate)
                         {   // Remove from existing score.
                             scoreItemLinksToDelete.Add(new ScoreItemLink { ScoreItemUid = previousScoreItem.ScoreItemUid, ScoreUid = previousScoreItem.ScoreUid });
@@ -831,10 +840,10 @@ where   ExecutionID <> @id
                                 if (groupScoreItem != null)
                                 {
                                     if (!(from a in assetScoreItems
-                                            join all in allMeasures on a.MetricAssetUid equals all.MetricAssetUid
-                                            where all.MetricParentAssetUid == allMeasure.MetricParentAssetUid
-                                            where all.MetricAssetUid != previousScoreItem.MetricAssetUid
-                                            select all.MetricAssetUid).Any())
+                                          join all in allMeasures on a.MetricAssetUid equals all.MetricAssetUid
+                                          where all.MetricParentAssetUid == allMeasure.MetricParentAssetUid
+                                          where all.MetricAssetUid != previousScoreItem.MetricAssetUid
+                                          select all.MetricAssetUid).Any())
                                     {
                                         scoreItemLinksToDelete.Add(new ScoreItemLink { ScoreItemUid = groupScoreItem.ScoreItemUid, ScoreUid = previousScoreItem.ScoreUid });
                                     }
@@ -844,7 +853,7 @@ where   ExecutionID <> @id
                     });
 
                     // Perform final score calculations for this asset/effective date combination. If no data for asset/effective date, then do not even bother to recalculate anything for it.
-                    if (assetScoreItems.Count > 0)// || alreadyProcessedMeasureUids.Any(o => o.Deleted))
+                    if (assetScoreItems.Count > 0)
                     {
                         var score = AdjustScoreItemWeights(allMeasures, assetScoreItems);
 
