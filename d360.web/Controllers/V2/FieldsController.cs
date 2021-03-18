@@ -2019,10 +2019,9 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
             ]
-        public HttpResponseMessage GetFilterVales(Guid assetTypeUid, string fieldName)
+        public HttpResponseMessage GetFilterVales(Guid assetTypeUid, string fieldName, int skip = 0, int take = 0)
         {
             var prefix = "Fields.GetFilterVales => ";
-            var errorMessage = "";
             try
             {
 
@@ -2030,15 +2029,15 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     select top 1 ft.ID from fieldtype ft
                     inner join assettype at on at.object = ft.object and at.objectid = ft.objectid
                     where at.uid = @assetTypeUid and ft.Name = @fieldName)
-
                     select text from FieldLookupValue where @fieldTypeId = FieldTypeID
-                    order by text asc", new { assetTypeUid, fieldName }).ToList();
+                    order by text asc
+					OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY;", new { assetTypeUid, fieldName, skip, take }).ToList();
 
                 return Request.CreateResponse(HttpStatusCode.OK, data);
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", prefix }
                 });

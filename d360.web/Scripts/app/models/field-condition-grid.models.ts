@@ -8,6 +8,7 @@ export class FieldTypeAPIModelFieldCondition extends FieldTypeAPIModelField {
     Operators: SelectItem[];
 
     IsSystemField?: boolean = false;
+    IsRelationship?: boolean = false;
 }
 
 export class FieldCondition {

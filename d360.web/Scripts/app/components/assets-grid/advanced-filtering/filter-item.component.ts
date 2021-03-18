@@ -1,26 +1,30 @@
 ﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, HostListener, OnChanges } from '@angular/core';
-import { SelectItem, SelectItemGroup } from 'primeng/api';
+import { LazyLoadEvent, SelectItem, SelectItemGroup } from 'primeng/api';
 import * as _ from 'lodash';
 import { FieldTypeAPIModelFieldCondition } from '../../../models/field-condition-grid.models';
 import { OperatorModel } from '../../../models/operator.model';
 import { AdvancedFilterFieldCondition, SystemFields } from './advanced-filtering.models';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
-import { AssetService } from '../../../services/asset.service';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { TagService } from '../../../services/tag.service';
+import { RelationshipType } from '../../../models/relationship.model';
+import { RelationshipsService } from '../../../services/relationships.service';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'filter-item',
     templateUrl: 'filter-item.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [FieldsObservableService, AssetTypeService, TagService]
+    providers: [FieldsObservableService, AssetTypeService, TagService, RelationshipsService]
 })
 export class FilterItemComponent implements OnInit, OnChanges {
     @Input() assetTypeUid: string = "";
     @Input() condition: AdvancedFilterFieldCondition;
     @Input() fields: FieldTypeAPIModelFieldCondition[] = null;
     @Input() operators: OperatorModel[] = [];
+    @Input() relationshipTypes: RelationshipType[] = [];
 
+    lazyLoadSubscription: Subscription;
 
     currentField: FieldTypeAPIModelFieldCondition;
 
@@ -47,7 +51,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
         private elRef: ElementRef,
         private fieldsService: FieldsObservableService,
         private assetTypeService: AssetTypeService,
-        private tagService: TagService
+        private tagService: TagService,
+        private relationshipService: RelationshipsService
     ) {
     }
 
@@ -59,9 +64,11 @@ export class FilterItemComponent implements OnInit, OnChanges {
     ngOnInit() {
         this.allFieldsDropdown = [];
         let assetFieldGroup: SelectItemGroup = { value: "asset-field", label: "Asset Fields", items: [] };
-        let systemFieldsGroup: SelectItemGroup = { value: "asset-field", label: "System Fields", items: [] };
+        let systemFieldsGroup: SelectItemGroup = { value: "system-field", label: "System Fields", items: [] };
+        let relationshipGroup: SelectItemGroup = { value: "rel-field", label: "Relationships", items: [] };
         this.allFieldsDropdown.push(assetFieldGroup);
         this.allFieldsDropdown.push(systemFieldsGroup);
+        this.allFieldsDropdown.push(relationshipGroup);
 
         this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
             assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
@@ -70,6 +77,11 @@ export class FilterItemComponent implements OnInit, OnChanges {
         SystemFields.GetSystemFieldDefinition().forEach((f) => {
             systemFieldsGroup.items.push({ value: f.Name, label: f.FriendlyName });
         });
+
+        SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).forEach((f) => {
+            relationshipGroup.items.push({ value: f.Name, label: f.FriendlyName });
+        });
+
     }
 
     getTypeForCondition(item: AdvancedFilterFieldCondition) {
@@ -86,6 +98,15 @@ export class FilterItemComponent implements OnInit, OnChanges {
             var options: SelectItem[] = [];
             options.push({ label: "contains", value: "Equals" });
             options.push({ label: "not contains", value: "NotEquals" });
+            return options;
+        }
+
+        if (this.currentField.IsRelationship) {
+            var options: SelectItem[] = [];
+            options.push({ value: "Contains", label: " contains " });
+            options.push({ value: "NotContains", label: " does not contains " });
+            options.push({ value: "Populated", label: " exist " });
+            options.push({ value: "NotPopulated", label: " do not exist " });
             return options;
         }
 
@@ -126,14 +147,14 @@ export class FilterItemComponent implements OnInit, OnChanges {
     onFieldSelected($event) {
         this.isSelectingCurrentField = false;
         var type = this.getFieldType(this.condition);
+        if (this.fields.filter(x => x.Name === this.condition.field).length !== 0) {
+            this.currentField = this.fields.filter(x => x.Name === this.condition.field)[0];
+        }
+
         if (type.Type) {
             this.condition.friendlyFieldName = type.FriendlyName;
             this.condition.fieldType = this.getTypeForCondition(this.condition);
-            this.currentField = this.fields.filter(x => x.Name === this.condition.field)[0];
             this.condition.type = this.currentField;
-            if (this.condition.fieldType === "Lookup") {
-                this.loadLookupValues();
-            }
             if (this.condition.fieldType === "Tag") {
                 this.loadTagValues();
             }
@@ -148,29 +169,49 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.uiCurrentOperatorsList = this.getOperators(this.condition);
                 this.uiFilterLabel = this.condition.getFilterLabel();
             }
+            else if (this.currentField.IsRelationship) {
+                this.condition.friendlyFieldName = this.currentField.FriendlyName;
+                this.condition.fieldType = null;
+                this.loadRelationshipValues();
+                this.uiCurrentOperatorsList = this.getOperators(this.condition);
+                //this.uiFilterLabel = this.condition.getFilterLabel();
+            }
         }
         this.isSelectingValue = true;
+    }
+
+    loadListLazy(event: LazyLoadEvent) {
+        //simulate remote connection with a timeout 
+        var type = this.getFieldType(this.condition);
+        if (type.Type) {
+            if (this.condition.fieldType === "Lookup") {
+                this.loadLookupValues(event.first, event.rows);
+            }
+            if (this.condition.fieldType === "Tag") {
+                this.loadTagValues();
+            }
+        }
+        console.log(event);
     }
 
     onOperatorSelected($event) {
         this.updateAllAnyData();
     }
 
-    loadLookupValues() {
-        if (!this.currentField.Values) {
-            this.isLookupValuesLoading = true;
-
-            this.fieldsService.getLookupValues(this.currentField.AssetTypeUid, this.currentField.Name.trim())
-                .subscribe(res => {
-                    this.currentField.Values = [];
-                    res.forEach(str => {
-                        this.currentField.Values.push({ title: str, value: str });
-                    })
-
-                    this.isLookupValuesLoading = false;
-                    this.cdRef.markForCheck();
-                })
+    loadLookupValues(skip, take) {
+        if (this.lazyLoadSubscription) {
+            this.lazyLoadSubscription.unsubscribe();
         }
+
+        this.lazyLoadSubscription = this.fieldsService.getLookupValues(this.currentField.AssetTypeUid, this.currentField.Name.trim(), skip, take)
+            .subscribe(res => {
+                this.currentField.Values = [];
+                res.forEach(str => {
+                    this.currentField.Values.push({ title: str, value: str });
+                })
+
+                this.cdRef.markForCheck();
+            })
     }
 
 
@@ -230,6 +271,29 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
     }
 
+    loadRelationshipValues() {
+        if (!this.currentField.Values || this.currentField.Values.length === 0) {
+            this.isLookupValuesLoading = true;
+
+
+            console.log(this.currentField.Name);
+            this.relationshipService.getRelatedObjectsByUid(this.currentField.Name.split("|")[1], this.currentField.Name.split("|")[0])
+                .subscribe((res) => {
+                    console.log(res);
+                })
+            //this.tagService.getTagsList(true).subscribe((res) => {
+            //    this.currentField.Values = [];
+            //    res.forEach(str => {
+            //        this.currentField.Values.push({ title: str.Value, value: str.Value });
+            //    })
+
+            //    this.isLookupValuesLoading = false;
+            //    this.cdRef.markForCheck();
+            //});
+
+
+        }
+    }
 
     confirmValue() {
         this.isSelectingValue = false;
@@ -302,13 +366,23 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 }
             }
         }
+
+        if (this.condition.fieldType === "Path") {
+            if (this.condition.operator.toString() === "Contains") {
+                this.uiIsAllDisabled = false;
+                this.uiIsAnyDisabled = false;
+            }
+            else {
+                this.uiIsAllDisabled = true;
+                this.uiIsAnyDisabled = true;
+            }
+        }
     }
 
     fieldInputType() {
         if (this.condition.field === SystemFields.OwnedByFieldCode) {
             return "lookup";
         }
-
         var type = this.getTypeForCondition(this.condition);
 
         if (type == "Number" || type == "Decimal" || type == "Score") {
@@ -350,6 +424,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
         if (type == "Lookup" || type === "Tag") {
             return "lookup";
+        }
+
+        if (type === "Path" && (this.condition.operator.toString() !== "StartsWith" || this.condition.operator.toString() !== "EndsWith")) {
+            return "multi-input";
         }
 
         return "text";

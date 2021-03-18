@@ -20,7 +20,7 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Relation),
-            OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text),
+            OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text, DataType.Path),
             OperatorFieldTypeRequirements(false),
             SortOrder(300)
         ]
@@ -31,7 +31,7 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Relation),
-            OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text),
+            OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text, DataType.Path),
             OperatorFieldTypeRequirements(false),
             SortOrder(400)
         ]
@@ -44,7 +44,7 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Text, DataType.Link, DataType.Html, DataType.Tag),
+            OperatorAllowedDataTypes(DataType.Text, DataType.Link, DataType.Html, DataType.Tag, DataType.Path),
             OperatorFieldTypeRequirements(false),
             SortOrder(100)
         ]
@@ -57,7 +57,7 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Text, DataType.Link, DataType.Html, DataType.Tag),
+            OperatorAllowedDataTypes(DataType.Text, DataType.Link, DataType.Html, DataType.Tag, DataType.Path),
             OperatorFieldTypeRequirements(false),
             SortOrder(200)
         ]
@@ -70,7 +70,7 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Text),
+            OperatorAllowedDataTypes(DataType.Text, DataType.Path),
             OperatorFieldTypeRequirements(false),
             SortOrder(500)
         ]
@@ -83,7 +83,7 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Text),
+            OperatorAllowedDataTypes(DataType.Text, DataType.Path),
             OperatorFieldTypeRequirements(false),
             SortOrder(600)
         ]

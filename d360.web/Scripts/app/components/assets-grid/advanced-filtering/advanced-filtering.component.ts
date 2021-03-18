@@ -9,6 +9,9 @@ import { AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, F
 import { DatePipe } from '@angular/common';
 import { AllocationService } from '../../../services/allocations.service';
 import { ScoreTypeAllocation } from '../../../models/metrics.model';
+import { RelationshipsService } from '../../../services/relationships.service';
+import { RelationshipType } from '../../../models/relationship.model';
+import { AssetTypeService } from '../../../services/asset-type.service';
 
 @Component({
     selector: 'advanced-filtering',
@@ -16,13 +19,14 @@ import { ScoreTypeAllocation } from '../../../models/metrics.model';
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['./advanced-filtering.component.less'],
-    providers: [FieldsObservableService, CompanySettingsService, AllocationService]
+    providers: [FieldsObservableService, CompanySettingsService, AllocationService, RelationshipsService]
 })
 export class AdvancedFilteringComponent implements OnChanges {
     @Input() assetTypeUid: string = '';
     @Output() onChange = new EventEmitter();
 
     allocations: ScoreTypeAllocation[] = [];
+    relationshipTypes: RelationshipType[] = [];
     filters: Filters;
 
     fields: FieldTypeAPIModelFieldCondition[] = null;
@@ -39,6 +43,7 @@ export class AdvancedFilteringComponent implements OnChanges {
         private fieldsService: FieldsObservableService,
         private settingsService: CompanySettingsService,
         private allocationService: AllocationService,
+        private relationshipService: RelationshipsService,
         private datePipe: DatePipe) {
         this.conditions = new AdvancedFilterFieldConditionCollection();
         this.conditions.filters = [];
@@ -65,11 +70,13 @@ export class AdvancedFilteringComponent implements OnChanges {
         forkJoin(
             this.settingsService.getOperators(),
             this.fieldsService.getFieldsV2(this.assetTypeUid, null, null),
-            this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid)
+            this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid),
+            this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid)
         ).subscribe((response) => {
             this.operators = response[0];
-            this.allocations = response[2];
             let res = response[1];
+            this.allocations = response[2];
+            this.relationshipTypes = response[3];
 
             var tempFields: FieldTypeAPIModelFieldCondition[] = [];
             res.forEach(f => {
@@ -80,6 +87,12 @@ export class AdvancedFilteringComponent implements OnChanges {
             });
 
             SystemFields.GetSystemFieldDefinition().forEach((f) => {
+                var fModel = f as FieldTypeAPIModelFieldCondition;
+                fModel.IsSystemField = true;
+                tempFields.push(fModel);
+            });
+
+            SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).forEach((f) => {
                 var fModel = f as FieldTypeAPIModelFieldCondition;
                 fModel.IsSystemField = true;
                 tempFields.push(fModel);
@@ -114,9 +127,6 @@ export class AdvancedFilteringComponent implements OnChanges {
                     }
                 });
             });
-
-
-
 
             this.fields = tempFields;
             this.cdRef.markForCheck();

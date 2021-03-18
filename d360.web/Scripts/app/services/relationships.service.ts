@@ -146,6 +146,14 @@ export class RelationshipsService extends BaseObservableService {
             );
     }
 
+    getRelatedObjectsByUid(assetTypeUID: string, intersectTypeUID: string): Observable<RelatedItem[]> {
+        return this.http.get(`/api/RelationshipObjectsByAssetTypeUID?assetTypeUid=${assetTypeUID}&intersectTypeUid=${intersectTypeUID}`)
+            .pipe(
+                map(response => <RelatedItem[]>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     getRelatedObjects(objectType: string, objectId: number, intersectTypeId: number): Observable<RelatedItem[]> {
         return this.http.get(`/api/RelationshipObjectsByType?type=${objectType}&id=${objectId}&intersectTypeId=${intersectTypeId}`)
             .pipe(

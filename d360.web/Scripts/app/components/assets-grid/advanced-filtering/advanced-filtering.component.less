@@ -65,6 +65,10 @@
         z-index: 200;
       }
 
+      .value-selector {
+        margin-top: 8px;
+      }
+
       .value-selection {
         position: absolute;
         width: 308px;
@@ -87,6 +91,12 @@
         input {
           margin-top: 8px;
         }
+
+        .ig-multi-input-field {
+          input {
+            margin-top: 0px;
+          }
+        }
       }
     }
   }
@@ -97,14 +107,12 @@
   thead {
     border-bottom: 1px solid #ccc;
   }
-
-  .p-datatable-tbody {
+  /*  .p-datatable-tbody {
     max-height: 300px;
     display: block;
     overflow: auto;
     width: 289px;
-  }
-
+  }*/
   .p-checkbox-box {
     width: 16px;
     height: 16px;
@@ -154,7 +162,7 @@
     }
 
     td.first-col {
-      max-width: 28px;
+      width: 28px;
       padding-left: 10px;
     }
 

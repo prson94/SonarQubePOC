@@ -49,6 +49,10 @@ export class MultiInputField implements ControlValueAccessor {
         if (val.length === 0) {
             return;
         }
+        if (!this.value) {
+            this.value = [];
+        }
+
         (this.value as string[]).push(val);
         this.currentText = "";
         this.writeValue(this.value);

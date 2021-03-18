@@ -5,6 +5,7 @@ import { debug } from "util";
 import { FieldType, FieldTypeAPIModelField } from "../../../models/fieldtype-api.model";
 import { ScoreType, ScoreTypeAllocation } from "../../../models/metrics.model";
 import { Operator } from "../../../models/operator.model";
+import { RelationshipType } from "../../../models/relationship.model";
 
 export class SystemFields {
     public static OwnedByFieldCode: string = "#OwnedBy";
@@ -49,6 +50,40 @@ export class SystemFields {
 
         return fields;
     }
+
+    public static GetRelationshipDefinition(relTypes: RelationshipType[], assetType: string): FieldTypeAPIModelFieldCondition[] {
+        var fields: FieldTypeAPIModelFieldCondition[] = [];
+
+        relTypes.forEach((r) => {
+            let predicate: string = "";
+            let typeName: string = "";
+            let sideUid: string = "";
+            if (r.Object.Uid === assetType) {
+                predicate = r.Predicate.Inverse;
+                typeName = r.Subject.Name;
+                sideUid = r.Object.Uid;
+            }
+            else {
+                predicate = r.Predicate.Name;
+                typeName = r.Object.Name;
+                sideUid = r.Subject.Uid;
+            }
+
+            typeName = typeName.split("/").join("<i class='fa fa-chevron-right'></i>");
+
+            fields.push({
+                Category: "Relationships",
+                FriendlyName: `${predicate} ${typeName}`,
+                Name: r.Uid + "|" + sideUid,
+                Type: null,
+                Operators: [],
+                Values: [],
+                IsRelationship: true
+            });
+
+        });
+        return fields;
+    }
 }
 
 export class FieldTypeAPIModelFieldCondition extends FieldTypeAPIModelField {
@@ -57,6 +92,7 @@ export class FieldTypeAPIModelFieldCondition extends FieldTypeAPIModelField {
 
     IsOwnerField?: boolean = false;
     IsSystemField?: boolean = false;
+    IsRelationship?: boolean = false;
 }
 
 export class AdvancedFilterFieldCondition {
@@ -434,6 +470,19 @@ export class AdvancedFilterFieldConditionCollection {
             }
             else if (cond.fieldType === "Score" && cond.operator.toString() === "IsInBand") {
                 queries.push(this.getInBandQuery(cond));
+            }
+            else if (cond.fieldType === "Path" && cond.value) {
+                let subConditions: AdvancedFilterFieldCondition[] = [];
+                var stringArr = cond.value as string[];
+                stringArr.forEach(r => {
+                    subConditions.push(cond.getCopyWithNewValue(r));
+                });
+
+                let subQueries: string[] = [];
+                subConditions.forEach((sc) => {
+                    subQueries.push(sc.getQueryString());
+                });
+                queries.push("(" + subQueries.join(" " + cond.connectingOperator + " ") + ")");
             }
             else {
                 queries.push(cond.getQueryString());

@@ -3,7 +3,7 @@
 <div class="advanced-filtering" *ngIf="visible">
     <div class="filters-list">
         <div class="filter-item" *ngFor="let item of conditions.filters">
-            <filter-item [assetTypeUid]="assetTypeUid" [condition]="item" [fields]="fields" [operators]="operators"></filter-item>
+            <filter-item [assetTypeUid]="assetTypeUid" [condition]="item" [fields]="fields" [operators]="operators" [relationshipTypes]="relationshipTypes"></filter-item>
         </div>
     </div>
 

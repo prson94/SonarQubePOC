@@ -13,6 +13,7 @@ import { TableModule } from 'primeng/table';
 import { SearchFieldModule } from '../../shared/controls/search-field/search-field.component';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { CoreModule } from '../../shared/core.module';
+import { MultiInputFieldModule } from '../../shared/controls/multi-input-field/multi-input-field.component';
 
 
 @NgModule({
@@ -30,7 +31,8 @@ import { CoreModule } from '../../shared/core.module';
         RadioButtonModule,
 
         DropdownModule,
-        DirectivesModule
+        DirectivesModule,
+        MultiInputFieldModule
     ],
     declarations: [AdvancedFilteringComponent, FilterItemComponent],
     exports: [AdvancedFilteringComponent]

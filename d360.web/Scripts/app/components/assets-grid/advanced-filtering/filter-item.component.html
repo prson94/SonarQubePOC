@@ -19,8 +19,7 @@
                 </div>
             </ng-template>
             <ng-template let-field pTemplate="item">
-                <div class="field-item">
-                    <div>{{field.label}}</div>
+                <div class="field-item" [innerHTML]="field.label">
                 </div>
             </ng-template>
         </p-dropdown>
@@ -37,97 +36,115 @@
                         igSize="full"
                         appendTo="body">
             </p-dropdown>
-            <ng-container *ngIf="needsValue()">
-                <input *ngIf="fieldInputType() === 'text'" igInput igSize="full" type="text" [(ngModel)]="condition.value" required />
-                <ig-number-input *ngIf="fieldInputType() === 'number'" igSize="full" [(ngModel)]="condition.value" required></ig-number-input>
+            <div class="value-selector">
+                <ng-container *ngIf="needsValue()">
+                    <input *ngIf="fieldInputType() === 'text'" igInput igSize="full" type="text" [(ngModel)]="condition.value" required />
+                    <ig-number-input *ngIf="fieldInputType() === 'number'" igSize="full" [(ngModel)]="condition.value" required></ig-number-input>
 
-                <ng-container *ngIf="fieldInputType() === 'multi-number'">
-                    <ig-number-input igSize="full" [(ngModel)]="condition.value" required></ig-number-input>
-                    <div class="value-separator">and</div>
-                    <ig-number-input igSize="full" [(ngModel)]="condition.value2" required></ig-number-input>
-                </ng-container>
+                    <ng-container *ngIf="fieldInputType() === 'multi-number'">
+                        <ig-number-input igSize="full" [(ngModel)]="condition.value" required></ig-number-input>
+                        <div class="value-separator">and</div>
+                        <ig-number-input igSize="full" [(ngModel)]="condition.value2" required></ig-number-input>
+                    </ng-container>
 
-                <ig-date *ngIf="fieldInputType() === 'date'" [(ngModel)]="condition.value" required></ig-date>
-                <ng-container *ngIf="fieldInputType() === 'multi-date'">
-                    <ig-date [(ngModel)]="condition.value" required></ig-date>
-                    <div class="value-separator">and</div>
-                    <ig-date [(ngModel)]="condition.value2" required></ig-date>
-                </ng-container>
+                    <ig-date *ngIf="fieldInputType() === 'date'" [(ngModel)]="condition.value" required></ig-date>
+                    <ng-container *ngIf="fieldInputType() === 'multi-date'">
+                        <ig-date [(ngModel)]="condition.value" required></ig-date>
+                        <div class="value-separator">and</div>
+                        <ig-date [(ngModel)]="condition.value2" required></ig-date>
+                    </ng-container>
 
-                <ig-date *ngIf="fieldInputType() === 'date-time'" [(ngModel)]="condition.value" [showTime]="true" required></ig-date>
-                <ng-container *ngIf="fieldInputType() === 'multi-date-time'">
-                    <ig-date [(ngModel)]="condition.value2" required [showTime]="true"></ig-date>
-                    <div class="value-separator">and</div>
-                    <ig-date [(ngModel)]="condition.value2" required [showTime]="true"></ig-date>
-                </ng-container>
+                    <ig-date *ngIf="fieldInputType() === 'date-time'" [(ngModel)]="condition.value" [showTime]="true" required></ig-date>
+                    <ng-container *ngIf="fieldInputType() === 'multi-date-time'">
+                        <ig-date [(ngModel)]="condition.value2" required [showTime]="true"></ig-date>
+                        <div class="value-separator">and</div>
+                        <ig-date [(ngModel)]="condition.value2" required [showTime]="true"></ig-date>
+                    </ng-container>
 
-                <ng-container *ngIf="fieldInputType() === 'lookup' && currentField">
-                    <div class="lookup-selection">
-                        <p-table #dt1
-                                 tableStyleClass="ig-filter-table"
-                                 [metaKeySelection]="true"
-                                 [value]="currentField.Values"
-                                 (onRowSelect)="onItemSelected($event)"
-                                 [(selection)]="condition.value"
-                                 [globalFilterFields]="['value']"
-                                 dataKey="value">
-                            <ng-template pTemplate="header">
-                                <tr>
-                                    <th class="first-col">
-                                        <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
-                                    </th>
-                                    <th>
-                                        <input type="text" (input)="dt1.filterGlobal($event.target.value, 'contains')" placeholder="Search list" />
-                                    </th>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="body" let-item>
-                                <ng-container *ngIf="item.styleClass === 'group-name'; else elseBlock">
-                                    <tr class="{{item.styleClass}}">
-                                        <td class="first-col" colspan="2">
-                                            <span class="item-value">{{item.title}}</span>
-                                        </td>
-                                    </tr>
-                                </ng-container>
-                                <ng-template #elseBlock>
-                                    <tr [pSelectableRow]="item">
-                                        <td class="first-col">
-                                            <p-tableCheckbox [value]="item"></p-tableCheckbox>
-                                        </td>
-                                        <td>
-                                            <span class="item-value">{{item.title}}</span>
-                                        </td>
+                    <ng-container *ngIf="fieldInputType() === 'lookup' && currentField">
+                        <div class="lookup-selection">
+                            <p-table #dt1
+                                     tableStyleClass="ig-filter-table"
+                                     [metaKeySelection]="true"
+                                     [value]="currentField.Values"
+                                     (onRowSelect)="onItemSelected($event)"
+                                     [(selection)]="condition.value"
+                                     [globalFilterFields]="['value']"
+                                     dataKey="value"
+                                     [scrollable]="true"
+                                     scrollHeight="250px"
+                                     [virtualRowHeight]="30"
+                                     [rows]="250"
+                                     [virtualScroll]="true"
+                                     [lazy]="true"
+                                     (onLazyLoad)="loadListLazy($event)">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th class="first-col">
+                                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                                        </th>
+                                        <th>
+                                            <input type="text" (input)="dt1.filterGlobal($event.target.value, 'contains')" placeholder="Search list" />
+                                        </th>
                                     </tr>
                                 </ng-template>
+                                <ng-template pTemplate="body" let-item>
+                                    <ng-container *ngIf="item.styleClass === 'group-name'; else elseBlock">
+                                        <tr class="{{item.styleClass}}">
+                                            <td class="first-col" colspan="2">
+                                                <span class="item-value">{{item.title}}</span>
+                                            </td>
+                                        </tr>
+                                    </ng-container>
+                                    <ng-template #elseBlock>
+                                        <tr [pSelectableRow]="item">
+                                            <td class="first-col">
+                                                <p-tableCheckbox [value]="item"></p-tableCheckbox>
+                                            </td>
+                                            <td>
+                                                <span class="item-value">{{item.title}}</span>
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                </ng-template>
+                            </p-table>
+                        </div>
+
+                        <div class="any-all-picker">
+                            <p-radioButton [disabled]="uiIsAllDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="and" label="Match all"></p-radioButton>
+                            <p-radioButton [disabled]="uiIsAnyDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="or" label="Match any"></p-radioButton>
+                        </div>
+                    </ng-container>
+
+                    <ng-container *ngIf="fieldInputType() === 'score-band'">
+                        <p-dropdown igDropdown
+                                    [options]="currentField.Values"
+                                    [(ngModel)]="condition.value"
+                                    (onChange)="onItemSelected($event)"
+                                    igSize="full"
+                                    appendTo="body">
+                            <ng-template let-item pTemplate="selectedItem">
+                                <div class="score-pill-small-rounded score-{{item.value}}"></div>
+                                {{item.title}}
                             </ng-template>
-                        </p-table>
-                    </div>
+                            <ng-template let-item pTemplate="item">
+                                <div class="score-pill-small-rounded score-{{item.value}}"></div>
+                                {{item.title}}
+                            </ng-template>
+                        </p-dropdown>
+                    </ng-container>
 
-                    <div class="any-all-picker">
-                        <p-radioButton [disabled]="uiIsAllDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="and" label="Match all"></p-radioButton>
-                        <p-radioButton [disabled]="uiIsAnyDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="or" label="Match any"></p-radioButton>
-                    </div>
+                    <ng-container *ngIf="fieldInputType() === 'multi-input'">
+                        <ig-multi-input-field [(ngModel)]='condition.value'></ig-multi-input-field>
+                        <div class="any-all-picker" *ngIf="!uiIsAllDisabled && !uiIsAnyDisabled">
+                            <p-radioButton [disabled]="uiIsAllDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="and" label="Match all"></p-radioButton>
+                            <p-radioButton [disabled]="uiIsAnyDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="or" label="Match any"></p-radioButton>
+                        </div>
+                    </ng-container>
+
                 </ng-container>
+            </div>
 
-                <ng-container *ngIf="fieldInputType() === 'score-band'">
-                    <p-dropdown igDropdown
-                                [options]="currentField.Values"
-                                [(ngModel)]="condition.value"
-                                (onChange)="onItemSelected($event)"
-                                igSize="full"
-                                appendTo="body">
-                        <ng-template let-item pTemplate="selectedItem">
-                            <div class="score-pill-small-rounded score-{{item.value}}"></div>
-                            {{item.title}}
-                        </ng-template>
-                        <ng-template let-item pTemplate="item">
-                            <div class="score-pill-small-rounded score-{{item.value}}"></div>
-                            {{item.title}}
-                        </ng-template>
-                    </p-dropdown>
-                </ng-container>
-
-            </ng-container>
             <div class="buttons flex">
                 <button igButton icon="fa-trash" style="margin-left:0px;" tooltip="Close" (click)="remove()"></button>
 
