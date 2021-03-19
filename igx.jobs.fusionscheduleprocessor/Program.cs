@@ -1,25 +1,31 @@
 ﻿using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace igx.jobs.fusionscheduleprocessor
 {
     class Program
     {
-        static void Main()
-        {
-            var config = CoreFunction.GetJobHostConfiguration();
-            config.UseTimers();
-#if DEBUG
-            config.UseDevelopmentSettings();
-#endif
-			System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
-			var host = new JobHost(config);
-            host.RunAndBlock();
-        }
-    }
+		static async Task Main()
+		{
+			var builder = CoreFunction.JobHostConfigBuilder();
+			builder.ConfigureWebJobs(c =>
+			{
+				c.AddAzureStorageCoreServices()
+				.AddAzureStorage()
+				.AddTimers();
+			});
+
+			using (var host = builder.Build())
+			{
+				await host.RunAsync();
+			}
+		}
+	}
 
     public static class FusionScheduleProcessor
     {

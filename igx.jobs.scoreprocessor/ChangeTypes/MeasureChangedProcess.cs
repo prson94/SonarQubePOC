@@ -40,7 +40,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 
                             if (definition.DataQuality != null)
                             {
-                                var dqQueryDetail = Db.BuildDataQualityMeasureQueryModel(2, version.RollupPaths.First().Uid);
+                                var dqQueryDetail = Db.BuildDataQualityMeasureQueryModel(MetricDataQualityQueryType.ImpactedAssets_EffectiveDates_By_ProvidedUid, version.RollupPaths.First().Uid);
                                 list = Db.GetDataQualityAssetEffectiveDateResultModels(dqQueryDetail, measureChangedModel.MetricAssetUid, measureChangedModel.MetricAssetVersionUid, version.EffectiveDate);
                             }
                             else if (definition.Governance != null)

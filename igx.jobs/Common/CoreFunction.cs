@@ -1,4 +1,4 @@
-using ApplicationInsights.Helpers.WebJobs;
+
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
@@ -8,12 +8,16 @@ using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+
 
 namespace igx.jobs
 {
@@ -232,24 +236,38 @@ namespace igx.jobs
             }
         }
 
-        public static JobHostConfiguration GetJobHostConfiguration()
+        public static IHostBuilder JobHostConfigBuilder()
         {
-            var config = new JobHostConfiguration
+            var builder = new HostBuilder();
+            var env = GetConfigValueByKey("Environment");
+
+
+            builder
+            .UseEnvironment(env)
+            .ConfigureWebJobs(c =>
             {
-                DashboardConnectionString = CoreFunction.GetConfigValueByKey("WebJobsAccount"),
-                StorageConnectionString = CoreFunction.GetConfigValueByKey("WebJobsAccount"),
-                NameResolver = new QueueNameResolver()
-            };
-
-            if (config.IsDevelopment)
+                c.AddAzureStorageCoreServices()
+                .AddAzureStorage();
+            })
+            .ConfigureAppConfiguration((context, b) =>
             {
-                config.UseDevelopmentSettings();
-            }
+                b.AddConfiguration(context.Configuration)
+                .AddEnvironmentVariables()
+                .Build();
+            })
+            .ConfigureLogging((context, b) =>
+            {
+                b.AddConsole();
 
-            config.UseApplicationInsights();
-            config.UseCore();
+                string appInsightsKey = context.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
+                if (!string.IsNullOrEmpty(appInsightsKey))
+                {
+                    b.AddApplicationInsights(appInsightsKey);
+                }
+            })
+            .UseConsoleLifetime();
 
-            return config;
+            return builder;
         }
     }
 }

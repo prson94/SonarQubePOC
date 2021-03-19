@@ -50,7 +50,7 @@ namespace d360.model.DataAccessLayer
         protected async Task<ApiExecutionInfo> CreateApiBatchJob(ApiExecutionInfo executionInfo, ApiExecution execution, object data)
         {
             // Save to storage container.
-            StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(data));
+            await StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(data));
 
             // Save to the database.
             execution.ExecutionID = executionInfo.ExecutionID;

@@ -12,25 +12,32 @@ using d360.extensions.caching;
 using d360.extensions.queue;
 using d360.model;
 using d360.core.enums;
+using Microsoft.Extensions.Hosting;
 
 namespace igx.jobs.displayvaluechecker
 {
     class Program
     {
-        static void Main()
+        static async Task Main()
         {
-            var config = CoreFunction.GetJobHostConfiguration();
-            config.UseTimers();
-#if DEBUG
-            config.UseDevelopmentSettings();
-#endif
             System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
-            var host = new JobHost(config);
-            host.RunAndBlock();
+
+            var builder = CoreFunction.JobHostConfigBuilder();
+            builder.ConfigureWebJobs(c =>
+            {
+                c.AddAzureStorageCoreServices()
+                .AddAzureStorage()
+                .AddTimers();
+            });
+
+            using (var host = builder.Build())
+            {
+                await host.RunAsync();
+            }
         }
     }
 
-    public static class DisplayValueChecker
+    public class DisplayValueChecker
     {
         const string functionName = "DisplayValueChecker";
         

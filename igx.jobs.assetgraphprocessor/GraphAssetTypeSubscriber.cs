@@ -17,7 +17,7 @@ namespace igx.jobs.assetgraphprocessor
         const string functionName = "AssetGraphProcessor_GraphAssetTypeSubscriber";
         const int timeout = 60 * 10;
 
-        public static async Task Run([ServiceBusTrigger("%AssetBusTopicName%", "GraphAssetType", AccessRights.Manage)]BrokeredMessage brokeredMessage, TextWriter log)
+        public static async Task RunAssetTypeSubscriber([ServiceBusTrigger("%AssetBusTopicName%", "GraphAssetType")]BrokeredMessage brokeredMessage, TextWriter log)
         {
             var info = brokeredMessage.GetBody<AssetEventInfo>();
             if (info.Type != AssetEventType.AssetType)

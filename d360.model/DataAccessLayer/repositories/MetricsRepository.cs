@@ -2375,7 +2375,7 @@ for json path";
             };
 
             // Save to storage container.
-            StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(request));
+            await StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(request));
 
 
             // Save to the database.

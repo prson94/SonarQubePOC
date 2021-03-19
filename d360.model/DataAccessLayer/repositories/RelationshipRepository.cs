@@ -527,8 +527,8 @@ from	IntersectType I
                 SendWorkflowEvents = triggerWorkflow
             };
 
-            Storage.CreateFolder(executionInfo.StorageFolder);
-            Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(relationships));
+            await Storage.CreateFolder(executionInfo.StorageFolder);
+            await Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(relationships));
                         
             execution.ExecutionID = executionInfo.ExecutionID;
             companyContext.Add(execution);
@@ -626,8 +626,8 @@ from	IntersectType I
                 SendWorkflowEvents = triggerWorkflow
             };
 
-            Storage.CreateFolder(executionInfo.StorageFolder);
-            Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(relationships));
+            await Storage.CreateFolder(executionInfo.StorageFolder);
+            await Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(relationships));
                         
             execution.ExecutionID = executionInfo.ExecutionID;
             companyContext.Add(execution);
