@@ -46,6 +46,7 @@ namespace d360.extensions.storage
                 headers.ContentType = contentType;
             }
 
+            file.Position = 0;
             await blob.UploadAsync(file, headers).ConfigureAwait(false);
         }
 
