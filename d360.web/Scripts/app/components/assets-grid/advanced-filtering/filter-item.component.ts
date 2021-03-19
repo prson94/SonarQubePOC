@@ -155,6 +155,9 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.condition.friendlyFieldName = type.FriendlyName;
             this.condition.fieldType = this.getTypeForCondition(this.condition);
             this.condition.type = this.currentField;
+            if (this.condition.fieldType === "Lookup") {
+                this.loadLookupValues(null, null, true);
+            }
             if (this.condition.fieldType === "Tag") {
                 this.loadTagValues();
             }
@@ -198,12 +201,14 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.updateAllAnyData();
     }
 
-    loadLookupValues(skip, take) {
+    loadLookupValues(skip: number, take: number, onlyCount: boolean = false) {
         if (this.lazyLoadSubscription) {
             this.lazyLoadSubscription.unsubscribe();
         }
 
-        this.lazyLoadSubscription = this.fieldsService.getLookupValues(this.currentField.AssetTypeUid, this.currentField.Name.trim(), skip, take)
+        var params = { skip: skip, take: take, onlyCount: onlyCount };
+
+        this.lazyLoadSubscription = this.fieldsService.getLookupValues(this.currentField.AssetTypeUid, this.currentField.Name.trim(), params)
             .subscribe(res => {
                 this.currentField.Values = [];
                 res.forEach(str => {

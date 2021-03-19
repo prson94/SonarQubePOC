@@ -496,10 +496,19 @@ export class FieldsObservableService extends BaseObservableService implements IF
 
     }
 
-    getLookupValues(assetTypeUid: string, fieldName: string, skip: number, take: number): Observable<string[]> {
+    getLookupValues(assetTypeUid: string, fieldName: string, params: any): Observable<string[]> {
+        var qString = '';
+        if (params) {
+            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            if (qString)
+                qString = '?' + qString;
+        }
+
+        let url = `api/v2/fields/${assetTypeUid}/lookupvalues/${fieldName}`;
+
         return this
             .http
-            .get(`api/v2/fields/${assetTypeUid}/lookupvalues/${fieldName}?skip=${skip}&take=${take}`)
+            .get(url)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
