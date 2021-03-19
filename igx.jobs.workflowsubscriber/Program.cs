@@ -2,14 +2,17 @@
 using d360.core.entities.Workflow;
 using d360.core.queue;
 using d360.model;
+using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Hosting;
 using Microsoft.ServiceBus.Messaging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace igx.jobs.workflowsubscriber
@@ -41,7 +44,7 @@ namespace igx.jobs.workflowsubscriber
         const string functionName = "Workflow_Subscriber";
         const int MAX_NUMBER_OF_WORKFLOW_EVENTS = 10000;
 
-        public static async Task Run([ServiceBusTrigger("%EventBusTopicName%", "Workflow")]BrokeredMessage brokeredMessage, TextWriter log)
+        public static async Task Run([ServiceBusTrigger("%EventBusTopicName%", "Workflow")]Message brokeredMessage, TextWriter log)
         {
             var companyId = 0;
             try
@@ -50,7 +53,8 @@ namespace igx.jobs.workflowsubscriber
                 log.WriteLine($"WorkflowSubscriber trigger function processed:  {brokeredMessage.MessageId}");
                 CoreFunction.AITrackEvent(functionName,"WorkflowSubscriber triggered", new Dictionary<string, string> { { "MessageID", brokeredMessage.MessageId } });
 
-                var info = brokeredMessage.GetBody<EventInfo>();
+                var messageString = Encoding.UTF8.GetString(brokeredMessage.Body);
+                var info = JsonConvert.DeserializeObject<EventInfo>(messageString);
 
                 // Create EF connection
                 companyId = info.CompanyID;
