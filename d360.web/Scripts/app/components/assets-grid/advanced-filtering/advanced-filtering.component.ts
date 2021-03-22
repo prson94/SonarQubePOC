@@ -11,7 +11,6 @@ import { AllocationService } from '../../../services/allocations.service';
 import { ScoreTypeAllocation } from '../../../models/metrics.model';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { RelationshipType } from '../../../models/relationship.model';
-import { AssetTypeService } from '../../../services/asset-type.service';
 
 @Component({
     selector: 'advanced-filtering',

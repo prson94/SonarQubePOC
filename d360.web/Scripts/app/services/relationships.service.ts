@@ -130,6 +130,20 @@ export class RelationshipsService extends BaseObservableService {
         }
     }
 
+    getRelationshipLookupValues(assetTypeUID: string, intersectTypeUID: string, params: any): Observable<any> {
+        var qString = '';
+        if (params) {
+            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            if (qString)
+                qString = '?' + qString;
+        }
+        return this.http.get(`api/v2/relationships/lookupvalues/${assetTypeUID}/${intersectTypeUID}` + qString)
+            .pipe(
+                map(response => <RelatedItem[]>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     getRelation(id: number): Observable<RelationshipDetail> {
         return this.http.get(`form/IntersectType_FormData?id=${id}`)
             .pipe(
@@ -142,14 +156,6 @@ export class RelationshipsService extends BaseObservableService {
         return this.http.get(`/api/${objectType}/${objectId}/relationshipTypes`)
             .pipe(
                 map(response => <ObjectRelationship[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getRelatedObjectsByUid(assetTypeUID: string, intersectTypeUID: string): Observable<RelatedItem[]> {
-        return this.http.get(`/api/RelationshipObjectsByAssetTypeUID?assetTypeUid=${assetTypeUID}&intersectTypeUid=${intersectTypeUID}`)
-            .pipe(
-                map(response => <RelatedItem[]>response),
                 catchError(err => this.handleError(err))
             );
     }

@@ -61,12 +61,12 @@ export class SystemFields {
             if (r.Object.Uid === assetType) {
                 predicate = r.Predicate.Inverse;
                 typeName = r.Subject.Name;
-                sideUid = r.Object.Uid;
+                sideUid = r.Subject.Uid;
             }
             else {
                 predicate = r.Predicate.Name;
                 typeName = r.Object.Name;
-                sideUid = r.Subject.Uid;
+                sideUid = r.Object.Uid;
             }
 
             typeName = typeName.split("/").join("<i class='fa fa-chevron-right'></i>");
@@ -497,9 +497,14 @@ export class AdvancedFilterFieldConditionCollection {
         }
         let value: string = "";
 
-        this.filters.filter(x => x.field === SystemFields.OwnedByFieldCode && x.operator && x.value).forEach((cond) => {
-            value += (cond.value as SelectItem[]).map(x => x.value).join(", ");
-        });
+        var filter = this.filters.filter(x => x.field === SystemFields.OwnedByFieldCode && x.operator && x.value && x.operator.toString() === "Equals");
+        if (filter && filter.length > 0) {
+            value += (filter[0].value as SelectItem[]).map(x => x.value).join(", ");
+            if (filter[0].connectingOperator === "and") {
+                value = "MatchAll:" + value;
+            }
+        }
+
         return value;
     }
 

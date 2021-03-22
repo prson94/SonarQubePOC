@@ -43,6 +43,7 @@ import * as _ from 'lodash';
 import { V2ApiFilters } from '../../models/asset-search.model';
 import { SortOrder } from '../../models/enums.model';
 import { AssetGridObject } from './asset-grid.model';
+import { Filters } from './advanced-filtering/advanced-filtering.models';
 
 @Component({
     selector: 'd3s-asset-grid',
@@ -309,8 +310,19 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         }
         delete params['_filter'];
         if (this.newAdvancedFilters) {
-            params._filter = this.newAdvancedFilters;
+            if (this.newAdvancedFilters.filter) {
+                params._filter = this.newAdvancedFilters.filter;
+            }
+            else {
+                delete params['_filter'];
+            }
 
+            if (this.newAdvancedFilters.owners) {
+                params._ownedBy = this.newAdvancedFilters.owners;
+            }
+            else {
+                delete params['_ownedBy'];
+            }
         }
 
         return params;
@@ -545,8 +557,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         this.changeDetectorRef.markForCheck();
     }
 
-    private newAdvancedFilters: string = '';
+    private newAdvancedFilters: Filters;
     private advancedFiltersChanged($event) {
-        this.newAdvancedFilters = $event.filter;
+        this.newAdvancedFilters = $event;
     }
 }

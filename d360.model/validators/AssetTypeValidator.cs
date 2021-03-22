@@ -142,7 +142,7 @@ namespace d360.core.validators
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.CanEditParentRestriction);
                 }
 
-                if(model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset)
+                if (model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset)
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.CanEditParentClassRestriction);
                 }
@@ -266,7 +266,7 @@ namespace d360.core.validators
             if (!String.IsNullOrEmpty(isHierachyItem))
             {
                 var order = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_order").Value;
-                if(!String.IsNullOrEmpty(order))
+                if (!String.IsNullOrEmpty(order))
                 {
                     int orderID = 0;
                     order = order.Split(new[] { "Field" }, StringSplitOptions.None)[1];
@@ -334,7 +334,7 @@ namespace d360.core.validators
         {
             if (queryParams.Any(x => x.Key.Trim().ToLower() == "_ownedby"))
             {
-                string[] owners = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_ownedby").Value.Split(',');
+                string[] owners = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_ownedby").Value.Replace("MatchAll:", "").Split(',');
                 foreach (var owner in owners)
                 {
                     if (!Guid.TryParse(owner, out Guid ownerguid))
@@ -367,7 +367,7 @@ namespace d360.core.validators
             }
             return true;
         }
-        
+
         public bool IsValidGetAssets(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             if (queryParams.Any(x => x.Key.Trim().ToLower() == "_assetuid"))

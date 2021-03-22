@@ -496,7 +496,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
 
     }
 
-    getLookupValues(assetTypeUid: string, fieldName: string, params: any): Observable<string[]> {
+    getLookupValues(assetTypeUid: string, fieldName: string, params: any): Observable<any> {
         var qString = '';
         if (params) {
             qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
@@ -504,7 +504,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
                 qString = '?' + qString;
         }
 
-        let url = `api/v2/fields/${assetTypeUid}/lookupvalues/${fieldName}`;
+        let url = `api/v2/fields/${assetTypeUid}/lookupvalues/${fieldName}` + qString;
 
         return this
             .http

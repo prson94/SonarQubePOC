@@ -82,7 +82,7 @@ namespace d360.model.DataAccessLayer
             string condition = string.Empty;
             string optionalJoin = string.Empty;
             string permissionsJoin = string.Empty;
-            
+
             if (Class.HasValue)
             {
                 if (fusionTypeUid.HasValue && fusionTypeUid.Value != Guid.Empty && (Class == AssetTypeClass.FusionAttribute || Class == AssetTypeClass.FusionQuery))
@@ -205,7 +205,7 @@ namespace d360.model.DataAccessLayer
 
             }
 
-            if(!CompanyContext.CurrentResourceIsAdmin)
+            if (!CompanyContext.CurrentResourceIsAdmin)
             {
                 permissionsJoin = $"outer apply (select case when ua.PermissionsBitMask & {(int)Permission.ReadAsset} = 0 then 0 else 1 end as hasRead from UserAssetPermissions(@userId,a.id) ua where ua.AssetTypeID = a.id and ua.AssetID = 0) UserP";
                 condition += " and (UserP.hasRead is null or UserP.hasRead != 0)";
@@ -821,18 +821,25 @@ namespace d360.model.DataAccessLayer
 
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_ownedby"))
             {
-                List<Guid> ownerUids = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_ownedby")
-                    .Value.Split(',').Select(x =>
-                    {
-                        var guid = Guid.Empty;
-                        Guid.TryParse(x, out guid);
-                        return guid;
-                    }).ToList();
+                bool matchAll = false;
+
+                string ownerValue = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_ownedby").Value;
+                if (ownerValue.StartsWith("MatchAll:"))
+                {
+                    matchAll = true;
+                    ownerValue = ownerValue.Replace("MatchAll:", "");
+                }
+                List<Guid> ownerUids = ownerValue.Split(',').Select(x =>
+                   {
+                       var guid = Guid.Empty;
+                       Guid.TryParse(x, out guid);
+                       return guid;
+                   }).ToList();
 
                 if (ownerUids.Any(x => x == Guid.Empty))
                     throw new Exception("Invalid Owner Uid in parameters!");
 
-                if (ownerUids.Count > 0)
+                if (ownerUids.Count > 0 && matchAll == false)
                 {
                     dbArgs.Add("ownerUids", ownerUids);
                     var ownershipSQL = $@"EXISTS(
@@ -861,6 +868,43 @@ namespace d360.model.DataAccessLayer
                                                 rd.isVisible = 1
                                             )";
                     whereStatements.Add(ownershipSQL);
+                }
+
+                if (ownerUids.Count > 0 && matchAll == true)
+                {
+                    List<string> ownershipSqls = new List<string>();
+                    for (int i = 0; i < ownerUids.Count; i++)
+                    {
+                        dbArgs.Add("ownerUids_" + i, ownerUids[i]);
+                        var ownershipSQL = $@"EXISTS(
+                                            SELECT 1 
+                                            FROM 
+                                                [dbo].[ResponsibilityDetail] rd 
+                                            WHERE 
+                                                rd.SecurityAssetUid = @ownerUids_{i} 
+                                                and 
+                                                a.ID=rd.AssetID 
+                                                and
+                                                rd.isVisible = 1
+                                            UNION
+                                            SELECT 1 
+                                            FROM 
+                                                [dbo].[ResponsibilityDetail] rd 
+                                            WHERE 
+                                                rd.SecurityAssetUid = @ownerUids_{i} 
+                                                and 
+                                                rd.ApplyToType = 1 
+                                                and 
+                                                rd.AssetID = 0 
+                                                and 
+                                                rd.AssetTypeId=a.AssetTypeId
+                                                and
+                                                rd.isVisible = 1
+                                            )";
+                        ownershipSqls.Add(ownershipSQL);
+                    }
+
+                    whereStatements.Add($"({string.Join(" and ", ownershipSqls)})");
                 }
             }
 
@@ -951,7 +995,7 @@ namespace d360.model.DataAccessLayer
                     A.[UID] as [AssetUid],
                     A.AssetTypeId,
                     T.[UID] as AssetTypeUid,
-                    {(includeCreatedByModifiedBy ? "UA.uid as UpdatedByUid,": "")}
+                    {(includeCreatedByModifiedBy ? "UA.uid as UpdatedByUid," : "")}
                     A.UpdatedOn,
                     {(includeCreatedByModifiedBy ? "CA.uid as CreatedByUid," : "")}                    
                     A.CreatedOn,
@@ -2700,7 +2744,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         new List<string>() { "Uid" })
             });
 
-            foreach(var node in nodes)
+            foreach (var node in nodes)
             {
                 List<PathComponent> returnlist = new List<PathComponent>();
 
@@ -3304,7 +3348,7 @@ where   A.[uid] = @assetUid";
                             R.ResourceID = F.ResourceID
 						    inner join Asset A on F.ObjectID = A.ObjectID and F.ObjectType=A.[Object]
 						    where A.[uid]=@assetUid
-                            ";            
+                            ";
 
             bool includeTotal = true;
 
@@ -3361,7 +3405,7 @@ where   A.[uid] = @assetUid";
             dbArgs.Add("@assetUid", assetUid);
             dbArgs.Add("@pageSize", pageSize);
             dbArgs.Add("@offset", (pageSize * pageNum));
-            
+
             var itemsSQL = $@"
                             select R.Uid as resourceUid, R.resourceId, F.FollowerName as 'name'
                             {joinSQL}
@@ -3381,8 +3425,8 @@ where   A.[uid] = @assetUid";
             }
 
             count = includeTotal ? count : null;
-            
-            return new AssetWatchers { total = count, items = items};
+
+            return new AssetWatchers { total = count, items = items };
         }
 
 
@@ -3456,7 +3500,7 @@ where   A.[uid] = @assetUid";
             }
 
             var orderBySQL = $"order by {orderBy} {orderDirection}";
-            
+
             dbArgs.Add("@assetTypeUid", assetTypeUid);
             dbArgs.Add("@pageSize", pageSize);
             dbArgs.Add("@offset", (pageSize * pageNum));

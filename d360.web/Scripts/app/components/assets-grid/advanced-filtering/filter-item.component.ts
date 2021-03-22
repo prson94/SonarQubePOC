@@ -88,6 +88,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
         if (this.condition.field === SystemFields.OwnedByFieldCode) {
             return "";
         }
+
+        if (this.currentField.IsRelationship) {
+            return "";
+        }
         var ft = this.getFieldType(item);
         if (!ft) return '';
         return Object.keys(ft.Type)[0];
@@ -155,9 +159,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.condition.friendlyFieldName = type.FriendlyName;
             this.condition.fieldType = this.getTypeForCondition(this.condition);
             this.condition.type = this.currentField;
-            if (this.condition.fieldType === "Lookup") {
-                this.loadLookupValues(null, null, true);
-            }
             if (this.condition.fieldType === "Tag") {
                 this.loadTagValues();
             }
@@ -175,7 +176,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
             else if (this.currentField.IsRelationship) {
                 this.condition.friendlyFieldName = this.currentField.FriendlyName;
                 this.condition.fieldType = null;
-                this.loadRelationshipValues();
                 this.uiCurrentOperatorsList = this.getOperators(this.condition);
                 //this.uiFilterLabel = this.condition.getFilterLabel();
             }
@@ -184,36 +184,51 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     loadListLazy(event: LazyLoadEvent) {
-        //simulate remote connection with a timeout 
+        var params = { skip: event.first, take: event.rows, filter: event.globalFilter ?? "" };
+
         var type = this.getFieldType(this.condition);
         if (type.Type) {
             if (this.condition.fieldType === "Lookup") {
-                this.loadLookupValues(event.first, event.rows);
+                this.loadLookupValues(params);
             }
             if (this.condition.fieldType === "Tag") {
                 this.loadTagValues();
             }
         }
-        console.log(event);
+        else {
+            if (this.condition.field === SystemFields.OwnedByFieldCode) {
+                this.loadLookupValuesForOwners();
+            }
+            else if (this.currentField.IsRelationship) {
+                this.loadRelationshipValues(params);
+            }
+        }
     }
 
     onOperatorSelected($event) {
         this.updateAllAnyData();
     }
 
-    loadLookupValues(skip: number, take: number, onlyCount: boolean = false) {
+    loadLookupValues(params: any) {
         if (this.lazyLoadSubscription) {
             this.lazyLoadSubscription.unsubscribe();
         }
 
-        var params = { skip: skip, take: take, onlyCount: onlyCount };
-
         this.lazyLoadSubscription = this.fieldsService.getLookupValues(this.currentField.AssetTypeUid, this.currentField.Name.trim(), params)
             .subscribe(res => {
-                this.currentField.Values = [];
-                res.forEach(str => {
-                    this.currentField.Values.push({ title: str, value: str });
-                })
+                if (!this.currentField.Values || this.currentField.Values.length === 0) {
+                    this.currentField.Values = Array.from({ length: res.count });
+                };
+
+                let loadedData = [];
+
+                res.items.forEach(str => {
+                    loadedData.push({ title: str, value: str });
+                });
+
+                Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
+
+                this.currentField.Values = [...this.currentField.Values];
 
                 this.cdRef.markForCheck();
             })
@@ -276,28 +291,31 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
     }
 
-    loadRelationshipValues() {
-        if (!this.currentField.Values || this.currentField.Values.length === 0) {
-            this.isLookupValuesLoading = true;
-
-
-            console.log(this.currentField.Name);
-            this.relationshipService.getRelatedObjectsByUid(this.currentField.Name.split("|")[1], this.currentField.Name.split("|")[0])
-                .subscribe((res) => {
-                    console.log(res);
-                })
-            //this.tagService.getTagsList(true).subscribe((res) => {
-            //    this.currentField.Values = [];
-            //    res.forEach(str => {
-            //        this.currentField.Values.push({ title: str.Value, value: str.Value });
-            //    })
-
-            //    this.isLookupValuesLoading = false;
-            //    this.cdRef.markForCheck();
-            //});
-
-
+    loadRelationshipValues(params: any) {
+        if (this.lazyLoadSubscription) {
+            this.lazyLoadSubscription.unsubscribe();
         }
+
+
+        this.lazyLoadSubscription = this.relationshipService
+            .getRelationshipLookupValues(this.currentField.Name.split("|")[1], this.currentField.Name.split("|")[0], params)
+            .subscribe(res => {
+                if (!this.currentField.Values || this.currentField.Values.length === 0) {
+                    this.currentField.Values = Array.from({ length: res.count });
+                };
+
+                let loadedData = [];
+
+                res.items.forEach(str => {
+                    loadedData.push({ title: str.label, value: str.value });
+                });
+
+                Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
+
+                this.currentField.Values = [...this.currentField.Values];
+
+                this.cdRef.markForCheck();
+            });
     }
 
     confirmValue() {
@@ -382,6 +400,17 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.uiIsAnyDisabled = true;
             }
         }
+        if (this.condition.field === SystemFields.OwnedByFieldCode) {
+            console.log(this.condition.operator.toString());
+            if (this.condition.operator.toString() === "Equals") {
+                this.uiIsAllDisabled = false;
+                this.uiIsAnyDisabled = false;
+            }
+            else {
+                this.uiIsAllDisabled = true;
+                this.uiIsAnyDisabled = true;
+            }
+        }
     }
 
     fieldInputType() {
@@ -427,7 +456,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             return "date-time";
         }
 
-        if (type == "Lookup" || type === "Tag") {
+        if (type == "Lookup" || type === "Tag" || this.currentField.IsRelationship) {
             return "lookup";
         }
 

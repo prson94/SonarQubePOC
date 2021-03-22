@@ -1849,25 +1849,6 @@ order by    rnk, [Name]";
             return list;
         }
 
-        [HttpGet, Route("RelationshipObjectsByAssetTypeUID")]
-        public async Task<IEnumerable<FilterObjectItem>> RelationshipObjectsByTypesUid(Guid assetTypeUid, Guid intersectTypeUid)
-        {
-            var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
-            var intersectType = Company.IntersectTypes.FirstOrDefault(x => x.uid == intersectTypeUid);
-            SystemObjects sysObj = SystemObjects.Unknown;
-            switch (assetType.Object)
-            {
-                case "ArtifactType":
-                    sysObj = SystemObjects.ArtifactType;
-                    break;
-                default:
-                    sysObj = SystemObjects.Unknown;
-                    break;
-            }
-
-            return await this.RelationshipObjectsByType(sysObj, assetType.ObjectID, intersectType.ID);
-        }
-
         [HttpGet, Route("RelationshipObjectsByType")]
         public async Task<IEnumerable<FilterObjectItem>> RelationshipObjectsByType(SystemObjects type, int id, int intersectTypeId)
         {
