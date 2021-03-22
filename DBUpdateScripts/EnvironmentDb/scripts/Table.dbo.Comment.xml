@@ -131,13 +131,15 @@ END
     </sql>
   </changeSet>
 
-  <changeSet author="Pappas" id="Table.dbo.Comment-v2-RemoveBadData">
+  <changeSet author="Pappas" id="Table.dbo.Comment-v3-RemoveBadData">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'Comment' and COLUMN_NAME = 'AssetID')
+if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'Comment' and COLUMN_NAME = 'AssetID') and
+	exists (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'CommentRelation') and
+	exists (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'CommentVote')
 BEGIN
 	delete V from CommentRelation V inner join Comment C on C.ID = V.CommentID and C.AssetID is null;
 	delete V from CommentVote V inner join Comment C on C.ID = V.CommentID and C.AssetID is null;

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.metrics.AssetVersion-v1">
+  <changeSet author="Core" id="Table.metrics.AssetVersion-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -13,25 +13,24 @@
 		<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'AssetVersion')
 BEGIN
-	CREATE TABLE [metrics].[AssetVersion](
-		[Uid] [uniqueidentifier] NOT NULL,
+	CREATE TABLE [metrics].[AssetVersion] (
+		[AssetUid] [uniqueidentifier] NOT NULL,
 		[EffectiveDate] [date] NOT NULL,
 		[Weight] [decimal](5, 3) NOT NULL,
 		[ConditionAndOr] [varchar](1) NULL,
-		[Internal] [bit] CONSTRAINT [DF_MetricAssetVersion_Internal] DEFAULT (0) NOT NULL,
-		[MetricRuleUid] [uniqueidentifier] NULL,
 		[CreatedOn] [datetime] NULL,
 		[CreatedBy] [int] NULL,
-		CONSTRAINT [PK_MetricAssetVersion] PRIMARY KEY NONCLUSTERED ( [Uid] ASC, [EffectiveDate] DESC )
+		[EffectiveEndDate] [date] NULL,
+		[State] [int] NULL,
+		[Uid] [uniqueidentifier] NOT NULL,
+		[Name] [nvarchar](250) NOT NULL,
+		[Description] [nvarchar](4000) NULL,
+		[Threshold] [float] NULL,
+		[UpdateFrequency] [int] NOT NULL,
+		[MatchConditionsOnly] [bit] NOT NULL,
+		[Definition] [nvarchar](4000) NOT NULL
 	)
 END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricAssetVersion_MetricAsset')
-BEGIN
-	ALTER TABLE [metrics].[AssetVersion] WITH CHECK ADD CONSTRAINT [FK_MetricAssetVersion_MetricAsset] FOREIGN KEY([Uid]) REFERENCES [metrics].[Asset] ([Uid]) ON DELETE CASCADE
-	ALTER TABLE [metrics].[AssetVersion] CHECK CONSTRAINT [FK_MetricAssetVersion_MetricAsset]
-
-END
 		]]>
     </sql>
 	<rollback>
@@ -40,107 +39,121 @@ END
 		]]>
 	</rollback>
   </changeSet>
-  <changeSet author="BHoward" id="Table.metrics.AssetVersion-v2">
-    <comment>GOV-9978</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-		IF COL_LENGTH('[metrics].[AssetVersion]', 'EffectiveEndDate') IS NULL
-		BEGIN
-			ALTER TABLE metrics.assetVersion
-			ADD EffectiveEndDate date NULL
-		END
-		IF COL_LENGTH('[metrics].[AssetVersion]', 'State') IS NULL
-		BEGIN
-			ALTER TABLE metrics.assetVersion
-			ADD [State] int	
-		END
-		]]>
-    </sql>
-    
-    <rollback>
-      <![CDATA[	
-		IF COL_LENGTH('[metrics].[AssetVersion]', 'EffectiveEndDate') IS NOT NULL
-		BEGIN
-			ALTER TABLE metrics.assetVersion
-			DROP COLUMN EffectiveEndDate 
-		END
-		IF COL_LENGTH('[metrics].[AssetVersion]', 'State') IS NOT NULL
-		BEGIN
-			ALTER TABLE metrics.assetVersion
-			DROP COLUMN [State] 
-		END
-	  ]]>
-    </rollback>
-  </changeSet>
-    <changeSet author="BHoward" id="Table.metrics.AssetVersion-v2.1">
-    <comment>GOV-9978-1</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-		UPDATE metrics.assetVersion 
-		SET  [State] = 1
-    
-		UPDATE metrics.assetVersion 
-		SET EffectiveEndDate = convert(varchar(10), getdate()-1, 120), [State] = 3
-		WHERE Uid in (SELECT Uid FROM metrics.Asset WHERE State = 3)
-		]]>
-    </sql>
-    
-    <rollback>
-      <![CDATA[	
-	  ]]>
-    </rollback>
-  </changeSet>
 
-  <changeSet author="Pappas" id="Table.metrics.AssetVersion-v3">
+  <changeSet author="Pappas" id="Constraint.metrics.AssetVersion-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'AssetVersion' AND COLUMN_NAME = 'MetricRuleUid')
-BEGIN
-	ALTER TABLE [metrics].[AssetVersion] DROP COLUMN [MetricRuleUid]
-END
+if not exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricAssetVersion')
+begin
+	ALTER TABLE [metrics].[AssetVersion] ADD CONSTRAINT PK_MetricAssetVersion PRIMARY KEY NONCLUSTERED  ( [Uid] ASC )
+end
+
+if not exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_MetricsAssetVersion')
+begin
+	ALTER TABLE [metrics].[AssetVersion] ADD CONSTRAINT UQ_MetricsAssetVersion UNIQUE ( [AssetUid] ASC, [EffectiveDate] ASC ); 
+end
+
+if not exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricAssetVersion_MetricAsset')
+begin
+	ALTER TABLE [metrics].[AssetVersion] WITH CHECK ADD CONSTRAINT [FK_MetricAssetVersion_MetricAsset] FOREIGN KEY([AssetUid]) REFERENCES [metrics].[Asset] ([Uid]) ON DELETE CASCADE;
+	ALTER TABLE [metrics].[AssetVersion] CHECK CONSTRAINT [FK_MetricAssetVersion_MetricAsset];
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAssetVersion_Uid')
+begin
+	ALTER TABLE [metrics].[AssetVersion] ADD  CONSTRAINT [DF_MetricAssetVersion_Uid]  DEFAULT (newid()) FOR [Uid]	
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAssetVersion_Name')
+begin
+	ALTER TABLE [metrics].[AssetVersion] ADD  CONSTRAINT [DF_MetricAssetVersion_Name]  DEFAULT ('') FOR [Name]
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAssetVersion_UpdateFrequency')
+begin
+	ALTER TABLE [metrics].[AssetVersion] ADD  CONSTRAINT [DF_MetricAssetVersion_UpdateFrequency]  DEFAULT ((0)) FOR [UpdateFrequency]	
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAssetVersion_MatchConditionsOnly')
+begin
+	ALTER TABLE [metrics].[AssetVersion] ADD  CONSTRAINT [DF_MetricAssetVersion_MatchConditionsOnly]  DEFAULT ((1)) FOR [MatchConditionsOnly]	
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAssetVersion_Definition')
+begin
+	ALTER TABLE [metrics].[AssetVersion] ADD  CONSTRAINT [DF_MetricAssetVersion_Definition]  DEFAULT ('{}') FOR [Definition]	
+end
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'AssetVersion' AND COLUMN_NAME = 'MetricRuleUid')
-BEGIN
-	ALTER TABLE [metrics].[AssetVersion] ADD [MetricRuleUid] [uniqueidentifier] NULL
-END
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAssetVersion_Uid')
+begin
+	ALTER TABLE [metrics].[AssetVersion] DROP CONSTRAINT [DF_MetricAssetVersion_Uid]	
+end
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAssetVersion_Name')
+begin
+	ALTER TABLE [metrics].[AssetVersion] DROP CONSTRAINT [DF_MetricAssetVersion_Name]	
+end
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAssetVersion_UpdateFrequency')
+begin
+	ALTER TABLE [metrics].[AssetVersion] DROP CONSTRAINT [DF_MetricAssetVersion_UpdateFrequency]	
+end
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAssetVersion_MatchConditionsOnly')
+begin
+	ALTER TABLE [metrics].[AssetVersion] DROP CONSTRAINT [DF_MetricAssetVersion_MatchConditionsOnly]	
+end
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAssetVersion_Definition')
+begin
+	ALTER TABLE [metrics].[AssetVersion] DROP CONSTRAINT [DF_MetricAssetVersion_Definition]	
+end
+
+if exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricAssetVersion_MetricAsset')
+begin
+	ALTER TABLE [metrics].[AssetVersion] DROP CONSTRAINT [FK_MetricAssetVersion_MetricAsset]
+end
+
+if exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_MetricsAssetVersion')
+begin
+	ALTER TABLE [metrics].[AssetVersion] DROP CONSTRAINT UQ_MetricsAssetVersion WITH ( ONLINE = OFF ); 
+end
+
+if exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricAssetVersion')
+begin
+	ALTER TABLE [metrics].[AssetVersion] DROP CONSTRAINT PK_MetricAssetVersion WITH ( ONLINE = OFF )
+end
 		]]>
 	</rollback>
-  </changeSet> 
+  </changeSet>
 
-  <changeSet author="Pappas" id="Table.metrics.AssetVersion-v4">
-    <comment>GOV-10877</comment>
-	<sql dbms="mssql"
+  <changeSet author="Pappas" id="Index.metrics.AssetVersion-v5">
+    <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'AssetVersion' AND COLUMN_NAME = 'Definition')
-BEGIN
-	alter table metrics.AssetVersion add [Definition] nvarchar(4000) constraint DF_MetricAssetVersion_Definition default('{}') not null
-END
+if not exists (select * from sys.indexes where name = 'CIX_MetricsAssetVersion')
+begin
+	CREATE CLUSTERED INDEX [CIX_MetricsAssetVersion] ON [metrics].[AssetVersion] ( [AssetUid] ASC, [EffectiveDate] ASC )
+end
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'AssetVersion' AND COLUMN_NAME = 'Definition')
-BEGIN
-	ALTER TABLE [metrics].[AssetVersion] DROP CONSTRAINT DF_MetricAssetVersion_Definition
-	ALTER TABLE [metrics].[AssetVersion] DROP COLUMN [Definition]
-END
+if exists (select * from sys.indexes where name = 'CIX_MetricsAssetVersion')
+begin
+	DROP INDEX [CIX_MetricsAssetVersion] ON [metrics].[AssetVersion] WITH ( ONLINE = OFF )
+end
 		]]>
 	</rollback>
   </changeSet> 
+
 
 </databaseChangeLog>
