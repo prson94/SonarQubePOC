@@ -49,6 +49,16 @@ namespace d360.extensions.queue
             }
         }
 
+        private Message GetMessageFromObject(object o)
+        {
+            var eString = JsonConvert.SerializeObject(o);
+            var eBytes = Encoding.UTF8.GetBytes(eString);
+            var bm = new Message(eBytes);
+            bm.MessageId = Guid.NewGuid().ToString();
+
+            return bm;
+        }
+
         public bool CreateMessage<T>(string queueName, T item)
         {
             try
@@ -150,9 +160,7 @@ namespace d360.extensions.queue
         public void CreateTopicMessage(EventInfo e)
         {
             var topicName = getTopicName();
-            var eString = JsonConvert.SerializeObject(e);
-            var eBytes = Encoding.UTF8.GetBytes(eString);
-            var bm = new Message(eBytes);
+            var bm = GetMessageFromObject(e);
 
             var client = CreateTopicClient(topicName);
             client.SendAsync(bm).RunSynchronously();
@@ -160,9 +168,7 @@ namespace d360.extensions.queue
 
         public void CreateTopicMessage(string topicName, EventInfo e)
         {
-            var eString = JsonConvert.SerializeObject(e);
-            var eBytes = Encoding.UTF8.GetBytes(eString);
-            var bm = new Message(eBytes);
+            var bm = GetMessageFromObject(e);
             var client = CreateTopicClient(topicName);
             client.SendAsync(bm).RunSynchronously();
         }
@@ -175,9 +181,7 @@ namespace d360.extensions.queue
 
         public async Task CreateTopicMessageAsync(string topicName, EventInfo e)
         {
-            var eString = JsonConvert.SerializeObject(e);
-            var eBytes = Encoding.UTF8.GetBytes(eString);
-            var bm = new Message(eBytes);
+            var bm = GetMessageFromObject(e);
             var client = CreateTopicClient(topicName);
             await client.SendAsync(bm);
         }
@@ -197,13 +201,16 @@ namespace d360.extensions.queue
 
             foreach (var e in events)
             {
-                var eString = JsonConvert.SerializeObject(e);
-                var eBytes = Encoding.UTF8.GetBytes(eString);
-                var bm = new Message(eBytes);
-                var messageId = $"C{e.CompanyID}_A{e.Action}_W{e.WorkflowItemID}_S{e.VersionStepTransitionID}_I{e.ItemStepID}";
+                var bm = GetMessageFromObject(e);
 
-                if (e.Object != null) messageId += $"_O{e.Object.Object}|{e.Object.ObjectID}";
-                bm.MessageId = messageId;
+                if (e.Object != null)
+                {
+                    bm.MessageId += $"_O{e.Object.Object}|{e.Object.ObjectID}";
+                }
+                else
+                {
+                    bm.MessageId = $"C{e.CompanyID}_A{e.Action}_W{e.WorkflowItemID}_S{e.VersionStepTransitionID}_I{e.ItemStepID}";
+                }
 
                 if(e.Action == ChangeType.Add || e.Action == ChangeType.Update) //delay the processing if add or edit so update has chance to process
                     bm.ScheduledEnqueueTimeUtc = DateTime.UtcNow.AddSeconds(15);
@@ -264,10 +271,7 @@ namespace d360.extensions.queue
 
             foreach (var e in events)
             {
-                var eString = JsonConvert.SerializeObject(e);
-                var eBytes = Encoding.UTF8.GetBytes(eString);
-                var bm = new Message(eBytes);
-
+                var bm = GetMessageFromObject(e);
                 batchSize = AddMessageToBatch(bm, batches, batchSize);
             }
 
@@ -281,20 +285,14 @@ namespace d360.extensions.queue
 
         public void CreateTopicMessage<T>(string topicName, T e)
         {
-            var eString = JsonConvert.SerializeObject(e);
-            var eBytes = Encoding.UTF8.GetBytes(eString);
-            var bm = new Message(eBytes);
-
+            var bm = GetMessageFromObject(e);
             var client = CreateTopicClient(topicName);
             client.SendAsync(bm).RunSynchronously();
         }
 
         public async Task CreateTopicMessageAsync<T>(string topicName, T e)
         {
-            var eString = JsonConvert.SerializeObject(e);
-            var eBytes = Encoding.UTF8.GetBytes(eString);
-            var bm = new Message(eBytes);
-
+            var bm = GetMessageFromObject(e);
             var client = CreateTopicClient(topicName);
             await client.SendAsync(bm);
         }
@@ -308,12 +306,9 @@ namespace d360.extensions.queue
 
             foreach (var e in events)
             {
-                var eString = JsonConvert.SerializeObject(e);
-                var eBytes = Encoding.UTF8.GetBytes(eString);
-                var bm = new Message(eBytes);
+                var bm = GetMessageFromObject(e);
 
-
-                if(scheduledEnqueueTime.HasValue)
+                if (scheduledEnqueueTime.HasValue)
                 {
                     bm.ScheduledEnqueueTimeUtc = scheduledEnqueueTime.Value;
                 }
@@ -337,10 +332,7 @@ namespace d360.extensions.queue
 
             foreach (var e in events)
             {
-                var eString = JsonConvert.SerializeObject(e);
-                var eBytes = Encoding.UTF8.GetBytes(eString);
-                var bm = new Message(eBytes);
-
+                var bm = GetMessageFromObject(e);
                 batchSize = AddMessageToBatch(bm, batches, batchSize);
             }
 
