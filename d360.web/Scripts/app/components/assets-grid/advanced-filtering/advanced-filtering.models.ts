@@ -72,7 +72,7 @@ export class SystemFields {
 
             typeName = typeName.split("/").join("<i class='fa fa-chevron-right'></i>");
 
-            fields.push({
+            var field = {
                 Category: "Relationships",
                 FriendlyName: `${predicate} ${typeName}`,
                 Name: r.Uid + "|" + sideUid,
@@ -80,7 +80,10 @@ export class SystemFields {
                 Operators: [],
                 Values: [],
                 IsRelationship: true
-            });
+            };
+            field["predicate"] = predicate;
+
+            fields.push(field);
 
         });
         return fields.sort((a, b) => { return a.FriendlyName > b.FriendlyName ? 1 : -1 });
@@ -109,6 +112,7 @@ export class AdvancedFilterFieldCondition {
     type?: FieldTypeAPIModelField;
 
     connectingOperator: string = "or";
+    isRelationship?: boolean = false;
 
 
     constructor(private datePipe: DatePipe) {
@@ -141,10 +145,20 @@ export class AdvancedFilterFieldCondition {
                 str += " does not contain ";
                 break;
             case "Equals":
-                str += " is ";
+                if (this.isRelationship) {
+                    str += " contains ";
+                }
+                else {
+                    str += " is ";
+                }
                 break;
             case "NotEquals":
-                str += " is not ";
+                if (this.isRelationship) {
+                    str += " does not contain ";
+                }
+                else {
+                    str += " is not ";
+                }
                 break;
             case "StartsWith":
                 str += " starts with ";
@@ -246,7 +260,7 @@ export class AdvancedFilterFieldCondition {
             case "IsInBand":
                 return `${this.friendlyFieldName} is in band ${this.getTypedValue()}`;
             default:
-                return "Format not defined";
+                return "Any";
         }
 
     }
@@ -318,7 +332,7 @@ export class AdvancedFilterFieldCondition {
                 return +value;
             }
 
-            if (this.fieldType === "Lookup" || this.fieldType === "Tag" || this.field === SystemFields.OwnedByFieldCode) {
+            if (this.fieldType === "Lookup" || this.fieldType === "Tag" || this.field === SystemFields.OwnedByFieldCode || this.isRelationship) {
                 let valueAsString = "";
                 if (Array.isArray(value)) {
                     var arr = value as SelectItem[];

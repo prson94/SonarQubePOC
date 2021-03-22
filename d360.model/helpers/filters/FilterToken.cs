@@ -206,7 +206,9 @@ namespace d360.model.helpers
 
             foreach (var item in _sqlParams)
             {
-                this.sqlParamsRef.Add(item.Key, item.Value);
+                string updatedKey = item.Key + "_" + parameterIdx;
+                query = query.Replace(item.Key, updatedKey);
+                this.sqlParamsRef.Add(updatedKey, item.Value);
             }
             return query;
         }

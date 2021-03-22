@@ -1543,6 +1543,7 @@ namespace d360.web.Controllers.V2
                     items = results.Read<dynamic>().ToList(),
                     count = results.Read<int>().FirstOrDefault()
                 };
+
                 return Request.CreateResponse(HttpStatusCode.OK, data);
             }
             catch (Exception ex)

@@ -102,7 +102,7 @@
                                                 <p-tableCheckbox [value]="item"></p-tableCheckbox>
                                             </td>
                                             <td>
-                                                <span class="item-value">{{item.title}}</span>
+                                                <span class="item-value" [innerHTML]="item.title"></span>
                                             </td>
                                         </tr>
                                     </ng-template>

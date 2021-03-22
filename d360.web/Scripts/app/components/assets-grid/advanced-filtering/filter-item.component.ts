@@ -176,8 +176,9 @@ export class FilterItemComponent implements OnInit, OnChanges {
             else if (this.currentField.IsRelationship) {
                 this.condition.friendlyFieldName = this.currentField.FriendlyName;
                 this.condition.fieldType = null;
+                this.condition.isRelationship = true;
                 this.uiCurrentOperatorsList = this.getOperators(this.condition);
-                //this.uiFilterLabel = this.condition.getFilterLabel();
+                this.uiFilterLabel = this.condition.getFilterLabel();
             }
         }
         this.isSelectingValue = true;
@@ -307,7 +308,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 let loadedData = [];
 
                 res.items.forEach(str => {
-                    loadedData.push({ title: str.label, value: str.value });
+                    let label: string = (str.label as string).split("].[").join(" <i class='fa fa-chevron-right'></i> ").replace("[", "").replace("]", "");
+                    loadedData.push({ title: label, value: str.value });
                 });
 
                 Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
