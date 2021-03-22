@@ -20,6 +20,7 @@ namespace igx.jobs.assetgraphprocessor
         const string functionName = "AssetGraphProcessor_GraphAssetTypeSubscriber";
         const int timeout = 60 * 10;
 
+        [Disable("DisableGraphAssetType")]
         public static async Task RunAssetTypeSubscriber([ServiceBusTrigger("%AssetBusTopicName%", "GraphAssetType")]Message brokeredMessage, TextWriter log)
         {
             var messageString = Encoding.UTF8.GetString(brokeredMessage.Body);
