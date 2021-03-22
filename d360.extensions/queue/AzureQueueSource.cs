@@ -216,7 +216,7 @@ namespace d360.extensions.queue
 
             foreach (var batch in batches)
             {
-                client.SendAsync(batch).RunSynchronously();
+                client.SendAsync(batch).Wait();
             }
         }
 
@@ -325,7 +325,7 @@ namespace d360.extensions.queue
 
             foreach (var batch in batches)
             {                
-                client.SendAsync(batch).RunSynchronously();
+                client.SendAsync(batch).Wait();
             }
 
         }
