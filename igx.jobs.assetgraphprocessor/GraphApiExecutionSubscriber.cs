@@ -24,6 +24,7 @@ namespace igx.jobs.assetgraphprocessor
         const int timeout = 60 * 180; //3 hours
         const int sqlBatchSize = 5000;
 
+        [Disable("DisableGraphApiExecution")]
         public static async Task RunExecutionSubscriber([ServiceBusTrigger("%AssetBusTopicName%", "GraphApiExecution")]Message brokeredMessage, TextWriter log)
         {
             var messageString = Encoding.UTF8.GetString(brokeredMessage.Body);
