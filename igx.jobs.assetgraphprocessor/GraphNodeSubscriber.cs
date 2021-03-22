@@ -19,7 +19,7 @@ namespace igx.jobs.assetgraphprocessor
         const string functionName = "AssetGraphProcessor_GraphNodeSubscriber";
         const int timeout = 60 * 10;
 
-        public static async Task RunNodeSubscriber([ServiceBusTrigger("%AssetBusTopicName%")]Message brokeredMessage, TextWriter log)
+        public static async Task RunNodeSubscriber([ServiceBusTrigger("%AssetBusTopicName%", "GraphNode")]Message brokeredMessage, TextWriter log)
         {
             var messageString = Encoding.UTF8.GetString(brokeredMessage.Body);
             var info = JsonConvert.DeserializeObject<AssetEventInfo>(messageString);
