@@ -821,25 +821,18 @@ namespace d360.model.DataAccessLayer
 
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_ownedby"))
             {
-                bool matchAll = false;
-
-                string ownerValue = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_ownedby").Value;
-                if (ownerValue.StartsWith("MatchAll:"))
-                {
-                    matchAll = true;
-                    ownerValue = ownerValue.Replace("MatchAll:", "");
-                }
-                List<Guid> ownerUids = ownerValue.Split(',').Select(x =>
-                   {
-                       var guid = Guid.Empty;
-                       Guid.TryParse(x, out guid);
-                       return guid;
-                   }).ToList();
+                List<Guid> ownerUids = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_ownedby")
+                    .Value.Split(',').Select(x =>
+                    {
+                        var guid = Guid.Empty;
+                        Guid.TryParse(x, out guid);
+                        return guid;
+                    }).ToList();
 
                 if (ownerUids.Any(x => x == Guid.Empty))
                     throw new Exception("Invalid Owner Uid in parameters!");
 
-                if (ownerUids.Count > 0 && matchAll == false)
+                if (ownerUids.Count > 0)
                 {
                     dbArgs.Add("ownerUids", ownerUids);
                     var ownershipSQL = $@"EXISTS(
@@ -868,43 +861,6 @@ namespace d360.model.DataAccessLayer
                                                 rd.isVisible = 1
                                             )";
                     whereStatements.Add(ownershipSQL);
-                }
-
-                if (ownerUids.Count > 0 && matchAll == true)
-                {
-                    List<string> ownershipSqls = new List<string>();
-                    for (int i = 0; i < ownerUids.Count; i++)
-                    {
-                        dbArgs.Add("ownerUids_" + i, ownerUids[i]);
-                        var ownershipSQL = $@"EXISTS(
-                                            SELECT 1 
-                                            FROM 
-                                                [dbo].[ResponsibilityDetail] rd 
-                                            WHERE 
-                                                rd.SecurityAssetUid = @ownerUids_{i} 
-                                                and 
-                                                a.ID=rd.AssetID 
-                                                and
-                                                rd.isVisible = 1
-                                            UNION
-                                            SELECT 1 
-                                            FROM 
-                                                [dbo].[ResponsibilityDetail] rd 
-                                            WHERE 
-                                                rd.SecurityAssetUid = @ownerUids_{i} 
-                                                and 
-                                                rd.ApplyToType = 1 
-                                                and 
-                                                rd.AssetID = 0 
-                                                and 
-                                                rd.AssetTypeId=a.AssetTypeId
-                                                and
-                                                rd.isVisible = 1
-                                            )";
-                        ownershipSqls.Add(ownershipSQL);
-                    }
-
-                    whereStatements.Add($"({string.Join(" and ", ownershipSqls)})");
                 }
             }
 

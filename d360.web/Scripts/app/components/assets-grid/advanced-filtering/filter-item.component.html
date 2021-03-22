@@ -69,14 +69,14 @@
                                      [value]="currentField.Values"
                                      (onRowSelect)="onItemSelected($event)"
                                      [(selection)]="condition.value"
-                                     [globalFilterFields]="['value']"
+                                     [globalFilterFields]="['title']"
                                      dataKey="value"
                                      [scrollable]="true"
                                      scrollHeight="250px"
                                      [virtualRowHeight]="30"
                                      [rows]="20"
                                      [virtualScroll]="true"
-                                     [lazy]="true"
+                                     [lazy]="isLazyLoad()"
                                      (onLazyLoad)="loadListLazy($event)">
                                 <ng-template pTemplate="header">
                                     <tr>

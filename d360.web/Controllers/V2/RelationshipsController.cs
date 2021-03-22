@@ -1478,15 +1478,30 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "true/false based on relationship exists on assettype.", typeof(bool)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
             ]
-        public async Task<HttpResponseMessage> ExistingRelationshipForSelectItemList(Guid assetTypeUid, Guid intersectTypeUid)
+        public async Task<HttpResponseMessage> ExistingRelationshipForSelectItemList(Guid assetTypeUid, Guid intersectTypeUid, int? skip = null, int? take = 0, string filter = null)
         {
             var prefix = "Relationships.IsTransformPredicateExists => ";
             var errorMessage = "";
 
             try
             {
-                var results = Company.Connection.QueryMultiple(@"
-                    select 
+                string pagingQuery = "";
+                string whereQuery = "";
+                string whereCountQuery = "";
+                if (skip != null && take != null)
+                {
+                    pagingQuery = " OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY ";
+                }
+
+                if (!string.IsNullOrEmpty(filter))
+                {
+                    filter = "%" + filter + "%";
+                    whereQuery += " where kp.keypath like @filter ";
+                    whereCountQuery += " and kp.keypath like @filter ";
+                }
+
+                var results = Company.Connection.QueryMultiple($@"
+                    ;with cte as(select 
 	                    distinct
                         ass.uid as 'value',
 	                    kp.keypath as 'label' 
@@ -1507,16 +1522,20 @@ namespace d360.web.Controllers.V2
 	                    inner join [Intersect] I on I.Object = ASS.Object and ASS.ObjectID = I.ObjectID and I.IntersectTypeID = IT.ID
 	                    inner join graph.AssetNode AN on AN.id = ass.id
 	                    left join graph.AssetNodeKeyPath KP on KP.ID = ass.ID 
-	                    where ATT.uid = @assetTypeUid;
+	                    where ATT.uid = @assetTypeUid)
+                    select * from cte
+                    {whereQuery}
+                    order by cte.label desc
+                    {pagingQuery}
 
                     select count(distinct a.ID) from asset a
                     inner join assettype at on at.id = a.assettypeid
                     inner join [IntersectType] it on it.uid = @intersectTypeUid
                     left join [Intersect] I on I.Object = a.Object and I.objectID = a.objectid and i.IntersectTypeID = IT.ID
                     left join [Intersect] I2 on I2.Subject = a.Object and I2.SubjectId = a.objectid and i.IntersectTypeID = IT.ID
-                    where at.uid = @assetTypeUid AND ISNULL(I.ID, I2.ID) IS NOT NULL;
+                    where at.uid = @assetTypeUid AND ISNULL(I.ID, I2.ID) IS NOT NULL {whereCountQuery};
 
-                    ", new { assetTypeUid, intersectTypeUid });
+                    ", new { assetTypeUid, intersectTypeUid, skip, take, filter });
 
 
                 var data = new

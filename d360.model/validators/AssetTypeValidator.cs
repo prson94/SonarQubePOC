@@ -334,7 +334,7 @@ namespace d360.core.validators
         {
             if (queryParams.Any(x => x.Key.Trim().ToLower() == "_ownedby"))
             {
-                string[] owners = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_ownedby").Value.Replace("MatchAll:", "").Split(',');
+                string[] owners = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_ownedby").Value.Split(',');
                 foreach (var owner in owners)
                 {
                     if (!Guid.TryParse(owner, out Guid ownerguid))

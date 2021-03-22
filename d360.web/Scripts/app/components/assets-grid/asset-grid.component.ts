@@ -308,22 +308,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         else {
             delete params['usegraphforparent'];
         }
-        delete params['_filter'];
-        if (this.newAdvancedFilters) {
-            if (this.newAdvancedFilters.filter) {
-                params._filter = this.newAdvancedFilters.filter;
-            }
-            else {
-                delete params['_filter'];
-            }
 
-            if (this.newAdvancedFilters.owners) {
-                params._ownedBy = this.newAdvancedFilters.owners;
-            }
-            else {
-                delete params['_ownedBy'];
-            }
-        }
+        this.newAdvancedFilters.applyFilters(params);
 
         return params;
     }

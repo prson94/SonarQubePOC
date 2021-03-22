@@ -263,6 +263,14 @@ namespace d360.model.helpers
                         sb.Append(token.GetSQLForDefaultField(ref sqlParams, val));
 
                     }
+                    else if (token.IsOwnerFilter)
+                    {
+                        sb.Append(token.GetSQLForOwnerField(ref sqlParams));
+                    }
+                    else if (token.IsRlationshipFilter)
+                    {
+                        sb.Append(token.GetSQLForRelationField(ref sqlParams));
+                    }
                     else
                     {
                         throw new Exception("Field with name '" + token.Field + "' does not exist!");

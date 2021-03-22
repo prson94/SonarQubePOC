@@ -37,6 +37,22 @@ namespace d360.model.helpers
             }
         }
 
+        public bool IsOwnerFilter
+        {
+            get
+            {
+                return field == "$ownedby";
+            }
+        }
+
+        public bool IsRlationshipFilter
+        {
+            get
+            {
+                return field.StartsWith("$related");
+            }
+        }
+
         public string Field
         {
             get
@@ -134,6 +150,65 @@ namespace d360.model.helpers
 
             sqlParamsRef.Add($"@filter_{parameterIdx}", value);
             return stringBuilder.ToString();
+        }
+
+        public string GetSQLForOwnerField(ref Dictionary<string, object> sqlParams)
+        {
+            this.sqlParamsRef = sqlParams;
+            stringBuilder.Clear();
+            var value = this.value.ToString().Trim('\'');
+            sqlParamsRef.Add($"@filter_{parameterIdx}", value);
+
+            string querySql = $@"EXISTS(
+                                            SELECT 1 
+                                            FROM 
+                                                [dbo].[ResponsibilityDetail] rd 
+                                            WHERE 
+                                                rd.SecurityAssetUid = @filter_{parameterIdx}
+                                                and 
+                                                a.ID=rd.AssetID 
+                                                and
+                                                rd.isVisible = 1
+                                            UNION
+                                            SELECT 1 
+                                            FROM 
+                                                [dbo].[ResponsibilityDetail] rd 
+                                            WHERE 
+                                                rd.SecurityAssetUid = @filter_{parameterIdx} 
+                                                and 
+                                                rd.ApplyToType = 1 
+                                                and 
+                                                rd.AssetID = 0 
+                                                and 
+                                                rd.AssetTypeId=a.AssetTypeId
+                                                and
+                                                rd.isVisible = 1
+                                            )";
+
+            if (this.@operator == "ne")
+            {
+                querySql = " NOT " + querySql;
+            }
+
+            return querySql;
+        }
+
+        public string GetSQLForRelationField(ref Dictionary<string, object> sqlParams)
+        {
+            this.sqlParamsRef = sqlParams;
+            stringBuilder.Clear();
+            var origQuery = $"{this.field} {this.@operator} {this.value.ToString().Trim('\'')}";
+
+            var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.Relationships);
+            Dictionary<string, object> _sqlParams = new Dictionary<string, object>();
+            List<int> filteredFields = new List<int>();
+            var query = filterExpressionParser.Parse(origQuery.Replace("$related:", ""), out _sqlParams, out filteredFields);
+
+            foreach (var item in _sqlParams)
+            {
+                this.sqlParamsRef.Add(item.Key, item.Value);
+            }
+            return query;
         }
 
         public string GetSQLForRelationship(ref Dictionary<string, object> sqlParams)

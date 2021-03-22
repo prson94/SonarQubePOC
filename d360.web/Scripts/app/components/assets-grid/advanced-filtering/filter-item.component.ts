@@ -107,8 +107,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
         if (this.currentField.IsRelationship) {
             var options: SelectItem[] = [];
-            options.push({ value: "Contains", label: " contains " });
-            options.push({ value: "NotContains", label: " does not contains " });
+            options.push({ value: "Equals", label: " contains " });
+            options.push({ value: "NotEquals", label: " does not contains " });
             options.push({ value: "Populated", label: " exist " });
             options.push({ value: "NotPopulated", label: " do not exist " });
             return options;
@@ -401,7 +401,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
             }
         }
         if (this.condition.field === SystemFields.OwnedByFieldCode) {
-            console.log(this.condition.operator.toString());
             if (this.condition.operator.toString() === "Equals") {
                 this.uiIsAllDisabled = false;
                 this.uiIsAnyDisabled = false;
@@ -465,5 +464,16 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         return "text";
+    }
+
+    isLazyLoad() {
+
+        if (this.currentField.Name === SystemFields.OwnedByFieldCode
+            || (this.currentField.Type && this.currentField.Type.Tag) != null
+        ) {
+            return false;
+        }
+
+        return true;
     }
 }

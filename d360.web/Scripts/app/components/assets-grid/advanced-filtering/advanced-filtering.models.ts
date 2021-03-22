@@ -8,7 +8,8 @@ import { Operator } from "../../../models/operator.model";
 import { RelationshipType } from "../../../models/relationship.model";
 
 export class SystemFields {
-    public static OwnedByFieldCode: string = "#OwnedBy";
+    public static OwnedByFieldCode: string = "$OwnedBy";
+    public static RelationshipFieldCode: string = "$Related";
 
     public static GetSystemFieldDefinition(): FieldTypeAPIModelFieldCondition[] {
         var fields: FieldTypeAPIModelFieldCondition[] = [];
@@ -82,7 +83,7 @@ export class SystemFields {
             });
 
         });
-        return fields;
+        return fields.sort((a, b) => { return a.FriendlyName > b.FriendlyName ? 1 : -1 });
     }
 }
 
@@ -394,7 +395,6 @@ export class AdvancedFilterFieldCondition {
                 return `'${value.value}'`
             }
         }
-
         return `'${value}'`;
     }
     getValue2(): string {
@@ -444,7 +444,6 @@ export class AdvancedFilterFieldConditionCollection {
         this.allocations = allocations;
         var f = new Filters();
         f.filter = this.getQueryStringValue();
-        f.owners = this.getOwnerFilter();
         return f;
     }
 
@@ -454,8 +453,8 @@ export class AdvancedFilterFieldConditionCollection {
         }
         let queries: string[] = [];
 
-        this.filters.filter(x => x.field && x.operator && x.field !== SystemFields.OwnedByFieldCode).forEach((cond) => {
-            if ((cond.fieldType === "Lookup" || cond.fieldType === "Tag") && cond.value) {
+        this.filters.filter(x => x.field && x.operator).forEach((cond) => {
+            if ((cond.fieldType === "Lookup" || cond.fieldType === "Tag" || cond.field === SystemFields.OwnedByFieldCode) && cond.value) {
                 let subConditions: AdvancedFilterFieldCondition[] = [];
                 var valuesArr = cond.value as SelectItem[];
                 valuesArr.forEach(r => {
@@ -484,28 +483,26 @@ export class AdvancedFilterFieldConditionCollection {
                 });
                 queries.push("(" + subQueries.join(" " + cond.connectingOperator + " ") + ")");
             }
+            else if (cond.fieldType == null && cond.field.indexOf("|") === 36 && cond.value) {
+                let subConditions: AdvancedFilterFieldCondition[] = [];
+                var valuesArr = cond.value as SelectItem[];
+                valuesArr.forEach(r => {
+                    var copyCond = cond.getCopyWithNewValue(r.value);
+                    copyCond.field = "$Related:" + copyCond.field.split("|")[0];
+                    subConditions.push(copyCond);
+                });
+
+                let subQueries: string[] = [];
+                subConditions.forEach((sc) => {
+                    subQueries.push(sc.getQueryString());
+                });
+                queries.push("(" + subQueries.join(" " + cond.connectingOperator + " ") + ")");
+            }
             else {
                 queries.push(cond.getQueryString());
             }
         });
         return queries.join(this.connector);
-    }
-
-    private getOwnerFilter(): string {
-        if (this.filters.length === 0) {
-            return "";
-        }
-        let value: string = "";
-
-        var filter = this.filters.filter(x => x.field === SystemFields.OwnedByFieldCode && x.operator && x.value && x.operator.toString() === "Equals");
-        if (filter && filter.length > 0) {
-            value += (filter[0].value as SelectItem[]).map(x => x.value).join(", ");
-            if (filter[0].connectingOperator === "and") {
-                value = "MatchAll:" + value;
-            }
-        }
-
-        return value;
     }
 
     private getInBandQuery(cond: AdvancedFilterFieldCondition): string {
@@ -536,6 +533,13 @@ export class AdvancedFilterFieldConditionCollection {
 
 export class Filters {
     filter: string = "";
-    owners: string = "";
     relationships: string = "";
+
+    public applyFilters(params: any) {
+        delete params['_filter'];
+        if (this.filter) {
+            params._filter = this.filter;
+        }
+
+    }
 }
