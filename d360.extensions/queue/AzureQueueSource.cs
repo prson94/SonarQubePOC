@@ -202,15 +202,13 @@ namespace d360.extensions.queue
             foreach (var e in events)
             {
                 var bm = GetMessageFromObject(e);
-
+                var messageId = $"C{e.CompanyID}_A{e.Action}_W{e.WorkflowItemID}_S{e.VersionStepTransitionID}_I{e.ItemStepID}";
                 if (e.Object != null)
                 {
                     bm.MessageId += $"_O{e.Object.Object}|{e.Object.ObjectID}";
                 }
-                else
-                {
-                    bm.MessageId = $"C{e.CompanyID}_A{e.Action}_W{e.WorkflowItemID}_S{e.VersionStepTransitionID}_I{e.ItemStepID}";
-                }
+
+                bm.MessageId = messageId;
 
                 if(e.Action == ChangeType.Add || e.Action == ChangeType.Update) //delay the processing if add or edit so update has chance to process
                     bm.ScheduledEnqueueTimeUtc = DateTime.UtcNow.AddSeconds(15);
