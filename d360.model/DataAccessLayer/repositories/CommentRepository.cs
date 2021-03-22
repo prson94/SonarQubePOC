@@ -383,7 +383,7 @@ order by u.CommentTypeName";
 				new DefaultFilter("UpdatedOn", "C.UpdatedOn", SqlFieldType.DateTime),
 				new DefaultFilter("Url", "AUrl.Url", SqlFieldType.Text),
 				new DefaultFilter("AssetPath", "AP.DisplayPath", SqlFieldType.Text),
-				new DefaultFilter("ResourceName", "R.LastName", SqlFieldType.Text)
+				new DefaultFilter("ResourceName", "R.FirstName + ' ' + R.LastName", SqlFieldType.Text)
 			};
 
 			DynamicParameters advFilterArgs = null;
