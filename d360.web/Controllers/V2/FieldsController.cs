@@ -428,7 +428,7 @@ namespace d360.web.Controllers.V2
                 bool anyExistingItems = FieldsRepository.HasExistingItems(typeIdentifierInfoModel);
 
                 List<FieldType> currentFieldTypes = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
-                bool anyResponsibilitiesUsingField = FieldsRepository.hasResponsibilityUsingField(typeIdentifierInfoModel, currentFieldTypes);
+                bool anyResponsibilitiesUsingField = FieldsRepository.hasResponsibilityUsingField(typeIdentifierInfoModel, currentFieldTypes.FindAll(x => model.Fields.Any(f=>f.Name==x.Name)));
 
                 if (anyResponsibilitiesUsingField)
                 {
