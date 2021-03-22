@@ -3,6 +3,7 @@ using d360.core.queue;
 using d360.extensions.storage;
 using d360.utils.company;
 using Dapper;
+using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.WebJobs;
 using Microsoft.ServiceBus.Messaging;
 using Newtonsoft.Json;
@@ -23,9 +24,11 @@ namespace igx.jobs.assetgraphprocessor
         const int timeout = 60 * 180; //3 hours
         const int sqlBatchSize = 5000;
 
-        public static async Task RunExecutionSubscriber([ServiceBusTrigger("%AssetBusTopicName%", "GraphApiExecution")]BrokeredMessage brokeredMessage, TextWriter log)
+        public static async Task RunExecutionSubscriber([ServiceBusTrigger("%AssetBusTopicName%", "GraphApiExecution")]Message brokeredMessage, TextWriter log)
         {
-            var info = brokeredMessage.GetBody<AssetEventInfo>();
+            var messageString = Encoding.UTF8.GetString(brokeredMessage.Body);
+            var info = JsonConvert.DeserializeObject<AssetEventInfo>(messageString);
+
             if (info.Type != AssetEventType.Execution)
             {
                 return;

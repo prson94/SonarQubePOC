@@ -1,5 +1,4 @@
 ﻿using d360.core.queue;
-using Microsoft.ServiceBus.Messaging;
 using System;
 using Newtonsoft.Json;
 using System.Diagnostics;
@@ -7,10 +6,11 @@ using System.Collections.Generic;
 using d360.core.enums.Workflow;
 using System.Threading.Tasks;
 using Microsoft.Azure;
-using Microsoft.ServiceBus;
 using Microsoft.Azure.Storage.Queue;
 using Microsoft.Azure.Storage.Auth;
 using Microsoft.Azure.Storage.RetryPolicies;
+using Microsoft.Azure.ServiceBus;
+using System.Text;
 
 namespace d360.extensions.queue
 {
@@ -150,18 +150,21 @@ namespace d360.extensions.queue
         public void CreateTopicMessage(EventInfo e)
         {
             var topicName = getTopicName();
-            var bm = new BrokeredMessage(e);
-            bm.Properties["topic"] = topicName;
+            var eString = JsonConvert.SerializeObject(e);
+            var eBytes = Encoding.UTF8.GetBytes(eString);
+            var bm = new Message(eBytes);
+
             var client = CreateTopicClient(topicName);
-            client.Send(bm);
+            client.SendAsync(bm).RunSynchronously();
         }
 
         public void CreateTopicMessage(string topicName, EventInfo e)
         {
-            var bm = new BrokeredMessage(e);
-            bm.Properties["topic"] = topicName;
+            var eString = JsonConvert.SerializeObject(e);
+            var eBytes = Encoding.UTF8.GetBytes(eString);
+            var bm = new Message(eBytes);
             var client = CreateTopicClient(topicName);
-            client.Send(bm);            
+            client.SendAsync(bm).RunSynchronously();
         }
 
         public async Task CreateTopicMessageAsync(EventInfo e)
@@ -172,8 +175,9 @@ namespace d360.extensions.queue
 
         public async Task CreateTopicMessageAsync(string topicName, EventInfo e)
         {
-            var bm = new BrokeredMessage(e);
-            bm.Properties["topic"] = topicName;
+            var eString = JsonConvert.SerializeObject(e);
+            var eBytes = Encoding.UTF8.GetBytes(eString);
+            var bm = new Message(eBytes);
             var client = CreateTopicClient(topicName);
             await client.SendAsync(bm);
         }
@@ -186,18 +190,19 @@ namespace d360.extensions.queue
 
         public void CreateTopicMessages(string topicName, List<EventInfo> events)
         {
-            var batches = new List<List<BrokeredMessage>>();
+            var batches = new List<List<Message>>();
             long batchSize = 0;
 
-            batches.Add(new List<BrokeredMessage>());
+            batches.Add(new List<Message>());
 
             foreach (var e in events)
             {
-                var bm = new BrokeredMessage(e);
+                var eString = JsonConvert.SerializeObject(e);
+                var eBytes = Encoding.UTF8.GetBytes(eString);
+                var bm = new Message(eBytes);
                 var messageId = $"C{e.CompanyID}_A{e.Action}_W{e.WorkflowItemID}_S{e.VersionStepTransitionID}_I{e.ItemStepID}";
 
                 if (e.Object != null) messageId += $"_O{e.Object.Object}|{e.Object.ObjectID}";
-                bm.Properties["topic"] = topicName;
                 bm.MessageId = messageId;
 
                 if(e.Action == ChangeType.Add || e.Action == ChangeType.Update) //delay the processing if add or edit so update has chance to process
@@ -210,8 +215,8 @@ namespace d360.extensions.queue
             var client = CreateTopicClient(topicName);
 
             foreach (var batch in batches)
-            {                
-                client.SendBatch(batch);
+            {
+                client.SendAsync(batch).RunSynchronously();
             }
         }
 
@@ -230,18 +235,15 @@ namespace d360.extensions.queue
             get
             {
                 return new RetryExponential( // default strategy
-                minBackoff: TimeSpan.FromSeconds(0), // default
-                maxBackoff: TimeSpan.FromSeconds(30), // default
-                maxRetryCount: 15); // increased from default of 10
+                TimeSpan.FromSeconds(0), // default
+                TimeSpan.FromSeconds(30), // default
+                15); // increased from default of 10
             }
         }
 
         private TopicClient CreateTopicClient(string topicName)
         {
-            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);            
-
-            client.RetryPolicy = DefaultTopicRetryPolicy;
-
+            var client = new TopicClient(EventServiceBusConnectionString, topicName, DefaultTopicRetryPolicy);            
             return client;
         }
 
@@ -255,15 +257,16 @@ namespace d360.extensions.queue
 
         public async Task CreateTopicMessagesAsync(string topicName, List<EventInfo> events)
         {
-            var batches = new List<List<BrokeredMessage>>();
+            var batches = new List<List<Message>>();
             long batchSize = 0;
 
-            batches.Add(new List<BrokeredMessage>());
+            batches.Add(new List<Message>());
 
             foreach (var e in events)
             {
-                var bm = new BrokeredMessage(e);
-                bm.Properties["topic"] = topicName;
+                var eString = JsonConvert.SerializeObject(e);
+                var eBytes = Encoding.UTF8.GetBytes(eString);
+                var bm = new Message(eBytes);
 
                 batchSize = AddMessageToBatch(bm, batches, batchSize);
             }
@@ -272,22 +275,25 @@ namespace d360.extensions.queue
 
             foreach (var batch in batches)
             {                
-                await client.SendBatchAsync(batch);
+                await client.SendAsync(batch);
             }
         }
 
         public void CreateTopicMessage<T>(string topicName, T e)
         {
-            var bm = new BrokeredMessage(e);
-            bm.Properties["topic"] = topicName;
+            var eString = JsonConvert.SerializeObject(e);
+            var eBytes = Encoding.UTF8.GetBytes(eString);
+            var bm = new Message(eBytes);
+
             var client = CreateTopicClient(topicName);
-            client.Send(bm);
+            client.SendAsync(bm).RunSynchronously();
         }
 
         public async Task CreateTopicMessageAsync<T>(string topicName, T e)
         {
-            var bm = new BrokeredMessage(e);
-            bm.Properties["topic"] = topicName;
+            var eString = JsonConvert.SerializeObject(e);
+            var eBytes = Encoding.UTF8.GetBytes(eString);
+            var bm = new Message(eBytes);
 
             var client = CreateTopicClient(topicName);
             await client.SendAsync(bm);
@@ -295,22 +301,17 @@ namespace d360.extensions.queue
 
         public void CreateTopicMessages<T>(string topicName, List<T> events, DateTime? scheduledEnqueueTime = null)
         {
-            var batches = new List<List<BrokeredMessage>>();
+            var batches = new List<List<Message>>();
             long batchSize = 0;
 
-            batches.Add(new List<BrokeredMessage>());
+            batches.Add(new List<Message>());
 
             foreach (var e in events)
             {
-                
-                var bm = new BrokeredMessage(e);
+                var eString = JsonConvert.SerializeObject(e);
+                var eBytes = Encoding.UTF8.GetBytes(eString);
+                var bm = new Message(eBytes);
 
-                if (e is IServiceBusMessageType)
-                {
-                    bm.Properties.Add("MessageType", (e as IServiceBusMessageType).MessageType);
-                }
-
-                bm.Properties["topic"] = topicName;
 
                 if(scheduledEnqueueTime.HasValue)
                 {
@@ -324,20 +325,21 @@ namespace d360.extensions.queue
 
             foreach (var batch in batches)
             {                
-                client.SendBatch(batch);
+                client.SendAsync(batch).RunSynchronously();
             }
 
         }
 
         public async Task CreateTopicMessagesAsync<T>(string topicName, List<T> events)
         {
-            var batches = new List<List<BrokeredMessage>>();
+            var batches = new List<List<Message>>();
             long batchSize = 0;
 
             foreach (var e in events)
             {
-                var bm = new BrokeredMessage(e);
-                bm.Properties["topic"] = topicName;
+                var eString = JsonConvert.SerializeObject(e);
+                var eBytes = Encoding.UTF8.GetBytes(eString);
+                var bm = new Message(eBytes);
 
                 batchSize = AddMessageToBatch(bm, batches, batchSize);
             }
@@ -346,18 +348,18 @@ namespace d360.extensions.queue
 
             foreach (var batch in batches)
             {                
-                await client.SendBatchAsync(batch);
+                await client.SendAsync(batch);
             }
 
         }
 
-        private long AddMessageToBatch(BrokeredMessage bm, List<List<BrokeredMessage>> batches, long batchSize)
+        private long AddMessageToBatch(Message bm, List<List<Message>> batches, long batchSize)
         {
             batchSize += bm.Size;
             if (batchSize > MAX_MESSAGE_SIZE)
             {
                 batchSize = 0;
-                batches.Add(new List<BrokeredMessage>());
+                batches.Add(new List<Message>());
             }
 
             batches[batches.Count - 1].Add(bm);
