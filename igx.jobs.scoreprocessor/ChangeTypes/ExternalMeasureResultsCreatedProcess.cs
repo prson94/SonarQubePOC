@@ -20,7 +20,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         {            
             var models = await Storage.DeserializeJsonObjectFromBlobAsync<List<ExternalMeasureResultsCreatedModel>>(Info.StorageFolder, Info.StorageFile);
 
-            if (model == null)
+            if (models == null)
             {
                 throw new Exception("Cannot load score file from storage");
             }
