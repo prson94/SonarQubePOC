@@ -43,12 +43,35 @@ advanced-filtering {
     }
   }
 
+  .remove-button {
+    position: absolute;
+    top: 8px;
+    right: 4px;
+    cursor: pointer;
+  }
+
   .filters-list {
     border: 1px solid rgba(0, 0, 0, 0.2);
-    height: 32px;
+    min-height: 32px;
     line-height: 30px;
     border-radius: 4px;
     max-width: 100%;
+    padding-right: 40px;
+    position: relative;
+
+    .filters-list-menu {
+      position: absolute;
+      top: 0;
+      right: 0;
+    }
+
+    button.menu {
+      width: 24px;
+      height: 24px;
+      position: absolute;
+      top: 4px;
+      right: 4px;
+    }
 
     .filter-item {
       display: inline-block;
@@ -62,6 +85,14 @@ advanced-filtering {
       .filter-label {
         height: 24px;
         padding: 0 8px;
+        padding-right: 20px;
+        max-width: 180px;
+
+        span.text {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
       }
 
       .field-selection {
@@ -71,12 +102,12 @@ advanced-filtering {
       }
 
       .value-selector {
-        margin-top: 8px;
+        margin-bottom: 8px;
       }
 
       .value-selection {
         position: absolute;
-        width: 308px;
+        min-width: 220px;
         top: 27px;
         z-index: 200;
         box-shadow: @ig-box-shadow;
@@ -85,7 +116,6 @@ advanced-filtering {
         border-radius: 4px;
 
         .buttons {
-          padding-top: 8px;
           display: flex;
 
           button {
@@ -104,6 +134,11 @@ advanced-filtering {
         }
       }
     }
+  }
+
+  .ig-multi-input-field {
+    width: 220px;
+    margin-top: 8px;
   }
 }
 
@@ -191,4 +226,13 @@ advanced-filtering {
       }
     }
   }
+}
+
+
+.slim-fa {
+  font-size: 8px !important;
+  padding: 0 4px !important;
+  color: black;
+  position: relative;
+  top: -1px;
 }

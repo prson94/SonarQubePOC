@@ -70,7 +70,7 @@ export class SystemFields {
                 sideUid = r.Object.Uid;
             }
 
-            typeName = typeName.split("/").join("<i class='fa fa-chevron-right'></i>");
+            typeName = typeName.split("/").join("<i class='slim-fa fa fa-chevron-right'></i>");
 
             var field = {
                 Category: "Relationships",
@@ -234,9 +234,9 @@ export class AdvancedFilterFieldCondition {
             case "IsFalse":
                 return fieldName + ": False";
             case "Contains":
-                return `${fieldName} : *${this.getTypedValue()}*`;
+                return `${fieldName} : *${this.getTypedValue(this.value, true)}*`;
             case "NotContains":
-                return `${fieldName} &#8800; *${this.getTypedValue()}*`;
+                return `${fieldName} &#8800; *${this.getTypedValue(this.value, true)}*`;
             case "Equals":
                 return `${fieldName} : ${this.getTypedValue(this.value, true)}`;
             case "NotEquals":
@@ -371,6 +371,43 @@ export class AdvancedFilterFieldCondition {
                     return valueAsString.trim();
                 }
             }
+
+            if (this.fieldType === "Path") {
+                if (this.operator.toString() === "StartsWith" || this.operator.toString() === "EndsWith") {
+                    return value;
+                }
+
+                let valueAsString = "";
+                var stringArr = this.value as string[];
+                if (stringArr.length === 1) {
+                    return stringArr[0];
+                }
+                if (isForLabel === true && stringArr.length > 1) {
+                    return stringArr.length + " items";
+                }
+
+                for (let i = 0; i < stringArr.length - 1; i++) {
+                    if (i !== stringArr.length - 2) {
+                        valueAsString += stringArr[i] + ", ";
+                    }
+                    else {
+                        if (this.operator.toString() === "Contains") {
+                            valueAsString += stringArr[i] + " " + this.connectingOperator + " " + stringArr[i + 1];
+                        }
+                        else if (this.operator.toString() === "NotContains") {
+                            valueAsString += stringArr[i] + " nor " + stringArr[i + 1];
+                        }
+                    }
+                }
+
+                if (this.operator.toString().indexOf("Equals") !== -1) {
+                    return stringArr.join("<i class='slim-fa fa fa-chevron-right'></i>");
+                }
+
+                return valueAsString.trim();
+
+            }
+
             return value;
         }
         catch (ex) {
@@ -491,17 +528,33 @@ export class AdvancedFilterFieldConditionCollection {
                 queries.push(this.getInBandQuery(cond));
             }
             else if (cond.fieldType === "Path" && cond.value) {
-                let subConditions: AdvancedFilterFieldCondition[] = [];
-                var stringArr = cond.value as string[];
-                stringArr.forEach(r => {
-                    subConditions.push(cond.getCopyWithNewValue(r));
-                });
+                if (cond.operator.toString() === "StartsWith" || cond.operator.toString() === "EndsWith") {
+                    queries.push(cond.getQueryString());
+                }
+                else {
+                    var stringArr = cond.value as string[];
 
-                let subQueries: string[] = [];
-                subConditions.forEach((sc) => {
-                    subQueries.push(sc.getQueryString());
-                });
-                queries.push("(" + subQueries.join(" " + cond.connectingOperator + " ") + ")");
+                    if (cond.operator.toString().indexOf("Equals") === -1) {
+                        let subConditions: AdvancedFilterFieldCondition[] = [];
+                        stringArr.forEach(r => {
+                            subConditions.push(cond.getCopyWithNewValue(r));
+                        });
+
+                        let subQueries: string[] = [];
+                        subConditions.forEach((sc) => {
+                            subQueries.push(sc.getQueryString());
+                        });
+                        queries.push("(" + subQueries.join(" " + cond.connectingOperator + " ") + ")");
+                    }
+                    else {
+                        if (cond.operator.toString() === "Equals") {
+                            queries.push(`(${cond.field} ct '${(stringArr.join(' > '))}')`);
+                        }
+                        if (cond.operator.toString() === "NotEquals") {
+                            queries.push(`(${cond.field} nct '${(stringArr.join(' > '))}')`);
+                        }
+                    }
+                }
             }
             else if (cond.fieldType == null && cond.field.indexOf("|") === 36 && cond.value) {
                 let subConditions: AdvancedFilterFieldCondition[] = [];

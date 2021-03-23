@@ -10,6 +10,7 @@ import { TagService } from '../../../services/tag.service';
 import { RelationshipType } from '../../../models/relationship.model';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { Subscription } from 'rxjs';
+import { Page } from 'powerbi-client';
 
 @Component({
     selector: 'filter-item',
@@ -59,6 +60,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
     ngOnChanges() {
         if (this.condition) {
             this.uiFilterLabel = this.condition.getFilterLabel();
+        }
+
+        if (this.condition.field && !this.currentField) {
+            this.onFieldSelected(null);
         }
     }
     ngOnInit() {
@@ -181,7 +186,14 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.uiFilterLabel = this.condition.getFilterLabel();
             }
         }
-        this.isSelectingValue = true;
+        //if null, this method is not called from ui
+        if (event && event.type !== "load") {
+            this.isSelectingValue = true;
+        }
+
+        if (this.uiCurrentOperatorsList) {
+            this.condition.operator = (this.uiCurrentOperatorsList[0] as SelectItem).value;
+        }
     }
 
     loadListLazy(event: LazyLoadEvent) {
@@ -308,7 +320,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 let loadedData = [];
 
                 res.items.forEach(str => {
-                    let label: string = (str.label as string).split("].[").join(" <i class='fa fa-chevron-right'></i> ").replace("[", "").replace("]", "");
+                    let label: string = (str.label as string).split("].[").join(" <i class='slim-fa fa fa-chevron-right'></i> ").replace("[", "").replace("]", "");
                     loadedData.push({ title: label, value: str.value });
                 });
 
@@ -359,7 +371,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.updateAllAnyData();
     }
 
-    private updateAllAnyData() {
+    private updateAllAnyData(event = null) {
         if (this.condition.fieldType === "Lookup") {
             if (this.currentField.Type.Lookup?.List?.AllowMultipleValues) {
                 this.uiIsAllDisabled = false;
@@ -393,11 +405,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         if (this.condition.fieldType === "Path") {
-            if (this.condition.operator.toString() === "Contains") {
+            if (this.condition.operator.toString() === "Contains" && (this.condition.value && (this.condition.value as any[]).length > 1)) {
                 this.uiIsAllDisabled = false;
                 this.uiIsAnyDisabled = false;
             }
             else {
+                this.condition.connectingOperator = "and";
                 this.uiIsAllDisabled = true;
                 this.uiIsAnyDisabled = true;
             }
@@ -461,7 +474,11 @@ export class FilterItemComponent implements OnInit, OnChanges {
             return "lookup";
         }
 
-        if (type === "Path" && (this.condition.operator.toString() !== "StartsWith" || this.condition.operator.toString() !== "EndsWith")) {
+        if (type === "Path") {
+            if (this.condition.operator.toString() === "StartsWith" || this.condition.operator.toString() === "EndsWith") {
+                return "text";
+            }
+
             return "multi-input";
         }
 

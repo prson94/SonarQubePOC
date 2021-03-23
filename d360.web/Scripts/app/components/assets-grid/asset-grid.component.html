@@ -5,7 +5,16 @@
         <ig-search-field></ig-search-field>
     </div>
     <advanced-filtering [assetTypeUid]="gridObject.AssetTypeUID" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+    <div class="grid-action-buttons">
+        <button igButton class="ig-button-primary" icon="fa-plus" tooltip="Add new asset" (click)="add()"></button>
+        <button igButton icon="fa-download" tooltip="Download excel" (click)="export(false)"></button>
+        <button igButton icon="fa-cog" tooltip="More"></button>
+    </div>
 </div>
+
+<br />
+Filters : {{newAdvancedFilters?.filter}}<br />
+
 <button (click)="getData()">New Search</button>
 
 <header class="grid-header" *ngIf="!showEditor && !showDelete && !isEditing && !hasNoListableColumns">

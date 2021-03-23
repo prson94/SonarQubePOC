@@ -1,4 +1,4 @@
-﻿import { Component, NgModule, ViewEncapsulation, ChangeDetectionStrategy, Input, ChangeDetectorRef, forwardRef, ElementRef } from "@angular/core";
+﻿import { Component, NgModule, ViewEncapsulation, ChangeDetectionStrategy, Input, ChangeDetectorRef, forwardRef, ElementRef, EventEmitter, Output } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { TooltipModule } from "primeng/tooltip";
 import { FormsModule, ControlValueAccessor, ReactiveFormsModule, NG_VALUE_ACCESSOR } from "@angular/forms";
@@ -22,6 +22,7 @@ export class MultiInputField implements ControlValueAccessor {
     @Input() required: boolean = false;
     @Input() tabindex: number = 1;
     @Input() infoTooltip: string = "";
+    @Output() changed = new EventEmitter();
     public _size: string;
 
 
@@ -139,6 +140,7 @@ export class MultiInputField implements ControlValueAccessor {
         this.value = obj;
         this.ref.markForCheck();
         this.onModelChange(this.value);
+        this.changed.emit(this.value);
     }
 
     registerOnChange(fn: any): void {

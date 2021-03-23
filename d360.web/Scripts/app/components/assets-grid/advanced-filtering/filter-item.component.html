@@ -1,5 +1,8 @@
 ﻿<div class="filter-block" pTooltip="{{uiTooltipValue}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip" [escape]="false">
-    <div class="ig-button filter-label" (click)="updateFilter()" [innerHTML]="uiFilterLabel"></div>
+    <div class="ig-button filter-label" (click)="updateFilter()">
+        <span class="text" [innerHTML]="uiFilterLabel"></span>
+    </div>
+    <i *ngIf="condition.field" class="remove-button fa fa-times-circle" (click)="remove()"></i>
 
     <div class="field-selection" [hidden]="!isSelectingCurrentField">
         <p-dropdown #dropdownRef
@@ -135,7 +138,7 @@
                     </ng-container>
 
                     <ng-container *ngIf="fieldInputType() === 'multi-input'">
-                        <ig-multi-input-field [(ngModel)]='condition.value'></ig-multi-input-field>
+                        <ig-multi-input-field (changed)="updateAllAnyData($event)" [(ngModel)]='condition.value' [infoTooltip]="'Type and hit Enter to create multiple phrases, to be compared against asset path segments for matches'"></ig-multi-input-field>
                         <div class="any-all-picker" *ngIf="!uiIsAllDisabled && !uiIsAnyDisabled">
                             <p-radioButton [disabled]="uiIsAllDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="and" label="Match all"></p-radioButton>
                             <p-radioButton [disabled]="uiIsAnyDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="or" label="Match any"></p-radioButton>

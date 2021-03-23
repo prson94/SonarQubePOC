@@ -34,7 +34,40 @@ export class AdvancedFilteringComponent implements OnChanges {
     conditions: AdvancedFilterFieldConditionCollection;
 
     visible: boolean = false;
+    filterMenu = [
+        {
+            title: 'Clear Filters',
+            callback: () => {
+                this.conditions.filters = [];
+            }
+        },
+        {
+            isSeparator: true
+        },
+        {
+            title: 'Match All',
+            hasCheckbox: true,
+            isChecked: true,
+            callback: () => {
+                console.log("Macth all");
+                this.conditions.connector = " and ";
+                this.filterMenu[3].isChecked = false;
+                this.cdRef.markForCheck();
+            }
+        },
+        {
+            title: 'Match Any',
+            hasCheckbox: true,
+            callback: () => {
+                console.log("Macth any");
+                this.filterMenu[2].isChecked = false;
 
+                this.conditions.connector = " or ";
+                this.cdRef.markForCheck();
+
+            }
+        }
+    ]
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
 
     constructor(public cdRef: ChangeDetectorRef,
@@ -132,10 +165,39 @@ export class AdvancedFilteringComponent implements OnChanges {
             this.visible = true;
         })
         this.cdRef.markForCheck();
-
+        var loadedFilters = this.loadFilters();
+        loadedFilters.forEach((f) => {
+            this.conditions.filters.push(f);
+        });
         this.conditions.filters.push(new AdvancedFilterFieldCondition(this.datePipe));
     }
 
+
+    private loadFilters(): AdvancedFilterFieldCondition[] {
+        var prefilters: any[] = [];
+        let loadedFilters: AdvancedFilterFieldCondition[] = [];
+
+        (prefilters as any[]).forEach((f) => {
+            var filter = f as AdvancedFilterFieldCondition;
+            var newfilter = new AdvancedFilterFieldCondition(this.datePipe);
+            newfilter.connectingOperator = filter.connectingOperator;
+            newfilter.field = filter.field;
+            newfilter.fieldType = filter.fieldType;
+            newfilter.friendlyFieldName = filter.friendlyFieldName;
+            newfilter.isRelationship = filter.isRelationship;
+            newfilter.markForDeletion = filter.markForDeletion;
+            newfilter.operator = filter.operator;
+            newfilter.type = filter.type;
+            newfilter.value = filter.value;
+            if (newfilter.type.Type.Date || filter.type.Type.DateTime) {
+                newfilter.value = new Date(filter.value);
+            }
+            newfilter.value2 = filter.value2;
+            loadedFilters.push(newfilter);
+        });
+
+        return loadedFilters;
+    }
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes && changes.assetTypeUid && changes.assetTypeUid.currentValue != changes.assetTypeUid.previousValue) {

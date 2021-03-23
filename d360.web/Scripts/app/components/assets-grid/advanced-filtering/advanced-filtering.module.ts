@@ -14,6 +14,7 @@ import { SearchFieldModule } from '../../shared/controls/search-field/search-fie
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { CoreModule } from '../../shared/core.module';
 import { MultiInputFieldModule } from '../../shared/controls/multi-input-field/multi-input-field.component';
+import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.component';
 
 
 @NgModule({
@@ -32,7 +33,8 @@ import { MultiInputFieldModule } from '../../shared/controls/multi-input-field/m
 
         DropdownModule,
         DirectivesModule,
-        MultiInputFieldModule
+        MultiInputFieldModule,
+        PopupMenuModule
     ],
     declarations: [AdvancedFilteringComponent, FilterItemComponent],
     exports: [AdvancedFilteringComponent]
