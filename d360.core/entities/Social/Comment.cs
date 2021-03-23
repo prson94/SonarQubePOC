@@ -131,4 +131,15 @@ namespace d360.core.entities
         public string Body { get; set; }
         public List<Guid> Tags { get; set; }
     }
+
+    public class CommentNotification
+    {
+        public string RecipientName { get; set; }
+        public string RecipientEmail { get; set; }
+        public string CommenterName { get; set; }
+        public string Subject { get; set; }
+        public string CommentUrl { get; set; }
+        public string AssetUrl { get; set; }
+        public bool IsHtml { get; set; }
+    }
 }

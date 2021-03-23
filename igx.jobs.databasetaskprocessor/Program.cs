@@ -9,12 +9,14 @@ using System.Xml.Linq;
 using d360.core;
 using d360.core.entities;
 using d360.core.queue;
+using d360.extensions.mail;
 using d360.extensions.queue;
 using d360.extensions.search;
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Hosting;
+using System.Text.Json;
 
 namespace igx.jobs.databasetaskprocessor
 {
@@ -274,10 +276,99 @@ from    [queue].[Task] T
                                                     break;
                                                 #endregion
                                                 case "Notify":
-                                                    #region Email Notification
-                                                    // this can be used for the comment tag notifications in the future
-                                                    // fusion notifications used to use this but are no longer used
-                                                    break;
+                                                        #region Email Notification
+                                                        switch (q.Object)
+                                                        {
+                                                            case "TaggedComment":
+                                                                #region Email Notification
+                                                                var comment = companyConnection.Query<Comment>(@"select * from Comment where ID = @id", new { id = q.ObjectID }, null, true, 900).FirstOrDefault();
+
+                                                                if (comment != null)
+                                                                {                                                                    
+                                                                    CommentNotification notification = JsonSerializer.Deserialize<CommentNotification>(q.Custom);
+
+                                                                    var AssetDetail = companyConnection.Query<AssetDetail>("Select * from AssetDetail A where A.ID = @AssetID", new { AssetID = comment.AssetID }).FirstOrDefault();                                                                        
+
+                                                                    var rootUrl = $"https://{c.UrlPrefix}.data3sixty.com";
+
+                                                                    string mailBody = $@"
+                                                                                    <html>
+                                                                                    <head>
+                                                                                        <style>
+                                                                                            body {{
+                                                                                                margin-top: 20px;
+                                                                                                margin-left: 50px;
+                                                                                                margin-right: 50px;
+                                                                                                font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+                                                                                            }}
+                                                                                            .header {{
+                                                                                                font-weight: bold;
+                                                                                                padding-bottom: 10px;
+                                                                                            }}
+                                                                                            .content {{
+                                                                                                padding-bottom: 20px;
+                                                                                                padding-top: 20px;
+                                                                                                border-top: 2px solid #d7d8dc;
+                                                                                                border-bottom: 2px solid #d7d8dc;
+                                                                                            }}
+                                                                                            .footer {{
+                                                                                                padding-top: 10px;
+                                                                                                text-align: right;
+                                                                                            }}
+                                                                                            .button {{
+                                                                                                display: inline-flex;
+                                                                                                position: relative;
+                                                                                                flex-direction: row;
+                                                                                                justify-content: center;
+                                                                                                align-items: center;
+                                                                                                flex-shrink: 0;
+                                                                                                background: #006fba;
+                                                                                                color: #ffffff;
+                                                                                                border: none;
+                                                                                                border-radius: 4px;
+                                                                                                line-height: 200%;
+                                                                                                height:32px;
+                                                                                            }}
+                                                                                            a {{
+                                                                                                text-decoration: none;
+                                                                                            }}
+                                                                                            a:link .link {{
+                                                                                                color: #006fba;
+                                                                                            }}
+                                                                                            a:hover .link {{
+                                                                                                text-decoration: underline;
+                                                                                            }}
+                                                                                            a:visited .link {{
+                                                                                                color: #006fba;
+                                                                                            }}
+                                                                                            img {{ border-style: none; }}
+                                                                                        </style>
+                                                                                    </head>
+                                                                                    <body>
+                                                                                        <div class='header'>
+                                                                                            {notification.CommenterName} tagged you in a comment
+                                                                                        </div>
+                                                                                        <div class='content'>
+                                                                                            {notification.CommenterName} tagged you in a comment on <a href='{rootUrl}{notification.AssetUrl}' class='link'>{AssetDetail.DisplayValue}</a> at {comment.UpdatedOn.Value.ToString("hh:mm tt 'on' dd MMM yyyy")}.
+                                                                                        <br />
+                                                                                        <br />
+                                                                                        <a href='{rootUrl}{notification.CommentUrl}' class='button'>&nbsp;&nbsp;View Comment&nbsp;&nbsp;</a>
+                                                                                    </div>
+                                                                                        <div class='footer'>
+                                                                                            <img src ='{rootUrl}/Content/images/logo.mail.small.png' alt='D360 Govern' style='border-style:none;' onerror='this.style.display = 'none''> 
+                                                                                        </div>
+                                                                                    </body>
+                                                                                    </html>                                                                                        
+                                                                                    ";                                                                      
+
+                                                                    SimpleMessage.SendMessage("D360 Govern", notification.Subject, notification.RecipientEmail, notification.RecipientName, mailBody, notification.IsHtml);
+                                                                    Console.WriteLine($"Sending to {notification.RecipientName}");                                                                    
+                                                                }
+                                                                #endregion
+                                                                    break;                                                                
+                                                                
+                                                        }
+                                                        break;
                                                 #endregion
                                                 case "ObjectIndex":
                                                     #region
