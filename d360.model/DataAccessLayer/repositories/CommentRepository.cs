@@ -769,7 +769,7 @@ order by V.Emoji";
         {		
 			if (taggedAssets.Any(a => a.Object == core.SystemObjects.Resource.ToString() || a.Object == core.SystemObjects.Group.ToString()))
 			{
-				var commentCreator = CompanyContext.Connection.Query<string>("Select GR.FirstName + ' ' + GR.LastName as ResourceName from reporting.Global_Resource GR where resourceId = @commentBy", new { commentBy = comment.CreatedBy }).FirstOrDefault(); ;
+				var commentCreator = CompanyContext.Connection.Query<string>("Select GR.FirstName + ' ' + GR.LastName as ResourceName from reporting.Global_Resource GR where resourceId = @commentBy", new { commentBy = comment.CreatedBy }).FirstOrDefault();
 
 				if (commentCreator != null)
 				{
@@ -805,7 +805,7 @@ order by V.Emoji";
 
 					var resourcesToNotify = CompanyContext.Connection.Query<GlobalReportingResource>(resourceSQL, new { commentID = comment.ID }).ToList();											
 
-					CommentNotification notification = new CommentNotification() {
+					CommentNotification notification = new CommentNotification {
 						CommenterName = commentCreator,
 						Subject = $"{commentCreator} tagged you in a comment on {AssetDetail.DisplayValue}",
 						IsHtml = true						
