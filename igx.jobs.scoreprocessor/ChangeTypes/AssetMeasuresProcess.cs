@@ -205,6 +205,11 @@ where   O.RowNum = 1;";
         {
             var assetMeasures = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetMeasureModel>>(Info.StorageFolder, Info.StorageFile);
 
+            if(assetMeasures == null)
+            {
+                throw new ArgumentNullException("assetMeasures","Cannot load score file from storage");
+            }
+
             var scoresToAdd = new List<Score>();
             var scoresItemsToAdd = new List<ScoreItem>();
             var scoreItemLinksToAdd = new List<ScoreItemLink>();
@@ -1253,7 +1258,7 @@ from	metrics.ScoreItemLink T
 
                             trans.Commit();
                             
-                            Db.SendContinuingScoreEventWithPayload(
+                            await Db.SendContinuingScoreEventWithPayload(
                                 ScoreQueueChangeType.WorkflowCheck,
                                 scoresToAdd.Select(i => new ScoreCreatedModel { AllocationUid = i.AllocationUid, AssetUid = i.AssetUid, EffectiveDate = i.EffectiveDate }).ToList(),
                                 Info.ExecutionUid, 
