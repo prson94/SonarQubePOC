@@ -196,6 +196,7 @@ namespace d360.extensions.queue
         {
             var batches = new List<List<Message>>();
             long batchSize = 0;
+            var partitionKey = Guid.NewGuid().ToString();
 
             batches.Add(new List<Message>());
 
@@ -209,6 +210,7 @@ namespace d360.extensions.queue
                 }
 
                 bm.MessageId = messageId;
+                bm.PartitionKey = partitionKey;
 
                 if(e.Action == ChangeType.Add || e.Action == ChangeType.Update) //delay the processing if add or edit so update has chance to process
                     bm.ScheduledEnqueueTimeUtc = DateTime.UtcNow.AddSeconds(15);
@@ -264,12 +266,14 @@ namespace d360.extensions.queue
         {
             var batches = new List<List<Message>>();
             long batchSize = 0;
+            var partitionKey = Guid.NewGuid().ToString();
 
             batches.Add(new List<Message>());
 
             foreach (var e in events)
             {
                 var bm = GetMessageFromObject(e);
+                bm.PartitionKey = partitionKey;
                 batchSize = AddMessageToBatch(bm, batches, batchSize);
             }
 
@@ -299,13 +303,14 @@ namespace d360.extensions.queue
         {
             var batches = new List<List<Message>>();
             long batchSize = 0;
+            var partitionKey = Guid.NewGuid().ToString();
 
             batches.Add(new List<Message>());
 
             foreach (var e in events)
             {
                 var bm = GetMessageFromObject(e);
-
+                bm.PartitionKey = partitionKey;
                 if (scheduledEnqueueTime.HasValue)
                 {
                     bm.ScheduledEnqueueTimeUtc = scheduledEnqueueTime.Value;
@@ -327,10 +332,12 @@ namespace d360.extensions.queue
         {
             var batches = new List<List<Message>>();
             long batchSize = 0;
+            var partitionKey = Guid.NewGuid().ToString();
 
             foreach (var e in events)
             {
                 var bm = GetMessageFromObject(e);
+                bm.PartitionKey = partitionKey;
                 batchSize = AddMessageToBatch(bm, batches, batchSize);
             }
 
