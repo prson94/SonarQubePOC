@@ -13,11 +13,17 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         {            
             var scores = await Storage.DeserializeJsonObjectFromBlobAsync<List<ScoreCreatedModel>>(Info.StorageFolder, Info.StorageFile);
 
+            if (scores == null)
+            {
+                throw new Exception("Cannot load score file from storage");
+            }
+
             var Db = GetCompanyContext();
 
             // More work to do here. Sprint 9.
             await Task.Delay(10);
-            Db.SendContinuingScoreEventWithPayload(ScoreQueueChangeType.WorkflowCheck, scores, Info.ExecutionUid, Info.StartedOn);
+
+            await Db.SendContinuingScoreEventWithPayload(ScoreQueueChangeType.WorkflowCheck, scores, Info.ExecutionUid, Info.StartedOn);
         }
     }
 }

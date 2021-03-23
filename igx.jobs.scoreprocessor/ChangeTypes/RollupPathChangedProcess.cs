@@ -1,6 +1,7 @@
 ﻿using d360.core.queue;
 using System.Threading.Tasks;
 using Dapper;
+using System;
 
 namespace igx.jobs.scoreprocessor.ChangeTypes
 {
@@ -9,6 +10,11 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         public async Task Run()
         {            
             var model = await Storage.DeserializeJsonObjectFromBlobAsync<RollupPathChangedModel>(Info.StorageFolder, Info.StorageFile);
+
+            if (model == null)
+            {
+                throw new Exception("Cannot load score file from storage");
+            }
 
             using (var company = GetEnvironmentConnection())
             {

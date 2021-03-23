@@ -32,7 +32,12 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         public async Task Run()
         {            
             var scores = await Storage.DeserializeJsonObjectFromBlobAsync<List<ScoreCreatedModel>>(Info.StorageFolder, Info.StorageFile);
-            
+
+            if (scores == null)
+            {
+                throw new Exception("Cannot load score file from storage");
+            }
+
             var Db = GetCompanyContext();
 
             var tbl = new DataTable();

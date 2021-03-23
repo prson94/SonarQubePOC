@@ -25,6 +25,11 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         {
             var model = await Storage.DeserializeJsonObjectFromBlobAsync<RuleAssetRemovedModel>(Info.StorageFolder, Info.StorageFile);
 
+            if (model == null)
+            {
+                throw new Exception("Cannot load score file from storage");
+            }
+
             var Db = GetCompanyContext();
             var list = Db.Query<RuleAssetRemovedDbModel>(
                 @"
@@ -62,7 +67,7 @@ where	Evidence <> '{}'
 
             if (list.Count > 0)
             {
-                Db.SendContinuingScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, list, Info.ExecutionUid, Info.StartedOn);
+                await Db.SendContinuingScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, list, Info.ExecutionUid, Info.StartedOn);
             }
         }
     }
