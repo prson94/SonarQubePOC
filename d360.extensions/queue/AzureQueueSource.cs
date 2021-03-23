@@ -163,14 +163,14 @@ namespace d360.extensions.queue
             var bm = GetMessageFromObject(e);
 
             var client = CreateTopicClient(topicName);
-            client.SendAsync(bm).RunSynchronously();
+            client.SendAsync(bm).Wait();
         }
 
         public void CreateTopicMessage(string topicName, EventInfo e)
         {
             var bm = GetMessageFromObject(e);
             var client = CreateTopicClient(topicName);
-            client.SendAsync(bm).RunSynchronously();
+            client.SendAsync(bm).Wait();
         }
 
         public async Task CreateTopicMessageAsync(EventInfo e)
@@ -285,7 +285,7 @@ namespace d360.extensions.queue
         {
             var bm = GetMessageFromObject(e);
             var client = CreateTopicClient(topicName);
-            client.SendAsync(bm).RunSynchronously();
+            client.SendAsync(bm).Wait();
         }
 
         public async Task CreateTopicMessageAsync<T>(string topicName, T e)
