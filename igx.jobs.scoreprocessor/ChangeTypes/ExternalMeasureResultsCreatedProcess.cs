@@ -22,7 +22,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 
             if (models == null)
             {
-                throw new Exception("Cannot load score file from storage");
+                throw new ArgumentNullException("models","Cannot load score file from storage");
             }
 
             var Db = GetCompanyContext();

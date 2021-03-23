@@ -19,7 +19,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 
             if (measureChangedModel == null)
             {
-                throw new Exception("Cannot load score file from storage");
+                throw new ArgumentNullException("measureChangedModel","Cannot load score file from storage");
             }
 
             if (measureChangedModel.EffectiveEndDate.Date <= DateTime.UtcNow.Date)

@@ -207,7 +207,7 @@ where   O.RowNum = 1;";
 
             if(assetMeasures == null)
             {
-                throw new Exception("Cannot load score file from storage");
+                throw new ArgumentNullException("assetMeasures","Cannot load score file from storage");
             }
 
             var scoresToAdd = new List<Score>();
