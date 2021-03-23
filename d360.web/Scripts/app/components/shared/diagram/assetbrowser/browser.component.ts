@@ -3160,18 +3160,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private getPartChildrenCount(obj: go.GraphObject) {
         if (!obj || !obj.part || !obj.part.data)
-            return NaN;
+            return 0;
 
-        if (!obj.part.data['_childrenCount']) {
-            var data = obj.diagram.nodes.filter(x =>
-                x.data['hierarchyKey'] == obj.part.data['hierarchyKey']
-                && x.data['group'] == obj.part.data['key']
-            );
-            if (!isNaN(data.count) && data.count != 0) {
-                obj.part.data['_childrenCount'] = data.count;
-            }
-        }
-        return +obj.part.data['_childrenCount'];
+        var value = +obj.part.data['_childrenCount'];
+
+        return isNaN(value) ? 0 : value;
     }
 
     //#endregion
