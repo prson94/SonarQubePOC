@@ -149,6 +149,4 @@ export class AdvancedFilteringComponent implements OnChanges {
 
         this.cdRef.markForCheck();
     }
-
-
 }

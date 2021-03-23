@@ -50,6 +50,7 @@ import { Filters } from './advanced-filtering/advanced-filtering.models';
     providers: [GridDefinitionService, ArtifactService, PermissionsService, ObjectDetailService, AssetService],
     templateUrl: './asset-grid.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    styleUrls: ['asset-grid.less'],
     host: {
         '(document:click)': 'clickedOutside()',
     },

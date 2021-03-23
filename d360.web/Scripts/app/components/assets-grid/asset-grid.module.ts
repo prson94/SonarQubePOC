@@ -33,6 +33,8 @@ import { AssetGridTopLevelFilterComponent } from './asset-grid-top-level-filter.
 import { AssetGridComponent } from './asset-grid.component';
 import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score.module';
 import { AdvancedFiltersModule } from './advanced-filtering/advanced-filtering.module';
+import { SearchModule } from '../search/search.module';
+import { SearchFieldModule } from '../shared/controls/search-field/search-field.component';
 
 
 @NgModule({
@@ -66,7 +68,8 @@ import { AdvancedFiltersModule } from './advanced-filtering/advanced-filtering.m
         SharedAssetEditorsModule,
         TilesModule,
         WorkflowModule,
-        AdvancedFiltersModule
+        AdvancedFiltersModule,
+        SearchFieldModule
     ],
     declarations: [
         AssetGridColumnFilterComponent,

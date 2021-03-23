@@ -222,43 +222,49 @@ export class AdvancedFilterFieldCondition {
         if (!this.operator) {
             return this.friendlyFieldName + ": Any"
         }
+        var fieldName = this.friendlyFieldName;
+
+        if (this.isRelationship) {
+            console.log(this.isRelationship);
+        }
+
         switch (this.operator.toString()) {
             case "IsTrue":
-                return this.friendlyFieldName + ": True";
+                return fieldName + ": True";
             case "IsFalse":
-                return this.friendlyFieldName + ": False";
+                return fieldName + ": False";
             case "Contains":
-                return `${this.friendlyFieldName} : *${this.getTypedValue()}*`;
+                return `${fieldName} : *${this.getTypedValue()}*`;
             case "NotContains":
-                return `${this.friendlyFieldName} &#8800; *${this.getTypedValue()}*`;
+                return `${fieldName} &#8800; *${this.getTypedValue()}*`;
             case "Equals":
-                return `${this.friendlyFieldName} : ${this.getTypedValue(this.value, true)}`;
+                return `${fieldName} : ${this.getTypedValue(this.value, true)}`;
             case "NotEquals":
-                return `${this.friendlyFieldName} &#8800; ${this.getTypedValue(this.value, true)}`;
+                return `${fieldName} &#8800; ${this.getTypedValue(this.value, true)}`;
             case "StartsWith":
-                return `${this.friendlyFieldName} : ${this.getTypedValue()}*`;
+                return `${fieldName} : ${this.getTypedValue()}*`;
             case "EndsWith":
-                return `${this.friendlyFieldName} : *${this.getTypedValue()}`;
+                return `${fieldName} : *${this.getTypedValue()}`;
             case "Populated":
-                return `${this.friendlyFieldName} : populated`;
+                return `${fieldName} : populated`;
             case "NotPopulated":
-                return `${this.friendlyFieldName} : not populated`;
+                return `${fieldName} : not populated`;
             case "Before":
             case "LessThan":
-                return `${this.friendlyFieldName} < ${this.getTypedValue()}`;
+                return `${fieldName} < ${this.getTypedValue()}`;
             case "OnOrBefore":
             case "LessThanOrEquals":
-                return `${this.friendlyFieldName} &#8804; ${this.getTypedValue()}`;
+                return `${fieldName} &#8804; ${this.getTypedValue()}`;
             case "After":
             case "GreaterThan":
-                return `${this.friendlyFieldName} > ${this.getTypedValue()}`;
+                return `${fieldName} > ${this.getTypedValue()}`;
             case "OnOrAfter":
             case "GreaterThanOrEquals":
-                return `${this.friendlyFieldName} &#8805; ${this.getTypedValue()}`;
+                return `${fieldName} &#8805; ${this.getTypedValue()}`;
             case "Between":
-                return `${this.friendlyFieldName} : ${this.getTypedValue()} - ${this.getTypedValue2()}`;
+                return `${fieldName} : ${this.getTypedValue()} - ${this.getTypedValue2()}`;
             case "IsInBand":
-                return `${this.friendlyFieldName} is in band ${this.getTypedValue()}`;
+                return `${fieldName} is in band ${this.getTypedValue()}`;
             default:
                 return "Any";
         }
