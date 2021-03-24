@@ -153,7 +153,7 @@
                             </div>
                         </div>
                         <div class="row">
-                            <label for="myFormEmail" class="ig-label">Property5</label>
+                            <label for="myFormEmail" class="ig-label">Property5</label>                            
                             <input tabindex="1" igInput type="text" [ngClass]="{'invalid': multiTestForm.get('myFormEmail')?.errors?.notNiceWord}" formControlName="myFormEmail" required />
                             <div *ngIf="multiTestForm.get('myFormEmail').invalid && (multiTestForm.get('myFormEmail').dirty || multiTestForm.get('myFormEmail').touched)">
                                 <div *ngIf="multiTestForm.get('myFormEmail').errors.notNiceWord" class="ig-text-required">
@@ -161,8 +161,20 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="row">
+                            <label for="myFormRadio" class="ig-label">Property6</label>
+                            <div>
+                                <p>Is this a Property Group?</p>
+                                <div class="row">
+                                    <p-radioButton igRadioButton name="groupName" [(ngModel)]="val" value="Of Course!" label="Yes" inputId="radio1" [ngModelOptions]="{standalone: true}"></p-radioButton>
+                                </div>
+                                <div class="row">
+                                    <p-radioButton igRadioButton name="groupName" [(ngModel)]="val" value="Hell No!" label="No" inputId="radio2" [ngModelOptions]="{standalone: true}"></p-radioButton>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </ig-property-group>
+</ig-property-group>
                 <div class="row">&nbsp;</div>
                 <div class="row">
                     <button igButton type="submit" [disabled]="!multiTestForm.valid" label="Save"></button>
