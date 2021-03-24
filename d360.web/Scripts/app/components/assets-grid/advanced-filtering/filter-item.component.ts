@@ -120,6 +120,11 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         var ft = this.getFieldType(item);
+
+        if (ft.Type.Lookup && ft.Type.Lookup.List.AllowMultipleValues) {
+            ft.Operators[0].label = "contains";
+            ft.Operators[1].label = "does not contains";
+        }
         return ft ? ft.Operators : [];
     }
 
@@ -182,6 +187,9 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.condition.friendlyFieldName = this.currentField.FriendlyName;
                 this.condition.fieldType = null;
                 this.condition.isRelationship = true;
+
+                console.log(this.getRelationshipCardinality());
+
                 this.uiCurrentOperatorsList = this.getOperators(this.condition);
                 this.uiFilterLabel = this.condition.getFilterLabel();
             }
@@ -194,6 +202,16 @@ export class FilterItemComponent implements OnInit, OnChanges {
         if (this.uiCurrentOperatorsList) {
             this.condition.operator = (this.uiCurrentOperatorsList[0] as SelectItem).value;
         }
+    }
+
+    getRelationshipCardinality(): string {
+        if (!this.condition.isRelationship) {
+            return "";
+        }
+        var data = this.condition.field.split('|');
+        var obj = this.relationshipTypes.filter((x) => x.Uid === data[0])[0];
+
+        return obj.Object.Uid === data[1] ? obj.Object.Cardinality : obj.Subject.Cardinality;
     }
 
     loadListLazy(event: LazyLoadEvent) {
@@ -373,7 +391,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     private updateAllAnyData(event = null) {
         if (this.condition.fieldType === "Lookup") {
-            if (this.currentField.Type.Lookup?.List?.AllowMultipleValues) {
+            if (this.currentField.Type.Lookup?.List?.AllowMultipleValues && (this.condition.value && (this.condition.value as any[]).length > 1)) {
                 this.uiIsAllDisabled = false;
                 this.uiIsAnyDisabled = false;
             }
@@ -388,7 +406,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             }
         }
 
-        if (this.condition.fieldType === "Tag") {
+        if (this.condition.fieldType === "Tag" && (this.condition.value && (this.condition.value as any[]).length > 1)) {
             if (this.condition.operator.toString() === "NotContains") {
                 this.condition.connectingOperator = "and";
                 this.uiIsAllDisabled = true;
@@ -421,6 +439,20 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.uiIsAnyDisabled = false;
             }
             else {
+                this.uiIsAllDisabled = true;
+                this.uiIsAnyDisabled = true;
+            }
+        }
+
+        if (this.condition.isRelationship) {
+            if (this.getRelationshipCardinality() === "Many" && this.condition.value && (this.condition.value as any[]).length > 1) {
+                this.uiIsAllDisabled = false;
+                this.uiIsAnyDisabled = false;
+            }
+            else {
+                if (this.getRelationshipCardinality() === "One") {
+                    this.condition.connectingOperator = "or";
+                }
                 this.uiIsAllDisabled = true;
                 this.uiIsAnyDisabled = true;
             }

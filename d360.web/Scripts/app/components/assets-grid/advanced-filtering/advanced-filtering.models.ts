@@ -135,9 +135,9 @@ export class AdvancedFilterFieldCondition {
 
         switch (this.operator.toString()) {
             case "IsTrue":
-                return this.friendlyFieldName + ": True";
+                return this.friendlyFieldName + " is True";
             case "IsFalse":
-                return this.friendlyFieldName + ": False";
+                return this.friendlyFieldName + " is False";
             case "Contains":
                 str += " contains ";
                 break;
@@ -224,15 +224,11 @@ export class AdvancedFilterFieldCondition {
         }
         var fieldName = this.friendlyFieldName;
 
-        if (this.isRelationship) {
-            console.log(this.isRelationship);
-        }
-
         switch (this.operator.toString()) {
             case "IsTrue":
-                return fieldName + ": True";
+                return fieldName + " is True";
             case "IsFalse":
-                return fieldName + ": False";
+                return fieldName + " is False";
             case "Contains":
                 return `${fieldName} : *${this.getTypedValue(this.value, true)}*`;
             case "NotContains":
@@ -365,6 +361,17 @@ export class AdvancedFilterFieldCondition {
                             else {
                                 valueAsString += arr[i].title + " nor " + arr[i + 1].title;
                             }
+                        }
+
+                        if (arr.length > 6 && i === 4) {
+                            let leftover: number = arr.length - 4;
+                            if (this.operator.toString() === "Equals" || this.operator.toString() === "Contains") {
+                                valueAsString += ` or ${leftover} other items`;
+                            }
+                            else {
+                                valueAsString += ` nor ${leftover} other items`;
+                            }
+                            i = arr.length;
                         }
                     }
 

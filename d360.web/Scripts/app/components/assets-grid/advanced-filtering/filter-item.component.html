@@ -71,6 +71,7 @@
                                      [metaKeySelection]="true"
                                      [value]="currentField.Values"
                                      (onRowSelect)="onItemSelected($event)"
+                                     (onRowUnselect)="onItemSelected($event)"
                                      [(selection)]="condition.value"
                                      [globalFilterFields]="['title']"
                                      dataKey="value"

@@ -26,8 +26,17 @@ advanced-filtering {
 
   .lookup-selection {
     margin-top: 8px;
-    border: 1px solid #cccccc;
-    border-radius: 4px;
+    min-width: 250px;
+
+    .p-datatable {
+      border: 1px solid #cccccc;
+      border-radius: 4px;
+      padding: 1px;
+    }
+
+    .p-datatable-scrollable-header-box {
+      padding-right: 0px !important;
+    }
   }
 
   .any-all-picker {
@@ -140,28 +149,47 @@ advanced-filtering {
     width: 220px;
     margin-top: 8px;
   }
+
+  ig-number-input {
+    .ig-number-field {
+      width: 100% !important;
+    }
+
+    .ig-button-container {
+      left: 199px;
+    }
+  }
+
+  .value-separator {
+    margin-bottom: -8px;
+  }
+
+  .ig-dropdown {
+    margin-top: 8px;
+  }
+
+  .ig-date .ig-input, p-calendar .ig-date .ig-input {
+    width: 204px;
+  }
 }
 
 .ig-filter-table {
+  table-layout: auto !important;
 
   thead {
     border-bottom: 1px solid #ccc;
   }
-  /*  .p-datatable-tbody {
-    max-height: 300px;
-    display: block;
-    overflow: auto;
-    width: 289px;
-  }*/
-  .p-checkbox-box {
-    width: 16px;
-    height: 16px;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 4px;
-    margin-right: 5px;
+
+  .p-checkbox {
+    margin: 0px !important;
+
+    .p-checkbox-box {
+      width: 16px;
+      height: 16px;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+    }
   }
-
-
 
   tr {
     color: black;
@@ -171,13 +199,17 @@ advanced-filtering {
 
     &.group-name {
       pointer-events: none;
-      font-weight: bold;
+
+      .item-value {
+        padding: 3px 0px !important;
+        font-weight: bold;
+        color: #818385;
+      }
     }
 
     td, th {
       background: white !important;
-      padding-top: 0 !important;
-      padding-bottom: 0 !important;
+      padding: 0 !important;
 
       .item-value {
         white-space: nowrap;
@@ -185,6 +217,7 @@ advanced-filtering {
         text-overflow: ellipsis;
         max-width: 230px;
         display: block;
+        color: black;
       }
 
       input {
@@ -197,13 +230,9 @@ advanced-filtering {
       }
     }
 
-    th.first-col {
-      width: 26px;
-    }
-
-    td.first-col {
-      width: 28px;
-      padding-left: 10px;
+    td.first-col, th.first-col {
+      width: 16px;
+      padding: 0px 8px !important;
     }
 
     &:hover {
