@@ -1,7 +1,6 @@
 ﻿import { DatePipe } from "@angular/common";
 import * as _ from "lodash";
 import { SelectItem } from "primeng/api";
-import { debug } from "util";
 import { FieldType, FieldTypeAPIModelField } from "../../../models/fieldtype-api.model";
 import { ScoreType, ScoreTypeAllocation } from "../../../models/metrics.model";
 import { Operator } from "../../../models/operator.model";

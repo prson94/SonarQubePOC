@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, HostListener, OnChanges } from '@angular/core';
+﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, HostListener, OnChanges, AfterViewChecked } from '@angular/core';
 import { LazyLoadEvent, SelectItem, SelectItemGroup } from 'primeng/api';
 import * as _ from 'lodash';
 import { FieldTypeAPIModelFieldCondition } from '../../../models/field-condition-grid.models';
@@ -10,6 +10,8 @@ import { TagService } from '../../../services/tag.service';
 import { RelationshipType } from '../../../models/relationship.model';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { Subscription } from 'rxjs';
+import { Table } from 'primeng/table';
+import { OverlayPanel } from 'primeng/overlaypanel';
 import { Page } from 'powerbi-client';
 
 @Component({
@@ -18,7 +20,7 @@ import { Page } from 'powerbi-client';
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [FieldsObservableService, AssetTypeService, TagService, RelationshipsService]
 })
-export class FilterItemComponent implements OnInit, OnChanges {
+export class FilterItemComponent implements OnInit, OnChanges, AfterViewChecked {
     @Input() assetTypeUid: string = "";
     @Input() condition: AdvancedFilterFieldCondition;
     @Input() fields: FieldTypeAPIModelFieldCondition[] = null;
@@ -87,6 +89,73 @@ export class FilterItemComponent implements OnInit, OnChanges {
             relationshipGroup.items.push({ value: f.Name, label: f.FriendlyName });
         });
 
+    }
+
+    ngAfterViewChecked() {
+
+    }
+
+    interval: any = {};
+    setTableWidth() {
+        if (this.isSelectingValue) {
+            if (this.interval) {
+                clearInterval(this.interval);
+            }
+
+            var html = this.elRef.nativeElement as HTMLElement;
+            var scrollWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0];
+            var selectionElement = html.getElementsByClassName("value-selection")[0];
+
+            if (scrollWrapper) {
+                (scrollWrapper as HTMLElement).style.width = 250 + "px";
+            }
+
+            if (selectionElement) {
+                (selectionElement as HTMLElement).style.removeProperty("left");
+            }
+
+            this.interval = setInterval(() => this.updateDynamicWidths(), 20);
+        }
+    }
+
+    updateDynamicWidths() {
+
+        try {
+            var html = this.elRef.nativeElement as HTMLElement;
+            var tableElements = html.getElementsByClassName("item-value");
+            var scrollWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0];
+            if (scrollWrapper) {
+                let width = scrollWrapper.clientWidth;
+                let oldWidth = width;
+                if (tableElements.length > 0) {
+                    for (let i = 0; i < tableElements.length; i++) {
+                        var elementWidth = tableElements[i].clientWidth + 45;
+                        if (elementWidth > width) {
+                            width = elementWidth;
+                        }
+                    }
+                }
+
+                if (width > (window.outerWidth - 16)) {
+                    width = window.outerWidth - 16;
+                }
+
+                var tableWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0] as HTMLElement;
+                if (tableWrapper && (Math.abs(oldWidth - width)) > 16) {
+                    tableWrapper.style.width = (width + 5) + "px";
+
+                    var difference = window.outerWidth - tableWrapper.getBoundingClientRect().right;
+                    if (difference < 0) {
+                        var selectionElement = html.getElementsByClassName("value-selection")[0] as HTMLElement;
+                        var leftLocation = window.outerWidth - selectionElement.clientWidth;
+                        selectionElement.style.left = leftLocation + "px";
+                    }
+                }
+            }
+        }
+        catch (ex) {
+            console.log(ex);
+        }
     }
 
     getTypeForCondition(item: AdvancedFilterFieldCondition) {
@@ -260,7 +329,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
 
                 this.currentField.Values = [...this.currentField.Values];
-
+                this.setTableWidth();
                 this.cdRef.markForCheck();
             })
     }
