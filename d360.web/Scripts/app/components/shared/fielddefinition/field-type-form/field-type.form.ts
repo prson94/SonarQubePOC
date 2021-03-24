@@ -754,6 +754,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             //need to convert the Fields and Relationships to the API expected format
             this.ConvertDisplayFieldsToAPIDefinition();
             this.model.FieldType.Type.ComputedRelationshipLookup = this.model.FieldType.Type.ComplexRelationLookup;
+            this.model.FieldType.Type.ComplexRelationLookup = undefined;
         }
         //special cases for Model and reference item types 
         if (this.currentType == 'Lookup') {
