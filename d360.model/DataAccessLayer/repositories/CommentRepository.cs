@@ -773,9 +773,10 @@ order by V.Emoji";
 
 				if (commentCreator != null)
 				{
-					var AssetDetail = CompanyContext.Connection.Query<AssetDetail>("Select * from AssetDetail A where A.ID = @AssetID", new { comment.AssetID }).FirstOrDefault();
-
-					string resourceSQL = $@"select distinct * from (Select 
+					var assetDetail = CompanyContext.Connection.Query<AssetDetail>("Select * from AssetDetail A where A.ID = @AssetID", new { comment.AssetID }).FirstOrDefault();
+					if (assetDetail != null)
+                    {                    
+						string resourceSQL = $@"select distinct * from (Select 
                                                                         GR.*
                                                                     from 
 	                                                                    CommentRelation CR 
@@ -803,32 +804,33 @@ order by V.Emoji";
 	                                                                    and 
 	                                                                    A.Object = 'Group') A";
 
-					var resourcesToNotify = CompanyContext.Connection.Query<GlobalReportingResource>(resourceSQL, new { commentID = comment.ID }).ToList();											
+					var resourcesToNotify = CompanyContext.Connection.Query<GlobalReportingResource>(resourceSQL, new { commentID = comment.ID }).ToList();
 
 					CommentNotification notification = new CommentNotification {
 						CommenterName = commentCreator,
-						Subject = $"{commentCreator} tagged you in a comment on {AssetDetail.DisplayValue}",
-						IsHtml = true						
-					};												
+						Subject = $"{commentCreator} tagged you in a comment on {assetDetail.DisplayValue}",
+						IsHtml = true
+					};
 
 					resourcesToNotify.ForEach(r =>
 					{
 						notification.RecipientEmail = r.Email;
 						notification.RecipientName = r.FullName;
 
-						var commentUrl = $"/sidebar/comments/{AssetDetail.uid}";
-						var assetUrl = $"/asset/{AssetDetail.uid}";
+						var commentUrl = $"/sidebar/comments/{assetDetail.uid}";
+						var assetUrl = $"/asset/{assetDetail.uid}";
 
-						if (!CompanyContext.HasUserReadPermission(AssetDetail.Object, AssetDetail.ObjectID, AssetDetail.TypeID, r.ResourceID))
-                        {
+						if (!CompanyContext.HasUserReadPermission(assetDetail.Object, assetDetail.ObjectID, assetDetail.TypeID, r.ResourceID))
+						{
 							commentUrl = assetUrl = $"/home";
 						}
 
 						notification.AssetUrl = assetUrl;
-						notification.CommentUrl = commentUrl;						
+						notification.CommentUrl = commentUrl;
 
 						CompanyContext.Connection.Execute("insert into [queue].[task]([Action], [Object], [ObjectID], [Custom]) values('Notify', 'TaggedComment', @id, @notification)", new { id = comment.ID, notification = JsonConvert.SerializeObject(notification) });
 					});
+				}
 				}			
 			}
 		} 
