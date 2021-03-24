@@ -448,6 +448,18 @@ where   ExecutionID <> @id
                     var assetFields = fields.Where(f => f.Assetuid == assetEffectiveDate.AssetUid).ToList();
                     var previousScoreItems = allPreviousScoreItems.Where(p => p.AssetUid == assetEffectiveDate.AssetUid && p.EffectiveDate.Date <= assetEffectiveDate.EffectiveDate.Date).ToList();
 
+                    // Add default raw items to represent the measure groups that may be present.
+                    incomingMeasureResults.AddRange(allMeasures.Where(am => am.IsGroup).Select(am => new ExternalMeasureResultsCreatedModel
+                    {
+                        AllocationUid = am.AllocationUid,
+                        AssetTypeId = assetEffectiveDate.AssetTypeId,
+                        AssetUid = assetEffectiveDate.AssetUid,
+                        MetricAssetUid = am.MetricAssetUid,
+                        MetricAssetVersionUid = am.MetricAssetVersionUid,
+                        EffectiveDate = assetEffectiveDate.EffectiveDate,
+                        Result = false
+                    }));
+
                     allMeasures.ForEach(allMeasure =>
                     {
                         bool measureDeleted = false;
