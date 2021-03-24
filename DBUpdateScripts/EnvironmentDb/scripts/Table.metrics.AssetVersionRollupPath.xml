@@ -79,12 +79,18 @@ end
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE NONCLUSTERED INDEX [IX_MetricAssetVersionRollupPath_AssetVersion] ON [metrics].[AssetVersionRollupPath] ( [AssetVersionUid] ASC )
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_MetricAssetVersionRollupPath_AssetVersion')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_MetricAssetVersionRollupPath_AssetVersion] ON [metrics].[AssetVersionRollupPath] ( [AssetVersionUid] ASC )
+END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-DROP INDEX [IX_MetricAssetVersionRollupPath_AssetVersion] ON [metrics].[AssetVersionRollupPath]
+IF EXISTS (select * from sys.indexes where name = 'IX_MetricAssetVersionRollupPath_AssetVersion')
+BEGIN
+	DROP INDEX [IX_MetricAssetVersionRollupPath_AssetVersion] ON [metrics].[AssetVersionRollupPath]
+END
 		]]>
 	</rollback>
   </changeSet> 
