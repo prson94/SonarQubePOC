@@ -5,13 +5,13 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.api.DeleteExecutionRecords-v3">
+  <changeSet author="kmcnamee" id="Procedure.api.DeleteExecutionRecords-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-			CREATE OR ALTER procedure [api].[DeleteExecutionRecords] 
+			CREATE OR ALTER   procedure [api].[DeleteExecutionRecords] 
 			@numberOfDaysOlderThan int = 30
 			as
 
@@ -47,6 +47,9 @@
 
 					-- finally delete the api.execution records themselves
 					delete from api.Execution where [route] is not null and [route] != 'BULK' and DATEDIFF(day, CompletedOn, getutcdate()) > @numberOfDaysOlderThan
+
+					-- delete any score records that are not completed, and have a status of -1
+					delete from api.Execution where [method] = 'score' and state = -1  and completedon is null and DATEDIFF(day, startedon, getutcdate()) > @numberOfDaysOlderThan
 
 					COMMIT TRANSACTION 
 				END TRY
@@ -90,8 +93,8 @@
 					delete from api.ExecutionDiagramAssetField where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
 					delete from api.ExecutionField where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
 					delete from api.ExecutionGroup where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-					delete from api.ExecutionMetric where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-					delete from api.ExecutionMetricMeasure where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionScore where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionMeasure where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
 					delete from api.ExecutionPredicate where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
 					delete from api.ExecutionRelationship where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
 					delete from api.ExecutionRelationshipError where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
