@@ -5,6 +5,7 @@ using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using Dapper;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -133,12 +134,15 @@ namespace d360.model.DataAccessLayer
 				var commentId = dbComment.ID;
 				if (comment.Tags != null && comment.Tags.Count > 0)
 				{
-					var taggedAssets = CompanyContext.Filter<Asset>(o => comment.Tags.Contains(o.uid)).Select(o => o.ID).ToList();
+					var taggedAssets = CompanyContext.Filter<Asset>(o => comment.Tags.Contains(o.uid)).ToList();
 					foreach (var r in taggedAssets)
 					{
-						CompanyContext.CommentRelations.Add(new CommentRelation { CommentID = commentId, AssetID = r });						
+						CompanyContext.CommentRelations.Add(new CommentRelation { CommentID = commentId, AssetID = r.ID });						
 					}
-					await CompanyContext.SaveChangesAsync();										
+
+					await CompanyContext.SaveChangesAsync();
+
+					SendCommentNotification(taggedAssets, dbComment);
 				}
 				CompanyContext.Connection.Execute("delete C from CommentRelation C left join Asset A on A.ID = C.AssetID where C.CommentID = @commentId and A.ID is null", new { commentId });
 
@@ -290,12 +294,15 @@ namespace d360.model.DataAccessLayer
 				{
 					if ( comment.Tags.Count > 0)
 					{
-						var taggedAssets = CompanyContext.Filter<Asset>(o => comment.Tags.Contains(o.uid)).Select(o => o.ID).ToList();
+						var taggedAssets = CompanyContext.Filter<Asset>(o => comment.Tags.Contains(o.uid)).ToList();
 						foreach (var r in taggedAssets)
 						{
-							CompanyContext.CommentRelations.Add(new CommentRelation { CommentID = commentId, AssetID = r });
+							CompanyContext.CommentRelations.Add(new CommentRelation { CommentID = commentId, AssetID = r.ID });
 						}
+
 						await CompanyContext.SaveChangesAsync();
+
+						SendCommentNotification(taggedAssets, dbComment);
 					}
 
 					CompanyContext.Connection.Execute("delete C from CommentRelation C left join Asset A on A.id = C.Assetid where C.CommentID = @commentId and A.ID is null", new { commentId });				
@@ -757,6 +764,76 @@ order by V.Emoji";
 				throw new GenericException(System.Net.HttpStatusCode.BadRequest, "", "You may not provide more than 50 tags on this comment.");
 			}
 		}
+
+		private void SendCommentNotification(List<Asset> taggedAssets, Comment comment)
+        {		
+			if (taggedAssets.Any(a => a.Object == core.SystemObjects.Resource.ToString() || a.Object == core.SystemObjects.Group.ToString()))
+			{
+				var commentCreator = CompanyContext.Connection.Query<string>("Select GR.FirstName + ' ' + GR.LastName as ResourceName from reporting.Global_Resource GR where resourceId = @commentBy", new { commentBy = comment.CreatedBy }).FirstOrDefault();
+
+				if (commentCreator != null)
+				{
+					var assetDetail = CompanyContext.Connection.Query<AssetDetail>("Select * from AssetDetail A where A.ID = @AssetID", new { comment.AssetID }).FirstOrDefault();
+					if (assetDetail != null)
+                    {                    
+						string resourceSQL = $@"select distinct * from (Select 
+                                                                        GR.*
+                                                                    from 
+	                                                                    CommentRelation CR 
+	                                                                    inner join 
+	                                                                    Asset A on A.ID = CR.AssetID 
+	                                                                    inner join 
+	                                                                    reporting.Global_Resource GR on A.ObjectID = GR.ResourceID 
+                                                                    where 
+	                                                                    CommentID = @commentID 
+	                                                                    and 
+	                                                                    A.Object = 'Resource'
+                                                                    Union
+                                                                    Select 
+                                                                        GR.*
+                                                                    from 
+	                                                                    CommentRelation CR 
+	                                                                    inner join 
+	                                                                    Asset A on A.ID = CR.AssetID
+	                                                                    inner Join 
+	                                                                    ResourceGroup RG on A.ObjectID = RG.GroupID
+	                                                                    inner join 
+	                                                                    reporting.Global_Resource GR on RG.ResourceID = GR.ResourceID 
+                                                                    where 
+	                                                                    CommentID = @commentID 
+	                                                                    and 
+	                                                                    A.Object = 'Group') A";
+
+					var resourcesToNotify = CompanyContext.Connection.Query<GlobalReportingResource>(resourceSQL, new { commentID = comment.ID }).ToList();
+
+					CommentNotification notification = new CommentNotification {
+						CommenterName = commentCreator,
+						Subject = $"{commentCreator} tagged you in a comment on {assetDetail.DisplayValue}",
+						IsHtml = true
+					};
+
+					resourcesToNotify.ForEach(r =>
+					{
+						notification.RecipientEmail = r.Email;
+						notification.RecipientName = r.FullName;
+
+						var commentUrl = $"/sidebar/comments/{assetDetail.uid}";
+						var assetUrl = $"/asset/{assetDetail.uid}";
+
+						if (!CompanyContext.HasUserReadPermission(assetDetail.Object, assetDetail.ObjectID, assetDetail.TypeID, r.ResourceID))
+						{
+							commentUrl = assetUrl = $"/home";
+						}
+
+						notification.AssetUrl = assetUrl;
+						notification.CommentUrl = commentUrl;
+
+						CompanyContext.Connection.Execute("insert into [queue].[task]([Action], [Object], [ObjectID], [Custom]) values('Notify', 'TaggedComment', @id, @notification)", new { id = comment.ID, notification = JsonConvert.SerializeObject(notification) });
+					});
+				}
+				}			
+			}
+		} 
 
 	}
 }
