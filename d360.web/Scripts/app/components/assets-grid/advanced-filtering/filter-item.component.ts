@@ -20,7 +20,7 @@ import { Page } from 'powerbi-client';
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [FieldsObservableService, AssetTypeService, TagService, RelationshipsService]
 })
-export class FilterItemComponent implements OnInit, OnChanges, AfterViewChecked {
+export class FilterItemComponent implements OnInit, OnChanges {
     @Input() assetTypeUid: string = "";
     @Input() condition: AdvancedFilterFieldCondition;
     @Input() fields: FieldTypeAPIModelFieldCondition[] = null;
@@ -88,10 +88,6 @@ export class FilterItemComponent implements OnInit, OnChanges, AfterViewChecked 
         SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).forEach((f) => {
             relationshipGroup.items.push({ value: f.Name, label: f.FriendlyName });
         });
-
-    }
-
-    ngAfterViewChecked() {
 
     }
 
@@ -346,6 +342,7 @@ export class FilterItemComponent implements OnInit, OnChanges, AfterViewChecked 
                 })
 
                 this.isLookupValuesLoading = false;
+                this.setTableWidth();
                 this.cdRef.markForCheck();
             });
 
@@ -386,6 +383,8 @@ export class FilterItemComponent implements OnInit, OnChanges, AfterViewChecked 
                 })
 
                 this.isLookupValuesLoading = false;
+                this.setTableWidth();
+
                 this.cdRef.markForCheck();
             });
         }
@@ -414,6 +413,7 @@ export class FilterItemComponent implements OnInit, OnChanges, AfterViewChecked 
                 Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
 
                 this.currentField.Values = [...this.currentField.Values];
+                this.setTableWidth();
 
                 this.cdRef.markForCheck();
             });
