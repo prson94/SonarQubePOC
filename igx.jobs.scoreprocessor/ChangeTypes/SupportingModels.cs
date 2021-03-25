@@ -72,6 +72,9 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         public bool Value { get; set; }
         public decimal AdjustedWeight { get; set; }
         public decimal AdjustedMaxWeight { get; set; }
+        public float? DecimalValue { get; set; }
+        public string OtherConditions { get; set; }
+        public string Evidence { get; set; }
     }
 
     internal class MatchingScoreModel

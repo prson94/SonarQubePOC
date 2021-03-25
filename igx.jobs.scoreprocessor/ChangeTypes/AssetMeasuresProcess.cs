@@ -154,13 +154,16 @@ from    (
 		        V.AssetUid as MetricAssetUid,
                 ROW_NUMBER() OVER(PARTITION BY Al.AssetUid, Al.EffectiveDate, Si.AssetVersionUid ORDER BY S.EffectiveDate DESC) as RowNum,
 		        L.*,
-                Si.AssetVersionUid as MetricAssetVersionUid,
-		        Si.ConditionUid,
                 S.EffectiveDate,
                 S.EndDate,
+                Si.AssetVersionUid as MetricAssetVersionUid,
+		        Si.ConditionUid,
 		        Si.Value,
 		        Si.AdjustedWeight,
 		        Si.AdjustedMaxWeight,
+                Si.DecimalValue,
+                Si.Evidence,
+                Si.OtherConditions,
                 iif(U.UseCount > 0, cast(1 as bit), cast(0 as bit)) as UsedInOtherScores
         from    (
 			        select		AllocationUid, AssetUid, EffectiveDate, AssetTypeId
@@ -830,6 +833,10 @@ where   ExecutionID <> @id
                                             scoreItem.Uid = previousScoreItem.ScoreItemUid;
                                         }
                                         scoreItem.Value = previousScoreItem.Value;
+                                        scoreItem.DecimalValue = previousScoreItem.DecimalValue;
+                                        scoreItem.Evidence = previousScoreItem.Evidence;
+                                        scoreItem.ConditionUid = previousScoreItem.ConditionUid;
+                                        scoreItem.OtherConditions = previousScoreItem.OtherConditions;
 
                                         assetScoreItems.Add(scoreItem);
                                         assetScoreItemLinks.Add(new ScoreItemLink { ScoreItemUid = scoreItem.Uid });
