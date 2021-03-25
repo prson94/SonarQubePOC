@@ -228,6 +228,10 @@ namespace d360.model.helpers
             {
                 sb.Append(token.GetSQLForOperator());
             }
+            else if (token.IsNullValue)
+            {
+                sb.Append(token.GetSQLForRelationshipNull(ref sqlParams));
+            }
             else
             {
                 sb.Append(token.GetSQLForRelationship(ref sqlParams));
@@ -338,7 +342,7 @@ namespace d360.model.helpers
         {
             List<Guid> IntersectUids = new List<Guid>();
             List<Guid> AssetUids = new List<Guid>();
-            foreach (var token in tokens.Where(x => x.IsOnlyOperator == false))
+            foreach (var token in tokens.Where(x => x.IsOnlyOperator == false && x.IsNullValue != true))
             {
                 var intersectUid = Guid.Empty;
                 var assetUid = Guid.Empty;

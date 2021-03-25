@@ -123,6 +123,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
         try {
             var html = this.elRef.nativeElement as HTMLElement;
+            var topPosition = html.getBoundingClientRect().bottom;
             var tableElements = html.getElementsByClassName("item-value");
             var scrollWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0];
             if (scrollWrapper) {
@@ -149,7 +150,11 @@ export class FilterItemComponent implements OnInit, OnChanges {
                     if (difference < 0) {
                         var selectionElement = html.getElementsByClassName("value-selection")[0] as HTMLElement;
                         var leftLocation = window.outerWidth - selectionElement.clientWidth;
+                        if (leftLocation < 0) {
+                            leftLocation = 0;
+                        }
                         selectionElement.style.left = leftLocation + "px";
+                        selectionElement.style.top = topPosition + "px";
                     }
                 }
             }

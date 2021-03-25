@@ -1496,45 +1496,23 @@ namespace d360.web.Controllers.V2
                 if (!string.IsNullOrEmpty(filter))
                 {
                     filter = "%" + filter + "%";
-                    whereQuery += " where kp.keypath like @filter ";
-                    whereCountQuery += " and kp.keypath like @filter ";
+                    whereQuery += " where keypath like @filter ";
+                    whereCountQuery += " and keypath like @filter ";
                 }
 
                 var results = Company.Connection.QueryMultiple($@"
-                    ;with cte as(select 
-	                    distinct
-                        ass.uid as 'value',
-	                    kp.keypath as 'label' 
-	                    from AssetType ATT
-	                    inner join Asset ASS on ATT.ID = ASS.AssetTypeID
-	                    inner join [IntersectType] IT on IT.uid = @intersectTypeUid                            
-	                    inner join [Intersect] I on I.Subject = ASS.Object and ASS.ObjectID = I.SubjectID and I.IntersectTypeID = IT.ID
-	                    left join graph.AssetNodeKeyPath KP on KP.ID = ass.ID 
-	                    where ATT.uid = @assetTypeUid
-                    union
-                    select 
-	                    distinct
-                        ass.uid as 'value',
-	                    kp.keypath as 'label' 
-	                    from AssetType ATT
-	                    inner join Asset ASS on ATT.ID = ASS.AssetTypeID
-	                    inner join [IntersectType] IT on IT.uid = @intersectTypeUid                            
-	                    inner join [Intersect] I on I.Object = ASS.Object and ASS.ObjectID = I.ObjectID and I.IntersectTypeID = IT.ID
-	                    inner join graph.AssetNode AN on AN.id = ass.id
-	                    left join graph.AssetNodeKeyPath KP on KP.ID = ass.ID 
-	                    where ATT.uid = @assetTypeUid)
+                    ;with cte as(select [uid] as 'value' ,
+                    keypath as 'label'
+                    from graph.AssetNodeKeyPath
+                    where assettypeuid = @assetTypeUid)
                     select * from cte
                     {whereQuery}
-                    order by cte.label desc
+                    order by cte.label asc
                     {pagingQuery}
 
-                    select count(distinct a.ID) from asset a
-                    inner join assettype at on at.id = a.assettypeid
-                    inner join [IntersectType] it on it.uid = @intersectTypeUid
-                    left join [Intersect] I on I.Object = a.Object and I.objectID = a.objectid and i.IntersectTypeID = IT.ID
-                    left join [Intersect] I2 on I2.Subject = a.Object and I2.SubjectId = a.objectid and i.IntersectTypeID = IT.ID
-                    where at.uid = @assetTypeUid AND ISNULL(I.ID, I2.ID) IS NOT NULL {whereCountQuery};
-
+                    select count(1)
+                        from graph.AssetNodeKeyPath
+                        where assettypeuid = @assetTypeUid {whereCountQuery};
                     ", new { assetTypeUid, intersectTypeUid, skip, take, filter });
 
 

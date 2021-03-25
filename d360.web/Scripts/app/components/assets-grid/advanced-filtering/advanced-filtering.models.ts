@@ -564,20 +564,27 @@ export class AdvancedFilterFieldConditionCollection {
                     }
                 }
             }
-            else if (cond.fieldType == null && cond.field.indexOf("|") === 36 && cond.value) {
+            else if (cond.fieldType == null && cond.field.indexOf("|") === 36) {
                 let subConditions: AdvancedFilterFieldCondition[] = [];
-                var valuesArr = cond.value as SelectItem[];
-                valuesArr.forEach(r => {
-                    var copyCond = cond.getCopyWithNewValue(r.value);
-                    copyCond.field = "$Related:" + copyCond.field.split("|")[0];
-                    subConditions.push(copyCond);
-                });
+                if (cond.value) {
+                    var valuesArr = cond.value as SelectItem[];
+                    valuesArr.forEach(r => {
+                        var copyCond = cond.getCopyWithNewValue(r.value);
+                        copyCond.field = "$Related:" + copyCond.field.split("|")[0];
+                        subConditions.push(copyCond);
+                    });
 
-                let subQueries: string[] = [];
-                subConditions.forEach((sc) => {
-                    subQueries.push(sc.getQueryString());
-                });
-                queries.push("(" + subQueries.join(" " + cond.connectingOperator + " ") + ")");
+                    let subQueries: string[] = [];
+                    subConditions.forEach((sc) => {
+                        subQueries.push(sc.getQueryString());
+                    });
+                    queries.push("(" + subQueries.join(" " + cond.connectingOperator + " ") + ")");
+                }
+                else {
+                    var copyCond = cond.getCopyWithNewValue(null);
+                    copyCond.field = "$Related:" + copyCond.field.split("|")[0];
+                    queries.push(copyCond.getQueryString());
+                }
             }
             else {
                 queries.push(cond.getQueryString());

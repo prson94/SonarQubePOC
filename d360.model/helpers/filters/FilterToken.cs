@@ -18,7 +18,7 @@ namespace d360.model.helpers
         private string field { get; set; }
         public string @operator { get; set; }
         private object value { get; set; }
-        private bool isNullValue { get; set; }
+        public bool IsNullValue { get; set; }
         private FieldType fieldType { get; set; }
         private string fieldColumn { get; set; }
         private bool isLookupField { get; set; }
@@ -78,7 +78,7 @@ namespace d360.model.helpers
 
             if (this.value != null && this.value.ToString().ToLower(CultureInfo.InvariantCulture) == "null")
             {
-                this.isNullValue = true;
+                this.IsNullValue = true;
             }
         }
 
@@ -90,7 +90,7 @@ namespace d360.model.helpers
             }
             sqlParamsRef = sqlParams;
             stringBuilder.Clear();
-            if (!this.isNullValue)
+            if (!this.IsNullValue)
             {
                 ValidateTokenForType();
                 UpdateTokenValueForType();
@@ -250,6 +250,39 @@ namespace d360.model.helpers
 
             sqlParams.Add($"@intersectFilter{this.parameterIdx}", Guid.Parse(field));
             sqlParams.Add($"@intersectAssetFilter{this.parameterIdx}", Guid.Parse(ValueAsString));
+            return stringBuilder.ToString();
+        }
+
+        public string GetSQLForRelationshipNull(ref Dictionary<string, object> sqlParams)
+        {
+            this.sqlParamsRef = sqlParams;
+            stringBuilder.Clear();
+
+            if (!new string[] { "eq", "ne" }.Contains(@operator))
+            {
+                throw new Exception($"Operator '{@operator}' is not valid when filtering relationship. Use 'eq' or 'ne'.");
+            }
+
+            sqlParams.Add($"@intersectFilter{this.parameterIdx}", Guid.Parse(field));
+
+            if (@operator == "ne")
+            {
+                stringBuilder.Append($@"(
+				 exists (SELECT top 1 *
+                    FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
+                    WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{this.parameterIdx}
+				              AND S.Uid = A.Uid))");
+            }
+
+            if (@operator == "eq")
+            {
+                stringBuilder.Append($@"(
+				 not exists (SELECT top 1 *
+                    FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
+                    WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{this.parameterIdx}
+				              AND S.Uid = A.Uid))");
+            }
+
             return stringBuilder.ToString();
         }
 
