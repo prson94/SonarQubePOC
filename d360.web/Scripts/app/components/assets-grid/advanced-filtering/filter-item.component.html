@@ -1,8 +1,8 @@
 ﻿<div class="filter-block" pTooltip="{{uiTooltipValue}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip" [escape]="false">
-    <div class="ig-button filter-label" (click)="updateFilter()">
+    <div class="ig-button filter-label {{(condition.isDefaultFilter ? '' :'has-remove-icon')}}" (click)="updateFilter()">
         <span class="text" [innerHTML]="uiFilterLabel"></span>
     </div>
-    <i *ngIf="condition.field" class="remove-button fa fa-times-circle" (click)="remove()"></i>
+    <i *ngIf="condition.field && !condition.isDefaultFilter" class="remove-button fa fa-times-circle" (click)="remove()"></i>
 
     <div class="field-selection" [hidden]="!isSelectingCurrentField">
         <p-dropdown #dropdownRef
@@ -34,37 +34,37 @@
         <div class="selectors" *ngIf="!isLookupValuesLoading">
             <p-dropdown igDropdown
                         [options]="uiCurrentOperatorsList"
-                        [(ngModel)]="condition.operator"
+                        [(ngModel)]="currentOperator"
                         (onChange)="onOperatorSelected($event)"
                         igSize="full"
                         appendTo="body">
             </p-dropdown>
             <div class="value-selector">
-                <ng-container *ngIf="needsValue()">
-                    <input *ngIf="fieldInputType() === 'text'" igInput igSize="full" type="text" [(ngModel)]="condition.value" required />
-                    <ig-number-input *ngIf="fieldInputType() === 'number'" igSize="full" [(ngModel)]="condition.value" required></ig-number-input>
+                <ng-container *ngIf="doesNeedValue">
+                    <input *ngIf="currentInputType === 'text'" igInput igSize="full" type="text" [(ngModel)]="condition.value" required />
+                    <ig-number-input *ngIf="currentInputType === 'number'" igSize="full" [(ngModel)]="condition.value" required></ig-number-input>
 
-                    <ng-container *ngIf="fieldInputType() === 'multi-number'">
+                    <ng-container *ngIf="currentInputType === 'multi-number'">
                         <ig-number-input igSize="full" [(ngModel)]="condition.value" required></ig-number-input>
                         <div class="value-separator">and</div>
                         <ig-number-input igSize="full" [(ngModel)]="condition.value2" required></ig-number-input>
                     </ng-container>
 
-                    <ig-date *ngIf="fieldInputType() === 'date'" [(ngModel)]="condition.value" required></ig-date>
-                    <ng-container *ngIf="fieldInputType() === 'multi-date'">
+                    <ig-date *ngIf="currentInputType === 'date'" [(ngModel)]="condition.value" required></ig-date>
+                    <ng-container *ngIf="currentInputType === 'multi-date'">
                         <ig-date [(ngModel)]="condition.value" required></ig-date>
                         <div class="value-separator">and</div>
                         <ig-date [(ngModel)]="condition.value2" required></ig-date>
                     </ng-container>
 
-                    <ig-date *ngIf="fieldInputType() === 'date-time'" [(ngModel)]="condition.value" [showTime]="true" required></ig-date>
-                    <ng-container *ngIf="fieldInputType() === 'multi-date-time'">
+                    <ig-date *ngIf="currentInputType === 'date-time'" [(ngModel)]="condition.value" [showTime]="true" required></ig-date>
+                    <ng-container *ngIf="currentInputType === 'multi-date-time'">
                         <ig-date [(ngModel)]="condition.value2" required [showTime]="true"></ig-date>
                         <div class="value-separator">and</div>
                         <ig-date [(ngModel)]="condition.value2" required [showTime]="true"></ig-date>
                     </ng-container>
 
-                    <ng-container *ngIf="fieldInputType() === 'lookup' && currentField">
+                    <ng-container *ngIf="currentInputType === 'lookup' && currentField">
                         <div class="lookup-selection">
                             <p-table #dataTable
                                      tableStyleClass="ig-filter-table"
@@ -120,7 +120,7 @@
                         </div>
                     </ng-container>
 
-                    <ng-container *ngIf="fieldInputType() === 'score-band'">
+                    <ng-container *ngIf="currentInputType === 'score-band'">
                         <p-dropdown igDropdown
                                     [options]="currentField.Values"
                                     [(ngModel)]="condition.value"
@@ -138,7 +138,7 @@
                         </p-dropdown>
                     </ng-container>
 
-                    <ng-container *ngIf="fieldInputType() === 'multi-input'">
+                    <ng-container *ngIf="currentInputType === 'multi-input'">
                         <ig-multi-input-field (changed)="updateAllAnyData($event)" [(ngModel)]='condition.value' [infoTooltip]="'Type and hit Enter to create multiple phrases, to be compared against asset path segments for matches'"></ig-multi-input-field>
                         <div class="any-all-picker" *ngIf="!uiIsAllDisabled && !uiIsAnyDisabled">
                             <p-radioButton [disabled]="uiIsAllDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="and" label="Match all"></p-radioButton>
@@ -150,11 +150,11 @@
             </div>
 
             <div class="buttons flex">
-                <button igButton icon="fa-trash" style="margin-left:0px;" tooltip="Close" (click)="remove()"></button>
+                <button *ngIf="hasRemoveButton()" igButton icon="fa-trash" style="margin-left:0px;" tooltip="Close" (click)="remove()"></button>
 
                 <div class="flex-grow"></div>
                 <button igButton icon="fa-times" tooltip="Close" (click)="cancel()"></button>
-                <button igButton class="ig-button-primary" icon="fa-check" tooltip="Save" (click)="confirmValue()"></button>
+                <button igButton [disabled]="isSaveDisabled()" class="ig-button-primary" icon="fa-check" tooltip="Save" (click)="confirmValue()"></button>
             </div>
         </div>
 

@@ -79,10 +79,6 @@ export class AdvancedFilteringComponent implements OnChanges {
         private datePipe: DatePipe) {
         this.conditions = new AdvancedFilterFieldConditionCollection();
         this.conditions.filters = [];
-        setInterval(() => {
-            this.getQuery();
-            this.customDoCheck();
-        }, 200);
     }
 
     customDoCheck() {
@@ -92,7 +88,6 @@ export class AdvancedFilteringComponent implements OnChanges {
         }
 
         this.conditions.filters = this.conditions.filters.filter(x => x.markForDeletion != true);
-
 
         this.onChange.emit(this.filters);
     }
@@ -167,15 +162,39 @@ export class AdvancedFilteringComponent implements OnChanges {
             });
 
             this.fields = tempFields;
+
+            this.cdRef.markForCheck();
+            var loadedFilters = this.loadFilters();
+
+            this.fields.forEach((field) => {
+                if (field.Type) {
+                    var key = Object.keys(field.Type)[0];
+                    var isDefaultFilter = field.Type[key]["IsPrimaryFilter"];
+                    if (isDefaultFilter === true && !loadedFilters.some(x => x.field === field.Name)) {
+                        var defaultFilter = new AdvancedFilterFieldCondition(this.datePipe);
+                        defaultFilter.field = field.Name;
+                        defaultFilter.isDefaultFilter = true;
+                        this.conditions.filters.push(defaultFilter);
+                    }
+                }
+            });
+
+            loadedFilters.forEach((f) => {
+                this.conditions.filters.push(f);
+            });
+
+            this.conditions.filters.push(new AdvancedFilterFieldCondition(this.datePipe));
+
             this.cdRef.markForCheck();
             this.visible = true;
+
+            setInterval(() => {
+                this.getQuery();
+                this.customDoCheck();
+            }, 200);
         })
-        this.cdRef.markForCheck();
-        var loadedFilters = this.loadFilters();
-        loadedFilters.forEach((f) => {
-            this.conditions.filters.push(f);
-        });
-        this.conditions.filters.push(new AdvancedFilterFieldCondition(this.datePipe));
+
+
     }
 
 

@@ -113,6 +113,8 @@ export class AdvancedFilterFieldCondition {
     connectingOperator: string = "or";
     isRelationship?: boolean = false;
 
+    isDefaultFilter?: boolean = false;
+
 
     constructor(private datePipe: DatePipe) {
 

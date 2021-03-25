@@ -310,7 +310,9 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
             delete params['usegraphforparent'];
         }
 
-        this.newAdvancedFilters.applyFilters(params);
+        if (this.newAdvancedFilters) {
+            this.newAdvancedFilters.applyFilters(params);
+        }
 
         return params;
     }

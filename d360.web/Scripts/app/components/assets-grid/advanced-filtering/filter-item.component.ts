@@ -33,17 +33,25 @@ export class FilterItemComponent implements OnInit, OnChanges {
     isSelectingCurrentField: boolean = false;
     isSelectingValue: boolean = false;
 
+
     tableSelection: any;
 
     isLookupValuesLoading: boolean = false;
 
     uiCurrentOperatorsList: any[] = [];
+    currentOperator: any;
+    currentInputType: string = "";
+    doesNeedValue: boolean = false;
 
     uiTooltipValue: string = "";
     uiFilterLabel: string = "";
 
     uiIsAllDisabled: boolean = true;
     uiIsAnyDisabled: boolean = true;
+
+    rollbackOperator: any;
+    rollbackValue1: any;
+    rollbackValue2: any;
 
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
 
@@ -205,6 +213,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     updateFilter() {
+        this.rollbackValue1 = this.condition.value;
+        this.rollbackValue2 = this.condition.value2;
+        this.rollbackOperator = this.condition.operator;
+
         if (!this.condition.field) {
             this.isSelectingCurrentField = true;
             this.isSelectingValue = false;
@@ -261,7 +273,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         if (this.uiCurrentOperatorsList) {
-            this.condition.operator = (this.uiCurrentOperatorsList[0] as SelectItem).value;
+            this.currentOperator = (this.uiCurrentOperatorsList[0] as SelectItem).value;
+            this.updateOperatorData();
         }
     }
 
@@ -298,7 +311,15 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     onOperatorSelected($event) {
+        this.condition.operator = this.currentOperator;
+        this.updateOperatorData();
+
         this.updateAllAnyData();
+    }
+
+    private updateOperatorData() {
+        this.currentInputType = this.fieldInputType();
+        this.doesNeedValue = this.needsValue();
     }
 
     loadLookupValues(params: any) {
@@ -417,21 +438,39 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     confirmValue() {
         this.isSelectingValue = false;
+        this.condition.operator = this.currentOperator;
+        this.updateOperatorData();
 
         this.uiTooltipValue = this.condition.getTooltipValue();
         this.uiFilterLabel = this.condition.getFilterLabel();
     }
 
     cancel() {
+        this.condition.value = this.rollbackValue1;
+        this.condition.value2 = this.rollbackValue2;
+        this.condition.operator = this.rollbackOperator;
+        this.currentOperator = this.rollbackOperator;
+
         this.isSelectingValue = false
     }
 
+    hasRemoveButton() {
+        if (this.condition.isDefaultFilter) {
+            return false;
+        }
+
+        return true;
+    }
+
     remove() {
+        if (this.condition.isDefaultFilter) {
+            return;
+        }
         this.condition.markForDeletion = true;
     }
 
     needsValue() {
-        if (!this.condition.operator) {
+        if (!this.currentOperator) {
             return false;
         }
 
@@ -439,7 +478,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             case "Boolean": return false;
         }
 
-        switch (this.condition.operator.toString()) {
+        switch (this.currentOperator.toString()) {
             case "Populated":
             case "NotPopulated":
                 this.condition.value = null;
@@ -525,14 +564,19 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     fieldInputType() {
+        if (!this.currentOperator) {
+            return;
+        }
+
         if (this.condition.field === SystemFields.OwnedByFieldCode) {
             return "lookup";
         }
+
         var type = this.getTypeForCondition(this.condition);
 
         if (type == "Number" || type == "Decimal" || type == "Score") {
 
-            if (this.condition.operator.toString() === "IsInBand") {
+            if (this.currentOperator.toString() === "IsInBand") {
                 this.currentField.Values = [];
                 this.currentField.Values.push({ value: "poor", title: "Poor" });
                 this.currentField.Values.push({ value: "average", title: "Average" });
@@ -541,7 +585,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             }
 
             //First handle special case eq. Between
-            if (this.condition.operator.toString() === "Between") {
+            if (this.currentOperator.toString() === "Between") {
                 return "multi-number";
             }
 
@@ -551,7 +595,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
         if (type == "Date") {
             //First handle special case eq. Between
-            if (this.condition.operator.toString() === "Between") {
+            if (this.currentOperator.toString() === "Between") {
                 return "multi-date";
             }
 
@@ -560,7 +604,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
         if (type == "DateTime") {
             //First handle special case eq. Between
-            if (this.condition.operator.toString() === "Between") {
+            if (this.currentOperator.toString() === "Between") {
                 return "multi-date-time";
             }
 
@@ -572,7 +616,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         if (type === "Path") {
-            if (this.condition.operator.toString() === "StartsWith" || this.condition.operator.toString() === "EndsWith") {
+            if (this.currentOperator.toString() === "StartsWith" || this.currentOperator.toString() === "EndsWith") {
                 return "text";
             }
 
@@ -591,5 +635,26 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         return true;
+    }
+
+    isSaveDisabled() {
+        if (!this.doesNeedValue) {
+            return false;
+        }
+
+        if (this.currentInputType.indexOf("multi") !== -1) {
+            return this.isEmpty(this.condition.value) || this.isEmpty(this.condition.value2);
+        }
+        else {
+            return this.isEmpty(this.condition.value);
+        }
+    }
+
+    isEmpty(value: any): boolean {
+        if (value === null || (typeof value === "undefined") || (value as string).length === 0) {
+            return true;
+        }
+
+        return false;
     }
 }
