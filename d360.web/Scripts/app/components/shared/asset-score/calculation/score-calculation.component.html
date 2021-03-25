@@ -69,7 +69,7 @@
             </div>
         </ng-container>
 
-        <ng-container *ngIf="selected.AdjustedWeight != selected.Weight">
+        <ng-container *ngIf="selected._adjustedMaxWeight !== selected.Weight">
             <div class="calculation-group">
                 <div class="title">Adjusted Weight</div>
                 <div class="indented-line">= condition group weight &#247; weights total &#215; 100% </div>

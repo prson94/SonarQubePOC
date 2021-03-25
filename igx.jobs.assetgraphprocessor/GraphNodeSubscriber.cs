@@ -1,12 +1,15 @@
 ﻿using d360.core.queue;
 using d360.utils.company;
 using Dapper;
+using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.WebJobs;
 using Microsoft.ServiceBus.Messaging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace igx.jobs.assetgraphprocessor
@@ -16,9 +19,11 @@ namespace igx.jobs.assetgraphprocessor
         const string functionName = "AssetGraphProcessor_GraphNodeSubscriber";
         const int timeout = 60 * 10;
 
-        public static async Task RunNodeSubscriber([ServiceBusTrigger("%AssetBusTopicName%")]BrokeredMessage brokeredMessage, TextWriter log)
+        [Disable("DisableGraphNode")]
+        public static async Task RunNodeSubscriber([ServiceBusTrigger("%AssetBusTopicName%", "GraphNode")]Message brokeredMessage, TextWriter log)
         {
-            var info = brokeredMessage.GetBody<AssetEventInfo>();
+            var messageString = Encoding.UTF8.GetString(brokeredMessage.Body);
+            var info = JsonConvert.DeserializeObject<AssetEventInfo>(messageString);
             if (info.Type != AssetEventType.Node)
                 return;
 

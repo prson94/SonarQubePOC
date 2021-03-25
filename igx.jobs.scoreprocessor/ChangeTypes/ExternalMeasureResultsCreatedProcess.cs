@@ -20,6 +20,11 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         {            
             var models = await Storage.DeserializeJsonObjectFromBlobAsync<List<ExternalMeasureResultsCreatedModel>>(Info.StorageFolder, Info.StorageFile);
 
+            if (models == null)
+            {
+                throw new ArgumentNullException("models","Cannot load score file from storage");
+            }
+
             var Db = GetCompanyContext();
             using (var company = GetEnvironmentConnection())
             {
@@ -96,12 +101,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                             }).ToList()
                         }).ToList();
 
-                    Db.SendContinuingScoreEventWithPayload(
-                        ScoreQueueChangeType.AssetMeasures, 
-                        assetMeasureModels,
-                        Info.ExecutionUid,
-                        Info.StartedOn
-                    );
+                    await Db.SendContinuingScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, assetMeasureModels, Info.ExecutionUid, Info.StartedOn );
                 }
             }
         }

@@ -87,6 +87,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
         if (this.getAssetSub)
             this.getAssetSub.unsubscribe();
 
+        this.loadParams.useGraphForParent = false;
         this.isLoading = true;
         this.getAssetSub = this.assetService.getAssets(this.assetTypeUid, this.loadParams).subscribe(result => {
             this.items = result.items;

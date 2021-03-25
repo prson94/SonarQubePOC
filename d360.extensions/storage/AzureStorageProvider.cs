@@ -61,14 +61,13 @@ namespace d360.extensions.storage
             using (MemoryStream ms = new MemoryStream())
             {
                 using (StreamWriter sw = new StreamWriter(ms, Encoding.UTF8))
+                using (JsonTextWriter jtw = new JsonTextWriter(sw))
                 {
-                    using (JsonTextWriter jtw = new JsonTextWriter(sw))
-                    {
-                        JsonSerializer ser = new JsonSerializer();
-                        ser.Serialize(jtw, obj);
-                        await CreateFile(folderName, fileName, ms).ConfigureAwait(false);
-                    }
+                    JsonSerializer ser = new JsonSerializer();
+                    ser.Serialize(jtw, obj);
                 }
+
+                await CreateFile(folderName, fileName, new MemoryStream(ms.ToArray())).ConfigureAwait(false);
             }
         }
 

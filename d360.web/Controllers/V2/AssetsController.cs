@@ -565,6 +565,9 @@ namespace d360.web.Controllers.V2
                 if (model.AutoDisplayParent.HasValue && (!model.Class.AllowsAutoDisplayParent() || parentAssetType == null))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Auto Display Parent", AssetTypeErrors.AutoDisplayParentRestriction));
 
+                if (model.AutoDisplayParent.HasValue && ((model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset) || parentAssetType == null))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Can Edit Parent", AssetTypeErrors.CanEditParentClassRestriction));
+
                 if (model.CanOwnFusion.HasValue && model.CanOwnFusion.Value && model.Class != AssetTypeClass.BusinessAsset)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Can Own Fusion", "Can Own Fusion can be set only asset types that are of class Business"));
 

@@ -903,7 +903,7 @@ where   E.ExecutionID = @ExecutionID
             return apiExecution.ExecutionID;
         }
 
-        public void SendContinuingScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid executionUid, DateTime startedOn)
+        public async Task SendContinuingScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid executionUid, DateTime startedOn)
         {
             var info = new ScoreQueueInfo
             {
@@ -914,7 +914,7 @@ where   E.ExecutionID = @ExecutionID
                 StartedOn = startedOn,
                 Location = ScoreQueueExecutionDataLocation.File
             };
-            Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.StorageFile, item).Wait();
+            await Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.StorageFile, item);
             QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
         }
 
