@@ -10,9 +10,6 @@ import { TagService } from '../../../services/tag.service';
 import { RelationshipType } from '../../../models/relationship.model';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { Subscription } from 'rxjs';
-import { Table } from 'primeng/table';
-import { OverlayPanel } from 'primeng/overlaypanel';
-import { Page } from 'powerbi-client';
 
 @Component({
     selector: 'filter-item',
@@ -190,6 +187,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             ft.Operators[0].label = "contains";
             ft.Operators[1].label = "does not contains";
         }
+
         return ft ? ft.Operators : [];
     }
 
@@ -252,8 +250,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.condition.friendlyFieldName = this.currentField.FriendlyName;
                 this.condition.fieldType = null;
                 this.condition.isRelationship = true;
-
-                console.log(this.getRelationshipCardinality());
 
                 this.uiCurrentOperatorsList = this.getOperators(this.condition);
                 this.uiFilterLabel = this.condition.getFilterLabel();

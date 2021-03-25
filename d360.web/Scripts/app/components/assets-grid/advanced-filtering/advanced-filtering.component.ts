@@ -135,7 +135,13 @@ export class AdvancedFilteringComponent implements OnChanges {
 
                 this.operators.forEach(op => {
                     if (f.Type) {
-                        if (op.AllowedDataTypes.some(x => x.Name === FieldTypeHelper.getFieldType(f.Type))) {
+                        var fieldType = FieldTypeHelper.getFieldType(f.Type).toLowerCase();
+
+                        if (fieldType === "computedrelationshipfield") {
+                            fieldType = "fieldfromrelationship";
+                        }
+
+                        if (op.AllowedDataTypes.some(x => x.Name.toLowerCase() === fieldType)) {
                             f.Operators.push({ label: op.Name, value: op.ID });
                         }
 
