@@ -335,6 +335,11 @@ namespace d360.model.helpers
                     fieldSql = $"CONVERT(VARCHAR,{fieldSql},120)";
                 }
 
+                if (this.fieldType.Type == "Score")
+                {
+                    fieldSql = $"CONVERT(DECIMAL(7,2),REPLACE({fieldSql},'%',''))";
+                }
+
                 stringBuilder.Append(fieldSql);
                 stringBuilder.Append(GetSQLOperator(@operator));
                 stringBuilder.Append($"@filter_{parameterIdx}");

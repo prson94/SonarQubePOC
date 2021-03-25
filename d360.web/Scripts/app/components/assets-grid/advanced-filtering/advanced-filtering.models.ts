@@ -586,12 +586,12 @@ export class AdvancedFilterFieldConditionCollection {
 
     private getInBandQuery(cond: AdvancedFilterFieldCondition): string {
         if (cond.value) {
-            let minValue: number = 0;
-            let maxValue: number = 99.999999;
+            let minValue: number = null;
+            let maxValue: number = 100;
             let alloc = this.allocations.filter(x => x.scoreType === cond.type.Type.Score.ScoreType)[0];
             switch (cond.value) {
                 case "poor":
-                    minValue = 0;
+                    minValue = null;
                     maxValue = alloc.lowerThreshold;
                     break;
                 case "average":
@@ -600,8 +600,16 @@ export class AdvancedFilterFieldConditionCollection {
                     break;
                 case "good":
                     minValue = alloc.upperThreshold;
-                    maxValue = 99.999999;
+                    maxValue = null;
                     break;
+            }
+
+            if (minValue === null) {
+                return `(${cond.field} lt '${maxValue}')`;
+            }
+
+            if (maxValue === null) {
+                return `(${cond.field} gt '${minValue}')`;
             }
 
             return `(${cond.field} ge '${minValue}' and ${cond.field} lt '${maxValue}')`;
