@@ -109,6 +109,34 @@ export class BrowserService extends BaseObservableService {
         });
 
         //#endregion
+
+        //#region Count number of children per hierarchy and group
+        try {
+            let groupMap: any = {};
+
+            response.nodes.forEach((node) => {
+                if (node.group) {
+                    let key = node.hierarchyKey + node.group;
+                    if (key in groupMap) {
+                        groupMap[key] += 1;
+                    }
+                    else {
+                        groupMap[key] = 1;
+                    }
+                }
+            });
+
+            response.nodes.forEach((node) => {
+                let key = node.hierarchyKey + node.key;
+                if (key in groupMap) {
+                    node["_childrenCount"] = groupMap[key];
+                }
+            });
+        }
+        catch (ex) {
+            console.warn(ex);
+        }
+        //#endregion
     }
 
     private processOwnerResponse(hierarchyKey: string,

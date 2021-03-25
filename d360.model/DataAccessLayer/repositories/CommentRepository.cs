@@ -371,20 +371,20 @@ order by u.CommentTypeName";
             return counts;
         }
 
-        public async Task<CommentDetails> GetCommentDetails(IEnumerable<KeyValuePair<string, string>> queryParams)
-        {
-            var dbArgs = new DynamicParameters();
-            List<string> whereStatements = new List<string>();
-            var queryFieldOptions = new List<DefaultFilter>
-            {
-                new DefaultFilter("Body", "C.Body", SqlFieldType.Text),
-                new DefaultFilter("Uid", "C.Uid", SqlFieldType.Guid),
-                new DefaultFilter("CreatedOn", "C.CreatedOn", SqlFieldType.DateTime),
-                new DefaultFilter("UpdatedOn", "C.UpdatedOn", SqlFieldType.DateTime),
-                new DefaultFilter("Url", "AUrl.Url", SqlFieldType.Text),
-                new DefaultFilter("AssetPath", "AP.DisplayPath", SqlFieldType.Text),
-                new DefaultFilter("ResourceName", "R.LastName", SqlFieldType.Text)
-            };
+		public async Task<CommentDetails> GetCommentDetails(IEnumerable<KeyValuePair<string, string>> queryParams)
+		{
+			var dbArgs = new DynamicParameters();
+			List<string> whereStatements = new List<string>();
+			var queryFieldOptions = new List<DefaultFilter>
+			{
+				new DefaultFilter("Body", "C.Body", SqlFieldType.Text),
+				new DefaultFilter("Uid", "C.Uid", SqlFieldType.Guid),
+				new DefaultFilter("CreatedOn", "C.CreatedOn", SqlFieldType.DateTime),
+				new DefaultFilter("UpdatedOn", "C.UpdatedOn", SqlFieldType.DateTime),
+				new DefaultFilter("Url", "AUrl.Url", SqlFieldType.Text),
+				new DefaultFilter("AssetPath", "AP.DisplayPath", SqlFieldType.Text),
+				new DefaultFilter("ResourceName", "R.FirstName + ' ' + R.LastName", SqlFieldType.Text)
+			};
 
             DynamicParameters advFilterArgs = null;
             List<string> advFilterStatements = null;

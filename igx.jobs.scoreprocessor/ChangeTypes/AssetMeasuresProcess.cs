@@ -205,6 +205,11 @@ where   O.RowNum = 1;";
         {
             var assetMeasures = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetMeasureModel>>(Info.StorageFolder, Info.StorageFile);
 
+            if(assetMeasures == null)
+            {
+                throw new ArgumentNullException("assetMeasures","Cannot load score file from storage");
+            }
+
             var scoresToAdd = new List<Score>();
             var scoresItemsToAdd = new List<ScoreItem>();
             var scoreItemLinksToAdd = new List<ScoreItemLink>();
@@ -442,6 +447,18 @@ where   ExecutionID <> @id
                     var incomingMeasureResults = models.Where(i => i.AllocationUid == assetEffectiveDate.AllocationUid && i.AssetUid == assetEffectiveDate.AssetUid && i.EffectiveDate == assetEffectiveDate.EffectiveDate).ToList();
                     var assetFields = fields.Where(f => f.Assetuid == assetEffectiveDate.AssetUid).ToList();
                     var previousScoreItems = allPreviousScoreItems.Where(p => p.AssetUid == assetEffectiveDate.AssetUid && p.EffectiveDate.Date <= assetEffectiveDate.EffectiveDate.Date).ToList();
+
+                    // Add default raw items to represent the measure groups that may be present.
+                    incomingMeasureResults.AddRange(allMeasures.Where(am => am.IsGroup).Select(am => new ExternalMeasureResultsCreatedModel
+                    {
+                        AllocationUid = am.AllocationUid,
+                        AssetTypeId = assetEffectiveDate.AssetTypeId,
+                        AssetUid = assetEffectiveDate.AssetUid,
+                        MetricAssetUid = am.MetricAssetUid,
+                        MetricAssetVersionUid = am.MetricAssetVersionUid,
+                        EffectiveDate = assetEffectiveDate.EffectiveDate,
+                        Result = false
+                    }));
 
                     allMeasures.ForEach(allMeasure =>
                     {
@@ -1253,7 +1270,7 @@ from	metrics.ScoreItemLink T
 
                             trans.Commit();
                             
-                            Db.SendContinuingScoreEventWithPayload(
+                            await Db.SendContinuingScoreEventWithPayload(
                                 ScoreQueueChangeType.WorkflowCheck,
                                 scoresToAdd.Select(i => new ScoreCreatedModel { AllocationUid = i.AllocationUid, AssetUid = i.AssetUid, EffectiveDate = i.EffectiveDate }).ToList(),
                                 Info.ExecutionUid, 

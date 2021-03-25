@@ -17,6 +17,11 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         {
             var measureChangedModel = await Storage.DeserializeJsonObjectFromBlobAsync<MeasureChangedModel>(Info.StorageFolder, Info.StorageFile);
 
+            if (measureChangedModel == null)
+            {
+                throw new ArgumentNullException("measureChangedModel","Cannot load score file from storage");
+            }
+
             if (measureChangedModel.EffectiveDate <= DateTime.UtcNow.Date)
             {
                 // We can continue processing it.
@@ -66,7 +71,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 
                             if (list.Count > 0)
                             {
-                                Db.SendContinuingScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, list, Info.ExecutionUid, Info.StartedOn);
+                                await Db.SendContinuingScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, list, Info.ExecutionUid, Info.StartedOn);
                             }
                         }
                     }
