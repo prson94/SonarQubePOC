@@ -86,9 +86,13 @@ export class CompanySettingsService extends BaseObservableService implements ICo
             );
     }
 
-    public getOperators(): Observable<OperatorModel[]> {
+    public getOperators(isForAdvancedFilters: boolean = false): Observable<OperatorModel[]> {
+        let url = `/api/v2/environment/operators`;
+        if (isForAdvancedFilters) {
+            url += "?isForAdvancedFilters=true"
+        }
         return this.http
-            .get<OperatorModel[]>(`/api/v2/environment/operators`)
+            .get<OperatorModel[]>(url)
             .pipe(catchError(err => this.handleError(err)));
     }
 

@@ -266,6 +266,15 @@ namespace d360.core
         }
     }
 
+    public class OperatorAllowedDataTypesAdvancedFilterAttribute : Attribute
+    {
+        public DataType[] DataTypes { get; private set; }
+        public OperatorAllowedDataTypesAdvancedFilterAttribute(params DataType[] dataTypes)
+        {
+            DataTypes = dataTypes;
+        }
+    }
+
     public class OperatorAllowedMeasureChecksAttribute : Attribute
     {
         public MetricGovernanceCheckType[] Checks { get; private set; }

@@ -100,7 +100,7 @@ export class AdvancedFilteringComponent implements OnChanges {
     private initializeData() {
         this.visible = false;
         forkJoin(
-            this.settingsService.getOperators(),
+            this.settingsService.getOperators(true),
             this.fieldsService.getFieldsV2(this.assetTypeUid, null, null),
             this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid),
             this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid)
