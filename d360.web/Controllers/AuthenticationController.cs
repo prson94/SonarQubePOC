@@ -306,7 +306,7 @@ namespace d360.web.Controllers
                     if (resource == null)
                     {
                         Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Did not find resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Warning });
-                        
+
                         if (Community.CurrentCompanySsoModel.AllowNewUserLogin && !string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(firstName) && !string.IsNullOrEmpty(lastName))
                         {
                             Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Now creating resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Information });
@@ -330,7 +330,8 @@ namespace d360.web.Controllers
                             };
                             Community.Add(resource);
 
-                            var companyResource = new CompanyResource {
+                            var companyResource = new CompanyResource
+                            {
                                 CompanyID = Community.CurrentCompanyID,
                                 IsAdministrator = false,
                                 ResourceID = resource.ID,
@@ -341,7 +342,8 @@ namespace d360.web.Controllers
 
                             if (!Company.Any<GlobalReportingResource>(gr => gr.ResourceID == resource.ID))
                             {
-                                Company.Add(new GlobalReportingResource {
+                                Company.Add(new GlobalReportingResource
+                                {
                                     LastLoggedInOn = companyResource.LastLoggedInOn,
                                     Email = resource.Email,
                                     FirstName = resource.FirstName,
@@ -350,12 +352,12 @@ namespace d360.web.Controllers
                                     ResourceID = resource.ID,
                                     Uid = resource.Uid,
                                     State = companyResource.State,
-                                    CreatedOn = DateTime.UtcNow                                    
+                                    CreatedOn = DateTime.UtcNow
                                 });
                             }
 
-                            Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Finished creating resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Verbose });                            
-                        }
+                            Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Finished creating resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Verbose });
+                        }                        
                     }
                     else
                     {
@@ -403,9 +405,7 @@ namespace d360.web.Controllers
                             else
                             {
                                 // The company resource account is not active, so ensure that user is NOT able to log in.
-                                resource = null;
-                                //if you change headers it throws and error after the redirect so dont continue just return
-                                return Redirect("/noaccess"); 
+                                resource = null;                                
                             }
                         }
 
@@ -437,6 +437,10 @@ namespace d360.web.Controllers
                             {
                                 Community.Update(resource);
                             }
+                        }
+                        else
+                        {
+                            return Redirect("/noaccess");
                         }
                     }
                 }
