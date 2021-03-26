@@ -26,7 +26,9 @@ export class AdvancedFilteringComponent implements OnChanges {
 
     allocations: ScoreTypeAllocation[] = [];
     relationshipTypes: RelationshipType[] = [];
+
     filters: Filters;
+    emittedFilters: string;
 
     fields: FieldTypeAPIModelFieldCondition[] = null;
     operators: OperatorModel[] = [];
@@ -34,6 +36,7 @@ export class AdvancedFilteringComponent implements OnChanges {
     conditions: AdvancedFilterFieldConditionCollection;
 
     visible: boolean = false;
+
     filterMenu = [
         {
             title: 'Clear Filters',
@@ -89,7 +92,13 @@ export class AdvancedFilteringComponent implements OnChanges {
 
         this.conditions.filters = this.conditions.filters.filter(x => x.markForDeletion != true);
 
-        this.onChange.emit(this.filters);
+        var currentFilters = JSON.stringify(this.filters);
+
+        if (currentFilters != this.emittedFilters) {
+            this.onChange.emit(this.filters);
+            this.emittedFilters = JSON.stringify(this.filters);
+        }
+
     }
 
     private initializeData() {

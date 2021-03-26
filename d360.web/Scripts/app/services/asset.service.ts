@@ -192,7 +192,7 @@ export class AssetService extends BaseObservableService {
         }
     }
 
-    public downloadAssetsExcel(assetTypeUid: string, params: any, fileName) {
+    public downloadAssetsExcel(assetTypeUid: string, params: any, fileName, callback: Function = null) {
         var copyParams = _.clone(params);
 
         //Setup paging for export
@@ -209,7 +209,12 @@ export class AssetService extends BaseObservableService {
         this.
             http
             .get(`/api/v2/assets/${assetTypeUid}${qString}`, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
-            .subscribe(data => this.downloadFile(data, fileName));
+            .subscribe(data => {
+                this.downloadFile(data, fileName);
+                if (callback) {
+                    callback();
+                }
+            });
     }
 
     public searchAssetPath(filterValue: AssetSearchFilter): Observable<AssetSearchApiResponse> {

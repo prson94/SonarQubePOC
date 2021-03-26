@@ -1,33 +1,5 @@
 <d3s-loading [isLoading]="isEditing"></d3s-loading>
-
-<div class="grid-actions-header">
-    <div class="simple-search">
-        <ig-search-field></ig-search-field>
-    </div>
-    <advanced-filtering [assetTypeUid]="gridObject.AssetTypeUID" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
-    <div class="grid-action-buttons">
-        <button igButton class="ig-button-primary" icon="fa-plus" tooltip="Add new asset" (click)="add()"></button>
-        <button igButton icon="fa-download" tooltip="Download excel" (click)="export(false)"></button>
-    </div>
-</div>
-
-<br />
-Filters : {{newAdvancedFilters?.filter}}<br />
-
-<button (click)="getData()">New Search</button>
-
 <header class="grid-header" *ngIf="!showEditor && !showDelete && !isEditing && !hasNoListableColumns">
-    <d3s-tile-actions [hasAdd]="showAddButton && hasModifyAssetPermissions()"
-                      [hasExport]="!gridObject.HasCustomExportTemplates"
-                      [hasCustomExport]="gridObject.HasCustomExportTemplates"
-                      (addClick)="add()"
-                      [isExportDisabled]="!canExportRecords()"
-                      [exportDisabledMessage]="'Export not available for over ' + maxExportRows + ' rows'"
-                      (customExportClick)="customExport()"
-                      (exportClick)="export(false)"
-                      [hasFilterMode]="true"
-                      [filterMode]="showGridSimpleFilter"
-                      (filterModeChange)="resetFilters(dt,$event)"></d3s-tile-actions>
     <div *ngIf="showArtifactDetails && gridObject && gridObject.Description"
          [innerHtml]="gridObject.Description | safeHtml"
          class="tile-description"></div>
@@ -39,7 +11,40 @@ Filters : {{newAdvancedFilters?.filter}}<br />
         {{showArtifactDetails ? 'Hide Description':'Show Description'}}
     </span>
 </header>
-<div class="row" *ngIf="!showDelete && !showEditor && !isEditing && !hasNoListableColumns">
+
+<div class="grid-actions-header">
+    <div class="simple-search">
+        <ig-search-field (onSearch)="onSimpleSearch($event)"
+                         [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter">
+        </ig-search-field>
+    </div>
+    <advanced-filtering [assetTypeUid]="gridObject.AssetTypeUID" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+    <div class="grid-action-buttons">
+        <button *ngIf="showAddButton && hasModifyAssetPermissions()"
+                igButton
+                pTooltip="Add"
+                tooltipPosition="top"
+                tooltipStyleClass="ig-tooltip"
+                class="ig-button-primary"
+                icon="fa-plus"
+                tooltip="Add new asset"
+                (click)="add()">
+        </button>
+
+        <div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+             tooltipPosition="left"
+             tooltipStyleClass="ig-tooltip">
+            <button igButton
+                    [disabled]="!canExportRecords() || isExportInProgress"
+                    icon="fa-download"
+                    [loading]="isExportInProgress"
+                    (click)="export(false)">
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row asset-grid-wrapper" *ngIf="!showDelete && !showEditor && !isEditing && !hasNoListableColumns">
     <div #rightMenu
          [ngClass]="{
       'artifact-context-menu': isMenuOpen,
@@ -48,16 +53,6 @@ Filters : {{newAdvancedFilters?.filter}}<br />
         <a [href]="itemUrl" target="_blank">Open in new window</a>
     </div>
     <div class="col s12" *ngIf="showGridSimpleFilter">
-        <input type="text"
-               *ngIf="topLevelFilters.length == 0"
-               pInputText
-               style="width: 100%;"
-               maxlength="200"
-               (keyup)="simpleSearch.next($event)"
-               [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter"
-               placeholder="Search..."
-               autofocus
-               autocomplete="off" />
         <d3s-asset-grid-top-level-filter *ngIf="topLevelFilters.length > 0"
                                          [(filters)]="stateService.artifactTypeFilters.filters"
                                          [fields]="topLevelFilters"

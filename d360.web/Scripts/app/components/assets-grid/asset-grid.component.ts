@@ -100,6 +100,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     public simpleSearch = new Subject<any>();
     private assetSearchSub: Subscription;
+
+    isExportInProgress = false;
     statusHasColor: boolean;
 
     get globalFilterFields(): string[] {
@@ -423,7 +425,19 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     export(listableOnly) {
-        this.assetService.downloadAssetsExcel(this.gridObject.AssetTypeUID, this.getParams(), 'Filtered ' + this.gridObject.Name + ' List');
+        if (this.gridObject.HasCustomExportTemplates) {
+            this.customExport();
+            return;
+        }
+
+        this.isExportInProgress = true;
+        this.assetService
+            .downloadAssetsExcel(
+                this.gridObject.AssetTypeUID,
+                this.getParams(),
+                'Filtered ' + this.gridObject.Name + ' List',
+                () => { this.isExportInProgress = false; }
+            );
     }
 
     downloadCustomExcel(option: AssetTypeExportTemplate) {
@@ -549,5 +563,10 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     private newAdvancedFilters: Filters;
     private advancedFiltersChanged($event) {
         this.newAdvancedFilters = $event;
+        this.getData();
+    }
+
+    private onSimpleSearch($event) {
+        this.getData();
     }
 }
