@@ -1,12 +1,12 @@
-﻿import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
-import { BaseComponent } from '../../../shared/base.component';
-import * as _ from 'lodash';
-import { NodeModel } from '../../../../models/workflow.model';
-import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
+﻿import { Component, Output, EventEmitter, Input, OnInit } from "@angular/core";
+import { BaseComponent } from "../../../shared/base.component";
+import * as _ from "lodash";
+import { NodeModel } from "../../../../models/workflow.model";
+import { WorkflowFieldsService } from "../../../../services/workflow-fields.service";
 
 @Component({
-    selector: 'd3s-workflow-step-http',
-    templateUrl: 'workflow-step-http.component.html',
+    selector: "d3s-workflow-step-http",
+    templateUrl: "workflow-step-http.component.html",
     styles: [
         `
         .textarea-editor {
@@ -35,10 +35,10 @@ export class WorkflowStepHttpComponent extends BaseComponent implements OnInit  
     @Input() issueObject: string;
 
     methods = [
-        'GET',
-        'POST',
-        'PUT',
-        'DELETE'
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
     ];
 
     constructor(private workflowFieldsService: WorkflowFieldsService) {

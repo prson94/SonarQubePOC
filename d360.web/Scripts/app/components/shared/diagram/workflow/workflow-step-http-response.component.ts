@@ -1,12 +1,12 @@
-﻿import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
-import { BaseComponent } from '../../../shared/base.component';
-import * as _ from 'lodash';
-import { HTTPResponseOutput, NodeModel } from '../../../../models/workflow.model';
-import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
+﻿import { Component, Output, EventEmitter, Input, OnInit } from "@angular/core";
+import { BaseComponent } from "../../../shared/base.component";
+import * as _ from "lodash";
+import { HTTPResponseOutput, NodeModel } from "../../../../models/workflow.model";
+import { WorkflowFieldsService } from "../../../../services/workflow-fields.service";
 
 @Component({
-    selector: 'd3s-workflow-step-http-response',
-    templateUrl: 'workflow-step-http-response.component.html',
+    selector: "d3s-workflow-step-http-response",
+    templateUrl: "workflow-step-http-response.component.html",
     styles: [
         `
         .textarea-editor {
@@ -54,9 +54,9 @@ export class WorkflowStepHttpResponseComponent extends BaseComponent implements 
     ngOnInit() {
         this.filterHttpRequestFields();
 
-        this.workflowFieldsService.httpRequest$.subscribe(r => {
+        this.workflowFieldsService.httpRequest$.subscribe(() => {
             this.filterHttpRequestFields();
-        })
+        });
     }
 
     clickMenu(e: any) {
@@ -113,7 +113,7 @@ export class WorkflowStepHttpResponseComponent extends BaseComponent implements 
         this.isDeleting = false;
         this.isEditing = false;
         this.selectedRow = new HTTPResponseOutput();
-        console.log(this.step.settings.HTTPResponse);
+
         let len = this.step.settings.HTTPResponse.Outputs.length;
         let count = len === 0 ? 1 : this.step.settings.HTTPResponse.Outputs
             .map((f) => +(f.Id))
@@ -146,8 +146,8 @@ export class WorkflowStepHttpResponseComponent extends BaseComponent implements 
         let upstreamSteps = [];
         this.traverseDiagram(this.step.key, upstreamSteps);
 
-        fields.forEach(f => {
-            let k = upstreamSteps.filter(u => u == f.key);
+        fields.forEach((f) => {
+            let k = upstreamSteps.filter((u) => u === f.key);
             if (k != null && k.length > 0) {
                 this.httpRequests.push({
                     key: f.key,
@@ -161,15 +161,18 @@ export class WorkflowStepHttpResponseComponent extends BaseComponent implements 
         let steps = <any[]>this.diagram.model.nodeDataArray;
         let links = <any[]>(<go.GraphLinksModel>this.diagram.model).linkDataArray;
 
-        let step = steps.find(s => s.key == key);
-        let toLinks = links.filter(l => l.to == key);
+        let step = steps.find((s) => s.key === key);
+        let toLinks = links.filter((l) => l.to === key);
 
-        if (_.includes(upstreamSteps, key)) return;
+        if (_.includes(upstreamSteps, key)) {
+            return;
+        }
         upstreamSteps.push(step.key);
 
-        if (toLinks == null || toLinks.length < 1) return;
+        if (toLinks == null || toLinks.length < 1) {
+            return;
+        }
 
-        toLinks.forEach(l => this.traverseDiagram(l.from, upstreamSteps));
-
+        toLinks.forEach((l) => this.traverseDiagram(l.from, upstreamSteps));
     }
 }

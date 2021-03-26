@@ -258,6 +258,37 @@ export class NodeModel {
     errors: string[] = [];
 }
 
+export class FieldUpdateSettings {
+    Field: any[] = [];
+}
+
+export class RelationshipUpdateSettings {
+    Relationship: any;
+}
+
+export class HTTPRequestSettings {
+    Timeout: number = 90;
+    Method: string;
+    Url: string;
+    Body: string;
+    Headers: any[] = [];
+}
+
+export class HTTPResponseOutput {
+    StepId: string;
+    Id: string;
+    Name: string;
+    Type: string = 'text';
+    Format: string = 'json';
+    Path: string;
+}
+
+export class HTTPResponseSettings {
+    InputStepId: string;
+    InputStepName: string;
+    Outputs: HTTPResponseOutput[] = [];
+}
+
 export class NodeSettings {
     Status: any;
     State: any;
@@ -280,37 +311,6 @@ export class NodeSettings {
      
     IncludePreviousFormResponses: any;
     WaitForAllTransitions: any;
-}
-
-export class FieldUpdateSettings {
-    Field: any[] = [];
-}
-
-export class RelationshipUpdateSettings {
-    Relationship: any;
-}
-
-export class HTTPRequestSettings {
-    Timeout: number = 90;
-    Method: string;
-    Url: string;
-    Body: string;
-    Headers: any[] = [];
-}
-
-export class HTTPResponseSettings {
-    InputStepId: string;
-    InputStepName: string;
-    Outputs: HTTPResponseOutput[] = [];
-}
-
-export class HTTPResponseOutput {
-    StepId: string;
-    Id: string;
-    Name: string;
-    Type: string = 'text';
-    Format: string = 'json';
-    Path: string;
 }
 
 export class NodeFields {

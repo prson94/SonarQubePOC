@@ -1,9 +1,8 @@
 ﻿import { Component, Input, OnInit } from "@angular/core";
-import { WorkflowStepItemSettings } from "../../../models/workflow.model";
 import { BaseComponent } from "../../shared/base.component";
 
 @Component({
-    selector: 'd3s-workflow-monitor-step-http-response-details',
+    selector: "d3s-workflow-monitor-step-http-response-details",
     template:
         `
                 <div class="row">
@@ -63,8 +62,8 @@ export class WorkflowMonitorStepHttpResponseDetailsComponent extends BaseCompone
                     stepSettingOutputs = [stepSettingOutputs];
                 }
 
-                stepSettingOutputs.forEach(o => {
-                    let field = stepFieldOutputs.find(f => f.Id == o.Id)
+                stepSettingOutputs.forEach((o) => {
+                    let field = stepFieldOutputs.find((f) => f.Id === o.Id);
                     if (field == null) {
                         field = {};
                     }

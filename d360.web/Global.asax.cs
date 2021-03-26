@@ -174,7 +174,6 @@ namespace d360.web
             System.Web.Helpers.AntiForgeryConfig.SuppressXFrameOptionsHeader = true;
 
             Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration.Active.InstrumentationKey = System.Web.Configuration.WebConfigurationManager.AppSettings["AppInsightsInstrumentationKey"];
-            Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration.Active.DisableTelemetry = true;
             #region Autofac
 
             Trace.WriteLine("Begin - Dependency Injection With Autofac");
