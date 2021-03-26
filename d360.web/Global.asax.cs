@@ -100,6 +100,11 @@ namespace d360.web
     {
         protected void Application_PreSendRequestHeaders(object sender, EventArgs e)
         {
+            // GOV-14170 server and x-powered-by still appearing on some files in govern
+            Response.Headers.Remove("Server");
+            Response.Headers.Remove("X-Powered-By");
+            
+
             /*
              * If Govern is accessed in a frame, cookies will be considered 3rd party cookies by the ancestor page
              * so to work, the SameSite flag needs to be set to "None", and when SameSite is set to none, the Secure flag

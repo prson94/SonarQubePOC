@@ -135,20 +135,6 @@ namespace d360.core.validators
             else if (predicate != null && model.Class.In(AssetTypeClass.Model, AssetTypeClass.Policy) && (predicate.Type != PredicateType.IntraTypeHierarchy))
                 return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ImproperPredicate);
 
-            if (model.CanEditParent.HasValue && model.CanEditParent.Value == true)
-            {
-                if (!model.Hierarchy.PredicateUid.HasValue)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.CanEditParentRestriction);
-                }
-
-                if(model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.CanEditParentClassRestriction);
-                }
-
-            }
-
             if (!isInsert)
             {
                 int assetCount = CompanyContext.Filter<Asset>(x => x.AssetTypeID == assetType.ID).Count();

@@ -709,7 +709,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to System Properties.
+        ///   Looks up a localized string similar to System Fields.
         /// </summary>
         public static string SystemFieldCategory {
             get {
