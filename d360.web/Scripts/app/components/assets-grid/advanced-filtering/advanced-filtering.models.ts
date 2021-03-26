@@ -21,7 +21,7 @@ export class AdvancedFilterFieldCondition {
     value: any;
     value2: any;
 
-    friendlyFieldName: string = '';
+    friendlyFieldName: string = "";
     markForDeletion: boolean = false;
     fieldType: string = "";
 
@@ -138,7 +138,7 @@ export class AdvancedFilterFieldCondition {
             return "Add filter";
         }
         if (!this.operator) {
-            return this.friendlyFieldName + ": Any"
+            return this.friendlyFieldName + ": Any";
         }
         var fieldName = this.friendlyFieldName;
 
@@ -196,33 +196,33 @@ export class AdvancedFilterFieldCondition {
             case "IsFalse":
                 return "eq false";
             case "Contains":
-                return `ct`;
+                return "ct";
             case "NotContains":
-                return `nct`;
+                return "nct";
             case "Equals":
-                return `eq`;
+                return "eq";
             case "NotEquals":
-                return `ne`;
+                return "ne";
             case "StartsWith":
-                return `ct`;
+                return "ct";
             case "EndsWith":
-                return `ct`;
+                return "ct";
             case "Populated":
-                return `ne null`;
+                return "ne null";
             case "NotPopulated":
-                return `eq null`;
+                return "eq null";
             case "LessThan":
             case "Before":
-                return `lt`;
+                return "lt";
             case "OnOrBefore":
             case "LessThanOrEquals":
-                return `le`;
+                return "le";
             case "After":
             case "GreaterThan":
-                return `gt`;
+                return "gt";
             case "OnOrAfter":
             case "GreaterThanOrEquals":
-                return `ge`;
+                return "ge";
             default:
                 return "---";
         }
@@ -234,17 +234,17 @@ export class AdvancedFilterFieldCondition {
                 value = this.value;
             }
 
-            if (this.fieldType == "Number" || this.fieldType == "Decimal") {
+            if (this.fieldType === "Number" || this.fieldType === "Decimal") {
                 return +value;
             }
-            if (this.fieldType == "Date") {
+            if (this.fieldType === "Date") {
                 return `${this.parseDateToString(value)}`
             }
-            if (this.fieldType == "DateTime") {
+            if (this.fieldType === "DateTime") {
                 return `${this.parseDateTimeToString(value)}`
             }
 
-            if (this.fieldType == "Score") {
+            if (this.fieldType === "Score") {
                 if (this.operator.toString() === "IsInBand") {
                     var stringValue = this.value as string;
                     return "'" + stringValue.slice(0, 1).toUpperCase() + stringValue.slice(1, stringValue.length) + "'";

@@ -132,7 +132,7 @@ export class AdvancedFilteringComponent implements OnChanges {
                 tempFields.push(fModel);
             });
 
-            tempFields.forEach(f => {
+            tempFields.forEach((f) => {
                 f.Operators = [];
 
                 this.operators.forEach(op => {
@@ -191,7 +191,7 @@ export class AdvancedFilteringComponent implements OnChanges {
                 this.getQuery();
                 this.customDoCheck();
             }, 200);
-        })
+        });
 
 
     }

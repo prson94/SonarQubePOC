@@ -307,7 +307,7 @@ namespace d360.core
 
     public class SortOrderAttribute : Attribute
     {
-        public int Order { get; private set; } = 0;
+        public int Order { get; private set; };
         public SortOrderAttribute(int order)
         {
             Order = order;
