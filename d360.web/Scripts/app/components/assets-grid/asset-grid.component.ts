@@ -1,14 +1,11 @@
-import { of as observableOf, Subject, Observable, Subscription } from 'rxjs';
+import { of as observableOf, Subject, Subscription } from 'rxjs';
 import { debounceTime, map, distinctUntilChanged, delay, mergeMap } from 'rxjs/operators';
 import {
     Component,
     Input,
-    Output,
     OnChanges,
     SimpleChange,
-    EventEmitter,
     ViewChild,
-    OnInit,
     ChangeDetectionStrategy,
     ChangeDetectorRef,
 
@@ -16,14 +13,11 @@ import {
 } from '@angular/core';
 import { LazyLoadEvent } from 'primeng/api';
 import { Table } from 'primeng/table';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
-    GridDefinition,
     GridColumn,
     GridField,
     GridFilterColumn,
-    GridFilterExpression,
-    GridRelationshipFilterExpression,
     GridScoreAllocation
 } from '../../models/grid-definition.model';
 import { GridDefinitionService } from '../../services/grid-definition.service';
@@ -32,13 +26,11 @@ import { AssetService } from '../../services/asset.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { StateService } from '../../services/state.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
-import { ArtifactType, AssetTypeExportTemplate } from '../../models/artifact-type.model';
+import { AssetTypeExportTemplate } from '../../models/artifact-type.model';
 import { BaseComponent } from '../shared/base.component';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { ObjectDetailService } from '../../services/object-detail.service';
-import { MessagesObservableService } from '../../services/messages-observable.service';
-import { AssetEditorModel } from '../../models/asset.model';
 import * as _ from 'lodash';
 import { V2ApiFilters } from '../../models/asset-search.model';
 import { SortOrder } from '../../models/enums.model';
@@ -104,25 +96,30 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     isExportInProgress = false;
     statusHasColor: boolean;
 
+    isDebugMode: boolean = false;
+
     get globalFilterFields(): string[] {
         return this.columns.map(c => c.datafield);
     }
 
     constructor(
         private headerActionsService: HeaderActionsService,
-        private messagesService: MessagesObservableService,
         private stateService: StateService,
         private permissionsService: PermissionsService,
         private router: Router,
         private gridDefinitionService: GridDefinitionService,
-        private artifactService: ArtifactService,
         private changeDetectorRef: ChangeDetectorRef,
-        private objectDetailService: ObjectDetailService,
-        private assetService: AssetService
+        private assetService: AssetService,
+        private route: ActivatedRoute
     ) {
         super();
 
         var me = this;
+        this.route.queryParams.subscribe((params) => {
+            if (params["debug"]) {
+                this.isDebugMode = true;
+            }
+        });
 
         const subscription = this.simpleSearch.pipe(
             map(event => event.target.value),

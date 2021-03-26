@@ -44,6 +44,12 @@
     </div>
 </div>
 
+<div class="debug-code" *ngIf="isDebugMode">
+    <ng-container *ngIf="newAdvancedFilters && newAdvancedFilters.filter">
+        {{newAdvancedFilters.filter}}
+    </ng-container>
+</div>
+
 <div class="row asset-grid-wrapper" *ngIf="!showDelete && !showEditor && !isEditing && !hasNoListableColumns">
     <div #rightMenu
          [ngClass]="{
@@ -51,13 +57,6 @@
       'artifact-context-menu-closed': !isMenuOpen
     }">
         <a [href]="itemUrl" target="_blank">Open in new window</a>
-    </div>
-    <div class="col s12" *ngIf="showGridSimpleFilter">
-        <d3s-asset-grid-top-level-filter *ngIf="topLevelFilters.length > 0"
-                                         [(filters)]="stateService.artifactTypeFilters.filters"
-                                         [fields]="topLevelFilters"
-                                         (filterChanged)="filterGridData(dt)">
-        </d3s-asset-grid-top-level-filter>
     </div>
     <d3s-asset-grid-column-filter *ngIf="!showGridSimpleFilter"
                                   [(ownerFilter)]="stateService.artifactTypeFilters.owners"
