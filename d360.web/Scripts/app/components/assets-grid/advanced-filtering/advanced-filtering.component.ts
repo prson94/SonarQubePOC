@@ -1,27 +1,27 @@
-﻿import { Component, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, OnChanges, SimpleChanges, OnInit, OnDestroy, Output, EventEmitter, AfterViewChecked, ViewChildren, ElementRef } from '@angular/core';
-import * as _ from 'lodash';
-import { OperatorModel } from '../../../models/operator.model';
-import { FieldsObservableService } from '../../../services/fieldsObservable.service';
-import { CompanySettingsService } from '../../../services/settings.service';
-import { FieldTypeHelper } from '../../../models/fieldtype-api.model';
-import { forkJoin } from 'rxjs';
-import { AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, FieldTypeAPIModelFieldCondition, Filters, SystemFields } from './advanced-filtering.models';
-import { DatePipe } from '@angular/common';
-import { AllocationService } from '../../../services/allocations.service';
-import { ScoreTypeAllocation } from '../../../models/metrics.model';
-import { RelationshipsService } from '../../../services/relationships.service';
-import { RelationshipType } from '../../../models/relationship.model';
+﻿import { Component, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, OnChanges, SimpleChanges, OnInit, OnDestroy, Output, EventEmitter, AfterViewChecked, ViewChildren, ElementRef } from "@angular/core";
+import * as _ from "lodash";
+import { OperatorModel } from "../../../models/operator.model";
+import { FieldsObservableService } from "../../../services/fieldsObservable.service";
+import { CompanySettingsService } from "../../../services/settings.service";
+import { FieldTypeHelper } from "../../../models/fieldtype-api.model";
+import { forkJoin } from "rxjs";
+import { AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, FieldTypeAPIModelFieldCondition, Filters, SystemFields } from "./advanced-filtering.models";
+import { DatePipe } from "@angular/common";
+import { AllocationService } from "../../../services/allocations.service";
+import { ScoreTypeAllocation } from "../../../models/metrics.model";
+import { RelationshipsService } from "../../../services/relationships.service";
+import { RelationshipType } from "../../../models/relationship.model";
 
 @Component({
-    selector: 'advanced-filtering',
-    templateUrl: 'advanced-filtering.component.html',
+    selector: "advanced-filtering",
+    templateUrl: "advanced-filtering.component.html",
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    styleUrls: ['./advanced-filtering.component.less'],
+    styleUrls: ["./advanced-filtering.component.less"],
     providers: [FieldsObservableService, CompanySettingsService, AllocationService, RelationshipsService]
 })
 export class AdvancedFilteringComponent implements OnChanges {
-    @Input() assetTypeUid: string = '';
+    @Input() assetTypeUid: string = "";
     @Output() onChange = new EventEmitter();
 
     allocations: ScoreTypeAllocation[] = [];
@@ -39,7 +39,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 
     filterMenu = [
         {
-            title: 'Clear Filters',
+            title: "Clear Filters",
             callback: () => {
                 this.conditions.filters = [];
             }
@@ -48,21 +48,19 @@ export class AdvancedFilteringComponent implements OnChanges {
             isSeparator: true
         },
         {
-            title: 'Match All',
+            title: "Match All",
             hasCheckbox: true,
             isChecked: true,
             callback: () => {
-                console.log("Macth all");
                 this.conditions.connector = " and ";
                 this.filterMenu[3].isChecked = false;
                 this.cdRef.markForCheck();
             }
         },
         {
-            title: 'Match Any',
+            title: "Match Any",
             hasCheckbox: true,
             callback: () => {
-                console.log("Macth any");
                 this.filterMenu[2].isChecked = false;
 
                 this.conditions.connector = " or ";
@@ -85,16 +83,16 @@ export class AdvancedFilteringComponent implements OnChanges {
     }
 
     customDoCheck() {
-        var allHaveField = this.conditions.filters.filter(x => x.field).length === this.conditions.filters.length;
+        var allHaveField = this.conditions.filters.filter((x) => x.field).length === this.conditions.filters.length;
         if (allHaveField) {
             this.conditions.filters.push(new AdvancedFilterFieldCondition(this.datePipe));
         }
 
-        this.conditions.filters = this.conditions.filters.filter(x => x.markForDeletion != true);
+        this.conditions.filters = this.conditions.filters.filter((x) => x.markForDeletion !== true);
 
         var currentFilters = JSON.stringify(this.filters);
 
-        if (currentFilters != this.emittedFilters) {
+        if (currentFilters !== this.emittedFilters) {
             this.onChange.emit(this.filters);
             this.emittedFilters = JSON.stringify(this.filters);
         }
@@ -115,7 +113,7 @@ export class AdvancedFilteringComponent implements OnChanges {
             this.relationshipTypes = response[3];
 
             var tempFields: FieldTypeAPIModelFieldCondition[] = [];
-            res.forEach(f => {
+            res.forEach((f) => {
                 if (FieldTypeHelper.isFieldForOperatorAdvancedFilters(f.Type)) {
                     var fModel = f as FieldTypeAPIModelFieldCondition;
                     tempFields.push(fModel);
@@ -145,26 +143,18 @@ export class AdvancedFilteringComponent implements OnChanges {
                             fieldType = "fieldfromrelationship";
                         }
 
-                        if (op.AllowedDataTypes.some(x => x.Name.toLowerCase() === fieldType)) {
+                        if (op.AllowedDataTypes.some((x) => x.Name.toLowerCase() === fieldType)) {
                             f.Operators.push({ label: op.Name, value: op.ID });
                         }
 
-                        if (FieldTypeHelper.getFieldType(f.Type) === 'Boolean') {
+                        if (FieldTypeHelper.getFieldType(f.Type) === "Boolean") {
                             f.Values = [];
-                            f.Values.push({ value: 'true', label: 'True' });
-                            f.Values.push({ value: 'false', label: 'False' });
+                            f.Values.push({ value: "true", label: "True" });
+                            f.Values.push({ value: "false", label: "False" });
                         }
-                        if (FieldTypeHelper.getFieldType(f.Type) === 'Date'
+                        if (FieldTypeHelper.getFieldType(f.Type) === "Date"
                             && f.Category === "System Fields") {
-                            f.Operators = f.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
-                            f.Operators.forEach((item) => {
-                                if (item.value === "Equals") {
-                                    item.value = "Contains";
-                                }
-                                if (item.value === "NotEquals") {
-                                    item.value = "NotContains";
-                                }
-                            });
+                            this.updateOperatorsForDateTimeSystemField(f);
                         }
                     }
                 });
@@ -179,7 +169,7 @@ export class AdvancedFilteringComponent implements OnChanges {
                 if (field.Type) {
                     var key = Object.keys(field.Type)[0];
                     var isDefaultFilter = field.Type[key]["IsPrimaryFilter"];
-                    if (isDefaultFilter === true && !loadedFilters.some(x => x.field === field.Name)) {
+                    if (isDefaultFilter === true && !loadedFilters.some((x) => x.field === field.Name)) {
                         var defaultFilter = new AdvancedFilterFieldCondition(this.datePipe);
                         defaultFilter.field = field.Name;
                         defaultFilter.isDefaultFilter = true;
@@ -206,6 +196,18 @@ export class AdvancedFilteringComponent implements OnChanges {
 
     }
 
+
+    private updateOperatorsForDateTimeSystemField(f: FieldTypeAPIModelFieldCondition) {
+        f.Operators = f.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
+        f.Operators.forEach((item) => {
+            if (item.value === "Equals") {
+                item.value = "Contains";
+            }
+            if (item.value === "NotEquals") {
+                item.value = "NotContains";
+            }
+        });
+    }
 
     private loadFilters(): AdvancedFilterFieldCondition[] {
         var prefilters: any[] = [];
@@ -234,7 +236,7 @@ export class AdvancedFilteringComponent implements OnChanges {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes && changes.assetTypeUid && changes.assetTypeUid.currentValue != changes.assetTypeUid.previousValue) {
+        if (changes && changes.assetTypeUid && changes.assetTypeUid.currentValue !== changes.assetTypeUid.previousValue) {
             this.initializeData();
         }
         this.cdRef.detectChanges();

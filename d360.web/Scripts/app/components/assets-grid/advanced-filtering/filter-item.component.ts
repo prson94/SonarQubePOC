@@ -1,19 +1,19 @@
-﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, HostListener, OnChanges, AfterViewChecked } from '@angular/core';
-import { LazyLoadEvent, SelectItem, SelectItemGroup } from 'primeng/api';
-import * as _ from 'lodash';
-import { FieldTypeAPIModelFieldCondition } from '../../../models/field-condition-grid.models';
-import { OperatorModel } from '../../../models/operator.model';
-import { AdvancedFilterFieldCondition, SystemFields } from './advanced-filtering.models';
-import { FieldsObservableService } from '../../../services/fieldsObservable.service';
-import { AssetTypeService } from '../../../services/asset-type.service';
-import { TagService } from '../../../services/tag.service';
-import { RelationshipType } from '../../../models/relationship.model';
-import { RelationshipsService } from '../../../services/relationships.service';
-import { Subscription } from 'rxjs';
+﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, HostListener, OnChanges, AfterViewChecked } from "@angular/core";
+import { LazyLoadEvent, SelectItem, SelectItemGroup } from "primeng/api";
+import * as _ from "lodash";
+import { FieldTypeAPIModelFieldCondition } from "../../../models/field-condition-grid.models";
+import { OperatorModel } from "../../../models/operator.model";
+import { AdvancedFilterFieldCondition, SystemFields } from "./advanced-filtering.models";
+import { FieldsObservableService } from "../../../services/fieldsObservable.service";
+import { AssetTypeService } from "../../../services/asset-type.service";
+import { TagService } from "../../../services/tag.service";
+import { RelationshipType } from "../../../models/relationship.model";
+import { RelationshipsService } from "../../../services/relationships.service";
+import { Subscription } from "rxjs";
 
 @Component({
-    selector: 'filter-item',
-    templateUrl: 'filter-item.component.html',
+    selector: "filter-item",
+    templateUrl: "filter-item.component.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [FieldsObservableService, AssetTypeService, TagService, RelationshipsService]
 })
@@ -173,7 +173,9 @@ export class FilterItemComponent implements OnInit, OnChanges {
             return "";
         }
         var ft = this.getFieldType(item);
-        if (!ft) return '';
+        if (!ft) {
+            return "";
+        }
         return Object.keys(ft.Type)[0];
     }
 
@@ -287,7 +289,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         if (!this.condition.isRelationship) {
             return "";
         }
-        var data = this.condition.field.split('|');
+        var data = this.condition.field.split("|");
         var obj = this.relationshipTypes.filter((x) => x.Uid === data[0])[0];
 
         return obj.Object.Uid === data[1] ? obj.Object.Cardinality : obj.Subject.Cardinality;
@@ -333,7 +335,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         this.lazyLoadSubscription = this.fieldsService.getLookupValues(this.currentField.AssetTypeUid, this.currentField.Name.trim(), params)
-            .subscribe(res => {
+            .subscribe((res) => {
                 if (!this.currentField.Values || this.currentField.Values.length === 0) {
                     this.currentField.Values = Array.from({ length: res.count });
                 };
@@ -349,7 +351,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.currentField.Values = [...this.currentField.Values];
                 this.setTableWidth();
                 this.cdRef.markForCheck();
-            })
+            });
     }
 
 
@@ -393,7 +395,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 })
 
                 var grouped = _.mapValues(_.groupBy(mapped, "group"),
-                    clist => clist.map(item => _.omit(item, "group")));
+                    clist => clist.map((item) => _.omit(item, "group")));
 
                 var keys = Object.keys(grouped);
                 keys.forEach((key) => {

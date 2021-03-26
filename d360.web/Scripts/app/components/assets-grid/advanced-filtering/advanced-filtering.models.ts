@@ -6,89 +6,6 @@ import { ScoreTypeAllocation } from "../../../models/metrics.model";
 import { Operator } from "../../../models/operator.model";
 import { RelationshipType } from "../../../models/relationship.model";
 
-export class SystemFields {
-    public static OwnedByFieldCode: string = "$OwnedBy";
-    public static RelationshipFieldCode: string = "$Related";
-
-    public static GetSystemFieldDefinition(): FieldTypeAPIModelFieldCondition[] {
-        var fields: FieldTypeAPIModelFieldCondition[] = [];
-
-        fields.push({
-            Category: "System Fields",
-            FriendlyName: "Date Created",
-            Name: "CreatedOn",
-            Type: new FieldType("Date"),
-            Operators: [],
-            Values: [],
-            IsSystemField: true
-        });
-
-
-        fields.push({
-            Category: "System Fields",
-            FriendlyName: "Date Last Modified",
-            Name: "UpdatedOn",
-            Type: new FieldType("Date"),
-            Operators: [],
-            Values: [],
-            IsSystemField: true
-        });
-
-        var owner: FieldTypeAPIModelFieldCondition = {
-            Category: "System Fields",
-            FriendlyName: "Owned By",
-            Name: this.OwnedByFieldCode,
-            Type: null,
-            Operators: [],
-            Values: [],
-            IsOwnerField: true,
-            IsSystemField: true
-        };
-
-
-        fields.push(owner);
-
-        return fields;
-    }
-
-    public static GetRelationshipDefinition(relTypes: RelationshipType[], assetType: string): FieldTypeAPIModelFieldCondition[] {
-        var fields: FieldTypeAPIModelFieldCondition[] = [];
-
-        relTypes.forEach((r) => {
-            let predicate: string = "";
-            let typeName: string = "";
-            let sideUid: string = "";
-            if (r.Object.Uid === assetType) {
-                predicate = r.Predicate.Inverse;
-                typeName = r.Subject.Name;
-                sideUid = r.Subject.Uid;
-            }
-            else {
-                predicate = r.Predicate.Name;
-                typeName = r.Object.Name;
-                sideUid = r.Object.Uid;
-            }
-
-            typeName = typeName.split("/").join("<i class='slim-fa fa fa-chevron-right'></i>");
-
-            var field = {
-                Category: "Relationships",
-                FriendlyName: `${predicate} ${typeName}`,
-                Name: r.Uid + "|" + sideUid,
-                Type: null,
-                Operators: [],
-                Values: [],
-                IsRelationship: true
-            };
-            field["predicate"] = predicate;
-
-            fields.push(field);
-
-        });
-        return fields.sort((a, b) => { return a.FriendlyName > b.FriendlyName ? 1 : -1 });
-    }
-}
-
 export class FieldTypeAPIModelFieldCondition extends FieldTypeAPIModelField {
     Values: SelectItem[];
     Operators: SelectItem[];
@@ -597,7 +514,7 @@ export class AdvancedFilterFieldConditionCollection {
         if (cond.value) {
             let minValue: number = null;
             let maxValue: number = 100;
-            let alloc = this.allocations.filter(x => x.scoreType === cond.type.Type.Score.ScoreType)[0];
+            let alloc = this.allocations.filter((x) => x.scoreType === cond.type.Type.Score.ScoreType)[0];
             switch (cond.value) {
                 case "poor":
                     minValue = null;
@@ -637,5 +554,88 @@ export class Filters {
             params._filter = this.filter;
         }
 
+    }
+}
+
+export class SystemFields {
+    public static OwnedByFieldCode: string = "$OwnedBy";
+    public static RelationshipFieldCode: string = "$Related";
+
+    public static GetSystemFieldDefinition(): FieldTypeAPIModelFieldCondition[] {
+        var fields: FieldTypeAPIModelFieldCondition[] = [];
+
+        fields.push({
+            Category: "System Fields",
+            FriendlyName: "Date Created",
+            Name: "CreatedOn",
+            Type: new FieldType("Date"),
+            Operators: [],
+            Values: [],
+            IsSystemField: true
+        });
+
+
+        fields.push({
+            Category: "System Fields",
+            FriendlyName: "Date Last Modified",
+            Name: "UpdatedOn",
+            Type: new FieldType("Date"),
+            Operators: [],
+            Values: [],
+            IsSystemField: true
+        });
+
+        var owner: FieldTypeAPIModelFieldCondition = {
+            Category: "System Fields",
+            FriendlyName: "Owned By",
+            Name: this.OwnedByFieldCode,
+            Type: null,
+            Operators: [],
+            Values: [],
+            IsOwnerField: true,
+            IsSystemField: true
+        };
+
+
+        fields.push(owner);
+
+        return fields;
+    }
+
+    public static GetRelationshipDefinition(relTypes: RelationshipType[], assetType: string): FieldTypeAPIModelFieldCondition[] {
+        var fields: FieldTypeAPIModelFieldCondition[] = [];
+
+        relTypes.forEach((r) => {
+            let predicate: string = "";
+            let typeName: string = "";
+            let sideUid: string = "";
+            if (r.Object.Uid === assetType) {
+                predicate = r.Predicate.Inverse;
+                typeName = r.Subject.Name;
+                sideUid = r.Subject.Uid;
+            }
+            else {
+                predicate = r.Predicate.Name;
+                typeName = r.Object.Name;
+                sideUid = r.Object.Uid;
+            }
+
+            typeName = typeName.split("/").join("<i class='slim-fa fa fa-chevron-right'></i>");
+
+            var field = {
+                Category: "Relationships",
+                FriendlyName: `${predicate} ${typeName}`,
+                Name: r.Uid + "|" + sideUid,
+                Type: null,
+                Operators: [],
+                Values: [],
+                IsRelationship: true
+            };
+            field["predicate"] = predicate;
+
+            fields.push(field);
+
+        });
+        return fields.sort((a, b) => { return a.FriendlyName > b.FriendlyName ? 1 : -1 });
     }
 }

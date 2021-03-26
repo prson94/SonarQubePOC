@@ -1,5 +1,5 @@
-import { of as observableOf, Subject, Subscription } from 'rxjs';
-import { debounceTime, map, distinctUntilChanged, delay, mergeMap } from 'rxjs/operators';
+import { of as observableOf, Subject, Subscription } from "rxjs";
+import { debounceTime, map, distinctUntilChanged, delay, mergeMap } from "rxjs/operators";
 import {
     Component,
     Input,
@@ -10,41 +10,41 @@ import {
     ChangeDetectorRef,
 
     OnDestroy
-} from '@angular/core';
-import { LazyLoadEvent } from 'primeng/api';
-import { Table } from 'primeng/table';
-import { ActivatedRoute, Router } from '@angular/router';
+} from "@angular/core";
+import { LazyLoadEvent } from "primeng/api";
+import { Table } from "primeng/table";
+import { ActivatedRoute, Router } from "@angular/router";
 import {
     GridColumn,
     GridField,
     GridFilterColumn,
     GridScoreAllocation
-} from '../../models/grid-definition.model';
-import { GridDefinitionService } from '../../services/grid-definition.service';
-import { ArtifactService } from '../../services/artifacts.service';
-import { AssetService } from '../../services/asset.service';
-import { PermissionsService } from '../../services/permissions.service';
-import { StateService } from '../../services/state.service';
-import { HeaderActionsService } from '../../services/header-actions.service';
-import { AssetTypeExportTemplate } from '../../models/artifact-type.model';
-import { BaseComponent } from '../shared/base.component';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { StringConstants } from '../../static/string-constants';
-import { ObjectDetailService } from '../../services/object-detail.service';
-import * as _ from 'lodash';
-import { V2ApiFilters } from '../../models/asset-search.model';
-import { SortOrder } from '../../models/enums.model';
-import { AssetGridObject } from './asset-grid.model';
-import { Filters } from './advanced-filtering/advanced-filtering.models';
+} from "../../models/grid-definition.model";
+import { GridDefinitionService } from "../../services/grid-definition.service";
+import { ArtifactService } from "../../services/artifacts.service";
+import { AssetService } from "../../services/asset.service";
+import { PermissionsService } from "../../services/permissions.service";
+import { StateService } from "../../services/state.service";
+import { HeaderActionsService } from "../../services/header-actions.service";
+import { AssetTypeExportTemplate } from "../../models/artifact-type.model";
+import { BaseComponent } from "../shared/base.component";
+import { SiteUrlHelpers } from "../../static/site-url-helpers";
+import { StringConstants } from "../../static/string-constants";
+import { ObjectDetailService } from "../../services/object-detail.service";
+import * as _ from "lodash";
+import { V2ApiFilters } from "../../models/asset-search.model";
+import { SortOrder } from "../../models/enums.model";
+import { AssetGridObject } from "./asset-grid.model";
+import { Filters } from "./advanced-filtering/advanced-filtering.models";
 
 @Component({
-    selector: 'd3s-asset-grid',
+    selector: "d3s-asset-grid",
     providers: [GridDefinitionService, ArtifactService, PermissionsService, ObjectDetailService, AssetService],
-    templateUrl: './asset-grid.component.html',
+    templateUrl: "./asset-grid.component.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
-    styleUrls: ['asset-grid.less'],
+    styleUrls: ["asset-grid.less"],
     host: {
-        '(document:click)': 'clickedOutside()',
+        "(document:click)": "clickedOutside()",
     },
 })
 
