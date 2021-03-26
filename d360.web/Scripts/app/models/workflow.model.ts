@@ -278,8 +278,8 @@ export class HTTPResponseOutput {
     StepId: string;
     Id: string;
     Name: string;
-    Type: string = 'text';
-    Format: string = 'json';
+    Type: string = "text";
+    Format: string = "json";
     Path: string;
 }
 

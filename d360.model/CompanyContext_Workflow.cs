@@ -1484,26 +1484,7 @@ namespace d360.model
                 }
                 else if (item.UseOutputValue)
                 {
-                    var val = "";
-                    var step = WorkflowItemSteps.FirstOrDefault(s => s.StepID == item.FormStepID && s.ItemID == itemStep.ItemID);
-                    if (step != null)
-                    {
-                        var stepFields = step.FieldsDocument;
-                        if (stepFields != null)
-                        {
-                            var outputs = stepFields.Element("Outputs").Elements("Output");
-                            if (outputs != null)
-                            {
-                                foreach (var output in outputs)
-                                {
-                                    if (output.Element("Id")?.Value == item.FormField)
-                                    {
-                                        val = output.Element("Value")?.Value ?? "";
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    var val = GetOutputFieldValue(item.FormStepID, itemStep.ItemID, item.FormField);
                     UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
                 }
             }
@@ -1603,6 +1584,32 @@ namespace d360.model
             foreach (XElement el in fields)
                 yield return (string)el.Attribute("value");
 
+        }
+
+        private string GetOutputFieldValue(int stepId, long itemId, string fieldId)
+        {
+            var step = WorkflowItemSteps.FirstOrDefault(s => s.StepID == stepId && s.ItemID == itemId);
+            if (step != null)
+            {
+                var stepFields = step.FieldsDocument;
+
+                if (stepFields != null)
+                {
+                    var outputs = stepFields.Element("Outputs").Elements("Output");
+                    if (outputs != null)
+                    {
+                        foreach (var output in outputs)
+                        {
+                            if (output.Element("Id")?.Value == fieldId)
+                            {
+                                return output.Element("Value")?.Value ?? "";
+                            }
+                        }
+                    }
+                }
+            }
+
+            return "";
         }
 
         private void ExecuteProc(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
@@ -2896,29 +2903,9 @@ namespace d360.model
 
                     var stepId = -1;
                     var fieldId = fieldTypeIdStringitem.Split('|')[1];
-
                     int.TryParse(fieldTypeIdStringitem.Split('|')[0], out stepId);
-                    var step = WorkflowItemSteps.FirstOrDefault(s => s.StepID == stepId && s.ItemID == itemStep.ItemID);
 
-                    if (step != null)
-                    {
-                        var stepFields = step.FieldsDocument;
-
-                        if (stepFields != null)
-                        {
-                            var outputs = stepFields.Element("Outputs").Elements("Output");
-                            if (outputs != null)
-                            {
-                                foreach(var output in outputs)
-                                {
-                                    if (output.Element("Id")?.Value == fieldId)
-                                    {
-                                        result = result.Replace(item, output.Element("Value")?.Value ?? "");
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    result = result.Replace(item, GetOutputFieldValue(stepId, itemStep.ItemID, fieldId));
                 }
             }
 

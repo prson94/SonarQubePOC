@@ -72,9 +72,9 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        let objectTypeChanged = changes["objectType"] != null && changes["objectType"].currentValue != changes["objectType"].previousValue && changes["objectType"].currentValue != null;
-        let objectIdChanged = changes["objectId"] != null && changes["objectId"].currentValue != changes["objectId"].previousValue && changes["objectId"].currentValue != null;
-        let stepChanged = changes["step"] != null && changes["step"].currentValue != changes["step"].previousValue && changes["step"].currentValue != null;
+        let objectTypeChanged = changes["objectType"] != null && changes["objectType"].currentValue !== changes["objectType"].previousValue && changes["objectType"].currentValue != null;
+        let objectIdChanged = changes["objectId"] != null && changes["objectId"].currentValue !== changes["objectId"].previousValue && changes["objectId"].currentValue != null;
+        let stepChanged = changes["step"] != null && changes["step"].currentValue !== changes["step"].previousValue && changes["step"].currentValue != null;
 
         if (objectTypeChanged || objectIdChanged || stepChanged) {
             this.filterHttpFields();
@@ -116,7 +116,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
                     let label = "HTTP Request :: " + f["@label"];
                     this.fields.push({
                         value: "[HTTPREQUEST|" + f["@stepId"] + "|" + f["@id"] + "]",
-                        label: label
+                        label
                     });
                 });
 
@@ -124,7 +124,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
                     let label = "HTTP Response :: " + f.Name;
                     this.fields.push({
                         value: "[HTTPRESPONSE|" + f.StepId + "|" + f.Id+ "]",
-                        label: label
+                        label
                     });
                 });
             });
@@ -141,7 +141,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
         for (let i = 0; i < this.container.nativeElement.childNodes.length; i++) {
             let node = this.container.nativeElement.childNodes[i];
 
-            if (node.tagName == "SPAN") {
+            if (node.tagName === "SPAN") {
                 this.container.nativeElement.removeChild(node);
             }
         }
@@ -159,7 +159,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
         this.traverseDiagram(this.step.key, upstreamSteps);
 
         fields.forEach((f) => {
-            let k = upstreamSteps.filter(u => u == f["@stepId"]);
+            let k = upstreamSteps.filter((u) => u === f["@stepId"]);
             if (k != null && k.length > 0) {
                 f["@FormFieldId"] = f["@id"] + "|" + f["@stepId"];
                 f["@FormLabel"] = "HTTP Request :: " + f["@label"];
@@ -210,12 +210,12 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
     }
 
     clickItem(e: any) {
-        if (e == "none") {
+        if (e === "none") {
             return;
         }
 
         let f = e.split('#');
-        if (f.length == 2) {
+        if (f.length === 2) {
             this.onItemClick.emit(f[1]);
         }
         else {
