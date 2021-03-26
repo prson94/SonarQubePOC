@@ -230,11 +230,11 @@ namespace d360.model.helpers
             }
             else if (token.IsNullValue)
             {
-                sb.Append(token.GetSQLForRelationshipNull(ref sqlParams));
+                sb.Append(token.GetSQLForRelationshipNull(sqlParams));
             }
             else
             {
-                sb.Append(token.GetSQLForRelationship(ref sqlParams));
+                sb.Append(token.GetSQLForRelationship(sqlParams));
             }
         }
 
@@ -259,21 +259,21 @@ namespace d360.model.helpers
                     if (allowedDefaultFields.Any(x => x.ApiName.ToLower() == token.Field.ToLower()))
                     {
                         var val = allowedDefaultFields.FirstOrDefault(x => x.ApiName.ToLower() == token.Field.ToLower());
-                        sb.Append(token.GetSQLForDefaultField(ref sqlParams, val));
+                        sb.Append(token.GetSQLForDefaultField(sqlParams, val));
                     }
                     else if (this.registerTokensAsFields == true)
                     {
                         var val = new DefaultFilter(token.Field, token.Field, SqlFieldType.Text);
-                        sb.Append(token.GetSQLForDefaultField(ref sqlParams, val));
+                        sb.Append(token.GetSQLForDefaultField(sqlParams, val));
 
                     }
                     else if (token.IsOwnerFilter)
                     {
-                        sb.Append(token.GetSQLForOwnerField(ref sqlParams));
+                        sb.Append(token.GetSQLForOwnerField(sqlParams));
                     }
                     else if (token.IsRlationshipFilter)
                     {
-                        sb.Append(token.GetSQLForRelationField(ref sqlParams));
+                        sb.Append(token.GetSQLForRelationField(sqlParams));
                     }
                     else
                     {
@@ -285,7 +285,7 @@ namespace d360.model.helpers
                     this.filteredFieldIDs.Add(fieldType.ID);
 
                     token.LoadFieldType(fieldType, fieldColumns);
-                    sb.Append(token.GetSQLForField(ref sqlParams));
+                    sb.Append(token.GetSQLForField(sqlParams));
                 }
             }
         }

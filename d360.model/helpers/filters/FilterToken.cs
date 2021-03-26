@@ -82,7 +82,7 @@ namespace d360.model.helpers
             }
         }
 
-        public string GetSQLForField(ref Dictionary<string, object> sqlParams)
+        public string GetSQLForField(Dictionary<string, object> sqlParams)
         {
             if (field == null)
             {
@@ -120,7 +120,7 @@ namespace d360.model.helpers
             return stringBuilder.ToString();
         }
 
-        public string GetSQLForDefaultField(ref Dictionary<string, object> sqlParams, DefaultFilter filter)
+        public string GetSQLForDefaultField(Dictionary<string, object> sqlParams, DefaultFilter filter)
         {
             this.sqlParamsRef = sqlParams;
 
@@ -152,12 +152,12 @@ namespace d360.model.helpers
             return stringBuilder.ToString();
         }
 
-        public string GetSQLForOwnerField(ref Dictionary<string, object> sqlParams)
+        public string GetSQLForOwnerField(Dictionary<string, object> sqlParams)
         {
             this.sqlParamsRef = sqlParams;
             stringBuilder.Clear();
-            var value = this.value.ToString().Trim('\'');
-            sqlParamsRef.Add($"@filter_{parameterIdx}", value);
+            var valueStr = this.value.ToString().Trim('\'');
+            sqlParamsRef.Add($"@filter_{parameterIdx}", valueStr);
 
             string querySql = $@"EXISTS(
                                             SELECT 1 
@@ -193,7 +193,7 @@ namespace d360.model.helpers
             return querySql;
         }
 
-        public string GetSQLForRelationField(ref Dictionary<string, object> sqlParams)
+        public string GetSQLForRelationField(Dictionary<string, object> sqlParams)
         {
             this.sqlParamsRef = sqlParams;
             stringBuilder.Clear();
@@ -213,7 +213,7 @@ namespace d360.model.helpers
             return query;
         }
 
-        public string GetSQLForRelationship(ref Dictionary<string, object> sqlParams)
+        public string GetSQLForRelationship(Dictionary<string, object> sqlParams)
         {
 
             if (assetType == null || intersectType == null)
@@ -224,7 +224,7 @@ namespace d360.model.helpers
             this.sqlParamsRef = sqlParams;
             stringBuilder.Clear();
 
-            if (!new string[] { "eq", "ne" }.Contains(@operator))
+            if (!new [] { "eq", "ne" }.Contains(@operator))
             {
                 throw new Exception($"Operator '{@operator}' is not valid when filtering relationship. Use 'eq' or 'ne'.");
             }
@@ -253,12 +253,12 @@ namespace d360.model.helpers
             return stringBuilder.ToString();
         }
 
-        public string GetSQLForRelationshipNull(ref Dictionary<string, object> sqlParams)
+        public string GetSQLForRelationshipNull(Dictionary<string, object> sqlParams)
         {
             this.sqlParamsRef = sqlParams;
             stringBuilder.Clear();
 
-            if (!new string[] { "eq", "ne" }.Contains(@operator))
+            if (!new [] { "eq", "ne" }.Contains(@operator))
             {
                 throw new Exception($"Operator '{@operator}' is not valid when filtering relationship. Use 'eq' or 'ne'.");
             }
@@ -347,7 +347,7 @@ namespace d360.model.helpers
                 }
             }
 
-            string[] lookupFieldTypes = new string[] { "Lookup", "Relationship" };
+            string[] lookupFieldTypes = new [] { "Lookup", "Relationship" };
 
             if (lookupFieldTypes.Select(x => x.ToLower()).Contains(fieldType.Type.ToLower()))
             {
@@ -555,16 +555,16 @@ namespace d360.model.helpers
                 case "boolean":
                 case "lookup":
                 case "relationship":
-                    return new string[] { "eq", "ne", "ct" }.Contains(operand);
+                    return new [] { "eq", "ne", "ct" }.Contains(operand);
                 case "number":
                 case "decimal":
                 case "score":
-                    return !(new string[] { "ct", "nct" }.Contains(operand));
+                    return !(new [] { "ct", "nct" }.Contains(operand));
                 case "date":
                 case "datetime":
                     return true;
                 default:
-                    return new string[] { "eq", "ne", "ct", "nct" }.Contains(operand);
+                    return new [] { "eq", "ne", "ct", "nct" }.Contains(operand);
             }
         }
 
