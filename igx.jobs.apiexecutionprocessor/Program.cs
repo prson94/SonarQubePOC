@@ -31,7 +31,11 @@ namespace igx.jobs.apiexecutionprocessor
             builder.ConfigureWebJobs(c =>
             {
                 c.AddAzureStorageCoreServices();
-                c.AddAzureStorage();
+                c.AddAzureStorage(s =>
+                {
+                    s.VisibilityTimeout = TimeSpan.FromHours(6);
+                    s.BatchSize = 2;
+                });
             });
 
             using (var host = builder.Build())
