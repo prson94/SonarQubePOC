@@ -322,7 +322,7 @@
     <value>Type</value>
   </data>
   <data name="SystemFieldCategory" xml:space="preserve">
-    <value>System Properties</value>
+    <value>System Fields</value>
   </data>
   <data name="SystemNoCategory" xml:space="preserve">
     <value>None</value>

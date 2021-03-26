@@ -858,16 +858,16 @@ where   E.ExecutionID = @ExecutionID
             return model;
         }
 
-        public void SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid? fromExecutionUid = null, TimeSpan? timespan = null)
+        public Guid SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid? fromExecutionUid = null, TimeSpan? timespan = null)
         {
             var fields = new { 
                 originalExecutionUid = fromExecutionUid ?? Guid.Empty
             };
 
-            SendScoreEventWithPayload(changeType, item, fields, timespan);
+            return SendScoreEventWithPayload(changeType, item, fields, timespan);
         }
 
-        public void SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, dynamic fields, TimeSpan? timespan = null)
+        public Guid SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, dynamic fields, TimeSpan? timespan = null)
         {
             var apiExecution = new ApiExecution
             {
@@ -899,9 +899,11 @@ where   E.ExecutionID = @ExecutionID
             {
                 QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
             }
+            
+            return apiExecution.ExecutionID;
         }
 
-        public void SendContinuingScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid executionUid, DateTime startedOn)
+        public async Task SendContinuingScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid executionUid, DateTime startedOn)
         {
             var info = new ScoreQueueInfo
             {
@@ -912,7 +914,7 @@ where   E.ExecutionID = @ExecutionID
                 StartedOn = startedOn,
                 Location = ScoreQueueExecutionDataLocation.File
             };
-            Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.StorageFile, item).Wait();
+            await Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.StorageFile, item);
             QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
         }
 
@@ -992,7 +994,7 @@ from	metrics.AssetVersion V
 
         #region Score Engine Methods
 
-        public DataQualityMeasureQueryModel BuildDataQualityMeasureQueryModel(int queryType, Guid assetVersionRollupPathUid)
+        public DataQualityMeasureQueryModel BuildDataQualityMeasureQueryModel(MetricDataQualityQueryType queryType, Guid assetVersionRollupPathUid)
         {
             var dqQueryDetail = new DataQualityMeasureQueryModel
             {
@@ -1004,7 +1006,7 @@ from	metrics.AssetVersion V
 
             var dqQueryDetails = Connection.QueryMultiple(
                 "metrics.BuildDataQualityMeasureQuery @queryType, @assetVersionRollupPathUid",
-                new { queryType, assetVersionRollupPathUid }
+                new { queryType = (int)queryType, assetVersionRollupPathUid }
                 );
             var resultSqlQueryStatements = dqQueryDetails.Read<string>();
             dqQueryDetail.FilterMatchType = dqQueryDetails.Read<MetricMatchType>().Single();

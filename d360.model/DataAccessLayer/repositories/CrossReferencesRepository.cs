@@ -185,7 +185,7 @@ namespace d360.model.DataAccessLayer
             };
 
             // Save to storage container.
-            StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(crossReferences));
+            await StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(crossReferences));
                         
             // Save to the database.
             execution.ExecutionID = executionInfo.ExecutionID;

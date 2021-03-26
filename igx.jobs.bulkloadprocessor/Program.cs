@@ -1,5 +1,4 @@
 ﻿using d360.core.entities;
-using d360.core.exceptions;
 using d360.core.queue;
 using d360.core.enums;
 using d360.extensions.caching;
@@ -17,27 +16,24 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Ganss.XSS;
 using System.Text.RegularExpressions;
 using d360.model.DataAccessLayer;
 using d360.extensions.storage;
 using d360.core;
 using System.Text;
 using d360.core.entities.Metric;
+using Microsoft.Extensions.Hosting;
 
 namespace igx.jobs.bulkloadprocessor
 {
     class Program
     {
-        static void Main()
+        static async Task Main()
         {
-            var config = CoreFunction.GetJobHostConfiguration();
-#if DEBUG
-            config.UseDevelopmentSettings();
-#endif
-            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
-            var host = new JobHost(config);
-            host.RunAndBlock();
+            using (var host = CoreFunction.JobHostConfigBuilder().Build())
+            {
+                await host.RunAsync();
+            }
         }
     }
 

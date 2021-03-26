@@ -17,6 +17,11 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         {
             var measureChangedModel = await Storage.DeserializeJsonObjectFromBlobAsync<MeasureChangedModel>(Info.StorageFolder, Info.StorageFile);
 
+            if (measureChangedModel == null)
+            {
+                throw new ArgumentNullException("measureChangedModel","Cannot load score file from storage");
+            }
+
             if (measureChangedModel.EffectiveDate <= DateTime.UtcNow.Date)
             {
                 // We can continue processing it.
@@ -40,7 +45,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 
                             if (definition.DataQuality != null)
                             {
-                                var dqQueryDetail = Db.BuildDataQualityMeasureQueryModel(2, version.RollupPaths.First().Uid);
+                                var dqQueryDetail = Db.BuildDataQualityMeasureQueryModel(MetricDataQualityQueryType.ImpactedAssets_EffectiveDates_By_ProvidedUid, version.RollupPaths.First().Uid);
                                 list = Db.GetDataQualityAssetEffectiveDateResultModels(dqQueryDetail, measureChangedModel.MetricAssetUid, measureChangedModel.MetricAssetVersionUid, version.EffectiveDate);
                             }
                             else if (definition.Governance != null)
@@ -66,7 +71,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 
                             if (list.Count > 0)
                             {
-                                Db.SendContinuingScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, list, Info.ExecutionUid, Info.StartedOn);
+                                await Db.SendContinuingScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, list, Info.ExecutionUid, Info.StartedOn);
                             }
                         }
                     }

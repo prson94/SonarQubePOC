@@ -38,6 +38,7 @@ declare var VersionNumber: string;
                                             <li>Contributor count: {{numberWithCommas(licenceData.users.contributors)}}</li>
                                             <li>Administrator count: {{numberWithCommas(licenceData.users.administrators)}}</li>
                                         </ul>
+                                        <d3s-loading [isLoading]="isLoading"></d3s-loading>
                                     </ul>
                                     <p>© 2005-{{this.buildDate | date:'yyyy'}} Infogix. All rights reserved.</p>
                                     <p>Confidential - Limited distribution to authorized persons only, pursuant to the terms of Infogix Inc. license agreement. This software is protected as an unpublished work and constitutes a trade secret of Infogix Inc.</p>
@@ -69,6 +70,7 @@ export class HeaderHelpComponent implements AfterViewInit{
     public active: boolean = false;
     private hideHandle: number = 0;
     display: boolean = false;
+    isLoading: boolean = false;
 
     public userGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#c-user-guide/user-guide.htm%3FTocPath%3DUser%2520guide%7C_____0";
     public adminGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/admin-intro.htm%3FTocPath%3DAdministration%2520guide%7C_____0";
@@ -87,8 +89,12 @@ export class HeaderHelpComponent implements AfterViewInit{
     ) { }
 
     ngAfterViewInit(): void {
+        this.isLoading = true;
         this.settingService.getLicensingDetails().subscribe((x) => {
-            this.licenceData = x;
+            if (x) {
+                this.licenceData = x;
+                this.isLoading = false;
+            }
         });
     }
 

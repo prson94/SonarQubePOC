@@ -34,7 +34,7 @@ export class GalleryMultiInputFieldComponent implements OnInit {
     multiValue: string[] = ["First Chip", "Earth"];
     forTooltip: string[] = ["First Chip", "Earth", "Moon", "Sun", "Uranus", "Mars"];
     multiValueInvalid: string[] = ["Duplicate", "NoN-Duplicate", "Duplicate"];
-
+    lastEvent: string = "";
     constructor(private ref: ChangeDetectorRef) { }
 
     myForm = new FormGroup({

@@ -751,15 +751,13 @@ where	ExecutionID = @executionID
                 Connection.Execute($@"
                     DELETE Field
                     FROM Field F
-                    	inner join {tableName} E on E.ExecutionID = @executionID 
-                    	inner join {ApiExecutionFieldTable} EF on EF.ExecutionId = E.ExecutionId and EF.ItemNumber = E.ItemNumber
-                    	inner join Asset A on A.uid = E.Uid                 
-                    WHERE E.ExecutionID = @executionID
-                     and EF.ItemNumber between @beginItemNumber and @endItemNumber
+                    	inner join {tableName} A on A.ExecutionID = @executionID 
+                    	inner join {ApiExecutionFieldTable} EF on EF.ExecutionId = A.ExecutionId and EF.ItemNumber = A.ItemNumber
+                    WHERE EF.ItemNumber between @beginItemNumber and @endItemNumber
                      and EF.Ignore is null
                      and EF.FieldTypeID is not null
-                     and F.ObjectID = A.ObjectID
-                     and F.ObjectType = A.Object
+                     and F.ObjectID = {objectIdSqlSyntax}
+                     and F.ObjectType = {objectSqlSyntax}
                      and F.FieldTypeID = EF.FieldTypeID
                      and EF.FieldValue is null 
                      and EF.LookupValue is null;",
@@ -8136,66 +8134,141 @@ insert into #Keys WITH(TABLOCK)
                     bulkCopy.WriteToServer(ruleResults);
                 }
 
-            rawMeasures = Connection.Query<RuleResultChangedRawModel>(@"
-drop table if exists #Combos;
-select	distinct
-	Ma.AllocationUid,
-	A.Uid as AssetUid,
-	cast(Re.EffectiveDate as date) as EffectiveDate,
-	Ma.Uid as MetricAssetUid,
-	Mver.Uid as MetricAssetVersionUid,
-	case Mver.UpdateFrequency
-		when 2 then dateadd(d, 2, Re.EffectiveDate)
-		when 4 then dateadd(d, 1, dateadd(m, 1, Re.EffectiveDate))
-		when 5 then dateadd(d, 1, dateadd(q, 1, Re.EffectiveDate))
-		when 6 then dateadd(d, 1, dateadd(yy, 1, Re.EffectiveDate))
-		else dateadd(d, 8, Re.EffectiveDate)
-	end ResultsValidUntil
-into	#Combos
-from	AssetResult Re,
-	AssetResultEdge E,
-	graph.AssetNode Ea,
-	[metrics].[RollupPathSegment] Seg,
-	[metrics].[RollupPath] Rol,
-	[metrics].[AssetVersionRollupPath] VerRol,
-	metrics.AssetVersion Mver,
-	metrics.Asset Ma,
-	metrics.Allocation Mal,
-	AssetType T,
-	Asset A
-where	match(Ea-(E)->Re)
-	and E.Class = 2
-	and Ma.IsGroup = 0
-	and Seg.AssetTypeID = Ea.AssetTypeID
-	and Rol.Uid = Seg.RollupPathUid
-	and VerRol.RollupPathUid = Rol.Uid
-	and Mver.Uid = VerRol.AssetVersionUid
-and (
-	(Mver.EffectiveDate <= Re.EffectiveDate and Mver.EffectiveEndDate >= Re.EffectiveDate)
-	or (Mver.EffectiveDate <= Re.EffectiveDate and Mver.EffectiveEndDate is null)
-)
-	and Ma.Uid = Mver.AssetUid
-	and Mal.Uid = Ma.AllocationUid
-	and Mal.ScoreType = 2
-	and Mal.IsExternallyCalculated = 0
-	and T.Uid = Mal.AssetTypeUid
-	and A.AssetTypeID = T.ID
-    and Re.Uid in (select RuleResultUid from #RuleResults);
+                var rawQueries = Connection.Query<string>(@"
+	select	distinct
+			cast(Re.EffectiveDate as date) as EffectiveDate,
+			Ma.Uid as MetricAssetUid,
+			Mver.Uid as MetricAssetVersionUid,
+			T.Class as AssetClass,
+			Rol.Uid as RollupPathUid,
+			Oa.Uid as OwnerAssetUid,
+			Oa.AssetTypeUid as OwnerAssetTypeUid,
+			Oa.AssetTypeId as OwnerAssetTypeId,
+			Ea.Uid as EvaluatedAssetUid,
+			Ea.AssetTypeUid as EvaluatedAssetTypeUid,
+			Ea.AssetTypeId as EvaluatedAssetTypeId
+	into	#Combos
+	from	AssetResult Re,
+			AssetResultEdge Ee,
+			graph.AssetNode Ea,
+			AssetResultEdge Eo,
+			graph.AssetNode Oa,
+			metrics.RollupPathSegment Seg,
+			metrics.RollupPath Rol,
+			metrics.AssetVersionRollupPath VerRol,
+			metrics.AssetVersion Mver,
+			metrics.Asset Ma,
+			metrics.Allocation Mal,
+			AssetType T
+	where	match(Ea-(Ee)->Re<-(Eo)-Oa)
+			and Ee.Class = 2
+			and Eo.Class = 1
+			and Ma.IsGroup = 0
+			and Seg.AssetTypeID = Ea.AssetTypeID
+			and Rol.Uid = Seg.RollupPathUid
+			and VerRol.RollupPathUid = Rol.Uid
+			and Mver.Uid = VerRol.AssetVersionUid
+			and (
+				(Mver.EffectiveDate <= Re.EffectiveDate and Mver.EffectiveEndDate >= Re.EffectiveDate)
+				or (Mver.EffectiveDate <= Re.EffectiveDate and Mver.EffectiveEndDate is null)
+			)
+			and Ma.Uid = Mver.AssetUid
+			and Mal.Uid = Ma.AllocationUid
+			and Mal.ScoreType = 2
+			and Mal.IsExternallyCalculated = 0
+			and T.Uid = Mal.AssetTypeUid
+			and Re.Uid in (select RuleResultUid from #RuleResults);
 
-select	AssetUid,
-	EffectiveDate,
-	MetricAssetUid,
-	MetricAssetVersionUid
-from	#Combos
-union
-select	C.AssetUid,
-	S.EffectiveDate,
-	C.MetricAssetUid,
-	C.MetricAssetVersionUid
-from	#Combos C
-	inner join metrics.Score S on S.AssetUid = C.AssetUid and S.AllocationUid = C.AllocationUid and S.EffectiveDate > C.EffectiveDate and S.EffectiveDate <= C.ResultsValidUntil", 
-    transaction: trans).ToList();
-        }
+select	'select distinct ' + 
+			'cast(''' + cast(MetricAssetUid as varchar(50)) + ''' as uniqueidentifier) as MetricAssetUid, ' + 
+			'cast(''' + cast(MetricAssetVersionUid as varchar(50)) + ''' as uniqueidentifier) as MetricAssetVersionUid, ' + 
+			'cast(''' + cast(EffectiveDate as varchar) + ''' as date) as EffectiveDate, ' + 
+			AssetUidColumn + 
+		' from ' + [Tables] + 
+		' where match(' + [Match] + ') and ' + Wheres  as AssetsQuery
+from	(
+		select	C.*,
+				iif(MP.MaxPosition = 2 and C.AssetClass <> 7, 'S2.Uid as AssetUid', 'S1.Uid as AssetUid') as [AssetUidColumn],
+				(
+				select	distinct
+						string_agg(T, ', ')
+				from	(
+						select	'graph.AssetNode S'+cast(L.StartPosition as varchar) as T
+						from	[metrics].[RollupPathLink] L
+								inner join [metrics].[RollupPathSegment] S on S.[RollupPathUid] = L.[RollupPathUid] and S.Position between L.StartPosition and L.EndPosition
+						where	L.[RollupPathUid] = C.[RollupPathUid]
+						union
+						select	iif(L.EndPosition = MP.MaxPosition and L.EndPosition > 2, null, 'graph.AssetNode S'+cast(L.EndPosition as varchar)) as T
+						from	[metrics].[RollupPathLink] L
+								inner join [metrics].[RollupPathSegment] S on S.[RollupPathUid] = L.[RollupPathUid] and S.Position between L.StartPosition and L.EndPosition
+						where	L.[RollupPathUid] = C.[RollupPathUid]
+						union
+						select	iif(L.EndPosition = MP.MaxPosition and L.EndPosition > 2, null, 'graph.AssetEdge I'+cast(L.IntersectTypeID as varchar)) as T
+						from	[metrics].[RollupPathLink] L
+								inner join [metrics].[RollupPathSegment] S on S.[RollupPathUid] = L.[RollupPathUid] and S.Position between L.StartPosition and L.EndPosition
+						where	L.[RollupPathUid] = C.[RollupPathUid]
+						) O
+				) as [Tables],
+				(
+				select	distinct
+						string_agg(W, '')
+				from	(
+						select	case 
+									when L.StartPosition = 1 then 'S' + cast(L.StartPosition as varchar) + '-(I'+cast(L.IntersectTypeID as varchar)+')->S' + cast(L.EndPosition as varchar)
+									when L.EndPosition = MP.MaxPosition then null
+									else '-(I'+cast(L.IntersectTypeID as varchar)+')->S' + cast(L.EndPosition as varchar)
+								end as W
+						from	[metrics].[RollupPathLink] L
+						where	L.[RollupPathUid] = C.[RollupPathUid]
+						) O
+				) as [Match],
+				(
+				select	distinct
+						string_agg(W, ' and ')
+				from	(
+						select	case 
+									when S.Position <> MP.MaxPosition and MP.MaxPosition > 2
+											then 'S'+cast(S.Position as varchar)+'.AssetTypeID = ' + cast(S.AssetTypeID as varchar) + iif (S.AssetTypeID = C.EvaluatedAssetTypeId, ' and S'+cast(S.Position as varchar) + '.Uid = ''' + cast(C.EvaluatedAssetUid as varchar(50)) + '''', '')
+									when S.Position+1 = MP.MaxPosition and C.AssetClass = 7 
+											then 'S1.AssetTypeID = ' + cast(C.OwnerAssetTypeId as varchar) + ' and S1.Uid = ''' + cast(C.OwnerAssetUid as varchar(50)) + ''''
+									when S.Position+1 = MP.MaxPosition and C.AssetClass <> 7 
+											then 'S2.AssetTypeID = ' + cast(C.EvaluatedAssetTypeId as varchar) + ' and S2.Uid = ''' + cast(C.EvaluatedAssetUid as varchar(50)) + ''''		
+									else null
+								end as W
+						from	[metrics].[RollupPathSegment] S
+						where	S.[RollupPathUid] = C.[RollupPathUid]
+						union
+						select	iif(L.EndPosition = MP.MaxPosition, null, 'I'+cast(L.IntersectTypeID as varchar)+'.IntersectTypeID = ' + cast(L.IntersectTypeID as varchar)) as W
+						from	[metrics].[RollupPathLink] L
+								inner join [metrics].[RollupPathSegment] S on S.[RollupPathUid] = L.[RollupPathUid] and S.Position between L.StartPosition and L.EndPosition
+						where	L.[RollupPathUid] = C.[RollupPathUid]
+						) O
+				) as [Wheres]
+		from	#Combos C
+				cross apply (
+					select	max(S.Position) as MaxPosition
+					from	[metrics].[RollupPathSegment] S
+					where	S.[RollupPathUid] = C.[RollupPathUid]
+				) as MP
+		) O", transaction: trans).ToList();
+
+                rawMeasures = new List<RuleResultChangedRawModel>();
+
+                string sql;
+                while (rawQueries.Count > 0)
+                { 
+                    sql = string.Join(" union ", rawQueries.Take(50));
+                    if (rawQueries.Count > 50)
+                    {
+                        rawQueries.RemoveRange(0, 50);
+                    }
+                    else
+                    {
+                        rawQueries.RemoveRange(0, rawQueries.Count);
+                    }
+                    rawMeasures.AddRange(Connection.Query<RuleResultChangedRawModel>(sql, transaction: trans));
+                }              
+            }
 
             var structuredMeasures = rawMeasures
                 .GroupBy(m => new { m.AssetUid, m.EffectiveDate })
@@ -10017,9 +10090,12 @@ SET DefinitionConverted = cd.[Definition];
                         var row = table.NewRow();
                         row["ExecutionID"] = execution.ExecutionID;
                         row["ItemNumber"] = itemNumber;
-                        if (item.Uid != null)
-                            row["GroupUid"] = item.Uid;
 
+                        if (item.Uid.HasValue && item.Uid.Value != Guid.Empty)
+                        {
+                            row["GroupUid"] = item.Uid;
+                        }
+                            
                         if (item.Name == null)
                             row["Name"] = "";
                         else
@@ -10077,7 +10153,7 @@ SET DefinitionConverted = cd.[Definition];
 
                 update	[api].[ExecutionGroup]
                 set		Success = 0,
-		                [Message] = coalesce([Message], '') + 'Already a group called this name;'
+		                [Message] = coalesce([Message], '') + 'Already a group called ' + EG.[Name] + ';'
 	            from [api].[ExecutionGroup] EG 
 	            inner join [Group] G on G.[Name] = EG.[Name]
                 left join [Asset] A on A.ObjectID = G.[ID] and A.Object = 'Group' and A.uid = EG.[GroupUid]
@@ -10087,8 +10163,17 @@ SET DefinitionConverted = cd.[Definition];
                 set		Success = 0,
 		                [Message] = coalesce([Message], '') + 'Uid provided is not a group uid;'
 	            from [api].[ExecutionGroup] EG 
+                Inner Join [api].[Execution] E on E.ExecutionID = EG.ExecutionID
 	            left join [Asset] A on A.[uid] = EG.[GroupUid] and A.Object = 'Group'
-                where	ExecutionID = @ExecutionID and A.uid is null and EG.[GroupUid] is not null;
+                where	E.Method = 'PUT' and EG.ExecutionID = @ExecutionID and A.uid is null and EG.[GroupUid] is not null;
+
+                update	[api].[ExecutionGroup]
+                set		Success = 0,
+		                [Message] = coalesce([Message], '') + 'Uid already exists;'
+	            from [api].[ExecutionGroup] EG 
+                Inner Join [api].[Execution] E on E.ExecutionID = EG.ExecutionID
+	            left join [Asset] A on A.[uid] = EG.[GroupUid]
+                where	E.Method = 'POST' and EG.ExecutionID = @ExecutionID and A.uid is not null and EG.[GroupUid] is not null;
 
                 update	[api].[ExecutionGroup]
                 set		Success = 0,
@@ -10150,7 +10235,8 @@ EG.Name,EG.Description,
 EG.ExecutionItemUid,
 EG.IsActiveDirectoryGroup,
 PO.ObjectID as PrimaryID,
-SO.ObjectID as SecondaryID
+SO.ObjectID as SecondaryID,
+EG.GroupUid
 	                from api.ExecutionGroup EG
 					left join Asset A on A.uid = EG.GroupUid and A.Object = 'Group'
 					left join Asset PO on PO.uid = EG.PrimaryOwnerUid and PO.Object = 'Resource'
@@ -10168,8 +10254,8 @@ SO.ObjectID as SecondaryID
 					G.SecondaryOwnerResourceID = SecondaryID,
                     G.IsActiveDirectoryGroup = S.IsActiveDirectoryGroup
                 when not matched then
-	                insert (Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID,IsActiveDirectoryGroup,UpdatedOn,UpdatedBy)
-	                values (TRIM(S.Name),S.Description, S.PrimaryID, S.SecondaryID,S.IsActiveDirectoryGroup,GETDATE(),@currentUser)
+	                insert ([Uid], Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID,IsActiveDirectoryGroup,UpdatedOn,UpdatedBy)
+	                values (ISNULL(S.GroupUid, NEWID()), TRIM(S.Name),S.Description, S.PrimaryID, S.SecondaryID,S.IsActiveDirectoryGroup,GETDATE(),@currentUser)
 	            output TRIM(S.Name), S.ExecutionItemUid into #mergeResultTable;
 
 

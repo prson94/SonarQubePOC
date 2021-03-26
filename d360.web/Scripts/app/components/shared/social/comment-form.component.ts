@@ -61,6 +61,7 @@ export class CommentFormComponent extends BaseComponent {
                 subscribe((res) => {
                     this.messagesService.showInfoMessage("Success", "Item edited successfully");
                     this.isLoading = false;
+                    this.comment.UpdatedOn = new Date();
                     this.onSave.emit({ comment: this.comment, event: "edit" });
                 });
         }

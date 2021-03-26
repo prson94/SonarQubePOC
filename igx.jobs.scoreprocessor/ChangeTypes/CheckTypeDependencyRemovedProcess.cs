@@ -14,6 +14,11 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         {
             var model = await Storage.DeserializeJsonObjectFromBlobAsync<CheckTypeDependencyRemovedModel>(Info.StorageFolder, Info.StorageFile);
 
+            if (model == null)
+            {
+                throw new ArgumentNullException("model","Cannot load score file from storage");
+            }
+
             // We can continue processing it.
             var Db = GetCompanyContext();
 

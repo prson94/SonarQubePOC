@@ -17,6 +17,11 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         {
             var measureChangedModel = await Storage.DeserializeJsonObjectFromBlobAsync<MeasureRemovedModel>(Info.StorageFolder, Info.StorageFile);
 
+            if (measureChangedModel == null)
+            {
+                throw new ArgumentNullException("measureChangedModel","Cannot load score file from storage");
+            }
+
             if (measureChangedModel.EffectiveEndDate.Date <= DateTime.UtcNow.Date)
             {
                 // We can continue processing it.

@@ -148,15 +148,14 @@
             <ig-property-group 
                                [igformGroup]="metricForm" 
                                [title]="'Asset Conditions and Weighting'" 
-                               [shouldBePadded]="false" 
                                [showMoreInfo]="true"
                                [moreInfoHtml]="assetConditionsAndWeightingTooltip"
                                *ngIf="!metricForm.value.isGroup && !isExternallyCalculated" 
                                (isValid)="canAddNewGroup($event)">
                 <div inputs>
                     <div class="row match-condition">
-                        <p-radioButton igRadioButton formControlName="MatchConditionsOnly" [(ngModel)]="model.MatchConditionsOnly" value="true" label="Only apply this measure to assets that match a condition group"></p-radioButton>&nbsp;
-                        <p-radioButton igRadioButton formControlName="MatchConditionsOnly" [(ngModel)]="model.MatchConditionsOnly" value="false" label="Apply this measure to all assets, using the first matching condition group to determine measure weight"></p-radioButton>
+                        <p-radioButton igRadioButton formControlName="MatchConditionsOnly" [(ngModel)]="matchConditionsOnly" value="true" label="Only apply this measure to assets that match a condition group"></p-radioButton>&nbsp;
+                        <p-radioButton igRadioButton formControlName="MatchConditionsOnly" [(ngModel)]="matchConditionsOnly" value="false" label="Apply this measure to all assets, using the first matching condition group to determine measure weight"></p-radioButton>
                     </div>
                     <div class="condition-group" *ngFor="let cg of sortByDisplayOrder();let i=index">
                         <div class="row cg-header-row">
@@ -170,7 +169,7 @@
                                             Weight(%) <ng-container *ngTemplateOutlet="conditionWeightTooltip"></ng-container>
                                         </label>
                                         <ig-number-input [tabindex]="4"
-                                                         placeholder="displayWeight"
+                                                         placeholder="{{displayWeight}}"
                                                          [min]="1"
                                                          [max]="100"
                                                          [step]="1"

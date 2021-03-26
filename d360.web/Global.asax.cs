@@ -100,6 +100,11 @@ namespace d360.web
     {
         protected void Application_PreSendRequestHeaders(object sender, EventArgs e)
         {
+            // GOV-14170 server and x-powered-by still appearing on some files in govern
+            Response.Headers.Remove("Server");
+            Response.Headers.Remove("X-Powered-By");
+            
+
             /*
              * If Govern is accessed in a frame, cookies will be considered 3rd party cookies by the ancestor page
              * so to work, the SameSite flag needs to be set to "None", and when SameSite is set to none, the Secure flag
@@ -108,7 +113,7 @@ namespace d360.web
              * from a frame. To track if the session is "framed", a separate Frame cookie is set on the first request when it's
              * possible to deduct that it originated in a frame. The frame-cookie settings are derived from the authentication cookie
              */
-            if(Response.Cookies.Count == 0)
+            if (Response.Cookies.Count == 0)
             {
                 return;
             }
@@ -164,6 +169,9 @@ namespace d360.web
         {
             ViewEngines.Engines.Clear();
             ViewEngines.Engines.Add(new RazorViewEngine()); //only use razor view engine
+
+            //GOV-14022 remove the X-Frame-Options from the forms / password reset we add this in the web.config this avoids it appearing 2x
+            System.Web.Helpers.AntiForgeryConfig.SuppressXFrameOptionsHeader = true;
 
             Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration.Active.InstrumentationKey = System.Web.Configuration.WebConfigurationManager.AppSettings["AppInsightsInstrumentationKey"];
             Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration.Active.DisableTelemetry = true;

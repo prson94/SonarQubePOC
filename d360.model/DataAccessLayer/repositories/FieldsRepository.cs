@@ -1670,7 +1670,7 @@ from	IntersectType I
             foreach(var rule in rules)
             {
                 rule.SetDefinitionFromRaw();
-                anyResponsibilityUsingField = rule.StructuredDefinition.When.Any(x => fieldTypes.Any(f=>f.ID == x.FieldTypeID));
+                anyResponsibilityUsingField = rule.StructuredDefinition?.When != null && rule.StructuredDefinition.When.Any(x => fieldTypes.Any(f=>f.ID == x.FieldTypeID));
                 if (anyResponsibilityUsingField)
                 {
                     break;

@@ -50,7 +50,7 @@ namespace d360.model.DataAccessLayer
         protected async Task<ApiExecutionInfo> CreateApiBatchJob(ApiExecutionInfo executionInfo, ApiExecution execution, object data)
         {
             // Save to storage container.
-            StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(data));
+            await StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(data));
 
             // Save to the database.
             execution.ExecutionID = executionInfo.ExecutionID;
@@ -864,6 +864,50 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_notownedby"))
+            {
+                List<Guid> notOwnerUids = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_notownedby")
+                    .Value.Split(',').Select(x =>
+                    {
+                        var guid = Guid.Empty;
+                        Guid.TryParse(x, out guid);
+                        return guid;
+                    }).ToList();
+
+                if (notOwnerUids.Any(x => x == Guid.Empty))
+                    throw new Exception("Invalid Owner Uid in parameters!");
+
+                if (notOwnerUids.Count > 0)
+                {
+                    dbArgs.Add("notOwnerUids", notOwnerUids);
+                    var ownershipSQL = $@"NOT EXISTS(
+                                            SELECT 1 
+                                            FROM 
+                                                [dbo].[ResponsibilityDetail] rd 
+                                            WHERE 
+                                                rd.SecurityAssetUid in @notOwnerUids 
+                                                and 
+                                                a.ID=rd.AssetID 
+                                                and
+                                                rd.isVisible = 1
+                                            UNION
+                                            SELECT 1 
+                                            FROM 
+                                                [dbo].[ResponsibilityDetail] rd 
+                                            WHERE 
+                                                rd.SecurityAssetUid in @notOwnerUids 
+                                                and 
+                                                rd.ApplyToType = 1 
+                                                and 
+                                                rd.AssetID = 0 
+                                                and 
+                                                rd.AssetTypeId=a.AssetTypeId
+                                                and
+                                                rd.isVisible = 1
+                                            )";
+                    whereStatements.Add(ownershipSQL);
+                }
+            }
             var whereSql = "";
             if (whereStatements.Any())
                 whereSql = $"where {string.Join(" and ", whereStatements)}";

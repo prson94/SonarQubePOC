@@ -30,6 +30,6 @@ namespace d360.model.DataAccessLayer
         List<DataQualityDeleteResponseModel> DeleteDataQualityResult(List<DataQualityDeleteModel> list, ApiExecution execution);
         Task<ApiExecutionInfo> PostBulkDataQualityResults(List<DataQualityInsertModel> request, ApiExecution execution, bool sendWorkflowEvents = true);
         List<MeasureVersionHistoryModel> GetMetricVersionHistory(Guid measureUid);
-        void RecalculateMeasureScoreItems(Guid allocationUid, Guid measureUid);
+        Guid RecalculateMeasureScoreItems(Guid allocationUid, Guid measureUid);
     }
 }

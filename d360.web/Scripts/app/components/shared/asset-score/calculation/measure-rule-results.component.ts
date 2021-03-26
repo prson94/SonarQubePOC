@@ -1,7 +1,7 @@
-﻿import { Component, Input, OnDestroy, EventEmitter, Output, OnChanges, SimpleChanges, OnInit } from "@angular/core";
+﻿import { Component, Input, OnDestroy, EventEmitter, Output, OnChanges, SimpleChanges } from "@angular/core";
 import * as _ from "lodash";
 import { LazyLoadEvent } from "primeng/api";
-import { ScoreType } from "../../../../models/metrics.model";
+import { MetricAssetDefinitionViewModel, MetricRuleResultOperation, ScoreType } from "../../../../models/metrics.model";
 import { DataQualityEvidenceItemModel, DataQualityEvidenceModel, PointBreakdown } from "../../../../models/score.model";
 import { ScoreService } from "../../../../services/score.service";
 import { BaseComponent } from "../../base.component";
@@ -15,6 +15,7 @@ import { BaseComponent } from "../../base.component";
 
 export class MeasureRuleResultsComponent extends BaseComponent implements OnDestroy, OnChanges {
     @Input() scoreItem: PointBreakdown;
+    @Input() definition: MetricAssetDefinitionViewModel;
     @Input() assetName: string;
     @Input() assetTypeName: string;
     @Output() onClose = new EventEmitter;
@@ -133,5 +134,27 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
 
     selectedItemChange(ruleResultUid: string) {
 
+    }
+
+    getMissingRuleResultMessage() {
+        let message = "";
+        if (this.selected && !this.selected.EffectiveDate) {
+            let operation = MetricRuleResultOperation[this.definition?.DataQuality?.ResultOperation+""];
+            if (operation) {
+                message = "For this scoring date, no rule results were found for this asset and rule. "
+                    + "A pass fraction of 0 will therefore be used in place of this missing result. As this measure uses the ";
+                if (operation === MetricRuleResultOperation.Maximum) {
+                    message += "maximum pass fraction, the measure score will most likely be unaffected by this.";
+                }
+                else if (operation === MetricRuleResultOperation.Minimum) {
+                    message += "minimum pass fraction, the measure score will be 0.";
+                }
+                else { // (operation === MetricRuleResultOperation.Average)
+                    message += "average pass fraction, the measure score may be lower than expected.";
+                }
+            }
+        }
+
+        return message;
     }
 }

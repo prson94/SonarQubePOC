@@ -5,6 +5,7 @@ using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using Dapper;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -133,12 +134,15 @@ namespace d360.model.DataAccessLayer
 				var commentId = dbComment.ID;
 				if (comment.Tags != null && comment.Tags.Count > 0)
 				{
-					var taggedAssets = CompanyContext.Filter<Asset>(o => comment.Tags.Contains(o.uid)).Select(o => o.ID).ToList();
+					var taggedAssets = CompanyContext.Filter<Asset>(o => comment.Tags.Contains(o.uid)).ToList();
 					foreach (var r in taggedAssets)
 					{
-						CompanyContext.CommentRelations.Add(new CommentRelation { CommentID = commentId, AssetID = r });
+						CompanyContext.CommentRelations.Add(new CommentRelation { CommentID = commentId, AssetID = r.ID });						
 					}
+
 					await CompanyContext.SaveChangesAsync();
+
+					SendCommentNotification(taggedAssets, dbComment);
 				}
 				CompanyContext.Connection.Execute("delete C from CommentRelation C left join Asset A on A.ID = C.AssetID where C.CommentID = @commentId and A.ID is null", new { commentId });
 
@@ -290,12 +294,15 @@ namespace d360.model.DataAccessLayer
 				{
 					if ( comment.Tags.Count > 0)
 					{
-						var taggedAssets = CompanyContext.Filter<Asset>(o => comment.Tags.Contains(o.uid)).Select(o => o.ID).ToList();
+						var taggedAssets = CompanyContext.Filter<Asset>(o => comment.Tags.Contains(o.uid)).ToList();
 						foreach (var r in taggedAssets)
 						{
-							CompanyContext.CommentRelations.Add(new CommentRelation { CommentID = commentId, AssetID = r });
+							CompanyContext.CommentRelations.Add(new CommentRelation { CommentID = commentId, AssetID = r.ID });
 						}
+
 						await CompanyContext.SaveChangesAsync();
+
+						SendCommentNotification(taggedAssets, dbComment);
 					}
 
 					CompanyContext.Connection.Execute("delete C from CommentRelation C left join Asset A on A.id = C.Assetid where C.CommentID = @commentId and A.ID is null", new { commentId });				
@@ -322,9 +329,8 @@ namespace d360.model.DataAccessLayer
 			from	Comment C
 			where	C.ID in	(
 					select	O.CommentID as ID
-					from	Follow F
-							inner join Asset A on A.Object = F.ObjectType and A.ObjectID = F.ObjectID 
-							inner join CommentRelation O on O.AssetID = A.ID
+					from	FollowDetail F
+							inner join CommentRelation O on O.AssetID = F.AssetID
 					where	F.ResourceID = @resourceId
 					union all
 					select	ID 
@@ -384,7 +390,7 @@ order by u.CommentTypeName";
 				new DefaultFilter("UpdatedOn", "C.UpdatedOn", SqlFieldType.DateTime),
 				new DefaultFilter("Url", "AUrl.Url", SqlFieldType.Text),
 				new DefaultFilter("AssetPath", "AP.DisplayPath", SqlFieldType.Text),
-				new DefaultFilter("ResourceName", "R.LastName", SqlFieldType.Text)
+				new DefaultFilter("ResourceName", "R.FirstName + ' ' + R.LastName", SqlFieldType.Text)
 			};
 
 			DynamicParameters advFilterArgs = null;
@@ -418,6 +424,44 @@ order by u.CommentTypeName";
 				followerUidPresent = Guid.TryParse(follower, out followerUid);
 			}
 
+			#region "Ng additional filter: set variable"
+
+			var followerCurrResUidPresent = false;
+			
+			if (queryParams.Any(qp => qp.Key.ToLower() == "followeruidiscurrentresourceuid"))
+            {
+				var followerCurrentResourceUid = queryParams.FirstOrDefault(x => x.Key.ToLower() == "followeruidiscurrentresourceuid").Value;
+				if (followerCurrentResourceUid.ToLower() == "true")
+				{
+					followerCurrResUidPresent = true;
+				}
+			}
+
+			int CommentTypeID = 0;
+			bool CommentTypeIDPresent = false;
+			if (queryParams.Any(qp => qp.Key.ToLower() == "commenttypeid"))
+			{
+				var CommentTypeIDValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "commenttypeid").Value;
+				CommentTypeIDPresent = int.TryParse(CommentTypeIDValue, out CommentTypeID);
+			}
+
+			bool IsShowDeleteComment = true;
+			bool DeletedCommentPresent = false;
+			if (queryParams.Any(qp => qp.Key.ToLower() == "showdeletecomment"))
+			{
+				var ShowDeleteCommentValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "showdeletecomment").Value;
+				DeletedCommentPresent = bool.TryParse(ShowDeleteCommentValue, out IsShowDeleteComment);
+			}
+
+			int Days = 0;
+			bool daysToLookBackPresent = false;
+			if (queryParams.Any(qp => qp.Key.ToLower() == "daystolookback"))
+			{
+				var daysToLookBackValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "daystolookback").Value;
+				daysToLookBackPresent = int.TryParse(daysToLookBackValue, out Days);
+			}
+			#endregion
+
 			var orderColumn = CompanyContext.ParseOrderColumn(queryParams, queryFieldOptions, "C.CreatedOn");
 			var orderDirection = CompanyContext.ParseOrderDirection(queryParams, "desc");
 			var orderBySql = $" order by {orderColumn} {orderDirection} ";
@@ -427,6 +471,45 @@ order by u.CommentTypeName";
 			string offset = CompanyContext.ParsePageOffsetSql(pageNum, pageSize);
 
 			var baseCommentWheres = new List<string> { "C.ParentID is null" };
+
+			#region "Ng additional Filter : Apply"
+				if (CommentTypeIDPresent)
+				{
+					dbArgs.Add("@CommentTypeID", CommentTypeID);
+					baseCommentWheres.Add(@"(C.CommentType = @CommentTypeID)");
+				}
+
+				if (DeletedCommentPresent)
+				{
+					baseCommentWheres.Add(@"(C.IsDeleted = 0)");
+				}
+
+				if (followerCurrResUidPresent)
+				{
+					baseCommentWheres.Add(@"(iif(C.CreatedBy = @currentUser, 1, 0) = 1)");
+				}
+
+				if (daysToLookBackPresent)
+				{
+					DateTime dateStart;
+					DateTime dateEnd = DateTime.UtcNow;
+					Days *= -1;
+					if (Days == 0)
+					{
+						dateStart = new DateTime(2000, 1, 1);
+					}
+					else
+					{
+						dateStart = (Days < 0) ? dateEnd.AddDays(Days) : dateEnd.AddDays(-Days);
+					}
+
+					dbArgs.Add("@rangeStart", dateStart);
+					dbArgs.Add("@rangeEnd", dateEnd);
+
+					baseCommentWheres.Add(@"(C.CreatedOn between @rangeStart and @rangeEnd)");
+				}
+			#endregion
+
 			if (assetUidPresent)
 			{
 				var asset = CompanyContext.Filter<Asset>(o => o.uid == assetUid).FirstOrDefault();
@@ -463,22 +546,38 @@ order by u.CommentTypeName";
 					) 
 				)");
 			}
+			int followerresourceID = -1;
 			if (followerUidPresent)
 			{
 				var follower = CompanyContext.Filter<GlobalReportingResource>(o => o.Uid == followerUid).FirstOrDefault();
-				if (follower != null)
-				{
-					dbArgs.Add("@followerId", follower.ResourceID);
-					baseCommentWheres.Add(@"(
-(C.AssetID in (select f.AssetID from FollowDetail f where f.ResourceID = @followerId union select r.AssetID from ResponsibilityDetail r where r.ResourceID = @followerId)) 
-or (C.ID in (select ParentID from Comment where ParentID is not null and CreatedBy = @followerId))
-)");
+				if (follower == null)
+                {
+					throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "User with provided Uid does not exist.");
 				}
+				else
+				{
+					followerresourceID = follower.ResourceID;
+				}
+			}
+			else if (followerCurrResUidPresent)
+			{
+				followerresourceID = CompanyContext.CurrentResourceID;
+			}
+
+			if (followerresourceID > -1)
+			{
+					dbArgs.Add("@followerId", followerresourceID);
+
+					baseCommentWheres.Add(@"(
+(exists (select f.AssetID from FollowDetail f where f.ResourceID = @followerId and f.AssetID = C.AssetID  union all select r.AssetID from ResponsibilityDetail r where r.ResourceID = @followerId and r.AssetID = C.AssetID)) 
+or (exists (select cp.ParentID from Comment cp where cp.ParentID is not null and cp.CreatedBy = @followerId and cp.ParentID = C.ID ))
+or (C.ID in (select ID from Comment where CreatedBy = @followerId))
+)");
 			}
 
 			dbArgs.Add("@currentUser", CompanyContext.CurrentResourceID);
-			whereStatements.Add($@"O.ID not in (select AssetID from dbo.UserAssetPermissions(@currentUser,O.AssetTypeID) where ((PermissionsBitMask & {(int)Permission.ReadAsset})) = 0)");
-			whereStatements.Add(@"O.AssetTypeID not in (select AssetTypeID from dbo.AssetTypesUserCantRead(@currentUser))");
+			whereStatements.Add($@"O.ID not in (select AssetID from dbo.UserAssetPermissions(@currentUser,T.ID) where ((PermissionsBitMask & {(int)Permission.ReadAsset})) = 0)");
+			whereStatements.Add(@"T.ID not in (select AssetTypeID from dbo.AssetTypesUserCantRead(@currentUser))");
 
 			var cteSql = $@"
 with P as (
@@ -665,6 +764,76 @@ order by V.Emoji";
 				throw new GenericException(System.Net.HttpStatusCode.BadRequest, "", "You may not provide more than 50 tags on this comment.");
 			}
 		}
+
+		private void SendCommentNotification(List<Asset> taggedAssets, Comment comment)
+        {		
+			if (taggedAssets.Any(a => a.Object == core.SystemObjects.Resource.ToString() || a.Object == core.SystemObjects.Group.ToString()))
+			{
+				var commentCreator = CompanyContext.Connection.Query<string>("Select GR.FirstName + ' ' + GR.LastName as ResourceName from reporting.Global_Resource GR where resourceId = @commentBy", new { commentBy = comment.CreatedBy }).FirstOrDefault();
+
+				if (commentCreator != null)
+				{
+					var assetDetail = CompanyContext.Connection.Query<AssetDetail>("Select * from AssetDetail A where A.ID = @AssetID", new { comment.AssetID }).FirstOrDefault();
+					if (assetDetail != null)
+                    {                    
+						string resourceSQL = $@"select distinct * from (Select 
+                                                                        GR.*
+                                                                    from 
+	                                                                    CommentRelation CR 
+	                                                                    inner join 
+	                                                                    Asset A on A.ID = CR.AssetID 
+	                                                                    inner join 
+	                                                                    reporting.Global_Resource GR on A.ObjectID = GR.ResourceID 
+                                                                    where 
+	                                                                    CommentID = @commentID 
+	                                                                    and 
+	                                                                    A.Object = 'Resource'
+                                                                    Union
+                                                                    Select 
+                                                                        GR.*
+                                                                    from 
+	                                                                    CommentRelation CR 
+	                                                                    inner join 
+	                                                                    Asset A on A.ID = CR.AssetID
+	                                                                    inner Join 
+	                                                                    ResourceGroup RG on A.ObjectID = RG.GroupID
+	                                                                    inner join 
+	                                                                    reporting.Global_Resource GR on RG.ResourceID = GR.ResourceID 
+                                                                    where 
+	                                                                    CommentID = @commentID 
+	                                                                    and 
+	                                                                    A.Object = 'Group') A";
+
+					var resourcesToNotify = CompanyContext.Connection.Query<GlobalReportingResource>(resourceSQL, new { commentID = comment.ID }).ToList();
+
+					CommentNotification notification = new CommentNotification {
+						CommenterName = commentCreator,
+						Subject = $"{commentCreator} tagged you in a comment on {assetDetail.DisplayValue}",
+						IsHtml = true
+					};
+
+					resourcesToNotify.ForEach(r =>
+					{
+						notification.RecipientEmail = r.Email;
+						notification.RecipientName = r.FullName;
+
+						var commentUrl = $"/sidebar/comments/{assetDetail.uid}";
+						var assetUrl = $"/asset/{assetDetail.uid}";
+
+						if (!CompanyContext.HasUserReadPermission(assetDetail.Object, assetDetail.ObjectID, assetDetail.TypeID, r.ResourceID))
+						{
+							commentUrl = assetUrl = $"/home";
+						}
+
+						notification.AssetUrl = assetUrl;
+						notification.CommentUrl = commentUrl;
+
+						CompanyContext.Connection.Execute("insert into [queue].[task]([Action], [Object], [ObjectID], [Custom]) values('Notify', 'TaggedComment', @id, @notification)", new { id = comment.ID, notification = JsonConvert.SerializeObject(notification) });
+					});
+				}
+				}			
+			}
+		} 
 
 	}
 }

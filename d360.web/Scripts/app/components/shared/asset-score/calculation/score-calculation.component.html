@@ -2,6 +2,17 @@
 
     <ng-container *ngIf="selected.IsGroup">
         <div class="calculation-group">
+            <div class="title">Maximum Possible Score</div>
+            <div class="indented-line">= adjusted measure weight</div>
+            <div class="indented-line">= (defined weight &#247; sum of weights) x 100% </div>
+            <div class="indented-line">
+                = ({{getAsPrecentage(selected.Weight)}} &#247; {{getAsPrecentageNoMax(summedMeasures)}}) x 100%
+            </div>
+            <div class="indented-line">
+                = {{getAsPrecentage(selected.AdjustedMaxWeight)}}
+            </div>
+        </div>
+        <div class="calculation-group">
             <div class="title">Measure Score</div>
             <div class="indented-line">= sum of sub-measures</div>
             <div class="indented-line">
@@ -13,17 +24,6 @@
             </div>
             <div class="indented-line">
                 = {{getAsPrecentage(selected._adjustedWeight)}}
-            </div>
-        </div>
-        <div class="calculation-group">
-            <div class="title">Maximum Possible Score</div>
-            <div class="indented-line">= adjusted measure weight</div>
-            <div class="indented-line">= (defined weight &#247; sum of weights) x 100% </div>
-            <div class="indented-line">
-                = ({{getAsPrecentage(selected.Weight)}} &#247; {{getAsPrecentageNoMax(summedMeasures)}}) x 100%
-            </div>
-            <div class="indented-line">
-                = {{getAsPrecentage(selected.AdjustedMaxWeight)}}
             </div>
         </div>
     </ng-container>
@@ -54,7 +54,7 @@
                     <div>
                         <div>Weight: {{formatWeight(matchedCondition.Weight)}} - Determined via match on Condition Group {{matchedCondition.Position}}</div>
                         <span *ngFor="let item of matchedCondition.ConditionItems;let i = index;">
-                            <span *ngIf="i > 0">&nbsp;,</span> {{item.FieldName}} {{Operator[item.Operator]}} {{isDate(item) ? (item.Value | date: shortdate) : item.Value}}
+                            <span *ngIf="i > 0">&nbsp;,</span> {{item.FieldName}} {{Operator[item.Operator]}} {{isDate(item) ? (item.Value | utcDate | date: shortdate) : item.Value}}
                         </span>
                     </div>
                 </div>
@@ -69,7 +69,7 @@
             </div>
         </ng-container>
 
-        <ng-container *ngIf="selected.AdjustedWeight != selected.Weight">            
+        <ng-container *ngIf="selected._adjustedMaxWeight !== selected.Weight">
             <div class="calculation-group">
                 <div class="title">Adjusted Weight</div>
                 <div class="indented-line">= condition group weight &#247; weights total &#215; 100% </div>
@@ -81,30 +81,6 @@
                 </div>
                 <div class="indented-line">
                     = {{getAsPrecentage(selected._adjustedMaxWeight)}}
-                </div>
-            </div>
-        </ng-container>
-
-        <ng-container *ngIf="!showPassTest()">
-            <div class="calculation-group">
-                <div class="title">Measure Score</div>
-
-                <div class="indented-line" *ngIf="!selected._adjustedGroupWeight">= rule results score ({{definition?.DataQuality?.ResultOperation}}) &#215; measure weight</div>
-                <div class="indented-line" *ngIf="!selected._adjustedGroupWeight">
-                    = {{getAsPrecentage(selected.DecimalValue)}} &#215; {{getAsPrecentage(selected.AdjustedMaxWeight)}}
-                </div>
-
-                <div class="indented-line" *ngIf="selected._adjustedGroupWeight">= rule results score ({{definition?.DataQuality?.ResultOperation}}) &#215; measure weight &#215; group weight</div>
-                <div class="indented-line" *ngIf="selected._adjustedGroupWeight">
-                    = {{getAsPrecentage(selected.DecimalValue)}} &#215; {{getAsPrecentage(selected.AdjustedMaxWeight)}} &#215; {{getAsPrecentage(selected._adjustedGroupWeight)}}
-                </div>
-
-                <div class="indented-line">
-                    = {{getAsPrecentage(selected._adjustedWeight)}}
-                </div>
-
-                <div style="margin-top: 16px;">
-                    <button class="link" (click)="showRuleResults(true)">Show rule results</button>
                 </div>
             </div>
         </ng-container>
@@ -145,6 +121,30 @@
             </div>
         </ng-container>
 
+        <ng-container *ngIf="!showPassTest()">
+            <div class="calculation-group">
+                <div class="title">Measure Score</div>
+
+                <div class="indented-line" *ngIf="!selected._adjustedGroupWeight">= rule results score ({{definition?.DataQuality?.ResultOperation}}) &#215; measure weight</div>
+                <div class="indented-line" *ngIf="!selected._adjustedGroupWeight">
+                    = {{getAsPrecentage(selected.DecimalValue)}} &#215; {{getAsPrecentage(selected.AdjustedMaxWeight)}}
+                </div>
+
+                <div class="indented-line" *ngIf="selected._adjustedGroupWeight">= rule results score ({{definition?.DataQuality?.ResultOperation}}) &#215; measure weight &#215; group weight</div>
+                <div class="indented-line" *ngIf="selected._adjustedGroupWeight">
+                    = {{getAsPrecentage(selected.DecimalValue)}} &#215; {{getAsPrecentage(selected.AdjustedMaxWeight)}} &#215; {{getAsPrecentage(selected._adjustedGroupWeight)}}
+                </div>
+
+                <div class="indented-line">
+                    = {{getAsPrecentage(selected._adjustedWeight)}}
+                </div>
+
+                <div style="margin-top: 16px;">
+                    <button class="link" (click)="showRuleResults(true)">Show rule results</button>
+                </div>
+            </div>
+        </ng-container>
+
         <ng-container *ngIf="showPassTest()">
             <div class="calculation-group">
                 <div class="title">Measure Score</div>
@@ -160,6 +160,6 @@
 </div>
 
 <d3s-modal [title]="'Rule Results'" additionalClasses="xlarge-dialog modal-measure" (onClose)="showRuleResults(false)" [isVisible]="isRuleResultsModalVisible">
-    <measure-rule-results (onClose)="showRuleResults(false);" [scoreItem]="selected" [assetTypeName]="assetTypeName" [assetName]="assetName">
+    <measure-rule-results (onClose)="showRuleResults(false);" [scoreItem]="selected" [definition]="definition" [assetTypeName]="assetTypeName" [assetName]="assetName">
     </measure-rule-results>
 </d3s-modal>
