@@ -238,10 +238,10 @@ export class AdvancedFilterFieldCondition {
                 return +value;
             }
             if (this.fieldType === "Date") {
-                return `${this.parseDateToString(value)}`
+                return `${this.parseDateToString(value)}`;
             }
             if (this.fieldType === "DateTime") {
-                return `${this.parseDateTimeToString(value)}`
+                return `${this.parseDateTimeToString(value)}`;
             }
 
             if (this.fieldType === "Score") {
@@ -336,7 +336,7 @@ export class AdvancedFilterFieldCondition {
             return value;
         }
         catch (ex) {
-            console.log(value);
+            console.warn(value);
         }
     }
 
@@ -360,21 +360,21 @@ export class AdvancedFilterFieldCondition {
                 value = "*" + value;
                 break;
         }
-        if (this.fieldType == "Number" || this.fieldType == "Decimal") {
+        if (this.fieldType === "Number" || this.fieldType === "Decimal") {
             return value;
         }
 
-        if (this.fieldType == "Date") {
-            return `'${this.parseDateToString(value, true)}'`
+        if (this.fieldType === "Date") {
+            return `'${this.parseDateToString(value, true)}'`;
         }
 
-        if (this.fieldType == "DateTime") {
-            return `'${this.parseDateTimeToString(value, true)}'`
+        if (this.fieldType === "DateTime") {
+            return `'${this.parseDateTimeToString(value, true)}'`;
         }
 
-        if (this.fieldType == "Lookup") {
+        if (this.fieldType === "Lookup") {
             if (value.value) {
-                return `'${value.value}'`
+                return `'${value.value}'`;
             }
         }
         return `'${value}'`;
@@ -434,12 +434,12 @@ export class AdvancedFilterFieldConditionCollection {
             return "";
         }
         let queries: string[] = [];
-
+        let valuesArr: any[];
         this.filters.filter(x => x.field && x.operator).forEach((cond) => {
             if ((cond.fieldType === "Lookup" || cond.fieldType === "Tag" || cond.field === SystemFields.OwnedByFieldCode) && cond.value) {
                 let subConditions: AdvancedFilterFieldCondition[] = [];
-                var valuesArr = cond.value as SelectItem[];
-                valuesArr.forEach(r => {
+                valuesArr = cond.value as SelectItem[];
+                valuesArr.forEach((r) => {
                     subConditions.push(cond.getCopyWithNewValue(r.value));
                 });
 
@@ -484,8 +484,8 @@ export class AdvancedFilterFieldConditionCollection {
             else if (cond.fieldType == null && cond.field.indexOf("|") === 36) {
                 let subConditions: AdvancedFilterFieldCondition[] = [];
                 if (cond.value) {
-                    var valuesArr = cond.value as SelectItem[];
-                    valuesArr.forEach(r => {
+                    valuesArr = cond.value as SelectItem[];
+                    valuesArr.forEach((r) => {
                         var copyCond = cond.getCopyWithNewValue(r.value);
                         copyCond.field = "$Related:" + copyCond.field.split("|")[0];
                         subConditions.push(copyCond);
@@ -549,7 +549,7 @@ export class Filters {
     relationships: string = "";
 
     public applyFilters(params: any) {
-        delete params['_filter'];
+        delete params["_filter"];
         if (this.filter) {
             params._filter = this.filter;
         }
@@ -636,6 +636,6 @@ export class SystemFields {
             fields.push(field);
 
         });
-        return fields.sort((a, b) => { return a.FriendlyName > b.FriendlyName ? 1 : -1 });
+        return fields.sort((a, b) => { return a.FriendlyName > b.FriendlyName ? 1 : -1; });
     }
 }

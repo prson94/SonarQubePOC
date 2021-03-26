@@ -94,7 +94,7 @@ export class DropdownDirective implements AfterContentInit {
             return 0;
         }
         let count: number = 0;
-        this.dropdownRef.options.forEach(opt => {
+        this.dropdownRef.options.forEach((opt) => {
             if (!opt.items) {
                 count++;
             }

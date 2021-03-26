@@ -160,7 +160,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             }
         }
         catch (ex) {
-            console.log(ex);
+            console.warn(ex);
         }
     }
 
@@ -180,15 +180,15 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     getOperators(item: AdvancedFilterFieldCondition) {
+        let options: SelectItem[] = [];
         if (this.condition.field === SystemFields.OwnedByFieldCode) {
-            var options: SelectItem[] = [];
             options.push({ label: "contains", value: "Equals" });
             options.push({ label: "not contains", value: "NotEquals" });
             return options;
         }
 
         if (this.currentField.IsRelationship) {
-            var options: SelectItem[] = [];
+            options = [];
             options.push({ value: "Equals", label: " contains " });
             options.push({ value: "NotEquals", label: " does not contains " });
             options.push({ value: "Populated", label: " exist " });
@@ -207,13 +207,15 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     getValues(item: AdvancedFilterFieldCondition) {
-        if (!this.getFieldType(item)) return [];
+        if (!this.getFieldType(item)) {
+            return [];
+        };
         return this.getFieldType(item).Values;
     }
 
     getFieldType(item: AdvancedFilterFieldCondition) {
         if (this.fields) {
-            return this.fields.filter(x => x.Name === item.field)[0];
+            return this.fields.filter((x) => x.Name === item.field)[0];
         }
 
         return null;
@@ -243,8 +245,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
     onFieldSelected($event) {
         this.isSelectingCurrentField = false;
         var type = this.getFieldType(this.condition);
-        if (this.fields.filter(x => x.Name === this.condition.field).length !== 0) {
-            this.currentField = this.fields.filter(x => x.Name === this.condition.field)[0];
+        if (this.fields.filter((x) => x.Name === this.condition.field).length !== 0) {
+            this.currentField = this.fields.filter((x) => x.Name === this.condition.field)[0];
         }
 
         if (type.Type) {
@@ -338,7 +340,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             .subscribe((res) => {
                 if (!this.currentField.Values || this.currentField.Values.length === 0) {
                     this.currentField.Values = Array.from({ length: res.count });
-                };
+                }
 
                 let loadedData = [];
 
@@ -361,9 +363,9 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
             this.tagService.getTagsList(true).subscribe((res) => {
                 this.currentField.Values = [];
-                res.forEach(str => {
+                res.forEach((str) => {
                     this.currentField.Values.push({ title: str.Value, value: str.Value });
-                })
+                });
 
                 this.isLookupValuesLoading = false;
                 this.setTableWidth();
@@ -375,7 +377,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     loadLookupValuesForOwners() {
-        if (!this.currentField.Values || this.currentField.Values.length == 0) {
+        if (!this.currentField.Values || this.currentField.Values.length === 0) {
             this.isLookupValuesLoading = true;
             this.assetTypeService.GetAssetTypePossibleOwners(this.assetTypeUid).subscribe((res) => {
                 this.currentField.Values = [];
@@ -390,12 +392,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
                     }
                 });
 
-                mapped.filter(x => !x.group).forEach(str => {
+                mapped.filter((x) => !x.group).forEach((str) => {
                     this.currentField.Values.push({ title: str.title, value: str.value });
                 })
 
                 var grouped = _.mapValues(_.groupBy(mapped, "group"),
-                    clist => clist.map((item) => _.omit(item, "group")));
+                    (clist) => clist.map((item) => _.omit(item, "group")));
 
                 var keys = Object.keys(grouped);
                 keys.forEach((key) => {
@@ -422,7 +424,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
         this.lazyLoadSubscription = this.relationshipService
             .getRelationshipLookupValues(this.currentField.Name.split("|")[1], this.currentField.Name.split("|")[0], params)
-            .subscribe(res => {
+            .subscribe((res) => {
                 if (!this.currentField.Values || this.currentField.Values.length === 0) {
                     this.currentField.Values = Array.from({ length: res.count });
                 };
@@ -458,7 +460,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.condition.operator = this.rollbackOperator;
         this.currentOperator = this.rollbackOperator;
 
-        this.isSelectingValue = false
+        this.isSelectingValue = false;
     }
 
     hasRemoveButton() {
@@ -581,7 +583,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
         var type = this.getTypeForCondition(this.condition);
 
-        if (type == "Number" || type == "Decimal" || type == "Score") {
+        if (type === "Number" || type === "Decimal" || type === "Score") {
 
             if (this.currentOperator.toString() === "IsInBand") {
                 this.currentField.Values = [];
@@ -600,7 +602,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
 
-        if (type == "Date") {
+        if (type === "Date") {
             //First handle special case eq. Between
             if (this.currentOperator.toString() === "Between") {
                 return "multi-date";
@@ -609,7 +611,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             return "date";
         }
 
-        if (type == "DateTime") {
+        if (type === "DateTime") {
             //First handle special case eq. Between
             if (this.currentOperator.toString() === "Between") {
                 return "multi-date-time";
@@ -618,7 +620,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             return "date-time";
         }
 
-        if (type == "Lookup" || type === "Tag" || this.currentField.IsRelationship) {
+        if (type === "Lookup" || type === "Tag" || this.currentField.IsRelationship) {
             return "lookup";
         }
 
@@ -636,7 +638,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
     isLazyLoad() {
 
         if (this.currentField.Name === SystemFields.OwnedByFieldCode
-            || (this.currentField.Type && this.currentField.Type.Tag) != null
+            || (this.currentField.Type && this.currentField.Type.Tag) !== null
         ) {
             return false;
         }

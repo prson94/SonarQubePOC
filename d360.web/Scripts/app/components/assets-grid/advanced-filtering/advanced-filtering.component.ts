@@ -1,4 +1,4 @@
-﻿import { Component, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, OnChanges, SimpleChanges, OnInit, OnDestroy, Output, EventEmitter, AfterViewChecked, ViewChildren, ElementRef } from "@angular/core";
+﻿import { Component, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, OnChanges, SimpleChanges, OnInit, OnDestroy, Output, EventEmitter, AfterViewChecked, ViewChildren, ElementRef, HostBinding } from "@angular/core";
 import * as _ from "lodash";
 import { OperatorModel } from "../../../models/operator.model";
 import { FieldsObservableService } from "../../../services/fieldsObservable.service";
@@ -35,6 +35,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 
     conditions: AdvancedFilterFieldConditionCollection;
 
+
     visible: boolean = false;
 
     filterMenu = [
@@ -70,6 +71,7 @@ export class AdvancedFilteringComponent implements OnChanges {
         }
     ]
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
+    @HostBinding('class') class = 'advanced-filtering-component';
 
     constructor(public cdRef: ChangeDetectorRef,
         private elRef: ElementRef,

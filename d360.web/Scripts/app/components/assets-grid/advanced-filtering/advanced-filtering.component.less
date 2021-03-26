@@ -1,6 +1,6 @@
 ﻿@import "../../../../../Content/styles/infogix-ui/infogix-ui.less";
 
-advanced-filtering {
+.advanced-filtering-component {
   flex-grow: 1;
   margin-left: 8px;
 }
@@ -16,12 +16,6 @@ advanced-filtering {
 
   .p-datepicker-trigger {
     top: 11px !important;
-  }
-
-  .p-selectable-row {
-    .p-checkbox {
-      pointer-events: auto;
-    }
   }
 
   .lookup-selection {
@@ -173,7 +167,7 @@ advanced-filtering {
     margin-top: 8px;
   }
 
-  .ig-date .ig-input, p-calendar .ig-date .ig-input {
+  .ig-date, .ig-input {
     width: 204px;
   }
 }
@@ -196,21 +190,17 @@ advanced-filtering {
     }
   }
 
+  .p-selectable-row {
+    .p-checkbox {
+      pointer-events: auto;
+    }
+  }
+
   tr {
     color: black;
     padding-top: 0 !important;
     padding-bottom: 0 !important;
     outline: 0;
-
-    &.group-name {
-      pointer-events: none;
-
-      .item-value {
-        padding: 3px 0 !important;
-        font-weight: bold;
-        color: #818385;
-      }
-    }
 
     td, th {
       background: white !important;
@@ -229,6 +219,16 @@ advanced-filtering {
         padding: 0;
         color: black;
         font-weight: normal;
+      }
+    }
+
+    &.group-name {
+      pointer-events: none;
+
+      .item-value {
+        padding: 3px 0 !important;
+        font-weight: bold;
+        color: #818385;
       }
     }
 
