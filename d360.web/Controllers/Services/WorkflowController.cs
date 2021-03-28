@@ -2772,7 +2772,7 @@ order by wi.StartedOn desc";
                     fieldChange.UseCurrentDate = field["@UseCurrentDate"] != null ? field["@UseCurrentDate"] : false;
                     fieldChange.AppendValue = field["@AppendValue"] != null ? field["@AppendValue"] : "";
                     fieldChange.ClearValue = field["@ClearValue"] != null ? field["@ClearValue"] : "";
-                    fieldChange.UseOutputValue = field["@UseOutputValue"] != null ? field["@UseOutputValue"] : "";
+                    fieldChange.UseOutputValue = field["@UseOutputValue"] != null ? field["@UseOutputValue"] : "false";
                     FieldType fieldType = Company.GetById<FieldType>(fieldTypeId);
                     fieldChange.FieldName = fieldType?.FriendlyName;
                     fieldChange.Type = fieldType?.Type;
@@ -2862,6 +2862,10 @@ order by wi.StartedOn desc";
                             fieldChange.Value = actionField?.FormattedValue;
                         }
 
+                    }
+                    else if (fieldChange.UseOutputValue == true && formFieldId != null && stepId != 0)
+                    {
+                        fieldChange.Value = Company.GetOutputFieldValue(stepId, detail.ItemID, formFieldId) ?? "";
                     }
 
                     fieldChanges.Add(fieldChange);
@@ -3742,8 +3746,8 @@ order by wi.StartedOn desc";
                     if (fields.Count == null)
                     {
                         var field = fields;
-
-                        if (field["@UseFormValue"] != null && field["@UseFormValue"].ToString().ToLower() == "true" && mappings.ContainsKey((int)field["@FormStepId"]))
+                        var shouldUpdate = (field["@UseFormValue"] != null && field["@UseFormValue"].ToString().ToLower() == "true") || (field["@UseOutputValue"] != null && field["@UseOutputValue"].ToString().ToLower() == "true");
+                        if (shouldUpdate && mappings.ContainsKey((int)field["@FormStepId"]))
                             field["@FormStepId"] = mappings[(int)field["@FormStepId"]];
                     }
                     else
@@ -3751,8 +3755,9 @@ order by wi.StartedOn desc";
                         for (var i = 0; i < count; i++)
                         {
                             var field = fields[i];
+                            var shouldUpdate = (field["@UseFormValue"] != null && field["@UseFormValue"].ToString().ToLower() == "true") || (field["@UseOutputValue"] != null && field["@UseOutputValue"].ToString().ToLower() == "true");
 
-                            if (field["@UseFormValue"] != null && field["@UseFormValue"].ToString().ToLower() == "true" && mappings.ContainsKey((int)field["@FormStepId"]))
+                            if (shouldUpdate && mappings.ContainsKey((int)field["@FormStepId"]))
                                 field["@FormStepId"] = mappings[(int)field["@FormStepId"]];
                         }
                     }

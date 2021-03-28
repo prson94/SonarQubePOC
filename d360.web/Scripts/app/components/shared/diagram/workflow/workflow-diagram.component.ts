@@ -424,6 +424,18 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                                     }
                                 }
                             }
+
+                            if (field['@UseOutputValue'] != null && field['@UseOutputValue'].toString() == 'true') {
+                                if (field['@FormStepId'] != null && field['@FormFieldId'] != null) {
+                                    let outputNode = nodeList.find(n => n.key == field['@FormStepId'].toString());
+                                    if (outputNode != null && outputNode.settings != null && outputNode.settings.HTTPResponse != null && outputNode.settings.HTTPResponse.Outputs != null) {
+                                        let outputField = outputNode.settings.HTTPResponse.Outputs.find(f => f.Id == field['@FormFieldId']);
+                                        if (outputField != null) {
+                                            field['@FormLabel'] = 'HTTP Response :: ' + outputField.Name;
+                                        }
+                                    }
+                                }
+                            }
                         });
                     }
                 }
@@ -904,13 +916,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 if (n.settings.HTTPResponse == null) {
                     n.settings.HTTPResponse = new HTTPResponseSettings();
                 }
-                if (n.settings.HTTPResponse.Outputs != null && n.settings.HTTPResponse.Outputs.length > 0) {
+                if (n.settings.HTTPResponse.Outputs != null && n.settings.HTTPResponse.Outputs.length == null) {
+                    n.settings.HTTPResponse.Outputs = [n.settings.HTTPResponse.Outputs as any];
                     n.settings.HTTPResponse.Outputs.forEach(o => {
                         this.workflowFieldsService.pushOutputField(o);
                     });
-                }
-                if (n.settings.HTTPResponse.Outputs != null && n.settings.HTTPResponse.Outputs.length == null) {
-                    n.settings.HTTPResponse.Outputs = [n.settings.HTTPResponse.Outputs as any];
                 }
             }
 
@@ -985,7 +995,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             }
 
             if (m.activityType == WorkflowActivityType.HTTPResponse) {
-                console.log(settings, 'convert');
                 if (settings.HTTPResponse != null && settings.HTTPResponse.Outputs != null) {
                     settings.HTTPResponse.Outputs.forEach(o => {
                         delete o['@FormFieldId'];

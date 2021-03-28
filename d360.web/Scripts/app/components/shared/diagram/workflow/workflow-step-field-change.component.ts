@@ -236,7 +236,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         let stepId = this.selectedFormFieldId.split("|")[1];
         let fieldId = this.selectedFormFieldId.split("|")[0];
         let field = this.outputFields.find(f => f.Id == fieldId && f.StepId == stepId);
-        console.log('change', e, field, this.outputFields);
+
         if (field == null) {
             this.selectedField['@FormFieldId'] = null;
             this.selectedField['@FormStepId'] = null;
@@ -380,7 +380,6 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         this.setValueType();
 
         if (this.valueType == 'form' || this.valueType == 'output') {
-            console.log()
             this.selectedFormFieldId = this.selectedField['@FormFieldId'] + '|' + this.selectedField['@FormStepId'];
         }
 

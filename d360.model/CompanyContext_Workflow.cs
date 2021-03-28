@@ -1433,7 +1433,7 @@ namespace d360.model
                     var val = DateTime.UtcNow.Date.ToShortDateString();
                     this.UpdateField(objectId, objectType, fieldType, item, val);
                 }
-                else if (!item.IsActionForm && !item.UseFormValue)
+                else if (!item.IsActionForm && !item.UseFormValue && !item.UseOutputValue)
                 {
                     var val = item.Value;
                     this.UpdateField(objectId, objectType, fieldType, item, val);
@@ -1586,7 +1586,7 @@ namespace d360.model
 
         }
 
-        private string GetOutputFieldValue(int stepId, long itemId, string fieldId)
+        public string GetOutputFieldValue(int stepId, long itemId, string fieldId)
         {
             var step = WorkflowItemSteps.FirstOrDefault(s => s.StepID == stepId && s.ItemID == itemId);
             if (step != null)
