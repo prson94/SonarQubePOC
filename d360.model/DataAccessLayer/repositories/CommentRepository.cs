@@ -67,7 +67,7 @@ namespace d360.model.DataAccessLayer
 
 		#endregion
 
-		public async Task<CommentDetail> AddComment(CommentApiPostModel comment)
+		public async Task<CommentDetail> AddComment(CommentApiPostModel comment, CommentType commentType = CommentType.Social)
 		{
 			validateComment(comment);
 
@@ -116,7 +116,7 @@ namespace d360.model.DataAccessLayer
 
 			var dbComment = new Comment
 			{
-				CommentType = CommentType.Social,
+				CommentType = commentType,
 				CreatedBy = CompanyContext.CurrentResourceID,
 				CreatedOn = DateTime.UtcNow,
 				IsDeleted = false,
