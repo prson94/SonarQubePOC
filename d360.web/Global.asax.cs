@@ -169,25 +169,7 @@ namespace d360.web
             System.Web.Helpers.AntiForgeryConfig.SuppressXFrameOptionsHeader = true;
 
             Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration.Active.InstrumentationKey = System.Web.Configuration.WebConfigurationManager.AppSettings["AppInsightsInstrumentationKey"];
-            #region Autofac
-
-            Trace.WriteLine("Begin - Dependency Injection With Autofac");
-
-            try
-            {
-                var di = new DiModel();
-                var container = di.GetContainer();
-                DependencyResolver.SetResolver(new Autofac.Integration.Mvc.AutofacDependencyResolver(container));
-                GlobalConfiguration.Configuration.DependencyResolver = new Autofac.Integration.WebApi.AutofacWebApiDependencyResolver(container);
-            }
-            catch (Exception )
-            {
-            }
-
-            Trace.WriteLine("End - Dependency Injection With Autofac");
             
-            #endregion
-
             GlobalConfiguration.Configure(WebApiConfig.Register);
             CryptoConfig.AddAlgorithm(typeof(RSAPKCS1SHA256SignatureDescription), "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256");
             // set the app insights telemetry initializer so that the user id can be passed with app insights info
