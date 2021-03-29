@@ -33,13 +33,13 @@ namespace d360.model.DataAccessLayer
             this.Community = community;
         }
 
-		#endregion DI
+        #endregion DI
 
-		#region Common Sql
+        #region Common Sql
 
-		const string COMMENT_TABLE_COLUMNS = @"C.Uid, C.ID, C.ParentID, C.CommentType, iif(C.IsDeleted = 1, '[Comment removed]', C.Body) as Body, C.CreatedOn, C.CreatedBy, C.UpdatedBy, C.UpdatedOn, C.IsDeleted"; 
+        const string COMMENT_TABLE_COLUMNS = @"C.Uid, C.ID, C.ParentID, C.CommentType, iif(C.IsDeleted = 1, '[Comment removed]', C.Body) as Body, C.CreatedOn, C.CreatedBy, C.UpdatedBy, C.UpdatedOn, C.IsDeleted";
 
-		const string TAGS_JSON_SQL = @"coalesce(
+        const string TAGS_JSON_SQL = @"coalesce(
 			(
 			select	CRA.Uid as AssetUid,
 					CRA.AssetTypeUid,
@@ -55,7 +55,7 @@ namespace d360.model.DataAccessLayer
 			for		json path
 			), '[]') as TagsJson";
 
-		const string EMOJIS_JSON_SQL = @"coalesce(
+        const string EMOJIS_JSON_SQL = @"coalesce(
 			(
 			select	count(ResourceID) as [Count],
 					Emoji
@@ -65,69 +65,69 @@ namespace d360.model.DataAccessLayer
 			for		json path
 			), '[]') as EmojisJson";
 
-		#endregion
+        #endregion
 
-		public async Task<CommentDetail> AddComment(CommentApiPostModel comment)
-		{
-			validateComment(comment);
+        public async Task<CommentDetail> AddComment(CommentApiPostModel comment)
+        {
+            validateComment(comment);
 
-			int? parentId = null;
-			long? assetId = null;
-			Asset commentAsset = null;
-			if (comment.ParentUid.HasValue && comment.ParentUid != Guid.Empty)
-			{
-				var parentComment = CompanyContext.Filter<Comment>(o => o.Uid == comment.ParentUid.Value, o => o.Asset).SingleOrDefault();
-				if (parentComment == null)
-				{
-					throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Parent comment not found");
-				}
-				else 
-				{
-					parentId = parentComment.ID;
-					comment.AssetUid = parentComment.Asset.uid;
-					assetId = parentComment.Asset.ID;
+            int? parentId = null;
+            long? assetId = null;
+            Asset commentAsset = null;
+            if (comment.ParentUid.HasValue && comment.ParentUid != Guid.Empty)
+            {
+                var parentComment = CompanyContext.Filter<Comment>(o => o.Uid == comment.ParentUid.Value, o => o.Asset).SingleOrDefault();
+                if (parentComment == null)
+                {
+                    throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Parent comment not found");
+                }
+                else
+                {
+                    parentId = parentComment.ID;
+                    comment.AssetUid = parentComment.Asset.uid;
+                    assetId = parentComment.Asset.ID;
 
-					commentAsset = parentComment.Asset;
-				}
-			}
+                    commentAsset = parentComment.Asset;
+                }
+            }
 
-			if (comment.AssetUid == Guid.Empty)
-			{
-				throw new GenericException(System.Net.HttpStatusCode.BadRequest, "", "You must provide a valid Uid for the AssetUid property.");
-			}
+            if (comment.AssetUid == Guid.Empty)
+            {
+                throw new GenericException(System.Net.HttpStatusCode.BadRequest, "", "You must provide a valid Uid for the AssetUid property.");
+            }
 
-			if (!assetId.HasValue)
-			{
-				commentAsset = CompanyContext.Filter<Asset>(a => a.uid == comment.AssetUid).FirstOrDefault();
-				if (commentAsset == null)
-				{
-					throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Asset with provided Uid does not exist.");
-				}
-				assetId = commentAsset.ID;				
-			}
+            if (!assetId.HasValue)
+            {
+                commentAsset = CompanyContext.Filter<Asset>(a => a.uid == comment.AssetUid).FirstOrDefault();
+                if (commentAsset == null)
+                {
+                    throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Asset with provided Uid does not exist.");
+                }
+                assetId = commentAsset.ID;
+            }
 
-			if (commentAsset != null)
-			{
-				if (!CompanyContext.HasAssetPermission(commentAsset.Object, commentAsset.ObjectID, Permission.ReadAsset))
-				{
-					throw new GenericException(System.Net.HttpStatusCode.Forbidden, "", "You do not have permissions to add a comment to this asset.");
-				}
-			}
+            if (commentAsset != null)
+            {
+                if (!CompanyContext.HasAssetPermission(commentAsset.Object, commentAsset.ObjectID, Permission.ReadAsset))
+                {
+                    throw new GenericException(System.Net.HttpStatusCode.Forbidden, "", "You do not have permissions to add a comment to this asset.");
+                }
+            }
 
-			var dbComment = new Comment
-			{
-				CommentType = CommentType.Social,
-				CreatedBy = CompanyContext.CurrentResourceID,
-				CreatedOn = DateTime.UtcNow,
-				IsDeleted = false,
-				AssetID = assetId.Value,
-				Body = comment.Body,
-				ParentID = parentId,
-				Uid = Guid.NewGuid(),
-				UpdatedBy = CompanyContext.CurrentResourceID,
-				UpdatedOn = DateTime.UtcNow
-			};
-			var commentAdded = CompanyContext.Add(dbComment);
+            var dbComment = new Comment
+            {
+                CommentType = CommentType.Social,
+                CreatedBy = CompanyContext.CurrentResourceID,
+                CreatedOn = DateTime.UtcNow,
+                IsDeleted = false,
+                AssetID = assetId.Value,
+                Body = comment.Body,
+                ParentID = parentId,
+                Uid = Guid.NewGuid(),
+                UpdatedBy = CompanyContext.CurrentResourceID,
+                UpdatedOn = DateTime.UtcNow
+            };
+            var commentAdded = CompanyContext.Add(dbComment);
 
 			if (commentAdded)
 			{
@@ -146,149 +146,149 @@ namespace d360.model.DataAccessLayer
 				}
 				CompanyContext.Connection.Execute("delete C from CommentRelation C left join Asset A on A.ID = C.AssetID where C.CommentID = @commentId and A.ID is null", new { commentId });
 
-				return await GetCommentDetailByUid(dbComment.Uid).ConfigureAwait(false);
-			}
-			else
-			{
-				throw new GenericException(System.Net.HttpStatusCode.InternalServerError, "", "Comment was not successfully created.");
-			}
-		}
-
-		public bool AddVote(Guid commentUid, int resourceId, Emoji emoji, bool toggle = true)
-		{
-			var emojiGroup = emoji.GetGroupName();
-			var groupedEmojis = new List<int>();
-
-			if (!string.IsNullOrEmpty(emojiGroup))
+                return await GetCommentDetailByUid(dbComment.Uid).ConfigureAwait(false);
+            }
+            else
             {
-				groupedEmojis = Emoji.ThumbsDown
-					.GetEmojiInfoList()
-					.Where(e => e.Group == emojiGroup)
-					.Select(e => e.ID)
-					.ToList();
-			}
-			else
+                throw new GenericException(System.Net.HttpStatusCode.InternalServerError, "", "Comment was not successfully created.");
+            }
+        }
+
+        public bool AddVote(Guid commentUid, int resourceId, Emoji emoji, bool toggle = true)
+        {
+            var emojiGroup = emoji.GetGroupName();
+            var groupedEmojis = new List<int>();
+
+            if (!string.IsNullOrEmpty(emojiGroup))
             {
-				groupedEmojis.Add((int)emoji);
+                groupedEmojis = Emoji.ThumbsDown
+                    .GetEmojiInfoList()
+                    .Where(e => e.Group == emojiGroup)
+                    .Select(e => e.ID)
+                    .ToList();
+            }
+            else
+            {
+                groupedEmojis.Add((int)emoji);
             }
 
-			var comment = CompanyContext.Filter<Comment>(o => o.Uid == commentUid).SingleOrDefault();
-			if (comment != null)
-			{
-				var commentVote = CompanyContext.Filter<CommentVote>(o => o.CommentID == comment.ID && o.ResourceID == resourceId && groupedEmojis.Contains((int)o.Emoji)).FirstOrDefault();
-				if (commentVote == null)
-				{
-					if (CompanyContext.Add(new CommentVote { CommentID = comment.ID, ResourceID = resourceId, Emoji = emoji }))
-					{
-						return true;
-					}
-				}
-				else if (commentVote.Emoji != emoji)
+            var comment = CompanyContext.Filter<Comment>(o => o.Uid == commentUid).SingleOrDefault();
+            if (comment != null)
+            {
+                var commentVote = CompanyContext.Filter<CommentVote>(o => o.CommentID == comment.ID && o.ResourceID == resourceId && groupedEmojis.Contains((int)o.Emoji)).FirstOrDefault();
+                if (commentVote == null)
                 {
-					commentVote.Emoji = emoji;
-					return CompanyContext.Update(commentVote);
+                    if (CompanyContext.Add(new CommentVote { CommentID = comment.ID, ResourceID = resourceId, Emoji = emoji }))
+                    {
+                        return true;
+                    }
                 }
-				else if (toggle == true)
+                else if (commentVote.Emoji != emoji)
                 {
-					DeleteVote(commentUid, resourceId, emoji);
+                    commentVote.Emoji = emoji;
+                    return CompanyContext.Update(commentVote);
                 }
-				
-				return false;
-			}
-			else 
-			{
-				throw new NotFoundException("comment");
-			}
-		}
+                else if (toggle == true)
+                {
+                    DeleteVote(commentUid, resourceId, emoji);
+                }
 
-		public bool DeleteComment(Guid commentUid)
-		{
-			var dbComment = CompanyContext.Filter<Comment>(o => o.Uid == commentUid).SingleOrDefault();
+                return false;
+            }
+            else
+            {
+                throw new NotFoundException("comment");
+            }
+        }
 
-			if (dbComment == null)
-			{
-				throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
-			}
+        public bool DeleteComment(Guid commentUid)
+        {
+            var dbComment = CompanyContext.Filter<Comment>(o => o.Uid == commentUid).SingleOrDefault();
 
-			if (dbComment.CreatedBy != CompanyContext.CurrentResourceID && !CompanyContext.CurrentResourceIsAdmin)
-			{
-				throw new GenericException(System.Net.HttpStatusCode.Forbidden, "You are not the creator of this comment or administrator and may not update it.", "You are not the creator of this comment or administrator and may not update it.");
-			}
+            if (dbComment == null)
+            {
+                throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
+            }
 
-			bool commentUpdated = false;
-			if (CompanyContext.Any<Comment>(c => c.ParentID == dbComment.ID))
-			{
-				dbComment.IsDeleted = true;
-				dbComment.UpdatedBy = CompanyContext.CurrentResourceID;
-				dbComment.UpdatedOn = DateTime.UtcNow;
+            if (dbComment.CreatedBy != CompanyContext.CurrentResourceID && !CompanyContext.CurrentResourceIsAdmin)
+            {
+                throw new GenericException(System.Net.HttpStatusCode.Forbidden, "You are not the creator of this comment or administrator and may not update it.", "You are not the creator of this comment or administrator and may not update it.");
+            }
 
-				commentUpdated = CompanyContext.Update(dbComment);
-			}
-			else
-			{
-				commentUpdated = CompanyContext.Delete(dbComment);
-			}
+            bool commentUpdated = false;
+            if (CompanyContext.Any<Comment>(c => c.ParentID == dbComment.ID))
+            {
+                dbComment.IsDeleted = true;
+                dbComment.UpdatedBy = CompanyContext.CurrentResourceID;
+                dbComment.UpdatedOn = DateTime.UtcNow;
 
-			if (commentUpdated)
-			{
-				return true;
-			}
-			else
-			{
-				throw new GenericException(System.Net.HttpStatusCode.InternalServerError, "Comment was not successfully removed.");
-			}
-		}
+                commentUpdated = CompanyContext.Update(dbComment);
+            }
+            else
+            {
+                commentUpdated = CompanyContext.Delete(dbComment);
+            }
 
-		public bool DeleteVote(Guid commentUid, int resourceId, Emoji emoji)
-		{
-			var comment = CompanyContext.Filter<Comment>(o => o.Uid == commentUid).SingleOrDefault();
-			if (comment != null)
-			{
-				var commentVote = CompanyContext.Filter<CommentVote>(o => o.CommentID == comment.ID && o.ResourceID == resourceId && o.Emoji == emoji).FirstOrDefault();
-				if (commentVote != null)
-				{
-					if (CompanyContext.Delete(commentVote))
-					{
-						return true;
-					}
-				}
+            if (commentUpdated)
+            {
+                return true;
+            }
+            else
+            {
+                throw new GenericException(System.Net.HttpStatusCode.InternalServerError, "Comment was not successfully removed.");
+            }
+        }
 
-				return false;
-			}
-			else
-			{
-				throw new NotFoundException("comment");
-			}
-		}
+        public bool DeleteVote(Guid commentUid, int resourceId, Emoji emoji)
+        {
+            var comment = CompanyContext.Filter<Comment>(o => o.Uid == commentUid).SingleOrDefault();
+            if (comment != null)
+            {
+                var commentVote = CompanyContext.Filter<CommentVote>(o => o.CommentID == comment.ID && o.ResourceID == resourceId && o.Emoji == emoji).FirstOrDefault();
+                if (commentVote != null)
+                {
+                    if (CompanyContext.Delete(commentVote))
+                    {
+                        return true;
+                    }
+                }
 
-		public async Task<CommentDetail> EditComment(Guid commentUid, CommentApiPutModel comment)
-		{
-			validateComment(comment);
+                return false;
+            }
+            else
+            {
+                throw new NotFoundException("comment");
+            }
+        }
 
-			var dbComment = CompanyContext.Filter<Comment>(o => o.Uid == commentUid).SingleOrDefault();
+        public async Task<CommentDetail> EditComment(Guid commentUid, CommentApiPutModel comment)
+        {
+            validateComment(comment);
 
-			if (dbComment == null)
-			{
-				throw new NotFoundException("comment");
-			}
+            var dbComment = CompanyContext.Filter<Comment>(o => o.Uid == commentUid).SingleOrDefault();
 
-			if (dbComment.CreatedBy != CompanyContext.CurrentResourceID)
-			{
-				throw new GenericException(System.Net.HttpStatusCode.Forbidden, "You are not the creator of this comment and may not update it.", "You are not the creator of this comment and may not update it.");
-			}
-			
+            if (dbComment == null)
+            {
+                throw new NotFoundException("comment");
+            }
 
-			dbComment.Body = comment.Body;
-			dbComment.UpdatedBy = CompanyContext.CurrentResourceID;
-			dbComment.UpdatedOn = DateTime.UtcNow;
+            if (dbComment.CreatedBy != CompanyContext.CurrentResourceID)
+            {
+                throw new GenericException(System.Net.HttpStatusCode.Forbidden, "You are not the creator of this comment and may not update it.", "You are not the creator of this comment and may not update it.");
+            }
 
-			var commentUpdated = CompanyContext.Update(dbComment);
 
-			if (commentUpdated)
-			{
-				var commentId = dbComment.ID;
+            dbComment.Body = comment.Body;
+            dbComment.UpdatedBy = CompanyContext.CurrentResourceID;
+            dbComment.UpdatedOn = DateTime.UtcNow;
 
-				CompanyContext.Connection.Execute("delete CommentRelation where CommentID = @commentId", new { commentId });
+            var commentUpdated = CompanyContext.Update(dbComment);
+
+            if (commentUpdated)
+            {
+                var commentId = dbComment.ID;
+
+                CompanyContext.Connection.Execute("delete CommentRelation where CommentID = @commentId", new { commentId });
 
 				if (comment.Tags != null)
 				{
@@ -305,20 +305,20 @@ namespace d360.model.DataAccessLayer
 						SendCommentNotification(taggedAssets, dbComment);
 					}
 
-					CompanyContext.Connection.Execute("delete C from CommentRelation C left join Asset A on A.id = C.Assetid where C.CommentID = @commentId and A.ID is null", new { commentId });				
-				}
+                    CompanyContext.Connection.Execute("delete C from CommentRelation C left join Asset A on A.id = C.Assetid where C.CommentID = @commentId and A.ID is null", new { commentId });
+                }
 
-				return await GetCommentDetailByUid(dbComment.Uid).ConfigureAwait(false);
-			}
-			else
-			{
-				throw new GenericException(System.Net.HttpStatusCode.InternalServerError, "", "Comment was not successfully updated.");
-			}
-		}
+                return await GetCommentDetailByUid(dbComment.Uid).ConfigureAwait(false);
+            }
+            else
+            {
+                throw new GenericException(System.Net.HttpStatusCode.InternalServerError, "", "Comment was not successfully updated.");
+            }
+        }
 
-		public async Task<List<CommentCount>> GetCommentCountsByFollower(int resourceId, string searchPhrase = null, DateTime? rangeStart = null, DateTime? rangeEnd = null)
-		{
-			var sql = @"
+        public async Task<List<CommentCount>> GetCommentCountsByFollower(int resourceId, string searchPhrase = null, DateTime? rangeStart = null, DateTime? rangeEnd = null)
+        {
+            var sql = @"
 	SELECT	i.CommentType, 
 			u.[Count], 
 			u.CommentTypeName 
@@ -373,10 +373,10 @@ namespace d360.model.DataAccessLayer
 			) i on i.CommentTypeName = u.CommentTypeName
 order by u.CommentTypeName";
 
-			var request = await CompanyContext.QueryAsync<CommentCount>(sql, new { resourceId, searchPhrase, rangeStart, rangeEnd });
-			var counts = request.ToList();
-			return counts;
-		}
+            var request = await CompanyContext.QueryAsync<CommentCount>(sql, new { resourceId, searchPhrase, rangeStart, rangeEnd });
+            var counts = request.ToList();
+            return counts;
+        }
 
 		public async Task<CommentDetails> GetCommentDetails(IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
@@ -393,142 +393,157 @@ order by u.CommentTypeName";
 				new DefaultFilter("ResourceName", "R.FirstName + ' ' + R.LastName", SqlFieldType.Text)
 			};
 
-			DynamicParameters advFilterArgs = null;
-			List<string> advFilterStatements = null;
-			CompanyContext.ParseAdvancedFilterQueryParameter(queryParams, queryFieldOptions, out advFilterArgs, out advFilterStatements);
-			if (advFilterArgs != null && advFilterStatements != null)
-			{
-				dbArgs.AddDynamicParams(advFilterArgs);
-				whereStatements.AddRange(advFilterStatements);
-			}
-
-			Guid assetUid = Guid.Empty;
-			bool assetUidPresent = false;
-			if (queryParams.Any(qp => qp.Key.ToLower() == "assetuid"))
-			{
-				var asset = queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetuid").Value;
-				assetUidPresent = Guid.TryParse(asset, out assetUid);
-			}
-			Guid assetTypeUid = Guid.Empty;
-			bool assetTypeUidPresent = false;
-			if (queryParams.Any(qp => qp.Key.ToLower() == "assettypeuid"))
-			{
-				var assetType = queryParams.FirstOrDefault(x => x.Key.ToLower() == "assettypeuid").Value;
-				assetTypeUidPresent = Guid.TryParse(assetType, out assetTypeUid);
-			}
-			Guid followerUid = Guid.Empty;
-			bool followerUidPresent = false;
-			if (queryParams.Any(qp => qp.Key.ToLower() == "followeruid"))
-			{
-				var follower = queryParams.FirstOrDefault(x => x.Key.ToLower() == "followeruid").Value;
-				followerUidPresent = Guid.TryParse(follower, out followerUid);
-			}
-
-			#region "Ng additional filter: set variable"
-
-			var followerCurrResUidPresent = false;
-			
-			if (queryParams.Any(qp => qp.Key.ToLower() == "followeruidiscurrentresourceuid"))
+            DynamicParameters advFilterArgs = null;
+            List<string> advFilterStatements = null;
+            CompanyContext.ParseAdvancedFilterQueryParameter(queryParams, queryFieldOptions, out advFilterArgs, out advFilterStatements);
+            if (advFilterArgs != null && advFilterStatements != null)
             {
-				var followerCurrentResourceUid = queryParams.FirstOrDefault(x => x.Key.ToLower() == "followeruidiscurrentresourceuid").Value;
-				if (followerCurrentResourceUid.ToLower() == "true")
-				{
-					followerCurrResUidPresent = true;
-				}
-			}
+                dbArgs.AddDynamicParams(advFilterArgs);
+                whereStatements.AddRange(advFilterStatements);
+            }
 
-			int CommentTypeID = 0;
-			bool CommentTypeIDPresent = false;
-			if (queryParams.Any(qp => qp.Key.ToLower() == "commenttypeid"))
-			{
-				var CommentTypeIDValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "commenttypeid").Value;
-				CommentTypeIDPresent = int.TryParse(CommentTypeIDValue, out CommentTypeID);
-			}
+            Guid assetUid = Guid.Empty;
+            bool assetUidPresent = false;
+            if (queryParams.Any(qp => qp.Key.ToLower() == "assetuid"))
+            {
+                var asset = queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetuid").Value;
+                assetUidPresent = Guid.TryParse(asset, out assetUid);
+            }
+            Guid assetTypeUid = Guid.Empty;
+            bool assetTypeUidPresent = false;
+            if (queryParams.Any(qp => qp.Key.ToLower() == "assettypeuid"))
+            {
+                var assetType = queryParams.FirstOrDefault(x => x.Key.ToLower() == "assettypeuid").Value;
+                assetTypeUidPresent = Guid.TryParse(assetType, out assetTypeUid);
+            }
+            Guid followerUid = Guid.Empty;
+            bool followerUidPresent = false;
+            if (queryParams.Any(qp => qp.Key.ToLower() == "followeruid"))
+            {
+                var follower = queryParams.FirstOrDefault(x => x.Key.ToLower() == "followeruid").Value;
+                followerUidPresent = Guid.TryParse(follower, out followerUid);
+            }
 
-			bool IsShowDeleteComment = true;
-			bool DeletedCommentPresent = false;
-			if (queryParams.Any(qp => qp.Key.ToLower() == "showdeletecomment"))
-			{
-				var ShowDeleteCommentValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "showdeletecomment").Value;
-				DeletedCommentPresent = bool.TryParse(ShowDeleteCommentValue, out IsShowDeleteComment);
-			}
+            #region "Ng additional filter: set variable"
 
-			int Days = 0;
-			bool daysToLookBackPresent = false;
-			if (queryParams.Any(qp => qp.Key.ToLower() == "daystolookback"))
-			{
-				var daysToLookBackValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "daystolookback").Value;
-				daysToLookBackPresent = int.TryParse(daysToLookBackValue, out Days);
-			}
-			#endregion
+            var followerCurrResUidPresent = false;
 
-			var orderColumn = CompanyContext.ParseOrderColumn(queryParams, queryFieldOptions, "C.CreatedOn");
-			var orderDirection = CompanyContext.ParseOrderDirection(queryParams, "desc");
-			var orderBySql = $" order by {orderColumn} {orderDirection} ";
+            if (queryParams.Any(qp => qp.Key.ToLower() == "followeruidiscurrentresourceuid"))
+            {
+                var followerCurrentResourceUid = queryParams.FirstOrDefault(x => x.Key.ToLower() == "followeruidiscurrentresourceuid").Value;
+                if (followerCurrentResourceUid.ToLower() == "true")
+                {
+                    followerCurrResUidPresent = true;
+                }
+            }
 
-			int pageNum = CompanyContext.ParsePageNumber(queryParams, 1);
-			int pageSize = CompanyContext.ParsePageSize(queryParams);
-			string offset = CompanyContext.ParsePageOffsetSql(pageNum, pageSize);
+            int CommentTypeID = 0;
+            bool CommentTypeIDPresent = false;
+            if (queryParams.Any(qp => qp.Key.ToLower() == "commenttypeid"))
+            {
+                var CommentTypeIDValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "commenttypeid").Value;
+                CommentTypeIDPresent = int.TryParse(CommentTypeIDValue, out CommentTypeID);
+            }
 
-			var baseCommentWheres = new List<string> { "C.ParentID is null" };
+            bool IsShowDeleteComment = true;
+            bool DeletedCommentPresent = false;
+            if (queryParams.Any(qp => qp.Key.ToLower() == "showdeletecomment"))
+            {
+                var ShowDeleteCommentValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "showdeletecomment").Value;
+                DeletedCommentPresent = bool.TryParse(ShowDeleteCommentValue, out IsShowDeleteComment);
+            }
 
-			#region "Ng additional Filter : Apply"
-				if (CommentTypeIDPresent)
-				{
-					dbArgs.Add("@CommentTypeID", CommentTypeID);
-					baseCommentWheres.Add(@"(C.CommentType = @CommentTypeID)");
-				}
+            int Days = 0;
+            bool daysToLookBackPresent = false;
+            if (queryParams.Any(qp => qp.Key.ToLower() == "daystolookback"))
+            {
+                var daysToLookBackValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "daystolookback").Value;
+                daysToLookBackPresent = int.TryParse(daysToLookBackValue, out Days);
+            }
+            #endregion
 
-				if (DeletedCommentPresent)
-				{
-					baseCommentWheres.Add(@"(C.IsDeleted = 0)");
-				}
+            var orderColumn = CompanyContext.ParseOrderColumn(queryParams, queryFieldOptions, "C.CreatedOn");
+            var orderDirection = CompanyContext.ParseOrderDirection(queryParams, "desc");
+            var orderBySql = $" order by {orderColumn} {orderDirection} ";
 
-				if (followerCurrResUidPresent)
-				{
-					baseCommentWheres.Add(@"(iif(C.CreatedBy = @currentUser, 1, 0) = 1)");
-				}
+            int pageNum = CompanyContext.ParsePageNumber(queryParams, 1);
+            int pageSize = CompanyContext.ParsePageSize(queryParams);
+            string offset = CompanyContext.ParsePageOffsetSql(pageNum, pageSize);
 
-				if (daysToLookBackPresent)
-				{
-					DateTime dateStart;
-					DateTime dateEnd = DateTime.UtcNow;
-					Days *= -1;
-					if (Days == 0)
-					{
-						dateStart = new DateTime(2000, 1, 1);
-					}
-					else
-					{
-						dateStart = (Days < 0) ? dateEnd.AddDays(Days) : dateEnd.AddDays(-Days);
-					}
+            var baseCommentWheres = new List<string> { "C.ParentID is null" };
 
-					dbArgs.Add("@rangeStart", dateStart);
-					dbArgs.Add("@rangeEnd", dateEnd);
+            #region "Ng additional Filter : Apply"
+            if (CommentTypeIDPresent)
+            {
+                dbArgs.Add("@CommentTypeID", CommentTypeID);
+                baseCommentWheres.Add(@"(C.CommentType = @CommentTypeID)");
+            }
 
-					baseCommentWheres.Add(@"(C.CreatedOn between @rangeStart and @rangeEnd)");
-				}
-			#endregion
+            if (DeletedCommentPresent)
+            {
+                baseCommentWheres.Add(@"(C.IsDeleted = 0)");
+            }
 
-			if (assetUidPresent)
-			{
-				var asset = CompanyContext.Filter<Asset>(o => o.uid == assetUid).FirstOrDefault();
-				if (asset == null)
-				{
-					throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Asset with provided Uid does not exist.");
-				}
-				dbArgs.Add("@assetId", asset.ID);
-				baseCommentWheres.Add(@"( (C.AssetID = @assetId) or (C.ID in (select coalesce(ic.ParentID, ic.ID) from CommentRelation ir inner join Comment ic on ic.ID = ir.CommentID and ir.AssetID = @assetId)) )");
-			}
-			if (assetTypeUidPresent)
-			{
-				var assetType = CompanyContext.Filter<AssetType>(o => o.uid == assetTypeUid).FirstOrDefault();
-				if (assetType == null)
-				{
-					throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Asset Type with provided Uid does not exist.");
-				}
-				dbArgs.Add("@assetTypeId", assetType.ID);
-				baseCommentWheres.Add(@"( 
+            if (followerCurrResUidPresent)
+            {
+                baseCommentWheres.Add(@"(iif(C.CreatedBy = @currentUser, 1, 0) = 1)");
+            }
+
+            if (daysToLookBackPresent)
+            {
+                DateTime dateStart;
+                DateTime dateEnd = DateTime.UtcNow;
+                Days *= -1;
+                if (Days == 0)
+                {
+                    dateStart = new DateTime(2000, 1, 1);
+                }
+                else
+                {
+                    dateStart = (Days < 0) ? dateEnd.AddDays(Days) : dateEnd.AddDays(-Days);
+                }
+
+                dbArgs.Add("@rangeStart", dateStart);
+                dbArgs.Add("@rangeEnd", dateEnd);
+
+                baseCommentWheres.Add(@"(C.CreatedOn between @rangeStart and @rangeEnd)");
+            }
+            #endregion
+
+            if (assetUidPresent)
+            {
+                var asset = CompanyContext.Filter<Asset>(o => o.uid == assetUid).FirstOrDefault();
+                if (asset == null)
+                {
+                    throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Asset with provided Uid does not exist.");
+                }
+                var assetType = CompanyContext.Filter<AssetType>(o => o.ID == asset.AssetTypeID).FirstOrDefault();
+
+                if (!CompanyContext.CurrentResourceIsAdmin
+                    && !CompanyContext.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))
+                {
+                    throw new GenericException(System.Net.HttpStatusCode.Forbidden, "Invalid request", "You do not have permissions to read the specified asset type.");
+                }
+
+                dbArgs.Add("@assetId", asset.ID);
+                baseCommentWheres.Add(@"( (C.AssetID = @assetId) or (C.ID in (select coalesce(ic.ParentID, ic.ID) from CommentRelation ir inner join Comment ic on ic.ID = ir.CommentID and ir.AssetID = @assetId)) )");
+            }
+            if (assetTypeUidPresent)
+            {
+                var assetType = CompanyContext.Filter<AssetType>(o => o.uid == assetTypeUid).FirstOrDefault();
+                if (assetType == null)
+                {
+                    throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Asset Type with provided Uid does not exist.");
+                }
+
+                if (!CompanyContext.CurrentResourceIsAdmin
+                    && !CompanyContext.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))
+                {
+                    throw new GenericException(System.Net.HttpStatusCode.Forbidden, "Invalid request", "You do not have permissions to read the specified asset type.");
+                }
+
+                dbArgs.Add("@assetTypeId", assetType.ID);
+                baseCommentWheres.Add(@"( 
 					(C.ID in ( 
 						     select ic.ID 
 							 from	Comment ic 
@@ -545,41 +560,41 @@ order by u.CommentTypeName";
 							)
 					) 
 				)");
-			}
-			int followerresourceID = -1;
-			if (followerUidPresent)
-			{
-				var follower = CompanyContext.Filter<GlobalReportingResource>(o => o.Uid == followerUid).FirstOrDefault();
-				if (follower == null)
+            }
+            int followerresourceID = -1;
+            if (followerUidPresent)
+            {
+                var follower = CompanyContext.Filter<GlobalReportingResource>(o => o.Uid == followerUid).FirstOrDefault();
+                if (follower == null)
                 {
-					throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "User with provided Uid does not exist.");
-				}
-				else
-				{
-					followerresourceID = follower.ResourceID;
-				}
-			}
-			else if (followerCurrResUidPresent)
-			{
-				followerresourceID = CompanyContext.CurrentResourceID;
-			}
+                    throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "User with provided Uid does not exist.");
+                }
+                else
+                {
+                    followerresourceID = follower.ResourceID;
+                }
+            }
+            else if (followerCurrResUidPresent)
+            {
+                followerresourceID = CompanyContext.CurrentResourceID;
+            }
 
-			if (followerresourceID > -1)
-			{
-					dbArgs.Add("@followerId", followerresourceID);
+            if (followerresourceID > -1)
+            {
+                dbArgs.Add("@followerId", followerresourceID);
 
-					baseCommentWheres.Add(@"(
+                baseCommentWheres.Add(@"(
 (exists (select f.AssetID from FollowDetail f where f.ResourceID = @followerId and f.AssetID = C.AssetID  union all select r.AssetID from ResponsibilityDetail r where r.ResourceID = @followerId and r.AssetID = C.AssetID)) 
 or (exists (select cp.ParentID from Comment cp where cp.ParentID is not null and cp.CreatedBy = @followerId and cp.ParentID = C.ID ))
 or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 )");
-			}
+            }
 
-			dbArgs.Add("@currentUser", CompanyContext.CurrentResourceID);
-			whereStatements.Add($@"O.ID not in (select AssetID from dbo.UserAssetPermissions(@currentUser,T.ID) where ((PermissionsBitMask & {(int)Permission.ReadAsset})) = 0)");
-			whereStatements.Add(@"T.ID not in (select AssetTypeID from dbo.AssetTypesUserCantRead(@currentUser))");
+            dbArgs.Add("@currentUser", CompanyContext.CurrentResourceID);
+            whereStatements.Add($@"O.ID not in (select AssetID from dbo.UserAssetPermissions(@currentUser,T.ID) where ((PermissionsBitMask & {(int)Permission.ReadAsset})) = 0)");
+            whereStatements.Add(@"T.ID not in (select AssetTypeID from dbo.AssetTypesUserCantRead(@currentUser))");
 
-			var cteSql = $@"
+            var cteSql = $@"
 with P as (
 	select		C.ID,
 				C.ParentID,
@@ -594,9 +609,9 @@ with P as (
 				inner join P on P.ID = C.ParentID
 ) ";
 
-			var whereSql = (whereStatements.Count > 0) ? "where " + string.Join(" and ", whereStatements) : "";
+            var whereSql = (whereStatements.Count > 0) ? "where " + string.Join(" and ", whereStatements) : "";
 
-			var tableSql = @"from	Comment C
+            var tableSql = @"from	Comment C
 		inner join reporting.Global_Resource R on R.ResourceID = C.CreatedBy
 		inner join P ON C.ID = P.ID
 		inner join Asset O on O.ID = P.AssetID
@@ -604,13 +619,13 @@ with P as (
 		inner join graph.AssetNodeDisplayPath AP on AP.ID = O.ID
 		outer apply [dbo].[GetAssetUrlById](O.ID) AUrl ";
 
-			var countWhereSql = whereSql + (string.IsNullOrEmpty(whereSql) ? "where " : " and ") + "C.ParentID is null";
-			var countSql = $@"
+            var countWhereSql = whereSql + (string.IsNullOrEmpty(whereSql) ? "where " : " and ") + "C.ParentID is null";
+            var countSql = $@"
 {cteSql}
 select	count(1) as [Count]
 {tableSql} {countWhereSql}";
 
-			var sql = $@"
+            var sql = $@"
 {cteSql}
 select	{COMMENT_TABLE_COLUMNS},
 		O.Uid as AssetUid,
@@ -622,29 +637,29 @@ select	{COMMENT_TABLE_COLUMNS},
 		{EMOJIS_JSON_SQL} 
 {tableSql} {whereSql} {orderBySql} {offset}";
 
-			var countRequest = await CompanyContext.QueryAsync<int>(countSql, dbArgs);
+            var countRequest = await CompanyContext.QueryAsync<int>(countSql, dbArgs);
 
-			var count = countRequest.Single();
+            var count = countRequest.Single();
 
-			var request = await CompanyContext.QueryAsync<CommentDetail>(sql, dbArgs);
-			var flatComments = request.ToList();
-			var rootComments = flatComments.Where(c => !c.ParentID.HasValue);
-			var returnedComments = new List<CommentDetail>();
-			foreach (var commentDetail in rootComments)
-			{
-				loadCommentDetailDescendants(flatComments, commentDetail);
-				returnedComments.Add(commentDetail);
-			}
-			return new CommentDetails 
-			{ 
-				count = count,
-				page = pageNum,
-				pageSize = pageSize,
-				comments = returnedComments 
-			};
-		}
+            var request = await CompanyContext.QueryAsync<CommentDetail>(sql, dbArgs);
+            var flatComments = request.ToList();
+            var rootComments = flatComments.Where(c => !c.ParentID.HasValue);
+            var returnedComments = new List<CommentDetail>();
+            foreach (var commentDetail in rootComments)
+            {
+                loadCommentDetailDescendants(flatComments, commentDetail);
+                returnedComments.Add(commentDetail);
+            }
+            return new CommentDetails
+            {
+                count = count,
+                page = pageNum,
+                pageSize = pageSize,
+                comments = returnedComments
+            };
+        }
 
-		public async Task<CommentDetail> GetCommentDetailByUid(Guid commentUid)
+        public async Task<CommentDetail> GetCommentDetailByUid(Guid commentUid)
         {
             var sql = $@"
 with P as (
@@ -677,26 +692,26 @@ from	Comment C
 		outer apply [dbo].[GetAssetUrlById](O.ID) AUrl
 ORDER BY	C.ParentID, C.CreatedOn DESC";
 
-			var request = await CompanyContext.QueryAsync<CommentDetail>(sql, new { commentUid });
-			var flatComments = request.ToList();
+            var request = await CompanyContext.QueryAsync<CommentDetail>(sql, new { commentUid });
+            var flatComments = request.ToList();
 
-			var commentDetail = flatComments.SingleOrDefault(c => c.Uid == commentUid);
-			if (commentDetail != null)
-			{
-				loadCommentDetailDescendants(flatComments, commentDetail);
-				return commentDetail;
-			}
-			else
-			{
-				throw new NotFoundException("comment");
-			}
+            var commentDetail = flatComments.SingleOrDefault(c => c.Uid == commentUid);
+            if (commentDetail != null)
+            {
+                loadCommentDetailDescendants(flatComments, commentDetail);
+                return commentDetail;
+            }
+            else
+            {
+                throw new NotFoundException("comment");
+            }
         }
 
-		public async Task<List<CommentVoteDetail>> GetCommentVotesByCommentUid(Guid commentUid)
-		{
-			if (CompanyContext.Any<Comment>(c => c.Uid == commentUid))
-			{
-				var sql = $@"
+        public async Task<List<CommentVoteDetail>> GetCommentVotesByCommentUid(Guid commentUid)
+        {
+            if (CompanyContext.Any<Comment>(c => c.Uid == commentUid))
+            {
+                var sql = $@"
 select	V.Emoji as emoji, 
 		R.Uid as resourceUid, 
 		R.FirstName + ' ' + R.LastName as userDisplayName 
@@ -705,20 +720,20 @@ from	CommentVote V
 		inner join reporting.Global_Resource R on R.ResourceID = V.ResourceID 
 order by V.Emoji";
 
-				var request = await CompanyContext.QueryAsync<CommentVoteDetail>(sql, new { commentUid });
-				return request.ToList();
-			}
-			else 
-			{
-				throw new NotFoundException("comment");
-			}
-		}
+                var request = await CompanyContext.QueryAsync<CommentVoteDetail>(sql, new { commentUid });
+                return request.ToList();
+            }
+            else
+            {
+                throw new NotFoundException("comment");
+            }
+        }
 
-		public async Task<List<CommentVoterDetail>> GetCommentVotersByCommentAndEmoji(Guid commentUid, Emoji emoji)
-		{
-			if (CompanyContext.Any<Comment>(c => c.Uid == commentUid))
-			{
-				var sql = $@"
+        public async Task<List<CommentVoterDetail>> GetCommentVotersByCommentAndEmoji(Guid commentUid, Emoji emoji)
+        {
+            if (CompanyContext.Any<Comment>(c => c.Uid == commentUid))
+            {
+                var sql = $@"
 select	R.Uid as resourceUid, 
 		R.FirstName + ' ' + R.LastName as userDisplayName 
 from	CommentVote V 
@@ -726,44 +741,44 @@ from	CommentVote V
 		inner join reporting.Global_Resource R on R.ResourceID = V.ResourceID 
 order by V.Emoji";
 
-				var request = await CompanyContext.QueryAsync<CommentVoterDetail>(sql, new { commentUid, emoji = (int)emoji });
-				return request.ToList();
-			}
-			else
-			{
-				throw new NotFoundException("comment");
-			}
-		}
+                var request = await CompanyContext.QueryAsync<CommentVoterDetail>(sql, new { commentUid, emoji = (int)emoji });
+                return request.ToList();
+            }
+            else
+            {
+                throw new NotFoundException("comment");
+            }
+        }
 
-		private void loadCommentDetailDescendants(List<CommentDetail> list, CommentDetail p)
-		{
-			foreach (var c in list.Where(c => c.ParentID == p.ID).OrderByDescending(c => c.CreatedOn))
-			{
-				if (p.Comments == null)
-				{
-					p.Comments = new List<CommentDetail>();
-				}
-				loadCommentDetailDescendants(list, c);
-				p.Comments.Add(c);
-			}
-		}
+        private void loadCommentDetailDescendants(List<CommentDetail> list, CommentDetail p)
+        {
+            foreach (var c in list.Where(c => c.ParentID == p.ID).OrderByDescending(c => c.CreatedOn))
+            {
+                if (p.Comments == null)
+                {
+                    p.Comments = new List<CommentDetail>();
+                }
+                loadCommentDetailDescendants(list, c);
+                p.Comments.Add(c);
+            }
+        }
 
-		private void validateComment(IApiComment comment) 
-		{
-			if (comment == null)
-			{
-				throw new GenericException(System.Net.HttpStatusCode.BadRequest, "", "No content provided to create a comment with.");
-			}
-			if (string.IsNullOrEmpty(comment.Body))
-			{
-				throw new GenericException(System.Net.HttpStatusCode.BadRequest, "", "You must provide a value for the Body property.");
-			}
+        private void validateComment(IApiComment comment)
+        {
+            if (comment == null)
+            {
+                throw new GenericException(System.Net.HttpStatusCode.BadRequest, "", "No content provided to create a comment with.");
+            }
+            if (string.IsNullOrEmpty(comment.Body))
+            {
+                throw new GenericException(System.Net.HttpStatusCode.BadRequest, "", "You must provide a value for the Body property.");
+            }
 
-			if (comment.Tags != null && comment.Tags.Count > 50)
-			{
-				throw new GenericException(System.Net.HttpStatusCode.BadRequest, "", "You may not provide more than 50 tags on this comment.");
-			}
-		}
+            if (comment.Tags != null && comment.Tags.Count > 50)
+            {
+                throw new GenericException(System.Net.HttpStatusCode.BadRequest, "", "You may not provide more than 50 tags on this comment.");
+            }
+        }
 
 		private void SendCommentNotification(List<Asset> taggedAssets, Comment comment)
         {		
