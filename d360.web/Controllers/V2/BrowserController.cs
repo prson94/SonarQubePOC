@@ -61,7 +61,7 @@ namespace d360.web.Controllers.V2
 
                 var model = new AssetBrowserResponseModel
                 {
-                    nodes = reader.Read<AssetBrowserNode>().ToList(),
+                    nodes = reader.Read<AssetBrowserNode>().OrderBy(x => x.text).ThenBy(i => i.assetUid).ToList(),
                     links = reader.Read<AssetBrowserLink>().ToList(),
                     hierarchy = reader.Read<AssetBrowserHeirarchy>().ToList(),
                     reveals = reader.Read<AssetBrowserRevealNode>().ToList(),
