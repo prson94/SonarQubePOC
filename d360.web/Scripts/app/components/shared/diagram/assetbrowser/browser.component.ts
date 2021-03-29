@@ -1731,12 +1731,24 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let al = a.data.text ? a.data.text.toLowerCase() : '';
         let bl = b.data.text ? b.data.text.toLowerCase() : '';
 
-        if (al > bl)
+        let aAssetUid = a.data.assetUid;
+        let bAssetUid = b.data.assetUid;
+
+        if (al > bl) {
             return 1;
-        else if (al < bl)
+        }
+        else if (al < bl) {
             return -1;
-        else
+        }
+        if (aAssetUid > bAssetUid) {
+            return 1;
+        }
+        else if (aAssetUid < bAssetUid) {
+            return -1;
+        }
+        else {
             return 0;
+        }
     }
 
     private helper_UpdateDiagramLayout() {
