@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.metrics.AssetVersionConditionItem-v1">
+  <changeSet author="Pappas" id="Table.metrics.AssetVersionConditionItem-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -13,103 +13,109 @@
 		<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'AssetVersionConditionItem')
 BEGIN
-	create table metrics.AssetVersionConditionItem (
-		Uid uniqueidentifier CONSTRAINT DF_MetricAssetVersionConditionItem_Uid DEFAULT (newid()) NOT NULL,
-		AssetVersionConditionUid uniqueidentifier NOT NULL,
-		ConditionType int NOT NULL,
-		ConditionFieldTypeID int NULL,
-		ConditionIntersectTypeID int NULL,
-		[Operator] varchar(10) NOT NULL,
-		CONSTRAINT PK_MetricAssetVersionConditionItem PRIMARY KEY NONCLUSTERED ( [Uid] )
+	CREATE TABLE [metrics].[AssetVersionConditionItem] (
+		[Uid] [uniqueidentifier] NOT NULL,
+		[AssetVersionConditionUid] [uniqueidentifier] NOT NULL,
+		[ConditionType] [int] NOT NULL,
+		[ConditionFieldTypeID] [int] NULL,
+		[ConditionIntersectTypeID] [int] NULL,
+		[Operator] [int] NOT NULL
 	)
 END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricAssetVersionConditionItem_FieldType')
-BEGIN
-	ALTER TABLE [metrics].[AssetVersionConditionItem] WITH CHECK ADD CONSTRAINT [FK_MetricAssetVersionConditionItem_FieldType] FOREIGN KEY([ConditionFieldTypeID]) REFERENCES [dbo].[FieldType] ([ID]) ON DELETE CASCADE
-	ALTER TABLE [metrics].[AssetVersionConditionItem] CHECK CONSTRAINT [FK_MetricAssetVersionConditionItem_FieldType]
-END
+		]]>
+	</rollback>
+  </changeSet>
 
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricAssetVersionConditionItem_IntersectType')
-BEGIN
-	ALTER TABLE [metrics].[AssetVersionConditionItem] WITH CHECK ADD CONSTRAINT [FK_MetricAssetVersionConditionItem_IntersectType] FOREIGN KEY([ConditionIntersectTypeID]) REFERENCES [dbo].[IntersectType] ([ID]) ON DELETE CASCADE
-	ALTER TABLE [metrics].[AssetVersionConditionItem] CHECK CONSTRAINT [FK_MetricAssetVersionConditionItem_IntersectType]
-END
+  <changeSet author="Pappas" id="Constraint.metrics.AssetVersionConditionItem-v4">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricAssetVersionConditionItem')
+begin
+	ALTER TABLE [metrics].[AssetVersionConditionItem] ADD CONSTRAINT [PK_MetricAssetVersionConditionItem] PRIMARY KEY NONCLUSTERED ( [Uid] ASC )
+end
 
+if not exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricAssetVersionConditionItem_FieldType')
+begin
+	ALTER TABLE [metrics].[AssetVersionConditionItem]  WITH CHECK ADD  CONSTRAINT [FK_MetricAssetVersionConditionItem_FieldType] FOREIGN KEY([ConditionFieldTypeID]) REFERENCES [dbo].[FieldType] ([ID]) ON DELETE CASCADE;
+	ALTER TABLE [metrics].[AssetVersionConditionItem] CHECK CONSTRAINT [FK_MetricAssetVersionConditionItem_FieldType];
+end
+
+if not exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricAssetVersionConditionItem_IntersectType')
+begin
+	ALTER TABLE [metrics].[AssetVersionConditionItem]  WITH CHECK ADD  CONSTRAINT [FK_MetricAssetVersionConditionItem_IntersectType] FOREIGN KEY([ConditionIntersectTypeID]) REFERENCES [dbo].[IntersectType] ([ID]) ON DELETE CASCADE;
+	ALTER TABLE [metrics].[AssetVersionConditionItem] CHECK CONSTRAINT [FK_MetricAssetVersionConditionItem_IntersectType];
+end
+
+if not exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricAssetVersionConditionItem_MetricAssetVersionCondition')
+begin
+	ALTER TABLE [metrics].[AssetVersionConditionItem]  WITH CHECK ADD  CONSTRAINT [FK_MetricAssetVersionConditionItem_MetricAssetVersionCondition] FOREIGN KEY([AssetVersionConditionUid]) REFERENCES [metrics].[AssetVersionCondition] ([Uid]) ON DELETE CASCADE;
+	ALTER TABLE [metrics].[AssetVersionConditionItem] CHECK CONSTRAINT [FK_MetricAssetVersionConditionItem_MetricAssetVersionCondition];
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAssetVersionConditionItem_Uid')
+begin
+	ALTER TABLE [metrics].[AssetVersionConditionItem] ADD CONSTRAINT [DF_MetricAssetVersionConditionItem_Uid] DEFAULT (newid()) FOR [Uid]
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAssetVersionConditionItem_Uid')
+begin
+	ALTER TABLE [metrics].[AssetVersionConditionItem] DROP CONSTRAINT [DF_MetricAssetVersionConditionItem_Uid]
+end
+
+if exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricAssetVersionConditionItem_FieldType')
+begin
+	ALTER TABLE [metrics].[AssetVersionConditionItem] DROP CONSTRAINT [FK_MetricAssetVersionConditionItem_FieldType]
+end
+
+if exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricAssetVersionConditionItem_IntersectType')
+begin
+	ALTER TABLE [metrics].[AssetVersionConditionItem] DROP CONSTRAINT [FK_MetricAssetVersionConditionItem_IntersectType]
+end
+
+if exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricAssetVersionConditionItem_MetricAssetVersionCondition')
+begin
+	ALTER TABLE [metrics].[AssetVersionConditionItem] DROP CONSTRAINT [FK_MetricAssetVersionConditionItem_MetricAssetVersionCondition]
+end
+
+if exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricAssetVersionConditionItem')
+begin
+	ALTER TABLE [metrics].[AssetVersionConditionItem] DROP CONSTRAINT PK_MetricAssetVersionConditionItem WITH ( ONLINE = OFF )
+end
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Index.metrics.AssetVersionConditionItem-v4">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
 if not exists (select * from sys.indexes where name = 'CIX_MetricsAssetVersionConditionItem')
 begin
-	create clustered index CIX_MetricsAssetVersionConditionItem on [metrics].[AssetVersionConditionItem] ( AssetVersionConditionUid )
+	CREATE CLUSTERED INDEX [CIX_MetricsAssetVersionConditionItem] ON [metrics].[AssetVersionConditionItem] ( [AssetVersionConditionUid] ASC )
 end
-GO
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-drop table if exists metrics.AssetVersionConditionItem
+if exists (select * from sys.indexes where name = 'CIX_MetricsAssetVersionConditionItem')
+begin
+	DROP INDEX [CIX_MetricsAssetVersionConditionItem] ON [metrics].[CIX_MetricsAssetVersionConditionItem] WITH ( ONLINE = OFF )
+end
 		]]>
 	</rollback>
-  </changeSet>
-
-  <changeSet author="Pappas" id="Table.metrics.AssetVersionConditionItem-v2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-update 	metrics.AssetVersionConditionItem
-set		[Operator] = case [Operator]
-						when 'neq' then 2
-						when 'lt' then 14
-						when 'lte' then 13
-						when 'gt' then 12
-						when 'gte' then 15
-						else 1
-					 end
-GO
-
-alter table metrics.AssetVersionConditionItem alter column [Operator] int not null
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-alter table metrics.AssetVersionConditionItem alter column [Operator] varchar(10) not null
-GO
-update 	metrics.AssetVersionConditionItem
-set		[Operator] = case [Operator]
-						when '2' then 'neq'
-						when '14' then 'lt'
-						when '13' then 'lte'
-						when '12' then 'gt'
-						when '15' then 'gte'
-						else 'eq'
-					 end
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Pappas" id="Table.metrics.AssetVersionConditionItem-v3">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-update 	T 
-set		T.[Operator] = case
-						when T.[Operator] = 13 then 7
-						when T.[Operator] = 14 then 7
-						when T.[Operator] = 12 then 8
-						when T.[Operator] = 15 then 8
-					 end
-from	metrics.AssetVersionConditionItem T
-		inner join FieldType S on S.ID = T.ConditionFieldTypeID and S.[Type] in ('Date', 'DateTime') and T.[Operator] between 12 and 15
-GO
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
+  </changeSet> 
 
 </databaseChangeLog>

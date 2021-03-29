@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.metrics.Score-v1">
+  <changeSet author="Core" id="Table.metrics.Score-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -13,100 +13,98 @@
 		<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Score')
 BEGIN
-	CREATE TABLE [metrics].[Score](
+	CREATE TABLE [metrics].[Score] (
 		[AssetUid] [uniqueidentifier] NOT NULL,
-		[EffectiveDate] [date] CONSTRAINT [DF_MetricsNewScore_EffectiveDate] DEFAULT (getutcdate()) NOT NULL,
-		[Value] [decimal](5, 3) NOT NULL,
+		[EffectiveDate] [date] NOT NULL,
+		[Value] [decimal](8, 6) NOT NULL,
 		[RunDate] [datetime] NULL,
 		[EndDate] [date] NULL,
-		[ScoreType] [int] NOT NULL,
-		CONSTRAINT [PK_MetricScore] PRIMARY KEY CLUSTERED ( [AssetUid] ASC, [ScoreType] ASC, [EffectiveDate] DESC )
+		[Uid] [uniqueidentifier] NOT NULL,
+		[AllocationUid] [uniqueidentifier] NOT NULL,
+		[VersionValueHash] [varchar](50) NULL
 	)
 END
 		]]>
     </sql>
 	<rollback>
-		<![CDATA[	
-
+		<![CDATA[
 		]]>
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.metrics.Score-v2.2">
+  <changeSet author="Pappas" id="Constraint.metrics.Score-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Score' AND COLUMN_NAME = 'Uid')
-BEGIN
-	ALTER TABLE [metrics].[Score] ADD [Uid] uniqueidentifier constraint DF_MetricScore_Uid default(newid()) not null
-END
-
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Score' AND COLUMN_NAME = 'AllocationUid')
-BEGIN
-	ALTER TABLE [metrics].[Score] ADD [AllocationUid] uniqueidentifier null
-END
-
-if exists (select * from sys.key_constraints where  name = 'PK_MetricScore')
+if not exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricScore')
 begin
-	alter table [metrics].[Score] drop constraint [PK_MetricScore]
-	alter table [metrics].[Score] add constraint [PK_MetricScore] primary key nonclustered ( [Uid] asc )
+	ALTER TABLE [metrics].[Score] ADD CONSTRAINT [PK_MetricScore] PRIMARY KEY NONCLUSTERED ( [Uid] ASC )
 end
 
-if not exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_MetricScore')
+if not exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricScore_MetricAllocation')
 begin
-	alter table [metrics].[Score] add constraint UQ_MetricScore unique clustered ( [AssetUid], [ScoreType], [EffectiveDate] ); 
+	ALTER TABLE [metrics].[Score]  WITH CHECK ADD  CONSTRAINT [FK_MetricScore_MetricAllocation] FOREIGN KEY([AllocationUid]) REFERENCES [metrics].[Allocation] ([Uid]) ON DELETE CASCADE
+	ALTER TABLE [metrics].[Score] CHECK CONSTRAINT [FK_MetricScore_MetricAllocation]	
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricsNewScore_EffectiveDate')
+begin
+	ALTER TABLE [metrics].[Score] ADD  CONSTRAINT [DF_MetricsNewScore_EffectiveDate]  DEFAULT (getutcdate()) FOR [EffectiveDate]
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricScore_Uid')
+begin
+	ALTER TABLE [metrics].[Score] ADD  CONSTRAINT [DF_MetricScore_Uid]  DEFAULT (newid()) FOR [Uid]
 end
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Score' AND COLUMN_NAME = 'Uid')
-BEGIN
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricsNewScore_EffectiveDate')
+begin
+	ALTER TABLE [metrics].[Score] DROP CONSTRAINT [DF_MetricsNewScore_EffectiveDate]
+end
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricScore_Uid')
+begin
 	ALTER TABLE [metrics].[Score] DROP CONSTRAINT [DF_MetricScore_Uid]
-	ALTER TABLE [metrics].[Score] DROP COLUMN [Uid]
-END
-
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Score' AND COLUMN_NAME = 'AllocationUid')
-BEGIN
-	ALTER TABLE [metrics].[Score] DROP COLUMN [AllocationUid]
-END
-
-if exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_MetricScore')
-begin
-	alter table [metrics].[Score] drop constraint UQ_MetricScore 
 end
 
-if exists (select * from sys.key_constraints where  name = 'PK_MetricScore')
+if exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricScore_MetricAllocation')
 begin
-	alter table [metrics].[Score] drop constraint [PK_MetricScore]
-	alter table [metrics].[Score] add constraint [PK_MetricScore] primary key clustered ( [AssetUid] ASC, [ScoreType] ASC, [EffectiveDate] DESC )
+	ALTER TABLE [metrics].[Score] DROP CONSTRAINT [FK_MetricScore_MetricAllocation]
+end
+
+if exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricScore')
+begin
+	ALTER TABLE [metrics].[Score] DROP CONSTRAINT PK_MetricScore WITH ( ONLINE = OFF )
 end
 		]]>
 	</rollback>
   </changeSet>
-  
-  <changeSet author="Core" id="Table.metrics.Score-v3">
+
+  <changeSet author="Pappas" id="Index.metrics.Score-v4">
     <sql dbms="mssql"
-		endDelimiter="\nGO" 
-		splitStatements="true"
-        stripComments="false">
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Score' AND COLUMN_NAME = 'Value')
-BEGIN
-	alter table metrics.Score alter column [Value] decimal(8,6) not null
-END
+if not exists (select * from sys.indexes where name = 'CIX_MetricScore')
+begin
+	CREATE CLUSTERED INDEX [CIX_MetricScore] ON [metrics].[Score] ( [AssetUid] ASC, [AllocationUid] ASC, [EffectiveDate] DESC )
+end
 		]]>
     </sql>
 	<rollback>
-	<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Score' AND COLUMN_NAME = 'Value')
-BEGIN
-	alter table metrics.Score alter column [Value] decimal(5,3) not null
-END
-	]]>
+		<![CDATA[	
+if exists (select * from sys.indexes where name = 'CIX_MetricScore')
+begin
+	DROP INDEX [CIX_MetricScore] ON [metrics].[Score] WITH ( ONLINE = OFF )
+end
+		]]>
 	</rollback>
-  </changeSet>
+  </changeSet> 
 
 </databaseChangeLog>

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.metrics.AssetVersionConditionItemValue-v1">
+  <changeSet author="Pappas" id="Table.metrics.AssetVersionConditionItemValue-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -13,24 +13,49 @@
 		<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'AssetVersionConditionItemValue')
 BEGIN
-	create table metrics.AssetVersionConditionItemValue (
-		[Uid] uniqueidentifier NOT NULL,
-		[Value] nvarchar(250) NOT NULL,
-		CONSTRAINT PK_MetricAssetVersionConditionItemValue PRIMARY KEY CLUSTERED ( [Uid] ASC, [Value] ASC )
+	CREATE TABLE [metrics].[AssetVersionConditionItemValue] (
+		[Uid] [uniqueidentifier] NOT NULL,
+		[Value] [nvarchar](250) NOT NULL
 	)
 END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricAssetVersionConditionItemValue_MetricAssetVersionConditionItem')
-BEGIN
-	ALTER TABLE [metrics].[AssetVersionConditionItemValue]  WITH CHECK ADD  CONSTRAINT FK_MetricAssetVersionConditionItemValue_MetricAssetVersionConditionItem FOREIGN KEY([Uid]) REFERENCES [metrics].[AssetVersionConditionItem] ([Uid]) ON DELETE CASCADE
-	ALTER TABLE [metrics].[AssetVersionConditionItemValue] CHECK CONSTRAINT FK_MetricAssetVersionConditionItemValue_MetricAssetVersionConditionItem
-END
-
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-drop table if exists metrics.AssetVersionConditionItemValue
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Constraint.metrics.AssetVersionConditionItemValue-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricAssetVersionConditionItemValue')
+begin
+	ALTER TABLE [metrics].[AssetVersionConditionItemValue] ADD CONSTRAINT [PK_MetricAssetVersionConditionItemValue] PRIMARY KEY CLUSTERED ( [Uid] ASC, [Value] ASC )
+end
+
+if not exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricAssetVersionConditionItemValue_MetricAssetVersionConditionItem')
+begin
+	ALTER TABLE [metrics].[AssetVersionConditionItemValue] WITH CHECK ADD CONSTRAINT [FK_MetricAssetVersionConditionItemValue_MetricAssetVersionConditionItem] FOREIGN KEY([Uid]) REFERENCES [metrics].[AssetVersionConditionItem] ([Uid]) ON DELETE CASCADE;
+	ALTER TABLE [metrics].[AssetVersionConditionItemValue] CHECK CONSTRAINT [FK_MetricAssetVersionConditionItemValue_MetricAssetVersionConditionItem];
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+if exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricAssetVersionConditionItemValue_MetricAssetVersionConditionItem')
+begin
+	ALTER TABLE [metrics].[AssetVersionConditionItemValue] DROP CONSTRAINT [FK_MetricAssetVersionConditionItemValue_MetricAssetVersionConditionItem]
+end
+
+if exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricAssetVersionConditionItemValue')
+begin
+	ALTER TABLE [metrics].[AssetVersionConditionItemValue] DROP CONSTRAINT PK_MetricAssetVersionConditionItemValue WITH ( ONLINE = OFF )
+end
 		]]>
 	</rollback>
   </changeSet>
