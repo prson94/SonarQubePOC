@@ -879,6 +879,8 @@ where   ExecutionID <> @id
                     // Perform final score calculations for this asset/effective date combination. If no data for asset/effective date, then do not even bother to recalculate anything for it.
                     if (assetScoreItems.Count > 0)
                     {
+                        assetScoreItems.RemoveAll(s => ignoredAssetScoreItems.Any(d => d.AssetVersionUid == s.AssetVersionUid)); 
+
                         var score = AdjustScoreItemWeights(allMeasures, assetScoreItems);
 
                         var matchingScore = matchingScores.FirstOrDefault(s => s.AllocationUid == assetEffectiveDate.AllocationUid && s.AssetUid == assetEffectiveDate.AssetUid);
