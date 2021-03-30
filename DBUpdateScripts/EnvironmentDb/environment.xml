@@ -211,9 +211,6 @@
 	<include file="scripts/Table.metrics.AssetVersionCondition.xml"/>
 	<include file="scripts/Table.metrics.AssetVersionConditionItem.xml"/>
 	<include file="scripts/Table.metrics.AssetVersionConditionItemValue.xml"/>
-	<include file="scripts/Table.metrics.AssetVersionParameter.xml"/>
-	<include file="scripts/Table.metrics.RuleParameter.xml"/>
-	<include file="scripts/Table.metrics.Rule.xml"/>
 	<include file="scripts/Table.metrics.RollupPath.xml"/>
 	<include file="scripts/Table.metrics.RollupPathLink.xml"/>
 	<include file="scripts/Table.metrics.RollupPathSegment.xml"/>
@@ -223,7 +220,6 @@
 	<include file="scripts/Table.metrics.Score.xml"/>
 	<include file="scripts/Table.metrics.ScoreItem.xml"/>
 	<include file="scripts/Table.metrics.ScoreItemLink.xml"/>
-	<include file="scripts/Table.metrics.StagingScoreItem.xml"/>
 	<include file="scripts/Table.queue.Task.xml"/>
 	<include file="scripts/Table.reporting.Dates.xml"/>
 	<include file="scripts/Table.reporting.Global_Audit.xml"/>
@@ -275,6 +271,8 @@
 	<include file="scripts/Table.api.ExecutionDiagramAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionDiagramAssetField.xml"/>
 	<include file="scripts/Table.dbo.ConnectorLabel.xml"/>
+	  
+	<include file="scripts/Table.Deletions.xml"/>	  
 	  
 	<!-- Views (object-based naming) -->
 	<include file="scripts/Function.dbo.GetAssetDisplayValue.xml"/>				<!--Function used for computed column-->
@@ -362,7 +360,6 @@
 	<include file="scripts/View.reporting.WorkflowSteps.xml"/>
 
 	<include file="scripts/Function.metrics.CompareConditionValueToFieldValue.xml"/>
-	<include file="scripts/Migration.Metrics.xml"/>
 	<include file="scripts/View.reporting.Metric_All.xml"/> 		<!--temporary location. would normally be above in reporting views section.-->
 	
 	<!-- Functions (object-based naming) -->

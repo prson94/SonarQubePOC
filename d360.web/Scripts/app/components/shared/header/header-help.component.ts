@@ -31,6 +31,7 @@ declare var VersionNumber: string;
                                         <li><b>Build Version:</b> {{this.versionNumber}}</li>
                                         <li><b>Build Date:</b> {{this.buildDate | date:'short'}}</li>
                                         <li><b>Support:</b> <a href="http://support.infogix.com" target="_blank">http://support.infogix.com</a></li>
+                                        <li><a class="thirdPartyLicence" href="/Content/thirdpartylicenses.html" target="_blank">Third Party Licenses</a></li>
                                         <li><b>Usage information:</b> <br/></li>
                                         <ul class="licence-info" *ngIf="licenceData">
                                             <li>Asset count: {{numberWithCommas(licenceData.assets.count)}}</li>
@@ -62,6 +63,10 @@ declare var VersionNumber: string;
         .licence-info li{
             list-style: disc;
 
+        }
+        .thirdPartyLicence 
+        {
+            padding-left:0px;
         }
         `]
 })
