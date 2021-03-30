@@ -17,7 +17,9 @@ namespace igx.jobs.scoreprocessor
                 using (var company = GetEnvironmentConnection())
                 {
                     if (company.State != ConnectionState.Open)
+                    {
                         company.Open();
+                    }
 
                     var exec = await company.QueryFirstOrDefaultAsync<ApiExecution>("select * from api.Execution where ExecutionID = @id", new { id = Info.ExecutionUid });
                     if (exec != null)
@@ -28,6 +30,7 @@ namespace igx.jobs.scoreprocessor
             }
             catch
             {
+                // This is solely to log the exception on the execution record. We should not fail the job for this.
             }
             return closedExecution;
         }
