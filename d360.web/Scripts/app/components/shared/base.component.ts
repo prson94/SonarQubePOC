@@ -1108,6 +1108,7 @@ export class BaseComponent {
 
                     if (selected && selected.ID > 0) {
                         this.setObjectInfo(objectName, selected.ID, selected.DisplayValue, selected.AssetID, undefined, selected.Uid);
+                        this.baseCrumbs = [];
                         this.checkParentBase(selected, this.preloadedTreeData, data.ObjectTypeId, objectName);
                         this.breadcrumbsService.showBreadcrumb(
                             new Breadcrumb(
