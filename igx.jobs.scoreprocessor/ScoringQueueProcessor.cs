@@ -35,10 +35,10 @@ namespace igx.jobs.scoreprocessor
 #else
             var scoreInfo = JsonConvert.DeserializeObject<ScoreQueueInfo>(myQueueItem);
 #endif
+            AzureStorageProvider storage = new AzureStorageProvider();
 
             try
             {
-                AzureStorageProvider storage = new AzureStorageProvider();
                 IScoreProcess process = null;
 
                 switch (scoreInfo.ChangeType)
@@ -87,19 +87,27 @@ namespace igx.jobs.scoreprocessor
             }
             catch (Exception ex)
             {
-                var props = new Dictionary<string, string>() {
-                    { "ExecutionUid", scoreInfo.ExecutionUid.ToString() },
-                    { "ChangeType", scoreInfo.ChangeType.ToString() }
-                };
+                var execUpdater = new ExecutionUpdater { Info = scoreInfo, Storage = storage };
+                var closedExecution = await execUpdater.UpdateAsync(ex);
 
-                CoreFunction.AITrackException(functionName, ex, scoreInfo.CompanyID, props);
-
-                lock (log)
+                if (closedExecution)
                 {
-                    log.WriteLine($"Company [{scoreInfo.CompanyID}]: [{ex.GetFullExceptionData()}]");
-                }
+                    var props = new Dictionary<string, string>() {
+                        { "ExecutionUid", scoreInfo.ExecutionUid.ToString() },
+                        { "ChangeType", scoreInfo.ChangeType.ToString() }
+                    };
 
-                throw ex;
+                    CoreFunction.AITrackException(functionName, ex, scoreInfo.CompanyID, props);
+
+                    lock (log)
+                    {
+                        log.WriteLine($"Company [{scoreInfo.CompanyID}]: [{ex.GetFullExceptionData()}]");
+                    }
+                }
+                else
+                {
+                    throw ex;
+                }
             }
         }
     }
