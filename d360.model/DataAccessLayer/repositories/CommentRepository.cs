@@ -67,9 +67,9 @@ namespace d360.model.DataAccessLayer
 
         #endregion
 
-        public async Task<CommentDetail> AddComment(CommentApiPostModel comment)
-        {
-            validateComment(comment);
+		public async Task<CommentDetail> AddComment(CommentApiPostModel comment, CommentType commentType = CommentType.Social)
+		{
+			validateComment(comment);
 
             int? parentId = null;
             long? assetId = null;
@@ -114,20 +114,20 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
-            var dbComment = new Comment
-            {
-                CommentType = CommentType.Social,
-                CreatedBy = CompanyContext.CurrentResourceID,
-                CreatedOn = DateTime.UtcNow,
-                IsDeleted = false,
-                AssetID = assetId.Value,
-                Body = comment.Body,
-                ParentID = parentId,
-                Uid = Guid.NewGuid(),
-                UpdatedBy = CompanyContext.CurrentResourceID,
-                UpdatedOn = DateTime.UtcNow
-            };
-            var commentAdded = CompanyContext.Add(dbComment);
+			var dbComment = new Comment
+			{
+				CommentType = commentType,
+				CreatedBy = CompanyContext.CurrentResourceID,
+				CreatedOn = DateTime.UtcNow,
+				IsDeleted = false,
+				AssetID = assetId.Value,
+				Body = comment.Body,
+				ParentID = parentId,
+				Uid = Guid.NewGuid(),
+				UpdatedBy = CompanyContext.CurrentResourceID,
+				UpdatedOn = DateTime.UtcNow
+			};
+			var commentAdded = CompanyContext.Add(dbComment);
 
 			if (commentAdded)
 			{

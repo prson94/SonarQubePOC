@@ -836,11 +836,11 @@ for json path";
                     if (actionAsset != null && resourceAsset != null) 
                     {
                          var comment = new CommentApiPostModel { 
-                            AssetUid = resourceAsset.uid,
+                            AssetUid = resourceAsset.uid,                           
                             Body = issueModel.Comment ?? $"New {issueType.Name} Raised.",
                             Tags = new List<Guid> { actionAsset.uid }       // Add relation to current artifact
                          };
-                        var dtl = await commentRepository.AddComment(comment);
+                        var dtl = await commentRepository.AddComment(comment, CommentType.Issue);
                         issueModel.Issue.CommentID = dtl.ID;
                     }
                 }
