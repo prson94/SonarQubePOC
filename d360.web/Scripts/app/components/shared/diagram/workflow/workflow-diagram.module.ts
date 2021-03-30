@@ -37,6 +37,7 @@ import { WorkflowStepSummaryComponent } from "./workflow-step-summary.component"
 import { WorkflowTransitionSummaryComponent } from "./workflow-transition-summary.component";
 import { WorkflowResponsibilitySelectorComponent } from "./workflow-responsibility-selector.component";
 import { WorkflowStepHttpComponent } from "./workflow-step-http.component";
+import { WorkflowStepHttpResponseComponent } from "./workflow-step-http-response.component";
 import { PipesModule } from "../../../../pipes/pipes.module";
 
 
@@ -85,6 +86,7 @@ import { DirectivesModule } from "../../../../directives/directives.module";
         WorkflowStepFieldChangeComponent,
         WorkflowStepSummaryComponent,
         WorkflowStepHttpComponent,
+        WorkflowStepHttpResponseComponent,
         WorkflowTransitionSummaryComponent,
         WorkflowResponsibilitySelectorComponent,
     ],

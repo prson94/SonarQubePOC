@@ -26,6 +26,7 @@ namespace d360.model.workflow
         private static string FIELD_SETTINGS = "Field";
         private static string RELATIONSHIP_SETTINGS = "Relationship";
         private static string HTTP_REQUEST_SETTINGS = "HTTPRequest";
+        private static string HTTP_RESPONSE_SETTINGS = "HTTPResponse";
 
         public string SubjectTemplate { get; set; }
         public string BodyTemplate { get; set; }
@@ -52,6 +53,7 @@ namespace d360.model.workflow
 
         public List<WorkflowRelationshipUpdateSettings> RelationshipUpdateSettings { get; set; }
         public WorkflowHttpRequestSettingsModel HttpRequestSettings { get; set; }
+        public WorkflowHttpResponseSettingsModel HttpResponseSettings { get; set; }
 
         public static WorkflowItemStepSettingModel ParseXml(string root)
         {
@@ -81,6 +83,7 @@ namespace d360.model.workflow
             List<WorkflowFieldUpdateSettings> fieldUpdateSettings = new List<WorkflowFieldUpdateSettings>();
             List<WorkflowRelationshipUpdateSettings> relationshipUpdateSettings = new List<WorkflowRelationshipUpdateSettings>();
             var httpRequestSettings = new WorkflowHttpRequestSettingsModel();
+            var httpResponseSettings = new WorkflowHttpResponseSettingsModel();
 
             if (root != null)
             {
@@ -165,6 +168,11 @@ namespace d360.model.workflow
                 {
                     httpRequestSettings = WorkflowHttpRequestSettingsModel.ParseXml(root.Element(HTTP_REQUEST_SETTINGS));
                 }
+
+                if (root.Element(HTTP_RESPONSE_SETTINGS) != null)
+                {
+                    httpResponseSettings = WorkflowHttpResponseSettingsModel.ParseXml(root.Element(HTTP_RESPONSE_SETTINGS));
+                }
             }
 
             return new WorkflowItemStepSettingModel
@@ -183,7 +191,8 @@ namespace d360.model.workflow
                 BodyTemplate = messageBody ?? MISSING_BODY_VALUE,
                 FieldUpdateSettings = fieldUpdateSettings,
                 RelationshipUpdateSettings = relationshipUpdateSettings,
-                HttpRequestSettings = httpRequestSettings
+                HttpRequestSettings = httpRequestSettings,
+                HttpResponseSettings = httpResponseSettings
             };
         }
     }

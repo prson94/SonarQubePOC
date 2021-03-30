@@ -1566,44 +1566,7 @@ order by wi.StartedOn desc";
                 //2nd loop to handle mappings
                 omodel.Nodes.ForEach(n =>
                 {
-                    if (n.ActivityType == WorkflowActivityType.FieldChange)
-                    {
-
-                        int key;
-                        if (!int.TryParse(n.Key, out key)) return;
-                        if (keyMapping.ContainsKey(key))
-                            key = keyMapping[key];
-
-                        var node = Company.GetById<WorkflowVersionStep>(key);
-                        node.Settings = MapWorkflowFieldSettings(node.Settings, keyMapping);
-
-                    }
-                    if (n.ActivityType == WorkflowActivityType.RelationshipChange)
-                    {
-                        int key;
-                        if (!int.TryParse(n.Key, out key)) return;
-                        if (keyMapping.ContainsKey(key))
-                            key = keyMapping[key];
-
-                        var node = Company.GetById<WorkflowVersionStep>(key);
-                        node.Settings = MapWorkflowRelationshipUpdateSettings(node.Settings, keyMapping);
-
-                    }
-                    if (tokenTypes.Contains(n.ActivityType))
-                    {
-                        var fields = Regex.Matches(n.Settings, "\\[HTTPREQUEST\\|(-?)([0-9.]+)\\|([a-zA-Z]+)\\]");
-
-                        foreach (var field in fields)
-                        {
-                            int key;
-                            if (!int.TryParse(n.Key, out key)) return;
-                            if (keyMapping.ContainsKey(key))
-                                key = keyMapping[key];
-
-                            var node = Company.GetById<WorkflowVersionStep>(key);
-                            MapWorkflowHttpSettings(node, key, field.ToString(), keyMapping);
-                        }
-                    }
+                    MapNodeSettingsAndTokens(n, keyMapping);
                 });
                 Company.SaveChanges();
 
@@ -1840,44 +1803,7 @@ order by wi.StartedOn desc";
                             //2nd loop to handle mappings
                             model.Nodes.ForEach(n =>
                             {
-                                if (n.ActivityType == WorkflowActivityType.FieldChange)
-                                {
-
-                                    int key;
-                                    if (!int.TryParse(n.Key, out key)) return;
-                                    if (keyMapping.ContainsKey(key))
-                                        key = keyMapping[key];
-
-                                    var node = Company.GetById<WorkflowVersionStep>(key);
-                                    node.Settings = MapWorkflowFieldSettings(node.Settings, keyMapping);
-
-                                }
-                                if (n.ActivityType == WorkflowActivityType.RelationshipChange)
-                                {
-                                    int key;
-                                    if (!int.TryParse(n.Key, out key)) return;
-                                    if (keyMapping.ContainsKey(key))
-                                        key = keyMapping[key];
-
-                                    var node = Company.GetById<WorkflowVersionStep>(key);
-                                    node.Settings = MapWorkflowRelationshipUpdateSettings(node.Settings, keyMapping);
-
-                                }
-                                if (tokenTypes.Contains(n.ActivityType))
-                                {
-                                    var fields = Regex.Matches(n.Settings, "\\[HTTPREQUEST\\|(-?)([0-9.]+)\\|([a-zA-Z]+)\\]");
-
-                                    foreach (var field in fields)
-                                    {
-                                        int key;
-                                        if (!int.TryParse(n.Key, out key)) return;
-                                        if (keyMapping.ContainsKey(key))
-                                            key = keyMapping[key];
-
-                                        var node = Company.GetById<WorkflowVersionStep>(key);
-                                        MapWorkflowHttpSettings(node, key, field.ToString(), keyMapping);
-                                    }
-                                }
+                                MapNodeSettingsAndTokens(n, keyMapping);
                             });
                             Company.SaveChanges();
                         }
@@ -2015,46 +1941,7 @@ order by wi.StartedOn desc";
                             //2nd loop to handle mappings
                             model.Nodes.ForEach(n =>
                             {
-                                if (n.ActivityType == WorkflowActivityType.FieldChange)
-                                {
-
-                                    int key;
-                                    if (!int.TryParse(n.Key, out key)) return;
-                                    if (keyMapping.ContainsKey(key))
-                                        key = keyMapping[key];
-
-                                    var node = Company.GetById<WorkflowVersionStep>(key);
-                                    node.Settings = MapWorkflowFieldSettings(node.Settings, keyMapping);
-
-                                }
-                                if (n.ActivityType == WorkflowActivityType.RelationshipChange)
-                                {
-
-                                    int key;
-                                    if (!int.TryParse(n.Key, out key)) return;
-                                    if (keyMapping.ContainsKey(key))
-                                        key = keyMapping[key];
-
-                                    var node = Company.GetById<WorkflowVersionStep>(key);
-                                    node.Settings = MapWorkflowRelationshipUpdateSettings(node.Settings, keyMapping);
-                                    
-
-                                }
-                                if (tokenTypes.Contains(n.ActivityType))
-                                {
-                                    var fields = Regex.Matches(n.Settings, "\\[HTTPREQUEST\\|(-?)([0-9.]+)\\|([a-zA-Z]+)\\]");
-
-                                    foreach (var field in fields)
-                                    {
-                                        int key;
-                                        if (!int.TryParse(n.Key, out key)) return;
-                                        if (keyMapping.ContainsKey(key))
-                                            key = keyMapping[key];
-
-                                        var node = Company.GetById<WorkflowVersionStep>(key);
-                                        MapWorkflowHttpSettings(node, key, field.ToString(), keyMapping);
-                                    }
-                                }
+                                MapNodeSettingsAndTokens(n, keyMapping);
                             });
                             Company.SaveChanges();
                         }
@@ -2885,6 +2772,7 @@ order by wi.StartedOn desc";
                     fieldChange.UseCurrentDate = field["@UseCurrentDate"] != null ? field["@UseCurrentDate"] : false;
                     fieldChange.AppendValue = field["@AppendValue"] != null ? field["@AppendValue"] : "";
                     fieldChange.ClearValue = field["@ClearValue"] != null ? field["@ClearValue"] : "";
+                    fieldChange.UseOutputValue = field["@UseOutputValue"] != null ? field["@UseOutputValue"] : "false";
                     FieldType fieldType = Company.GetById<FieldType>(fieldTypeId);
                     fieldChange.FieldName = fieldType?.FriendlyName;
                     fieldChange.Type = fieldType?.Type;
@@ -2950,9 +2838,13 @@ order by wi.StartedOn desc";
                         }
                     }
                     else if (fieldChange.UseCurrentDate)
+                    {
                         fieldChange.Value = detail.CompletedOn.HasValue ? detail.CompletedOn.Value.ToShortDateString() : "";
+                    }
                     else
+                    {
                         fieldChange.Value = field["@ValueLabel"] != null ? field["@ValueLabel"] : field["@Value"] != null ? field["@Value"] : "";
+                    }
 
                     if (isFromActionForm && formFieldId != null && stepId != 0)
                     {
@@ -2970,6 +2862,10 @@ order by wi.StartedOn desc";
                             fieldChange.Value = actionField?.FormattedValue;
                         }
 
+                    }
+                    else if (fieldChange.UseOutputValue == true && formFieldId != null && stepId != 0)
+                    {
+                        fieldChange.Value = Company.GetOutputFieldValue(stepId, detail.ItemID, formFieldId) ?? "";
                     }
 
                     fieldChanges.Add(fieldChange);
@@ -3850,8 +3746,8 @@ order by wi.StartedOn desc";
                     if (fields.Count == null)
                     {
                         var field = fields;
-
-                        if (field["@UseFormValue"] != null && field["@UseFormValue"].ToString().ToLower() == "true" && mappings.ContainsKey((int)field["@FormStepId"]))
+                        var shouldUpdate = (field["@UseFormValue"] != null && field["@UseFormValue"].ToString().ToLower() == "true") || (field["@UseOutputValue"] != null && field["@UseOutputValue"].ToString().ToLower() == "true");
+                        if (shouldUpdate && mappings.ContainsKey((int)field["@FormStepId"]))
                             field["@FormStepId"] = mappings[(int)field["@FormStepId"]];
                     }
                     else
@@ -3859,8 +3755,9 @@ order by wi.StartedOn desc";
                         for (var i = 0; i < count; i++)
                         {
                             var field = fields[i];
+                            var shouldUpdate = (field["@UseFormValue"] != null && field["@UseFormValue"].ToString().ToLower() == "true") || (field["@UseOutputValue"] != null && field["@UseOutputValue"].ToString().ToLower() == "true");
 
-                            if (field["@UseFormValue"] != null && field["@UseFormValue"].ToString().ToLower() == "true" && mappings.ContainsKey((int)field["@FormStepId"]))
+                            if (shouldUpdate && mappings.ContainsKey((int)field["@FormStepId"]))
                                 field["@FormStepId"] = mappings[(int)field["@FormStepId"]];
                         }
                     }
@@ -3906,6 +3803,138 @@ order by wi.StartedOn desc";
                     httpKey = keyMapping[httpKey];
 
                 node.Settings = node.Settings.Replace(field.ToString(), $"[HTTPREQUEST|{httpKey}|{parts[2]}");
+            }
+        }
+
+        private void MapWorkflowHttpResponseTokens(WorkflowVersionStep node, int key, string field, Dictionary<int, int> keyMapping)
+        {
+            var parts = field.ToString().Split('|');
+            int httpKey = 0;
+            int.TryParse(parts[1], out httpKey);
+
+            if (key != 0 && httpKey != 0)
+            {
+                if (keyMapping.ContainsKey(httpKey))
+                    httpKey = keyMapping[httpKey];
+
+                node.Settings = node.Settings.Replace(field.ToString(), $"[HTTPRESPONSE|{httpKey}|{parts[2]}");
+            }
+        }
+
+
+        private string MapWorkflowHttpResponseSettings(string settingsString, Dictionary<int, int> keyMapping)
+        {
+            dynamic settings = XmlToDynamic(settingsString);
+
+            if (settings.HTTPResponse != null)
+            {
+                if (settings.HTTPResponse.InputStepId != null)
+                {
+                    if (int.TryParse(settings.HTTPResponse.InputStepId.ToString(), out int inputId) && keyMapping.ContainsKey(inputId))
+                    {
+                        settings.HTTPResponse.InputStepId = keyMapping[inputId].ToString();
+                    }
+                }
+
+                if (settings.HTTPResponse.Outputs != null)
+                {
+                    if (settings.HTTPResponse.Outputs.Count == null)
+                    {
+                        var output = settings.HTTPResponse.Outputs;
+                        if (int.TryParse(output.StepId.ToString(), out int stepId) && keyMapping.ContainsKey(stepId))
+                        {
+                            output.StepId = keyMapping[stepId].ToString();
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < settings.HTTPResponse.Outputs.Count; i++)
+                        {
+                            var output = settings.HTTPResponse.Outputs[i];
+                            if (int.TryParse(output.StepId.ToString(), out int stepId) && keyMapping.ContainsKey(stepId))
+                            {
+                                output.StepId = keyMapping[stepId].ToString();
+                            }
+                        }
+                    }
+                }
+
+                return JsonConvert.DeserializeXNode(JsonConvert.SerializeObject(new { settings = settings })).ToString();
+            }
+
+            return settingsString;
+        }
+
+        private void MapNodeSettingsAndTokens(WorkflowDiagramNode n, Dictionary<int,int> keyMapping)
+        {
+            List<WorkflowActivityType> tokenTypes = new List<WorkflowActivityType>()
+                    {
+                        WorkflowActivityType.Form,
+                        WorkflowActivityType.EmailNotification,
+                        WorkflowActivityType.HTTPRequest
+                    };
+
+            if (n.ActivityType == WorkflowActivityType.FieldChange)
+            {
+
+                int key;
+                if (!int.TryParse(n.Key, out key)) return;
+                if (keyMapping.ContainsKey(key))
+                    key = keyMapping[key];
+
+                var node = Company.GetById<WorkflowVersionStep>(key);
+                node.Settings = MapWorkflowFieldSettings(node.Settings, keyMapping);
+
+            }
+            if (n.ActivityType == WorkflowActivityType.RelationshipChange)
+            {
+                int key;
+                if (!int.TryParse(n.Key, out key)) return;
+                if (keyMapping.ContainsKey(key))
+                    key = keyMapping[key];
+
+                var node = Company.GetById<WorkflowVersionStep>(key);
+                node.Settings = MapWorkflowRelationshipUpdateSettings(node.Settings, keyMapping);
+
+            }
+            if (n.ActivityType == WorkflowActivityType.HTTPResponse)
+            {
+                int key;
+                if (!int.TryParse(n.Key, out key)) return;
+                if (keyMapping.ContainsKey(key))
+                    key = keyMapping[key];
+
+                var node = Company.GetById<WorkflowVersionStep>(key);
+                node.Settings = MapWorkflowHttpResponseSettings(node.Settings, keyMapping);
+
+            }
+            if (tokenTypes.Contains(n.ActivityType))
+            {
+                var fields = Regex.Matches(n.Settings, "\\[HTTPREQUEST\\|(-?)([0-9.]+)\\|([a-zA-Z]+)\\]");
+
+                foreach (var field in fields)
+                {
+                    int key;
+                    if (!int.TryParse(n.Key, out key)) return;
+                    if (keyMapping.ContainsKey(key))
+                        key = keyMapping[key];
+
+                    var node = Company.GetById<WorkflowVersionStep>(key);
+                    MapWorkflowHttpSettings(node, key, field.ToString(), keyMapping);
+                }
+
+                fields = Regex.Matches(n.Settings, "\\[HTTPRESPONSE\\|(-?)([0-9.]+)\\|([0-9.]+)\\]");
+
+                foreach (var field in fields)
+                {
+                    int key;
+                    if (!int.TryParse(n.Key, out key)) return;
+                    if (keyMapping.ContainsKey(key))
+                        key = keyMapping[key];
+
+                    var node = Company.GetById<WorkflowVersionStep>(key);
+                    MapWorkflowHttpResponseTokens(node, key, field.ToString(), keyMapping);
+                }
             }
         }
 

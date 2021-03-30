@@ -38,6 +38,7 @@ import {
     HTTPRequestSettings,
     RelationshipUpdateSettings,
     FieldUpdateSettings,
+    HTTPResponseSettings,
 } from '../../../../models/workflow.model';
 import { FieldType } from '../../../../models/fields.model';
 import { map, concatMap } from 'rxjs/operators';
@@ -423,6 +424,18 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                                     }
                                 }
                             }
+
+                            if (field['@UseOutputValue'] != null && field['@UseOutputValue'].toString() == 'true') {
+                                if (field['@FormStepId'] != null && field['@FormFieldId'] != null) {
+                                    let outputNode = nodeList.find(n => n.key == field['@FormStepId'].toString());
+                                    if (outputNode != null && outputNode.settings != null && outputNode.settings.HTTPResponse != null && outputNode.settings.HTTPResponse.Outputs != null) {
+                                        let outputField = outputNode.settings.HTTPResponse.Outputs.find(f => f.Id == field['@FormFieldId']);
+                                        if (outputField != null) {
+                                            field['@FormLabel'] = 'HTTP Response :: ' + outputField.Name;
+                                        }
+                                    }
+                                }
+                            }
                         });
                     }
                 }
@@ -439,6 +452,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         dm.linkDataArray.forEach(l => {
             (<LinkModel>l).formInputs = this.getAvailableFormInputs(<LinkModel>l);
             (<LinkModel>l).httpInputs = this.getAvailableHttpInputs(<LinkModel>l);
+            (<LinkModel>l).httpResponseInputs = this.getAvailableHttpOutputs(<LinkModel>l);
         });
 
         //get deep copy of lists
@@ -493,11 +507,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 this.onCloseClick.emit();
             });
     }
-
-    
+   
     private load() {
         this.getActivityTypes()
             .pipe(
+                concatMap(() => of(this.workflowFieldsService.clearHttpRequestFields())),
                 concatMap(() => this.populateDiagram()),
                 concatMap(() => of(this.initializePalette())),
                 concatMap(() => of(this.initializeFormFields())),
@@ -674,6 +688,37 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         return requests;
     }
 
+    private getAvailableHttpOutputs(link: LinkModel): string[] {
+        let links = [];
+        let requests = [];
+        let visited = [];
+
+        let nodes = this.diagram.model.nodeDataArray.filter(n => (<any>n).key == link.from);
+        visited = visited.concat(nodes.map(n => {
+            return (<any>n).key;
+        }));
+
+        while (nodes.length > 0) {
+            links = [];
+            nodes.forEach(n => {
+                if ((<NodeModel>n).activityType == WorkflowActivityType.HTTPResponse) {
+                    requests.push((<NodeModel>n).key);
+                }
+
+                links = links.concat((<go.GraphLinksModel>this.diagram.model).linkDataArray.filter(l => (<LinkModel>l).to == (<NodeModel>n).key));
+            });
+            nodes = [];
+            links.forEach(l => {
+                let newNodes = this.diagram.model.nodeDataArray.filter(n => (<any>n).key == (<any>l).from && visited.findIndex(v => v == (<any>n).key) == -1);
+                nodes = nodes.concat(newNodes);
+                visited = visited.concat(newNodes.map(n => {
+                    return (<any>n).key;
+                }));
+            });
+        }
+        return requests;
+    }
+
     private getActivityTypes(): Observable<any> {
         return this.workflowService.getActivityTypes()
             .pipe(
@@ -769,6 +814,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             if (n.transitionType == TransitionType.Condition) {
                 n.formInputs = this.getAvailableFormInputs(n);
                 n.httpInputs = this.getAvailableHttpInputs(n);
+                n.httpResponseInputs = this.getAvailableHttpOutputs(n);
             }
 
             this.setTransitionIcon(n);
@@ -863,6 +909,19 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 if (n.settings.HTTPRequest.Headers != null && n.settings.HTTPRequest.Headers.length == null) {
                     n.settings.HTTPRequest.Headers = [n.settings.HTTPRequest.Headers];
                 }
+                this.workflowFieldsService.pushHttpRequestField({key: n.key, name: n.name });
+            }
+
+            if (n.activityType == WorkflowActivityType.HTTPResponse) {
+                if (n.settings.HTTPResponse == null) {
+                    n.settings.HTTPResponse = new HTTPResponseSettings();
+                }
+                if (n.settings.HTTPResponse.Outputs != null && n.settings.HTTPResponse.Outputs.length == null) {
+                    n.settings.HTTPResponse.Outputs = [n.settings.HTTPResponse.Outputs as any];
+                    n.settings.HTTPResponse.Outputs.forEach(o => {
+                        this.workflowFieldsService.pushOutputField(o);
+                    });
+                }
             }
 
             if (n.activityType == WorkflowActivityType.RelationshipUpdate) {
@@ -935,6 +994,15 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 }
             }
 
+            if (m.activityType == WorkflowActivityType.HTTPResponse) {
+                if (settings.HTTPResponse != null && settings.HTTPResponse.Outputs != null) {
+                    settings.HTTPResponse.Outputs.forEach(o => {
+                        delete o['@FormFieldId'];
+                        delete o['@FormLabel'];
+                    });
+                }
+            }
+
             if (m.activityType == WorkflowActivityType.EmailNotification) {
                 if (m.settings['MessageRecipientType'] == 'Responsibility') {
                     delete m.settings['ResponsibilityTypeName'];
@@ -979,9 +1047,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
     private setConditionLabel(condition: any) {
         let i = this.fieldTypes.findIndex(f => f.ID == condition['@FieldTypeID']);
-        if (i >= 0)
+        if (i >= 0) {
             condition['@FieldName'] = this.fieldTypes[i].FriendlyName + (this.fieldTypes[i].Object == 'IssueType' ? ' (Action Field)' : '');
-
+            return;
+        }
 
         if (condition['@FormInputID'] != null) {
             switch (condition['@FormInputID']) {
@@ -990,6 +1059,15 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     break;
                 case 'responseBody':
                     condition['@FieldName'] = 'HTTP Request :: Response Body';
+                    break;
+                default:
+                    let step = this.model.Nodes.find(n => n.Key == condition['@VersionStepID']);
+                    if (step != null) {
+                        if (step.SettingsObject != null && step.SettingsObject.settings != null && step.SettingsObject.settings.HTTPResponse != null) {
+                            let output = step.SettingsObject.settings.HTTPResponse.Outputs.find(o => o.Id == condition['@FormInputID']);
+                            condition['@FieldName'] = 'HTTP Response :: ' + output.Name;
+                        }
+                    }
                     break;
             }
         }
@@ -1156,6 +1234,17 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
                 if (n.settings.HTTPRequest.Method == null || n.settings.HTTPRequest.Method == '')
                     return false;
+                break;
+            case WorkflowActivityType.HTTPResponse:
+                if (n.settings.HTTPResponse == null) {
+                    return false;
+                }
+                if (n.settings.HTTPResponse.InputStepId == null) {
+                    return false;
+                }
+                if (n.settings.HTTPResponse.Outputs == null || n.settings.HTTPResponse.Outputs.length < 1) {
+                    return false;
+                }
                 break;
         }
 
@@ -1478,6 +1567,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 break;
             case WorkflowActivityType.HTTPRequest:
                 n.settings.HTTPRequest = e.settings.HTTPRequest;
+                this.workflowFieldsService.pushHttpRequestField({ key: n.key, name: n.name });
+                break;
+            case WorkflowActivityType.HTTPResponse:
+                n.settings.HTTPResponse = e.settings.HTTPResponse;  
                 break;
         }
 
@@ -1514,9 +1607,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             l.icon = e.icon;
             l.formInputs = this.getAvailableFormInputs(e);
             l.httpInputs = this.getAvailableHttpInputs(e);
+            l.httpResponseInputs = this.getAvailableHttpOutputs(e);
             if (this.selectedData != null && this.selectedData.diagramObjectType == DiagramObjectType.Link) {
                 this.selectedData.formInputs = l.formInputs;
                 this.selectedData.httpInputs = l.httpInputs;
+                this.selectedData.httpResponseInputs = l.httpResponseInputs;
             }
 
             this.setTransitionIcon(l);
@@ -1595,6 +1690,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             let k = (<LinkModel>(<go.GraphLinksModel>this.diagram.model).linkDataArray[l]);
             k.formInputs = this.getAvailableFormInputs(k);
             k.httpInputs = this.getAvailableHttpInputs(k);
+            k.httpResponseInputs = this.getAvailableHttpOutputs(k);
         }
     }
 
@@ -1640,6 +1736,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         });
 
         nodes.forEach(n => {
+            if (n.activityType == WorkflowActivityType.HTTPRequest) {
+                this.workflowFieldsService.deleteHttpRequestField(n.key);
+            }
             if (n.activityType == WorkflowActivityType.Form) {
                 let canDelete = true;
                 if (n.fields.form != null && n.fields.form.field != null) {
@@ -2000,55 +2099,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         );
     }
 
-    private createEditorLink(): go.Link {
-        return this.g(go.Link,  // the whole link panel
-            {
-                routing: go.Link.AvoidsNodes,
-                curve: go.Link.JumpOver,
-                corner: 5, toShortLength: 4,
-                relinkableFrom: true,
-                relinkableTo: true,
-                reshapable: true,
-                resegmentable: true,
-                // mouse-overs subtly highlight links:
-                mouseEnter: function (e, link: go.Part) {
-                    (link.findObject("HIGHLIGHT") as go.Shape).stroke = "rgba(30,144,255,0.2)";
-                },
-                mouseLeave: function (e, link: go.Part) {
-                    (link.findObject("HIGHLIGHT") as go.Shape).stroke = "transparent";
-                }
-            },
-            new go.Binding("points").makeTwoWay(),
-            this.g(go.Shape,  // the link path shape
-                { isPanelMain: true, stroke: "gray", strokeWidth: 2 }),
-            this.g(go.Shape,  // the arrowhead
-                { toArrow: "standard", stroke: null, fill: "gray" }),
-            this.g(go.Panel, "Auto",
-                this.g(go.Shape, "Circle", {
-                    visible: false,
-                    fill: 'gray',//this.g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
-                    stroke: 'gray'
-                    //,width: 25,
-                    //height: 25
-                    //strokeDashArray: [2, 2]
-                },
-                    //only visible if there's a label
-                    new go.Binding("visible", "icon", function (a) {
-                        return (a ? true : false)
-                    })
-                ), // the link shape
-                this.g(go.TextBlock, {
-                    textAlign: "center", font: "9pt FontAwesome", stroke: "#fff", margin: 0.75
-                },
-                    // the label
-                    new go.Binding("text", "icon").makeTwoWay()
-                )
-            ),
-            this.g(go.Shape,
-                { isPanelMain: true, strokeWidth: 8, stroke: "transparent", name: "HIGHLIGHT" })
-        );
-    }
-
     private makeIconPanel(fontSize) {
         fontSize -= 2;
         let iconPanel = this.g(go.Panel,
@@ -2147,34 +2197,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         );
 
         return countPanel;
-    }
-
-    private makePort2(name: string, leftside: boolean) {
-        var port = this.g(go.Shape, "Circle", {
-            fill: "white",
-            stroke: "gray",
-            strokeWidth: 3,
-            desiredSize: new go.Size(9, 9),
-            portId: name, // declare this object to be a "port"
-            cursor: "pointer" // show a different cursor to indicate potential link point
-        });
-
-        var panel = this.g(go.Panel, "Horizontal", {
-            margin: new go.Margin(2, 0)
-        });
-
-        if (leftside) {
-            port.toSpot = go.Spot.Left;
-            port.toLinkable = true;
-            panel.alignment = go.Spot.TopLeft;
-            panel.add(port);
-        } else {
-            port.fromSpot = go.Spot.Right;
-            port.fromLinkable = true;
-            panel.alignment = go.Spot.TopRight;
-            panel.add(port);
-        }
-        return panel;
     }
 
     private makePort(name, spot, output, input) {

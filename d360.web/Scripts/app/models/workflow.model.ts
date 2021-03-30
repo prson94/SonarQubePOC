@@ -225,6 +225,7 @@ export class LinkModel {
     settings: any = {};
     formInputs: any = [];
     httpInputs: any = [];
+    httpResponseInputs: any = [];
 
     valid: boolean = true;
     errors: string[] = [];
@@ -257,29 +258,6 @@ export class NodeModel {
     errors: string[] = [];
 }
 
-export class NodeSettings {
-    Status: any;
-    State: any;
-    ProcedureID: any;
-    FieldUpdate: FieldUpdateSettings;
-    RelationshipUpdate: RelationshipUpdateSettings;
-    HTTPRequest: HTTPRequestSettings;
-
-    FormResponseType: any;
-    MessageRecipientType: any;
-    MessageToUser: any;
-    ResponsibilityTypeID: any;
-    MessageToGroup: any;
-    SendFormEmail: any;
-    MessageBodyTemplate: any;
-    MessageSubjectTemplate: any;
-    ResponsibilitySide: any;
-    SendToDefaultUsers: any;
-     
-    IncludePreviousFormResponses: any;
-    WaitForAllTransitions: any;
-}
-
 export class FieldUpdateSettings {
     Field: any[] = [];
 }
@@ -294,6 +272,45 @@ export class HTTPRequestSettings {
     Url: string;
     Body: string;
     Headers: any[] = [];
+}
+
+export class HTTPResponseOutput {
+    StepId: string;
+    Id: string;
+    Name: string;
+    Type: string = "text";
+    Format: string = "json";
+    Path: string;
+}
+
+export class HTTPResponseSettings {
+    InputStepId: string;
+    InputStepName: string;
+    Outputs: HTTPResponseOutput[] = [];
+}
+
+export class NodeSettings {
+    Status: any;
+    State: any;
+    ProcedureID: any;
+    FieldUpdate: FieldUpdateSettings;
+    RelationshipUpdate: RelationshipUpdateSettings;
+    HTTPRequest: HTTPRequestSettings;
+    HTTPResponse: HTTPResponseSettings;
+
+    FormResponseType: any;
+    MessageRecipientType: any;
+    MessageToUser: any;
+    ResponsibilityTypeID: any;
+    MessageToGroup: any;
+    SendFormEmail: any;
+    MessageBodyTemplate: any;
+    MessageSubjectTemplate: any;
+    ResponsibilitySide: any;
+    SendToDefaultUsers: any;
+     
+    IncludePreviousFormResponses: any;
+    WaitForAllTransitions: any;
 }
 
 export class NodeFields {
@@ -454,6 +471,12 @@ export class WorkflowTaskProcedure {
     UpdatedOn: string;
 }
 
+export class SharedWorkflowFields {
+    formFields: any[] = [];
+    httpFields: any[] = [];
+    jsonFields: HTTPResponseOutput[] = [];
+}
+
 //#region enums
 
 export enum WorkflowChangeType {
@@ -487,7 +510,8 @@ export enum WorkflowActivityType {
     RelationshipUpdate = 6,
     StateChange = 7,
     Delete = 8,
-    HTTPRequest = 9
+    HTTPRequest = 9,
+    HTTPResponse = 10
 }
 
 export enum DiagramObjectType {
@@ -541,7 +565,8 @@ export enum ConditionFieldType {
     Field,
     Form,
     Contextual,
-    HttpRequest
+    HttpRequest,
+    HttpResponse
 }
 
 //#endregion
