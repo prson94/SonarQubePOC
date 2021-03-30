@@ -1,7 +1,7 @@
 ﻿using d360.core.enums;
 using d360.core.queue;
 using Microsoft.Azure;
-using Microsoft.ServiceBus.Messaging;
+using Microsoft.Azure.ServiceBus;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -10,7 +10,7 @@ namespace d360.extensions.queue
 {
     public class DummyQueueSource: IQueueSource
     {
-        public string EventServiceBusConnectionString { get { return CloudConfigurationManager.GetSetting("EventServiceBus"); } }
+        public string EventServiceBusConnectionString { get { return ""; } }// CloudConfigurationManager.GetSetting("EventServiceBus"); } }
 
         public bool CreateMessage<T>(string queueName, T item)
         {
@@ -51,7 +51,7 @@ namespace d360.extensions.queue
 
         public async Task CreateTopicMessageAsync(string topicName, EventInfo e)
         {
-            var bm = new BrokeredMessage(e);
+            var bm = new Message(e);
             var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName); 
             await client.SendAsync(bm);
         }
@@ -73,10 +73,10 @@ namespace d360.extensions.queue
 
         public async Task CreateTopicMessagesAsync(string topicName, List<EventInfo> events)
         {
-            var list = new List<BrokeredMessage>();
+            var list = new List<Message>();
             foreach (var e in events)
             {
-                var bm = new BrokeredMessage(e);
+                var bm = new Message(e);
                 list.Add(bm);
             }
 
@@ -91,7 +91,7 @@ namespace d360.extensions.queue
 
         public async Task CreateTopicMessageAsync<T>(string topicName, T e)
         {
-            var bm = new BrokeredMessage(e);
+            var bm = new Message(e);
             var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
             await client.SendAsync(bm);
         }
@@ -103,10 +103,10 @@ namespace d360.extensions.queue
 
         public async Task CreateTopicMessagesAsync<T>(string topicName, List<T> events)
         {
-            var list = new List<BrokeredMessage>();
+            var list = new List<Message>();
             foreach (var e in events)
             {
-                var bm = new BrokeredMessage(e);
+                var bm = new Message(e);
                 list.Add(bm);
             }
 
