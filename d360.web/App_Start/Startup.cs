@@ -5,6 +5,10 @@ using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Routing;
 using d360.web.Models.Attributes;
+using System;
+using Autofac;
+using Autofac.Integration.Mvc;
+using Autofac.Integration.WebApi;
 
 [assembly: OwinStartup(typeof(d360.web.Startup))]
 
@@ -54,7 +58,34 @@ namespace d360.web
 
 
             #endregion
-            
+
+            #region Autofac
+
+            try
+            {
+                var builder = new ContainerBuilder();
+                var di = new DiModel();
+                builder.RegisterControllers(typeof(MvcApplication).Assembly);
+                var container = di.GetContainer();                
+                
+                DependencyResolver.SetResolver(new AutofacDependencyResolver(container));
+
+                app.UseAutofacMiddleware(container);
+                app.UseAutofacMvc();
+                                
+                // For WebAPI:
+                var config = GlobalConfiguration.Configuration; 
+                config.DependencyResolver = new AutofacWebApiDependencyResolver(container);
+
+                app.UseAutofacWebApi(config);                
+            }
+            catch (Exception)
+            {
+                //surpress any startup exception 
+            }
+
+            #endregion
+
             app.Use<IpRestrictionMiddleware>();
             app.Use<CompanyIDCheckMiddleware>();
             app.Use<UserIDCheckMiddleware>();
