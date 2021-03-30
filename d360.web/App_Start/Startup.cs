@@ -81,6 +81,7 @@ namespace d360.web
             }
             catch (Exception)
             {
+                //surpress any startup exception 
             }
 
             #endregion
