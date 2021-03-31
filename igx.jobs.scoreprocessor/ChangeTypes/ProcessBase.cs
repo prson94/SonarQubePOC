@@ -313,5 +313,58 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                 BulkCopyTimeout = 0
             };
         }
+
+        protected bool updateExecution(SqlConnection Db, ApiExecution executionRecord, bool completed, Exception ex = null)
+        {
+            bool closedExecution = false;
+
+            try
+            {
+                // Reset on failure so it does not interfere with any other executing thread.
+                if (executionRecord != null)
+                {
+                    executionRecord.MarkedForProcessing = false;
+                    executionRecord.ProcessingStartedOn = null;
+                    if (completed)
+                    {
+                        executionRecord.CompletedOn = DateTime.UtcNow;
+                        executionRecord.State = State.InActive;
+                        closedExecution = true;
+                    }
+                    if (ex != null)
+                    {
+                        executionRecord.Error += 1;
+                        executionRecord.ErrorMessage += ex.GetFullExceptionData(false);
+                        if (executionRecord.Error >= 3)
+                        {
+                            executionRecord.CompletedOn = DateTime.UtcNow;
+                            executionRecord.State = State.InActive;
+                            closedExecution = true;
+                        }
+                    }
+
+                    Db.Execute(@"update api.Execution 
+set     Total = @Total,
+        Processed = @Processed,
+        [Error] = @Error, 
+        StartedOn = @StartedOn,
+        CompletedOn = @CompletedOn, 
+        Fields = @Fields,
+        ErrorMessage = @ErrorMessage,
+        Method = @Method,
+        [Route] = @Route,
+        ProcessingStartedOn = @ProcessingStartedOn,
+        [State] = @State,
+        MarkedForProcessing = @MarkedForProcessing 
+where   ExecutionID = @ExecutionID", executionRecord);
+                }
+            }
+            catch
+            {
+                //do nothing.
+            }
+            
+            return closedExecution;
+        }
     }
 }
