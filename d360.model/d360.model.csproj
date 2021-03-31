@@ -210,7 +210,7 @@
       <Name>d360.core</Name>
     </ProjectReference>
     <ProjectReference Include="..\d360.extensions\d360.extensions.csproj">
-      <Project>{2D52A6C1-A7F3-42F3-90D2-0A0ECB871483}</Project>
+      <Project>{2d52a6c1-a7f3-42f3-90d2-0a0ecb871483}</Project>
       <Name>d360.extensions</Name>
     </ProjectReference>
   </ItemGroup>
