@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Dapper;
 
 namespace igx.jobs.scoreprocessor.ChangeTypes
 {
@@ -60,7 +61,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                                         .Select(uid => new AssetMeasureModel
                                         {
                                             AssetUid = uid,
-                                            EffectiveDate = DateTime.UtcNow,
+                                            EffectiveDate = DateTime.UtcNow.Date,
                                             Measures = new List<AssetMeasureChildModel>() {
                                             new AssetMeasureChildModel { MetricAssetUid = measureChangedModel.MetricAssetUid, MetricAssetVersionUid = measureChangedModel.MetricAssetVersionUid, Result = false }
                                              }
@@ -71,7 +72,21 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 
                             if (list.Count > 0)
                             {
-                                await Db.SendContinuingScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, list, Info.ExecutionUid, Info.StartedOn);
+                                var effectiveDates = list.Select(o => o.EffectiveDate).Distinct().OrderBy(o => o).ToList();
+                                if (effectiveDates.Count == 1)
+                                {
+                                    await Db.SendContinuingScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, list, Info.ExecutionUid, Info.StartedOn);
+                                }
+                                else
+                                {
+                                    Db.Connection.Execute("update [api].Execution set CompletedOn = getutcdate(), State = 4 where ExecutionID = @id", new { id = Info.ExecutionUid });
+                                    effectiveDates.ForEach(ed =>
+                                    {
+                                        var assetMeasuresSubset = list.Where(m => m.EffectiveDate == ed).ToList();
+                                        Db.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, assetMeasuresSubset, Info.ExecutionUid);
+                                    });
+                                }
+                                
                             }
                         }
                     }

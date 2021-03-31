@@ -2464,11 +2464,6 @@ for json path";
                 throw new GenericException(HttpStatusCode.Conflict, $"Measure does not belong to a valid Allocation, indicating an invalid measure.");
             }
 
-            if (measure.Allocation.ScoreType != ScoreType.Governance)
-            {
-                throw new GenericException(HttpStatusCode.BadRequest, $"Measure does not belong to a Governance score definition.");
-            }
-
             if (measure.Versions == null)
             {
                 throw new GenericException(HttpStatusCode.Conflict, $"Measure does not contain any versions, indicating an invalid measure.");
