@@ -21,6 +21,7 @@ namespace igx.functions.databasetaskprocessor
         const string functionName = "DatabaseTask_ProcessScheduled";
         const string timerSettings = "*/1 * * * * *";
         const int markitLineageSettingID = 62;
+        const int DEFAULT_QUEUE_ITEMS = 1000;
 
 
         [FunctionName("DatabaseTaskProcessor")]
@@ -46,7 +47,12 @@ namespace igx.functions.databasetaskprocessor
                 {
                     try
                     {
-                        var numberOfQueueItems = 1000;
+                        var numberOfQueueItems = DEFAULT_QUEUE_ITEMS;
+                        if (int.TryParse(CoreFunction.GetConfigValueByKey("TaskProcessorNumQueueItems"), out int tempNumQueueItems))
+                        {
+                            numberOfQueueItems = tempNumQueueItems > 0 ? tempNumQueueItems : DEFAULT_QUEUE_ITEMS;
+                        }
+
                         var indexCollectionModel = new ObjectIndexCollectionModel();
                         List<CompanySetting> settings = null;
 
