@@ -92,7 +92,7 @@ namespace d360.extensions.azuregraph
         private static async Task<string> GetAuthCode(string tenantId, string clientId, string clientSecret)
         {            
             HttpClient client = new HttpClient();
-            StringContent queryString = new StringContent($"grant_type=client_credentials&client_id={clientId}&client_secret={HttpUtility.UrlEncode(clientSecret)}&resource=https://graph.microsoft.com",Encoding.UTF8, "application/x-www-form-urlencoded");
+            StringContent queryString = new StringContent($"grant_type=client_credentials&client_id={clientId}&client_secret={WebUtility.UrlEncode(clientSecret)}&resource=https://graph.microsoft.com",Encoding.UTF8, "application/x-www-form-urlencoded");
             
             HttpResponseMessage response = await client.PostAsync(new Uri($"https://login.microsoftonline.com/{tenantId}/oauth2/token"), queryString);
                         
