@@ -835,7 +835,7 @@ order by V.Emoji";
 						var commentUrl = $"/sidebar/comments/{assetDetail.uid}";
 						var assetUrl = $"/asset/{assetDetail.uid}";
 
-						if (!CompanyContext.HasUserReadPermission(assetDetail.Object, assetDetail.ObjectID, assetDetail.TypeID, r.ResourceID))
+						if (!CompanyContext.HasUserReadPermission(assetDetail.Object, assetDetail.ObjectID, assetDetail.AssetTypeID, r.ResourceID))
 						{
 							commentUrl = assetUrl = $"/home";
 						}
