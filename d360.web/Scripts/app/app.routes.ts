@@ -1,9 +1,15 @@
 ﻿import { NgModule } from '@angular/core';
-import { Routes, RouterModule, Route } from '@angular/router';
-import { SiteUrlHelpers } from './static/site-url-helpers';
+import { Routes, RouterModule } from '@angular/router';
+import { RedirectGuard } from './guards/redirect.guard';
+
 
 const routes: Routes = [
-   // { path: '', redirectTo: SiteUrlHelpers.getDefaultRoute(), pathMatch: 'full' },
+    {
+        path: '',
+        children: [], 
+        canActivate: [RedirectGuard],
+        pathMatch: 'full'
+    },
 
     // lazy loaded modules 
     { path: 'community', loadChildren: () => import('./components/community/community.module').then((m) => m.CommunityModule) },
@@ -51,8 +57,8 @@ const routes: Routes = [
     { path: 'sidebar/connectorLabels', loadChildren: () => import('./components/sidebar/connector-labels/connector-labels-sidebar.module').then((m) => m.ConnectorLabelsModule) },    
     {
         path: '**',
-        redirectTo: 'home'
-      //  redirectTo: SiteUrlHelpers.getDefaultRoute()
+        redirectTo: 'home',
+        canActivate: [RedirectGuard],
     },
 ];
 
