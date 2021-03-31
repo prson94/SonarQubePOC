@@ -940,7 +940,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Forces a recalculation of Governance score item results associated with a specific measure.
+        /// Forces a recalculation of score item results associated with a specific measure.
         /// </summary>
         /// <param name="allocationUid">The unique identifier for the allocation the measure belongs to.</param>
         /// <param name="measureUid">The unique identifier for the measure.</param>

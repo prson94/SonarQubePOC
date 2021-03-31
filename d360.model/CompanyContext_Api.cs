@@ -8860,7 +8860,12 @@ from	(
                 var assetMeasures = GetAssetMeasuresFromRuleResults(ruleResultUids);
                 if (assetMeasures.Count > 0)
                 {
-                    SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, assetMeasures, execution.ExecutionID);
+                    var effectiveDates = assetMeasures.Select(o => o.EffectiveDate).Distinct().OrderBy(o => o).ToList();
+                    effectiveDates.ForEach(ed =>
+                    {
+                        var assetMeasuresSubset = assetMeasures.Where(m => m.EffectiveDate == ed).ToList();
+                        SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, assetMeasuresSubset, execution.ExecutionID);
+                    });
                 }
             }
 
