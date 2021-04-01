@@ -17,7 +17,8 @@
                                            [style]="{width:'100%'}"
                                            [disabled]="field.disabled"
                                            appendTo="body"
-                                           defaultLabel="Choose"></p-multiSelect>
+                                           defaultLabel="Choose"
+                                           selectedItemsLabel="{0} items selected"></p-multiSelect>
                         </span>
                         <span *ngSwitchCase="'checkbox'">
                             <select [name]="field.datafield"

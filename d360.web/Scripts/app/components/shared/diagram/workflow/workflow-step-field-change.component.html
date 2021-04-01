@@ -112,7 +112,7 @@
                         <div *ngIf="field.Type == 'Lookup'">
                             <ng-container *ngIf="field.AllowMultipleValues == true; else single">
                                 <div>
-                                    <p-multiSelect [options]="lookups" [(ngModel)]="selectedField['@Value']" [style]="{'width':'95%'}">
+                                    <p-multiSelect [options]="lookups" [(ngModel)]="selectedField['@Value']" [style]="{'width':'95%'}" selectedItemsLabel="{0} items selected">
                                     </p-multiSelect>
                                 </div>
                                 <div>
