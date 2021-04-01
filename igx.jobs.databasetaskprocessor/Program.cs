@@ -49,7 +49,6 @@ namespace igx.jobs.databasetaskprocessor
         const int markitLineageSettingID = 62;
         const int DEFAULT_QUEUE_ITEMS = 1000;
 
-
         public static void Run([TimerTrigger(timerSettings, RunOnStartup = true)]TimerInfo myTimer, TextWriter log)
         {
             try
@@ -61,12 +60,6 @@ namespace igx.jobs.databasetaskprocessor
 #endif
 
                 companies.Shuffle(); //Randomize
-
-                #region Must keep this segment here b/c this webjob can execute on multiple machines.  We do not want two or more machines trying to grab hold of the same queue item.
-                var rand = new Random();
-                int sleepSeconds = rand.Next(1, 10);
-                Thread.Sleep(sleepSeconds * 500);
-                #endregion
 
                 companies.AsParallel().ForAll(c =>
                 {
@@ -181,125 +174,149 @@ from    [queue].[Task] T
 
 select  T.* 
 from    [queue].[Task] T
-        inner join @IDs S on S.ID = T.ID
+        inner join @IDs S on S.ID = T.ID                                
 ";
-                                var queueItems = outerCompanyConnection.Query<QueueTask>(checkoutAndGetQueueItemSql, new { m = new DbString { Value = System.Environment.MachineName, IsAnsi = true, Length = 250 } }).ToList();
 
-                                queueItems.AsParallel().ForAll(q =>
+                                List<QueueTask> queueItems = null;
+
+                                // Checkout select and update should be done in transaction to avoid other webjob instances from
+                                // checking out the same items.  
+                                using (var trans = outerCompanyConnection.BeginTransaction())
                                 {
                                     try
                                     {
-                                        using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID))
+                                        queueItems = outerCompanyConnection.Query<QueueTask>(checkoutAndGetQueueItemSql, new { m = new DbString { Value = System.Environment.MachineName, IsAnsi = true, Length = 250 } }, transaction:trans).ToList();
+
+                                        trans.Commit();
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        if (trans != null)
                                         {
-                                            companyConnection.Open();
+                                            trans.Rollback();
+                                        }
 
-                                            try
+                                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                                    }
+                                }
+
+                                if (queueItems != null)
+                                {
+                                    queueItems.AsParallel().ForAll(q =>
+                                    {
+                                        try
+                                        {
+                                            using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID))
                                             {
-                                                switch (q.Action)
+                                                companyConnection.Open();
+
+                                                try
                                                 {
-                                                    case "Add":
-                                                    #region
-                                                    addAuditEntry(companyConnection, q.Object, q.ObjectID, "Created", q.Custom, q.AssetID);
-                                                        resolveIndexItem(companyConnection, q.Object, q.ObjectID, "A", q.AssetID);
-                                                        break;
-                                                #endregion
-                                                case "Delete":
-                                                    #region                                     
-                                                    if(IsValidTypeForAuditAction(q.Action,q.Object))                                                    
-                                                        {
-                                                            addAuditEntry(companyConnection, q.Object, q.ObjectID, "Removed", q.Custom, q.AssetID);
-                                                        }
-                                                        resolveIndexItem(companyConnection, q.Object, q.ObjectID, "D", q.AssetID);
-                                                        break;
-                                                #endregion
-                                                case "EventTopicNotification":
-                                                    #region
-                                                    if (!string.IsNullOrEmpty(q.Custom))
-                                                        {
-                                                            var customXml = XElement.Parse(q.Custom);
-
-                                                            var queue = new AzureQueueSource();
-
-                                                            d360.core.enums.Workflow.ChangeType ct;
-                                                            if (Enum.TryParse<d360.core.enums.Workflow.ChangeType>(customXml.Element("ChangeType").Value, out ct))
+                                                    switch (q.Action)
+                                                    {
+                                                        case "Add":
+                                                        #region
+                                                        addAuditEntry(companyConnection, q.Object, q.ObjectID, "Created", q.Custom, q.AssetID);
+                                                            resolveIndexItem(companyConnection, q.Object, q.ObjectID, "A", q.AssetID);
+                                                            break;
+                                                    #endregion
+                                                    case "Delete":
+                                                        #region                                     
+                                                        if (IsValidTypeForAuditAction(q.Action, q.Object))
                                                             {
-                                                                SystemObjects obj;
-                                                                SystemObjects objType;
-                                                                if (Enum.TryParse<SystemObjects>(customXml.Element("ObjectType").Value, out objType))
+                                                                addAuditEntry(companyConnection, q.Object, q.ObjectID, "Removed", q.Custom, q.AssetID);
+                                                            }
+                                                            resolveIndexItem(companyConnection, q.Object, q.ObjectID, "D", q.AssetID);
+                                                            break;
+                                                    #endregion
+                                                    case "EventTopicNotification":
+                                                        #region
+                                                        if (!string.IsNullOrEmpty(q.Custom))
+                                                            {
+                                                                var customXml = XElement.Parse(q.Custom);
+
+                                                                var queue = new AzureQueueSource();
+
+                                                                d360.core.enums.Workflow.ChangeType ct;
+                                                                if (Enum.TryParse<d360.core.enums.Workflow.ChangeType>(customXml.Element("ChangeType").Value, out ct))
                                                                 {
-                                                                    if (Enum.TryParse<SystemObjects>(q.Object, out obj))
+                                                                    SystemObjects obj;
+                                                                    SystemObjects objType;
+                                                                    if (Enum.TryParse<SystemObjects>(customXml.Element("ObjectType").Value, out objType))
                                                                     {
-                                                                        if (int.TryParse(customXml.Element("ObjectTypeID").Value, out int objectTypeID))
+                                                                        if (Enum.TryParse<SystemObjects>(q.Object, out obj))
                                                                         {
-                                                                            var topicName = c.EventTopic;
-#if DEBUG
-                                                                        topicName = "events-debug";
-#endif
-                                                                        queue.CreateTopicMessage(topicName, new EventInfo
+                                                                            if (int.TryParse(customXml.Element("ObjectTypeID").Value, out int objectTypeID))
                                                                             {
-                                                                                Action = ct,
-                                                                                CompanyID = c.CompanyID,
-                                                                                DomainPrefix = c.UrlPrefix,
-                                                                                Object = new EventObjectInfo
+                                                                                var topicName = c.EventTopic;
+#if DEBUG
+                                                                            topicName = "events-debug";
+#endif
+                                                                            queue.CreateTopicMessage(topicName, new EventInfo
                                                                                 {
-                                                                                    Object = obj,
-                                                                                    ObjectID = q.ObjectID,
-                                                                                    ObjectType = objType,
-                                                                                    ObjectTypeID = objectTypeID
-                                                                                },
-                                                                                ResourceID = 0
-                                                                            });
+                                                                                    Action = ct,
+                                                                                    CompanyID = c.CompanyID,
+                                                                                    DomainPrefix = c.UrlPrefix,
+                                                                                    Object = new EventObjectInfo
+                                                                                    {
+                                                                                        Object = obj,
+                                                                                        ObjectID = q.ObjectID,
+                                                                                        ObjectType = objType,
+                                                                                        ObjectTypeID = objectTypeID
+                                                                                    },
+                                                                                    ResourceID = 0
+                                                                                });
+                                                                            }
+                                                                            else { throw new ApplicationException("Unable to parse the ObjectTypeID specified."); }
                                                                         }
-                                                                        else { throw new ApplicationException("Unable to parse the ObjectTypeID specified."); }
+                                                                        else
+                                                                        {
+                                                                            throw new ApplicationException("Unable to identify the Object specified.");
+                                                                        }
                                                                     }
                                                                     else
                                                                     {
-                                                                        throw new ApplicationException("Unable to identify the Object specified.");
+                                                                        throw new ApplicationException("Unable to identify the ObjectType specified.");
                                                                     }
                                                                 }
                                                                 else
                                                                 {
-                                                                    throw new ApplicationException("Unable to identify the ObjectType specified.");
+                                                                    throw new ApplicationException("Unable to identify the ChangeType specified.");
                                                                 }
                                                             }
                                                             else
                                                             {
-                                                                throw new ApplicationException("Unable to identify the ChangeType specified.");
+                                                                throw new ApplicationException("XML field does not have any valid information contained within.");
                                                             }
-                                                        }
-                                                        else
-                                                        {
-                                                            throw new ApplicationException("XML field does not have any valid information contained within.");
-                                                        }
 
+                                                            break;
+                                                    #endregion
+                                                    case "FusionCache":
+                                                        #region
+                                                        if (settings == null)
+                                                            {
+                                                                settings = CompanyConnectionUtils.GetCompanySettings(c.CompanyID);
+                                                            }
+                                                            bool useNewMarkitLineage = settings.Any(s => s.SettingID == markitLineageSettingID && s.Value.ToLower() == "true");
+                                                            companyConnection.Execute("exec fusion.ProcessFusionCacheInQueue @FusionID, @useNewMarkitLineage", new { FusionID = q.ObjectID, useNewMarkitLineage }, null, 10800);    // 180 minute timeout.
                                                         break;
-                                                #endregion
-                                                case "FusionCache":
-                                                    #region
-                                                    if (settings == null)
-                                                        {
-                                                            settings = CompanyConnectionUtils.GetCompanySettings(c.CompanyID);
-                                                        }
-                                                        bool useNewMarkitLineage = settings.Any(s => s.SettingID == markitLineageSettingID && s.Value.ToLower() == "true");
-                                                        companyConnection.Execute("exec fusion.ProcessFusionCacheInQueue @FusionID, @useNewMarkitLineage", new { FusionID = q.ObjectID, useNewMarkitLineage }, null, 10800);    // 180 minute timeout.
-                                                    break;
-                                                #endregion
-                                                case "Notify":
+                                                    #endregion
+                                                    case "Notify":
                                                         #region Email Notification
                                                         if (q.Object == "TaggedComment")
-                                                        {
-                                                            var comment = companyConnection.Query<(int AssetID, DateTime? CommentDate)>(@"select AssetID, isNull(UpdatedOn, CreatedOn) as CommentDate from Comment where ID = @id", new { id = q.ObjectID }, null, true, 900).FirstOrDefault();
+                                                            {
+                                                                var comment = companyConnection.Query<(int AssetID, DateTime? CommentDate)>(@"select AssetID, isNull(UpdatedOn, CreatedOn) as CommentDate from Comment where ID = @id", new { id = q.ObjectID }, null, true, 900).FirstOrDefault();
 
-                                                            if (comment.AssetID > 0)
-                                                            {                                                                    
-                                                                CommentNotification notification = JsonSerializer.Deserialize<CommentNotification>(q.Custom);
-                                                                if (notification != null)
-                                                                {                                                                
-                                                                    var displayValue = companyConnection.Query<string>("Select DisplayValue from AssetDetail A where A.ID = @AssetID", new { AssetID = comment.AssetID }).FirstOrDefault();                                                                        
+                                                                if (comment.AssetID > 0)
+                                                                {
+                                                                    CommentNotification notification = JsonSerializer.Deserialize<CommentNotification>(q.Custom);
+                                                                    if (notification != null)
+                                                                    {
+                                                                        var displayValue = companyConnection.Query<string>("Select DisplayValue from AssetDetail A where A.ID = @AssetID", new { AssetID = comment.AssetID }).FirstOrDefault();
 
-                                                                    var rootUrl = $"https://{c.UrlPrefix}.data3sixty.com";
+                                                                        var rootUrl = $"https://{c.UrlPrefix}.data3sixty.com";
 
-                                                                    string mailBody = $@"
+                                                                        string mailBody = $@"
                                                                                     <html>
                                                                                     <head>
                                                                                         <style>
@@ -368,78 +385,79 @@ from    [queue].[Task] T
                                                                                     </body>
                                                                                     </html>                                                                                        
                                                                                     ";
-                                                                    SimpleMessage.SendMessage("D360 Govern", notification.Subject, notification.RecipientEmail, notification.RecipientName, mailBody, notification.IsHtml);
-                                                                }                                                                
-                                                            }                                                                                                                             
-                                                        }
-                                                        break;
-                                                #endregion
-                                                case "ObjectIndex":
-                                                    #region
-                                                    resolveIndexItem(companyConnection, q.Object, q.ObjectID, q.Custom, q.AssetID);
-                                                        break;
-                                                #endregion
-                                                case "Update":
-                                                    #region
-                                                    addAuditEntry(companyConnection, q.Object, q.ObjectID, "Updated", q.Custom, q.AssetID);
-
-                                                        if (q.Object != "PolicyType" && q.Object != "TaxonomyType")
-                                                            resolveIndexItem(companyConnection, q.Object, q.ObjectID, "U", q.AssetID);
-                                                        break;
-                                                #endregion
-                                                case "TagConsolidated":
-                                                        addAuditEntry(companyConnection, q.Object, q.ObjectID, "Tag Consolidate", q.Custom, q.AssetID);
-                                                        break;
-                                                    case "CompanySettingsUpdate":
-                                                        addAuditEntry(companyConnection, q.Object, q.ObjectID, "Update settings", q.Custom, q.AssetID);
-
-                                                        break;
-                                                    case "QueueRebuild":
-                                                        if (!string.IsNullOrEmpty(q.Custom))
-                                                        {
-                                                            var queue = new AzureQueueSource();
-                                                            switch (q.Custom)
-                                                            {
-                                                                case "AssetGraph":
-                                                                    queue.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new RebuildAssetGraphModel { CompanyID = c.CompanyID });
-                                                                    break;
-                                                                case "DisplayValue":
-                                                                    queue.CreateMessage(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = c.CompanyID, RebuildAll = true });
-                                                                    break;
-                                                                case "SearchIndex":
-                                                                    queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = c.CompanyID });
-                                                                    break;
+                                                                        SimpleMessage.SendMessage("D360 Govern", notification.Subject, notification.RecipientEmail, notification.RecipientName, mailBody, notification.IsHtml);
+                                                                    }
+                                                                }
                                                             }
-                                                        }
-                                                    break;
+                                                            break;
+                                                    #endregion
+                                                    case "ObjectIndex":
+                                                        #region
+                                                        resolveIndexItem(companyConnection, q.Object, q.ObjectID, q.Custom, q.AssetID);
+                                                            break;
+                                                    #endregion
+                                                    case "Update":
+                                                        #region
+                                                        addAuditEntry(companyConnection, q.Object, q.ObjectID, "Updated", q.Custom, q.AssetID);
+
+                                                            if (q.Object != "PolicyType" && q.Object != "TaxonomyType")
+                                                                resolveIndexItem(companyConnection, q.Object, q.ObjectID, "U", q.AssetID);
+                                                            break;
+                                                    #endregion
+                                                    case "TagConsolidated":
+                                                            addAuditEntry(companyConnection, q.Object, q.ObjectID, "Tag Consolidate", q.Custom, q.AssetID);
+                                                            break;
+                                                        case "CompanySettingsUpdate":
+                                                            addAuditEntry(companyConnection, q.Object, q.ObjectID, "Update settings", q.Custom, q.AssetID);
+
+                                                            break;
+                                                        case "QueueRebuild":
+                                                            if (!string.IsNullOrEmpty(q.Custom))
+                                                            {
+                                                                var queue = new AzureQueueSource();
+                                                                switch (q.Custom)
+                                                                {
+                                                                    case "AssetGraph":
+                                                                        queue.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new RebuildAssetGraphModel { CompanyID = c.CompanyID });
+                                                                        break;
+                                                                    case "DisplayValue":
+                                                                        queue.CreateMessage(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = c.CompanyID, RebuildAll = true });
+                                                                        break;
+                                                                    case "SearchIndex":
+                                                                        queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = c.CompanyID });
+                                                                        break;
+                                                                }
+                                                            }
+                                                            break;
+                                                    }
+
+
+                                                    companyConnection.Execute("delete [queue].[Task] where ID = @queueID", new { queueID = q.ID }, null, 500);
                                                 }
-
-
-                                                companyConnection.Execute("delete [queue].[Task] where ID = @queueID", new { queueID = q.ID }, null, 500);
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                                                try
+                                                catch (Exception ex)
                                                 {
-                                                    if (q.NumberOfRetries >= 2)
-                                                        companyConnection.Execute("delete [queue].[Task] where ID = @queueID", new { queueID = q.ID }, null, 500);
-                                                    else
-                                                        companyConnection.Execute(@"update [queue].[Task] set MachineAssigned = null, HasError = 1, NumberOfRetries = NumberOfRetries + 1, ErrorMessage = @error where ID = @queueID", new { queueID = q.ID, error = ex.GetFullExceptionData() }, null, 500);
+                                                    CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                                                    try
+                                                    {
+                                                        if (q.NumberOfRetries >= 2)
+                                                            companyConnection.Execute("delete [queue].[Task] where ID = @queueID", new { queueID = q.ID }, null, 500);
+                                                        else
+                                                            companyConnection.Execute(@"update [queue].[Task] set MachineAssigned = null, HasError = 1, NumberOfRetries = NumberOfRetries + 1, ErrorMessage = @error where ID = @queueID", new { queueID = q.ID, error = ex.GetFullExceptionData() }, null, 500);
+                                                    }
+                                                    catch (Exception iex)
+                                                    {
+                                                        CoreFunction.AITrackException(functionName, iex, c.CompanyID);
+                                                    }
                                                 }
-                                                catch (Exception iex)
-                                                {
-                                                    CoreFunction.AITrackException(functionName, iex, c.CompanyID);
-                                                }
-                                            }
 
+                                            }
                                         }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        CoreFunction.AITrackException(functionName, ex);
-                                    }
-                                });
+                                        catch (Exception ex)
+                                        {
+                                            CoreFunction.AITrackException(functionName, ex);
+                                        }
+                                    });
+                                }
 
                             }
 
