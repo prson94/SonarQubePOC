@@ -49,7 +49,7 @@ import { WorkflowStepFieldChangeDetail } from "../../../models/workflow.model";
                                         </div>
                                     </td>
                                     <td>{{item.FormValue}}</td>
-                                    <td>{{item.OutputValue}}</td>
+                                    <td>{{item.UseOutputValue}}</td>
                                     <td>{{item.AppendValue}}</td>
                                     <td>{{item.ClearValue}}</td>
                                 </tr>
