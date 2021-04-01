@@ -916,8 +916,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 if (n.settings.HTTPResponse == null) {
                     n.settings.HTTPResponse = new HTTPResponseSettings();
                 }
-                if (n.settings.HTTPResponse.Outputs != null && n.settings.HTTPResponse.Outputs.length == null) {
-                    n.settings.HTTPResponse.Outputs = [n.settings.HTTPResponse.Outputs as any];
+                if (n.settings.HTTPResponse.Outputs != null) {
+                    if (n.settings.HTTPResponse.Outputs.length == null) {
+                        n.settings.HTTPResponse.Outputs = [n.settings.HTTPResponse.Outputs as any];
+                    }
+
                     n.settings.HTTPResponse.Outputs.forEach(o => {
                         this.workflowFieldsService.pushOutputField(o);
                     });
