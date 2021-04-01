@@ -20,7 +20,8 @@
                                [ngModel]="filter?.Data?.objectIds"
                                [options]="relationshipValues"
                                [style]="{width:'100%'}"
-                               name="predicates"></p-multiSelect>
+                               name="predicates"
+                               selectedItemsLabel="{0} items selected"></p-multiSelect>
                 <p-selectButton (ngModelChange)="filter.Data.includeType = $event;"
                                 [ngModel]="filter?.Data?.includeType"
                                 [options]="connectors"

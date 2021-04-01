@@ -24,7 +24,7 @@ import { map } from 'rxjs/operators';
                                     <tbody>
                                         <tr>
                                             <td>
-                                                <p-multiSelect [options]="items" [style]="{'width':'98%'}" [ngModel]="selection" (ngModelChange)="change($event)"></p-multiSelect>
+                                                <p-multiSelect [options]="items" [style]="{'width':'98%'}" [ngModel]="selection" (ngModelChange)="change($event)" selectedItemsLabel="{0} items selected"></p-multiSelect>
                                             </td>
                                             <td [ngClass]="{'actions-disabled':isExportDisabled}" *ngIf="showExport" style="width:32px">
                                                 <a class="Action" style="font-size:1.1em" (click)="isExportDisabled ? return : exportClick.emit()" [pTooltip]="isExportDisabled ? exportDisabledMessage : 'Export to Excel'"><i class="fa fa-download fa-fw"></i></a>
