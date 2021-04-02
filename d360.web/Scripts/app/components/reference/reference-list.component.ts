@@ -23,7 +23,7 @@ import { Subscription } from 'rxjs';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading">
                     <div [ngClass]="showDefault ? 'col s12 l3' : 'col s12 l8'">
-                        <d3s-reference-item-type-list [initialSelectedListUid]="selectedReferenceListUid" [selected]="selectedReferenceItemType" (formModeChange)="changeFormMode($event)"  (selectedChange)="changeType($event)"></d3s-reference-item-type-list>
+                        <d3s-reference-item-type-list [initialSelectedListUid]="selectedReferenceListUid" [selected]="selectedReferenceItemType" (formModeChange)="changeFormMode($event)"  (selectedChange)="changeType($event, replaceUrl)"></d3s-reference-item-type-list>
                     </div>
                     <div class="col s12 l9" *ngIf="selectedReferenceItemType && showDefault">
                         <div class="row">
@@ -61,6 +61,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
     private loadPermissionSub: Subscription;
     private loadObjectDataSub: Subscription;
+    private replaceUrl: boolean = true;
 
     constructor(
         secondaryNavService: SecondaryNavService,
@@ -92,7 +93,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
             this.selectedReferenceListId = +params['referenceListId']; // (+) converts string 'id' to a number
             if (params['referenceListId']) {
-                if (params['referenceListId'].toString().length == 36) {
+                if (params['referenceListId'].toString().length == 36) {                    
                     this.selectedReferenceListUid = params['referenceListId'];
                     if (this.loadObjectDataSub) {
                         this.loadObjectDataSub.unsubscribe();
@@ -100,10 +101,18 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                     this.loadObjectDataSub = this.assetTypeService.getAssetTypeObjectAndID(params['referenceListId']).subscribe((res) => {
                         this.selectedReferenceListId = +res.ObjectID;
                         this.load();
+                        if (this.selectedReferenceItemType && this.selectedReferenceItemType.ID != this.selectedReferenceListId) {
+                            var referenceItemType: ReferenceItemType = new ReferenceItemType();
+                            referenceItemType.ID = this.selectedReferenceListId;
+                            referenceItemType.uid = this.selectedReferenceListUid;
+                            this.changeType(referenceItemType, true)
+                        }                        
+                        this.replaceUrl = false;
                     })
                 }
-                else if (this.selectedReferenceListId != null && !isNaN(this.selectedReferenceListId)) {
+                else if (this.selectedReferenceListId != null && !isNaN(this.selectedReferenceListId)) {                   
                     this.load();
+                    this.replaceUrl = true;
                 }
             }
         });
@@ -157,11 +166,11 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
             this.showDefault = false;
     }
 
-    changeType(e: any) {
+    changeType(e: any, replaceUrl: boolean) {
         this.selectedReferenceItemType = e;
         this.selectedReferenceListId = e.ID;
-        this.setSecondaryNavItems();
-        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_REFERENCE_ROOT};referenceListId=${e.uid}`);
+        this.setSecondaryNavItems();       
+        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_REFERENCE_ROOT};referenceListId=${e.uid}`, { replaceUrl: replaceUrl });
     }
 
     setSecondaryNavItems() {
