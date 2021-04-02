@@ -389,7 +389,7 @@ from    [queue].[Task] T
                                                                                             {notification.CommenterName} tagged you in a comment
                                                                                         </div>
                                                                                         <div class='content'>
-                                                                                            {notification.CommenterName} tagged you in a comment on <a href='{rootUrl}{notification.AssetUrl}' class='link'>{displayValue}</a> at {comment.CommentDate.Value:hh:mm tt 'on' dd MMM yyyy}.
+                                                                                            {notification.CommenterName} tagged you in a comment on <a href='{rootUrl}{notification.AssetUrl}' class='link'>{displayValue}</a> at {comment.CommentDate.Value:hh:mm tt 'UTC' 'on' dd MMM yyyy}.
                                                                                         <br />
                                                                                         <br />
                                                                                         <a href='{rootUrl}{notification.CommentUrl}' class='button'>&nbsp;&nbsp;View Comment&nbsp;&nbsp;</a>
