@@ -1082,10 +1082,10 @@ namespace d360.model
                 Console.WriteLine($"ERROR - INVALID HTTP RESPONSE BODY IS NULL OR EMPTY.");
             }
 
-            JObject body = null;
+            JToken body = null;
             try
             {
-                body = JObject.Parse(requestStepBody);
+                body = JToken.Parse(requestStepBody);
             }
             catch
             {
