@@ -8,6 +8,7 @@ using d360.core.queue;
 using d360.core;
 using System.Collections.Concurrent;
 using MoreLinq;
+using System.Data;
 
 namespace d360.extensions.search
 {
@@ -81,12 +82,56 @@ namespace d360.extensions.search
 
         public void IndexAssets(ConcurrentBag<Guid> AssetGuids)
         {
-            List<IndexObjectModel> models = AssetGuids.SelectMany(g => LoadModels(_context, _companyID, null, null, g)).ToList();
-            if (models.Any())
+            if (AssetGuids.Count == 1)
             {
-                _source.RemoveFromIndex(models);
-                _source.AddToIndex(models);
+                IndexAsset(AssetGuids.First());
+                return;
             }
+
+            string batchUid = Guid.NewGuid().ToString().Replace('-', '_');
+            string batchTableName = $"##searcindexbatch_{batchUid}";
+
+            var batchTable = new DataTable();
+            batchTable.Columns.Add("AssetUid", typeof(Guid));
+            AssetGuids.Distinct().ForEach(g =>
+            {
+                var batchRow = batchTable.NewRow();
+                batchRow["AssetUid"] = g;
+                batchTable.Rows.Add(batchRow);
+            });
+
+            _context.Execute($@"DROP TABLE IF EXISTS {batchTableName};
+            CREATE TABLE {batchTableName} (AssetUid uniqueidentifier, AssetTypeUid uniqueidentifier, class int, AssetID bigint);");
+
+            using (SqlBulkCopy bulkCopy = new SqlBulkCopy(_context))
+            {
+                bulkCopy.DestinationTableName = batchTableName;
+                bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
+                bulkCopy.WriteToServer(batchTable);
+            }
+
+            _context.Execute($@"UPDATE t
+            SET t.AssetTypeUid = at.uid,
+	            t.Class = at.Class,
+	            t.AssetID = a.id
+            FROM {batchTableName} t
+            INNER JOIN Asset a ON t.AssetUid = a.uid
+            INNER JOIN AssetType at on a.AssetTypeID = at.ID;
+
+            CREATE NONCLUSTERED INDEX IX_searcindexbatch_{batchUid} ON {batchTableName} (AssetID);
+            ");
+
+            IEnumerable<AssetTypeClass> types = _context.Query<AssetTypeClass>($"SELECT DISTINCT Class FROM {batchTableName}");
+            types.ForEach(t =>
+            {
+                IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, t, null, null, false, batchTableName);
+                if (models.Any())
+                {
+                    _source.RemoveFromIndex(models);
+                    _source.AddToIndex(models);
+                }
+            });
+            _context.Execute($@"DROP TABLE IF EXISTS {batchTableName};");
         }
 
         public void IndexAsset(string Object, long ObjectID)
@@ -101,7 +146,7 @@ namespace d360.extensions.search
 
         public void IndexAssets(ConcurrentBag<Tuple<string, long>> tuples)
         {
-            List<IndexObjectModel> models = tuples.SelectMany(t => LoadModels(_context, _companyID, t.Item1, t.Item2)).ToList();
+            List<IndexObjectModel> models = tuples.Distinct().SelectMany(t => LoadModels(_context, _companyID, t.Item1, t.Item2)).ToList();
             if (models.Any())
             {
                 _source.RemoveFromIndex(models);
@@ -163,7 +208,7 @@ namespace d360.extensions.search
             _source.AddToIndex(models);
         }
 
-        private IEnumerable<IndexObjectModel> LoadModels(SqlConnection context, int companyID, AssetTypeClass? assetClass, Guid? AssetTypeUid, Guid? AssetUid, bool useTempTable = false)
+        private IEnumerable<IndexObjectModel> LoadModels(SqlConnection context, int companyID, AssetTypeClass? assetClass, Guid? AssetTypeUid, Guid? AssetUid, bool useTempTable = false, string batchTable = null)
         {
             IndexMode mode = IndexMode.BaseQuery;
             string sql = "";
@@ -181,6 +226,13 @@ namespace d360.extensions.search
             if (assetClass == null)
             {
                 throw new Exception("AssetClass is null");
+            }
+
+            string joinBatchTable = "";
+            if (!string.IsNullOrEmpty(batchTable))
+            {
+                joinBatchTable = $"inner join {batchTable} bt on bt.AssetID = a.id";
+                parameters.Add("batchtable", batchTable);
             }
 
             int assettypeclass = (int)assetClass;
@@ -221,6 +273,7 @@ namespace d360.extensions.search
 	                        [dbo].Asset a
 	                        inner join [dbo].assettype att on a.assettypeid = att.id
 	                        inner join [dbo].assetdisplayvalue adv on adv.assetid = a.id
+                            {joinBatchTable}
                         where
 	                          {whereCondition}
                         ORDER BY A.ID";
@@ -315,9 +368,10 @@ namespace d360.extensions.search
 	                        [dbo].Asset a
 	                        inner join reporting.global_resource u on u.ResourceID = a.ObjectID and a.[Object] = 'Resource'
 	                        inner join [dbo].assettype att on a.assettypeid = att.id
+                            {joinBatchTable}
 	                        left outer join [dbo].assetdisplayvalue adv on adv.assetid = a.id
                         where
-	                         {whereCondition}
+                            {whereCondition}
                         ORDER BY A.ID";
                     shaper = (dynamic o) =>
                     {
@@ -372,6 +426,7 @@ namespace d360.extensions.search
                             inner join [Group] g on g.ID = a.ObjectID and [Object] = 'Group'
 	                        inner join [dbo].assettype att on a.assettypeid = att.id
 	                        inner join [dbo].assetdisplayvalue adv on adv.assetid = a.id
+                            {joinBatchTable}
                         where
 	                        {whereCondition}
                         ORDER BY A.ID";
@@ -690,6 +745,10 @@ namespace d360.extensions.search
                 fieldJoin.Add("inner join Asset a on a.ID = F.AssetID");
                 fieldWhere.Add("a.uid = @assetuid");
             }
+            if (parameters.ParameterNames.Contains("batchtable"))
+            {
+                fieldJoin.Add($"inner join {parameters.Get<string>("batchtable")} bt on F.AssetID = bt.AssetID");
+            }
 
             if(existsWhere.Any())
             {
@@ -722,6 +781,10 @@ namespace d360.extensions.search
             {
                 tagWhere.Add("a.uid = @assetuid");
             }
+            if (parameters.ParameterNames.Contains("batchtable"))
+            {
+                tagJoin.Add($"inner join {parameters.Get<string>("batchtable")} bt on at.AssetID = bt.AssetID");
+            }
 
             string tagsSql = @"SELECT a.ID as AssetID, a.uid AS AssetUID, t.uid AS TagUID, t.Value FROM [dbo].[AssetTag] at " +
             "INNER JOIN [dbo].[Tag] t ON at.TagID = t.ID INNER JOIN [dbo].[Asset] a ON at.AssetID = a.ID";
@@ -739,6 +802,9 @@ namespace d360.extensions.search
 
         private static string GetResponsibilityQuery(DynamicParameters parameters)
         {
+            List<string> joins = new List<string>();
+            List<string> conditions = new List<string>();
+
             string sql = $@"SELECT aa.id as AssetID, 
                               rresource.SecurityAsset,
                               rresource.SecurityAssetID
@@ -765,11 +831,30 @@ namespace d360.extensions.search
                          AND rasset.AssetTypeID = 0";
             if (parameters.ParameterNames.Contains("assetuid"))
             {
-                return "SELECT q.* FROM (" + sql + ") q INNER JOIN [dbo].Asset a ON q.AssetID = a.ID WHERE a.uid = @assetuid";
+                joins.Add("INNER JOIN [dbo].Asset a ON q.AssetID = a.ID");
+                conditions.Add("a.uid = @assetuid");
             }
             else if (parameters.ParameterNames.Contains("assettypeuid"))
             {
-                return "SELECT q.* FROM (" + sql + ") q INNER JOIN [dbo].Asset a ON q.AssetID = a.ID INNER JOIN [dbo].AssetType att on a.AssetTypeID = att.id WHERE att.uid = @assettypeuid";
+                joins.Add("INNER JOIN [dbo].Asset a ON q.AssetID = a.ID");
+                joins.Add("INNER JOIN [dbo].AssetType att on a.AssetTypeID = att.id");
+                conditions.Add("att.uid = @assettypeuid");
+            }
+            if (parameters.ParameterNames.Contains("batchtable"))
+            {
+                joins.Add($"INNER JOIN {parameters.Get<string>("batchtable")} bt on q.AssetID = bt.AssetID");
+                if(parameters.ParameterNames.Contains("assettypeclass"))
+                {
+                    conditions.Add("bt.Class = @assettypeclass");
+                }
+            }
+            if(joins.Any())
+            {
+                sql = $@"SELECT q.* FROM ({sql}) q {string.Join("", joins)}";
+                if (conditions.Any())
+                {
+                    sql += $" WHERE {string.Join(" AND ", conditions)}";
+                }
             }
             return sql;
         }
@@ -966,7 +1051,13 @@ namespace d360.extensions.search
         protected override void OnLastPage()
         {
             base.OnLastPage();
-            _connection.Execute($"DROP TABLE IF EXISTS ##{_tableIdentifier}");
+            try
+            {
+                _connection.Execute($"DROP TABLE IF EXISTS ##{_tableIdentifier}");
+            } catch (Exception)
+            {
+                //If connection is closed, the temp table is automatically dropped
+            }
         }
     }
 }

@@ -121,10 +121,25 @@ namespace igx.jobs.databasetaskprocessor
                                 }
                                 else //Add or update
                                 {
-                                    if (o == "Synonym" || o == "ReferenceItemType" || (o == "Intersect" && givenAssetId > 0))
+                                    if (o == "Synonym" || o == "ReferenceItemType")
                                     {
                                         //These objects are not assets, so they do not have an Asset UID
                                         indexCollectionModel.UpsertByObject.Add(new Tuple<string, long>(o, oid));
+                                    }
+                                    else if (o == "Intersect" && givenAssetId > 0)
+                                    {
+                                        //Intersects of Predicate type 6 are synonyms and are indexed
+                                        bool isSynonym = companyConnection.Query<bool>(@"SELECT COUNT(1)
+                                            FROM [dbo].[Intersect] i
+                                            WHERE EXISTS (SELECT 1 FROM [dbo].[IntersectType] it
+                                                INNER JOIN [dbo].[Predicate] p ON it.PredicateID = p.id
+                                                WHERE p.type = 6 AND i.IntersectTypeID = it.ID)
+                                            AND i.id = @a", new { a = oid }).SingleOrDefault();
+
+                                        if (isSynonym)
+                                        {
+                                            indexCollectionModel.UpsertByObject.Add(new Tuple<string, long>(o, oid));
+                                        }
                                     }
                                     else
                                     {
