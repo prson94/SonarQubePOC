@@ -166,7 +166,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     getLabelByID(id) {
-        if (id && this.field.Items.length > 0) {
+        if (id && this.field.Items && this.field.Items.length > 0) {
             let filterItems = this.field.Items.filter(x => x.value == id);
             if (filterItems.length > 0) {
                 return filterItems[0].label;
@@ -176,7 +176,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     getColorByID(id) {
-        if (id && this.field.Items.length > 0) {
+        if (id && this.field.Items && this.field.Items.length > 0) {
             let filterItems = this.field.Items.filter(x => x.value == id);
             if (filterItems.length > 0) {
                 return filterItems[0].title;
@@ -255,7 +255,13 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                                 this.hasCascadeLoaded = true;
 
                                 this.listItemChange.emit({ field: this.field, value: this.field.Value });
-                                this.ref.markForCheck();
+                                if (this.field.UseColorControl) {
+                                    this.ref.markForCheck();
+                                }
+                                else {
+                                    this.ref.detectChanges();
+                                    this.form.controls[this.field.FieldName].setValue(this.field.Value);
+                                }
                             }
                         )
                     } else {
