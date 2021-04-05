@@ -170,7 +170,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
         if (nav !== null) {
             if (nav.Icon === null && nav.FullURL) {
                 retVal = "URL-" + nav.FullURL;
-            } else if (nav.Icon !== null {
+            } else if (nav.Icon !== null) {
                 retVal = nav.Icon;
             }
         }
