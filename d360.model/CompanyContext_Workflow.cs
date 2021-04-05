@@ -1001,7 +1001,7 @@ namespace d360.model
 
                 if (!string.IsNullOrEmpty(requestSettings.Body))
                 {
-                    var body = await ProcessMessageTokens(requestSettings.Body, info, prefix, item);
+                    var body = await ProcessMessageTokens(requestSettings.Body, info, prefix, item, false);
                     var contentArray = Encoding.UTF8.GetBytes(body);
                     request.Content = new ByteArrayContent(contentArray);
                 }
@@ -1033,7 +1033,7 @@ namespace d360.model
                         });
                     }
 
-                    var uri = await ProcessMessageTokens(requestSettings.Url, info, prefix, item);
+                    var uri = await ProcessMessageTokens(requestSettings.Url, info, prefix, item, false);
 
                     if (!Uri.IsWellFormedUriString(uri, UriKind.Absolute))
                         throw new Exception($"ERROR - INVALID HTTP REQUEST URL SPECIFIED.");
