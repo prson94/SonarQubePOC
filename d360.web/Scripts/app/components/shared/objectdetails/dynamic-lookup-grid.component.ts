@@ -85,7 +85,7 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
     }
 
     private formatAsNumber(val): string {
-        return val !== '' && val !== null && val !== undefined ? Number(val).toLocaleString() : "";
+        return val !== '' && val !== null ? Number(val).toLocaleString() : "";
     }
 
     private columnDataType(column: GridFilterColumn): string {
