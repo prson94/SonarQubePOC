@@ -7022,3 +7022,9 @@ table {
     left: 3px;
   }
 }
+
+//Fixes issue with PrimeNG editor adding "auto" to width and height to the Quill style
+.p-editor-container .p-editor-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-options .ql-picker-item {
+    min-height: 16px;
+    min-width: 16px;
+}
