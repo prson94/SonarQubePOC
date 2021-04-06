@@ -292,7 +292,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Returns an array of votes for a specific comment.
+        /// Returns an array of votes for a specific comment by emoji.
         /// </summary>
         /// <returns>An array of votes.</returns>
         [
