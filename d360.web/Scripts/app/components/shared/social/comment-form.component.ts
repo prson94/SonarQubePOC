@@ -59,10 +59,12 @@ export class CommentFormComponent extends BaseComponent {
 
             this.socialService.editComment(putModel).
                 subscribe((res) => {
-                    this.messagesService.showInfoMessage("Success", "Item edited successfully");
+                    if (res) {
+                        this.messagesService.showInfoMessage("Success", "Item edited successfully");
+                        this.comment.UpdatedOn = new Date();
+                        this.onSave.emit({ comment: this.comment, event: "edit" });
+                    }
                     this.isLoading = false;
-                    this.comment.UpdatedOn = new Date();
-                    this.onSave.emit({ comment: this.comment, event: "edit" });
                 });
         }
         else {
@@ -77,9 +79,11 @@ export class CommentFormComponent extends BaseComponent {
 
             this.socialService.addComment(postModel).
                 subscribe((res) => {
-                    this.messagesService.showInfoMessage("Success", "Item added successfully");
-                    this.isLoading = false;
-                    this.onSave.emit({ comment: res, event: "add" });
+                    if (res) {
+                        this.messagesService.showInfoMessage("Success", "Item added successfully");
+                        this.onSave.emit({ comment: res, event: "add" })
+                    }
+                    this.isLoading = false;  
                 });
         }
     }
