@@ -6,7 +6,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -97,27 +96,9 @@ namespace d360.web
                         string directiveString = string.Join("; ", directives
                             .Where(d => d.Value.Any())
                             .Select(d => d.Key + " " + string.Join(" ", d.Value.ToArray())).ToArray());
-                        try
-                        {
-                            res.Headers.Add("Content-Security-Policy", new[] { directiveString });
-                        } catch (Exception)
-                        {
-                        }
-                    }, response);
-                } else
-                {
-/*                    string csp = File.ReadAllText("c:/csp.txt");
-                    response.OnSendingHeaders(s => {
-                        var res = (IOwinResponse)s;
 
-                        try
-                        {
-                            res.Headers.Add("Content-Security-Policy-Report-Only", new[] { csp });
-                        }
-                        catch (Exception)
-                        {
-                        }
-                    }, response);*/
+                        res.Headers.Add("Content-Security-Policy", new[] { directiveString });
+                    }, response);
                 }
             }
             await _next.Invoke(environment).ConfigureAwait(false);
