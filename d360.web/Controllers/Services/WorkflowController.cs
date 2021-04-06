@@ -2772,7 +2772,7 @@ order by wi.StartedOn desc";
                     fieldChange.UseCurrentDate = field["@UseCurrentDate"] != null ? field["@UseCurrentDate"] : false;
                     fieldChange.AppendValue = field["@AppendValue"] != null ? field["@AppendValue"] : "";
                     fieldChange.ClearValue = field["@ClearValue"] != null ? field["@ClearValue"] : "";
-                    fieldChange.UseOutputValue = field["@UseOutputValue"] != null ? field["@UseOutputValue"] : "false";
+                    fieldChange.UseOutputValue = field["@UseOutputValue"] != null ? field["@UseOutputValue"] : false;
                     FieldType fieldType = Company.GetById<FieldType>(fieldTypeId);
                     fieldChange.FieldName = fieldType?.FriendlyName;
                     fieldChange.Type = fieldType?.Type;
