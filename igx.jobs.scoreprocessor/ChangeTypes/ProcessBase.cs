@@ -314,6 +314,24 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
             };
         }
 
+        protected void updateExecution(SqlConnection Db, ApiExecution executionRecord)
+        {
+            Db.Execute(@"update api.Execution 
+set     Total = @Total,
+        Processed = @Processed,
+        [Error] = @Error, 
+        StartedOn = @StartedOn,
+        CompletedOn = @CompletedOn, 
+        Fields = @Fields,
+        ErrorMessage = @ErrorMessage,
+        Method = @Method,
+        [Route] = @Route,
+        ProcessingStartedOn = @ProcessingStartedOn,
+        [State] = @State,
+        MarkedForProcessing = @MarkedForProcessing 
+where   ExecutionID = @ExecutionID", executionRecord);
+        }
+
         protected bool updateExecution(SqlConnection Db, ApiExecution executionRecord, bool completed, Exception ex = null)
         {
             bool closedExecution = false;
@@ -343,20 +361,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                         }
                     }
 
-                    Db.Execute(@"update api.Execution 
-set     Total = @Total,
-        Processed = @Processed,
-        [Error] = @Error, 
-        StartedOn = @StartedOn,
-        CompletedOn = @CompletedOn, 
-        Fields = @Fields,
-        ErrorMessage = @ErrorMessage,
-        Method = @Method,
-        [Route] = @Route,
-        ProcessingStartedOn = @ProcessingStartedOn,
-        [State] = @State,
-        MarkedForProcessing = @MarkedForProcessing 
-where   ExecutionID = @ExecutionID", executionRecord);
+                    updateExecution(Db, executionRecord);
                 }
             }
             catch

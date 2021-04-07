@@ -204,6 +204,21 @@ where   O.RowNum = 1;";
 
         #endregion
 
+        ApiExecution executionRecord;
+        AssetVersionCheckObjectTypes assetVersionCheckObjectTypes;
+        List<Score> scoresToAdd;
+        List<ScoreItem> scoresItemsToAdd;
+        List<ScoreItemLink> scoreItemLinksToAdd;
+        List<ScoreItemLink> scoreItemLinksToDelete;
+
+        public AssetMeasuresProcess()
+        {
+            // Store the Governance check values and whether they are valid, so we do not have to check individual measure validity more than once.
+            assetVersionCheckObjectTypes = new AssetVersionCheckObjectTypes();
+
+            resetLists();
+        }
+
         public async Task Run()
         {
             var assetMeasures = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetMeasureModel>>(Info.StorageFolder, Info.StorageFile);
@@ -213,15 +228,10 @@ where   O.RowNum = 1;";
                 throw new ArgumentNullException("assetMeasures","Cannot load score file from storage");
             }
 
-            var scoresToAdd = new List<Score>();
-            var scoresItemsToAdd = new List<ScoreItem>();
-            var scoreItemLinksToAdd = new List<ScoreItemLink>();
-            var scoreItemLinksToDelete = new List<ScoreItemLink>();
-
             var Db = GetCompanyContext();
             using (var company = GetEnvironmentConnection())
             {
-                var executionRecord = company.Query<ApiExecution>("select * from api.Execution where ExecutionID = @id", new { id = Info.ExecutionUid }).SingleOrDefault();
+                executionRecord = company.Query<ApiExecution>("select * from api.Execution where ExecutionID = @id", new { id = Info.ExecutionUid }).SingleOrDefault();
 
                 if (executionRecord == null && assetMeasures.Count > 10)
                 {
@@ -373,9 +383,6 @@ where   ExecutionID <> @id
                     trans.Commit();
                 }
                 
-                // Store the Governance check values and whether they are valid, so we do not have to check individual measure validity more than once.
-                var assetVersionCheckObjectTypes = new AssetVersionCheckObjectTypes();
-
                 Action<MetricAssetDefinitionGovernanceViewModel, Guid, bool?> assetVersionCheckObjectTypeAction = (MetricAssetDefinitionGovernanceViewModel governance, Guid metricAssetVersionUid, bool? overrideBoolValue) => {
                     if (assetVersionCheckObjectTypes.OkToAddToList(metricAssetVersionUid))
                     {
@@ -438,7 +445,7 @@ where   ExecutionID <> @id
                     })
                     .Distinct()
                     .ToList();
-                uniqueAssetCombinations.ForEach(assetEffectiveDate =>
+                uniqueAssetCombinations.ForEach(async assetEffectiveDate =>
                 {
                     // The local lists below keep track of score items and links to add for a specific score (asset / effective date / allocation combination).
                     var ignoredAssetScoreItems = new List<ScoreItem>();
@@ -951,348 +958,32 @@ where   ExecutionID <> @id
                             scoresToAdd.Add(assetScore);
                         }
                     }
+
+                    // Now add remaining scores via a transaction.
+                    if (scoresToAdd.Count % 250 == 0)
+                    {
+                        addScoresToEnvironmentDatabase(company);
+                        await Db.SendContinuingScoreEventWithPayload(
+                            ScoreQueueChangeType.WorkflowCheck,
+                            scoresToAdd.Select(i => new ScoreCreatedModel { AllocationUid = i.AllocationUid, AssetUid = i.AssetUid, EffectiveDate = i.EffectiveDate }).ToList(),
+                            Info.ExecutionUid,
+                            Info.StartedOn
+                            );
+                        resetLists();
+                    }
                 });
 
-                // Now add scores via a transaction.
+                // Now add remaining scores via a transaction.
                 if (scoresToAdd.Count > 0)
                 {
-                    using (var trans = company.BeginTransaction())
-                    { 
-                        try
-                        {
-                            var scores = new DataTable();
-                            scores.Columns.Add("Uid", typeof(Guid));
-                            scores.Columns.Add("AssetUid", typeof(Guid));
-                            scores.Columns.Add("EffectiveDate", typeof(DateTime));
-                            scores.Columns.Add("Value", typeof(decimal));
-                            scores.Columns.Add("RunDate", typeof(DateTime));
-                            scores.Columns.Add("EndDate", typeof(DateTime));
-                            scores.Columns.Add("AllocationUid", typeof(Guid));
-                            scores.Columns.Add("VersionValueHash", typeof(string));
-
-                            var scoreItems = new DataTable();
-                            scoreItems.Columns.Add("Uid", typeof(Guid));
-                            scoreItems.Columns.Add("UpdatedOn", typeof(DateTime));
-                            scoreItems.Columns.Add("Value", typeof(bool));
-                            scoreItems.Columns.Add("AdjustedWeight", typeof(decimal));
-                            scoreItems.Columns.Add("RunDate", typeof(DateTime));
-                            scoreItems.Columns.Add("AssetVersionUid", typeof(Guid));
-                            scoreItems.Columns.Add("Evidence", typeof(string));
-                            scoreItems.Columns.Add("ConditionUid", typeof(Guid));
-                            scoreItems.Columns.Add("OtherConditions", typeof(string));
-                            scoreItems.Columns.Add("DecimalValue", typeof(float));
-                            scoreItems.Columns.Add("AdjustedMaxWeight", typeof(decimal));
-
-                            var scoreItemLinks = new DataTable();
-                            scoreItemLinks.Columns.Add("ScoreUid", typeof(Guid));
-                            scoreItemLinks.Columns.Add("ScoreItemUid", typeof(Guid));
-
-                            var deleteScoreItemLinks = new DataTable();
-                            deleteScoreItemLinks.Columns.Add("ScoreUid", typeof(Guid));
-                            deleteScoreItemLinks.Columns.Add("ScoreItemUid", typeof(Guid));
-
-                            var deleteScoreItemVersionLinks = new DataTable();
-                            deleteScoreItemVersionLinks.Columns.Add("AssetVersionUid", typeof(Guid));
-
-                            scoresToAdd.ForEach(s =>
-                            {
-                                var scoreRow = scores.NewRow();
-                                scoreRow["Uid"] = s.Uid;
-                                scoreRow["AssetUid"] = s.AssetUid;
-                                scoreRow["EffectiveDate"] = s.EffectiveDate.Date;
-                                scoreRow["Value"] = s.Value;
-                                scoreRow["RunDate"] = s.RunDate;
-                                scoreRow["AllocationUid"] = s.AllocationUid;
-                                scoreRow["VersionValueHash"] = s.VersionValueHash;
-                                scores.Rows.Add(scoreRow);
-                            });
-
-                            scoresItemsToAdd.ForEach(s =>
-                            {
-                                var scoreItemRow = scoreItems.NewRow();
-                                scoreItemRow["Uid"] = s.Uid;
-                                scoreItemRow["UpdatedOn"] = s.UpdatedOn;
-                                scoreItemRow["Value"] = s.Value;
-                                if (s.DecimalValue.HasValue)
-                                    scoreItemRow["DecimalValue"] = s.DecimalValue;
-                                if (s.AdjustedWeight.HasValue)
-                                    scoreItemRow["AdjustedWeight"] = s.AdjustedWeight.Value;
-                                scoreItemRow["RunDate"] = s.RunDate;
-                                scoreItemRow["AssetVersionUid"] = s.AssetVersionUid;
-                                scoreItemRow["Evidence"] = s.Evidence ?? "{}";
-                                if (s.ConditionUid.HasValue)
-                                    scoreItemRow["ConditionUid"] = s.ConditionUid;
-                                scoreItemRow["OtherConditions"] = s.OtherConditions ?? "[]";
-                                if (s.AdjustedMaxWeight.HasValue)
-                                    scoreItemRow["AdjustedMaxWeight"] = s.AdjustedMaxWeight.Value;
-                                scoreItems.Rows.Add(scoreItemRow);
-                            });
-
-                            scoreItemLinksToAdd.ForEach(s =>
-                            {
-                                var scoreRow = scoreItemLinks.NewRow();
-                                scoreRow["ScoreUid"] = s.ScoreUid;
-                                scoreRow["ScoreItemUid"] = s.ScoreItemUid;
-                                scoreItemLinks.Rows.Add(scoreRow);
-                            });
-
-                            scoreItemLinksToDelete.ForEach(s =>
-                            {
-                                var scoreRow = deleteScoreItemLinks.NewRow();
-                                scoreRow["ScoreUid"] = s.ScoreUid;
-                                scoreRow["ScoreItemUid"] = s.ScoreItemUid;
-                                deleteScoreItemLinks.Rows.Add(scoreRow);
-                            });
-
-                            assetVersionCheckObjectTypes.ForEach(s =>
-                            {
-                                if (!s.Valid)
-                                {
-                                    var row = deleteScoreItemVersionLinks.NewRow();
-                                    row["AssetVersionUid"] = s.AssetVersionUid;
-                                    deleteScoreItemVersionLinks.Rows.Add(row);
-                                }
-                            });
-
-                            await company.ExecuteAsync(
-                               @"create table #Scores (
-                                    Uid uniqueidentifier not null,
-                                    AssetUid uniqueidentifier not null,
-                                    EffectiveDate date not null,
-                                    Value decimal(8,6) null,
-                                    RunDate datetime not null,
-                                    EndDate date null,
-                                    AllocationUid uniqueidentifier null,
-                                    VersionValueHash varchar(50) null
-                                );
-                                create table #ScoreUidSynchronization (
-                                    GivenUid uniqueidentifier not null,
-                                    ActualUid uniqueidentifier not null
-                                ); 
-                                create table #ScoreItems (
-	                                Uid uniqueidentifier NOT NULL,
-	                                UpdatedOn datetime NOT NULL,
-	                                Value bit NOT NULL,
-	                                AdjustedWeight decimal(8,6) NULL,
-	                                RunDate datetime NULL,
-	                                AssetVersionUid uniqueidentifier NULL,
-	                                Evidence nvarchar(max) NULL,
-	                                ConditionUid uniqueidentifier NULL,
-                                    OtherConditions nvarchar(max) NOT NULL,
-	                                AdjustedMaxWeight decimal(8,6) NULL,
-                                    DecimalValue float NULL
-                                );
-                                create table #ScoreItemLinks (
-                                    ScoreUid uniqueidentifier NOT NULL,
-	                                ScoreItemUid uniqueidentifier NOT NULL
-                                );
-                                create table #ScoreItemLinksToDelete (
-                                    ScoreUid uniqueidentifier NOT NULL,
-	                                ScoreItemUid uniqueidentifier NOT NULL
-                                );
-                                create table #ScoreItemVersionLinksToDelete (
-                                    AssetVersionUid uniqueidentifier NOT NULL
-                                );", transaction: trans);
-
-                            using (var bulkCopy = CreateBulkCopy(company, trans, "#Scores"))
-                            {
-                                bulkCopy.ColumnMappings.Add("Uid", "Uid");
-                                bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
-                                bulkCopy.ColumnMappings.Add("EffectiveDate", "EffectiveDate");
-                                bulkCopy.ColumnMappings.Add("Value", "Value");
-                                bulkCopy.ColumnMappings.Add("RunDate", "RunDate");
-                                bulkCopy.ColumnMappings.Add("EndDate", "EndDate");
-                                bulkCopy.ColumnMappings.Add("AllocationUid", "AllocationUid");
-                                bulkCopy.ColumnMappings.Add("VersionValueHash", "VersionValueHash");
-
-                                await bulkCopy.WriteToServerAsync(scores);
-                            }
-
-                            using (var bulkCopy = CreateBulkCopy(company, trans, "#ScoreItems"))
-                            {
-                                bulkCopy.ColumnMappings.Add("Uid", "Uid");
-                                bulkCopy.ColumnMappings.Add("UpdatedOn", "UpdatedOn");
-                                bulkCopy.ColumnMappings.Add("Value", "Value");
-                                bulkCopy.ColumnMappings.Add("DecimalValue", "DecimalValue");
-                                bulkCopy.ColumnMappings.Add("AdjustedWeight", "AdjustedWeight");
-                                bulkCopy.ColumnMappings.Add("RunDate", "RunDate");
-                                bulkCopy.ColumnMappings.Add("AssetVersionUid", "AssetVersionUid");
-                                bulkCopy.ColumnMappings.Add("Evidence", "Evidence");
-                                bulkCopy.ColumnMappings.Add("ConditionUid", "ConditionUid");
-                                bulkCopy.ColumnMappings.Add("OtherConditions", "OtherConditions");
-                                bulkCopy.ColumnMappings.Add("AdjustedMaxWeight", "AdjustedMaxWeight");
-
-                                await bulkCopy.WriteToServerAsync(scoreItems);
-                            }
-
-                            using (var bulkCopy = CreateBulkCopy(company, trans, "#ScoreItemLinks"))
-                            {
-                                bulkCopy.ColumnMappings.Add("ScoreUid", "ScoreUid");
-                                bulkCopy.ColumnMappings.Add("ScoreItemUid", "ScoreItemUid");
-
-                                await bulkCopy.WriteToServerAsync(scoreItemLinks);
-                            }
-
-                            if (scoreItemLinksToDelete.Count > 0)
-                            {
-                                using (var bulkCopy = CreateBulkCopy(company, trans, "#ScoreItemLinksToDelete"))
-                                {
-                                    bulkCopy.ColumnMappings.Add("ScoreUid", "ScoreUid");
-                                    bulkCopy.ColumnMappings.Add("ScoreItemUid", "ScoreItemUid");
-
-                                    await bulkCopy.WriteToServerAsync(deleteScoreItemLinks);
-                                }
-                            }
-
-                            if (assetVersionCheckObjectTypes.Count > 0)
-                            {
-                                using (var bulkCopy = CreateBulkCopy(company, trans, "#ScoreItemVersionLinksToDelete"))
-                                {
-                                    bulkCopy.ColumnMappings.Add("AssetVersionUid", "AssetVersionUid");
-
-                                    await bulkCopy.WriteToServerAsync(deleteScoreItemVersionLinks);
-                                }
-                            }
-
-                            // End-date earlier scores and score items.
-                            await company.ExecuteAsync("update T " +
-                                "set T.EndDate = DATEADD(d, -1, S.EffectiveDate) " +
-                                "from metrics.Score T " +
-                                "inner join #Scores S on S.AllocationUid = T.AllocationUid and S.AssetUid = T.AssetUid and S.EffectiveDate > T.EffectiveDate and T.EndDate is null", transaction: trans);
-
-                            // End-date new scores and score items IF the effective date is not the latest effective date.
-                            await company.ExecuteAsync("update T " +
-                                "set T.EndDate = DATEADD(d, -1, S.EffectiveDate) " +
-                                "from #Scores T " +
-                                "cross apply (select min(EffectiveDate) as EffectiveDate from metrics.Score where AllocationUid = T.AllocationUid and AssetUid = T.AssetUid and EffectiveDate > T.EffectiveDate) MinS " +
-                                "inner join metrics.Score S on S.AllocationUid = T.AllocationUid and S.AssetUid = T.AssetUid and S.EffectiveDate = MinS.EffectiveDate", transaction: trans);
-
-                            // Merge scores.
-                            await company.ExecuteAsync(
-                                "merge metrics.Score as T " +
-                                "using (select Si.* from #Scores Si inner join metrics.Allocation A on A.Uid = Si.AllocationUid) as S " +
-                                "on ((S.AllocationUid = T.AllocationUid and T.AssetUid = S.AssetUid and T.EffectiveDate = S.EffectiveDate) OR (T.Uid = S.Uid)) " +
-                                "when matched then " +
-                                "update set " +
-                                "T.RunDate = S.RunDate, T.EndDate = S.EndDate, T.Value = S.Value, T.VersionValueHash = S.VersionValueHash " +
-                                "when not matched then " +
-                                "insert (Uid, AllocationUid, AssetUid, EffectiveDate, Value, RunDate, EndDate, VersionValueHash) " +
-                                "values (S.Uid, S.AllocationUid, S.AssetUid, S.EffectiveDate, S.Value, S.RunDate, S.EndDate, S.VersionValueHash)" +
-                                "output S.Uid, inserted.Uid into #ScoreUidSynchronization;", transaction: trans);
-
-                            // Synchronize score Uids with temp table we are about to merge into Link and Item table.
-                            await company.ExecuteAsync(@"
-update T 
-set T.ScoreUid = S.ActualUid 
-from #ScoreItemLinks T 
-inner join #ScoreUidSynchronization S on S.GivenUid = T.ScoreUid;
-
-update T 
-set T.ScoreUid = S.ActualUid 
-from #ScoreItemLinksToDelete T 
-inner join #ScoreUidSynchronization S on S.GivenUid = T.ScoreUid;
-
-update T 
-set T.Uid = S.ActualUid 
-from #Scores T 
-inner join #ScoreUidSynchronization S on S.GivenUid = T.Uid;
-
-delete  I 
-from    #ScoreItems I
-        inner join #ScoreItemLinks L on L.ScoreItemUid = I.Uid
-        inner join #Scores S on S.Uid = L.ScoreUid
-        left join #ScoreUidSynchronization N on N.GivenUid = S.Uid
-where   N.ActualUid is null;
-
-delete  L 
-from    #ScoreItemLinks L
-        inner join #Scores S on S.Uid = L.ScoreUid
-        left join #ScoreUidSynchronization N on N.GivenUid = S.Uid
-where   N.ActualUid is null;", transaction: trans);
-
-                            // Merge score items.
-                            await company.ExecuteAsync(
-                                "merge metrics.ScoreItem as T " +
-                                "using #ScoreItems as S " +
-                                "on (S.Uid = T.Uid) " +
-                                "when matched then " +
-                                "update set " +
-                                "T.RunDate = S.RunDate, T.UpdatedOn = S.UpdatedOn, " +
-                                "T.AssetVersionUid = S.AssetVersionUid, T.Value = S.Value, T.DecimalValue = S.DecimalValue, T.Evidence = S.Evidence, " +
-                                "T.ConditionUid = S.ConditionUid, T.OtherConditions = S.OtherConditions, T.AdjustedWeight = S.AdjustedWeight, T.AdjustedMaxWeight = S.AdjustedMaxWeight " +
-                                "when not matched then " +
-                                "insert (UpdatedOn, Value, DecimalValue, AdjustedWeight, RunDate, Uid, AssetVersionUid, Evidence, ConditionUid, OtherConditions, AdjustedMaxWeight) " +
-                                "values (S.UpdatedOn, S.Value, S.DecimalValue, S.AdjustedWeight, S.RunDate, S.Uid, S.AssetVersionUid, S.Evidence, S.ConditionUid, S.OtherConditions, S.AdjustedMaxWeight);", transaction: trans);
-
-                            // Merge score Item Links.
-                            await company.ExecuteAsync(
-                                "merge metrics.ScoreItemLink as T " +
-                                "using (select distinct ScoreUid, ScoreItemUid from #ScoreItemLinks) as S " +
-                                "on (S.ScoreUid = T.ScoreUid and T.ScoreItemUid = S.ScoreItemUid) " +
-                                "when not matched then " +
-                                "insert (ScoreUid, ScoreItemUid) " +
-                                "values (S.ScoreUid, S.ScoreItemUid);", transaction: trans);
-
-                            if (scoreItemLinksToDelete.Count > 0)
-                            {
-                                // Delete now invalid score Item Links.
-                                await company.ExecuteAsync(
-                                    "delete T " +
-                                    "from metrics.ScoreItemLink T " +
-                                    "inner join #ScoreItemLinksToDelete S on (S.ScoreUid = T.ScoreUid and T.ScoreItemUid = S.ScoreItemUid);", transaction: trans);
-                            }
-
-                            await company.ExecuteAsync(
-                                "delete	D " +
-                                "from metrics.ScoreItemLink D " +
-                                "left join #ScoreItemLinks O on O.ScoreUid = D.ScoreUid and O.ScoreItemUid = D.ScoreItemUid " +
-                                "where O.ScoreItemUid is null " +
-                                "and D.ScoreUid in (select ScoreUid from #ScoreItemLinks)", transaction: trans);
-
-                            if (deleteScoreItemVersionLinks.Rows.Count > 0)
-                            {
-                                // Delete now invalid score Item Links.
-                                await company.ExecuteAsync(
-                                    "delete T " +
-                                    "from metrics.ScoreItemLink T " +
-                                    "inner join #Scores S on S.Uid = T.ScoreUid " +
-                                    "inner join metrics.ScoreItem I on I.Uid = T.ScoreItemUid " +
-                                    "inner join #ScoreItemVersionLinksToDelete D on D.AssetVersionUid = I.AssetVersionUid;", transaction: trans);
-                            }
-
-                            // Clean out potentially old references to the same asset versions on a single score.
-                            await company.ExecuteAsync(
-                                @"
-delete	T
-from	metrics.ScoreItemLink T
-		inner join	(
-					select	*
-					from	(
-							select	L.*,
-									ROW_NUMBER() OVER(PARTITION BY S.Uid, I.AssetVersionUid ORDER BY I.UpdatedOn desc) as RowNum
-							from	#Scores S
-									inner join metrics.ScoreItemLink L on L.ScoreUid = S.Uid
-									inner join metrics.ScoreItem I on I.Uid = L.ScoreItemUid
-							) O
-					where	O.RowNum > 1
-					) S on (S.ScoreUid = T.ScoreUid and S.ScoreItemUid = T.ScoreItemUid);", transaction: trans);
-
-                            trans.Commit();
-                            
-                            await Db.SendContinuingScoreEventWithPayload(
-                                ScoreQueueChangeType.WorkflowCheck,
-                                scoresToAdd.Select(i => new ScoreCreatedModel { AllocationUid = i.AllocationUid, AssetUid = i.AssetUid, EffectiveDate = i.EffectiveDate }).ToList(),
-                                Info.ExecutionUid, 
-                                Info.StartedOn
-                                );
-                        }
-                        catch (Exception ex)
-                        {
-                            trans.Rollback();
-                            updateExecution(company, executionRecord, false, ex);
-                            throw ex;
-                        }
-                    }
+                    addScoresToEnvironmentDatabase(company);
+                    await Db.SendContinuingScoreEventWithPayload(
+                        ScoreQueueChangeType.WorkflowCheck,
+                        scoresToAdd.Select(i => new ScoreCreatedModel { AllocationUid = i.AllocationUid, AssetUid = i.AssetUid, EffectiveDate = i.EffectiveDate }).ToList(),
+                        Info.ExecutionUid,
+                        Info.StartedOn
+                        );
+                    resetLists();
                 }
 
                 updateExecution(company, executionRecord, true);
@@ -1325,6 +1016,386 @@ from	metrics.ScoreItemLink T
             });
 
             return uids;
+        }
+
+        bool addScoresToEnvironmentDatabase(SqlConnection company) 
+        {
+            bool success = false;
+            using (var trans = company.BeginTransaction())
+            {
+                try
+                {
+                    var scores = new DataTable();
+                    scores.Columns.Add("Uid", typeof(Guid));
+                    scores.Columns.Add("AssetUid", typeof(Guid));
+                    scores.Columns.Add("EffectiveDate", typeof(DateTime));
+                    scores.Columns.Add("Value", typeof(decimal));
+                    scores.Columns.Add("RunDate", typeof(DateTime));
+                    scores.Columns.Add("EndDate", typeof(DateTime));
+                    scores.Columns.Add("AllocationUid", typeof(Guid));
+                    scores.Columns.Add("VersionValueHash", typeof(string));
+
+                    var scoreItems = new DataTable();
+                    scoreItems.Columns.Add("Uid", typeof(Guid));
+                    scoreItems.Columns.Add("UpdatedOn", typeof(DateTime));
+                    scoreItems.Columns.Add("Value", typeof(bool));
+                    scoreItems.Columns.Add("AdjustedWeight", typeof(decimal));
+                    scoreItems.Columns.Add("RunDate", typeof(DateTime));
+                    scoreItems.Columns.Add("AssetVersionUid", typeof(Guid));
+                    scoreItems.Columns.Add("Evidence", typeof(string));
+                    scoreItems.Columns.Add("ConditionUid", typeof(Guid));
+                    scoreItems.Columns.Add("OtherConditions", typeof(string));
+                    scoreItems.Columns.Add("DecimalValue", typeof(float));
+                    scoreItems.Columns.Add("AdjustedMaxWeight", typeof(decimal));
+
+                    var scoreItemLinks = new DataTable();
+                    scoreItemLinks.Columns.Add("ScoreUid", typeof(Guid));
+                    scoreItemLinks.Columns.Add("ScoreItemUid", typeof(Guid));
+
+                    var deleteScoreItemLinks = new DataTable();
+                    deleteScoreItemLinks.Columns.Add("ScoreUid", typeof(Guid));
+                    deleteScoreItemLinks.Columns.Add("ScoreItemUid", typeof(Guid));
+
+                    var deleteScoreItemVersionLinks = new DataTable();
+                    deleteScoreItemVersionLinks.Columns.Add("AssetVersionUid", typeof(Guid));
+
+                    scoresToAdd.ForEach(s =>
+                    {
+                        var scoreRow = scores.NewRow();
+                        scoreRow["Uid"] = s.Uid;
+                        scoreRow["AssetUid"] = s.AssetUid;
+                        scoreRow["EffectiveDate"] = s.EffectiveDate.Date;
+                        scoreRow["Value"] = s.Value;
+                        scoreRow["RunDate"] = s.RunDate;
+                        scoreRow["AllocationUid"] = s.AllocationUid;
+                        scoreRow["VersionValueHash"] = s.VersionValueHash;
+                        scores.Rows.Add(scoreRow);
+                    });
+
+                    scoresItemsToAdd.ForEach(s =>
+                    {
+                        var scoreItemRow = scoreItems.NewRow();
+                        scoreItemRow["Uid"] = s.Uid;
+                        scoreItemRow["UpdatedOn"] = s.UpdatedOn;
+                        scoreItemRow["Value"] = s.Value;
+                        if (s.DecimalValue.HasValue)
+                            scoreItemRow["DecimalValue"] = s.DecimalValue;
+                        if (s.AdjustedWeight.HasValue)
+                            scoreItemRow["AdjustedWeight"] = s.AdjustedWeight.Value;
+                        scoreItemRow["RunDate"] = s.RunDate;
+                        scoreItemRow["AssetVersionUid"] = s.AssetVersionUid;
+                        scoreItemRow["Evidence"] = s.Evidence ?? "{}";
+                        if (s.ConditionUid.HasValue)
+                            scoreItemRow["ConditionUid"] = s.ConditionUid;
+                        scoreItemRow["OtherConditions"] = s.OtherConditions ?? "[]";
+                        if (s.AdjustedMaxWeight.HasValue)
+                            scoreItemRow["AdjustedMaxWeight"] = s.AdjustedMaxWeight.Value;
+                        scoreItems.Rows.Add(scoreItemRow);
+                    });
+
+                    scoreItemLinksToAdd.ForEach(s =>
+                    {
+                        var scoreRow = scoreItemLinks.NewRow();
+                        scoreRow["ScoreUid"] = s.ScoreUid;
+                        scoreRow["ScoreItemUid"] = s.ScoreItemUid;
+                        scoreItemLinks.Rows.Add(scoreRow);
+                    });
+
+                    scoreItemLinksToDelete.ForEach(s =>
+                    {
+                        var scoreRow = deleteScoreItemLinks.NewRow();
+                        scoreRow["ScoreUid"] = s.ScoreUid;
+                        scoreRow["ScoreItemUid"] = s.ScoreItemUid;
+                        deleteScoreItemLinks.Rows.Add(scoreRow);
+                    });
+
+                    assetVersionCheckObjectTypes.ForEach(s =>
+                    {
+                        if (!s.Valid)
+                        {
+                            var row = deleteScoreItemVersionLinks.NewRow();
+                            row["AssetVersionUid"] = s.AssetVersionUid;
+                            deleteScoreItemVersionLinks.Rows.Add(row);
+                        }
+                    });
+
+                    company.Execute(
+                       @"
+IF OBJECT_ID('tempdb..#Scores') IS NULL
+begin
+create table #Scores (
+    Uid uniqueidentifier not null,
+    AssetUid uniqueidentifier not null,
+    EffectiveDate date not null,
+    Value decimal(8,6) null,
+    RunDate datetime not null,
+    EndDate date null,
+    AllocationUid uniqueidentifier null,
+    VersionValueHash varchar(50) null
+);
+end
+
+IF OBJECT_ID('tempdb..#ScoreUidSynchronization') IS NULL
+begin
+create table #ScoreUidSynchronization (
+    GivenUid uniqueidentifier not null,
+    ActualUid uniqueidentifier not null
+); 
+end
+
+IF OBJECT_ID('tempdb..#ScoreItems') IS NULL
+begin
+create table #ScoreItems (
+	Uid uniqueidentifier NOT NULL,
+	UpdatedOn datetime NOT NULL,
+	Value bit NOT NULL,
+	AdjustedWeight decimal(8,6) NULL,
+	RunDate datetime NULL,
+	AssetVersionUid uniqueidentifier NULL,
+	Evidence nvarchar(max) NULL,
+	ConditionUid uniqueidentifier NULL,
+    OtherConditions nvarchar(max) NOT NULL,
+	AdjustedMaxWeight decimal(8,6) NULL,
+    DecimalValue float NULL
+);
+end
+
+IF OBJECT_ID('tempdb..#ScoreItemLinks') IS NULL
+begin
+create table #ScoreItemLinks (
+    ScoreUid uniqueidentifier NOT NULL,
+	ScoreItemUid uniqueidentifier NOT NULL
+);
+end
+
+IF OBJECT_ID('tempdb..#ScoreItemLinksToDelete') IS NULL
+begin
+create table #ScoreItemLinksToDelete (
+    ScoreUid uniqueidentifier NOT NULL,
+	ScoreItemUid uniqueidentifier NOT NULL
+);
+end
+
+IF OBJECT_ID('tempdb..#ScoreItemVersionLinksToDelete') IS NULL
+begin
+create table #ScoreItemVersionLinksToDelete (
+    AssetVersionUid uniqueidentifier NOT NULL
+);
+end", transaction: trans);
+
+                    using (var bulkCopy = CreateBulkCopy(company, trans, "#Scores"))
+                    {
+                        bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                        bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
+                        bulkCopy.ColumnMappings.Add("EffectiveDate", "EffectiveDate");
+                        bulkCopy.ColumnMappings.Add("Value", "Value");
+                        bulkCopy.ColumnMappings.Add("RunDate", "RunDate");
+                        bulkCopy.ColumnMappings.Add("EndDate", "EndDate");
+                        bulkCopy.ColumnMappings.Add("AllocationUid", "AllocationUid");
+                        bulkCopy.ColumnMappings.Add("VersionValueHash", "VersionValueHash");
+
+                        bulkCopy.WriteToServer(scores);
+                    }
+
+                    using (var bulkCopy = CreateBulkCopy(company, trans, "#ScoreItems"))
+                    {
+                        bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                        bulkCopy.ColumnMappings.Add("UpdatedOn", "UpdatedOn");
+                        bulkCopy.ColumnMappings.Add("Value", "Value");
+                        bulkCopy.ColumnMappings.Add("DecimalValue", "DecimalValue");
+                        bulkCopy.ColumnMappings.Add("AdjustedWeight", "AdjustedWeight");
+                        bulkCopy.ColumnMappings.Add("RunDate", "RunDate");
+                        bulkCopy.ColumnMappings.Add("AssetVersionUid", "AssetVersionUid");
+                        bulkCopy.ColumnMappings.Add("Evidence", "Evidence");
+                        bulkCopy.ColumnMappings.Add("ConditionUid", "ConditionUid");
+                        bulkCopy.ColumnMappings.Add("OtherConditions", "OtherConditions");
+                        bulkCopy.ColumnMappings.Add("AdjustedMaxWeight", "AdjustedMaxWeight");
+
+                        bulkCopy.WriteToServer(scoreItems);
+                    }
+
+                    using (var bulkCopy = CreateBulkCopy(company, trans, "#ScoreItemLinks"))
+                    {
+                        bulkCopy.ColumnMappings.Add("ScoreUid", "ScoreUid");
+                        bulkCopy.ColumnMappings.Add("ScoreItemUid", "ScoreItemUid");
+
+                        bulkCopy.WriteToServer(scoreItemLinks);
+                    }
+
+                    if (scoreItemLinksToDelete.Count > 0)
+                    {
+                        using (var bulkCopy = CreateBulkCopy(company, trans, "#ScoreItemLinksToDelete"))
+                        {
+                            bulkCopy.ColumnMappings.Add("ScoreUid", "ScoreUid");
+                            bulkCopy.ColumnMappings.Add("ScoreItemUid", "ScoreItemUid");
+
+                            bulkCopy.WriteToServer(deleteScoreItemLinks);
+                        }
+                    }
+
+                    if (assetVersionCheckObjectTypes.Count > 0)
+                    {
+                        using (var bulkCopy = CreateBulkCopy(company, trans, "#ScoreItemVersionLinksToDelete"))
+                        {
+                            bulkCopy.ColumnMappings.Add("AssetVersionUid", "AssetVersionUid");
+
+                            bulkCopy.WriteToServer(deleteScoreItemVersionLinks);
+                        }
+                    }
+
+                    // End-date earlier scores and score items.
+                    company.Execute("update T " +
+                        "set T.EndDate = DATEADD(d, -1, S.EffectiveDate) " +
+                        "from metrics.Score T " +
+                        "inner join #Scores S on S.AllocationUid = T.AllocationUid and S.AssetUid = T.AssetUid and S.EffectiveDate > T.EffectiveDate and T.EndDate is null", transaction: trans);
+
+                    // End-date new scores and score items IF the effective date is not the latest effective date.
+                    company.Execute("update T " +
+                        "set T.EndDate = DATEADD(d, -1, S.EffectiveDate) " +
+                        "from #Scores T " +
+                        "cross apply (select min(EffectiveDate) as EffectiveDate from metrics.Score where AllocationUid = T.AllocationUid and AssetUid = T.AssetUid and EffectiveDate > T.EffectiveDate) MinS " +
+                        "inner join metrics.Score S on S.AllocationUid = T.AllocationUid and S.AssetUid = T.AssetUid and S.EffectiveDate = MinS.EffectiveDate", transaction: trans);
+
+                    // Merge scores.
+                    company.Execute(
+                        "merge metrics.Score as T " +
+                        "using (select Si.* from #Scores Si inner join metrics.Allocation A on A.Uid = Si.AllocationUid) as S " +
+                        "on ((S.AllocationUid = T.AllocationUid and T.AssetUid = S.AssetUid and T.EffectiveDate = S.EffectiveDate) OR (T.Uid = S.Uid)) " +
+                        "when matched then " +
+                        "update set " +
+                        "T.RunDate = S.RunDate, T.EndDate = S.EndDate, T.Value = S.Value, T.VersionValueHash = S.VersionValueHash " +
+                        "when not matched then " +
+                        "insert (Uid, AllocationUid, AssetUid, EffectiveDate, Value, RunDate, EndDate, VersionValueHash) " +
+                        "values (S.Uid, S.AllocationUid, S.AssetUid, S.EffectiveDate, S.Value, S.RunDate, S.EndDate, S.VersionValueHash)" +
+                        "output S.Uid, inserted.Uid into #ScoreUidSynchronization;", transaction: trans);
+
+                    // Synchronize score Uids with temp table we are about to merge into Link and Item table.
+                    company.Execute(@"
+update T 
+set T.ScoreUid = S.ActualUid 
+from #ScoreItemLinks T 
+inner join #ScoreUidSynchronization S on S.GivenUid = T.ScoreUid;
+
+update T 
+set T.ScoreUid = S.ActualUid 
+from #ScoreItemLinksToDelete T 
+inner join #ScoreUidSynchronization S on S.GivenUid = T.ScoreUid;
+
+update T 
+set T.Uid = S.ActualUid 
+from #Scores T 
+inner join #ScoreUidSynchronization S on S.GivenUid = T.Uid;
+
+delete  I 
+from    #ScoreItems I
+        inner join #ScoreItemLinks L on L.ScoreItemUid = I.Uid
+        inner join #Scores S on S.Uid = L.ScoreUid
+        left join #ScoreUidSynchronization N on N.GivenUid = S.Uid
+where   N.ActualUid is null;
+
+delete  L 
+from    #ScoreItemLinks L
+        inner join #Scores S on S.Uid = L.ScoreUid
+        left join #ScoreUidSynchronization N on N.GivenUid = S.Uid
+where   N.ActualUid is null;", transaction: trans);
+
+                    // Merge score items.
+                    company.Execute(
+                        "merge metrics.ScoreItem as T " +
+                        "using #ScoreItems as S " +
+                        "on (S.Uid = T.Uid) " +
+                        "when matched then " +
+                        "update set " +
+                        "T.RunDate = S.RunDate, T.UpdatedOn = S.UpdatedOn, " +
+                        "T.AssetVersionUid = S.AssetVersionUid, T.Value = S.Value, T.DecimalValue = S.DecimalValue, T.Evidence = S.Evidence, " +
+                        "T.ConditionUid = S.ConditionUid, T.OtherConditions = S.OtherConditions, T.AdjustedWeight = S.AdjustedWeight, T.AdjustedMaxWeight = S.AdjustedMaxWeight " +
+                        "when not matched then " +
+                        "insert (UpdatedOn, Value, DecimalValue, AdjustedWeight, RunDate, Uid, AssetVersionUid, Evidence, ConditionUid, OtherConditions, AdjustedMaxWeight) " +
+                        "values (S.UpdatedOn, S.Value, S.DecimalValue, S.AdjustedWeight, S.RunDate, S.Uid, S.AssetVersionUid, S.Evidence, S.ConditionUid, S.OtherConditions, S.AdjustedMaxWeight);", transaction: trans);
+
+                    // Merge score Item Links.
+                    company.Execute(
+                        "merge metrics.ScoreItemLink as T " +
+                        "using (select distinct ScoreUid, ScoreItemUid from #ScoreItemLinks) as S " +
+                        "on (S.ScoreUid = T.ScoreUid and T.ScoreItemUid = S.ScoreItemUid) " +
+                        "when not matched then " +
+                        "insert (ScoreUid, ScoreItemUid) " +
+                        "values (S.ScoreUid, S.ScoreItemUid);", transaction: trans);
+
+                    if (scoreItemLinksToDelete.Count > 0)
+                    {
+                        // Delete now invalid score Item Links.
+                        company.Execute(
+                            "delete T " +
+                            "from metrics.ScoreItemLink T " +
+                            "inner join #ScoreItemLinksToDelete S on (S.ScoreUid = T.ScoreUid and T.ScoreItemUid = S.ScoreItemUid);", transaction: trans);
+                    }
+
+                    company.Execute(
+                        "delete	D " +
+                        "from metrics.ScoreItemLink D " +
+                        "left join #ScoreItemLinks O on O.ScoreUid = D.ScoreUid and O.ScoreItemUid = D.ScoreItemUid " +
+                        "where O.ScoreItemUid is null " +
+                        "and D.ScoreUid in (select ScoreUid from #ScoreItemLinks)", transaction: trans);
+
+                    if (deleteScoreItemVersionLinks.Rows.Count > 0)
+                    {
+                        // Delete now invalid score Item Links.
+                        company.Execute(
+                            "delete T " +
+                            "from metrics.ScoreItemLink T " +
+                            "inner join #Scores S on S.Uid = T.ScoreUid " +
+                            "inner join metrics.ScoreItem I on I.Uid = T.ScoreItemUid " +
+                            "inner join #ScoreItemVersionLinksToDelete D on D.AssetVersionUid = I.AssetVersionUid;", transaction: trans);
+                    }
+
+                    // Clean out potentially old references to the same asset versions on a single score.
+                    company.Execute(
+                        @"
+delete	T
+from	metrics.ScoreItemLink T
+		inner join	(
+					select	*
+					from	(
+							select	L.*,
+									ROW_NUMBER() OVER(PARTITION BY S.Uid, I.AssetVersionUid ORDER BY I.UpdatedOn desc) as RowNum
+							from	#Scores S
+									inner join metrics.ScoreItemLink L on L.ScoreUid = S.Uid
+									inner join metrics.ScoreItem I on I.Uid = L.ScoreItemUid
+							) O
+					where	O.RowNum > 1
+					) S on (S.ScoreUid = T.ScoreUid and S.ScoreItemUid = T.ScoreItemUid);", transaction: trans);
+
+                    trans.Commit();
+
+                    success = true;
+                }
+                catch (Exception ex)
+                {
+                    trans.Rollback();
+                    if (executionRecord != null)
+                    {
+                        updateExecution(company, executionRecord, false, ex);
+                    }
+                    throw ex;
+                }
+            }
+
+            if (success && executionRecord != null)
+            {
+                executionRecord.Processed += scoresToAdd.Count;
+                updateExecution(company, executionRecord);
+            }
+
+            return success;
+        }
+
+        void resetLists()
+        {
+            scoresToAdd = new List<Score>();
+            scoresItemsToAdd = new List<ScoreItem>();
+            scoreItemLinksToAdd = new List<ScoreItemLink>();
+            scoreItemLinksToDelete = new List<ScoreItemLink>();
         }
     }
 }
