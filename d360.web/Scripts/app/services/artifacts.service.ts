@@ -28,7 +28,7 @@ export class ArtifactService extends BaseObservableService {
             .get(`api/artifact/${id}`)
             .pipe(
                 map(response => <Artifact>response),
-                catchError(err => this.handleError(err, false, this.router))
+                catchError((err) => this.handleError(err, false, this.router))
             )
             ;
     }
