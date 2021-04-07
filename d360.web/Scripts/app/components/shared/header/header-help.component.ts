@@ -71,7 +71,7 @@ declare var VersionNumber: string;
         `]
 })
 
-export class HeaderHelpComponent implements AfterViewInit{
+export class HeaderHelpComponent {
     public active: boolean = false;
     private hideHandle: number = 0;
     display: boolean = false;
@@ -93,7 +93,8 @@ export class HeaderHelpComponent implements AfterViewInit{
         private settingService: CompanySettingsService
     ) { }
 
-    ngAfterViewInit(): void {
+    loadLicensingDetails(): void {
+        this.licenceData = null;
         this.isLoading = true;
         this.settingService.getLicensingDetails().subscribe((x) => {
             if (x) {
@@ -125,6 +126,7 @@ export class HeaderHelpComponent implements AfterViewInit{
     }
     showAbout() {
         this.isModalVisible = true;
+        this.loadLicensingDetails();
     }
 
     closeAbout() {
