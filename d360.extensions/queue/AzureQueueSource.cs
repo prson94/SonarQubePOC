@@ -21,8 +21,8 @@ namespace d360.extensions.queue
         public string EventServiceBusConnectionString { get { return CloudConfigurationManager.GetSetting("EventServiceBus"); } }
 
         //https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quotas
-        //256KB message size limit, minus 64KB for header
-        private const long MAX_MESSAGE_SIZE = (1024 * 256) - (1024 * 64);
+        //256KB message size limit, minus 128KB for header and other uncounted properties
+        private const long MAX_MESSAGE_SIZE = (1024 * 256) - (1024 * 128);
 
         private CloudQueueClient cloudClient {
             get
