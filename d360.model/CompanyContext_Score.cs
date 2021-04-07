@@ -314,6 +314,7 @@ from    #InternalMeasures T
                     execution.Error = results.Count(i => !i.IsSuccess);
                     execution.Processed = results.Count(i => i.IsSuccess);
                     execution.ProcessingStartedOn = null;
+                    execution.CompletedOn = DateTime.UtcNow;
                     Update(execution);
 
                     var queueResults = results.Where(r => r.IsSuccess).Select(r => new ExternalMeasureResultsCreatedModel
