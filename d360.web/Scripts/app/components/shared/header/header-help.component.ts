@@ -100,6 +100,7 @@ export class HeaderHelpComponent {
             if (x) {
                 this.licenceData = x;
                 this.isLoading = false;
+                this.ref.markForCheck();
             }
         });
     }
