@@ -226,7 +226,7 @@ export class ProcessDiagramTemplates {
         badge.toolTip = $("ToolTip",
             $(go.TextBlock, {
                 margin: 4,
-                text: "View and edit related assets"
+                text: "View and edit relationships"
             })
         );
 
@@ -668,7 +668,7 @@ export class ProcessDiagramTemplates {
                 toolTip: $("ToolTip",
                     $(go.TextBlock, {
                         margin: 4,
-                        text: "View and edit related assets"
+                        text: "View and edit relationships"
                     },
                         new go.Binding("text", "label").makeTwoWay()
                     )

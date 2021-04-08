@@ -334,7 +334,7 @@ export class BaseComponent {
 
             if (hasRelationships) {
                 this.relationsSidebar = new SecondaryNavItem(
-                    'Related Assets',
+                    'Relationships',
                     'relationship',
                     ['fa-retweet'],
                     `/sidebar/relationships${this.objectContextUrl()}`, null, 20
