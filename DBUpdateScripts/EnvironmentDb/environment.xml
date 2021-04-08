@@ -70,6 +70,7 @@
 	<include file="scripts/Table.dbo.Asset.xml"/>
 	<include file="scripts/Table.dbo.AssetCrossReference.xml"/>
 	<include file="scripts/Table.dbo.AssetDataProfile.xml"/>
+	<include file="scripts/Table.dbo.AssetDataProfileSample.xml"/>
 	<include file="scripts/Table.dbo.AssetProcessDiagram.xml"/>
 	<include file="scripts/Table.dbo.AssetDisplayValue.xml"/>
 	<include file="scripts/Table.dbo.AssetResult.xml"/>

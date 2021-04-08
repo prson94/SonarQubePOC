@@ -1,0 +1,33 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfileSample-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetDataProfileSample')
+BEGIN
+	CREATE TABLE [dbo].[AssetDataProfileSample](
+		[ID] [BIGINT] IDENTITY(1,1) NOT NULL,
+		[AssetDataProfileID] BIGINT NOT NULL,			
+		[SampleType] NVARCHAR(100) NOT NULL,
+		[Value] NVARCHAR(200) NOT NULL,		
+		CONSTRAINT [PK_AssetDataProfileSample] PRIMARY KEY CLUSTERED ([ID], AssetDataProfileID),
+		CONSTRAINT [FK_AssetDataProfileSample_AssetDataProfile] FOREIGN KEY (AssetDataProfileID) REFERENCES AssetDataProfile(ID)
+	)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+</databaseChangeLog>
