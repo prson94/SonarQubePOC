@@ -2253,10 +2253,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private template_ContextMenu(): go.Adornment {
         return this.g(
             "ContextMenu",
-            { areaBackground: "#ffffff", background: "#ffffff" },
+            { areaBackground: "#ffffff", background: "#ffffff" },            
             this.g(
                 "ContextMenuButton",
-                this.g(go.TextBlock, { text: "Navigate to", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
+                this.g(go.TextBlock, { text: "Open", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
                 {
                     click: (e, obj) => {
                         let assetUidRedirect: string = '';
@@ -2281,7 +2281,35 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 },
                 new go.Binding("visible", "", (o) => (
                     !(o.part.data.template && o.part.data.template == 'Owner') &&
+                    o.part.data.assetUid != this.assetUid && 
                     (o.part.data.assetUid !== this.emptyUid && o.part.data.hasAssetReadAccess)
+                )).ofObject()
+            ),
+            this.g(
+                "ContextMenuButton",
+                this.g(go.TextBlock, { text: "Open in New Tab", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
+                {
+                    click: (e, obj) => {
+                        let assetUidRedirect: string = '';
+                        assetUidRedirect = obj.part.data.assetUid;
+                        if (assetUidRedirect == this.assetUid)
+                            return;
+
+                        if (obj.part.data.class && obj.part.data.class.toString() == 'DiagramAsset') {
+
+                            this.processService.getProcessUrlByDiagramAssetUid(obj.part.data.assetUid).subscribe(res => {
+                                window.open(res, '_blank');
+                            })
+                            return;
+                        }
+
+                        var url = window.location.protocol + '//' + window.location.hostname + '/' + SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT + '/' + 'browser' + '/' + assetUidRedirect;
+                        window.open(url, '_blank');
+                    }
+                },
+                new go.Binding("visible", "", (o) => (
+                    !(o.part.data.template && o.part.data.template == 'Owner') &&
+                    (o.part.data.assetUid !== this.emptyUid && o.part.data.assetUid != this.assetUid && o.part.data.hasAssetReadAccess)
                 )).ofObject()
             ),
             this.g(
