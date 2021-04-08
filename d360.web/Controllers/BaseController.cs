@@ -1105,7 +1105,7 @@ namespace d360.web.Controllers
                                             fld.UseTypeahead = true;
                                             if (!string.IsNullOrWhiteSpace(selectedValue) && selectedValue != null && int.TryParse(selectedValue, out var selectedValueInt))
                                             {
-                                                selected = Company.FieldLookupValues.Where(i => i.FieldTypeID == ft.ID && i.LookupObjectType == ft.LookupObjectType && i.LookupObjectID == ft.LookupObjectID && i.Value == selectedValueInt)
+                                                selected = Company.FieldLookupValues.Where(i => i.FieldTypeID == ft.ID && i.Value == selectedValueInt)
                                                 .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = true })
                                                 .ToList();
                                             }
