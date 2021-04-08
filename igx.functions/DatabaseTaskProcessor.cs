@@ -153,14 +153,18 @@ namespace igx.functions.databasetaskprocessor
                                 var checkoutAndGetQueueItemSql = $@"
 declare @IDs table (ID uniqueidentifier)
 
-update top ({numberOfQueueItems}) [queue].[task] 
-    set MachineAssigned = @m OUTPUT deleted.ID into @IDs 
-where 
-    MachineAssigned is null and NumberOfRetries < 2  and [date] < DATEADD(minute, -1, getutcdate())  
+;WITH CTE AS 
+( 
+    SELECT TOP {numberOfQueueItems} * 
+    FROM [queue].[task]
+    where MachineAssigned is null and NumberOfRetries < 2  and [date] < DATEADD(minute, -1, getutcdate()) 
+    ORDER BY [Date] ASC
+) 
+UPDATE CTE set MachineAssigned = @m OUTPUT deleted.ID into @IDs  
 
 select  T.* 
 from    [queue].[Task] T
-        inner join @IDs S on S.ID = T.ID  
+        inner join @IDs S on S.ID = T.ID
 ";
                                 List<QueueTask> queueItems = null;
 
