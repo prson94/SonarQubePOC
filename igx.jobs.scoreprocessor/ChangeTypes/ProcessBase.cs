@@ -203,11 +203,11 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         }
 
         internal decimal AdjustScoreItemWeights(
-            List<AllocationDataModel> allMeasures, List<ScoreItem> items)
+            List<AllocationDataModel> allMeasures, List<StagingScoreItem> items)
         {
             var all = new List<AllocationDataModel>(allMeasures);
 
-            var measuresThatAreNotPresent = all.Where(m => !m.IsGroup && !items.Any(i => i.MetricAssetUid == m.MetricAssetUid)).Select(m => m.MetricAssetUid);
+            var measuresThatAreNotPresent = all.Where(m => !m.IsGroup && !items.Any(i => i.MeasureUid == m.MetricAssetUid)).Select(m => m.MetricAssetUid);
             all.RemoveAll(m => measuresThatAreNotPresent.Contains(m.MetricAssetUid));
 
             var groupsWithoutAChild = all
@@ -222,10 +222,10 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
             var rootUids = all.Where(o => !o.MetricParentAssetUid.HasValue).Select(o => o.MetricAssetUid).ToList();
             
             // Root-level measures
-            foreach(var o in items.Where(o => rootUids.Contains(o.MetricAssetUid)))
+            foreach(var o in items.Where(o => rootUids.Contains(o.MeasureUid)))
             {
-                o.AdjustedMaxWeight = o.RawMeasureWeight / 
-                    items.Where(i => rootUids.Contains(i.MetricAssetUid)).Sum(i => i.RawMeasureWeight);
+                o.AdjustedMaxWeight = o.RawWeight / 
+                    items.Where(i => rootUids.Contains(i.MeasureUid)).Sum(i => i.RawWeight);
 
                 o.AdjustedMaxWeight = Math.Round(o.AdjustedMaxWeight ?? 0, 6, MidpointRounding.AwayFromZero);
 
@@ -236,16 +236,16 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 
                 decimal totalChildPassingWeights = 0;
                 // Child-level measures.
-                if (all.Any(c => c.MetricParentAssetUid == o.MetricAssetUid))
+                if (all.Any(c => c.MetricParentAssetUid == o.MeasureUid))
                 {
                     var childMeasures = (from item in items 
-                                        join m in all on item.MetricAssetUid equals m.MetricAssetUid
-                                        where m.MetricParentAssetUid == o.MetricAssetUid
-                                        select item).ToList();
+                                        join m in all on item.MeasureUid equals m.MetricAssetUid
+                                        where m.MetricParentAssetUid == o.MeasureUid
+                                         select item).ToList();
 
                     foreach (var c in childMeasures)
                     {
-                        c.AdjustedMaxWeight = c.RawMeasureWeight / childMeasures.Sum(i => i.RawMeasureWeight);
+                        c.AdjustedMaxWeight = c.RawWeight / childMeasures.Sum(i => i.RawWeight);
                         c.AdjustedMaxWeight = Math.Round(c.AdjustedMaxWeight ?? 0, 6, MidpointRounding.AwayFromZero);
                         if (c.AdjustedMaxWeight > 1)
                         {
@@ -270,7 +270,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                     }
                 }
 
-                var rootMeasure = all.Single(r => r.MetricAssetUid == o.MetricAssetUid);
+                var rootMeasure = all.Single(r => r.MetricAssetUid == o.MeasureUid);
                 if (rootMeasure.IsGroup)
                 {
                     o.AdjustedWeight = totalChildPassingWeights * (o.AdjustedMaxWeight ?? 0);

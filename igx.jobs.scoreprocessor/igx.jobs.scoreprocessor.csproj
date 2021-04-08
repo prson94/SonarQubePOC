@@ -429,6 +429,7 @@
     <Compile Include="Models\MeasureRemovedScoreRequeueDataItem.cs" />
     <Compile Include="Models\AssetVersionCheckObjectType.cs" />
     <Compile Include="ExecutionUpdater.cs" />
+    <Compile Include="Models\StagingScoreItem.cs" />
     <Compile Include="ScoringQueueProcessor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
