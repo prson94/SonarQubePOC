@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.core.exceptions;
 using d360.core.helpers;
 using d360.extensions;
 using d360.model;
@@ -416,7 +417,7 @@ where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
 
             if(type != SystemObjects.FusionAttribute)
             {
-                throw new Exception($"Cannot get details for type {type}");
+                throw new GenericException(System.Net.HttpStatusCode.NotFound, $"Cannot get details for type {type}");
             }
             var fusionAttribute = Company.GetById<FusionAttribute>(id);
             if (fusionAttribute != null)
