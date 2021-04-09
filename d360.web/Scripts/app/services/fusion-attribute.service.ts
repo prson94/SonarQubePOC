@@ -89,7 +89,7 @@ export class FusionAttributeService extends BaseObservableService {
             dataProfile = "&target=DataProfile";
         }
 
-        url = `internal/fusion/${route}?fusionID=${fusionId}&${type}ID=${fusionAttributeTypeId}&sortDataField=${sortField ? sortField : ''}&sortOrder=${sortOrderText}${dataProfile}`;
+        url = `internal/fusion/${route}?fusionID=${fusionId}&${type}ID=${fusionAttributeTypeId}&sortDataField=${sortField ? sortField : ""}&sortOrder=${sortOrderText}${dataProfile}`;
 
         if (filters && filters.length > 0) {
             url += `&filterscount=${filters.length}`;
