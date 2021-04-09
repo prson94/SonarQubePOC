@@ -255,10 +255,9 @@ where A.FusionTypeID = @id", columns, joins);
                     select	A.ID,
                             A.Name,
                             A.ScanEnabled,
-                            Q.Query
+                            null as 'Query'
                     from    Fusion C
-                            inner join FusionAttributeType A on A.FusionTypeID = C.FusionTypeID and C.ID = @id
-                            left join FusionAttributeTypeCustomQuery Q on Q.FusionAttributeTypeID = A.ID and Q.FusionID = C.ID", 
+                            inner join FusionAttributeType A on A.FusionTypeID = C.FusionTypeID and C.ID = @id", 
                                 new { id }
                             );
             
@@ -861,32 +860,6 @@ where A.FusionTypeID = @id", columns, joins);
         public List<FusionAttributeItem> GetAttributesByFusion(int typeID, int fusionID)
         {
             return Company.GetAttributesByFusion(fusionID);
-        }
-
-        /// <summary>
-        /// Gets all overrides queries for a given fusion attribute type within a specific fusion configuration.
-        /// </summary>
-        /// <returns>A list of available overrides for a configuration.</returns>
-        [Route("{fusionTypeID:int}/configurations/{fusionID:int}/queryoverrides")]
-        public HttpResponseMessage GetQueryOverridesByConfiguration(int fusionTypeID, int fusionID)
-        {
-            if (Company.CurrentResourceIsAdmin)
-            {
-                return Request.CreateResponse(
-                    HttpStatusCode.OK,
-                    Company.Filter<FusionAttributeTypeCustomQuery>(i => i.FusionID == fusionID, i => i.FusionAttributeType).Select(o => new {
-                        FusionAttributeType = o.FusionAttributeType.TextPath,
-                        o.FusionAttributeTypeID,
-                        o.FusionID,
-                        o.ID,
-                        o.Query
-                    })
-                );
-            }
-            else
-            {
-                return null;
-            }
         }
 
         /// <summary>

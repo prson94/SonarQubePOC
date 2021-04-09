@@ -61,8 +61,7 @@ namespace d360.model
         DbSet<FollowDetail> FollowDetails { get; set; }
         DbSet<Follow> Follows { get; set; }
         DbSet<FusionAgentError> FusionAgentErrors { get; set; }
-        DbSet<FusionAttribute> FusionAttributes { get; set; }
-        DbSet<FusionAttributeTypeCustomQuery> FusionAttributeTypeCustomQueries { get; set; }
+        DbSet<FusionAttribute> FusionAttributes { get; set; }        
         DbSet<FusionAttributeType> FusionAttributeTypes { get; set; }
         DbSet<FusionExecution> FusionExecutions { get; set; }
         DbSet<FusionQueryAttribute> FusionQueryAttributes { get; set; }
