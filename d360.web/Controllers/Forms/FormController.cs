@@ -593,8 +593,6 @@ namespace d360.web.Controllers
                     return DeleteCustomAPIEndPoint(form);
                 case "FUSIONCONFIGURATION":
                     return DeleteFusion(form);
-                case "FUSIONQUERYATTRIBUTE":
-                    return DeleteFusionQueryAttribute(form);                
                 case "INTERSECTTYPE":
                     IntersectType intersectType = Company.GetById<IntersectType>(objectID);
                     form.Add("IntersectTypeUid", intersectType.uid.ToString());

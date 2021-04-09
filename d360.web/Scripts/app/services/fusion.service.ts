@@ -13,7 +13,6 @@ import {
     FusionExecutionError,
     FusionExecutionResultPaged,
     FusionProcessError,    
-    FusionQueryAttributeType,    
     FusionSummaryStats,
     FusionType,
     FusionWorkerExecution,
@@ -244,20 +243,6 @@ export class FusionService extends BaseObservableService {
             );
     }
 
-    getFusionQueryAttributeTypes(
-        typeid: number,
-        id: number,
-        query: string = ''
-    ): Observable<FusionQueryAttributeType[]> {
-        return this
-            .http
-            .get(`services/fusion/${typeid}/configurations/${id}/queryattributetypes?${query}`)
-            .pipe(
-                map(response => <FusionQueryAttributeType[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     postFusionType(
         fusionType: FusionType,
         assetStyle: AssetTypeStyle = null
@@ -457,16 +442,6 @@ export class FusionService extends BaseObservableService {
                 map(response => <FusionConfigurationDetails>response[0]),
                 catchError(err => this.handleError(err))
             );
-    }
-
-
-
-
-
-
-
-    deleteFusionQuery(id: number): Observable<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'FusionQueryAttribute', id);
     }
 
     postRunMarkitLineage(id: number) {

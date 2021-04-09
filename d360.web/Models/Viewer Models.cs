@@ -222,13 +222,6 @@ namespace d360.web.Models
         public Guid Uid { get; set; }
     }
 
-    public class FusionQueryAttributeTypeKeyField
-    {
-        public int ID { get; set; }
-
-        public string Name { get; set; }
-    }
-
     [DataContract]
     public class GridColumnGroup
     {

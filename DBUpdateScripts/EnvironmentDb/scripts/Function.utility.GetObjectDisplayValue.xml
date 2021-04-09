@@ -5,7 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Function.utility.GetObjectDisplayValue-v2">
+  <changeSet author="TKlok" id="Function.utility.GetObjectDisplayValue-v3">
+    <comment>GOV-9617</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -29,10 +30,6 @@ BEGIN
 	begin
 		set @displayFormat = (select DisplayFormat from [AssetType] where ObjectID = @ObjectTypeID and [Object] = 'ArtifactType');
 	end	
-	if @Object = 'FusionQueryAttribute'
-	begin
-		set @displayFormat = (select DisplayFormat from [AssetType] where ObjectID = @ObjectTypeID and [Object] = 'FusionQueryAttributeType');
-	end
 	if @Object = 'Policy'
 	begin		
 		set @displayFormat = (select DisplayFormat from [AssetType] where ObjectID = @ObjectTypeID and [Object] = 'PolicyType');
@@ -131,11 +128,7 @@ BEGIN
 	if @Object = 'Artifact'
 	begin
 		set @displayFormat = (select DisplayFormat from [AssetType] where ObjectID = @ObjectTypeID and [Object] = 'ArtifactType');
-	end
-	if @Object = 'Attribute'
-	begin
-		set @displayFormat = (select DisplayFormat from [AttributeType] where ID = @ObjectTypeID);
-	end
+	end	
 	if @Object = 'FusionQueryAttribute'
 	begin
 		set @displayFormat = (select DisplayFormat from [AssetType] where ObjectID = @ObjectTypeID and [Object] = 'FusionQueryAttributeType');

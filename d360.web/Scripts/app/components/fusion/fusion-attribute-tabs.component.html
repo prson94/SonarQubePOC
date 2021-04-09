@@ -6,7 +6,7 @@
                     <ng-template pTemplate="content">
                         <div class="row">
                             <div *ngIf="!isLoading">
-                                <d3s-fusion-attribute-summary [hideHeader]="true" [showExportOnFilter]="true" [initialFusionAttributeId]="initialFusionAttributeId" [initialFusionQueryAttributeId]="initialFusionQueryAttributeId" [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" [fusionQueryAttribute]="selectedFusionQueryAttribute" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;" (fusionQueryAttributeChange)="selectedFusionQueryAttribute=$event;"></d3s-fusion-attribute-summary>
+                                <d3s-fusion-attribute-summary [hideHeader]="true" [showExportOnFilter]="true" [initialFusionAttributeId]="initialFusionAttributeId" [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;"></d3s-fusion-attribute-summary>
                             </div>
                         </div>
                     </ng-template>
@@ -16,10 +16,10 @@
     </div>
     <div class="col s12 m12" *ngIf="tabIsActive('ASSETS')">
         <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
-            <d3s-object-definition-tile [objectPermissions]="[]" [objectID]="selectedFusionAttribute?.ID" [objectType]="selectedFusionQueryAttributeTypeId ? 'FusionQueryAttribute':'FusionAttribute'"  [nymTypes]="selectedFusionAttribute?.NymTypes"></d3s-object-definition-tile>
+            <d3s-object-definition-tile [objectPermissions]="[]" [objectID]="selectedFusionAttribute?.ID" [objectType]="'FusionAttribute'"  [nymTypes]="selectedFusionAttribute?.NymTypes"></d3s-object-definition-tile>
         </div>
         <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
-            <d3s-object-relationships [objectPermissions]="permissions" [objectType]="selectedFusionQueryAttributeTypeId ? 'FusionQueryAttribute':'FusionAttribute'" [objectID]="selectedFusionAttribute?.ID" objectName=""></d3s-object-relationships>
+            <d3s-object-relationships [objectPermissions]="permissions" [objectType]="'FusionAttribute'" [objectID]="selectedFusionAttribute?.ID" objectName=""></d3s-object-relationships>
         </div>
     </div>
 </div>

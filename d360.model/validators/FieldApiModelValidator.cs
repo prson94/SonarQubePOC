@@ -134,7 +134,6 @@ namespace d360.model.validators
                     {
                         var restrictedTypes = new List<string>() {
                             SystemObjects.FusionAttributeType.ToString(),
-                            SystemObjects.FusionQueryAttributeType.ToString(),
                             SystemObjects.FusionType.ToString(),
                             SystemObjects.OrganizationType.ToString(),
                             SystemObjects.ResourceType.ToString()
@@ -220,7 +219,6 @@ namespace d360.model.validators
                     {
                         var restrictedTypes = new List<string>() {
                             SystemObjects.FusionAttributeType.ToString(),
-                            SystemObjects.FusionQueryAttributeType.ToString(),
                             SystemObjects.FusionType.ToString(),
                             SystemObjects.OrganizationType.ToString(),
                             SystemObjects.ReferenceItemType.ToString(),

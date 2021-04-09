@@ -37,18 +37,6 @@ export class FusionConfiguration {
     Enabled: boolean;
 }
 
-export class FusionQueryAttributeType {
-    ID: number;
-    FusionID: number;
-    Name: string;
-    DisplayFormat: string;
-    Query: string;
-    CreatedOn: string;
-    CreatedBy: number;
-    UpdatedOn: string;
-    UpdatedBy: number;
-}
-
 export class ObjectStyle {
     ObjectType: string;
     ObjectID: number;

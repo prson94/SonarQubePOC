@@ -533,36 +533,5 @@ namespace d360.web.Controllers
 
 
         #endregion
-
-        #region FusionQueryAttributeType
-
-        protected JsonResult DeleteFusionQueryAttribute(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("fusion attribute type");
-
-                var model = Company.GetById<FusionQueryAttributeType>(parseIntField(form, "ID"));
-                if (model == null) throw new NotFoundException("fusion query attribute type");
-
-                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.FusionID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(model);
-                return jsonSuccess("Item successfully removed.", model.ID.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        #endregion
     }
 }

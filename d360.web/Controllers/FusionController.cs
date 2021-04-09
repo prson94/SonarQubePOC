@@ -409,213 +409,34 @@ where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
             return new JsonNetResult { Data = new { total, results = query }, Formatting = Formatting.None };
         }
 
-        [Route("ExportQueryItemsByAttributeType"), FileDownload, NonNullableParameters]
-        public FileResult ExportQueryItemsByAttributeType(int fusionID, int fusionQueryAttributeTypeID, string sortDataField, string sortOrder)
-        {
-            var type = "FusionQueryAttributeType";
-            var fusionQueryAttributeTypeName = Company.FusionQueryAttributeTypes.Where(x => x.ID == fusionQueryAttributeTypeID).Single().Name;
-
-            var pluralFusionQueryAttributeTypeName = "Defalut";
-            if (PluralCultureHelper.IsNeutralCultureEnglish())
-            {
-                var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-                pluralFusionQueryAttributeTypeName = pluralize.Pluralize(fusionQueryAttributeTypeName);
-            }
-
-            var sqlFieldModels = new List<SqlFieldModel>();
-
-            sqlFieldModels.Add(new SqlFieldModel { FieldColumnName = "ID", FieldName = "A.ID", FieldFriendlyName = "ID" });
-
-            #region Dynamic Fields
-
-            var fields = Company.Filter<FieldType>(i => i.Object == type && i.ObjectID == fusionQueryAttributeTypeID && i.IsListable).OrderBy(i => i.SortOrder).ToList();
-
-            fields.ForEach(f => {
-                var name = $"Field{f.ID}";
-                
-                sqlFieldModels.Add(new SqlFieldModel
-                {
-                    FieldColumnName = $"{name}",
-                    FieldName = $"{name}_T.FormattedValue as [{name}]",
-                    FieldFriendlyName = f.FriendlyName,                    
-                    FieldJoin = $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{type}' and {name}_TT.ObjectID = A.FusionQueryAttributeTypeID and {name}_TT.IsListable = 1 
-                                    left join Field {name}_T on {name}_T.ObjectType = 'FusionQueryAttribute' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {name}_TT.ID ",
-                    JoinOrder = 100
-                });
-            });
-
-            #endregion
-
-            var dbArgs = new Dapper.DynamicParameters();
-            dbArgs.Add("t", fusionQueryAttributeTypeID);
-
-            #region Query
-
-            string columns = string.Join(", ", sqlFieldModels.Select(c => c.FieldName)); 
-            string joins = string.Join(" ", sqlFieldModels.Where(o => !string.IsNullOrEmpty(o.FieldJoin)).OrderBy(o => o.JoinOrder).Select(o => o.FieldJoin));
-
-            var sql = $@"
-select  {columns} 
-from	FusionQueryAttribute A 
-        {joins}
-where   A.FusionQueryAttributeTypeID = @t 
-        and A.Deleted = 0";
-
-            sql = $@"select * from ({sql}) A";
-            sql = applyFilteringSuffixBind(sql, Request, dbArgs);
-            sql = applySortSuffix(sql, sortDataField, sortOrder, "ID");
-
-            #endregion
-
-            var query = Company.Query<dynamic>(sql, dbArgs).ToList();
-
-            #region Create the list sheet
-
-            var document = new SLDocument();
-            var defaultSheet = pluralFusionQueryAttributeTypeName;
-            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, defaultSheet);
-            document.SelectWorksheet(defaultSheet);
-
-            var col = 1;
-            var row = 1;
-            
-            #region Header
-            foreach (var prop in sqlFieldModels)
-            {
-                document.SetCellValue(row, col, prop.FieldFriendlyName);
-                col++;
-            }
-            
-            #endregion
-
-            foreach (var item in query)
-            {
-                var obj = (item as IDictionary<string, object>);
-                col = 1;
-                row++;
-                foreach (var prop in sqlFieldModels)
-                {
-                    document.SetCellValue(row, col, (obj[prop.FieldColumnName] != null) ? obj[prop.FieldColumnName].ToString() : "");
-                    col++;
-                }
-            }
-            
-            #endregion
-
-            var stream = new MemoryStream();
-            document.SaveAs(stream);
-            return File(stream.ToArray(), "application/vnd.ms-excel", $"{pluralFusionQueryAttributeTypeName}.xlsx");
-        }
-
-        [Route("QueryItemsByAttributeType"), NonNullableParameters]
-        public JsonNetResult QueryItemsByAttributeType(int fusionID, int fusionQueryAttributeTypeID, string sortDataField, string sortOrder, int pagenum, int pagesize)
-        {
-            var joins = "";
-            var columns = "";
-
-            var filterjoins = "";
-            var filtercolumns = "";
-
-            var queryParameters = Request.Params;
-            var filterscount = 0;
-            var filterFields = new List<string>();
-            if (int.TryParse(queryParameters["filterscount"], out filterscount))
-            {
-                for (int i = 0; i < filterscount; i++)
-                {
-                    var fField = queryParameters["filterdatafield" + i];
-                    if (!string.IsNullOrEmpty(fField))
-                    {
-                        filterFields.Add(fField);
-                    }
-                }
-            }
-
-            var dbArgs = new Dapper.DynamicParameters();
-
-            getDynamicFieldJoinStatements(fusionQueryAttributeTypeID, "FusionQueryAttribute", filterFields, out joins, out filterjoins, out columns, out filtercolumns, dbArgs, false);
-
-            if (columns.Contains("[type]"))
-                columns = columns.Replace("[type]", "[_type]");
-
-            dbArgs.Add("t", fusionQueryAttributeTypeID);
-
-            #region Count SQL
-
-            var countSql = $@"
-select  A.ID, 
-        A.FusionQueryAttributeTypeID,
-        'FusionQueryAttribute' as [Type]
-        {filtercolumns}
-from	FusionQueryAttribute A {filterjoins}
-where   A.FusionQueryAttributeTypeID = @t 
-        and A.Deleted = 0";
-
-            countSql = $@"select count(1) from ({countSql}) A";
-            countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
-            var total = Company.Query<int>(countSql, dbArgs).First();
-
-            #endregion
-
-            #region Query
-
-            var sql = $@"
-select  A.ID 
-        , A.FusionQueryAttributeTypeID
-        , 'FusionQueryAttribute' as [Type]
-        {columns} 
-from	FusionQueryAttribute A {joins}
-where   A.FusionQueryAttributeTypeID = @t 
-        and (A.Deleted = 0 or A.Deleted is null)";
-
-            sql = $@"select * from ({sql}) A";
-            sql = applyFilteringSuffixBind(sql, Request, dbArgs);
-            sql = applySortSuffix(sql, sortDataField, sortOrder, "ID");
-            sql = applyPagingSuffix(sql, pagenum, pagesize);
-
-            var query = Company.Query<dynamic>(sql, dbArgs);
-
-            #endregion
-
-            return new JsonNetResult { Data = new { total, results = query }, Formatting = Formatting.None };
-        }
-
         [Route("details/{type}/{id:int}")]
         public JsonResult FusionItemDetails(SystemObjects type, int id)
         {
             Dictionary<string, object> model = new Dictionary<string, object>();
-            switch (type)
+
+            if(type != SystemObjects.FusionAttribute)
             {
-                case SystemObjects.FusionAttribute:
-                    var fusionAttribute = Company.GetById<FusionAttribute>(id);
-                    if (fusionAttribute != null)
+                throw new Exception($"Cannot get details for type {type}");
+            }
+            var fusionAttribute = Company.GetById<FusionAttribute>(id);
+            if (fusionAttribute != null)
+            {
+                model["Name"] = fusionAttribute.Name;
+                model["TextPath"] = fusionAttribute.TextPath;
+                model["FusionID"] = fusionAttribute.FusionID;
+                model["FusionAttributeTypeID"] = fusionAttribute.FusionAttributeTypeID;
+                model["ParentID"] = fusionAttribute.ParentID;
+                var asset = Company.Assets.Where(x => x.Object == "FusionAttribute" && x.ObjectID == id).FirstOrDefault();
+                if (asset != null)
+                {
+                    model["AssetID"] = asset.ID;
+                    model["Uid"] = asset.uid;
+                    var assetType = Company.AssetTypes.Where(x => x.ID == asset.AssetTypeID).FirstOrDefault();
+                    if (assetType != null)
                     {
-                        model["Name"] = fusionAttribute.Name;
-                        model["TextPath"] = fusionAttribute.TextPath;
-                        model["FusionID"] = fusionAttribute.FusionID;
-                        model["FusionAttributeTypeID"] = fusionAttribute.FusionAttributeTypeID;
-                        model["ParentID"] = fusionAttribute.ParentID;
-                        var asset = Company.Assets.Where(x => x.Object == "FusionAttribute" && x.ObjectID == id).FirstOrDefault();
-                        if (asset != null)
-                        {
-                            model["AssetID"] = asset.ID;
-                            model["Uid"] = asset.uid;
-                            var assetType = Company.AssetTypes.Where(x => x.ID == asset.AssetTypeID).FirstOrDefault();
-                            if (assetType != null)
-                            {
-                                model["AssetTypeName"] = assetType.Name;
-                            }
-                        }
+                        model["AssetTypeName"] = assetType.Name;
                     }
-                    break;
-                case SystemObjects.FusionQueryAttribute:
-                    var fusionQueryAttribute = Company.GetById<FusionQueryAttribute>(id, i => i.FusionQueryAttributeType);
-                    if (fusionQueryAttribute != null)
-                    {                     
-                        model["FusionID"] = fusionQueryAttribute.FusionQueryAttributeType.FusionID;
-                        model["FusionAttributeTypeID"]= fusionQueryAttribute.FusionQueryAttributeTypeID;
-                    }
-                    break;
+                }
             }
                     
             var sql = @"

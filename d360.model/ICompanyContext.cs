@@ -64,8 +64,6 @@ namespace d360.model
         DbSet<FusionAttribute> FusionAttributes { get; set; }        
         DbSet<FusionAttributeType> FusionAttributeTypes { get; set; }
         DbSet<FusionExecution> FusionExecutions { get; set; }
-        DbSet<FusionQueryAttribute> FusionQueryAttributes { get; set; }
-        DbSet<FusionQueryAttributeType> FusionQueryAttributeTypes { get; set; }
         DbSet<FusionStatusLog> FusionStatusLogs { get; set; }
         DbSet<Fusion> FusionTypeConfigurations { get; set; }
         DbSet<FusionType> FusionTypes { get; set; }
