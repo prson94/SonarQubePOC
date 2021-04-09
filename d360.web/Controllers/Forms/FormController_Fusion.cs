@@ -517,39 +517,6 @@ namespace d360.web.Controllers
 
         #endregion
 
-        #region Fusion Attribute Type Custom Query
-
-        [HttpDelete, Route("DeleteFusionAttributeTypeCustomQuery")]
-        public JsonResult DeleteFusionAttributeTypeCustomQuery(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("fusionattributetypecustomquery");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<FusionAttributeTypeCustomQuery>(id);
-                if (model == null) throw new NotFoundException("fusionattributetypecustomquery");
-
-                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.FusionID, Permission.DeleteAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(model);
-
-                return jsonSuccess("Override successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
         #region FusionAttributeType
 
         // used by filter icon in fusion page.
