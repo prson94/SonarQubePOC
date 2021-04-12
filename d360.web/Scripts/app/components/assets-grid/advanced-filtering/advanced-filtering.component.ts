@@ -171,7 +171,7 @@ export class AdvancedFilteringComponent implements OnChanges {
                 if (field.Type) {
                     var key = Object.keys(field.Type)[0];
                     var isDefaultFilter = false;
-                    if (Object.keys(field.Type).some(x => x === key)) {
+                    if (Object.keys(field.Type).some((x) => x === key)) {
                         isDefaultFilter = field.Type[key]["IsPrimaryFilter"];
                     }
 
