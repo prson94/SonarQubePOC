@@ -789,7 +789,6 @@ namespace d360.web.Controllers.V2
                     AssetTypeClass.Diagram,
                     AssetTypeClass.Fusion,
                     AssetTypeClass.FusionAttribute,
-                    AssetTypeClass.FusionQuery,
                     AssetTypeClass.Group,
                     AssetTypeClass.Model,
                     AssetTypeClass.Organization,

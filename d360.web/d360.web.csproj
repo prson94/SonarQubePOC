@@ -1613,8 +1613,6 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\followers\followers.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\followers\followers.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-details.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-query-attribute-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-query-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\itemown\itemown.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\itemown\itemown.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\itemown\itemown.routes.ts" />

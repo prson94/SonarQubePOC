@@ -137,15 +137,10 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
 
     @Input() fusionId: number;
     @Input() fusionAttributeTypeId: number;
-    @Input() fusionQueryAttributeTypeId: number;
 
     @Input() fusionAttribute: any;
     @Output() fusionAttributeChange = new EventEmitter();
     @Input() initialFusionAttributeId: number;
-
-    @Input() fusionQueryAttribute: any;
-    @Output() fusionQueryAttributeChange = new EventEmitter();
-    @Input() initialFusionQueryAttributeId: number;
 
     @Input() hideHeader: boolean = false;
     @Input() isDataProfile: boolean = false;
@@ -176,7 +171,6 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
         if (changes['fusionAttributeTypeId'] && this.fusionAttributeTypeId) {
             this.fusionObject = 'FusionAttributeType';
             this.fusionObjectID = this.fusionAttributeTypeId;
-            this.fusionQueryAttributeTypeId = null;
 
             this.stateService.resetFusionAttributeFilterIfRequired(this.fusionObject, this.fusionObjectID, this.isDataProfile);
 
@@ -190,17 +184,9 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
 
             this.getFieldsDefinition();
 
-        } else if (changes['fusionQueryAttributeTypeId'] && this.fusionQueryAttributeTypeId) {
-            this.fusionObject = 'FusionQueryAttributeType';
-            this.fusionObjectID = this.fusionQueryAttributeTypeId;
-            this.fusionAttributeTypeId = null;
-            this.stateService.resetFusionAttributeFilterIfRequired(this.fusionObject, this.fusionObjectID, this.isDataProfile);
-
-            this.getFieldsDefinition();
         } else if (changes['initialFusionAttributeId'] && this.initialFusionAttributeId && this.fusionAttributeTypeId) {
             this.fusionObject = 'FusionAttributeType';
             this.fusionObjectID = this.fusionAttributeTypeId;
-            this.fusionQueryAttributeTypeId = null;
             if (this.initialFusionAttributeId > 0)
                 this.stateService.getFusionFilter(this.isDataProfile).filters = [{
                     dataField: 'ID',
@@ -260,60 +246,32 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
         }
         this.isFiltering = true;
 
-        if (this.fusionObject == "FusionQueryAttributeType") {
-            this.fusionAttributeService.getFusionQueryAttributes(
-                this.fusionId,
-                this.fusionObjectID,
-                this.stateService.getFusionFilter(this.isDataProfile).currentPageNumber,
-                this.stateService.getFusionFilter(this.isDataProfile).rowsPerPage,
-                this.stateService.getFusionFilter(this.isDataProfile).sortField,
-                this.stateService.getFusionFilter(this.isDataProfile).sortOrder,
-                this.stateService.getFusionFilter(this.isDataProfile).filters
-            ).subscribe(
-                (res) => {
-                    this.results = res;
+        let target: string = this.isDataProfile ? 'DataProfile' : '';
 
-                    this.isFiltering = false;
+        this.fusionAttributeService.getFusionAttributes(
+            this.fusionId,
+            this.fusionObjectID,
+            target,
+            this.stateService.getFusionFilter(this.isDataProfile).currentPageNumber,
+            this.stateService.getFusionFilter(this.isDataProfile).rowsPerPage,
+            this.stateService.getFusionFilter(this.isDataProfile).sortField,
+            this.stateService.getFusionFilter(this.isDataProfile).sortOrder,
+            this.stateService.getFusionFilter(this.isDataProfile).filters
+        ).subscribe(
+            (res) => {
+                this.results = res;
+                this.isFiltering = false;
 
-                    if (!this.fusionAttribute && this.results && this.results.results && this.results.results.length > 0) {
-                        this.fusionAttribute = this.results.results[0];
-                        this.fusionAttributeChange.emit(this.fusionAttribute);
-                    } else {
-                        this.fusionAttribute = null;
-                    }
-
-                    this.fusionAttributeChange.emit(this.fusionAttribute);
-                    this.changeDetectorRef.markForCheck();
+                if (!this.fusionAttribute && this.results && this.results.results && this.results.results.length > 0) {
+                    this.fusionAttribute = this.results.results[0];
+                } else {
+                    this.fusionAttribute = null;
                 }
-            );
-        } else {
-            let target: string = this.isDataProfile ? 'DataProfile' : '';
 
-            this.fusionAttributeService.getFusionAttributes(
-                this.fusionId,
-                this.fusionObjectID,
-                target,
-                this.stateService.getFusionFilter(this.isDataProfile).currentPageNumber,
-                this.stateService.getFusionFilter(this.isDataProfile).rowsPerPage,
-                this.stateService.getFusionFilter(this.isDataProfile).sortField,
-                this.stateService.getFusionFilter(this.isDataProfile).sortOrder,
-                this.stateService.getFusionFilter(this.isDataProfile).filters
-            ).subscribe(
-                (res) => {
-                    this.results = res;
-                    this.isFiltering = false;
-
-                    if (!this.fusionAttribute && this.results && this.results.results && this.results.results.length > 0) {
-                        this.fusionAttribute = this.results.results[0];
-                    } else {
-                        this.fusionAttribute = null;
-                    }
-
-                    this.fusionAttributeChange.emit(this.fusionAttribute);
-                    this.changeDetectorRef.markForCheck();
-                }
-            );
-        }
+                this.fusionAttributeChange.emit(this.fusionAttribute);
+                this.changeDetectorRef.markForCheck();
+            }
+        );
     }
 
     private loadFusionAttributesLazy(event: LazyLoadEvent) {
@@ -336,7 +294,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
         this.fusionAttributeService.getFusionAttributeExcel(
             this.fusionObject,
             this.fusionId,
-            (this.fusionObject == "FusionQueryAttributeType") ? this.fusionQueryAttributeTypeId : this.fusionAttributeTypeId,
+            this.fusionAttributeTypeId,
             this.isDataProfile,
             this.stateService.getFusionFilter(this.isDataProfile).sortField,
             this.stateService.getFusionFilter(this.isDataProfile).sortOrder,

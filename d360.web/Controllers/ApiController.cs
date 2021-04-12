@@ -899,7 +899,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                         items.InsertRange(0, targetKeyFields);
                     }
 
-                    if (targetType == SystemObjects.ReferenceItemType.ToString() || targetType == SystemObjects.FusionAttributeType.ToString() || targetType == SystemObjects.ResourceType.ToString() || targetType == SystemObjects.GroupType.ToString() || targetType == SystemObjects.FusionQueryAttributeType.ToString())
+                    if (targetType == SystemObjects.ReferenceItemType.ToString() || targetType == SystemObjects.FusionAttributeType.ToString() || targetType == SystemObjects.ResourceType.ToString() || targetType == SystemObjects.GroupType.ToString())
                     {
                         columns.Add(
                             new GridColumn { text = "Name", datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
@@ -1078,29 +1078,6 @@ where   h.ID <> @t order by h.[Level] desc;
                         filterColumns.Add(col);
                     });
 
-                    break;
-                #endregion
-                case SystemObjects.FusionQueryAttributeType:
-                    #region
-
-                    remainingWidth = 90;
-
-                    dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
-
-                    filterColumns.Add(new GridFilterColumn { text = "ID", datafield = "ID", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
-                    fields.Add(new GridField { name = "ID", type = "number" });
-
-                    parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
-
-                    items.ForEach(i =>
-                    {
-                        GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, dynamicFieldWidth, true));
-
-                        col.id = i.ID.ToString();
-                        col.hiddenfield = false;
-
-                        filterColumns.Add(col);
-                    });
                     break;
                 #endregion
                 case SystemObjects.FusionType:
@@ -3324,16 +3301,6 @@ from    (
                     fusionAttributeType = null;
                     break;
                 #endregion
-                case SystemObjects.FusionQueryAttribute:
-                    #region Fields
-                    var fusionQueryAttribute = Company.GetById<FusionQueryAttribute>(id);
-                    if (fusionQueryAttribute != null)
-                    {
-                        model.rows.AddRange(await loadDynamicDisplayFields(type, id).ConfigureAwait(false));
-                    }
-                    fusionQueryAttribute = null;
-                    break;
-                #endregion
                 case SystemObjects.FusionExecution:
                     #region Fields
                     var fusionExecution = Company.GetById<FusionExecution>(id);
@@ -4548,8 +4515,6 @@ where v.id = {0}", id)).FirstOrDefault();
 
             if (obj == SystemObjects.FusionAttribute)
                 sql = string.Format(QueryConstants.FusionAttributeRelationshipAllCountsWithZero, disallowEditFilter);
-            else if (obj == SystemObjects.FusionQueryAttribute)
-                sql = string.Format(QueryConstants.FusionQueryAttributeRelationshipAllCountsWithZero, disallowEditFilter);
             else if (obj == SystemObjects.ReferenceItemType)
                 sql = string.Format(QueryConstants.ReferenceListTypeRelationshipsAllCountsWithZero, disallowEditFilter);
             else
@@ -4560,8 +4525,7 @@ where v.id = {0}", id)).FirstOrDefault();
             if (!Community.IsFusionEnabled())
             {
                 data = data.Where(x => x.Object != SystemObjects.FusionType.ToString()
-                && x.Object != SystemObjects.FusionAttributeType.ToString()
-                && x.Object != SystemObjects.FusionQueryAttributeType.ToString());
+                && x.Object != SystemObjects.FusionAttributeType.ToString());
             }
             return data;
 

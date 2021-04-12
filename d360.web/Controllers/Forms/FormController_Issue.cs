@@ -35,7 +35,6 @@ namespace d360.web.Controllers
             {
                 ignoreObjects.Add(SystemObjects.FusionType.ToString());
                 ignoreObjects.Add(SystemObjects.FusionAttributeType.ToString());
-                ignoreObjects.Add(SystemObjects.FusionQueryAttributeType.ToString());
             }
 
             ignoreObjects.Add(SystemObjects.ReferenceItemType.ToString());

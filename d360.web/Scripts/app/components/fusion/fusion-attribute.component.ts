@@ -14,9 +14,6 @@ export class FusionAttributeComponent extends BaseComponent implements OnChanges
     @Input() selectedFusionAttribute: any;
     @Input() initialFusionAttributeId: number;
 
-    @Input() selectedFusionQueryAttributeTypeId: number;
-    @Input() selectedFusionQueryAttribute: any;
-    @Input() initialFusionQueryAttributeId: number;
     @Input() objectPermissions: ResponsibilityTypeRelationPermission[] = [];
 
     ngOnChanges(changes: SimpleChanges): void {

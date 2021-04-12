@@ -7,13 +7,6 @@
         Update
     }
 
-    public class FusionQueryTypeFieldTypeModel
-    {
-        public int FusionQueryAttributeTypeID { get; set; }
-        public string FieldTypeName { get; set; }
-        public int FieldTypeID { get; set; }
-    }
-
     public class FusionAttributeTempTableValue
     {
         public Action Action { get; set; }
@@ -46,38 +39,6 @@
                     return Action.Update;
                 default:
                     return Action.NotSet;                    
-            }
-        }
-    }
-
-    public class FusionQueryAttributeTempTableValue
-    {
-        public Action Action { get; set; }
-
-        public int FusionQueryAttributeTypeID { get; set; }
-
-        public int ID { get; set; }
-        public string SourceID { get; set; }
-
-        public bool DeletedBit { get; set; }
-
-        public bool IsDeleted()
-        {
-            return Action == Action.Delete;
-        }
-
-        internal static Action ActionFromString(string actionString)
-        {
-            if (string.IsNullOrEmpty(actionString)) return Action.NotSet;
-
-            switch (actionString.ToUpper())
-            {
-                case "D":
-                    return Action.Delete;
-                case "U":
-                    return Action.Update;
-                default:
-                    return Action.NotSet;
             }
         }
     }

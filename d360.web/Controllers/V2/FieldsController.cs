@@ -1664,11 +1664,6 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 {
                     list.Add("Name", 0);
                 }
-                else if (type == SystemObjects.FusionQueryAttributeType)
-                {
-                    list.Add("Name", 0);
-                    list.Add("DisplayValue", 0);
-                }
                 else
                 {
                     list.Add("DisplayValue", 0);
