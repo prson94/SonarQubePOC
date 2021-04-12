@@ -36,7 +36,7 @@ export class AssetBrowserInfoPanelComponent implements AfterViewInit {
         if (value == null || value.length === 0) {
             return "";
         }
-        if (value.indexOf('|') === -1) {
+        if (value.indexOf("|") === -1) {
             return `<a href="${value}">${value}</a>`;
         }
         else {
