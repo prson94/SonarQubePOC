@@ -121,6 +121,7 @@ namespace d360.web.Models
         public bool ClearHomePageBackgroundImage { get; set; } = false;
         public string BrowserTitlePrefix { get; set; }
         public bool WorkflowDigestEmailEnabled { get; set; }
+        public int WorkflowDigestEmailDays { get; set; }
         public int MaxDropdownItems { get; set; }
         public bool WriteActionDescription { get; set; }
 

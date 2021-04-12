@@ -81,4 +81,5 @@
   <include file="scripts/GOV-13927.xml"/>  <!-- remove DisableQuestionPosting Config to setting and CompanySetting table -->
   <include file="scripts/GOV-13551.xml"/>  <!-- Drop backup tables plugin.CompanyPackage and plugin.FieldType-->
   <include file="scripts/GOV-13928.xml"/>  <!-- Removing unused settings from setting and companySettings tables-->
+  <include file="scripts/GOV-5317.xml"/>  <!-- Add WorkflowDigestEmailDays company setting -->
 </databaseChangeLog>

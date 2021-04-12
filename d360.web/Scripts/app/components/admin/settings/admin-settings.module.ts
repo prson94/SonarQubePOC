@@ -10,6 +10,7 @@ import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.compon
 import { ShortcutModule } from '../../shared/shortcuts/shortcut.module';
 import { IconPickerModule } from '../../shared/controls/icon-picker/icon-picker.component';
 import { PipesModule } from '../../../pipes/pipes.module';
+import { DayOfWeekInputModule } from '../../shared/small-widgets/dayofweek-input/dayofweek-input.component';
 
 import { AdminSettingsComponent } from './admin-settings.component';
 import { AdminSiteMenuComponent } from './admin-site-menu.component';
@@ -50,6 +51,7 @@ import { TableModule } from 'primeng/table';
         TilesModule,
         ShortcutModule,
         IconPickerModule,
+        DayOfWeekInputModule,
         D3SSharedModule,
         PipesModule
     ],

@@ -117,11 +117,14 @@ namespace d360.model
         {
             var companySettings = Community.GetCompanySettings();
 
-            // 0 check if the workflow digest emails are enabled
+            // 0 check if the workflow digest emails are enabled for today
 
-            var enabledString = companySettings["WorkflowDigestEmailEnabled"] ?? "false";
+            int digestDays = int.TryParse(companySettings["WorkflowDigestEmailDays"], out digestDays) ? digestDays : 0;
 
-            if (!bool.TryParse(enabledString, out bool isEnabled) || !isEnabled) return; // setting is off or we cant figure out if it is on / off
+            if(( (int)Math.Pow(2, (int)DateTime.UtcNow.DayOfWeek) & digestDays) == 0)
+            {
+                return; //Today is not selected as a day to send digest emails
+            }
 
             // 1 determine which users have outstanding workflows
             var users = await GetUsersWithOutstandingWorkflows();
@@ -140,7 +143,7 @@ namespace d360.model
                 string tblTRWhite = string.Empty;
                 #region table formating
 
-                tblHeader = @"<table style='width: 692px; border-style: none; border-width: 0px; box-sizing: border-box; line-height: 18px;'><thead style='background-color: #999999; '>
+                tblHeader = @"<table style='width: 692px; border-style: none; border-width: 0px; box-sizing: border-box; line-height: 18px;'><thead style='background-color: #252c41; '>
                     <tr>
                     <th style='text-align:left;padding-left:5px;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif;color:#FFF;'>Name</th>
                     <th style='text-align:center;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif;color:#FFF;'>Version</th>
@@ -152,7 +155,7 @@ namespace d360.model
                     </thead>
                     <tbody>";
 
-                tblTR = @"<tr style='background-color: #def1fd; box-sizing: border-box; color: #646464; display: table-row; border: 0px none #d9d9d9;'>";
+                tblTR = @"<tr style='background-color: #f1f1f1; box-sizing: border-box; color: #646464; display: table-row; border: 0px none #d9d9d9;'>";
 
                 tblTRWhite = @"<tr style='background-color: #FFF; box-sizing: border-box; color: #646464; display: table-row; border: 0px none #d9d9d9;'>";
 
