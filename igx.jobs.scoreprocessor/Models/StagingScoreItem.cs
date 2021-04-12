@@ -13,6 +13,7 @@ namespace igx.jobs.scoreprocessor.Models
         public float? DecimalValue { get; set; }
         public decimal? RawWeight { get; set; }
         public Guid? ConditionUid { get; set; }
+        public char Actino { get; set; }
         public string Evidence { get; set; }
         public string OtherConditions { get; set; }
     }
