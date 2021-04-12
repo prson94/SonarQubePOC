@@ -1227,7 +1227,12 @@ where   N.ActualUid is null;", transaction: trans);
                             // Merge score Item Links.
                             await company.ExecuteAsync(
                                 "merge metrics.ScoreItemLink as T " +
-                                "using (select distinct ScoreUid, ScoreItemUid from #ScoreItemLinks) as S " +
+                                "using (" +
+                                "select distinct L.ScoreUid, L.ScoreItemUid " +
+                                "from #ScoreItemLinks L " +
+                                "inner join metrics.Score Sc on Sc.Uid = L.ScoreUid " +
+                                "inner join metrics.ScoreItem I on I.Uid = L.ScoreItemUid" +
+                                ") as S " +
                                 "on (S.ScoreUid = T.ScoreUid and T.ScoreItemUid = S.ScoreItemUid) " +
                                 "when not matched then " +
                                 "insert (ScoreUid, ScoreItemUid) " +
