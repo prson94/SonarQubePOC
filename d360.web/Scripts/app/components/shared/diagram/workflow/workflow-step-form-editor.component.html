@@ -19,7 +19,12 @@
                 <p-editor [ngModel]="step.fields.form['@description']" (ngModelChange)="mapHTMLToFormProperty($event, '@description'); stepChange.emit(step)"  #fed>
                     <p-header>
                         <d3s-editor-header></d3s-editor-header>
-                        <d3s-workflow-template-tool [issueObject]="issueObject" [objectType]="objectType" [objectId]="objectId" (onItemClick)="appendFieldDescription($event)" ></d3s-workflow-template-tool>
+                        <d3s-workflow-template-tool [step]="step"
+                                                    [diagram]="diagram"
+                                                    [issueObject]="issueObject" 
+                                                    [objectType]="objectType" 
+                                                    [objectId]="objectId" 
+                                                    (onItemClick)="appendFieldDescription($event)" ></d3s-workflow-template-tool>
                     </p-header>
                 </p-editor>
             </div>
@@ -167,7 +172,6 @@
                                 <button type="button" icon="fa-ellipsis-v" igButton (click)="select(i);menu.toggle($event)" pTooltip="Form Field Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
                                 <ig-popup-menu (onSelect)="select(i);clickMenu($event)" [items]="menuItems(i != 0, i != (dt.totalRecords-1))" #menu [tabIndex]="1"></ig-popup-menu>
                             </ng-container>
-
                         </td>
                     </tr>
                 </ng-template>

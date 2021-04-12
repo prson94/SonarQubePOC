@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.metrics.RollupPath-v1">
+  <changeSet author="Pappas" id="Table.metrics.RollupPath-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -13,44 +13,42 @@
 		<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'RollupPath')
 BEGIN
-	CREATE TABLE [metrics].[RollupPath](
-		[Uid] uniqueidentifier NOT NULL,
-		[ScoreType] int not null,
-		[State] int NOT NULL,
-		[PathHash] varchar(50) not null,
-		--[Path] as metrics.CalculateRollupPathWrapper(Uid),
-		CONSTRAINT [PK_MetricRollupPath] PRIMARY KEY CLUSTERED ( [Uid] ASC )
+	CREATE TABLE [metrics].[RollupPath] (
+		[Uid] [uniqueidentifier] NOT NULL,
+		[ScoreType] [int] NOT NULL,
+		[State] [int] NOT NULL,
+		[PathHash] [varchar](50) NOT NULL,
+		[AssetTypeID] [int] NULL
 	)
 END
 		]]>
     </sql>
 	<rollback>
-		<![CDATA[	
-DROP TABLE IF EXISTS [metrics].[RollupPath]
+		<![CDATA[
 		]]>
 	</rollback>
   </changeSet> 
 
-  <changeSet author="Pappas" id="Table.metrics.RollupPath-v1.1">
+  <changeSet author="Pappas" id="Constraint.metrics.RollupPath-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'RollupPath' AND COLUMN_NAME = 'AssetTypeID')
-BEGIN
-	alter table [metrics].[RollupPath] add AssetTypeID int null
-END
+if not exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricRollupPath')
+begin
+	ALTER TABLE [metrics].[RollupPath] ADD CONSTRAINT [PK_MetricRollupPath] PRIMARY KEY CLUSTERED ( [Uid] ASC )
+end
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'RollupPath' AND COLUMN_NAME = 'AssetTypeID')
-BEGIN
-	ALTER TABLE [metrics].[RollupPath] DROP COLUMN [AssetTypeID]
-END
+if exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricRollupPath')
+begin
+	ALTER TABLE [metrics].[RollupPath] DROP CONSTRAINT PK_MetricRollupPath WITH ( ONLINE = OFF )
+end
 		]]>
 	</rollback>
-  </changeSet> 
+  </changeSet>
 
 </databaseChangeLog>

@@ -154,13 +154,16 @@ from    (
 		        V.AssetUid as MetricAssetUid,
                 ROW_NUMBER() OVER(PARTITION BY Al.AssetUid, Al.EffectiveDate, Si.AssetVersionUid ORDER BY S.EffectiveDate DESC) as RowNum,
 		        L.*,
-                Si.AssetVersionUid as MetricAssetVersionUid,
-		        Si.ConditionUid,
                 S.EffectiveDate,
                 S.EndDate,
+                Si.AssetVersionUid as MetricAssetVersionUid,
+		        Si.ConditionUid,
 		        Si.Value,
 		        Si.AdjustedWeight,
 		        Si.AdjustedMaxWeight,
+                Si.DecimalValue,
+                Si.Evidence,
+                Si.OtherConditions,
                 iif(U.UseCount > 0, cast(1 as bit), cast(0 as bit)) as UsedInOtherScores
         from    (
 			        select		AllocationUid, AssetUid, EffectiveDate, AssetTypeId
@@ -239,7 +242,7 @@ where   O.RowNum = 1;";
                     if (executionRecord.Total != assetMeasures.Count)
                     {
                         executionRecord.Total = assetMeasures.Count;
-                        company.Execute("update api.Execution set Total = @Total where ExecutionID = @id", new { executionRecord.Total, id = executionRecord.ExecutionID });
+                        updateExecution(company, executionRecord, false);
                     }
 
                     // This means that the original execution came in via one of the external measure/score endpoints.
@@ -265,7 +268,7 @@ where   ExecutionID <> @id
 
                     executionRecord.MarkedForProcessing = true;
                     executionRecord.ProcessingStartedOn = DateTime.UtcNow;
-                    company.Execute("update api.Execution set MarkedForProcessing = 1, ProcessingStartedOn = @dt where ExecutionID = @id", new { dt = executionRecord.ProcessingStartedOn, id = executionRecord.ExecutionID });
+                    updateExecution(company, executionRecord, false);
                 }
 
                 // Load assets to a temporary table to get the list of asset types with all associated measures for the specific effective date.
@@ -830,6 +833,10 @@ where   ExecutionID <> @id
                                             scoreItem.Uid = previousScoreItem.ScoreItemUid;
                                         }
                                         scoreItem.Value = previousScoreItem.Value;
+                                        scoreItem.DecimalValue = previousScoreItem.DecimalValue;
+                                        scoreItem.Evidence = previousScoreItem.Evidence;
+                                        scoreItem.ConditionUid = previousScoreItem.ConditionUid;
+                                        scoreItem.OtherConditions = previousScoreItem.OtherConditions;
 
                                         assetScoreItems.Add(scoreItem);
                                         assetScoreItemLinks.Add(new ScoreItemLink { ScoreItemUid = scoreItem.Uid });
@@ -872,6 +879,8 @@ where   ExecutionID <> @id
                     // Perform final score calculations for this asset/effective date combination. If no data for asset/effective date, then do not even bother to recalculate anything for it.
                     if (assetScoreItems.Count > 0)
                     {
+                        assetScoreItems.RemoveAll(s => ignoredAssetScoreItems.Any(d => d.AssetVersionUid == s.AssetVersionUid)); 
+
                         var score = AdjustScoreItemWeights(allMeasures, assetScoreItems);
 
                         var matchingScore = matchingScores.FirstOrDefault(s => s.AllocationUid == assetEffectiveDate.AllocationUid && s.AssetUid == assetEffectiveDate.AssetUid);
@@ -1280,7 +1289,7 @@ from	metrics.ScoreItemLink T
                         catch (Exception ex)
                         {
                             trans.Rollback();
-                            updateExecution(company, executionRecord, false);
+                            updateExecution(company, executionRecord, false, ex);
                             throw ex;
                         }
                     }
@@ -1316,29 +1325,6 @@ from	metrics.ScoreItemLink T
             });
 
             return uids;
-        }
-
-        void updateExecution(SqlConnection Db, ApiExecution executionRecord, bool completed) 
-        {
-            try
-            {
-                // Reset on failure so it does not interfere with any other executing thread.
-                if (executionRecord != null)
-                {
-                    executionRecord.MarkedForProcessing = false;
-                    executionRecord.ProcessingStartedOn = null;
-                    if (completed)
-                    {
-                        executionRecord.CompletedOn = DateTime.UtcNow;
-                        executionRecord.State = State.InActive;
-                    }
-                    Db.Execute("update api.Execution set MarkedForProcessing = 0, ProcessingStartedOn = null, CompletedOn = @dt, [State] = 4 where ExecutionID = @id", new { dt = executionRecord.CompletedOn, id = executionRecord.ExecutionID });
-                }
-            }
-            catch
-            {
-                //do nothing.
-            }
         }
     }
 }

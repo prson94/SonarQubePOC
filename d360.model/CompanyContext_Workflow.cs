@@ -904,6 +904,10 @@ namespace d360.model
                         await SendHttpRequestAsync(itemStep, objectInfo, stepSettings);
                         isStepCompleted = true;
                         break;
+                    case WorkflowActivityType.HTTPResponse:
+                        await ParseHttpResponseAsync(itemStep, objectInfo, stepSettings);
+                        isStepCompleted = true;
+                        break;
                     default:
                         isStepCompleted = true;
                         break;
@@ -997,7 +1001,7 @@ namespace d360.model
 
                 if (!string.IsNullOrEmpty(requestSettings.Body))
                 {
-                    var body = await ProcessMessageTokens(requestSettings.Body, info, prefix, item);
+                    var body = await ProcessMessageTokens(requestSettings.Body, info, prefix, item, false);
                     var contentArray = Encoding.UTF8.GetBytes(body);
                     request.Content = new ByteArrayContent(contentArray);
                 }
@@ -1029,7 +1033,7 @@ namespace d360.model
                         });
                     }
 
-                    var uri = await ProcessMessageTokens(requestSettings.Url, info, prefix, item);
+                    var uri = await ProcessMessageTokens(requestSettings.Url, info, prefix, item, false);
 
                     if (!Uri.IsWellFormedUriString(uri, UriKind.Absolute))
                         throw new Exception($"ERROR - INVALID HTTP REQUEST URL SPECIFIED.");
@@ -1047,6 +1051,98 @@ namespace d360.model
 
                 await SaveHttpResponseResultsAsync(item, requestSettings, response);
             }
+        }
+
+        private async Task ParseHttpResponseAsync(WorkflowItemStep item, EventObjectInfo info, WorkflowItemStepSettingModel settings)
+        {
+            if (settings == null)
+                throw new Exception($"ERROR - INVALID HTTP RESPONSE SETTINGS SPECIFIED.");
+
+            var responseSettings = settings.HttpResponseSettings;
+
+            if (string.IsNullOrEmpty(responseSettings.InputStepId))
+            {
+                throw new Exception($"ERROR - INVALID HTTP RESPONSE STEP MISSING INPUT STEP ID.");
+            }
+
+            var stepId = -1;
+            int.TryParse(responseSettings.InputStepId, out stepId);
+
+            var requestStep = WorkflowItemSteps.FirstOrDefault(s => s.StepID == stepId && s.ItemID == item.ItemID);
+            if (requestStep == null)
+            {
+                throw new Exception($"ERROR - INVALID HTTP RESPONSE STEP MISSING REQUEST STEP.");
+            }
+
+            var requestStepFields = requestStep.FieldsDocument;
+            var requestStepBody = requestStepFields?.Element("HTTPResponse")?.Element("Body")?.Value;
+
+            if (string.IsNullOrEmpty(requestStepBody))
+            {
+                Console.WriteLine($"ERROR - INVALID HTTP RESPONSE BODY IS NULL OR EMPTY.");
+            }
+
+            JToken body = null;
+            try
+            {
+                body = JToken.Parse(requestStepBody);
+            }
+            catch
+            {
+                Console.WriteLine($"ERROR - INVALID HTTP RESPONSE BODY IS NOT VALID JSON.");
+            }
+
+            if (!string.IsNullOrEmpty(item.Fields))
+            {
+                var root = XElement.Parse(item.Fields);
+                var xOutputs = new XElement("Outputs");
+
+                foreach (var output in responseSettings.Outputs)
+                {
+                    string value = "";
+                    var xOutput = new XElement("Output");
+                    if (body != null)
+                    {
+                        value = body.SelectToken(output?.Path ?? "", false)?.ToString() ?? "";
+                    }
+
+                    xOutput.Add(new XElement("Id", output.Id));
+                    xOutput.Add(new XElement("Value", value));
+
+                    xOutputs.Add(xOutput);
+                }
+
+                root.Add(xOutputs);
+                item.Fields = root.ToString();
+            }
+
+            if (!string.IsNullOrEmpty(item.Settings))
+            {
+                var root = XElement.Parse(item.Settings);
+
+                var xResponse = new XElement("HTTPResponse");
+                xResponse.Add(new XElement("InputStepId", settings?.HttpResponseSettings?.InputStepId ?? ""));
+
+                if (settings?.HttpResponseSettings?.Outputs?.Any() == true)
+                {
+                    var xOutputs = new XElement("Outputs");
+                    foreach (var output in settings.HttpResponseSettings?.Outputs)
+                    {
+                        var o = new XElement("Output");
+                        o.Add(new XElement("Id", output.Id));
+                        o.Add(new XElement("Name", output.Name));
+                        o.Add(new XElement("Path", output.Path));
+                        o.Add(new XElement("Type", output.Type));
+                        o.Add(new XElement("Format", output.Format));
+                        xOutputs.Add(o);
+                    }
+                    xResponse.Add(xOutputs);
+                    root.Add(xResponse);
+                    item.Settings = root.ToString();
+                }
+            }
+
+            await SaveChangesAsync();
         }
 
         private void DeleteItemWorkflowActivity(EventObjectInfo objectInfo)
@@ -1337,7 +1433,7 @@ namespace d360.model
                     var val = DateTime.UtcNow.Date.ToShortDateString();
                     this.UpdateField(objectId, objectType, fieldType, item, val);
                 }
-                else if (!item.IsActionForm && !item.UseFormValue)
+                else if (!item.IsActionForm && !item.UseFormValue && !item.UseOutputValue)
                 {
                     var val = item.Value;
                     this.UpdateField(objectId, objectType, fieldType, item, val);
@@ -1385,6 +1481,11 @@ namespace d360.model
                         }
                     }
                     this.UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
+                }
+                else if (item.UseOutputValue)
+                {
+                    var val = GetOutputFieldValue(item.FormStepID, itemStep.ItemID, item.FormField);
+                    UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
                 }
             }
 
@@ -1483,6 +1584,32 @@ namespace d360.model
             foreach (XElement el in fields)
                 yield return (string)el.Attribute("value");
 
+        }
+
+        public string GetOutputFieldValue(int stepId, long itemId, string fieldId)
+        {
+            var step = WorkflowItemSteps.FirstOrDefault(s => s.StepID == stepId && s.ItemID == itemId);
+            if (step != null)
+            {
+                var stepFields = step.FieldsDocument;
+
+                if (stepFields != null)
+                {
+                    var outputs = stepFields.Element("Outputs").Elements("Output");
+                    if (outputs != null)
+                    {
+                        foreach (var output in outputs)
+                        {
+                            if (output.Element("Id")?.Value == fieldId)
+                            {
+                                return output.Element("Value")?.Value ?? "";
+                            }
+                        }
+                    }
+                }
+            }
+
+            return "";
         }
 
         private void ExecuteProc(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
@@ -2760,6 +2887,25 @@ namespace d360.model
                             }
                         }
                     }
+                }
+            }
+
+            if (Regex.IsMatch(result, "\\[HTTPRESPONSE\\|([0-9.]+)\\|([0-9.]+)\\]"))
+            {
+                var fields = Regex.Matches(result, "\\[HTTPRESPONSE\\|([0-9.]+)\\|([0-9.]+)\\]");
+
+                foreach (var field in fields)
+                {
+                    var item = field.ToString();
+
+                    var fieldTypeIdStringitem = item.Replace("[HTTPRESPONSE|", "");
+                    fieldTypeIdStringitem = fieldTypeIdStringitem.Replace("]", "");
+
+                    var stepId = -1;
+                    var fieldId = fieldTypeIdStringitem.Split('|')[1];
+                    int.TryParse(fieldTypeIdStringitem.Split('|')[0], out stepId);
+
+                    result = result.Replace(item, GetOutputFieldValue(stepId, itemStep.ItemID, fieldId));
                 }
             }
 

@@ -74,14 +74,14 @@ import { MessagesObservableService } from '../../services/messages-observable.se
                                                             <option></option>
                                                             <option *ngFor="let opt of field.Values" [value]="opt.Value">{{opt.Text}}</option>
                                                         </select>    
-                                                        <p-multiSelect *ngIf="field.AllowMultipleValues" [name]="'input_'+indx" [(ngModel)]="field.Value" [options]="field.Values | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl></p-multiSelect>
+                                                        <p-multiSelect *ngIf="field.AllowMultipleValues" [name]="'input_'+indx" [(ngModel)]="field.Value" [options]="field.Values | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" selectedItemsLabel="{0} items selected" ngDefaultControl></p-multiSelect>
                                                     </div>
                                                     <div *ngSwitchCase="fieldType.RelationshipType">
                                                         <select *ngIf="!field.AllowMultipleValues" [name]="'input_'+indx" style="height:auto;width:100%;" [(ngModel)]="field.Value">
                                                             <option></option>
                                                             <option *ngFor="let opt of field.Values" [value]="opt.Value">{{opt.Text}}</option>
                                                         </select>    
-                                                        <p-multiSelect *ngIf="field.AllowMultipleValues" [name]="'input_'+indx" [(ngModel)]="field.Value" [options]="field.Values | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl></p-multiSelect>
+                                                        <p-multiSelect *ngIf="field.AllowMultipleValues" [name]="'input_'+indx" [(ngModel)]="field.Value" [options]="field.Values | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" selectedItemsLabel="{0} items selected" ngDefaultControl></p-multiSelect>
                                                     </div>                                                
                                                 </div>
                                                 <div class="col s12">&nbsp;</div>                                                                                        

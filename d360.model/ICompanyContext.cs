@@ -61,8 +61,7 @@ namespace d360.model
         DbSet<FollowDetail> FollowDetails { get; set; }
         DbSet<Follow> Follows { get; set; }
         DbSet<FusionAgentError> FusionAgentErrors { get; set; }
-        DbSet<FusionAttribute> FusionAttributes { get; set; }
-        DbSet<FusionAttributeTypeCustomQuery> FusionAttributeTypeCustomQueries { get; set; }
+        DbSet<FusionAttribute> FusionAttributes { get; set; }        
         DbSet<FusionAttributeType> FusionAttributeTypes { get; set; }
         DbSet<FusionExecution> FusionExecutions { get; set; }
         DbSet<FusionQueryAttribute> FusionQueryAttributes { get; set; }
@@ -238,6 +237,7 @@ namespace d360.model
         bool HasAssetPermission(long id, Permission permission);
         bool HasAssetPermission(string type, int id, Permission permission);
         bool HasAssetPermission(SystemObjects type, int id, Permission permission);
+        bool HasUserReadPermission(string type, int objectId, int assetTypeId, int resourceId);
         bool HasAssetTypePermission(string type, int id, Permission permission);
         bool HasAssetTypePermission(SystemObjects type, int id, Permission permission);
         bool HasAssetTypePermission(int id, Permission permission);        
@@ -328,6 +328,8 @@ namespace d360.model
         void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false, bool sendGraphEvents = true);
         void SendAssetGraphEvents(IEnumerable<IGraphAsset> results, Dictionary<Guid, List<string>> fields = null, bool delayedDelivery = false);
         List<Guid> GetImpactedMeasureVersionsBy(MetricGovernanceCheckType check, int typeId);
+
+        string GetOutputFieldValue(int stepId, long itemId, string fieldId);
 
         #region API Query Parameter Parsing
 

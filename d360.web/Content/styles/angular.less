@@ -6201,6 +6201,10 @@ table {
     z-index: 899 !important;
 }
 
+.dropdown-govrole-correction {
+    top: 0px !important;
+}
+
 .gov-form-v2 {
     .FieldName, .FieldNameRequired {
         margin-top: 16px;
@@ -7025,4 +7029,10 @@ table {
     top: -18px;
     left: 3px;
   }
+}
+
+//Fixes issue with PrimeNG editor adding "auto" to width and height to the Quill style
+.p-editor-container .p-editor-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-options .ql-picker-item {
+    min-height: 16px;
+    min-width: 16px;
 }

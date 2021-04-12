@@ -24,6 +24,10 @@ import { WorkflowStepFieldChangeDetail } from "../../../models/workflow.model";
                                         Form
                                         <d3s-sortIcon [field]="'FormValue'"></d3s-sortIcon>
                                     </th>
+                                   <th [pSortableColumn]="'OutputValue'">
+                                        Output
+                                        <d3s-sortIcon [field]="'OutputValue'"></d3s-sortIcon>
+                                    </th>
                                     <th [pSortableColumn]="'AppendValue'">
                                         Appended
                                         <d3s-sortIcon [field]="'AppendValue'"></d3s-sortIcon>
@@ -45,6 +49,7 @@ import { WorkflowStepFieldChangeDetail } from "../../../models/workflow.model";
                                         </div>
                                     </td>
                                     <td>{{item.FormValue}}</td>
+                                    <td>{{item.UseOutputValue}}</td>
                                     <td>{{item.AppendValue}}</td>
                                     <td>{{item.ClearValue}}</td>
                                 </tr>

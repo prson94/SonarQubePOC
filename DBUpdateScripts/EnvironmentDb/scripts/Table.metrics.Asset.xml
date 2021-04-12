@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.metrics.Asset-v1.1">
+  <changeSet author="Pappas" id="Table.metrics.Asset-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -13,34 +13,20 @@
 		<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Asset')
 BEGIN
-	CREATE TABLE [metrics].[Asset](
-		[Uid] [uniqueidentifier] CONSTRAINT [DF_MetricsAsset_uid] DEFAULT (newid()) NOT NULL,
+	CREATE TABLE [metrics].[Asset] (
+		[Uid] [uniqueidentifier] NOT NULL,
 		[ParentUid] [uniqueidentifier] NULL,
-		[AllocationUid] uniqueidentifier NOT NULL,
-		[IsGroup] [bit] CONSTRAINT [DF_MetricAsset_IsGroup] DEFAULT (1) NOT NULL,
-		[State] [int] CONSTRAINT [DF_MetricAsset_State] DEFAULT (1) NOT NULL,
+		[IsGroup] [bit] NOT NULL,
+		[State] [int] NOT NULL,
 		[Name] [nvarchar](250) NULL,
 		[Description] [nvarchar](4000) NULL,
 		[CreatedOn] [datetime] NULL,
 		[CreatedBy] [int] NULL,
 		[UpdatedOn] [datetime] NULL,
 		[UpdatedBy] [int] NULL,
-		CONSTRAINT [PK_MetricAsset] PRIMARY KEY NONCLUSTERED ( [Uid] ASC )
+		[AllocationUid] [uniqueidentifier] NOT NULL
 	)
 END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricAsset_Parent')
-BEGIN
-	ALTER TABLE [metrics].[Asset] WITH CHECK ADD CONSTRAINT [FK_MetricAsset_Parent] FOREIGN KEY([ParentUid]) REFERENCES [metrics].[Asset] ([Uid])
-	ALTER TABLE [metrics].[Asset] CHECK CONSTRAINT [FK_MetricAsset_Parent]
-END
-
--- Will be uncommented in subsequent sprint.
---IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricAsset_MetricAllocation')
---BEGIN
---	ALTER TABLE [metrics].[Asset] WITH CHECK ADD CONSTRAINT [FK_MetricAsset_MetricAllocation] FOREIGN KEY([AllocationUid]) REFERENCES [metrics].[Allocation] ([Uid]) ON DELETE CASCADE
---	ALTER TABLE [metrics].[Asset] CHECK CONSTRAINT [FK_MetricAsset_MetricAllocation]
---END
 		]]>
     </sql>
 	<rollback>
@@ -49,28 +35,96 @@ END
 		]]>
 	</rollback>
   </changeSet>
-  
-  
-  <changeSet author="Pappas" id="Table.metrics.Asset-v2">
+    
+  <changeSet author="Pappas" id="Constraint.metrics.Asset-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Asset' AND COLUMN_NAME = 'OldMapID')
-BEGIN
-	ALTER TABLE [metrics].[Asset] DROP COLUMN [OldMapID]
-END
+if not exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricAsset')
+begin
+	ALTER TABLE [metrics].[Asset] ADD CONSTRAINT [PK_MetricAsset] PRIMARY KEY NONCLUSTERED ( [Uid] ASC )
+end
+
+if not exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricAsset_MetricAllocation')
+begin
+	ALTER TABLE [metrics].[Asset] WITH CHECK ADD  CONSTRAINT [FK_MetricAsset_MetricAllocation] FOREIGN KEY([AllocationUid]) REFERENCES [metrics].[Allocation] ([Uid]) ON DELETE CASCADE;
+	ALTER TABLE [metrics].[Asset] CHECK CONSTRAINT [FK_MetricAsset_MetricAllocation];	
+end
+
+if not exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricAsset_Parent')
+begin
+	ALTER TABLE [metrics].[Asset] WITH CHECK ADD  CONSTRAINT [FK_MetricAsset_Parent] FOREIGN KEY([ParentUid]) REFERENCES [metrics].[Asset] ([Uid]);
+	ALTER TABLE [metrics].[Asset] CHECK CONSTRAINT [FK_MetricAsset_Parent];
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricsAsset_uid')
+begin
+	ALTER TABLE [metrics].[Asset] ADD CONSTRAINT [DF_MetricsAsset_uid]  DEFAULT (newid()) FOR [Uid]
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAsset_IsGroup')
+begin
+	ALTER TABLE [metrics].[Asset] ADD CONSTRAINT [DF_MetricAsset_IsGroup]  DEFAULT ((1)) FOR [IsGroup]
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAsset_State')
+begin
+	ALTER TABLE [metrics].[Asset] ADD CONSTRAINT [DF_MetricAsset_State]  DEFAULT ((1)) FOR [State]
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricsAsset_uid')
+begin
+	ALTER TABLE [metrics].[Asset] DROP CONSTRAINT [DF_MetricsAsset_uid]
+end
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAsset_IsGroup')
+begin
+	ALTER TABLE [metrics].[Asset] DROP CONSTRAINT [DF_MetricAsset_IsGroup]
+end
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAsset_State')
+begin
+	ALTER TABLE [metrics].[Asset] DROP CONSTRAINT [DF_MetricAsset_State]
+end
+
+if exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricAsset_Parent')
+begin
+	ALTER TABLE [metrics].[Asset] DROP CONSTRAINT [FK_MetricAsset_Parent]
+end
+
+if exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricAsset')
+begin
+	ALTER TABLE [metrics].[Asset] DROP CONSTRAINT PK_MetricAsset WITH ( ONLINE = OFF )
+end
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Index.metrics.Asset-v4">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select * from sys.indexes where name = 'CIX_MetricsAsset')
+begin
+	CREATE CLUSTERED INDEX [CIX_MetricsAsset] ON [metrics].[Asset] ( [AllocationUid] ASC )
+end
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Asset' AND COLUMN_NAME = 'OldMapID')
-BEGIN
-	ALTER TABLE [metrics].[Asset] ADD [OldMapID] int null
-END
+if exists (select * from sys.indexes where name = 'CIX_MetricsAsset')
+begin
+	DROP INDEX [CIX_MetricsAsset] ON [metrics].[Asset] WITH ( ONLINE = OFF )
+end
 		]]>
 	</rollback>
-  </changeSet>   
+  </changeSet> 
 
 </databaseChangeLog>

@@ -66,6 +66,10 @@
                     <d3s-workflow-monitor-step-http-details [step]="step"></d3s-workflow-monitor-step-http-details>
                 </ng-container>
 
+                <ng-container *ngSwitchCase="WorkflowActivityType.HTTPResponse">
+                    <d3s-workflow-monitor-step-http-response-details [step]="step"></d3s-workflow-monitor-step-http-response-details>
+                </ng-container>
+
                 <ng-container *ngSwitchCase="WorkflowActivityType.StateChange">
                     <div class="row">
                         <div class="col s6">

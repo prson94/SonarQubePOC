@@ -123,7 +123,7 @@ order by RT.Name", new { id }).AsQueryable();
         /// <summary>
         /// Default to read unless the user explicitly has no read access to an asset.
         /// </summary>
-        private bool HasAssetDefaultReadPermission(string type, int id, Permission permission = Permission.ReadAsset)
+        private bool HasAssetDefaultReadPermission(string type, int id)
         {
             bool hasPermission = CurrentResourceIsAdmin;
             if (!hasPermission)
@@ -133,7 +133,7 @@ order by RT.Name", new { id }).AsQueryable();
                 {
                     return true; // objects not in asset table we grant permission               
                 }
-               hasPermission = HasReadPermission(type, id, assetTypeID, permission);
+               hasPermission = HasReadPermission(type, id, assetTypeID);
             }
 
             return hasPermission;
@@ -213,10 +213,25 @@ order by RT.Name", new { id }).AsQueryable();
         /// <param name="type"></param>
         /// <param name="objectId"></param>
         /// <param name="assetTypeId"></param>
+        /// <returns></returns>
+        private bool HasReadPermission(string type, int objectId, int assetTypeId)
+        {
+            return HasUserReadPermission(type, objectId, assetTypeId, CurrentResourceID);   
+        }
+
+        /// <summary>
+        /// Used to get if a user has read permissions on a given item.  Read is assumed to be present unless denied.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="objectId"></param>
+        /// <param name="assetTypeId"></param>
+        /// <param name="permission"></param>
         /// <param name="permission"></param>
         /// <returns></returns>
-        private bool HasReadPermission(string type, int objectId, int assetTypeId, Permission permission)
+        public bool HasUserReadPermission(string type, int objectId, int assetTypeId, int resourceId)
         {
+            var permission = Permission.ReadAsset;
+
             return Database.Connection.QuerySingle<bool>($@"	if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = 0 and ua.AssetTypeID = @t)
                                                                                         begin
                                                                                             select 0;
@@ -228,7 +243,7 @@ order by RT.Name", new { id }).AsQueryable();
 				                                                                        else
 				                                                                        begin
                                                                                             select 1;
-                                                                                        end", new { type, id = objectId, t = assetTypeId, r = CurrentResourceID });
+                                                                                        end", new { type, id = objectId, t = assetTypeId, r = resourceId });
         }
 
         private bool HasPermission(long assetId, int assetTypeId, Permission permission)

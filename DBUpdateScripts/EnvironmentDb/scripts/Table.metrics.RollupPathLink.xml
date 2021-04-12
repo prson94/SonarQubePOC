@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.metrics.RollupPathLink-v1.1">
+  <changeSet author="Pappas" id="Table.metrics.RollupPathLink-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -13,73 +13,95 @@
 		<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'RollupPathLink')
 BEGIN
-	CREATE TABLE [metrics].[RollupPathLink](
-		[RollupPathUid] uniqueidentifier NOT NULL,
-		[StartPosition] int NOT NULL,
-		[EndPosition] int NULL,
-		[IntersectTypeID] int NULL,
-		CONSTRAINT [PK_MetricRollupPathLink] PRIMARY KEY CLUSTERED ( [RollupPathUid] ASC, StartPosition ASC )
+	CREATE TABLE [metrics].[RollupPathLink] (
+		[RollupPathUid] [uniqueidentifier] NOT NULL,
+		[StartPosition] [int] NOT NULL,
+		[EndPosition] [int] NULL,
+		[IntersectTypeID] [int] NULL
 	)
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricAssetVersionConditionItem_MetricRollupPath')
-BEGIN
-	ALTER TABLE [metrics].[RollupPathLink]  WITH CHECK ADD CONSTRAINT [FK_MetricAssetVersionConditionItem_MetricRollupPath] FOREIGN KEY([RollupPathUid]) REFERENCES [metrics].[RollupPath] ([Uid]) ON DELETE CASCADE
-	ALTER TABLE [metrics].[RollupPathLink] CHECK CONSTRAINT [FK_MetricAssetVersionConditionItem_MetricRollupPath]
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricRollupPathLink_IntersectType')
-BEGIN
-	ALTER TABLE [metrics].[RollupPathLink]  WITH CHECK ADD CONSTRAINT [FK_MetricRollupPathLink_IntersectType] FOREIGN KEY([IntersectTypeID]) REFERENCES [dbo].[IntersectType] ([ID]) ON DELETE SET NULL
-	ALTER TABLE [metrics].[RollupPathLink] CHECK CONSTRAINT [FK_MetricRollupPathLink_IntersectType]
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_MetricRollupPathLink_IntersectType')
-BEGIN
-	CREATE NONCLUSTERED INDEX IX_MetricRollupPathLink_IntersectType ON [metrics].RollupPathLink ( IntersectTypeID ASC )
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_MetricRollupPathLink_RollupPath')
-BEGIN
-	CREATE NONCLUSTERED INDEX IX_MetricRollupPathLink_RollupPath ON [metrics].RollupPathLink ( RollupPathUid ASC )
 END
 		]]>
     </sql>
 	<rollback>
-		<![CDATA[	
-DROP TABLE IF EXISTS [metrics].[RollupPathLink]
+		<![CDATA[
 		]]>
 	</rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="Table.metrics.RollupPathLink-v2">
+  <changeSet author="Pappas" id="Constraint.metrics.RollupPathLink-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (select * from sys.foreign_keys where name = 'FK_MetricRollupPathLink_IntersectType')
-BEGIN
-	ALTER TABLE [metrics].[RollupPathLink] DROP CONSTRAINT [FK_MetricRollupPathLink_IntersectType]
+if not exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricRollupPathLink')
+begin
+	ALTER TABLE [metrics].[RollupPathLink] ADD CONSTRAINT [PK_MetricRollupPathLink] PRIMARY KEY CLUSTERED ( [RollupPathUid] ASC, [StartPosition] ASC )
+end
 
-	ALTER TABLE [metrics].[RollupPathLink]  WITH CHECK ADD  CONSTRAINT [FK_MetricRollupPathLink_IntersectType] FOREIGN KEY([IntersectTypeID]) REFERENCES [dbo].[IntersectType] ([ID]) ON DELETE CASCADE
+if not exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricAssetVersionConditionItem_MetricRollupPath')
+begin
+	ALTER TABLE [metrics].[RollupPathLink]  WITH CHECK ADD  CONSTRAINT [FK_MetricAssetVersionConditionItem_MetricRollupPath] FOREIGN KEY([RollupPathUid]) REFERENCES [metrics].[RollupPath] ([Uid]) ON DELETE CASCADE;
+	ALTER TABLE [metrics].[RollupPathLink] CHECK CONSTRAINT [FK_MetricAssetVersionConditionItem_MetricRollupPath];
+end
 
-	ALTER TABLE [metrics].[RollupPathLink] CHECK CONSTRAINT [FK_MetricRollupPathLink_IntersectType]
-END
+if not exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricRollupPathLink_IntersectType')
+begin
+	ALTER TABLE [metrics].[RollupPathLink]  WITH CHECK ADD  CONSTRAINT [FK_MetricRollupPathLink_IntersectType] FOREIGN KEY([IntersectTypeID]) REFERENCES [dbo].[IntersectType] ([ID]) ON DELETE CASCADE;
+	ALTER TABLE [metrics].[RollupPathLink] CHECK CONSTRAINT [FK_MetricRollupPathLink_IntersectType];
+end
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-IF EXISTS (select * from sys.foreign_keys where name = 'FK_MetricRollupPathLink_IntersectType')
-BEGIN
+if exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricAssetVersionConditionItem_MetricRollupPath')
+begin
+	ALTER TABLE [metrics].[RollupPathLink] DROP CONSTRAINT [FK_MetricAssetVersionConditionItem_MetricRollupPath]
+end
+
+if exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricRollupPathLink_IntersectType')
+begin
 	ALTER TABLE [metrics].[RollupPathLink] DROP CONSTRAINT [FK_MetricRollupPathLink_IntersectType]
+end
 
-	ALTER TABLE [metrics].[RollupPathLink]  WITH CHECK ADD CONSTRAINT [FK_MetricRollupPathLink_IntersectType] FOREIGN KEY([IntersectTypeID]) REFERENCES [dbo].[IntersectType] ([ID]) ON DELETE SET NULL
-
-	ALTER TABLE [metrics].[RollupPathLink] CHECK CONSTRAINT [FK_MetricRollupPathLink_IntersectType]
-END
+if exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricRollupPathLink')
+begin
+	ALTER TABLE [metrics].[RollupPathLink] DROP CONSTRAINT PK_MetricRollupPathLink WITH ( ONLINE = OFF )
+end
 		]]>
 	</rollback>
   </changeSet>
+
+  <changeSet author="Pappas" id="Index.metrics.RollupPathLink-v3">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select * from sys.indexes where name = 'IX_MetricRollupPathLink_IntersectType')
+begin
+	CREATE NONCLUSTERED INDEX [IX_MetricRollupPathLink_IntersectType] ON [metrics].[RollupPathLink] ( [IntersectTypeID] ASC )
+end
+
+if not exists (select * from sys.indexes where name = 'IX_MetricRollupPathLink_RollupPath')
+begin
+	CREATE NONCLUSTERED INDEX [IX_MetricRollupPathLink_RollupPath] ON [metrics].[RollupPathLink] ( [RollupPathUid] ASC )
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+if exists (select * from sys.indexes where name = 'IX_MetricRollupPathLink_IntersectType')
+begin
+	DROP INDEX [IX_MetricRollupPathLink_IntersectType] ON [metrics].[RollupPathLink] WITH ( ONLINE = OFF )
+end
+
+if exists (select * from sys.indexes where name = 'IX_MetricRollupPathLink_RollupPath')
+begin
+	DROP INDEX [IX_MetricRollupPathLink_RollupPath] ON [metrics].[RollupPathLink] WITH ( ONLINE = OFF )
+end
+		]]>
+	</rollback>
+  </changeSet> 
 
 </databaseChangeLog>

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Table.metrics.Allocation-v2">
+  <changeSet author="Pappas" id="Table.metrics.Allocation-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -13,78 +13,40 @@
 		<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Allocation')
 BEGIN
-	CREATE TABLE [metrics].[Allocation](
-		[Uid] [uniqueidentifier] CONSTRAINT [DF_MetricAllocation_uid]  DEFAULT (newid()) NOT NULL,
+	CREATE TABLE [metrics].[Allocation] (
+		[Uid] [uniqueidentifier] NOT NULL,
 		[ScoreType] [int] NOT NULL,
 		[AssetTypeUid] [uniqueidentifier] NOT NULL,
 		[OverrideName] [nvarchar](250) NULL,
-		[State] [int] CONSTRAINT [DF_MetricAllocation_State]  DEFAULT (1) NOT NULL,
-		[CreatedOn] [datetime] CONSTRAINT [DF_MetricAllocation_CreatedOn]  DEFAULT (getutcdate()) NOT NULL,
-		[CreatedBy] [int] CONSTRAINT [DF_MetricAllocation_CreatedBy]  DEFAULT (0) NOT NULL,
-		[UpdatedOn] [datetime] CONSTRAINT [DF_MetricAllocation_UpdatedOn]  DEFAULT (getutcdate()) NOT NULL,
-		[UpdatedBy] [int] CONSTRAINT [DF_MetricAllocation_UpdatedBy]  DEFAULT (0) NOT NULL,
-		[IsExternallyCalculated] [bit] CONSTRAINT [DF_MetricAllocation_IsExternallyCalculated]  DEFAULT (0) NOT NULL,
-		CONSTRAINT [PK_MetricAllocation] PRIMARY KEY CLUSTERED ( [AssetTypeUid] ASC, [ScoreType] ASC )
+		[State] [int] NOT NULL,
+		[CreatedOn] [datetime] NOT NULL,
+		[CreatedBy] [int] NOT NULL,
+		[UpdatedOn] [datetime] NOT NULL,
+		[UpdatedBy] [int] NOT NULL,
+		[IsExternallyCalculated] [bit] NOT NULL,
+		[LowerThreshold] [int] NOT NULL,
+		[UpperThreshold] [int] NOT NULL,
+		[CalculationMethod] [int] NOT NULL,
+		[IsThresholdBased] [bit] NOT NULL
 	)
 END
-
-IF COL_LENGTH('metrics.Allocation', 'LowerThreshold') IS NULL
-BEGIN
-alter table [metrics].[Allocation] add LowerThreshold [int] CONSTRAINT [DF_MetricAllocation_LowerThreshold] DEFAULT(50) NOT NULL
-END
-
-IF COL_LENGTH('metrics.Allocation', 'UpperThreshold') IS NULL
-BEGIN
-alter table [metrics].[Allocation] add UpperThreshold [int] CONSTRAINT [DF_MetricAllocation_UpperThreshold] DEFAULT(90) NOT NULL
-END
-
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-SELECT 1 FROM sys.default_constraints 
-    WHERE parent_object_id = OBJECT_ID(N'metrics.Allocation') 
-        AND name = 'DF_MetricAllocation_LowerThreshold'
-
-SELECT 1 FROM sys.default_constraints 
-    WHERE parent_object_id = OBJECT_ID(N'metrics.Allocation') 
-        AND name = 'DF_MetricAllocation_LowerThreshold'
-BEGIN
-    ALTER TABLE [metrics].[Allocation]
-    DROP CONSTRAINT DF_MetricAllocation_LowerThreshold
-END
-
-SELECT 1 FROM sys.default_constraints 
-    WHERE parent_object_id = OBJECT_ID(N'metrics.Allocation') 
-        AND name = 'DF_MetricAllocation_UpperThreshold'
-BEGIN
-    ALTER TABLE [metrics].[Allocation]
-    DROP CONSTRAINT DF_MetricAllocation_UpperThreshold
-END
-
-IF COL_LENGTH('metrics.Allocation', 'LowerThreshold') IS NOT NULL
-BEGIN
-	alter table [metrics].[Allocation] drop column LowerThreshold
-END
-
-IF COL_LENGTH('metrics.Allocation', 'UpperThreshold') IS NOT NULL
-BEGIN
-	alter table [metrics].[Allocation] drop column UpperThreshold
-END
 
 		]]>
 	</rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="Table.metrics.Allocation-v3">
+  <changeSet author="Pappas" id="Constraint.metrics.Allocation-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-if exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricAllocation')
+if not exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricAllocation')
 begin
-	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT PK_MetricAllocation WITH ( ONLINE = OFF )
 	ALTER TABLE [metrics].[Allocation] ADD CONSTRAINT PK_MetricAllocation PRIMARY KEY NONCLUSTERED  ( [Uid] )
 end
 
@@ -93,56 +55,149 @@ begin
 	ALTER TABLE [metrics].[Allocation] ADD CONSTRAINT UQ_MetricsAllocation UNIQUE (AssetTypeUid, ScoreType, OverrideName ); 
 end
 
-if not exists (select * from sys.indexes where name = 'CIX_MetricsAllocation')
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAllocation_uid')
 begin
-	CREATE CLUSTERED INDEX CIX_MetricsAllocation ON metrics.Allocation ( AssetTypeUid )
+	ALTER TABLE [metrics].[Allocation] ADD CONSTRAINT [DF_MetricAllocation_uid]  DEFAULT (newid()) FOR [Uid]
 end
 
-if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Allocation' and COLUMN_NAME = 'CalculationMethod')
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAllocation_State')
 begin
-	ALTER TABLE [metrics].[Allocation] ADD CalculationMethod int constraint DF_MetricsAllocation_CalculationMethod default(4) not null
+	ALTER TABLE [metrics].[Allocation] ADD CONSTRAINT [DF_MetricAllocation_State]  DEFAULT ((1)) FOR [State]
 end
 
-if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Allocation' and COLUMN_NAME = 'IsThresholdBased')
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAllocation_CreatedOn')
 begin
-	ALTER TABLE [metrics].[Allocation] ADD IsThresholdBased bit constraint DF_MetricsAllocation_IsThresholdBased default(0) not null
+	ALTER TABLE [metrics].[Allocation] ADD CONSTRAINT [DF_MetricAllocation_CreatedOn]  DEFAULT (getutcdate()) FOR [CreatedOn]
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAllocation_CreatedBy')
+begin
+	ALTER TABLE [metrics].[Allocation] ADD CONSTRAINT [DF_MetricAllocation_CreatedBy]  DEFAULT ((0)) FOR [CreatedBy]
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAllocation_UpdatedOn')
+begin
+	ALTER TABLE [metrics].[Allocation] ADD CONSTRAINT [DF_MetricAllocation_UpdatedOn]  DEFAULT (getutcdate()) FOR [UpdatedOn]
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAllocation_UpdatedBy')
+begin
+	ALTER TABLE [metrics].[Allocation] ADD CONSTRAINT [DF_MetricAllocation_UpdatedBy]  DEFAULT ((0)) FOR [UpdatedBy]
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAllocation_IsExternallyCalculated')
+begin
+	ALTER TABLE [metrics].[Allocation] ADD CONSTRAINT [DF_MetricAllocation_IsExternallyCalculated]  DEFAULT ((0)) FOR [IsExternallyCalculated]
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAllocation_LowerThreshold')
+begin
+	ALTER TABLE [metrics].[Allocation] ADD CONSTRAINT [DF_MetricAllocation_LowerThreshold]  DEFAULT ((50)) FOR [LowerThreshold]
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAllocation_UpperThreshold')
+begin
+	ALTER TABLE [metrics].[Allocation] ADD  CONSTRAINT [DF_MetricAllocation_UpperThreshold]  DEFAULT ((90)) FOR [UpperThreshold]
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricsAllocation_CalculationMethod')
+begin
+	ALTER TABLE [metrics].[Allocation] ADD CONSTRAINT [DF_MetricsAllocation_CalculationMethod]  DEFAULT ((4)) FOR [CalculationMethod]
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricsAllocation_IsThresholdBased')
+begin
+	ALTER TABLE [metrics].[Allocation] ADD CONSTRAINT [DF_MetricsAllocation_IsThresholdBased]  DEFAULT ((0)) FOR [IsThresholdBased]
 end
 		]]>
     </sql>
 	<rollback>
-		<![CDATA[	
-if exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricAllocation')
+		<![CDATA[
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAllocation_uid')
 begin
-	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT PK_MetricAllocation WITH ( ONLINE = OFF )
-	ALTER TABLE [metrics].[Allocation] ADD  CONSTRAINT PK_MetricAllocation PRIMARY KEY CLUSTERED  ( [AssetTypeUid] ASC, [ScoreType] ASC )
+	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT [DF_MetricAllocation_uid]
+end
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAllocation_State')
+begin
+	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT [DF_MetricAllocation_State]
+end
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAllocation_CreatedOn')
+begin
+	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT [DF_MetricAllocation_CreatedOn]
+end
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAllocation_CreatedBy')
+begin
+	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT [DF_MetricAllocation_CreatedBy]
+end
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAllocation_UpdatedOn')
+begin
+	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT [DF_MetricAllocation_UpdatedOn]
+end
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAllocation_UpdatedBy')
+begin
+	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT [DF_MetricAllocation_UpdatedBy]
+end
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAllocation_IsExternallyCalculated')
+begin
+	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT [DF_MetricAllocation_IsExternallyCalculated]
+end
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAllocation_LowerThreshold')
+begin
+	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT [DF_MetricAllocation_LowerThreshold]
+end
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAllocation_UpperThreshold')
+begin
+	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT [DF_MetricAllocation_UpperThreshold]
+end
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricsAllocation_CalculationMethod')
+begin
+	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT [DF_MetricsAllocation_CalculationMethod]
+end
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricsAllocation_IsThresholdBased')
+begin
+	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT [DF_MetricsAllocation_IsThresholdBased]
 end
 
 if exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_MetricsAllocation')
 begin
-	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT UQ_MetricsAllocation
+	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT UQ_MetricsAllocation WITH ( ONLINE = OFF ); 
 end
 
+if exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricAllocation')
+begin
+	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT PK_MetricAllocation WITH ( ONLINE = OFF )
+end
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Index.metrics.Allocation-v4">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select * from sys.indexes where name = 'CIX_MetricsAllocation')
+begin
+	CREATE CLUSTERED INDEX [CIX_MetricsAllocation] ON [metrics].[Allocation] ( [AssetTypeUid] ASC )
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
 if exists (select * from sys.indexes where name = 'CIX_MetricsAllocation')
 begin
 	DROP INDEX [CIX_MetricsAllocation] ON [metrics].[Allocation] WITH ( ONLINE = OFF )
-end
-
-if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Allocation' and COLUMN_NAME = 'CalculationMethod')
-begin
-	if exists (select * from [sys].[default_constraints] where name = 'DF_MetricsAllocation_CalculationMethod')
-	begin
-		ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT [DF_MetricsAllocation_CalculationMethod]
-	end
-	ALTER TABLE [metrics].[Allocation] DROP COLUMN CalculationMethod
-end
-
-if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Allocation' and COLUMN_NAME = 'IsThresholdBased')
-begin
-	if exists (select * from [sys].[default_constraints] where name = 'DF_MetricsAllocation_IsThresholdBased')
-	begin
-		ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT [DF_MetricsAllocation_IsThresholdBased]
-	end
-	ALTER TABLE [metrics].[Allocation] DROP COLUMN IsThresholdBased
 end
 		]]>
 	</rollback>

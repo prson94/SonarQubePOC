@@ -25,8 +25,10 @@
                                 <span *ngIf="item['@ClearValue'] != null && item['@ClearValue'].toString() == 'true'">[clear the field value]</span>
                                 <span *ngIf="item['@UseFormValue'] != null && item['@UseFormValue'].toString() == 'true' && (item['@IsActionForm'] == null || item['@IsActionForm'].toString() == 'false')">[use value from form input {{item['@Formlabel']}}]</span>
                                 <span *ngIf="item['@IsActionForm'] != null && item['@IsActionForm'].toString() == 'true'">[use value from action form field {{item['@Formlabel']}}]</span>
+                                <span *ngIf="item['@UseOutputValue'] != null && item['@UseOutputValue'].toString() == 'true'">[use value from output field {{item['@FormLabel']}}]</span>
                                 <div *ngIf="(item['@UseCurrentDate'] == null || item['@UseCurrentDate'].toString() == 'false') 
                                      && (item['@UseFormValue'] == null || item['@UseFormValue'].toString() == 'false') 
+                                     && (item['@UseOutputValue'] == null || item['@UseOutputValue'].toString() == 'false') 
                                      && (item['@IsActionForm'] == null || item['@IsActionForm'].toString() == 'false') 
                                      && (item['@ClearValue'] == null || item['@ClearValue'].toString() == 'false')">
                                     <ng-container *ngIf="isHtml(item); else str">
@@ -110,7 +112,7 @@
                         <div *ngIf="field.Type == 'Lookup'">
                             <ng-container *ngIf="field.AllowMultipleValues == true; else single">
                                 <div>
-                                    <p-multiSelect [options]="lookups" [(ngModel)]="selectedField['@Value']" [style]="{'width':'95%'}">
+                                    <p-multiSelect [options]="lookups" [(ngModel)]="selectedField['@Value']" [style]="{'width':'95%'}" selectedItemsLabel="{0} items selected">
                                     </p-multiSelect>
                                 </div>
                                 <div>
@@ -146,7 +148,7 @@
                             </select>
                         </div>
                         <div *ngIf="allowMultiple">
-                            <input  type="checkbox" [(ngModel)]="selectedField['@AppendValue']" /> Append selected values?
+                            <input type="checkbox" [(ngModel)]="selectedField['@AppendValue']" /> Append selected values?
                         </div>
                     </div>
                 </div>
@@ -158,6 +160,21 @@
                             <select [ngModel]="selectedFormFieldId" (ngModelChange)="changeFormValue($event)" style="width: 95%">
                                 <option value="">Choose...</option>
                                 <option *ngFor="let f of availableActionFields" [value]="f['@FormFieldId']">{{f['@FormLabel']}}</option>
+                            </select>
+                        </div>
+                        <div *ngIf="allowMultiple">
+                            <input type="checkbox" [(ngModel)]="selectedField['@AppendValue']" /> Append selected values?
+                        </div>
+                    </div>
+                </div>
+
+                <div *ngIf="hasOutputFields" style="padding-bottom:10px;">
+                    <input type="radio" name="valueType" [checked]="valueType == 'output'" (change)="changeValueType('output')" /> Choose a HTTP Response value <br />
+                    <div *ngIf="valueType == 'output'">
+                        <div>
+                            <select [ngModel]="selectedFormFieldId" (ngModelChange)="changeOutputValue($event)" style="width: 95%">
+                                <option value="">Choose...</option>
+                                <option *ngFor="let f of availableOutputFields" [value]="f.key">{{f['@FormLabel']}}</option>
                             </select>
                         </div>
                         <div *ngIf="allowMultiple">

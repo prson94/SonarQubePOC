@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject} from 'rxjs';
-import { WorkflowChangeType, NodeModel, EmailTaskRecipientType } from '../models/workflow.model';
+import { WorkflowChangeType, NodeModel, EmailTaskRecipientType, HTTPResponseOutput } from '../models/workflow.model';
 
 
 @Injectable()
@@ -12,9 +12,19 @@ export class WorkflowFieldsService {
     private httpFieldsSource = new Subject<any[]>();
     httpFields$ = this.httpFieldsSource.asObservable();
 
+    private outputFieldsSource = new Subject<HTTPResponseOutput[]>();
+    outputFields$ = this.outputFieldsSource.asObservable();
+
+    private httpRequestSource = new Subject<any[]>();
+    httpRequest$ = this.httpRequestSource.asObservable();
+
+
+
     private httpFields: any[] = [];
+    private outputFields: HTTPResponseOutput[] = [];
     private formFields: any[] = [];
     private usedFields: any[] = [];
+    private httpRequestFields: any[] = [];
 
     private conditionOperators = [
         { value: '=', label: '=' },
@@ -87,9 +97,51 @@ export class WorkflowFieldsService {
             });
     }
 
+    getContextualFieldsForType() {
+        return this.contextualFields;
+    }
+
+    //#region Form Fields
+
+    clearFormFields() {
+        this.formFields = [];
+        this.formFieldsSource.next(this.formFields);
+    }
+
+    setFormFields(fields: any[]) {
+        this.formFields = fields;
+        this.formFieldsSource.next(this.formFields);
+    }
+
+    pushFormField(field: any) {
+        this.formFields.push(field);
+        this.formFieldsSource.next(this.formFields);
+    }
+
+    pushFormFields(fields: any[]) {
+        this.formFields.concat(fields);
+        this.formFieldsSource.next(this.formFields);
+    }
+
+    forceFormFieldUpdate() {
+        this.formFieldsSource.next(this.formFields);
+    }
+
+    deleteFormField(field: any) {
+        let i = this.formFields.findIndex(f => f['@stepId'] == field['@stepId'] && f['@id'] == field['@id']);
+        if (i > -1) {
+            this.formFields.splice(i, 1);
+            this.formFieldsSource.next(this.formFields);
+        }
+    }
+
+    getFields() {
+        return this.formFields;
+    }
+
     pushUsedField(fieldId: string, stepId: string, transitionId: string, transitionName: string) {
         this.usedFields.push({ fieldId: fieldId, stepId: stepId, transitionId: transitionId, transitionName: transitionName });
-    } 
+    }
 
     deleteUsedField(fieldId: string, stepId: string, transitionId: string) {
         let i = this.usedFields.findIndex(u => u.fieldId == fieldId && u.stepId == stepId && u.transitionId == transitionId);
@@ -107,9 +159,9 @@ export class WorkflowFieldsService {
         return this.usedFields;
     }
 
-    getFields() {
-        return this.formFields;
-    }
+    //#endregion
+
+    //#region Http Request Fields
 
     getHttpFields() {
         return this.httpFields;
@@ -167,40 +219,83 @@ export class WorkflowFieldsService {
         }
     }
 
-    clearFormFields() {
-        this.formFields = [];
-        this.formFieldsSource.next(this.formFields);
+    clearHttpRequestFields() {
+        this.httpRequestFields = [];
+        this.httpRequestSource.next(this.httpRequestFields);
     }
 
-    setFormFields(fields: any[]) {
-        this.formFields = fields;
-        this.formFieldsSource.next(this.formFields);
+    setHttpRequestFields(fields: any[]) {
+        this.httpRequestFields = fields;
+        this.httpRequestSource.next(this.httpRequestFields);
     }
 
-    pushFormField(field: any) {
-        this.formFields.push(field);
-        this.formFieldsSource.next(this.formFields);
-    }
-
-    pushFormFields(fields: any[]) {
-        this.formFields.concat(fields);
-        this.formFieldsSource.next(this.formFields);
-    }
-
-    forceFormFieldUpdate() {
-        this.formFieldsSource.next(this.formFields);
-    }
-
-
-    deleteFormField(field: any) {
-        let i = this.formFields.findIndex(f => f['@stepId'] == field['@stepId'] && f['@id'] == field['@id']);
+    pushHttpRequestField(field: any) {
+        let i = this.httpRequestFields.findIndex(f => f.key == field.key);
         if (i > -1) {
-            this.formFields.splice(i, 1);
-            this.formFieldsSource.next(this.formFields);
+            this.httpRequestFields[i].name = field.name;
+        } else {
+            this.httpRequestFields.push(field);
+        }
+        
+        this.httpRequestSource.next(this.httpRequestFields);
+    }
+
+    deleteHttpRequestField(key: string) {
+        let i = this.httpRequestFields.findIndex(f => f.key == key);
+        if (i > -1) {
+            this.httpRequestFields.splice(i, 1);
+            this.httpRequestSource.next(this.httpRequestFields);
         }
     }
 
-    getContextualFieldsForType() {
-        return this.contextualFields;
+    getHttpRequestFields() {
+        return this.httpRequestFields;
     }
+
+    //#endregion
+
+    //#region Http Response Fields
+
+    getOutputFields() {
+        return this.outputFields;
+    }
+
+    clearOutputFields() {
+        this.outputFields = [];
+    }
+
+    setOutputFields(fields: HTTPResponseOutput[]) {
+        this.outputFields = fields;
+        this.outputFieldsSource.next(this.outputFields);
+    }
+
+    pushOutputField(field: HTTPResponseOutput) {
+        let i = this.outputFields.findIndex(o => o.StepId == field.StepId && o.Id == field.Id);
+        if (i == -1) {
+            this.outputFields.push(field);
+        }
+
+        
+        this.outputFieldsSource.next(this.outputFields);
+    }
+
+    updateOutputField(field: HTTPResponseOutput) {
+        let i = this.outputFields.findIndex(f => f.Id == field.Id);
+        if (i > -1) {
+            this.outputFields[i].Name = field.Name;
+            this.outputFields[i].Path = field.Path;
+            this.outputFields[i].StepId = field.StepId;
+            this.outputFieldsSource.next(this.outputFields);
+        }
+    }
+
+    deleteOutputField(stepId: string, id: string) {
+        let i = this.outputFields.findIndex(f => f.Id == id && f.StepId == stepId);
+        if (i > -1) {
+            this.outputFields.splice(i, 1);
+            this.outputFieldsSource.next(this.outputFields);
+        }
+    }
+
+    //#endregion
 }

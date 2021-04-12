@@ -36,8 +36,10 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
 
     private fieldsSub: any;
     private httpFieldsSub: any;
+    private outputFieldsSub: any;
     private formFields: any[] = [];
     private httpFields: any[] = [];
+    private outputFields: any[] = [];
     private formMode = FormMode.Default;
 
     FormMode = FormMode;
@@ -56,13 +58,18 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
 
         this.filterFormFields();
         this.filterHttpFields();
+        this.filterOutputFields();
 
-        this.fieldsSub = this.workflowFieldsService.formFields$.subscribe(s => {
+        this.fieldsSub = this.workflowFieldsService.formFields$.subscribe(() => {
             this.filterFormFields();
         });
 
-        this.httpFieldsSub = this.workflowFieldsService.httpFields$.subscribe(s => {
+        this.httpFieldsSub = this.workflowFieldsService.httpFields$.subscribe(() => {
             this.filterHttpFields();
+        });
+
+        this.outputFieldsSub = this.workflowFieldsService.outputFields$.subscribe(() => {
+            this.filterOutputFields();
         });
     }
 
@@ -71,9 +78,11 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
             this.formMode = FormMode.Default;
             this.filterFormFields();
             this.filterHttpFields();
+            this.filterOutputFields();
         } else if (!changes['transition'].isFirstChange()) {
             this.filterFormFields();
             this.filterHttpFields();
+            this.filterOutputFields();
         }
     }
 
@@ -81,20 +90,29 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
         if (this.fieldsSub) {
             this.fieldsSub.unsubscribe();
         }
+        if (this.httpFieldsSub) {
+            this.httpFieldsSub.unsubscribe();
+        }
+        if (this.outputFieldsSub) {
+            this.outputFieldsSub.unsubscribe();
+        }
     }
 
     add() {
         this.condition = null;
         this.filterFormFields();
         this.filterHttpFields();
+        this.filterOutputFields();
+
         this.formMode = FormMode.Adding;
     }
 
     remove(e: any) {
         let i = this.transition.condition.findIndex(c => c == e);
 
-        if (e['@FormInputID'] != null)
-            this.workflowFieldsService.deleteUsedField(this.transition.condition[i]['@FormInputID'], this.transition.condition[i]['@VersionStepID'], this.transition.key);
+        if (e["@FormInputID"] != null) {
+            this.workflowFieldsService.deleteUsedField(this.transition.condition[i]["@FormInputID"], this.transition.condition[i]["@VersionStepID"], this.transition.key);
+        }
 
         this.transition.condition.splice(i, 1);
         this.transition.condition = this.transition.condition.slice();
@@ -108,8 +126,9 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
 
     saveCondition(e: any) {
         if (this.formMode == FormMode.Adding) {
-            if (e['@FormInputID'] != null)
-                this.workflowFieldsService.pushUsedField(e['@FormInputID'], e['@VersionStepID'], this.transition.key, this.transition.name);
+            if (e["@FormInputID"] != null) {
+                this.workflowFieldsService.pushUsedField(e["@FormInputID"], e["@VersionStepID"], this.transition.key, this.transition.name);
+            }
 
             this.transition.condition.push(e);
             this.transition.condition = this.transition.condition.slice();
@@ -127,15 +146,21 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
         this.transitionChange.emit(this.transition);
         this.filterFormFields();
         this.filterHttpFields();
+        this.filterOutputFields();
     }
 
     filterFormFields() {
         this.formFields = this.workflowFieldsService.getFields();
-        this.formFields = this.formFields.filter(f => this.transition.formInputs.indexOf(f['@stepId']) > -1);
+        this.formFields = this.formFields.filter((f) => this.transition.formInputs.indexOf(f["@stepId"]) > -1);
     }
 
     filterHttpFields() {
         this.httpFields = this.workflowFieldsService.getHttpFields();
-        this.httpFields = this.httpFields.filter(f => this.transition.httpInputs.indexOf(f['@stepId']) > -1);
+        this.httpFields = this.httpFields.filter((f) => this.transition.httpInputs.indexOf(f["@stepId"]) > -1);
+    }
+
+    filterOutputFields() {
+        this.outputFields = this.workflowFieldsService.getOutputFields();
+        this.outputFields = this.outputFields.filter((f) => this.transition.httpResponseInputs.findIndex((r) => r === f.StepId) > -1);
     }
 }

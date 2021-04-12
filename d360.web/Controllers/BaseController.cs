@@ -1049,19 +1049,19 @@ namespace d360.web.Controllers
                                         from FieldLookupValue V
                                         {(ft.LookupObjectType == "Resource" ? resourceJoin : "")}
                                         {(fld.UseColorControl ? colorjoin : "")}
-                                        where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId
+                                        where V.FieldTypeID = @fieldTypeId
                                         ";
 
                                     var countSql = $@"select count(*)
                                         from FieldLookupValue V
                                         {(ft.LookupObjectType == "Resource" ? resourceJoin : "")}
                                         {(fld.UseColorControl ? colorjoin : "")}
-                                        where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId
+                                        where V.FieldTypeID = @fieldTypeId
                                         ";
 
                                     if (ft.AllowMultipleValues)
                                     {
-                                        items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = ft.ID, lookupObjectType = ft.LookupObjectType, lookupObjectId = ft.LookupObjectID.Value })
+                                        items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = ft.ID })
                                             .OrderBy(o => o.Text)
                                             .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
                                             .ToList();
@@ -1090,7 +1090,7 @@ namespace d360.web.Controllers
                                     else
                                     {
                                         int maxItems = int.Parse(Community.GetCompanySettings()["MaxDropdownItems"]);
-                                        int count = Company.Query<int>(countSql, new { fieldTypeId = ft.ID, lookupObjectType = ft.LookupObjectType, lookupObjectId = ft.LookupObjectID }).FirstOrDefault();
+                                        int count = Company.Query<int>(countSql, new { fieldTypeId = ft.ID }).FirstOrDefault();
 
                                         string selectedValue = null;
                                         if (f != null && !string.IsNullOrWhiteSpace(f.Value))
@@ -1105,7 +1105,7 @@ namespace d360.web.Controllers
                                             fld.UseTypeahead = true;
                                             if (!string.IsNullOrWhiteSpace(selectedValue) && selectedValue != null && int.TryParse(selectedValue, out var selectedValueInt))
                                             {
-                                                selected = Company.FieldLookupValues.Where(i => i.FieldTypeID == ft.ID && i.LookupObjectType == ft.LookupObjectType && i.LookupObjectID == ft.LookupObjectID && i.Value == selectedValueInt)
+                                                selected = Company.FieldLookupValues.Where(i => i.FieldTypeID == ft.ID && i.Value == selectedValueInt)
                                                 .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = true })
                                                 .ToList();
                                             }
@@ -1115,7 +1115,7 @@ namespace d360.web.Controllers
                                         {
                                             fld.UseTypeahead = false;
 
-                                            items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = ft.ID, lookupObjectType = ft.LookupObjectType, lookupObjectId = ft.LookupObjectID.Value })
+                                            items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = ft.ID })
                                                 .OrderBy(o => o.Text)
                                                 .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
                                                 .ToList();

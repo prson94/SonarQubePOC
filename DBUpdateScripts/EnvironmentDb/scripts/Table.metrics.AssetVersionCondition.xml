@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.metrics.AssetVersionCondition-v1">
+  <changeSet author="Pappas" id="Table.metrics.AssetVersionCondition-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -13,26 +13,14 @@
 		<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'AssetVersionCondition')
 BEGIN
-	CREATE TABLE [metrics].[AssetVersionCondition](
+	CREATE TABLE [metrics].[AssetVersionCondition] (
+		[AssetVersionUid] [uniqueidentifier] NOT NULL,
 		[Uid] [uniqueidentifier] NOT NULL,
-		[EffectiveDate] [date] NOT NULL,
-		[FieldTypeID] [int] NOT NULL,
-		[Operator] [varchar](10) NOT NULL,
-		[ValueJson] [nvarchar](max) NOT NULL,
-		CONSTRAINT [PK_MetricAssetVersionCondition] PRIMARY KEY NONCLUSTERED ( [Uid] ASC, [EffectiveDate] DESC, [FieldTypeID] ASC )
+		[MatchType] [int] NOT NULL,
+		[Position] [int] NOT NULL,
+		[Threshold] [float] NULL,
+		[Weight] [decimal](5, 3) NULL
 	)
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricAssetVersionCondition_FieldType')
-BEGIN
-	ALTER TABLE [metrics].[AssetVersionCondition] WITH CHECK ADD CONSTRAINT [FK_MetricAssetVersionCondition_FieldType] FOREIGN KEY([FieldTypeID]) REFERENCES [dbo].[FieldType] ([ID]) ON DELETE CASCADE
-	ALTER TABLE [metrics].[AssetVersionCondition] CHECK CONSTRAINT [FK_MetricAssetVersionCondition_FieldType]
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricAssetVersionCondition_MetricAssetVersion')
-BEGIN
-	ALTER TABLE [metrics].[AssetVersionCondition] WITH CHECK ADD CONSTRAINT [FK_MetricAssetVersionCondition_MetricAssetVersion] FOREIGN KEY([Uid], [EffectiveDate]) REFERENCES [metrics].[AssetVersion] ([Uid], [EffectiveDate]) ON DELETE CASCADE
-	ALTER TABLE [metrics].[AssetVersionCondition] CHECK CONSTRAINT [FK_MetricAssetVersionCondition_MetricAssetVersion]
 END
 		]]>
     </sql>
@@ -42,5 +30,100 @@ END
 		]]>
 	</rollback>
   </changeSet>
+
+  <changeSet author="Pappas" id="Constraint.metrics.AssetVersionCondition-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricAssetVersionCondition')
+begin
+	ALTER TABLE [metrics].[AssetVersionCondition] ADD CONSTRAINT [PK_MetricAssetVersionCondition] PRIMARY KEY NONCLUSTERED ( [Uid] ASC )
+end
+
+if not exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricAssetVersionCondition_MetricAssetVersion')
+begin
+	ALTER TABLE [metrics].[AssetVersionCondition]  WITH CHECK ADD  CONSTRAINT [FK_MetricAssetVersionCondition_MetricAssetVersion] FOREIGN KEY([AssetVersionUid]) REFERENCES [metrics].[AssetVersion] ([Uid]) ON DELETE CASCADE;
+	ALTER TABLE [metrics].[AssetVersionCondition] CHECK CONSTRAINT [FK_MetricAssetVersionCondition_MetricAssetVersion];
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAssetVersionCondition_AssetVersionUid')
+begin
+	ALTER TABLE [metrics].[AssetVersionCondition] ADD CONSTRAINT [DF_MetricAssetVersionCondition_AssetVersionUid] DEFAULT (newid()) FOR [AssetVersionUid]
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAssetVersionCondition_Uid')
+begin
+	ALTER TABLE [metrics].[AssetVersionCondition] ADD CONSTRAINT [DF_MetricAssetVersionCondition_Uid] DEFAULT (newid()) FOR [Uid]
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAssetVersionCondition_MatchType')
+begin
+	ALTER TABLE [metrics].[AssetVersionCondition] ADD CONSTRAINT [DF_MetricAssetVersionCondition_MatchType] DEFAULT ((1)) FOR [MatchType]
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAssetVersionCondition_Position')
+begin
+	ALTER TABLE [metrics].[AssetVersionCondition] ADD CONSTRAINT [DF_MetricAssetVersionCondition_Position] DEFAULT ((1)) FOR [Position]
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAssetVersionCondition_AssetVersionUid')
+begin
+	ALTER TABLE [metrics].[AssetVersionCondition] DROP CONSTRAINT [DF_MetricAssetVersionCondition_AssetVersionUid]
+end
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAssetVersionCondition_Uid')
+begin
+	ALTER TABLE [metrics].[AssetVersionCondition] DROP CONSTRAINT [DF_MetricAssetVersionCondition_Uid]
+end
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAssetVersionCondition_MatchType')
+begin
+	ALTER TABLE [metrics].[AssetVersionCondition] DROP CONSTRAINT [DF_MetricAssetVersionCondition_MatchType]
+end
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricAssetVersionCondition_Position')
+begin
+	ALTER TABLE [metrics].[AssetVersionCondition] DROP CONSTRAINT [DF_MetricAssetVersionCondition_Position]
+end
+
+if exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricAssetVersionCondition_MetricAssetVersion')
+begin
+	ALTER TABLE [metrics].[AssetVersionCondition] DROP CONSTRAINT [FK_MetricAssetVersionCondition_MetricAssetVersion]
+end
+
+if exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricAssetVersionCondition')
+begin
+	ALTER TABLE [metrics].[AssetVersionCondition] DROP CONSTRAINT [PK_MetricAssetVersionCondition] WITH ( ONLINE = OFF )
+end
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Index.metrics.AssetVersionCondition-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select * from sys.indexes where name = 'CIX_MetricsAssetVersionCondition')
+begin
+	CREATE CLUSTERED INDEX [CIX_MetricsAssetVersionCondition] ON [metrics].[AssetVersionCondition] ( [AssetVersionUid] ASC, [Position] ASC )
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+if exists (select * from sys.indexes where name = 'CIX_MetricsAssetVersionCondition')
+begin
+	DROP INDEX [CIX_MetricsAssetVersionCondition] ON [metrics].[AssetVersionCondition] WITH ( ONLINE = OFF )
+end
+		]]>
+	</rollback>
+  </changeSet> 
 
 </databaseChangeLog>

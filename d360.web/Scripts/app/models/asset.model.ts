@@ -49,12 +49,14 @@ export enum AssetTypeClass {
     Model = 2,
     Fusion = 3,
     FusionAttribute = 4,
-    FusionQuery = 13,
     Policy = 6,
     Rule = 7,
     TechnicalAsset = 8,
     Reference = 9,
     Organization = 10,
+    User = 11,
+    Group = 12,
+    FusionQuery = 13,
     ReferenceItemType = 14,
     DiagramAsset = 15
 }
