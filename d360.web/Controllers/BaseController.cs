@@ -1011,7 +1011,7 @@ namespace d360.web.Controllers
                                 }
                                 else
                                 {
-                                    if (!ft.IsRequired)
+                                    if (!ft.IsRequired && !ft.AllowMultipleValues)
                                     {
                                         fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
                                     }
