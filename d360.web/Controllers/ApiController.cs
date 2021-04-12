@@ -5501,65 +5501,6 @@ where	Type = 'ReferenceItemType'
 
         #endregion
 
-        #region Issue Types
-
-        [Route("issue/{issueID:int}")]
-        public HttpResponseMessage GetIssue(int issueID)
-        {
-            var issue = Company.GetById<Issue>(issueID);
-
-            if (issue == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
-
-            var fields = Company.GetFieldRelationsByObject(SystemObjects.Issue, issueID).OrderBy(x => x.SortOrder).ToList();
-            List<dynamic> values = new List<dynamic>();
-
-            foreach (var field in fields)
-            {
-                values.Add(new { FieldName = field.FriendlyName, Value = field.FormattedValue, Type = field.Type });
-            }
-
-            return Request.CreateResponse(HttpStatusCode.OK, new
-            {
-                Issue = issue,
-                Fields = values,
-            });
-
-        }
-        #endregion
-
-        #region Metrics
-
-        internal class MetricAssetTypeViewModel
-        {
-            public Guid Uid { get; set; }
-            public AssetTypeClass Class { get; set; }
-            public string ClassName { get { return Class.GetDisplayName(); } }
-            public string Name { get; set; }
-        }
-
-        [Route("metrics/assettypes")]
-        public HttpResponseMessage GetMetricAssetTypes()
-        {
-            List<int> classes = new List<int>() {
-                (int)AssetTypeClass.BusinessAsset,
-                (int)AssetTypeClass.Model,
-                (int)AssetTypeClass.Policy,
-                (int)AssetTypeClass.Rule,
-                (int)AssetTypeClass.TechnicalAsset
-            };
-            var models = Company.Query<MetricAssetTypeViewModel>(@"
-select	T.[Uid],
-        T.[Class], 
-		P.[Path] as Name
-from	AssetType T
-		cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
-where   T.[Class] in @classes", new { classes }).OrderBy(i => i.ClassName).ThenBy(i => i.Name).ToList();
-
-            return Request.CreateResponse(HttpStatusCode.OK, models);
-        }
-
-        #endregion
-
         #region Cascading dropdown values
 
         [Route("FieldType_CascadingListValues/{fieldTypeID:int}")]
