@@ -336,6 +336,7 @@ export class AdvancedFilterFieldCondition {
             return value;
         }
         catch (ex) {
+console.warn(ex);
         }
     }
 

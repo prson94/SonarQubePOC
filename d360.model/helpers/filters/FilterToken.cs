@@ -200,11 +200,9 @@ namespace d360.model.helpers
             var origQuery = $"{this.field} {this.@operator} {this.value.ToString().Trim('\'')}";
 
             var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.Relationships);
-            Dictionary<string, object> _sqlParams = new Dictionary<string, object>();
-            List<int> filteredFields = new List<int>();
-            var query = filterExpressionParser.Parse(origQuery.Replace("$related:", ""), out _sqlParams, out filteredFields);
+            var query = filterExpressionParser.Parse(origQuery.Replace("$related:", ""), out sqlParams, out _);
 
-            foreach (var item in _sqlParams)
+            foreach (var item in sqlParams)
             {
                 string updatedKey = item.Key + "_" + parameterIdx;
                 query = query.Replace(item.Key, updatedKey);

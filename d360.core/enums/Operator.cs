@@ -283,7 +283,7 @@ namespace d360.core.enums
             EnumMember(Value = "IsInBand"),
             Description(""),
             OperatorValueCountRange(1, 1),
-            OperatorAllowedMeasureChecks(),
+            OperatorAllowedMeasureChecks,
             OperatorAllowedDataTypes(DataType.Score),
             OperatorAllowedDataTypesAdvancedFilter(DataType.Score),
             OperatorFieldTypeRequirements(false),
