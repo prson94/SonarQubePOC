@@ -1284,6 +1284,7 @@ namespace d360.web.Controllers.V2
                 bool useFriendlyNames = true;
                 bool useUnflattedStructure = true;
                 bool returnForUI = false;
+                bool returnuseUidUrls = true;
                 string orderBy = string.Empty;
                 string direction = string.Empty;
 
@@ -1308,6 +1309,14 @@ namespace d360.web.Controllers.V2
                     if (!bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "forui").Value.Trim().ToLower(), out returnForUI))
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid boolean value for parameter 'forUI'"));
+                    }
+                }
+
+                if (qparams.Any(x => x.Key.ToLower() == "useuidurls"))
+                {
+                    if (!bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "useuidurls").Value.Trim().ToLower(), out returnuseUidUrls))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid boolean value for parameter 'useUidUrls'"));
                     }
                 }
 
@@ -1420,7 +1429,7 @@ namespace d360.web.Controllers.V2
                 dbArgs.Add("simpleFilter", simpleFilter);
                 dbArgs.Add("orderBy", orderBy);
                 dbArgs.Add("orderDirection", direction);
-                dbArgs.Add("useUidUrls", true);
+                dbArgs.Add("useUidUrls", returnuseUidUrls);
                 dbArgs.Add("filters", advFilters.AsTableValuedParameter("dbo.AssetFiltersTable"));
 
                 var reader = await Company.QueryMultipleAsync(
