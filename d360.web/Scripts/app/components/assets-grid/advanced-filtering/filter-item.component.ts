@@ -675,7 +675,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         if (!this.doesNeedValue) {
             return false;
         }
-        if (this.currentInputType.indexOf("multi") !== -1 && this.currentInputType != "multi-input") {
+        if (this.currentInputType.indexOf("multi") !== -1 && this.currentInputType !== "multi-input") {
             return this.isEmpty(this.condition.value) || this.isEmpty(this.condition.value2);
         }
         else {
