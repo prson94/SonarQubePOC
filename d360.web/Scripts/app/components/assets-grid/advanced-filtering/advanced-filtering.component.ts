@@ -71,7 +71,7 @@ export class AdvancedFilteringComponent implements OnChanges {
         }
     ]
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
-    @HostBinding('class') class = 'advanced-filtering-component';
+    @HostBinding("class") class = "advanced-filtering-component";
 
     constructor(public cdRef: ChangeDetectorRef,
         private elRef: ElementRef,
@@ -137,7 +137,7 @@ export class AdvancedFilteringComponent implements OnChanges {
             tempFields.forEach((f) => {
                 f.Operators = [];
 
-                this.operators.forEach(op => {
+                this.operators.forEach((op) => {
                     if (f.Type) {
                         var fieldType = FieldTypeHelper.getFieldType(f.Type).toLowerCase();
 

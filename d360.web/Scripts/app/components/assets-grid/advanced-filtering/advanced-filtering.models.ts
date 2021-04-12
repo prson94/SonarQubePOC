@@ -336,7 +336,6 @@ export class AdvancedFilterFieldCondition {
             return value;
         }
         catch (ex) {
-            console.warn(value);
         }
     }
 
@@ -435,7 +434,7 @@ export class AdvancedFilterFieldConditionCollection {
         }
         let queries: string[] = [];
         let valuesArr: any[];
-        this.filters.filter(x => x.field && x.operator).forEach((cond) => {
+        this.filters.filter((x) => x.field && x.operator).forEach((cond) => {
             if ((cond.fieldType === "Lookup" || cond.fieldType === "Tag" || cond.field === SystemFields.OwnedByFieldCode) && cond.value) {
                 let subConditions: AdvancedFilterFieldCondition[] = [];
                 valuesArr = cond.value as SelectItem[];
@@ -461,7 +460,7 @@ export class AdvancedFilterFieldConditionCollection {
 
                     if (cond.operator.toString().indexOf("Equals") === -1) {
                         let subConditions: AdvancedFilterFieldCondition[] = [];
-                        stringArr.forEach(r => {
+                        stringArr.forEach((r) => {
                             subConditions.push(cond.getCopyWithNewValue(r));
                         });
 

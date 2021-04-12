@@ -160,7 +160,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             }
         }
         catch (ex) {
-            console.warn(ex);
+
         }
     }
 
@@ -209,7 +209,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
     getValues(item: AdvancedFilterFieldCondition) {
         if (!this.getFieldType(item)) {
             return [];
-        };
+        }
         return this.getFieldType(item).Values;
     }
 
@@ -344,7 +344,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
                 let loadedData = [];
 
-                res.items.forEach(str => {
+                res.items.forEach((str) => {
                     loadedData.push({ title: str, value: str });
                 });
 
@@ -394,7 +394,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
                 mapped.filter((x) => !x.group).forEach((str) => {
                     this.currentField.Values.push({ title: str.title, value: str.value });
-                })
+                });
 
                 var grouped = _.mapValues(_.groupBy(mapped, "group"),
                     (clist) => clist.map((item) => _.omit(item, "group")));
