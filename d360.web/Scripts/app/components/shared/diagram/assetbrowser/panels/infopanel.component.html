@@ -27,7 +27,7 @@
                         <i *ngIf="(field.Value || '').toUpperCase() == 'FALSE'" class="fa fa-times disabled" title="False"></i>
                     </span>
                 </ng-container>
-                <ng-container *ngSwitchCase="'JSON'">
+                <ng-container *ngSwitchCase="'Json'">
                     <span *ngIf="GetJSON(field.Value) == 'Error'; else showJSON">{{field.Value}}</span>
                     <ng-template #showJSON>
                         <ngx-json-view [data]="GetJSON(field.Value)"></ngx-json-view>
@@ -37,7 +37,7 @@
                     <span [innerHtml]="field.Value | safeHtml"></span>
                 </ng-container>
                 <ng-container *ngSwitchCase="'Link'">
-                    <span class="FieldDisplayContent" [innerHtml]="field.Value"></span>
+                    <span class="FieldDisplayContent" [innerHtml]="getLinkHtml(field.Value)"></span>
                 </ng-container>
                 <ng-container *ngSwitchCase="'Tag'">
                     <d3s-tag-view *ngIf="GetJSON(field.Values) != 'Error'" [data]="GetJSON(field.Values)" [assetUID]="asset?.Uid" [isEditable]="false" [allowAddTag]="false"></d3s-tag-view>

@@ -238,4 +238,14 @@ export class AssetService extends BaseObservableService {
                 catchError(err => this.handleError(err, true))
             );
     }
+
+    public getAsset(uid: string): Observable<any> {
+        return this
+            .http
+            .get(`/api/v2/assets/asset/${uid}`)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err, true))
+            );
+    }
 }

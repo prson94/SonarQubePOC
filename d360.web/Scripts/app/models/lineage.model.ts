@@ -570,9 +570,9 @@ export class AssetBrowserDiagramAssetScore {
 }
 
 export class AssetBrowserDiagramAssetOwner {
-    ResponsibilityTypeID: number;
+    ResponsibilityTypeUid: string;
     ResponsibilityTypeName: string;
-    ResourceID: number;
+    ResourceUid: string;
     ResourceName: string;
 }
 
