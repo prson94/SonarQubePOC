@@ -170,7 +170,11 @@ export class AdvancedFilteringComponent implements OnChanges {
             this.fields.forEach((field) => {
                 if (field.Type) {
                     var key = Object.keys(field.Type)[0];
-                    var isDefaultFilter = field.Type[key]["IsPrimaryFilter"];
+                    var isDefaultFilter = false;
+                    if (Object.keys(field.Type).some(x => x === key)) {
+                        isDefaultFilter = field.Type[key]["IsPrimaryFilter"];
+                    }
+
                     if (isDefaultFilter === true && !loadedFilters.some((x) => x.field === field.Name)) {
                         var defaultFilter = new AdvancedFilterFieldCondition(this.datePipe);
                         defaultFilter.field = field.Name;

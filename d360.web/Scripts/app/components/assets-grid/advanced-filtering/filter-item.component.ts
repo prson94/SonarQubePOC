@@ -160,7 +160,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             }
         }
         catch (ex) {
-
+            console.warn(ex);
         }
     }
 
@@ -406,7 +406,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
                         this.currentField.Values.push({ title: d.title, value: d.value });
                     });
 
-                })
+                });
 
                 this.isLookupValuesLoading = false;
                 this.setTableWidth();
@@ -427,11 +427,11 @@ export class FilterItemComponent implements OnInit, OnChanges {
             .subscribe((res) => {
                 if (!this.currentField.Values || this.currentField.Values.length === 0) {
                     this.currentField.Values = Array.from({ length: res.count });
-                };
+                }
 
                 let loadedData = [];
 
-                res.items.forEach(str => {
+                res.items.forEach((str) => {
                     let label: string = (str.label as string).split("].[").join(" <i class='slim-fa fa fa-chevron-right'></i> ").replace("[", "").replace("]", "");
                     loadedData.push({ title: label, value: str.value });
                 });
