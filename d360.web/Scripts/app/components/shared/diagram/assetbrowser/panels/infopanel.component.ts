@@ -31,4 +31,16 @@ export class AssetBrowserInfoPanelComponent implements AfterViewInit {
             return "Error";
         }
     }
+
+    getLinkHtml(value: string): string {
+        if (value == null || value.length === 0) {
+            return "";
+        }
+        if (value.indexOf('|') == -1) {
+            return `<a href="${value}">${value}</a>`
+        }
+        else {
+            return `<a href="${value.split('|')[1]}">${value.split('|')[0]}</a>`
+        }
+    }
 } 
