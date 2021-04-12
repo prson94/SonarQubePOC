@@ -1496,7 +1496,7 @@ namespace d360.web.Controllers.V2
                 if (!string.IsNullOrEmpty(filter))
                 {
                     filter = "%" + filter + "%";
-                    whereQuery += " where keypath like @filter ";
+                    whereQuery += " where label like @filter ";
                     whereCountQuery += " and keypath like @filter ";
                 }
 

@@ -12,7 +12,7 @@
     </span>
 </header>
 
-<div class="grid-actions-header">
+<div class="grid-actions-header {{(this.showEditor || this.showDelete || this.isEditing ? 'hidden' : '')}}">
     <div class="simple-search">
         <ig-search-field (onSearch)="onSimpleSearch($event)"
                          [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter">

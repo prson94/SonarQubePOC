@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, HostListener, OnChanges, AfterViewChecked } from "@angular/core";
+﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, OnChanges, AfterViewChecked, Output, EventEmitter } from "@angular/core";
 import { LazyLoadEvent, SelectItem, SelectItemGroup } from "primeng/api";
 import * as _ from "lodash";
 import { FieldTypeAPIModelFieldCondition } from "../../../models/field-condition-grid.models";
@@ -23,6 +23,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
     @Input() fields: FieldTypeAPIModelFieldCondition[] = null;
     @Input() operators: OperatorModel[] = [];
     @Input() relationshipTypes: RelationshipType[] = [];
+
+    @Output() onChange = new EventEmitter();
 
     lazyLoadSubscription: Subscription;
 
@@ -237,7 +239,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
             }
         }
         else {
-            this.isSelectingCurrentField = true;
             this.isSelectingValue = true;
         }
     }
@@ -452,6 +453,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
         this.uiTooltipValue = this.condition.getTooltipValue();
         this.uiFilterLabel = this.condition.getFilterLabel();
+
+        this.onChange.emit();
     }
 
     cancel() {
@@ -476,6 +479,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             return;
         }
         this.condition.markForDeletion = true;
+        this.onChange.emit();
     }
 
     needsValue() {
@@ -503,24 +507,41 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     private updateAllAnyData(event = null) {
-        if (this.condition.fieldType === "Lookup") {
-            if (this.currentField.Type.Lookup?.List?.AllowMultipleValues && (this.condition.value && (this.condition.value as any[]).length > 1)) {
-                this.uiIsAllDisabled = false;
-                this.uiIsAnyDisabled = false;
-            }
-            else {
-                this.condition.connectingOperator = "or";
-                if (this.condition.operator.toString() === "NotEquals") {
-                    this.condition.connectingOperator = "and";
-                }
 
+        if (this.condition.fieldType === "Lookup") {
+            if (this.currentField.Type.Lookup.List.AllowMultipleValues !== true) {
+                if (this.currentOperator.toString() === "NotEquals") {
+                    this.condition.connectingOperator = "and";
+                } else {
+                    this.condition.connectingOperator = "or";
+                }
                 this.uiIsAllDisabled = true;
                 this.uiIsAnyDisabled = true;
             }
+            else {
+                if (this.currentOperator.toString() === "NotEquals") {
+                    this.condition.connectingOperator = "and";
+                    this.uiIsAllDisabled = true;
+                    this.uiIsAnyDisabled = true;
+                }
+
+                if (this.condition) {
+                    var count = (this.condition.value as any[]).length;
+                    if (count > 1) {
+                        this.uiIsAllDisabled = false;
+                        this.uiIsAnyDisabled = false;
+                    }
+                    else {
+                        this.condition.connectingOperator = "or";
+                        this.uiIsAllDisabled = true;
+                        this.uiIsAnyDisabled = true;
+                    }
+                }
+            }
         }
 
-        if (this.condition.fieldType === "Tag" && (this.condition.value && (this.condition.value as any[]).length > 1)) {
-            if (this.condition.operator.toString() === "NotContains") {
+        if (this.condition.fieldType === "Tag" && this.condition.value) {
+            if (this.currentOperator.toString() === "NotContains") {
                 this.condition.connectingOperator = "and";
                 this.uiIsAllDisabled = true;
                 this.uiIsAnyDisabled = true;
@@ -532,11 +553,16 @@ export class FilterItemComponent implements OnInit, OnChanges {
                     this.uiIsAllDisabled = false;
                     this.uiIsAnyDisabled = false;
                 }
+                else {
+                    this.condition.connectingOperator = "or";
+                    this.uiIsAllDisabled = true;
+                    this.uiIsAnyDisabled = true;
+                }
             }
         }
 
         if (this.condition.fieldType === "Path") {
-            if (this.condition.operator.toString() === "Contains" && (this.condition.value && (this.condition.value as any[]).length > 1)) {
+            if (this.currentOperator.toString() === "Contains" && (this.condition.value && (this.condition.value as any[]).length > 1)) {
                 this.uiIsAllDisabled = false;
                 this.uiIsAnyDisabled = false;
             }
@@ -547,7 +573,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             }
         }
         if (this.condition.field === SystemFields.OwnedByFieldCode) {
-            if (this.condition.operator.toString() === "Equals") {
+            if (this.currentOperator.toString() === "Equals") {
                 this.uiIsAllDisabled = false;
                 this.uiIsAnyDisabled = false;
             }
@@ -638,11 +664,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
     isLazyLoad() {
 
         if (this.currentField.Name === SystemFields.OwnedByFieldCode
-            || (this.currentField.Type && this.currentField.Type.Tag) !== null
+            || (this.currentField.Type && this.currentField.Type.Tag)
         ) {
             return false;
         }
-
         return true;
     }
 
@@ -650,8 +675,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         if (!this.doesNeedValue) {
             return false;
         }
-
-        if (this.currentInputType.indexOf("multi") !== -1) {
+        if (this.currentInputType.indexOf("multi") !== -1 && this.currentInputType != "multi-input") {
             return this.isEmpty(this.condition.value) || this.isEmpty(this.condition.value2);
         }
         else {
@@ -660,6 +684,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     isEmpty(value: any): boolean {
+        if (Array.isArray(value) && (value as []).length > 0) {
+            return false;
+        }
+
         if (value === null || (typeof value === "undefined") || (value as string).length === 0) {
             return true;
         }

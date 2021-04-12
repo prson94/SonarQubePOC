@@ -435,7 +435,7 @@ export class AdvancedFilterFieldConditionCollection {
         }
         let queries: string[] = [];
         let valuesArr: any[];
-        this.filters.filter((x) => x.field && x.operator).forEach((cond) => {
+        this.filters.filter((x) => x.field && x.operator && x.markForDeletion !== true).forEach((cond) => {
             if ((cond.fieldType === "Lookup" || cond.fieldType === "Tag" || cond.field === SystemFields.OwnedByFieldCode) && cond.value) {
                 let subConditions: AdvancedFilterFieldCondition[] = [];
                 valuesArr = cond.value as SelectItem[];

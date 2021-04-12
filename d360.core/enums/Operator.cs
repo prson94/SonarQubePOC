@@ -209,7 +209,7 @@ namespace d360.core.enums
             OperatorValueCountRange(1, 1000),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation),
             OperatorAllowedDataTypes(DataType.Lookup),
-            OperatorAllowedDataTypesAdvancedFilter(DataType.Lookup),
+            OperatorAllowedDataTypesAdvancedFilter,
             OperatorFieldTypeRequirements(true),
             SortOrder(0)
             ]
@@ -221,7 +221,7 @@ namespace d360.core.enums
             OperatorValueCountRange(1, 1000),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation),
             OperatorAllowedDataTypes(DataType.Lookup),
-            OperatorAllowedDataTypesAdvancedFilter(DataType.Lookup),
+            OperatorAllowedDataTypesAdvancedFilter,
             OperatorFieldTypeRequirements(true),
             SortOrder(0)
         ]

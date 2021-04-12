@@ -43,6 +43,7 @@ export class AdvancedFilteringComponent implements OnChanges {
             title: "Clear Filters",
             callback: () => {
                 this.conditions.filters = [];
+                this.onItemChange();
             }
         },
         {
@@ -55,6 +56,7 @@ export class AdvancedFilteringComponent implements OnChanges {
             callback: () => {
                 this.conditions.connector = " and ";
                 this.filterMenu[3].isChecked = false;
+                this.onItemChange();
                 this.cdRef.markForCheck();
             }
         },
@@ -65,8 +67,8 @@ export class AdvancedFilteringComponent implements OnChanges {
                 this.filterMenu[2].isChecked = false;
 
                 this.conditions.connector = " or ";
+                this.onItemChange();
                 this.cdRef.markForCheck();
-
             }
         }
     ]
@@ -91,6 +93,11 @@ export class AdvancedFilteringComponent implements OnChanges {
         }
 
         this.conditions.filters = this.conditions.filters.filter((x) => x.markForDeletion !== true);
+        this.cdRef.markForCheck();
+    }
+
+    onItemChange() {
+        this.getQuery();
 
         var currentFilters = JSON.stringify(this.filters);
 
@@ -98,7 +105,6 @@ export class AdvancedFilteringComponent implements OnChanges {
             this.onChange.emit(this.filters);
             this.emittedFilters = JSON.stringify(this.filters);
         }
-
     }
 
     private initializeData() {
@@ -194,9 +200,8 @@ export class AdvancedFilteringComponent implements OnChanges {
             this.visible = true;
 
             setInterval(() => {
-                this.getQuery();
                 this.customDoCheck();
-            }, 200);
+            }, 50);
         });
 
 
