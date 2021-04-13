@@ -1454,8 +1454,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\customizations\admin-customizations.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-dashboards-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion\admin-fusion.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-schedule-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-schedule.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-types.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-types.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-types.routes.ts" />
