@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, OnChanges, AfterViewChecked, Output, EventEmitter } from "@angular/core";
+﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, OnChanges, Output, EventEmitter, HostListener } from "@angular/core";
 import { LazyLoadEvent, SelectItem, SelectItemGroup } from "primeng/api";
 import * as _ from "lodash";
 import { FieldTypeAPIModelFieldCondition } from "../../../models/field-condition-grid.models";
@@ -54,6 +54,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
     rollbackOperator: any;
     rollbackValue1: any;
     rollbackValue2: any;
+
+    maxNumberOfFilterCharacters: number = 50;
 
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
 
@@ -133,21 +135,21 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 let oldWidth = width;
                 if (tableElements.length > 0) {
                     for (let i = 0; i < tableElements.length; i++) {
-                        var elementWidth = tableElements[i].clientWidth + 45;
+                        var elementWidth = tableElements[i].clientWidth;
                         if (elementWidth > width) {
                             width = elementWidth;
                         }
                     }
                 }
 
-                if (width > (window.outerWidth - 16)) {
-                    width = window.outerWidth - 16;
+                if (width > (window.outerWidth - 50)) {
+                    width = window.outerWidth - 50;
                 }
 
                 var tableWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0] as HTMLElement;
-                if (tableWrapper && (Math.abs(oldWidth - width)) > 16) {
-                    tableWrapper.style.width = (width + 5) + "px";
 
+                if (tableWrapper && (Math.abs(oldWidth - width)) > 16) {
+                    tableWrapper.style.width = (width + 45) + "px";
                     var difference = window.outerWidth - tableWrapper.getBoundingClientRect().right;
                     if (difference < 0) {
                         var selectionElement = html.getElementsByClassName("value-selection")[0] as HTMLElement;
@@ -336,6 +338,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         if (this.lazyLoadSubscription) {
             this.lazyLoadSubscription.unsubscribe();
         }
+        this.isLookupValuesLoading = true;
 
         this.lazyLoadSubscription = this.fieldsService.getLookupValues(this.currentField.AssetTypeUid, this.currentField.Name.trim(), params)
             .subscribe((res) => {
@@ -353,6 +356,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
                 this.currentField.Values = [...this.currentField.Values];
                 this.setTableWidth();
+                this.isLookupValuesLoading = false;
                 this.cdRef.markForCheck();
             });
     }
@@ -421,7 +425,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         if (this.lazyLoadSubscription) {
             this.lazyLoadSubscription.unsubscribe();
         }
-
+        this.isLookupValuesLoading = true;
 
         this.lazyLoadSubscription = this.relationshipService
             .getRelationshipLookupValues(this.currentField.Name.split("|")[1], this.currentField.Name.split("|")[0], params)
@@ -441,6 +445,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
                 this.currentField.Values = [...this.currentField.Values];
                 this.setTableWidth();
+                this.isLookupValuesLoading = false;
 
                 this.cdRef.markForCheck();
             });
@@ -693,5 +698,31 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         return false;
+    }
+
+    @HostListener("document:click", ["$event"])
+    clickOutside(event: any) {
+        var target = event.target as HTMLElement;
+        if (!this.elRef.nativeElement.contains(event.target)
+            && !this.isInBodyElement(target)
+        ) {
+            this.isSelectingValue = false;
+        }
+    }
+
+    private isInBodyElement(el: HTMLElement) {
+        console.log(el.tagName);
+        if (el.tagName === "P-DROPDOWNITEM"
+            || el.classList.contains("p-datepicker-group-container")
+        ) {
+            return true;
+        }
+        else {
+            if (!el.parentElement) {
+                return false;
+            }
+
+            return this.isInBodyElement(el.parentElement);
+        }
     }
 }

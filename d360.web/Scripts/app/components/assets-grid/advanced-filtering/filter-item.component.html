@@ -29,9 +29,7 @@
     </div>
 
     <div class="value-selection" [hidden]="!isSelectingValue">
-        <d3s-loading [isLoading]="isLookupValuesLoading"></d3s-loading>
-
-        <div class="selectors" *ngIf="!isLookupValuesLoading">
+        <div class="selectors">
             <p-dropdown igDropdown
                         [options]="uiCurrentOperatorsList"
                         [(ngModel)]="currentOperator"
@@ -42,7 +40,7 @@
             </p-dropdown>
             <div class="value-selector">
                 <ng-container *ngIf="doesNeedValue">
-                    <input *ngIf="currentInputType === 'text'" igInput igSize="full" type="text" [(ngModel)]="condition.value" required />
+                    <input *ngIf="currentInputType === 'text'" igInput igSize="full" type="text" [(ngModel)]="condition.value" required maxlength="{{maxNumberOfFilterCharacters}}" />
                     <ig-number-input *ngIf="currentInputType === 'number'" igSize="full" [(ngModel)]="condition.value" required></ig-number-input>
 
                     <ng-container *ngIf="currentInputType === 'multi-number'">
@@ -82,7 +80,9 @@
                                      [rows]="20"
                                      [virtualScroll]="true"
                                      [lazy]="isLazyLoad()"
-                                     (onLazyLoad)="loadListLazy($event)">
+                                     (onLazyLoad)="loadListLazy($event)"
+                                     [loading]="isLookupValuesLoading"
+                                     [loadingIcon]="'fa fa-spinner fa-spin'">
                                 <ng-template pTemplate="header">
                                     <tr>
                                         <th class="first-col">
