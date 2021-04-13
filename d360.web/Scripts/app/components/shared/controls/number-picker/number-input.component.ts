@@ -20,7 +20,7 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
 
     @Input() placeholder: string;
     @Input() step: number;
-    @Input() max: number;
+    @Input() max: number = 9223372036854775807;
     @Input() min: number;
     @Input() disabled: boolean = false;
     @Input() required: boolean = false;

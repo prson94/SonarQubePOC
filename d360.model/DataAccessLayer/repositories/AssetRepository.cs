@@ -82,7 +82,7 @@ namespace d360.model.DataAccessLayer
             string condition = string.Empty;
             string optionalJoin = string.Empty;
             string permissionsJoin = string.Empty;
-            
+
             if (Class.HasValue)
             {
                 if (fusionTypeUid.HasValue && fusionTypeUid.Value != Guid.Empty && Class == AssetTypeClass.FusionAttribute)
@@ -189,7 +189,7 @@ namespace d360.model.DataAccessLayer
 
             }
 
-            if(!CompanyContext.CurrentResourceIsAdmin)
+            if (!CompanyContext.CurrentResourceIsAdmin)
             {
                 permissionsJoin = $"outer apply (select case when ua.PermissionsBitMask & {(int)Permission.ReadAsset} = 0 then 0 else 1 end as hasRead from UserAssetPermissions(@userId,a.id) ua where ua.AssetTypeID = a.id and ua.AssetID = 0) UserP";
                 condition += " and (UserP.hasRead is null or UserP.hasRead != 0)";
@@ -934,7 +934,7 @@ namespace d360.model.DataAccessLayer
                     A.[UID] as [AssetUid],
                     A.AssetTypeId,
                     T.[UID] as AssetTypeUid,
-                    {(includeCreatedByModifiedBy ? "UA.uid as UpdatedByUid,": "")}
+                    {(includeCreatedByModifiedBy ? "UA.uid as UpdatedByUid," : "")}
                     A.UpdatedOn,
                     {(includeCreatedByModifiedBy ? "CA.uid as CreatedByUid," : "")}                    
                     A.CreatedOn,
@@ -2682,7 +2682,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         new List<string>() { "Uid" })
             });
 
-            foreach(var node in nodes)
+            foreach (var node in nodes)
             {
                 List<PathComponent> returnlist = new List<PathComponent>();
 
@@ -3285,7 +3285,7 @@ where   A.[uid] = @assetUid";
                             R.ResourceID = F.ResourceID
 						    inner join Asset A on F.ObjectID = A.ObjectID and F.ObjectType=A.[Object]
 						    where A.[uid]=@assetUid
-                            ";            
+                            ";
 
             bool includeTotal = true;
 
@@ -3342,7 +3342,7 @@ where   A.[uid] = @assetUid";
             dbArgs.Add("@assetUid", assetUid);
             dbArgs.Add("@pageSize", pageSize);
             dbArgs.Add("@offset", (pageSize * pageNum));
-            
+
             var itemsSQL = $@"
                             select R.Uid as resourceUid, R.resourceId, F.FollowerName as 'name'
                             {joinSQL}
@@ -3362,8 +3362,8 @@ where   A.[uid] = @assetUid";
             }
 
             count = includeTotal ? count : null;
-            
-            return new AssetWatchers { total = count, items = items};
+
+            return new AssetWatchers { total = count, items = items };
         }
 
 
@@ -3437,7 +3437,7 @@ where   A.[uid] = @assetUid";
             }
 
             var orderBySQL = $"order by {orderBy} {orderDirection}";
-            
+
             dbArgs.Add("@assetTypeUid", assetTypeUid);
             dbArgs.Add("@pageSize", pageSize);
             dbArgs.Add("@offset", (pageSize * pageNum));

@@ -400,6 +400,25 @@ from	FollowDetail F
                     },
                     JsonRequestBehavior.AllowGet);
                 }
+
+                if (objectType == "ResponsibilityType")
+                {
+                    var responbility = Company.ResponsibilityTypes.FirstOrDefault(x => x.UID == uid);
+                    return Json(
+                    new
+                    {
+                        ShowTooltip = true,
+                        AssetID = -1,
+                        UID = uid,
+                        DisplayName = responbility?.Name,
+                        TypeName = "Responsibility Type",
+                        Url = "",
+                        Description = responbility?.Description
+
+                    },
+                    JsonRequestBehavior.AllowGet);
+                }
+
             }
 
 

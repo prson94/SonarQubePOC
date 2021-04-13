@@ -1,0 +1,11 @@
+﻿<div class="advanced-filtering">
+    <div class="filters-list" *ngIf="visible">
+        <div class="filter-item" *ngFor="let item of conditions.filters">
+            <filter-item (onChange)="onItemChange()" [assetTypeUid]="assetTypeUid" [condition]="item" [fields]="fields" [operators]="operators" [relationshipTypes]="relationshipTypes"></filter-item>
+        </div>
+        <div class="filters-list-menu">
+            <button igButton class="menu" icon="fa-ellipsis-v" tooltip="More..." (click)="menu.toggle($event)"></button>
+            <ig-popup-menu [items]="filterMenu" #menu [tabIndex]="20"></ig-popup-menu>
+        </div>
+    </div>
+</div>

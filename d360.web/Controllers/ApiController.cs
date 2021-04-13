@@ -404,7 +404,7 @@ begin
 	from	FieldDetail
 	where	FieldTypeID = @fieldTypeID and [Object] = @obj and ObjectID = @objID
 end
-select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAnsi = true, Length= 50 }, objID }).ConfigureAwait(false)).SingleOrDefault();
+select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAnsi = true, Length = 50 }, objID }).ConfigureAwait(false)).SingleOrDefault();
 
                     if (rfld != null)
                     {
@@ -508,8 +508,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 if (indx != 0) dynamicSql += " or ";
 
                 dynamicSql += $"[object] = @obj{indx} and [objectid] = @objId{indx}";
-                                
-                dbParams.Add($"obj{indx}", item.ObjectName,System.Data.DbType.AnsiString, size:50);
+
+                dbParams.Add($"obj{indx}", item.ObjectName, System.Data.DbType.AnsiString, size: 50);
                 dbParams.Add($"objId{indx}", item.ObjectID);
 
                 indx++;
@@ -1617,7 +1617,7 @@ order by    rnk, [Name]";
         private async Task<List<DetailReadOnlyRowModel>> RenderComplexLookupField(string type, int id, FieldType ft)
         {
             var list = new List<DetailReadOnlyRowModel>();
-            
+
             if (ft != null)
             {
                 var lookup = await Company.QueryFirstOrDefaultAsync<FieldTypeLookup>("select FieldTypeID, HideHeader, HideFooter, LookupType, Definition, HideFilter from FieldTypeLookup where FieldTypeID = @id", new { id = ft.ID });
@@ -1722,13 +1722,13 @@ order by    rnk, [Name]";
         }
 
         private async Task<bool> AnyComplexLookupGridValues(string type, int id, int fieldTypeId)
-        {            
+        {
             bool any = false;
 
             try
             {
                 any = await Company.QueryFirstOrDefaultAsync<bool>("exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, @countOnly, @checkExists",
-                    new { @object = new DbString { Value = type, IsAnsi= true, Length = 50 }, objectId = id, fieldTypeId, resourceId = Company.CurrentResourceID, countOnly = true, checkExists = true }
+                    new { @object = new DbString { Value = type, IsAnsi = true, Length = 50 }, objectId = id, fieldTypeId, resourceId = Company.CurrentResourceID, countOnly = true, checkExists = true }
                 );
             }
             catch (Exception ex)
@@ -1797,8 +1797,8 @@ order by    rnk, [Name]";
                 }
 
                 if (objectsWithoutReadAccess != null && objectsWithoutReadAccess.Any(x => (x.Object == obj && x.ObjectID == objID)))
-                {                    
-                        url = null;                 
+                {
+                    url = null;
                 }
 
                 values.Add(new ReadOnlyFieldValue { Value = intersectDisplayValue, TooltipContext = "Preview", TooltipID = objID, TooltipType = obj, TooltipUrl = url });
@@ -2003,10 +2003,10 @@ order by    rnk, [Name]";
                 bool includeSelected = offset < preselectedCount;
                 if (includeSelected)
                 {
-                    items.OrderBy(x=> x.Text.ToString()).Skip(offset).Take(rows).ToList().ForEach(d =>
-                    {
-                        selection.Add(new System.Web.Mvc.SelectListItem { Text = d.Text, Value = d.Value.ToString(), Selected = true });
-                    });
+                    items.OrderBy(x => x.Text.ToString()).Skip(offset).Take(rows).ToList().ForEach(d =>
+                     {
+                         selection.Add(new System.Web.Mvc.SelectListItem { Text = d.Text, Value = d.Value.ToString(), Selected = true });
+                     });
                 }
 
 
@@ -2037,7 +2037,7 @@ order by    rnk, [Name]";
                     List<dynamic> items = (List<dynamic>)result["Items"];
                     items.ForEach(d =>
                     {
-                        if(!excludeValues.Contains(d.Value.ToString()))
+                        if (!excludeValues.Contains(d.Value.ToString()))
                             selection.Add(new System.Web.Mvc.SelectListItem { Text = d.Text, Value = d.Value.ToString(), Selected = false });
                     });
                 }
@@ -5222,11 +5222,11 @@ SELECT (
         {
             var row = await Company.QueryFirstOrDefaultAsync<dynamic>(QueryConstants.TaxonomySettingsItem, new { id = typeID });
 
-            if(row == null)
+            if (row == null)
             {
                 throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
             }
-            
+
             return Request.CreateResponse<dynamic>(
                 new Dictionary<string, object> {
                     { "ID", row.ID },
@@ -5319,7 +5319,7 @@ SELECT (
             var rangeStart = rangeEnd.AddDays(days);
             var countsRequest = await commentsRepository.GetCommentCountsByFollower(resourceId, null, rangeStart, rangeEnd);
             var counts = countsRequest.OrderBy(i => i.CommentTypeName);
-            
+
             List<CountModel> items = new List<CountModel>();
 
             //need to add a record for social, Issue, Task, DataEvent, Question
@@ -5458,7 +5458,7 @@ from	ResponsibilityDetail
 where	Type = 'ReferenceItemType'
 		and TypeID = @id 
 		and PermissionsBitMask & @p = 0
-		and ResourceID = @resource", new { id, resource = Company.CurrentResourceID, p = (int)Permission.ReadAsset});
+		and ResourceID = @resource", new { id, resource = Company.CurrentResourceID, p = (int)Permission.ReadAsset });
 
             return Request.CreateResponse(HttpStatusCode.OK, !records.Any());
         }
