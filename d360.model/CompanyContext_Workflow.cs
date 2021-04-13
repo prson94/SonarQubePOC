@@ -120,11 +120,23 @@ namespace d360.model
             // 0 check if the workflow digest emails are enabled for today
 
             int digestDays = int.TryParse(companySettings["WorkflowDigestEmailDays"], out digestDays) ? digestDays : 0;
+            int todayDayOfWeek = (int)DateTime.UtcNow.DayOfWeek;
 
-            if(( (int)Math.Pow(2, (int)DateTime.UtcNow.DayOfWeek) & digestDays) == 0)
+            //Check if today is a day to send digest emails
+            if(( (int)Math.Pow(2,todayDayOfWeek) & digestDays) == 0)
             {
-                return; //Today is not selected as a day to send digest emails
+                return; 
             }
+
+            // 0.5 determine how many days ago last digest was sent
+            int newDelta = 0;
+            int previousDayOfWeek;
+            do
+            {
+                newDelta++;
+                previousDayOfWeek = (7 + todayDayOfWeek - newDelta) % 7;
+            } while (((int)Math.Pow(2, previousDayOfWeek) & digestDays) == 0);
+
 
             // 1 determine which users have outstanding workflows
             var users = await GetUsersWithOutstandingWorkflows();
@@ -168,7 +180,7 @@ namespace d360.model
                 // 3 get oustanding assignments
                 foreach (var user in users)
                 {
-                    var workflows = await GetUsersOutstandingWorkflows(user.ID);
+                    var workflows = await GetUsersOutstandingWorkflows(user.ID, newDelta);
 
 
                     StringBuilder sb = new StringBuilder();
@@ -244,7 +256,7 @@ namespace d360.model
                                      WI.CompletedOn is null and WVS.StepType = 2 and WVS.ActivityType = 3 and GRAA.State = 1");
         }
 
-        private async Task<IEnumerable<dynamic>> GetUsersOutstandingWorkflows(int resourceId)
+        private async Task<IEnumerable<dynamic>> GetUsersOutstandingWorkflows(int resourceId, int newOffset = 1)
         {
             return await Database.Connection.QueryAsync<dynamic>(@"
                     Select wfm.Name as Name,wfm.Id as Id,wfm.Version as Version,wfm.Step as Step,wfm.StepId as StepId,wfm.Total as Total,Isnull(Sub.New,0) as New
@@ -284,11 +296,11 @@ namespace d360.model
                     inner join [workflow].[itemassignment] wia on(wia.itemstepid = wis.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
                     inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
                     where
-                    wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3  and wia.CreatedOn > getdate()-1
+                    wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3  and wia.CreatedOn > getdate()-@newOffset
                     group by wt.name, wt.id,wv.[version],wvs.name,wvs.Id
                     ) as Sub on
                     wfm.Id =Sub.Id and wfm.Version=Sub.Version and wfm.StepId = sub.stepid
-                    order by wfm.Name asc,wfm.[version] desc,wfm.Step asc", new { r = resourceId });
+                    order by wfm.Name asc,wfm.[version] desc,wfm.Step asc", new { r = resourceId, newOffset });
         }
 
         public bool AssignActivityWorkflowToNewObject(WorkflowEventRegistration reg, int itemId, int workflowId, int objectId, string @object)
