@@ -2185,7 +2185,7 @@ for json path";
             if (!string.IsNullOrEmpty(_filter))
             {
                 var filterExpressionParser = new FilterExpressionParser(Company, FilterExpressionParseType.RuleResults);
-                var sqlParams = new Dictionary<string, object>();
+                Dictionary<string, object> sqlParams;
                 var query = "(" + filterExpressionParser.Parse(_filter, out sqlParams, out _) + ")";
 
                 foreach (var item in sqlParams)

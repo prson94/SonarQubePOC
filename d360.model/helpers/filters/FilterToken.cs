@@ -341,8 +341,8 @@ namespace d360.model.helpers
                     break;
                 case "assettypeclass":
                     var classes = AssetTypeClass.BusinessAsset.GetAsList();
-                    var match = classes.FirstOrDefault(x => x.Name.ToLower() == value.ToString().ToLower().Trim('\'')
-                    || x.Value.ToLower() == value.ToString().ToLower().Trim('\''));
+                    var match = classes.FirstOrDefault(x => x.Name.ToLower(CultureInfo.InvariantCulture) == value.ToString().ToLower(CultureInfo.InvariantCulture).Trim('\'')
+                    || x.Value.ToLower(CultureInfo.InvariantCulture) == value.ToString().ToLower(CultureInfo.InvariantCulture).Trim('\''));
 
                     if (match == null)
                     {
@@ -440,17 +440,17 @@ namespace d360.model.helpers
                 case "boolean":
                 case "lookup":
                 case "relationship":
-                    return new string[] { "eq", "ne", "ct" }.Contains(operand);
+                    return new [] { "eq", "ne", "ct" }.Contains(operand);
                 case "number":
                 case "decimal":
-                    return !(new string[] { "ct" }.Contains(operand));
+                    return !(new [] { "ct" }.Contains(operand));
                 case "date":
                 case "datetime":
                     return true;
                 case "assettypeclass":
-                    return new string[] { "eq", "ne" }.Contains(operand);
+                    return new [] { "eq", "ne" }.Contains(operand);
                 default:
-                    return new string[] { "eq", "ne", "ct" }.Contains(operand);
+                    return new [] { "eq", "ne", "ct" }.Contains(operand);
             }
         }
 
