@@ -765,6 +765,8 @@
     <Content Include="Scripts\app\components\admin\hierarchies\admin-level-list.component.html" />
     <Content Include="Scripts\app\components\admin\hierarchies\admin-hierarchies.component.html" />
     <Content Include="Scripts\app\components\admin\hierarchies\admin-level-editor.component.html" />
+    <Content Include="Scripts\app\components\assets-grid\advanced-filtering\filter-item.component.html" />
+    <Content Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.component.html" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.html" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid-column-filter.component.html" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid.component.html" />
@@ -849,6 +851,8 @@
     <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.woff" />
     <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.woff2" />
     <Content Include="Scripts\app\components\shared\asset-score\calculation\measure-rule-results.less" />
+    <Content Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.component.less" />
+    <Content Include="Scripts\app\components\assets-grid\asset-grid.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
@@ -983,6 +987,10 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets-grid\advanced-filtering\filter-item.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.models.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />

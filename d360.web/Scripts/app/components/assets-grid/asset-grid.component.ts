@@ -1,56 +1,50 @@
-import { of as observableOf, Subject, Observable, Subscription } from 'rxjs';
-import { debounceTime, map, distinctUntilChanged, delay, mergeMap } from 'rxjs/operators';
+import { of as observableOf, Subject, Subscription } from "rxjs";
+import { debounceTime, map, distinctUntilChanged, delay, mergeMap } from "rxjs/operators";
 import {
     Component,
     Input,
-    Output,
     OnChanges,
     SimpleChange,
-    EventEmitter,
     ViewChild,
-    OnInit,
     ChangeDetectionStrategy,
     ChangeDetectorRef,
 
     OnDestroy
-} from '@angular/core';
-import { LazyLoadEvent } from 'primeng/api';
-import { Table } from 'primeng/table';
-import { Router, ActivatedRoute } from '@angular/router';
+} from "@angular/core";
+import { LazyLoadEvent } from "primeng/api";
+import { Table } from "primeng/table";
+import { ActivatedRoute, Router } from "@angular/router";
 import {
-    GridDefinition,
     GridColumn,
     GridField,
     GridFilterColumn,
-    GridFilterExpression,
-    GridRelationshipFilterExpression,
     GridScoreAllocation
-} from '../../models/grid-definition.model';
-import { GridDefinitionService } from '../../services/grid-definition.service';
-import { ArtifactService } from '../../services/artifacts.service';
-import { AssetService } from '../../services/asset.service';
-import { PermissionsService } from '../../services/permissions.service';
-import { StateService } from '../../services/state.service';
-import { HeaderActionsService } from '../../services/header-actions.service';
-import { ArtifactType, AssetTypeExportTemplate } from '../../models/artifact-type.model';
-import { BaseComponent } from '../shared/base.component';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { StringConstants } from '../../static/string-constants';
-import { ObjectDetailService } from '../../services/object-detail.service';
-import { MessagesObservableService } from '../../services/messages-observable.service';
-import { AssetEditorModel } from '../../models/asset.model';
-import * as _ from 'lodash';
-import { V2ApiFilters } from '../../models/asset-search.model';
-import { SortOrder } from '../../models/enums.model';
-import { AssetGridObject } from './asset-grid.model';
+} from "../../models/grid-definition.model";
+import { GridDefinitionService } from "../../services/grid-definition.service";
+import { ArtifactService } from "../../services/artifacts.service";
+import { AssetService } from "../../services/asset.service";
+import { PermissionsService } from "../../services/permissions.service";
+import { StateService } from "../../services/state.service";
+import { HeaderActionsService } from "../../services/header-actions.service";
+import { AssetTypeExportTemplate } from "../../models/artifact-type.model";
+import { BaseComponent } from "../shared/base.component";
+import { SiteUrlHelpers } from "../../static/site-url-helpers";
+import { StringConstants } from "../../static/string-constants";
+import { ObjectDetailService } from "../../services/object-detail.service";
+import * as _ from "lodash";
+import { V2ApiFilters } from "../../models/asset-search.model";
+import { SortOrder } from "../../models/enums.model";
+import { AssetGridObject } from "./asset-grid.model";
+import { Filters } from "./advanced-filtering/advanced-filtering.models";
 
 @Component({
-    selector: 'd3s-asset-grid',
+    selector: "d3s-asset-grid",
     providers: [GridDefinitionService, ArtifactService, PermissionsService, ObjectDetailService, AssetService],
-    templateUrl: './asset-grid.component.html',
+    templateUrl: "./asset-grid.component.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
+    styleUrls: ["asset-grid.less"],
     host: {
-        '(document:click)': 'clickedOutside()',
+        "(document:click)": "clickedOutside()",
     },
 })
 
@@ -98,7 +92,11 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     public simpleSearch = new Subject<any>();
     private assetSearchSub: Subscription;
+
+    isExportInProgress = false;
     statusHasColor: boolean;
+
+    isDebugMode: boolean = false;
 
     get globalFilterFields(): string[] {
         return this.columns.map(c => c.datafield);
@@ -106,19 +104,22 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     constructor(
         private headerActionsService: HeaderActionsService,
-        private messagesService: MessagesObservableService,
         private stateService: StateService,
         private permissionsService: PermissionsService,
         private router: Router,
         private gridDefinitionService: GridDefinitionService,
-        private artifactService: ArtifactService,
         private changeDetectorRef: ChangeDetectorRef,
-        private objectDetailService: ObjectDetailService,
-        private assetService: AssetService
+        private assetService: AssetService,
+        private route: ActivatedRoute
     ) {
         super();
 
         var me = this;
+        this.route.queryParams.subscribe((params) => {
+            if (params["debug"]) {
+                this.isDebugMode = true;
+            }
+        });
 
         const subscription = this.simpleSearch.pipe(
             map(event => event.target.value),
@@ -218,7 +219,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 else {
                     this.hasNoListableColumns = false;
                 }
-                
+
                 this.isDefinitionLoaded = true;
                 this.getData();
                 this.changeDetectorRef.markForCheck();
@@ -237,7 +238,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         params._loadPermissionDetails = true;
         params._pageSize = this.rowsPerPage;
         params._pageNum = this.stateService.artifactTypeFilters.currentPageNumber + 1;
-        params._listColorsAsJSON = true; 
+        params._listColorsAsJSON = true;
 
         if (this.stateService.artifactTypeFilters.sortField) {
             params._order = this.getFieldAPINameByOldName(this.stateService.artifactTypeFilters.sortField);
@@ -308,6 +309,10 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
             delete params['usegraphforparent'];
         }
 
+        if (this.newAdvancedFilters) {
+            this.newAdvancedFilters.applyFilters(params);
+        }
+
         return params;
     }
 
@@ -333,7 +338,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
                 this.statusHasColor = this.items.filter(x => {
                     let foundColorToken = false;
-                    for (var prop in x) { 
+                    for (var prop in x) {
                         if (Object.prototype.hasOwnProperty.call(x, prop) && prop.toLowerCase() == "status") {
                             if ((x[prop] + "").indexOf('"name":') > -1 && (x[prop] + "").indexOf('"color":') > -1) {
 
@@ -341,7 +346,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                             }
 
                         }
-                        
+
                     }
                     return foundColorToken;
                 }).length > 0;
@@ -417,7 +422,19 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     export(listableOnly) {
-        this.assetService.downloadAssetsExcel(this.gridObject.AssetTypeUID, this.getParams(), 'Filtered ' + this.gridObject.Name + ' List');
+        if (this.gridObject.HasCustomExportTemplates) {
+            this.customExport();
+            return;
+        }
+
+        this.isExportInProgress = true;
+        this.assetService
+            .downloadAssetsExcel(
+                this.gridObject.AssetTypeUID,
+                this.getParams(),
+                'Filtered ' + this.gridObject.Name + ' List',
+                () => { this.isExportInProgress = false; }
+            );
     }
 
     downloadCustomExcel(option: AssetTypeExportTemplate) {
@@ -540,5 +557,13 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         this.changeDetectorRef.markForCheck();
     }
 
+    private newAdvancedFilters: Filters;
+    private advancedFiltersChanged($event) {
+        this.newAdvancedFilters = $event;
+        this.getData();
+    }
 
+    private onSimpleSearch($event) {
+        this.getData();
+    }
 }

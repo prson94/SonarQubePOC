@@ -1,16 +1,5 @@
 <d3s-loading [isLoading]="isEditing"></d3s-loading>
 <header class="grid-header" *ngIf="!showEditor && !showDelete && !isEditing && !hasNoListableColumns">
-    <d3s-tile-actions [hasAdd]="showAddButton && hasModifyAssetPermissions()"
-                      [hasExport]="!gridObject.HasCustomExportTemplates"
-                      [hasCustomExport]="gridObject.HasCustomExportTemplates"
-                      (addClick)="add()"
-                      [isExportDisabled]="!canExportRecords()"
-                      [exportDisabledMessage]="'Export not available for over ' + maxExportRows + ' rows'"
-                      (customExportClick)="customExport()"
-                      (exportClick)="export(false)"
-                      [hasFilterMode]="true"
-                      [filterMode]="showGridSimpleFilter"
-                      (filterModeChange)="resetFilters(dt,$event)"></d3s-tile-actions>
     <div *ngIf="showArtifactDetails && gridObject && gridObject.Description"
          [innerHtml]="gridObject.Description | safeHtml"
          class="tile-description"></div>
@@ -22,208 +11,196 @@
         {{showArtifactDetails ? 'Hide Description':'Show Description'}}
     </span>
 </header>
-<div class="row" *ngIf="!showDelete && !showEditor && !isEditing && !hasNoListableColumns">
-  <div
-    #rightMenu
-    [ngClass]="{
+
+<div class="grid-actions-header {{(this.showEditor || this.showDelete || this.isEditing ? 'hidden' : '')}}">
+    <div class="simple-search">
+        <ig-search-field (onSearch)="onSimpleSearch($event)"
+                         [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter">
+        </ig-search-field>
+    </div>
+    <advanced-filtering [assetTypeUid]="gridObject.AssetTypeUID" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+    <div class="grid-action-buttons">
+        <button *ngIf="showAddButton && hasModifyAssetPermissions()"
+                igButton
+                pTooltip="Add"
+                tooltipPosition="top"
+                tooltipStyleClass="ig-tooltip"
+                class="ig-button-primary"
+                icon="fa-plus"
+                tooltip="Add new asset"
+                (click)="add()">
+        </button>
+
+        <div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+             tooltipPosition="left"
+             tooltipStyleClass="ig-tooltip">
+            <button igButton
+                    [disabled]="!canExportRecords() || isExportInProgress"
+                    icon="fa-download"
+                    [loading]="isExportInProgress"
+                    (click)="export(false)">
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="debug-code" *ngIf="isDebugMode">
+    <ng-container *ngIf="newAdvancedFilters && newAdvancedFilters.filter">
+        {{newAdvancedFilters.filter}}
+    </ng-container>
+</div>
+
+<div class="row asset-grid-wrapper" *ngIf="!showDelete && !showEditor && !isEditing && !hasNoListableColumns">
+    <div #rightMenu
+         [ngClass]="{
       'artifact-context-menu': isMenuOpen,
       'artifact-context-menu-closed': !isMenuOpen
-    }"
-  >
-    <a [href]="itemUrl" target="_blank">Open in new window</a>
-  </div>
-  <div class="col s12" *ngIf="showGridSimpleFilter">
-    <input
-      type="text"
-      *ngIf="topLevelFilters.length == 0"
-      pInputText
-      style="width: 100%;"
-      maxlength="200"
-      (keyup)="simpleSearch.next($event)"
-      [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter"
-      placeholder="Search..."
-      autofocus
-      autocomplete="off"
-    />
-    <d3s-asset-grid-top-level-filter
-      *ngIf="topLevelFilters.length > 0"
-      [(filters)]="stateService.artifactTypeFilters.filters"
-      [fields]="topLevelFilters"
-      (filterChanged)="filterGridData(dt)"
-    >
-    </d3s-asset-grid-top-level-filter>
-  </div>
-  <d3s-asset-grid-column-filter
-    *ngIf="!showGridSimpleFilter"    
-    [(ownerFilter)]="stateService.artifactTypeFilters.owners"
-    [(relationshipFilters)]="stateService.artifactTypeFilters.relationships"
-    [(filters)]="stateService.artifactTypeFilters.filters"
-    [gridObject]="gridObject"
-    [fields]="filtercolumns"
-    [objectType]="gridObject.ObjectType"
-    (filterChanged)="filterGridData(dt)"
-  ></d3s-asset-grid-column-filter>
-  <d3s-asset-grid-custom-export
-    *ngIf="showCustomExport && canExportRecords()"
-    (closeClick)="showCustomExport = false"
-    (customExportClick)="downloadCustomExcel($event)"
-    [gridObject]="gridObject"
-    [objectType]="gridObject.ObjectType"
-    [sortOrder]="stateService.artifactTypeFilters.sortOrder"
-    [sortField]="stateService.artifactTypeFilters.sortField"
-    [filters]="stateService.artifactTypeFilters.filters"
-    [relationships]="stateService.artifactTypeFilters.relationships"    
-    [simpleFilter]="stateService.artifactTypeFilters.simpleTextFilter"
-    [owner]="stateService.artifactTypeFilters.owners"
-  ></d3s-asset-grid-custom-export>
-  <div class="col s12" [hidden]="showCustomExport" *ngIf="isDefinitionLoaded">
-    <p-table
-      #dt
-      [value]="items"
-      selectionMode="single"
-      [metaKeySelection]="true"
-      dataKey="AssetUid"
-      [globalFilterFields]="globalFilterFields"
-      [sortField]="stateService.artifactTypeFilters.sortField"
-      [sortOrder]="stateService.artifactTypeFilters.sortOrder"
-      [pageLinks]="3"
-      [paginator]="true"
-      [rows]="rowsPerPage"
-      [rowsPerPageOptions]="defaultPagingOptions"
-      [(selection)]="selected"
-      [lazy]="true"
-      (onLazyLoad)="loadArtifactsLazy($event)"
-      [totalRecords]="totalRecords"
-      [scrollable]="true"
-      scrollWidth="100%"
-      [loading]="isLoading"
-      [loadingIcon]="'fa fa-spinner fa-spin'"      
-    >
-      <ng-template pTemplate="colgroup">
-        <colgroup>
-          <col
-            *ngFor="let col of columns"
-            [style.width]="col.columnWidth ? col.columnWidth + 'px' : null"
-          />
-          <col style="width: 30px" />
-          <col style="width: 30px" />
-          <col style="width: 30px" />
-          <col style="width: 30px" />
-        </colgroup>
-      </ng-template>
-      <ng-template pTemplate="header">
-        <tr>
-          <th
-            *ngFor="let col of columns"
-            [pSortableColumn]="col.sortable ? col.datafield : null"
-            [style.width]="col.columnWidth ? col.columnWidth + 'px' : null"
-          >
-            {{ col.text }}
-            <d3s-sortIcon
-              *ngIf="col.sortable"
-              [field]="col.datafield"
-            ></d3s-sortIcon>
-          </th>
-          <th style="width: 30px"></th>
-          <th style="width: 30px"></th>
-          <th style="width: 35px"></th>
-          <th style="width: 30px"></th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-item>
-        <tr (dblclick)="selectArtifact(item)" [pSelectableRow]="item">
-          <td *ngFor="let col of columns">
-            <a
-              (contextmenu)="onRightClick($event, rightMenu, item, dt)"
-              (click)="selectArtifact(item)"
-              style="display:block; word-wrap:break-word"
-              ><d3s-dynamic-field-value
-                [column]="col"
-                [fields]="fields"
-                [item]="item"
-                [useApiName]="true"
-                [isDateUTC]="true"
-              ></d3s-dynamic-field-value
-            ></a>
-          </td>
-          <td>
-            <div
-              class="RowTools"
-              *ngIf="
+    }">
+        <a [href]="itemUrl" target="_blank">Open in new window</a>
+    </div>
+    <d3s-asset-grid-column-filter *ngIf="!showGridSimpleFilter"
+                                  [(ownerFilter)]="stateService.artifactTypeFilters.owners"
+                                  [(relationshipFilters)]="stateService.artifactTypeFilters.relationships"
+                                  [(filters)]="stateService.artifactTypeFilters.filters"
+                                  [gridObject]="gridObject"
+                                  [fields]="filtercolumns"
+                                  [objectType]="gridObject.ObjectType"
+                                  (filterChanged)="filterGridData(dt)"></d3s-asset-grid-column-filter>
+    <d3s-asset-grid-custom-export *ngIf="showCustomExport && canExportRecords()"
+                                  (closeClick)="showCustomExport = false"
+                                  (customExportClick)="downloadCustomExcel($event)"
+                                  [gridObject]="gridObject"
+                                  [objectType]="gridObject.ObjectType"
+                                  [sortOrder]="stateService.artifactTypeFilters.sortOrder"
+                                  [sortField]="stateService.artifactTypeFilters.sortField"
+                                  [filters]="stateService.artifactTypeFilters.filters"
+                                  [relationships]="stateService.artifactTypeFilters.relationships"
+                                  [simpleFilter]="stateService.artifactTypeFilters.simpleTextFilter"
+                                  [owner]="stateService.artifactTypeFilters.owners"></d3s-asset-grid-custom-export>
+    <div class="col s12" [hidden]="showCustomExport" *ngIf="isDefinitionLoaded">
+        <p-table #dt
+                 [value]="items"
+                 selectionMode="single"
+                 [metaKeySelection]="true"
+                 dataKey="AssetUid"
+                 [globalFilterFields]="globalFilterFields"
+                 [sortField]="stateService.artifactTypeFilters.sortField"
+                 [sortOrder]="stateService.artifactTypeFilters.sortOrder"
+                 [pageLinks]="3"
+                 [paginator]="true"
+                 [rows]="rowsPerPage"
+                 [rowsPerPageOptions]="defaultPagingOptions"
+                 [(selection)]="selected"
+                 [lazy]="true"
+                 (onLazyLoad)="loadArtifactsLazy($event)"
+                 [totalRecords]="totalRecords"
+                 [scrollable]="true"
+                 scrollWidth="100%"
+                 [loading]="isLoading"
+                 [loadingIcon]="'fa fa-spinner fa-spin'">
+            <ng-template pTemplate="colgroup">
+                <colgroup>
+                    <col *ngFor="let col of columns"
+                         [style.width]="col.columnWidth ? col.columnWidth + 'px' : null" />
+                    <col style="width: 30px" />
+                    <col style="width: 30px" />
+                    <col style="width: 30px" />
+                    <col style="width: 30px" />
+                </colgroup>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th *ngFor="let col of columns"
+                        [pSortableColumn]="col.sortable ? col.datafield : null"
+                        [style.width]="col.columnWidth ? col.columnWidth + 'px' : null">
+                        {{ col.text }}
+                        <d3s-sortIcon *ngIf="col.sortable"
+                                      [field]="col.datafield"></d3s-sortIcon>
+                    </th>
+                    <th style="width: 30px"></th>
+                    <th style="width: 30px"></th>
+                    <th style="width: 35px"></th>
+                    <th style="width: 30px"></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+                <tr (dblclick)="selectArtifact(item)" [pSelectableRow]="item">
+                    <td *ngFor="let col of columns">
+                        <a (contextmenu)="onRightClick($event, rightMenu, item, dt)"
+                           (click)="selectArtifact(item)"
+                           style="display:block; word-wrap:break-word">
+                            <d3s-dynamic-field-value [column]="col"
+                                                     [fields]="fields"
+                                                     [item]="item"
+                                                     [useApiName]="true"
+                                                     [isDateUTC]="true"></d3s-dynamic-field-value>
+                        </a>
+                    </td>
+                    <td>
+                        <div class="RowTools"
+                             *ngIf="
                 item[certificationStatusIndex] != null &&
                 item[certificationStatusIndex] != '' &&
                  !statusHasColor
-              "
-            >
-              <i
-                [pTooltip]="'Status: ' + item[certificationStatusIndex]"
-                [style.color]="
+              ">
+                            <i [pTooltip]="'Status: ' + item[certificationStatusIndex]"
+                               [style.color]="
                   getCertificationStatusColor(item[certificationStatusIndex])
                 "
-                class="fa fa-certificate"
-                style="margin: 0 10px 0 5px"
-              ></i>
-            </div>
-          </td>
-          <td>
-            <div class="RowTools" *ngIf="item.Permissions.ModifyAsset">
-              <a
-                style="cursor:pointer;"
-                (click)="onEdit(item)"
-                ><i class="fa fa-pencil"></i
-              ></a>
-            </div>
-          </td>
-          <td>
-            <div class="RowTools" *ngIf="item.Permissions.DeleteAsset">
-              <a
-                style="cursor:pointer;"
-                (click)="onDelete(item);"
-                ><i class="fa fa-trash-o"></i
-              ></a>
-            </div>
-          </td>
-          <td>
-            <div class="RowTools">
-              <d3s-preview-tooltip
-                objectType="Artifact"
-                [uid]="item.AssetUid"
-                (click)="selectArtifact(item)"
-                icon="info"
-              ></d3s-preview-tooltip>
-            </div>
-          </td>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="summary">
-        <d3s-grid-paging-info
-          [first]="dt.first"
-          [rows]="dt.rows"
-          [totalRecords]="dt.totalRecords"
-        ></d3s-grid-paging-info>
-      </ng-template>
-    </p-table>
-  </div>
+                               class="fa fa-certificate"
+                               style="margin: 0 10px 0 5px"></i>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="RowTools" *ngIf="item.Permissions.ModifyAsset">
+                            <a style="cursor:pointer;"
+                               (click)="onEdit(item)">
+                                <i class="fa fa-pencil"></i>
+                            </a>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="RowTools" *ngIf="item.Permissions.DeleteAsset">
+                            <a style="cursor:pointer;"
+                               (click)="onDelete(item);">
+                                <i class="fa fa-trash-o"></i>
+                            </a>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="RowTools">
+                            <d3s-preview-tooltip objectType="Artifact"
+                                                 [uid]="item.AssetUid"
+                                                 (click)="selectArtifact(item)"
+                                                 icon="info"></d3s-preview-tooltip>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="summary">
+                <d3s-grid-paging-info [first]="dt.first"
+                                      [rows]="dt.rows"
+                                      [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+            </ng-template>
+        </p-table>
+    </div>
 </div>
-<d3s-dynamic-editor
-  *ngIf="showEditor"
-  [objectID]="selected ? selected?.ObjectID : gridObject?.ID"
-  [objectType]="gridObject.Object"
-  [title]="selected?.Name ? selected?.Name : gridObject?.Name + ' Item'"
-  [selection]="selected"
-  [rowID]="rowID"
-  [objectTypeUid]="gridObject?.AssetTypeUID"
-  (saveClick)="saveItem($event)"
-  [isV2API]="true"
-  (closeClick)="closeEditor()"
-></d3s-dynamic-editor>
-<d3s-asset-delete-editor
-    *ngIf="showDelete"
-    [uid]="selected?.AssetUid"
-    [assetTypeUid]="gridObject?.AssetTypeUID"
-    [displayValue]="(deleteName ? deleteName : 'Artifact')"
-    (onCancel)="showDelete = false"
-    (onDeleted)="onDeleted()">
+<d3s-dynamic-editor *ngIf="showEditor"
+                    [objectID]="selected ? selected?.ObjectID : gridObject?.ID"
+                    [objectType]="gridObject.Object"
+                    [title]="selected?.Name ? selected?.Name : gridObject?.Name + ' Item'"
+                    [selection]="selected"
+                    [rowID]="rowID"
+                    [objectTypeUid]="gridObject?.AssetTypeUID"
+                    (saveClick)="saveItem($event)"
+                    [isV2API]="true"
+                    (closeClick)="closeEditor()"></d3s-dynamic-editor>
+<d3s-asset-delete-editor *ngIf="showDelete"
+                         [uid]="selected?.AssetUid"
+                         [assetTypeUid]="gridObject?.AssetTypeUID"
+                         [displayValue]="(deleteName ? deleteName : 'Artifact')"
+                         (onCancel)="showDelete = false"
+                         (onDeleted)="onDeleted()">
 </d3s-asset-delete-editor>
 <div *ngIf="hasNoListableColumns" style="font-weight:bold;padding:25px;">
     The current artifact type has no listable fields types configured.  Please configure at least one field type as listable in order to see data on the artifact list page.  For further information how to configure a field type as listable see the product guide.
