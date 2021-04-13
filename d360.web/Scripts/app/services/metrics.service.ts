@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { JsonResult } from '../models/jsonresult.model';
 import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreType, MetricAssetHistoryViewModel, MetricPathOptionViewModel, ScoreTypeAllocation } from '../models/metrics.model';
-import { AssetTypeMetricModel } from '../models/asset.model';
 import { Observable } from 'rxjs';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
@@ -12,12 +11,6 @@ import { catchError, map } from 'rxjs/operators';
 export class MetricsService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
-
-    public getAssetTypes(): Observable<AssetTypeMetricModel[]> {
-        return this.http
-            .get<AssetTypeMetricModel[]>(`/api/metrics/assettypes`)
-            .pipe(catchError(err => this.handleError(err)));
-    }
 
     public getFieldTypeViewModelsByAssetType(assetTypeUid: string): Observable<MetricFieldTypeViewModel[]> {
         return this.http

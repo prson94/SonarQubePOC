@@ -30,8 +30,8 @@ namespace d360.web.Controllers.V2
     ]
     public class ProcessController : BaseV2ApiController
     {
-        IAssetRepository AssetRepository;
-        IProcessRepository ProcessRepository;
+        readonly IAssetRepository AssetRepository;
+        readonly IProcessRepository ProcessRepository;
 
         public ProcessController(ICommunityContext community, ICompanyContext company, IAssetRepository assetRepository, IProcessRepository processRepository) : base(community, company)
         {
@@ -107,11 +107,15 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> AvailableDiagramNodesForAsset(Guid assetUid)
         {
             if (assetUid == null)
+            {
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset uid must be specified."));
+            }
 
             var asset = AssetRepository.GetAssetByUID(assetUid);
             if (asset == null)
+            {
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset with uid specified does not exist."));
+            }
 
             IEnumerable<dynamic> nodes = await ProcessRepository.GetAvailableDiagramNodesForAsset(assetUid);
 
@@ -257,7 +261,7 @@ namespace d360.web.Controllers.V2
                     {
                         var newKey = Guid.NewGuid();
                         var currentKey = node.AssetUid;
-                        pdCopyMapper.Add(new ProcessDiagramCopyMapper() { oldUid = node.AssetUid, keyUid = newKey });
+                        pdCopyMapper.Add(new ProcessDiagramCopyMapper{ oldUid = node.AssetUid, keyUid = newKey });
                         foreach (var rel in copyRelationshipModel.Where(x => x.keyUid == currentKey))
                         {
                             rel.keyUid = newKey;
@@ -286,8 +290,10 @@ namespace d360.web.Controllers.V2
 
                 if (!Company.HasAssetPermission(targetAsset.ID, core.enums.Permission.ModifyAsset))
                 {
-                    var err = new List<ValidationError>();
-                    err.Add(new ValidationError() { Error = "You are not authorized to edit this process diagram" });
+                    var err = new List<ValidationError>
+                    {
+                        new ValidationError { Error = "You are not authorized to edit this process diagram" }
+                    };
                     return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new
                     {
                         hasError = true,
@@ -317,7 +323,7 @@ namespace d360.web.Controllers.V2
                         return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new
                         {
                             hasError = true,
-                            errors = new List<ValidationError>()
+                            errors = new List<ValidationError>
                             {
                                 new ValidationError(){
                                 AssetTypeUid = Guid.Empty,
@@ -338,7 +344,7 @@ namespace d360.web.Controllers.V2
                     foreach (var item in duplicates)
                     {
                         var data = item.Items.FirstOrDefault();
-                        err.Add(new ValidationError() { ErrorType = "CustomUniqueName", AssetTypeUid = data.AssetTypeUid, AssetUid = data.AssetUid, Error = item.Items.Count() + " items have the same name '" + data["Name"] + "'" });
+                        err.Add(new ValidationError { ErrorType = "CustomUniqueName", AssetTypeUid = data.AssetTypeUid, AssetUid = data.AssetUid, Error = item.Items.Count() + " items have the same name '" + data["Name"] + "'" });
                     }
                     return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = err }))).ConfigureAwait(false);
 
@@ -356,8 +362,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 foreach (var node in model.nodeDataArray)
-                {
-                    var uid = node["key"];
+                {                    
                     var existsingNode = existingProcess.nodeDataArray.FirstOrDefault(x => x.AssetUid == node.AssetUid);
                     if (existsingNode == null)
                     {
@@ -400,7 +405,7 @@ namespace d360.web.Controllers.V2
                     umItem.Assets = new List<UpsertAsset>();
                     foreach (var a in item.Select(x => x))
                     {
-                        umItem.Assets.Add(new UpsertAsset()
+                        umItem.Assets.Add(new UpsertAsset
                         {
                             ExternalKey = a.AssetUid,
                             Uid = null,
@@ -458,8 +463,10 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                var err = new List<ValidationError>();
-                err.Add(new ValidationError() { Error = ex.Message });
+                var err = new List<ValidationError>
+                {
+                    new ValidationError { Error = ex.Message }
+                };
                 return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new
                 {
                     hasError = true,
