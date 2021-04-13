@@ -37,6 +37,7 @@ export class CompanySettings {
     ClearHomePageBackgroundImage: boolean = false;
     BrowserTitlePrefix: string;
     WorkflowDigestEmailEnabled: boolean = false;
+    WorkflowDigestEmailDays: number = 0;
     MaxDropdownItems: number;
     WriteActionDescription: boolean;
     CurrentCompanyLogoPath: string;
