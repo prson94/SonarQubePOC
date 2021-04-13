@@ -81,25 +81,6 @@ export class FusionAgentExecutionStats {
     Success: boolean;
 }
 
-export enum FusionScheduleDay {
-    Sunday = 0,
-    Monday = 1,
-    Tuesday = 2,
-    Wednesday = 3,
-    Thursday = 4,
-    Friday = 5,
-    Saturday = 6
-}
-
-export class FusionSchedule {
-    ID: number;
-    Day: FusionScheduleDay;
-    DayText: string;
-    Time: string;
-    FullRefresh: boolean;
-    FusionID: number;
-}
-
 export class FusionWorkerExecution {
     Adds: number;
     DateCompleted: Date;
