@@ -282,12 +282,7 @@ from    [queue].[Task] T
                                                     #endregion
                                                     case "FusionCache":
                                                         #region
-                                                        if (settings == null)
-                                                            {
-                                                                settings = CompanyConnectionUtils.GetCompanySettings(c.CompanyID);
-                                                            }
-                                                            bool useNewMarkitLineage = settings.Any(s => s.SettingID == markitLineageSettingID && s.Value.ToLower() == "true");
-                                                            companyConnection.Execute("exec fusion.ProcessFusionCacheInQueue @FusionID, @useNewMarkitLineage", new { FusionID = q.ObjectID, useNewMarkitLineage }, null, 10800);    // 180 minute timeout.
+                                                            companyConnection.Execute("exec fusion.ProcessFusionCacheInQueue @FusionID", new { FusionID = q.ObjectID }, null, 10800);    // 180 minute timeout.
                                                         break;
                                                     #endregion
                                                     case "Notify":
