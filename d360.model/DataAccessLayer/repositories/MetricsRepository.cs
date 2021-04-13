@@ -21,6 +21,7 @@ using Microsoft.SqlServer.Server;
 using System.Configuration;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using d360.model.helpers;
 
 namespace d360.model.DataAccessLayer
 {
@@ -73,7 +74,8 @@ namespace d360.model.DataAccessLayer
                     ) as ConditionGroups";
         }
 
-        string dataQualityDefinitionSql(string assetVersionAliasedDefinitionColumn, string assetVersionAliasedUidColumn) {
+        string dataQualityDefinitionSql(string assetVersionAliasedDefinitionColumn, string assetVersionAliasedUidColumn)
+        {
             return $@"JSON_QUERY((
                         select	P.RollupPathUid as ResultPathUid,
 		                        P.FilterMatchType,
@@ -1321,8 +1323,8 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
 
                                         if (item.ConditionFieldTypeID.HasValue)
                                         {
-                                        // Only one of the specific field per condition group.
-                                        if (usedFieldTypeIDs.Contains(item.ConditionFieldTypeID.Value))
+                                            // Only one of the specific field per condition group.
+                                            if (usedFieldTypeIDs.Contains(item.ConditionFieldTypeID.Value))
                                             {
                                                 okToSendItem = false;
                                             }
@@ -1335,8 +1337,8 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                                         }
                                         else if (item.ConditionIntersectTypeID.HasValue)
                                         {
-                                        // Only one of the specific relationship per condition group.
-                                        if (usedIntersectTypeIDs.Contains(item.ConditionFieldTypeID.Value))
+                                            // Only one of the specific relationship per condition group.
+                                            if (usedIntersectTypeIDs.Contains(item.ConditionFieldTypeID.Value))
                                             {
                                                 okToSendItem = false;
                                             }
@@ -1531,7 +1533,7 @@ delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metric
 
             return new WorkHttpStatus(isNew ? HttpStatusCode.Created : HttpStatusCode.OK, "", "");
         }
-        
+
         [Obsolete]
         public MetricAssetTypeHierarchyModels GetMetricDefinitionHierarchyByAssetType(Guid assetTypeUid, DateTime? effectiveDate)
         {
@@ -1742,7 +1744,7 @@ order by	R.[Name]";
             {
                 cnn.Open();
             }
-            
+
             return cnn.Query<RootMetricAssetHierarchyModel>(sql, new { allocationUid, assetUid, effectiveDate = effectiveDate.Value }, commandTimeout: ApiTimeout).ToList();
         }
 
@@ -1821,7 +1823,7 @@ order by	R.[Name]";
                             
                             		) as ValuesJson
                             from	AssetType A
-                            		inner join FieldType F on F.AssetTypeID = A.ID and A.[uid] = @assetTypeUid and F.Type in ('Boolean', 'Decimal', 'Date', 'DateTime', 'Html', 'Lookup', 'Number', 'Text')", 
+                            		inner join FieldType F on F.AssetTypeID = A.ID and A.[uid] = @assetTypeUid and F.Type in ('Boolean', 'Decimal', 'Date', 'DateTime', 'Html', 'Lookup', 'Number', 'Text')",
                                     new { assetTypeUid }, ApiTimeout).ToList();
         }
 
@@ -2020,8 +2022,8 @@ order by P.[Path]";
                         }
 
                         if (queryParams.Any(x => x.Key.ToLower() == "_scoretype"))
-                        { 
-                            return (null, "'_allocationUid' AND '_scoreType' are exclusive filters and may not be combined."); 
+                        {
+                            return (null, "'_allocationUid' AND '_scoreType' are exclusive filters and may not be combined.");
                         }
 
                         parameters.Add("@allocationUid", allocationUid);
@@ -2150,7 +2152,7 @@ for json path";
             return results;
         }
 
-        public DataQualityGetResultModel GetDataQualityResults(Guid owningAssetUid, Guid? evaluatedAssetUid = null, int pageSize = 250, int pageNum = 1, string sort = null, string direction = "asc", DateTime? effectiveDateStart = null, DateTime? effectiveDateEnd = null, bool includeDuplicateFlag = false)
+        public DataQualityGetResultModel GetDataQualityResults(Guid owningAssetUid, Guid? evaluatedAssetUid = null, int pageSize = 250, int pageNum = 1, string sort = null, string direction = "asc", DateTime? effectiveDateStart = null, DateTime? effectiveDateEnd = null, bool includeDuplicateFlag = false, string _filter = "")
         {
             var result = new DataQualityGetResultModel();
             var parameters = new DynamicParameters();
@@ -2178,6 +2180,19 @@ for json path";
             {
                 whereCteEvaluatedBySql = " and AE.Uid = @evaluatedAssetUid";
                 whereSql = (string.IsNullOrEmpty(whereSql) ? "where" : "and") + " E.EvaluatedAssetUid = @evaluatedAssetUid";
+            }
+
+            if (!string.IsNullOrEmpty(_filter))
+            {
+                var filterExpressionParser = new FilterExpressionParser(Company, FilterExpressionParseType.RuleResults);
+                var sqlParams = new Dictionary<string, object>();
+                var query = "(" + filterExpressionParser.Parse(_filter, out sqlParams, out _) + ")";
+
+                foreach (var item in sqlParams)
+                {
+                    parameters.Add(item.Key, item.Value);
+                }
+                whereSql = (string.IsNullOrEmpty(whereSql) ? " where " : " and ") + query;
             }
 
             if (!string.IsNullOrWhiteSpace(sort))
@@ -2283,6 +2298,7 @@ for json path";
             parameters.Add("@pageSize", result.pageSize);
 
             result.total = Company.Query<int>($"{cteSql} select count(1) {fromSql} {whereSql}", parameters, ApiTimeout).FirstOrDefault();
+
             result.items = Company.Query<DataQualityGetResultItem>($"{cteSql} select {columnSql} {fromSql} {whereSql} {orderSql} {pagingSql}", parameters, ApiTimeout).ToList();
 
             if (result.items == null)
@@ -2440,7 +2456,7 @@ for json path";
             public Guid measureUid { get; set; }
             public string action { get; set; }
         }
-        public Guid RecalculateMeasureScoreItems(Guid allocationUid, Guid measureUid) 
+        public Guid RecalculateMeasureScoreItems(Guid allocationUid, Guid measureUid)
         {
             if (!Company.CurrentResourceIsAdmin)
             {

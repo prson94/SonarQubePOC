@@ -5,11 +5,9 @@ using d360.extensions;
 using d360.model;
 using d360.web.Models;
 using Microsoft.Web.Http;
-using Newtonsoft.Json;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -27,6 +25,7 @@ using Resources;
 using SpreadsheetLight;
 using d360.core.resources;
 using d360.core.queue;
+using d360.model.helpers.filters;
 
 namespace d360.web.Controllers.V2
 {
@@ -329,7 +328,8 @@ namespace d360.web.Controllers.V2
                     {
                         g.ConditionItems = new List<MetricAssetVersionConditionItemViewModel>();
                     }
-                    g.ConditionItems.ForEach(i => {
+                    g.ConditionItems.ForEach(i =>
+                    {
                         if (i.Values == null)
                         {
                             i.Values = new List<string>();
@@ -749,7 +749,7 @@ namespace d360.web.Controllers.V2
                 var execution = getApiExecution(model.Count);
                 return ResponseMessage(
                     Request.CreateResponse(
-                        HttpStatusCode.OK, 
+                        HttpStatusCode.OK,
                         ScoringRepository.PostScoreResults(ScoreType.Governance, execution, model)
                     )
                 );
@@ -897,6 +897,10 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <remarks>
         /// Gets the data quality results for a rule and optionally a specific asset
+        ///       
+        /// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
+        /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
+        /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
         /// 
         /// **Notes:** 
         /// * Read permissions on the rule are required.
@@ -916,6 +920,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_effectiveDateEnd", "Additional parameter that can be supplied when the Rule or Asset UID is provided.    If provided with no EffectiveDateStart all results up until the EffectiveDateEnd will be returned.", DataType = "date-time", ParameterType = "query", Required = false),
             SwaggerParameter("_isFriendlyNameExport", "Additional parameter that can be supplied when doing a file export. If provided response file will replicate format of Result List screen", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_includeDuplicateFlag", "If True response will include IsDuplicate flag. Defaults to false.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json", "application/vnd.ms-excel", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
@@ -940,6 +945,7 @@ namespace d360.web.Controllers.V2
             int _pageSize = 250;
             int _pageNum = 1;
             bool includeDuplicate = false;
+            string _filter = null;
 
             #region Model Validation
             if (queryParams.Any(q => q.Key == "_owningAssetUid"))
@@ -1053,6 +1059,15 @@ namespace d360.web.Controllers.V2
                 }
             }
 
+            if (queryParams.Any(q => q.Key.ToLower() == "_filter"))
+            {
+                _filter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
+                if (string.IsNullOrEmpty(_filter))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"_filter is not valid.");
+                }
+            }
+
             string isValid = isPageSizeAndNumValid(queryParams);
 
             if (!string.IsNullOrEmpty(isValid))
@@ -1076,7 +1091,7 @@ namespace d360.web.Controllers.V2
             {
                 DataQualityGetResultModel dataQualityResult = new DataQualityGetResultModel();
 
-                dataQualityResult = await Task.FromResult(MetricsRepository.GetDataQualityResults(_owningAssetUid, _evaluatedAssetUid, _pageSize, _pageNum, _order, _direction, _effectiveDateStart, _effectiveDateEnd, includeDuplicate));
+                dataQualityResult = await Task.FromResult(MetricsRepository.GetDataQualityResults(_owningAssetUid, _evaluatedAssetUid, _pageSize, _pageNum, _order, _direction, _effectiveDateStart, _effectiveDateEnd, includeDuplicate, _filter));
 
                 if (Request.Headers.Accept.ToString().Equals("application/octet-stream", StringComparison.InvariantCultureIgnoreCase) || Request.Headers.Accept.ToString().Equals("application/vnd.ms-excel", StringComparison.InvariantCultureIgnoreCase))
                 {
@@ -1115,7 +1130,12 @@ namespace d360.web.Controllers.V2
                 }
 
             }
-            catch
+            catch (FilterExpressionParserException ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Filter expression parse error", errorMessage));
+            }
+            catch (Exception ex)
             {
                 return errorMessageResponse(HttpStatusCode.InternalServerError, "Error retrieving Data Quality Results", ApiMessages.UnknownErrorInvestigatingMessage);
             }
@@ -1576,7 +1596,7 @@ namespace d360.web.Controllers.V2
 
                 List<GraphPoints> results;
 
-                if (allocation == null) 
+                if (allocation == null)
                 {
                     results = new List<GraphPoints>();
                 }
@@ -1608,7 +1628,7 @@ namespace d360.web.Controllers.V2
                         else
                         {
                             if (measure.Measures != null)
-                            { 
+                            {
                                 foreach (var m in measure.Measures)
                                 {
                                     var point = new GraphPoints();
@@ -1616,7 +1636,7 @@ namespace d360.web.Controllers.V2
                                     point.EffectiveDate = item.EffectiveDate;
                                     point.Value = m.AdjustedWeight;
                                     allPoints.Add(point);
-                                }                            
+                                }
                             }
 
                             var measurePoint = new GraphPoints();

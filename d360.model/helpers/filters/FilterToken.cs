@@ -257,7 +257,7 @@ namespace d360.model.helpers
 
         private void UpdateTokenForNullValue()
         {
-            if (!(new []{ "eq", "ne" }.Contains(@operator)))
+            if (!(new[] { "eq", "ne" }.Contains(@operator)))
             {
                 throw new FormatException($"NULL value filter can be used only with 'eq' and 'ne' operator!");
             }
@@ -338,6 +338,18 @@ namespace d360.model.helpers
                         }
                     }
 
+                    break;
+                case "assettypeclass":
+                    var classes = AssetTypeClass.BusinessAsset.GetAsList();
+                    var match = classes.FirstOrDefault(x => x.Name.ToLower() == value.ToString().ToLower().Trim('\'')
+                    || x.Value.ToLower() == value.ToString().ToLower().Trim('\''));
+
+                    if (match == null)
+                    {
+                        throw new FormatException($"Invalid AssetTypeClass value for field '{field}'");
+                    }
+
+                    value = (int)match.ID;
                     break;
                 default:
                     value = value.ToString().Trim('\'').Replace("&apos;", "'");
@@ -435,6 +447,8 @@ namespace d360.model.helpers
                 case "date":
                 case "datetime":
                     return true;
+                case "assettypeclass":
+                    return new string[] { "eq", "ne" }.Contains(operand);
                 default:
                     return new string[] { "eq", "ne", "ct" }.Contains(operand);
             }
@@ -446,7 +460,7 @@ namespace d360.model.helpers
             {
                 return $"Node.DisplayPath";
             }
-            else 
+            else
             {
                 if (fieldColumn == null || fieldColumn.LastIndexOf(" as ") <= 0)
                 {
