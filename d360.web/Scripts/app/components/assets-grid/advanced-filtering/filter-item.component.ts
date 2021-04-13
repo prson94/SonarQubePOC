@@ -711,7 +711,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     private isInBodyElement(el: HTMLElement) {
-        console.log(el.tagName);
         if (el.tagName === "P-DROPDOWNITEM"
             || el.classList.contains("p-datepicker-group-container")
         ) {
