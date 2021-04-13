@@ -1091,7 +1091,7 @@ namespace d360.web.Controllers.V2
             {
                 DataQualityGetResultModel dataQualityResult = new DataQualityGetResultModel();
 
-                dataQualityResult = await Task.FromResult(MetricsRepository.GetDataQualityResults(_owningAssetUid, _evaluatedAssetUid, _pageSize, _pageNum, _order, _direction, _effectiveDateStart, _effectiveDateEnd, includeDuplicate, _filter));
+                dataQualityResult = await Task.FromResult(MetricsRepository.GetDataQualityResults(_owningAssetUid, _evaluatedAssetUid, _pageSize, _pageNum, _order, _direction, _effectiveDateStart, _effectiveDateEnd, includeDuplicate, _filter)).ConfigureAwait(false);
 
                 if (Request.Headers.Accept.ToString().Equals("application/octet-stream", StringComparison.InvariantCultureIgnoreCase) || Request.Headers.Accept.ToString().Equals("application/vnd.ms-excel", StringComparison.InvariantCultureIgnoreCase))
                 {
@@ -1133,7 +1133,7 @@ namespace d360.web.Controllers.V2
             catch (FilterExpressionParserException ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Filter expression parse error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Filter expression parse error", errorMessage)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
