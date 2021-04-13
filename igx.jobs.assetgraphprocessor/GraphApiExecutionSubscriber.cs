@@ -472,7 +472,10 @@ namespace igx.jobs.assetgraphprocessor
                 {
                     try
                     {
-                        trans.Rollback();
+                        if (trans != null)
+                        {
+                            trans.Rollback();
+                        }
                         throw ex;
                     }
                     catch { }

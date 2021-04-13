@@ -186,7 +186,16 @@ namespace d360.model
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();                    
+                    try
+                    {
+                        if (trans != null)
+                        {
+                            trans.Rollback();
+                        }
+                    }
+                    catch
+                    {
+                    }
                 }
             }
 
@@ -387,7 +396,16 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
                 }
                 catch (Exception ex)
                 {
-                    trans.Rollback();
+                    try
+                    {
+                        if (trans != null)
+                        {
+                            trans.Rollback();
+                        }
+                    }
+                    catch
+                    {
+                    }
                     throw ex;
                 }
             }

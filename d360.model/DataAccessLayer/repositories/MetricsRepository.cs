@@ -1511,12 +1511,30 @@ delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metric
                 }
                 catch (WorkStatusException ex)
                 {
-                    trans.Rollback();
+                    try
+                    {
+                        if (trans != null)
+                        {
+                            trans.Rollback();
+                        }
+                    }
+                    catch
+                    {
+                    }
                     return new WorkHttpStatus(ex.Status, errorTitle, ex.Message);
                 }
                 catch
                 {
-                    trans.Rollback();
+                    try
+                    {
+                        if (trans != null)
+                        {
+                            trans.Rollback();
+                        }
+                    }
+                    catch
+                    {
+                    }
                     return new WorkHttpStatus(HttpStatusCode.InternalServerError, errorTitle, $"An unhandled error occured. Please try your request again.");
                 }
             }

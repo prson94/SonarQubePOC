@@ -1293,7 +1293,16 @@ from	metrics.ScoreItemLink T
                         }
                         catch (Exception ex)
                         {
-                            trans.Rollback();
+                            try
+                            {
+                                if (trans != null)
+                                {
+                                    trans.Rollback();
+                                }
+                            }
+                            catch
+                            {
+                            }
                             updateExecution(company, executionRecord, false, ex);
                             throw ex;
                         }

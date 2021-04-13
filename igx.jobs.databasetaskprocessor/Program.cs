@@ -205,9 +205,15 @@ from    [queue].[Task] T
                                     }
                                     catch (Exception ex)
                                     {
-                                        if (trans != null)
+                                        try
                                         {
-                                            trans.Rollback();
+                                            if (trans != null)
+                                            {
+                                                trans.Rollback();
+                                            }
+                                        }
+                                        catch
+                                        {
                                         }
 
                                         CoreFunction.AITrackException(functionName, ex, c.CompanyID);

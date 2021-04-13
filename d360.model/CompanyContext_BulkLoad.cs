@@ -836,7 +836,16 @@ from	[Load] L
                     }
                     catch (Exception ex)
                     {
-                        trans.Rollback();
+                        try
+                        {
+                            if (trans != null)
+                            {
+                                trans.Rollback();
+                            }
+                        }
+                        catch
+                        {
+                        }
                         throw ex;
                     }
                 }
