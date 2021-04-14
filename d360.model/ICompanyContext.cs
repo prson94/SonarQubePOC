@@ -61,26 +61,15 @@ namespace d360.model
         DbSet<FollowDetail> FollowDetails { get; set; }
         DbSet<Follow> Follows { get; set; }
         DbSet<FusionAgentError> FusionAgentErrors { get; set; }
-        DbSet<FusionAttribute> FusionAttributes { get; set; }
-        DbSet<FusionAttributeTypeCustomQuery> FusionAttributeTypeCustomQueries { get; set; }
+        DbSet<FusionAttribute> FusionAttributes { get; set; }        
         DbSet<FusionAttributeType> FusionAttributeTypes { get; set; }
         DbSet<FusionExecution> FusionExecutions { get; set; }
-        DbSet<FusionQueryAttribute> FusionQueryAttributes { get; set; }
-        DbSet<FusionQueryAttributeType> FusionQueryAttributeTypes { get; set; }
         DbSet<FusionStatusLog> FusionStatusLogs { get; set; }
         DbSet<Fusion> FusionTypeConfigurations { get; set; }
         DbSet<FusionType> FusionTypes { get; set; }
         DbSet<GlobalReportingResource> GlobalReportingResources { get; set; }
         DbSet<GraphFilter> GraphFilters { get; set; }
-        DbSet<Group> Groups { get; set; }
-        DbSet<IntegrationAssetTypeFieldItem> IntegrationAssetTypeFieldItems { get; set; }
-        DbSet<IntegrationAssetTypeRelationItem> IntegrationAssetTypeRelationItems { get; set; }
-        DbSet<IntegrationAssetTypeRelationItemTarget> IntegrationAssetTypeRelationItemTargets { get; set; }
-        DbSet<IntegrationAssetTypeRoleItem> IntegrationAssetTypeRoleItems { get; set; }
-        DbSet<IntegrationAssetType> IntegrationAssetTypes { get; set; }
-        DbSet<IntegrationExecutionAssetType> IntegrationExecutionAssetTypes { get; set; }
-        DbSet<IntegrationSetting> IntegrationSettings { get; set; }
-        DbSet<IntegrationUnresolvedRelationItem> IntegrationUnresolvedRelationItems { get; set; }
+        DbSet<Group> Groups { get; set; }                
         DbSet<IntersectDetail> IntersectDetails { get; set; }
         DbSet<Intersect> Intersects { get; set; }
         DbSet<IntersectTypeDetail> IntersectTypeDetails { get; set; }

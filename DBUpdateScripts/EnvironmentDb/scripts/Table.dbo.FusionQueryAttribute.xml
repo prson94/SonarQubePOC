@@ -5,113 +5,30 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.FusionQueryAttribute-v1">
+  <changeSet author="TKLok" id="Table.dbo.FusionQueryAttribute-v2">
+    <comment>GOV-9617</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionQueryAttribute')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionQueryAttribute')
 BEGIN
-	CREATE TABLE [dbo].[FusionQueryAttribute](
-		[ID] [int] IDENTITY(1,1) NOT NULL,
-		[FusionQueryAttributeTypeID] [int] NOT NULL,
-		[SourceID] [varchar](250) NULL,
-		[CreatedOn] [datetime] NULL,
-		[CreatedBy] [int] NULL,
-		[UpdatedOn] [datetime] NULL,
-		[UpdatedBy] [int] NULL,
-		[Deleted] [bit] CONSTRAINT [DF_FusionQueryAttribute_Deleted] DEFAULT (0) NOT NULL,
-		[DisplayValue]  AS ([utility].[GetObjectDisplayValueWrapper]('FusionQueryAttribute',[ID],[FusionQueryAttributeTypeID])),
-		CONSTRAINT [PK_FusionQueryAttribute] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
-	)
-END
+	IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionQueryAttribute_backup')
+	BEGIN
+		SELECT *
+		INTO [dbo].[FusionQueryAttribute_backup]
+		FROM [dbo].[FusionQueryAttribute]
+	END
+	
+	DELETE FROM [dbo].[FusionQueryAttribute]
 
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_FusionQueryAttribute_FusionQueryAttributeType')
-BEGIN
-	ALTER TABLE [dbo].[FusionQueryAttribute] WITH CHECK ADD CONSTRAINT [FK_FusionQueryAttribute_FusionQueryAttributeType] FOREIGN KEY([FusionQueryAttributeTypeID]) REFERENCES [dbo].[FusionQueryAttributeType] ([ID]) ON DELETE CASCADE
-	ALTER TABLE [dbo].[FusionQueryAttribute] CHECK CONSTRAINT [FK_FusionQueryAttribute_FusionQueryAttributeType]
-END
+	IF EXISTS (select * from sys.foreign_keys where name = 'FK_FusionQueryAttribute_FusionQueryAttributeType')
+	BEGIN	
+		ALTER TABLE [dbo].[FusionQueryAttribute] DROP CONSTRAINT [FK_FusionQueryAttribute_FusionQueryAttributeType]
+	END
 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_FusionQueryAttribute_FusionQueryAttributeTypeID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FusionQueryAttribute_FusionQueryAttributeTypeID] ON [dbo].[FusionQueryAttribute] ( [FusionQueryAttributeTypeID] ASC )
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Core" id="Table.dbo.FusionQueryAttribute-FusionQueryAttribute_AfterDelete-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[FusionQueryAttribute_AfterDelete]
-	ON [dbo].[FusionQueryAttribute]
-	AFTER DELETE
-AS
-BEGIN
-	SET NOCOUNT ON
-	delete Asset
-	where Object = 'FusionQueryAttribute' and ObjectID in (select ID from deleted);
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Core" id="Table.dbo.FusionQueryAttribute-FusionQueryAttribute_AfterInsert-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[FusionQueryAttribute_AfterInsert]
-   ON  [dbo].[FusionQueryAttribute] 
-   AFTER INSERT
-AS 
-BEGIN
-	SET NOCOUNT ON;
-	INSERT INTO [dbo].[Asset] ([AssetTypeID],[State],SourceID,[Object],[ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy])
-		SELECT	T.ID, 1, O.ID, 'FusionQueryAttribute', O.ID, O.CreatedOn, O.CreatedBy, O.UpdatedOn, O.UpdatedBy
-		FROM	inserted O inner join  AssetType T on T.Object = 'FusionQueryAttributeType' and T.ObjectID = O.FusionQueryAttributeTypeID;
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Core" id="Table.dbo.FusionQueryAttribute-FusionQueryAttribute_AfterUpdate-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[FusionQueryAttribute_AfterUpdate]
-   ON  [dbo].[FusionQueryAttribute] 
-   AFTER UPDATE
-AS 
-BEGIN
-	SET NOCOUNT ON
-	update	T
-	set		T.UpdatedBy = S.UpdatedBy,
-			T.UpdatedOn = S.UpdatedOn
-	from	Asset T
-			inner join inserted S on T.Object = 'FusionQueryAttribute' and T.ObjectID = S.ID
+	DROP TABLE IF EXISTS [dbo].[FusionQueryAttribute]
 END
 		]]>
     </sql>

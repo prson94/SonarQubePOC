@@ -3,7 +3,7 @@ import {TreeNode} from 'primeng/api';
 import {takeUntil} from "rxjs/operators";
 import {Subject} from "rxjs";
 
-import {FusionAttributeType, FusionConfigurationDetails, FusionQueryAttributeType} from '../../models/fusion.model';
+import { FusionAttributeType, FusionConfigurationDetails } from '../../models/fusion.model';
 
 import {FusionService} from '../../services/fusion.service';
 
@@ -27,13 +27,8 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
     @Input() fusion: FusionConfigurationDetails;
 
     @Input() fusionAttributeTypeId: number;
-    @Input() fusionQueryAttributeTypeId: number;
 
-    @Output() fusionQueryAttributeTypeIdChange = new EventEmitter();
     @Output() fusionAttributeTypeIdChange = new EventEmitter();
-
-    @Input() showFusionQueryConfig: boolean;
-    @Output() showFusionQueryConfigChange = new EventEmitter();
 
     @Output() loaded = new EventEmitter();
 
@@ -41,7 +36,6 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
     private selected: TreeNode;
 
     public fusionAttributeTypes: FusionAttributeType[] = [];
-    public fusionQueryAttributeTypes: FusionQueryAttributeType[] = [];
 
     destroySubject$: Subject<void> = new Subject();
 
@@ -61,51 +55,20 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
 
                     this.treeItems = this.buildTreeNodeArray(this.fusionAttributeTypes);
 
-                    this.fusionService
-                        .getFusionQueryAttributeTypes(this.fusion.FusionTypeID, this.fusion.ID)
-                        .pipe(takeUntil(this.destroySubject$))
-                        .subscribe(
-                            res => {
-                                this.fusionQueryAttributeTypes = res;
+                    // handle initial selected item
+                    if (this.fusionAttributeTypeId) {
+                        this.selected = this.findSelectedTreeNode(this.fusionAttributeTypeId, 'FusionAttributeType');
+                        this.fusionAttributeTypeIdChange.emit(this.fusionAttributeTypeId);
+                    } else if (this.treeItems.length > 0) {
+                        this.fusionAttributeTypeId = this.treeItems[0].data.id;
+                        if (this.fusionAttributeTypeId > 0) {
+                            this.fusionAttributeTypeIdChange.emit(this.fusionAttributeTypeId);
+                        }
+                    }
 
-                                var queriesNode = {
-                                    label: 'Queries',
-                                    expanded: true,
-                                    data: {
-                                        type: 'FusionQueryAttributeType',
-                                        id: -1
-                                    },
-                                    children: (this.buildQueryTreeNodeArray(this.fusionQueryAttributeTypes)) //recursively find its children
-                                };
+                    this.loaded.emit();
 
-                                this.treeItems.push(queriesNode);
-
-                                // handle initial selected item
-                                if (this.fusionAttributeTypeId) {
-                                    this.selected = this.findSelectedTreeNode(this.fusionAttributeTypeId, 'FusionAttributeType');
-                                    this.fusionAttributeTypeIdChange.emit(this.fusionAttributeTypeId);
-                                } else if (this.fusionQueryAttributeTypeId) {
-                                    this.selected = this.findSelectedTreeNode(this.fusionQueryAttributeTypeId, 'FusionQueryAttributeType');
-                                    this.fusionQueryAttributeTypeIdChange.emit(this.fusionQueryAttributeTypeId);
-                                } else if (this.showFusionQueryConfig) {
-                                    this.selected = this.findSelectedTreeNode(-1, 'FusionQueryAttributeType');
-                                    this.showFusionQueryConfigChange.emit(this.showFusionQueryConfig);
-                                } else if (this.treeItems.length > 0) {
-                                    this.fusionAttributeTypeId = this.treeItems[0].data.id;
-                                    if (!this.fusionQueryAttributeTypeId) {
-                                        this.selected = this.findSelectedTreeNode(this.fusionAttributeTypeId, 'FusionAttributeType');
-                                    }
-                                    if (this.fusionAttributeTypeId > 0) {
-                                        this.fusionAttributeTypeIdChange.emit(this.fusionAttributeTypeId);
-                                    }
-                                }
-
-                                this.loaded.emit();
-
-                                this.isLoading = false;
-                            }
-                        );
-                });
+                    this.isLoading = false;                });
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -132,25 +95,6 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
                     id: root.ID
                 },
                 children: (this.buildTreeNodeArray(attributes, root.ID)) //recursively find its children
-            });
-        }
-
-        return res;
-    }
-
-    private buildQueryTreeNodeArray(attributes: FusionQueryAttributeType[]): TreeNode[] {
-        //find the root items then
-        let res: TreeNode[] = [];
-
-        for (let qry of attributes) {
-            res.push({
-                label: qry.Name,
-                expanded: true,
-                data: {
-                    type: 'FusionQueryAttributeType',
-                    id: qry.ID
-                },
-                children: null
             });
         }
 
@@ -203,20 +147,9 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
             return;
         }
 
-        this.showFusionQueryConfig = false;
-
         if (event.node.data.type == "FusionAttributeType") {
             this.fusionAttributeTypeId = event.node.data.id;
             this.fusionAttributeTypeIdChange.emit(this.fusionAttributeTypeId);
-        } else {
-            if (event.node.data.id == -1) {
-                this.showFusionQueryConfig = true;
-            } else {
-                this.fusionQueryAttributeTypeId = event.node.data.id;
-                this.fusionQueryAttributeTypeIdChange.emit(this.fusionQueryAttributeTypeId);
-            }
         }
-
-        this.showFusionQueryConfigChange.emit(this.showFusionQueryConfig);
     }
 }

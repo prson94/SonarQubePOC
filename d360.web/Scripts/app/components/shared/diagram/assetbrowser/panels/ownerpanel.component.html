@@ -9,10 +9,10 @@
     <ng-template pTemplate="body" let-item>
         <tr (dblclick)="onDoubleClick(item)" [pSelectableRow]="item">
             <td>
-                <d3s-preview-tooltip objectType="ResponsibilityType" [objectId]="item.ResponsibilityTypeID">{{item.ResponsibilityTypeName}}</d3s-preview-tooltip>
+                <d3s-preview-tooltip objectType="ResponsibilityType" [uid]="item.ResponsibilityTypeUid">{{item.ResponsibilityTypeName}}</d3s-preview-tooltip>
             </td>
             <td>
-                <d3s-preview-tooltip objectType="Resource" [objectId]="item.ResourceID">{{item.ResourceName}}</d3s-preview-tooltip>
+                <d3s-preview-tooltip objectType="Resource" [uid]="item.ResourceUid">{{item.ResourceName}}</d3s-preview-tooltip>
             </td>
         </tr>
     </ng-template>

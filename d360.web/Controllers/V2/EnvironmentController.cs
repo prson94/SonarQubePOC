@@ -441,9 +441,13 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Gets a list of operators.", typeof(List<OperatorInfo>))
         ]
-        public async Task<IHttpActionResult> GetOperators()
+        public async Task<IHttpActionResult> GetOperators(bool isForAdvancedFilters = false)
         {
-            var response = Operator.Equals.GetAsList();
+            var response = Operator.Equals.GetAsList().OrderBy(x=> x.SortOrder);
+            if (isForAdvancedFilters)
+            {
+                response = Operator.Equals.GetAsListForAdvancedFilters().OrderBy(x => x.SortOrder);
+            }
             return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
 
         }
@@ -789,7 +793,6 @@ namespace d360.web.Controllers.V2
                     AssetTypeClass.Diagram,
                     AssetTypeClass.Fusion,
                     AssetTypeClass.FusionAttribute,
-                    AssetTypeClass.FusionQuery,
                     AssetTypeClass.Group,
                     AssetTypeClass.Model,
                     AssetTypeClass.Organization,

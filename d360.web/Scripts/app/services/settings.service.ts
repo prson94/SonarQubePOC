@@ -1,14 +1,14 @@
-﻿import { Injectable } from '@angular/core';
-import { CompanySettings, ICompanySettingsService, CompanyRebuildJobToken, CompanyRebuildJobStatusApiModel, CompanySettingEnum, SettingsPutModel } from '../models/settings.model';
-import { AuthenticationProperties } from '../models/authentication-properties.model';
-import { SelectItem } from 'primeng/api';
-import { JsonResult } from '../models/jsonresult.model';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { catchError, map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
-import { BaseObservableService } from './baseObservable.service';
-import { MessagesObservableService } from './messages-observable.service';
-import { OperatorModel } from '../models/operator.model';
+﻿import { Injectable } from "@angular/core";
+import { CompanySettings, ICompanySettingsService, CompanyRebuildJobToken, CompanyRebuildJobStatusApiModel, CompanySettingEnum, SettingsPutModel } from "../models/settings.model";
+import { AuthenticationProperties } from "../models/authentication-properties.model";
+import { SelectItem } from "primeng/api";
+import { JsonResult } from "../models/jsonresult.model";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { catchError, map } from "rxjs/operators";
+import { Observable } from "rxjs";
+import { BaseObservableService } from "./baseObservable.service";
+import { MessagesObservableService } from "./messages-observable.service";
+import { OperatorModel } from "../models/operator.model";
 
 @Injectable()
 export class CompanySettingsService extends BaseObservableService implements ICompanySettingsService {
@@ -86,9 +86,13 @@ export class CompanySettingsService extends BaseObservableService implements ICo
             );
     }
 
-    public getOperators(): Observable<OperatorModel[]> {
+    public getOperators(isForAdvancedFilters: boolean = false): Observable<OperatorModel[]> {
+        let url = "/api/v2/environment/operators";
+        if (isForAdvancedFilters) {
+            url += "?isForAdvancedFilters=true";
+        }
         return this.http
-            .get<OperatorModel[]>(`/api/v2/environment/operators`)
+            .get<OperatorModel[]>(url)
             .pipe(catchError(err => this.handleError(err)));
     }
 

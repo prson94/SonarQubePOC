@@ -348,22 +348,6 @@ export class BrowserService extends BaseObservableService {
     }
 
     /**
-    * Retrieve results from the Govern API for lineage regarding a specific asset.
-    * @returns A deep models with hierarchical assets and relationships between them.
-    */
-    public getDetailByAsset(
-        uid: string
-
-    ): Observable<AssetBrowserDiagramAsset> {
-        const url = `api/v2/browser/diagramasset/${uid}`;
-
-        return this.http.get(url).pipe(
-            map(response => response),
-            catchError(err => this.handleError(err))
-        );
-    }
-
-    /**
     * Retrieves a set of options to filter by within the Asset Browser, for use in the filter panel.
     * @returns A set of filter options, as list properties.
     */

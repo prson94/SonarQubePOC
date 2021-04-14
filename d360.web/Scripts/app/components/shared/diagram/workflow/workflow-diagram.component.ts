@@ -1238,11 +1238,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 if (n.settings.HTTPRequest.Method == null || n.settings.HTTPRequest.Method == '')
                     return false;
                 break;
-            case WorkflowActivityType.HTTPResponse:
+            case WorkflowActivityType.HTTPResponse:               
                 if (n.settings.HTTPResponse == null) {
                     return false;
                 }
-                if (n.settings.HTTPResponse.InputStepId == null) {
+                if (n.settings.HTTPResponse.InputStepId == null || n.settings.HTTPResponse.InputStepId === '') {
                     return false;
                 }
                 if (n.settings.HTTPResponse.Outputs == null || n.settings.HTTPResponse.Outputs.length < 1) {

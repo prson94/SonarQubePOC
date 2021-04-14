@@ -146,12 +146,6 @@ namespace d360.model
 
         public DbSet<FusionAttributeType> FusionAttributeTypes { get; set; }
 
-        public DbSet<FusionAttributeTypeCustomQuery> FusionAttributeTypeCustomQueries { get; set; }
-
-        public DbSet<FusionQueryAttribute> FusionQueryAttributes { get; set; }
-
-        public DbSet<FusionQueryAttributeType> FusionQueryAttributeTypes { get; set; }
-
         public DbSet<FusionStatusLog> FusionStatusLogs { get; set; }
 
         public DbSet<FusionType> FusionTypes { get; set; }
@@ -1282,7 +1276,6 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
             if (!Community.IsFusionEnabled())
             {
                 excludedClasses.Add(SystemObjects.FusionAttributeType.ToString());
-                excludedClasses.Add(SystemObjects.FusionQueryAttributeType.ToString());
             }
 
             if (limitToClasses != null && limitToClasses.Count > 0)
@@ -1320,7 +1313,6 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
 			                when T.Object = 'ArtifactType' and T.[Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()} :: '
                             when T.Object = 'ArtifactType' and T.[Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()} :: '
 			                when T.Object = 'FusionAttributeType' then 'Fusion Attribute :: ' + FT.Name + ' / '
-			                when T.Object = 'FusionQueryAttributeType' then 'Fusion Query :: '
 			                when T.Object = 'GroupType' then 'Security :: '
 			                when T.Object = 'PolicyType' then '{CommonNames.AssetTypeClass_Policy.CleanForSql()} :: '
 			                when T.Object = 'ReferenceItemType' then 'Reference :: '

@@ -64,46 +64,10 @@ export class FusionAttributeService extends BaseObservableService {
             );
     }
 
-    getFusionQueryAttributes(
-        fusionId: number,
-        fusionQueryAttributeTypeId: number,
-        pageNumber?: number,
-        pageSize?: number,
-        sortField?: string,
-        sortOrder?: SortOrder,
-        filters?: FusionAttributeFilter[]
-    ): Observable<FusionAttributePagedResults> {
-        let url;
-        let sortOrderText = '';
-
-        if (sortOrder == SortOrder.Ascending) sortOrderText = 'asc';
-        if (sortOrder == SortOrder.Descending) sortOrderText = 'desc';
-
-        url = `internal/fusion/QueryItemsByAttributeType?fusionID=${fusionId}&fusionQueryAttributeTypeID=${fusionQueryAttributeTypeId}&pagenum=${pageNumber ? pageNumber : 0}&pagesize=${pageSize ? pageSize : 20}&sortDataField=${sortField ? sortField : ''}&sortOrder=${sortOrderText}`;
-
-        if (filters && filters.length > 0) {
-            url += `&filterscount=${filters.length}`;
-
-            let index = 0;
-            for (let filter of filters) {
-                url += `&filterdatafield${index}=${filter.dataField}&filtercondition${index}=${filter.condition}&filtervalue${index}=${encodeURIComponent(filter.value)}`;
-                index++;
-            }
-        }
-
-        return this
-            .http
-            .get(url)
-            .pipe(
-                map(response => <FusionAttributePagedResults>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     getFusionAttributeExcel(
         type: string,
         fusionId: number,
-        fusionQueryAttributeTypeId: number,
+        fusionAttributeTypeId: number,
         isDataProfile: boolean,
         sortField?: string,
         sortOrder?: SortOrder,
@@ -113,10 +77,6 @@ export class FusionAttributeService extends BaseObservableService {
         let route = "ExportItemsByAttributeType";
         let sortOrderText = "";
         let dataProfile: string = "";
-
-        if (type == 'FusionQueryAttributeType') {
-            route = 'ExportQueryItemsByAttributeType';
-        }
 
         if (sortOrder == SortOrder.Ascending) {
             sortOrderText = 'asc';
@@ -129,7 +89,7 @@ export class FusionAttributeService extends BaseObservableService {
             dataProfile = "&target=DataProfile";
         }
 
-        url = `internal/fusion/${route}?fusionID=${fusionId}&${type}ID=${fusionQueryAttributeTypeId}&sortDataField=${sortField ? sortField : ''}&sortOrder=${sortOrderText}${dataProfile}`;
+        url = `internal/fusion/${route}?fusionID=${fusionId}&${type}ID=${fusionAttributeTypeId}&sortDataField=${sortField ? sortField : ""}&sortOrder=${sortOrderText}${dataProfile}`;
 
         if (filters && filters.length > 0) {
             url += `&filterscount=${filters.length}`;

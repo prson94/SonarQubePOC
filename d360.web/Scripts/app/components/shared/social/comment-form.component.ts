@@ -5,6 +5,7 @@ import { AuthenticationService } from "../../../services/authentication.service"
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { SocialService } from "../../../services/social.service";
 import { BaseComponent } from "../base.component";
+import * as _ from "lodash";
 
 @Component({
     selector: "d3s-comment-form",
@@ -20,12 +21,20 @@ export class CommentFormComponent extends BaseComponent {
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
 
+    originalComment: CommentDetail;
+
     constructor(private authenticationService: AuthenticationService,
         private socialService: SocialService,
         protected messagesService: MessagesObservableService) {
         super();
         this.comment = new CommentDetail();
         this.comment.Tags = [];
+    }
+
+    ngOnInit() {
+        if (this.comment.Body) {
+            this.originalComment = _.cloneDeep(this.comment);
+        }
     }
 
     addTag(event) {
@@ -44,6 +53,9 @@ export class CommentFormComponent extends BaseComponent {
     }
 
     cancelClick() {
+        if (this.originalComment) {
+            this.onSave.emit({ comment: this.originalComment, event: "edit" });
+        }
         this.onCancel.emit();
     }
 
@@ -59,10 +71,12 @@ export class CommentFormComponent extends BaseComponent {
 
             this.socialService.editComment(putModel).
                 subscribe((res) => {
-                    this.messagesService.showInfoMessage("Success", "Item edited successfully");
+                    if (res) {
+                        this.messagesService.showInfoMessage("Success", "Item edited successfully");
+                        this.comment.UpdatedOn = new Date();
+                        this.onSave.emit({ comment: this.comment, event: "edit" });
+                    }
                     this.isLoading = false;
-                    this.comment.UpdatedOn = new Date();
-                    this.onSave.emit({ comment: this.comment, event: "edit" });
                 });
         }
         else {
@@ -77,9 +91,11 @@ export class CommentFormComponent extends BaseComponent {
 
             this.socialService.addComment(postModel).
                 subscribe((res) => {
-                    this.messagesService.showInfoMessage("Success", "Item added successfully");
-                    this.isLoading = false;
-                    this.onSave.emit({ comment: res, event: "add" });
+                    if (res) {
+                        this.messagesService.showInfoMessage("Success", "Item added successfully");
+                        this.onSave.emit({ comment: res, event: "add" });
+                    }
+                    this.isLoading = false;  
                 });
         }
     }

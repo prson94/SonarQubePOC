@@ -5,12 +5,18 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.fusion.GenerateMarkitMapLineageData-v1">
-    <sql dbms="mssql"
+  <changeSet author="Puneet Gupta" id="Procedure.fusion.GenerateMarkitMapLineageData-Drop-v2">
+    <comment>GOV-14255</comment>
+	<sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+			drop procedure if exists [fusion].[GenerateMarkitMapLineageData]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [fusion].[GenerateMarkitMapLineageData]
 	@fusionID int,
 	@useNewMethod bit = 0
@@ -592,11 +598,6 @@ begin
 	print 'Inserted [' + cast(@mapitemCount as varchar) + '] mapitem records';
 			
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

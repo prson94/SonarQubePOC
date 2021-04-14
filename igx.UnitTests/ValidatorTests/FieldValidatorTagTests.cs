@@ -89,7 +89,6 @@ namespace igx.UnitTests.ValidatorTests
                 "ArtifactType",
                 "AttributeType",
                 "FusionAttributeType",
-                "FusionQueryAttributeType",
                 "FusionType",
                 "GroupType",
                 "OrganizationType",

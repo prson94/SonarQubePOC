@@ -6,6 +6,7 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
   <changeSet author="Pappas" id="View.graph.AssetNodeDisplayPath-v4">
+	<validCheckSum>7:5868adbcf7b33b790638e5775eec3029</validCheckSum>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"

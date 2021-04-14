@@ -28,8 +28,6 @@ namespace d360.core.helpers
                     return SystemObjects.TaxonomyType;
                 case AssetTypeClass.FusionAttribute:
                     return SystemObjects.FusionAttributeType;
-                case AssetTypeClass.FusionQuery:
-                    return SystemObjects.FusionQueryAttributeType;
                 case AssetTypeClass.Diagram:
                     return SystemObjects.TaskType;
             }
