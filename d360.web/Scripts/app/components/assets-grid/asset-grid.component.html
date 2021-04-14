@@ -14,8 +14,11 @@
 
 <div class="grid-actions-header {{(this.showEditor || this.showDelete || this.isEditing ? 'hidden' : '')}}">
     <div class="simple-search">
-        <ig-search-field (onSearch)="onSimpleSearch($event)"
-                         [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter">
+        <ig-search-field mode="Keypress" 
+                         [debounce]="2000"
+                         (onSearch)="onSimpleSearch($event)"
+                         [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter"
+                         [infoTooltip]="simpleSearchTooltipHTML">
         </ig-search-field>
     </div>
     <advanced-filtering [assetTypeUid]="gridObject.AssetTypeUID" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>

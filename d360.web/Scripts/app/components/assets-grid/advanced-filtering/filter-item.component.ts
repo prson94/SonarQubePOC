@@ -10,6 +10,7 @@ import { TagService } from "../../../services/tag.service";
 import { RelationshipType } from "../../../models/relationship.model";
 import { RelationshipsService } from "../../../services/relationships.service";
 import { Subscription } from "rxjs";
+import { MultiInputField } from "../../shared/controls/multi-input-field/multi-input-field.component";
 
 @Component({
     selector: "filter-item",
@@ -58,6 +59,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
     maxNumberOfFilterCharacters: number = 50;
 
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
+    @ViewChild("multiInput", { static: false }) multiInputRef: MultiInputField;
 
     constructor(public cdRef: ChangeDetectorRef,
         private elRef: ElementRef,
@@ -227,6 +229,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     updateFilter() {
         this.rollbackValue1 = this.condition.value;
+        if (this.condition.value) {
+            this.rollbackValue1 = JSON.parse(JSON.stringify(this.condition.value));
+        }
+
         this.rollbackValue2 = this.condition.value2;
         this.rollbackOperator = this.condition.operator;
 
@@ -246,19 +252,16 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     onFieldSelected($event) {
+
         this.isSelectingCurrentField = false;
         var type = this.getFieldType(this.condition);
         if (this.fields.filter((x) => x.Name === this.condition.field).length !== 0) {
             this.currentField = this.fields.filter((x) => x.Name === this.condition.field)[0];
         }
-
         if (type.Type) {
             this.condition.friendlyFieldName = type.FriendlyName;
             this.condition.fieldType = this.getTypeForCondition(this.condition);
             this.condition.type = this.currentField;
-            if (this.condition.fieldType === "Tag") {
-                this.loadTagValues();
-            }
             this.uiCurrentOperatorsList = this.getOperators(this.condition);
             this.uiFilterLabel = this.condition.getFilterLabel();
         }
@@ -266,7 +269,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
             if (this.condition.field === SystemFields.OwnedByFieldCode) {
                 this.condition.friendlyFieldName = "Owned By";
                 this.condition.fieldType = null;
-                this.loadLookupValuesForOwners();
                 this.uiCurrentOperatorsList = this.getOperators(this.condition);
                 this.uiFilterLabel = this.condition.getFilterLabel();
             }
@@ -288,6 +290,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.currentOperator = (this.uiCurrentOperatorsList[0] as SelectItem).value;
             this.updateOperatorData();
         }
+
+        this.uiTooltipValue = this.condition.getTooltipValue();
     }
 
     getRelationshipCardinality(): string {
@@ -302,7 +306,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     loadListLazy(event: LazyLoadEvent) {
         var params = { skip: event.first, take: event.rows, filter: event.globalFilter ?? "" };
-
         var type = this.getFieldType(this.condition);
         if (type.Type) {
             if (this.condition.fieldType === "Lookup") {
@@ -356,6 +359,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
                 this.currentField.Values = [...this.currentField.Values];
                 this.setTableWidth();
+
                 this.isLookupValuesLoading = false;
                 this.cdRef.markForCheck();
             });
@@ -459,32 +463,62 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.uiTooltipValue = this.condition.getTooltipValue();
         this.uiFilterLabel = this.condition.getFilterLabel();
 
+        if (this.multiInputRef) {
+            this.multiInputRef.clearTextValue();
+        }
+
         this.onChange.emit();
     }
 
     cancel() {
+        if (!this.rollbackValue1 && !this.rollbackOperator) {
+            if (this.condition.isDefaultFilter) {
+                this.resetPersistedFilter();
+                return;
+            }
+            this.condition.markForDeletion = true;
+        }
+
         this.condition.value = this.rollbackValue1;
         this.condition.value2 = this.rollbackValue2;
         this.condition.operator = this.rollbackOperator;
         this.currentOperator = this.rollbackOperator;
 
         this.isSelectingValue = false;
+
+        if (this.multiInputRef) {
+            this.multiInputRef.clearTextValue();
+        }
     }
 
     hasRemoveButton() {
-        if (this.condition.isDefaultFilter) {
-            return false;
+        if (this.condition.isDefaultFilter || (!this.isEmpty(this.condition.value) && this.condition.operator)) {
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     remove() {
         if (this.condition.isDefaultFilter) {
+            this.resetPersistedFilter();
             return;
         }
         this.condition.markForDeletion = true;
         this.onChange.emit();
+    }
+
+    private resetPersistedFilter() {
+        this.condition.operator = undefined;
+        this.currentOperator = this.uiCurrentOperatorsList[0].value;
+        this.condition.value = undefined;
+
+        this.uiTooltipValue = this.condition.getTooltipValue();
+        this.uiFilterLabel = this.condition.getFilterLabel();
+
+        this.isSelectingValue = false;
+        this.onChange.emit();
+        this.cdRef.markForCheck();
     }
 
     needsValue() {
@@ -712,6 +746,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     private isInBodyElement(el: HTMLElement) {
         if (el.tagName === "P-DROPDOWNITEM"
+            || el.classList.contains("remove-chip")
             || el.classList.contains("p-datepicker-group-container")
         ) {
             return true;
@@ -722,6 +757,19 @@ export class FilterItemComponent implements OnInit, OnChanges {
             }
 
             return this.isInBodyElement(el.parentElement);
+        }
+    }
+
+    @HostListener("keydown", ["$event"]) onKeydownHandler(event: KeyboardEvent) {
+        let allowedTypes = ["text", "number", "lookup", "date", "date-time", "score-band", "multi-date", "multi-number"];
+        if (allowedTypes.some((x) => x === this.currentInputType)) {
+            if (event.keyCode === 13 && !this.isSaveDisabled()) {
+                this.confirmValue();
+            }
+
+            if (event.keyCode === 27) {
+                this.cancel();
+            }
         }
     }
 }

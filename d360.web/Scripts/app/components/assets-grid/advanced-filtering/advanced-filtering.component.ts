@@ -42,7 +42,7 @@ export class AdvancedFilteringComponent implements OnChanges {
         {
             title: "Clear Filters",
             callback: () => {
-                this.conditions.filters = [];
+                this.conditions.filters = this.conditions.filters.filter((x) => x.isDefaultFilter === true);
                 this.onItemChange();
             }
         },
@@ -103,6 +103,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 
         if (currentFilters !== this.emittedFilters) {
             this.onChange.emit(this.filters);
+            this.saveFilters();
             this.emittedFilters = JSON.stringify(this.filters);
         }
     }
@@ -195,10 +196,11 @@ export class AdvancedFilteringComponent implements OnChanges {
             });
 
             this.conditions.filters.push(new AdvancedFilterFieldCondition(this.datePipe));
-
-            this.cdRef.markForCheck();
             this.visible = true;
 
+            this.onItemChange();
+
+            this.cdRef.markForCheck();
             setInterval(() => {
                 this.customDoCheck();
             }, 50);
@@ -220,30 +222,51 @@ export class AdvancedFilteringComponent implements OnChanges {
         });
     }
 
+    getLocalStorageKey() {
+        return this.assetTypeUid + "_advancedFilters";
+    }
+
+    private saveFilters() {
+        localStorage.setItem(this.getLocalStorageKey(), JSON.stringify(this.conditions.filters));
+    }
+
     private loadFilters(): AdvancedFilterFieldCondition[] {
-        var prefilters: any[] = [];
-        let loadedFilters: AdvancedFilterFieldCondition[] = [];
+        try {
+            var prefilters: any[] = [];
+            let loadedFilters: AdvancedFilterFieldCondition[] = [];
 
-        (prefilters as any[]).forEach((f) => {
-            var filter = f as AdvancedFilterFieldCondition;
-            var newfilter = new AdvancedFilterFieldCondition(this.datePipe);
-            newfilter.connectingOperator = filter.connectingOperator;
-            newfilter.field = filter.field;
-            newfilter.fieldType = filter.fieldType;
-            newfilter.friendlyFieldName = filter.friendlyFieldName;
-            newfilter.isRelationship = filter.isRelationship;
-            newfilter.markForDeletion = filter.markForDeletion;
-            newfilter.operator = filter.operator;
-            newfilter.type = filter.type;
-            newfilter.value = filter.value;
-            if (newfilter.type.Type.Date || filter.type.Type.DateTime) {
-                newfilter.value = new Date(filter.value);
-            }
-            newfilter.value2 = filter.value2;
-            loadedFilters.push(newfilter);
-        });
+            var storageFilters = localStorage.getItem(this.getLocalStorageKey());
+            prefilters = JSON.parse(storageFilters);
+            (prefilters as any[]).forEach((f) => {
+                var filter = f as AdvancedFilterFieldCondition;
+                if (!filter.operator) {
+                    return false;
+                }
 
-        return loadedFilters;
+                var newfilter = new AdvancedFilterFieldCondition(this.datePipe);
+                newfilter.connectingOperator = filter.connectingOperator;
+                newfilter.field = filter.field;
+                newfilter.fieldType = filter.fieldType;
+                newfilter.friendlyFieldName = filter.friendlyFieldName;
+                newfilter.isRelationship = filter.isRelationship;
+                newfilter.markForDeletion = filter.markForDeletion;
+                newfilter.operator = filter.operator;
+                newfilter.type = filter.type;
+                newfilter.isDefaultFilter = filter.isDefaultFilter;
+                newfilter.value = filter.value;
+                newfilter.isPreloaded = true;
+                if (newfilter.type && (newfilter.type.Type.Date || filter.type.Type.DateTime)) {
+                    newfilter.value = new Date(filter.value);
+                }
+                newfilter.value2 = filter.value2;
+                loadedFilters.push(newfilter);
+            });
+            return loadedFilters;
+        }
+        catch (ex) {
+            console.warn("Error parsing saved filter");
+            return [];
+        }
     }
 
     ngOnChanges(changes: SimpleChanges) {

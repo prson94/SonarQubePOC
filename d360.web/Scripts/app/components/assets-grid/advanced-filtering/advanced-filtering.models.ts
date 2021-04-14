@@ -32,6 +32,7 @@ export class AdvancedFilterFieldCondition {
 
     isDefaultFilter?: boolean = false;
 
+    isPreloaded?: boolean = false;
 
     constructor(private datePipe: DatePipe) {
 
@@ -39,7 +40,7 @@ export class AdvancedFilterFieldCondition {
 
     public getTooltipValue() {
         if (!this.operator) {
-            return "";
+            return this.friendlyFieldName + ": Any";
         }
         return `Filter: ${this.getDescriptionText()}<br/>Click to modify`;
     }
@@ -546,7 +547,6 @@ export class AdvancedFilterFieldConditionCollection {
 
 export class Filters {
     filter: string = "";
-    relationships: string = "";
 
     public applyFilters(params: any) {
         delete params["_filter"];

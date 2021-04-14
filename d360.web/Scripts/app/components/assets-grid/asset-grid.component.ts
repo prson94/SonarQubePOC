@@ -102,6 +102,10 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         return this.columns.map(c => c.datafield);
     }
 
+    simpleSearchTooltipHTML: string = `<p>Type to provide a search term. Matches will be found where the value of any column starts with the termo or terms provided.</p><p>You can also use wildcards for more control over how the term is matched.
+*account* : Match on values which contain 'account'
+*account : Match on values which end with 'account'</p><p>All matches are case insensitive.</p>`;
+
     constructor(
         private headerActionsService: HeaderActionsService,
         private stateService: StateService,
