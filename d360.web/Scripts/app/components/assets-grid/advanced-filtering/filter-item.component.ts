@@ -760,7 +760,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
     }
 
-    @HostListener('keydown', ['$event']) onKeydownHandler(event: KeyboardEvent) {
+    @HostListener("keydown", ["$event"]) onKeydownHandler(event: KeyboardEvent) {
         let allowedTypes = ["text", "number", "lookup", "date", "date-time", "score-band", "multi-date", "multi-number"];
         if (allowedTypes.some((x) => x === this.currentInputType)) {
             if (event.keyCode === 13 && !this.isSaveDisabled()) {
