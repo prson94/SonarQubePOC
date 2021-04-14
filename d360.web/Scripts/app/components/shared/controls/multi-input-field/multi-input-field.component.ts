@@ -154,6 +154,11 @@ export class MultiInputField implements ControlValueAccessor {
     setDisabledState?(isDisabled: boolean): void {
         this.disabled = isDisabled;
     }
+
+    public clearTextValue() {
+        this.currentText = "";
+        this.ref.markForCheck();
+    }
 }
 
 @NgModule({

@@ -39,7 +39,7 @@ export class AdvancedFilterFieldCondition {
 
     public getTooltipValue() {
         if (!this.operator) {
-            return "";
+            return this.friendlyFieldName + ": Any";
         }
         return `Filter: ${this.getDescriptionText()}<br/>Click to modify`;
     }

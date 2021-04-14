@@ -42,7 +42,7 @@ export class AdvancedFilteringComponent implements OnChanges {
         {
             title: "Clear Filters",
             callback: () => {
-                this.conditions.filters = [];
+                this.conditions.filters = this.conditions.filters.filter((x) => x.isDefaultFilter === true);
                 this.onItemChange();
             }
         },
