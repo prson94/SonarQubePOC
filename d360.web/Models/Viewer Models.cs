@@ -499,32 +499,7 @@ namespace d360.web.Models
             if (PermissionsBitMask > 0)
             {
                 var rawList = Permission.DeleteAsset.GetList();
-                if ((PermissionsBitMask & (int)Permission.ReadAsset) == (int)Permission.ReadAsset)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.ReadAsset));
-                if ((PermissionsBitMask & (int)Permission.AddAsset) == (int)Permission.AddAsset)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.AddAsset));
-                if ((PermissionsBitMask & (int)Permission.EditAsset) == (int)Permission.EditAsset)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.EditAsset));
-                if ((PermissionsBitMask & (int)Permission.DeleteAsset) == (int)Permission.DeleteAsset)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.DeleteAsset));
-
-                if ((PermissionsBitMask & (int)Permission.ReadRelationships) == (int)Permission.ReadRelationships)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.ReadRelationships));
-                if ((PermissionsBitMask & (int)Permission.AddRelationships) == (int)Permission.AddRelationships)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.AddRelationships));
-                if ((PermissionsBitMask & (int)Permission.EditRelationships) == (int)Permission.EditRelationships)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.EditRelationships));
-                if ((PermissionsBitMask & (int)Permission.DeleteRelationships) == (int)Permission.DeleteRelationships)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.DeleteRelationships));
-
-                if ((PermissionsBitMask & (int)Permission.ReadResponsibilities) == (int)Permission.ReadResponsibilities)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.ReadResponsibilities));
-                if ((PermissionsBitMask & (int)Permission.AddResponsibilities) == (int)Permission.AddResponsibilities)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.AddResponsibilities));
-                if ((PermissionsBitMask & (int)Permission.EditResponsibilities) == (int)Permission.EditResponsibilities)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.EditResponsibilities));
-                if ((PermissionsBitMask & (int)Permission.DeleteResponsibilities) == (int)Permission.DeleteResponsibilities)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.DeleteResponsibilities));
+                Permissions.AddRange(rawList.Where(i => (PermissionsBitMask & (int)i.ID) == (int)i.ID));
             }
         }
 
