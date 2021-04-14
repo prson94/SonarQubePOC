@@ -55,6 +55,8 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
     private selectedAllocation: ResponsibilityTypeRelationAllocationOption = null;
     private errorMessage: string = "";
 
+    public permissionCategories: string[] = ["R", "A", "E", "D"];
+
     constructor(private responsibilityTypeService: ResponsibilityTypeService, private messagesService: MessagesObservableService, private objectDetailService: ObjectDetailService) {
         super();
     }
