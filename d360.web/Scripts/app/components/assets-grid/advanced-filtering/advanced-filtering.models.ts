@@ -32,6 +32,7 @@ export class AdvancedFilterFieldCondition {
 
     isDefaultFilter?: boolean = false;
 
+    isPreloaded?: boolean = false;
 
     constructor(private datePipe: DatePipe) {
 
@@ -546,7 +547,6 @@ export class AdvancedFilterFieldConditionCollection {
 
 export class Filters {
     filter: string = "";
-    relationships: string = "";
 
     public applyFilters(params: any) {
         delete params["_filter"];

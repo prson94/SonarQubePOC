@@ -252,19 +252,16 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     onFieldSelected($event) {
+
         this.isSelectingCurrentField = false;
         var type = this.getFieldType(this.condition);
         if (this.fields.filter((x) => x.Name === this.condition.field).length !== 0) {
             this.currentField = this.fields.filter((x) => x.Name === this.condition.field)[0];
         }
-
         if (type.Type) {
             this.condition.friendlyFieldName = type.FriendlyName;
             this.condition.fieldType = this.getTypeForCondition(this.condition);
             this.condition.type = this.currentField;
-            if (this.condition.fieldType === "Tag") {
-                this.loadTagValues();
-            }
             this.uiCurrentOperatorsList = this.getOperators(this.condition);
             this.uiFilterLabel = this.condition.getFilterLabel();
         }
@@ -272,7 +269,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
             if (this.condition.field === SystemFields.OwnedByFieldCode) {
                 this.condition.friendlyFieldName = "Owned By";
                 this.condition.fieldType = null;
-                this.loadLookupValuesForOwners();
                 this.uiCurrentOperatorsList = this.getOperators(this.condition);
                 this.uiFilterLabel = this.condition.getFilterLabel();
             }
@@ -310,7 +306,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     loadListLazy(event: LazyLoadEvent) {
         var params = { skip: event.first, take: event.rows, filter: event.globalFilter ?? "" };
-
         var type = this.getFieldType(this.condition);
         if (type.Type) {
             if (this.condition.fieldType === "Lookup") {
@@ -364,6 +359,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
                 this.currentField.Values = [...this.currentField.Values];
                 this.setTableWidth();
+
                 this.isLookupValuesLoading = false;
                 this.cdRef.markForCheck();
             });

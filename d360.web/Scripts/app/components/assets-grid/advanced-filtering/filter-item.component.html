@@ -74,7 +74,7 @@
                         <ig-date [(ngModel)]="condition.value2" [required]="true" [appendTo]="'body'" [showTime]="true"></ig-date>
                     </ng-container>
 
-                    <ng-container *ngIf="currentInputType === 'lookup' && currentField">
+                    <ng-container *ngIf="currentInputType === 'lookup' && currentField && isSelectingValue">
                         <div class="lookup-selection">
                             <p-table #dataTable
                                      tableStyleClass="ig-filter-table"
@@ -90,7 +90,7 @@
                                      [virtualRowHeight]="30"
                                      [rows]="20"
                                      [virtualScroll]="true"
-                                     [lazy]="isLazyLoad()"
+                                     [lazy]="true"
                                      (onLazyLoad)="loadListLazy($event)"
                                      [loading]="isLookupValuesLoading"
                                      [loadingIcon]="'fa fa-spinner fa-spin'">
