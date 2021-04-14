@@ -1487,7 +1487,6 @@ namespace d360.web.Controllers.V2
             {
                 string pagingQuery = "";
                 string whereQuery = "";
-                string whereCountQuery = "";
                 if (skip != null && take != null)
                 {
                     pagingQuery = " OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY ";
@@ -1496,24 +1495,31 @@ namespace d360.web.Controllers.V2
                 if (!string.IsNullOrEmpty(filter))
                 {
                     filter = "%" + filter + "%";
-                    whereQuery += " where label like @filter ";
-                    whereCountQuery += " and keypath like @filter ";
+                    whereQuery += " and ankp.[keypath] like @filter";
                 }
 
                 var results = Company.Connection.QueryMultiple($@"
-                    ;with cte as(select [uid] as 'value' ,
-                    keypath as 'label'
-                    from graph.AssetNodeKeyPath
-                    where assettypeuid = @assetTypeUid)
-                    select * from cte
-                    {whereQuery}
-                    order by cte.label asc
-                    {pagingQuery}
+                        drop table if exists #tempTable
+                        create table #tempTable (
+                            [value] uniqueidentifier,
+	                        label nvarchar(max)
+                        )
 
-                    select count(1)
-                        from graph.AssetNodeKeyPath
-                        where assettypeuid = @assetTypeUid {whereCountQuery};
-                    ", new { assetTypeUid, intersectTypeUid, skip, take, filter });
+                        insert into #tempTable
+                        select 
+	                        ankp.[Uid] as 'value',
+	                        ankp.[keypath] as 'label'
+	                         from assettype at 
+	                            inner join asset a on a.assettypeid = at.id
+	                            inner join graph.assetnodekeypath ankp on ankp.id = a.id
+	                        where at.uid = @assettypeuid {whereQuery}
+
+                        select * from #tempTable
+                            order by label asc
+                        {pagingQuery}
+
+                        select count(1) from #tempTable
+                    ", new { assetTypeUid, skip, take, filter });
 
 
                 var data = new
