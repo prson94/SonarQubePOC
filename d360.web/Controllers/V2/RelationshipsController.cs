@@ -1504,7 +1504,6 @@ namespace d360.web.Controllers.V2
                         from	graph.AssetNode N
                                 inner join graph.AssetNodeDisplayPath P on P.ID = N.ID
                                 inner join AssetType T on T.ID = N.AssetTypeID
-                                left join AssetTypeStyle S on S.ID = T.ID
                         where  T.UID = @assetTypeUid {whereQuery}
                         order by P.DisplayPath asc
                         {pagingQuery}
