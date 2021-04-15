@@ -499,6 +499,14 @@ export class FilterItemComponent implements OnInit, OnChanges {
         return false;
     }
 
+    hasRemoveIcon() {
+        if (!this.isEmpty(this.condition.value) && this.condition.operator) {
+            return true;
+        }
+
+        return false;
+    }
+
     remove() {
         if (this.condition.isDefaultFilter) {
             this.resetPersistedFilter();
@@ -726,7 +734,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
         if (Array.isArray(value) && (value as []).length > 0) {
             return false;
         }
-
         if (value === null || (typeof value === "undefined") || (value as string).length === 0) {
             return true;
         }

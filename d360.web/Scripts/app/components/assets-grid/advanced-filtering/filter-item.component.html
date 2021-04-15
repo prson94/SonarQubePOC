@@ -1,5 +1,5 @@
 ﻿<div class="filter-block" igAutoFocus>
-    <div class="ig-button filter-label {{(condition.isDefaultFilter ? '' :'has-remove-icon')}}"
+    <div class="ig-button filter-label {{(hasRemoveIcon() ? 'has-remove-icon' :'')}}"
          (click)="updateFilter()"
          pTooltip="{{uiTooltipValue}}"
          tooltipPosition="top"
@@ -7,7 +7,7 @@
          [escape]="false">
         <span class="text" [innerHTML]="uiFilterLabel"></span>
     </div>
-    <i *ngIf="condition.field && !condition.isDefaultFilter"
+    <i *ngIf="condition.field && hasRemoveIcon()"
        class="remove-button fa fa-times-circle"
        (click)="remove()"
        pTooltip="Remove filter"
