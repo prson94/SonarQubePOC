@@ -435,12 +435,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
             .getRelationshipLookupValues(this.currentField.Name.split("|")[1], this.currentField.Name.split("|")[0], params)
             .subscribe((res) => {
                 if (!this.currentField.Values || this.currentField.Values.length === 0) {
-                    this.currentField.Values = Array.from({ length: res.count });
+                    this.currentField.Values = Array.from({ length: 0 });
                 }
 
                 let loadedData = [];
 
-                res.items.forEach((str) => {
+                res.forEach((str) => {
                     let label: string = (str.label as string).split("].[").join(" <i class='slim-fa fa fa-chevron-right'></i> ").replace("[", "").replace("]", "");
                     loadedData.push({ title: label, value: str.value });
                 });

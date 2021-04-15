@@ -1495,40 +1495,21 @@ namespace d360.web.Controllers.V2
                 if (!string.IsNullOrEmpty(filter))
                 {
                     filter = "%" + filter + "%";
-                    whereQuery += " and ankp.[keypath] like @filter";
+                    whereQuery += " and P.DisplayPath like @filter";
                 }
 
-                var results = Company.Connection.QueryMultiple($@"
-                        drop table if exists #tempTable
-                        create table #tempTable (
-                            [value] uniqueidentifier,
-	                        label nvarchar(max)
-                        )
-
-                        insert into #tempTable
-                        select 
-	                        ankp.[Uid] as 'value',
-	                        ankp.[keypath] as 'label'
-	                         from assettype at 
-	                            inner join asset a on a.assettypeid = at.id
-	                            inner join graph.assetnodekeypath ankp on ankp.id = a.id
-	                        where at.uid = @assettypeuid {whereQuery}
-
-                        select * from #tempTable
-                            order by label asc
+                var results = Company.Connection.Query($@"
+                       select	N.Uid as value,
+		                        P.DisplayPath as label
+                        from	graph.AssetNode N
+                                inner join graph.AssetNodeDisplayPath P on P.ID = N.ID
+                                inner join AssetType T on T.ID = N.AssetTypeID
+                        where  T.UID = @assetTypeUid {whereQuery}
+                        order by P.DisplayPath asc
                         {pagingQuery}
-
-                        select count(1) from #tempTable
                     ", new { assetTypeUid, skip, take, filter });
 
-
-                var data = new
-                {
-                    items = results.Read<dynamic>().ToList(),
-                    count = results.Read<int>().FirstOrDefault()
-                };
-
-                return Request.CreateResponse(HttpStatusCode.OK, data);
+                return Request.CreateResponse(HttpStatusCode.OK, results);
             }
             catch (Exception ex)
             {
