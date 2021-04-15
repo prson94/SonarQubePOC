@@ -95,11 +95,22 @@ namespace d360.extensions.queue
 
             while (messages.Count > 0)
             {
+                var partitionKey = Guid.NewGuid().ToString();
                 using (ServiceBusMessageBatch batch = await sender.CreateMessageBatchAsync())
                 {
-                    while (messages.Count > 0 && batch.TryAddMessage(messages.Peek()))
+
+                    while (messages.Count > 0)
                     {
-                        messages.Dequeue();
+                        var msg = messages.Peek();
+                        msg.PartitionKey = partitionKey;
+                        if (batch.TryAddMessage(msg))
+                        {
+                            messages.Dequeue();
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
 
                     await sender.SendMessagesAsync(batch);
@@ -147,11 +158,22 @@ namespace d360.extensions.queue
 
             while (messages.Count > 0)
             {
+                var partitionKey = Guid.NewGuid().ToString();
                 using (ServiceBusMessageBatch batch = await sender.CreateMessageBatchAsync())
                 {
-                    while (messages.Count > 0 && batch.TryAddMessage(messages.Peek()))
+
+                    while (messages.Count > 0)
                     {
-                        messages.Dequeue();
+                        var msg = messages.Peek();
+                        msg.PartitionKey = partitionKey;
+                        if (batch.TryAddMessage(msg))
+                        {
+                            messages.Dequeue();
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
 
                     await sender.SendMessagesAsync(batch);
