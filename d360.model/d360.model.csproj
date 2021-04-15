@@ -121,7 +121,6 @@
     <Compile Include="BaseContext.cs" />
     <Compile Include="CommunityContext.cs" />
     <Compile Include="CompanyContext_Api.cs" />
-    <Compile Include="CompanyContext_Integration.cs" />
     <Compile Include="CompanyContext_Organization.cs" />
     <Compile Include="CompanyContext_BulkLoad.cs" />
     <Compile Include="CompanyContext_Asset.cs" />

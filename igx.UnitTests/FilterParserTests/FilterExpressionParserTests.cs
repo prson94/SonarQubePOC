@@ -265,7 +265,7 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("text ct 'Chetna&apos;s ^&*(_+-={}[]|\\;&apos;:\",./<>? Check~` All'", "%Chetna's [^]&%([_]+-={}[[]]|\\;':\",./<>_ Check~` All%")]
         [InlineData("text eq 'Chetna&apos;s ^&*(_+-={}[]|\\;&apos;:\",./<>? Check~` All'", "Chetna's ^&*(_+-={}[]|\\;':\",./<>? Check~` All")]
         [InlineData("text eq '*&_Bangalore'", "*&_Bangalore")]
-        [InlineData("text ct '*&_Bangalore'", "%%&[_]Bangalore%")]
+        [InlineData("text ct '*&_Bangalore'", "%&[_]Bangalore")]
         [InlineData("text ct 'string for contains'", "%string for contains%")]
         [InlineData("text eq 'string for equal'", "string for equal")]
         [InlineData("text ne 'string for equal'", "string for equal")]
