@@ -1054,11 +1054,11 @@ namespace d360.web.Controllers.V2
                             res
                         )
                     )
-                );
+                ).ConfigureAwait(false);
             }
             catch (ArgumentException)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found.")).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
