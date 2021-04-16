@@ -8120,7 +8120,8 @@ insert into #Keys WITH(TABLOCK)
             using (var trans = Connection.BeginTransaction())
             {
                 Connection.Execute(@"create table #RuleResults (
-                    RuleResultUid uniqueidentifier not null
+                    RuleResultUid uniqueidentifier not null,
+                    PRIMARY KEY CLUSTERED (RuleResultUid)
                 )", transaction: trans);
 
                 using (var bulkCopy = new SqlBulkCopy(Connection, SqlBulkCopyOptions.Default, trans))
@@ -8134,140 +8135,96 @@ insert into #Keys WITH(TABLOCK)
                     bulkCopy.WriteToServer(ruleResults);
                 }
 
-                var rawQueries = Connection.Query<string>(@"
-	select	distinct
-			cast(Re.EffectiveDate as date) as EffectiveDate,
-			Ma.Uid as MetricAssetUid,
-			Mver.Uid as MetricAssetVersionUid,
-			T.Class as AssetClass,
-			Rol.Uid as RollupPathUid,
-			Oa.Uid as OwnerAssetUid,
-			Oa.AssetTypeUid as OwnerAssetTypeUid,
-			Oa.AssetTypeId as OwnerAssetTypeId,
-			Ea.Uid as EvaluatedAssetUid,
-			Ea.AssetTypeUid as EvaluatedAssetTypeUid,
-			Ea.AssetTypeId as EvaluatedAssetTypeId
-	into	#Combos
-	from	AssetResult Re,
-			AssetResultEdge Ee,
-			graph.AssetNode Ea,
-			AssetResultEdge Eo,
-			graph.AssetNode Oa,
-			metrics.RollupPathSegment Seg,
-			metrics.RollupPath Rol,
-			metrics.AssetVersionRollupPath VerRol,
-			metrics.AssetVersion Mver,
-			metrics.Asset Ma,
-			metrics.Allocation Mal,
-			AssetType T
-	where	match(Ea-(Ee)->Re<-(Eo)-Oa)
-			and Ee.Class = 2
-			and Eo.Class = 1
-			and Ma.IsGroup = 0
-			and Seg.AssetTypeID = Ea.AssetTypeID
-			and Rol.Uid = Seg.RollupPathUid
-			and VerRol.RollupPathUid = Rol.Uid
-			and Mver.Uid = VerRol.AssetVersionUid
-			and (
-				(Mver.EffectiveDate <= Re.EffectiveDate and Mver.EffectiveEndDate >= Re.EffectiveDate)
-				or (Mver.EffectiveDate <= Re.EffectiveDate and Mver.EffectiveEndDate is null)
-			)
-			and Ma.Uid = Mver.AssetUid
-			and Mal.Uid = Ma.AllocationUid
-			and Mal.ScoreType = 2
-			and Mal.IsExternallyCalculated = 0
-			and T.Uid = Mal.AssetTypeUid
-			and Re.Uid in (select RuleResultUid from #RuleResults);
+                rawMeasures = Connection.Query<RuleResultChangedRawModel>(@"
+select	distinct
+		cast(Re.EffectiveDate as date) as EffectiveDate,
+		Ma.Uid as MetricAssetUid,
+		Mver.Uid as MetricAssetVersionUid,
+		Rol.Uid as RollupPathUid,
+		Ea.Id,
+		Seg.[Position],
+		case Seg.[Position]
+			when 1 then Ea.Uid
+			else null
+		end as StartAssetUid
+into	#Combos
+from	AssetResult Re,
+		AssetResultEdge Ee,
+		graph.AssetNode Ea,
+		AssetResultEdge Eo,
+		graph.AssetNode Oa,
+		metrics.RollupPathSegment Seg,
+		metrics.RollupPath Rol,
+		metrics.AssetVersionRollupPath VerRol,
+		metrics.AssetVersion Mver,
+		metrics.Asset Ma,
+		metrics.Allocation Mal,
+		AssetType T,
+		#RuleResults Rr
+where	match(Ea-(Ee)->Re<-(Eo)-Oa)
+		and Ee.Class = 2
+		and Eo.Class = 1
+		and Ma.IsGroup = 0
+		and Seg.AssetTypeID = Ea.AssetTypeID
+		and Rol.Uid = Seg.RollupPathUid
+		and VerRol.RollupPathUid = Rol.Uid
+		and Mver.Uid = VerRol.AssetVersionUid
+		and (
+			(Mver.EffectiveDate <= Re.EffectiveDate and Mver.EffectiveEndDate >= Re.EffectiveDate)
+			or (Mver.EffectiveDate <= Re.EffectiveDate and Mver.EffectiveEndDate is null)
+		)
+		and Ma.Uid = Mver.AssetUid
+		and Mal.Uid = Ma.AllocationUid
+		and Mal.ScoreType = 2
+		and Mal.IsExternallyCalculated = 0
+		and T.Uid = Mal.AssetTypeUid
+		and Re.Uid = Rr.RuleResultUid;
 
-select	'select distinct ' + 
-			'cast(''' + cast(MetricAssetUid as varchar(50)) + ''' as uniqueidentifier) as MetricAssetUid, ' + 
-			'cast(''' + cast(MetricAssetVersionUid as varchar(50)) + ''' as uniqueidentifier) as MetricAssetVersionUid, ' + 
-			'cast(''' + cast(EffectiveDate as varchar) + ''' as date) as EffectiveDate, ' + 
-			AssetUidColumn + 
-		' from ' + [Tables] + 
-		' where match(' + [Match] + ') and ' + Wheres  as AssetsQuery
-from	(
-		select	C.*,
-				iif(MP.MaxPosition = 2 and C.AssetClass <> 7, 'S2.Uid as AssetUid', 'S1.Uid as AssetUid') as [AssetUidColumn],
-				(
-				select	distinct
-						string_agg(T, ', ')
-				from	(
-						select	'graph.AssetNode S'+cast(L.StartPosition as varchar) as T
-						from	[metrics].[RollupPathLink] L
-								inner join [metrics].[RollupPathSegment] S on S.[RollupPathUid] = L.[RollupPathUid] and S.Position between L.StartPosition and L.EndPosition
-						where	L.[RollupPathUid] = C.[RollupPathUid]
-						union
-						select	iif(L.EndPosition = MP.MaxPosition and L.EndPosition > 2, null, 'graph.AssetNode S'+cast(L.EndPosition as varchar)) as T
-						from	[metrics].[RollupPathLink] L
-								inner join [metrics].[RollupPathSegment] S on S.[RollupPathUid] = L.[RollupPathUid] and S.Position between L.StartPosition and L.EndPosition
-						where	L.[RollupPathUid] = C.[RollupPathUid]
-						union
-						select	iif(L.EndPosition = MP.MaxPosition and L.EndPosition > 2, null, 'graph.AssetEdge I'+cast(L.IntersectTypeID as varchar)) as T
-						from	[metrics].[RollupPathLink] L
-								inner join [metrics].[RollupPathSegment] S on S.[RollupPathUid] = L.[RollupPathUid] and S.Position between L.StartPosition and L.EndPosition
-						where	L.[RollupPathUid] = C.[RollupPathUid]
-						) O
-				) as [Tables],
-				(
-				select	distinct
-						string_agg(W, '')
-				from	(
-						select	case 
-									when L.StartPosition = 1 then 'S' + cast(L.StartPosition as varchar) + '-(I'+cast(L.IntersectTypeID as varchar)+')->S' + cast(L.EndPosition as varchar)
-									when L.EndPosition = MP.MaxPosition then null
-									else '-(I'+cast(L.IntersectTypeID as varchar)+')->S' + cast(L.EndPosition as varchar)
-								end as W
-						from	[metrics].[RollupPathLink] L
-						where	L.[RollupPathUid] = C.[RollupPathUid]
-						) O
-				) as [Match],
-				(
-				select	distinct
-						string_agg(W, ' and ')
-				from	(
-						select	case 
-									when S.Position <> MP.MaxPosition and MP.MaxPosition > 2
-											then 'S'+cast(S.Position as varchar)+'.AssetTypeID = ' + cast(S.AssetTypeID as varchar) + iif (S.AssetTypeID = C.EvaluatedAssetTypeId, ' and S'+cast(S.Position as varchar) + '.Uid = ''' + cast(C.EvaluatedAssetUid as varchar(50)) + '''', '')
-									when S.Position+1 = MP.MaxPosition and C.AssetClass = 7 
-											then 'S1.AssetTypeID = ' + cast(C.OwnerAssetTypeId as varchar) + ' and S1.Uid = ''' + cast(C.OwnerAssetUid as varchar(50)) + ''''
-									when S.Position+1 = MP.MaxPosition and C.AssetClass <> 7 
-											then 'S2.AssetTypeID = ' + cast(C.EvaluatedAssetTypeId as varchar) + ' and S2.Uid = ''' + cast(C.EvaluatedAssetUid as varchar(50)) + ''''		
-									else null
-								end as W
-						from	[metrics].[RollupPathSegment] S
-						where	S.[RollupPathUid] = C.[RollupPathUid]
-						union
-						select	iif(L.EndPosition = MP.MaxPosition, null, 'I'+cast(L.IntersectTypeID as varchar)+'.IntersectTypeID = ' + cast(L.IntersectTypeID as varchar)) as W
-						from	[metrics].[RollupPathLink] L
-								inner join [metrics].[RollupPathSegment] S on S.[RollupPathUid] = L.[RollupPathUid] and S.Position between L.StartPosition and L.EndPosition
-						where	L.[RollupPathUid] = C.[RollupPathUid]
-						) O
-				) as [Wheres]
-		from	#Combos C
-				cross apply (
-					select	max(S.Position) as MaxPosition
-					from	[metrics].[RollupPathSegment] S
-					where	S.[RollupPathUid] = C.[RollupPathUid]
-				) as MP
-		) O", transaction: trans).ToList();
+alter table #Combos add RowNumber int identity
+alter table #Combos alter column RowNumber int; 
 
-                rawMeasures = new List<RuleResultChangedRawModel>();
+--select * from #Combos
 
-                string sql;
-                while (rawQueries.Count > 0)
-                { 
-                    sql = string.Join(" union ", rawQueries.Take(50));
-                    if (rawQueries.Count > 50)
-                    {
-                        rawQueries.RemoveRange(0, 50);
-                    }
-                    else
-                    {
-                        rawQueries.RemoveRange(0, rawQueries.Count);
-                    }
-                    rawMeasures.AddRange(Connection.Query<RuleResultChangedRawModel>(sql, transaction: trans));
-                }              
+with cte as (
+	select	* 
+	from	#Combos
+	union all
+	select	C.EffectiveDate,
+			C.MetricAssetUid,
+			C.MetricAssetVersionUid, 
+			C.RollupPathUid, 
+			C.Id, 
+			L.StartPosition as Position,
+			case L.StartPosition 
+				when 1 then SA.Uid
+				else null
+			end as StartAssetUid,
+			C.RowNumber
+	from	(
+				select	EffectiveDate,
+						MetricAssetUid, 
+						MetricAssetVersionUid,
+						RollupPathUid,
+						Id,
+						min(Position) as Position,
+						RowNumber
+				from	#Combos
+				group by EffectiveDate, MetricAssetUid, MetricAssetVersionUid, RollupPathUid, Id, RowNumber
+				having min(Position) > 1
+			) C
+			inner join Asset A on A.Id = C.Id
+			inner join [metrics].[RollupPathLink] L on L.RollupPathUid = C.RollupPathUid and L.EndPosition = C.Position
+			inner join [Intersect] I on I.Object = A.Object and I.ObjectID = A.ObjectId and I.IntersectTypeID = L.IntersectTypeID
+			inner join Asset SA on SA.Object = I.Subject and SA.ObjectId = I.SubjectId
+)
+
+select	StartAssetUid as AssetUid,
+		EffectiveDate,
+		MetricAssetUid,
+		MetricAssetVersionUid
+		from cte 
+where	StartAssetUid is not null 
+order by RowNumber", transaction: trans).ToList();
             }
 
             var structuredMeasures = rawMeasures

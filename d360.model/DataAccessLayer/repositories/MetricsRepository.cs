@@ -2494,7 +2494,7 @@ for json path";
             return Company.SendScoreEventWithPayload(
                 ScoreQueueChangeType.MeasureChanged,
                 new MeasureChangedModel { EffectiveDate = latestVersion.EffectiveDate, MetricAssetUid = measure.Uid, MetricAssetVersionUid = latestVersion.Uid },
-                new ReclaulatMeasureExecutionFields { measureUid = measureUid, action = "recalculating" }
+                triggeredByMeasureUid: measureUid
             );
         }
     }

@@ -14,6 +14,7 @@
 	
 	<!-- Types (object-based naming) -->
 	<include file="scripts/Udt.dbo.AssetBrowserImpactTable.xml"/>
+	<include file="scripts/Udt.dbo.AssetEffectiveDate.xml"/>
 	<include file="scripts/Udt.dbo.AssetFiltersTable.xml"/>
 	<include file="scripts/Udt.dbo.Ids.xml"/>
 	<include file="scripts/Udt.dbo.IDTable.xml"/>
@@ -211,6 +212,7 @@
 	<include file="scripts/Table.metrics.AssetVersionCondition.xml"/>
 	<include file="scripts/Table.metrics.AssetVersionConditionItem.xml"/>
 	<include file="scripts/Table.metrics.AssetVersionConditionItemValue.xml"/>
+	<include file="scripts/Table.metrics.Execution.xml"/>
 	<include file="scripts/Table.metrics.RollupPath.xml"/>
 	<include file="scripts/Table.metrics.RollupPathLink.xml"/>
 	<include file="scripts/Table.metrics.RollupPathSegment.xml"/>
@@ -220,6 +222,7 @@
 	<include file="scripts/Table.metrics.Score.xml"/>
 	<include file="scripts/Table.metrics.ScoreItem.xml"/>
 	<include file="scripts/Table.metrics.ScoreItemLink.xml"/>
+	<include file="scripts/Table.metrics.StagingScoreItem.xml"/>
 	<include file="scripts/Table.queue.Task.xml"/>
 	<include file="scripts/Table.reporting.Dates.xml"/>
 	<include file="scripts/Table.reporting.Global_Audit.xml"/>
@@ -476,6 +479,7 @@
 	<include file="scripts/Procedure.metrics.BuildDataQualityMeasureQuery.xml"/>
 	<include file="scripts/Procedure.metrics.CalculateRollups.xml"/>
 	<include file="scripts/Procedure.metrics.LoadFromStaging.xml"/>
+	<include file="scripts/Procedure.metrics.ProcessAssetScores.xml"/>
 	<include file="scripts/Procedure.tile.GetObjectStatistics.xml"/>
 	<include file="scripts/Procedure.utility.AddAuditEntry.xml"/>
 	<include file="scripts/Procedure.utility.GetAssignedResponsibilityNameForWorkflow.xml"/>

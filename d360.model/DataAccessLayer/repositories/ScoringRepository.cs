@@ -611,5 +611,36 @@ end";
 
             return evidenceModel;
         }
+
+        public ScoreExecution GetExecutionById(Guid uid)
+        {
+            var execution = companyContext.GetByUid<ScoreExecution>(uid);
+
+            if (execution == null)
+            {
+                throw new ArgumentException("Execution unique identifier not found.");
+            }
+
+            return execution;
+        }
+
+        public IQueryable<ScoreExecution> GetExecutions(int pageSize, int pageNumber)
+        {
+            if (pageNumber > 0)
+            {
+                pageNumber -= 1;
+            }
+            else
+            {
+                pageNumber = 0;
+            }
+
+            if (pageSize > 200 || pageSize < 0)
+            {
+                pageSize = 200;
+            }
+
+            return (IQueryable<ScoreExecution>)companyContext.ScoreExecutions.OrderByDescending(i => i.StartedOn).Skip(pageSize*pageNumber).Take(pageSize);
+        }
     }
 }

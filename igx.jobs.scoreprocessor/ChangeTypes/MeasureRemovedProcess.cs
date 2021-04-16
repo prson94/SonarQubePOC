@@ -126,7 +126,7 @@ select Uid from #Scores where OtherMeasuresCount = 0 and EffectiveDate = @today;
                     {
                         var secondsToAdd = new Random().Next(10, 50);
                         var timespan = new TimeSpan(0, 0, secondsToAdd);
-                        Db.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, list, Info.ExecutionUid, timespan);
+                        Db.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, list, triggeredByExecutionUid: Info.ExecutionUid, timespan: timespan);
                     }
                 }
             }
