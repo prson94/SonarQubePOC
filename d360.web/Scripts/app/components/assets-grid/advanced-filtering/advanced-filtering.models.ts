@@ -34,6 +34,8 @@ export class AdvancedFilterFieldCondition {
 
     isPreloaded?: boolean = false;
 
+    relationshipFieldName?: string = "";
+
     constructor(private datePipe: DatePipe) {
 
     }
@@ -253,7 +255,7 @@ export class AdvancedFilterFieldCondition {
                 return +value;
             }
 
-            if (this.fieldType === "Lookup" || this.fieldType === "Tag" || this.field === SystemFields.OwnedByFieldCode || this.isRelationship) {
+            if (this.fieldType === "Lookup" || this.fieldType === "Tag" || this.fieldType === "Relationship" || this.field === SystemFields.OwnedByFieldCode || this.isRelationship) {
                 let valueAsString = "";
                 if (Array.isArray(value)) {
                     var arr = value as SelectItem[];
@@ -482,12 +484,18 @@ export class AdvancedFilterFieldConditionCollection {
                     }
                 }
             }
-            else if (cond.fieldType == null && cond.field.indexOf("|") === 36) {
+            else if ((cond.fieldType == null && cond.field.indexOf("|") === 36) || cond.relationshipFieldName.indexOf("|") === 36) {
                 let subConditions: AdvancedFilterFieldCondition[] = [];
                 if (cond.value) {
                     valuesArr = cond.value as SelectItem[];
                     valuesArr.forEach((r) => {
                         var copyCond = cond.getCopyWithNewValue(r.value);
+
+                        //in case of relationship field, but still treat as realtionship
+                        if (cond.relationshipFieldName.indexOf("|") === 36) {
+                            copyCond.field = cond.relationshipFieldName;
+                        }
+
                         copyCond.field = "$Related:" + copyCond.field.split("|")[0];
                         subConditions.push(copyCond);
                     });

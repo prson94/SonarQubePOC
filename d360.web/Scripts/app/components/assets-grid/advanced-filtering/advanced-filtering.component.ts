@@ -250,6 +250,7 @@ export class AdvancedFilteringComponent implements OnChanges {
                 newfilter.friendlyFieldName = filter.friendlyFieldName;
                 newfilter.isRelationship = filter.isRelationship;
                 newfilter.markForDeletion = filter.markForDeletion;
+                newfilter.relationshipFieldName = filter.relationshipFieldName;
                 newfilter.operator = filter.operator;
                 newfilter.type = filter.type;
                 newfilter.isDefaultFilter = filter.isDefaultFilter;
