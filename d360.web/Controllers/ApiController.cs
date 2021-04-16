@@ -892,19 +892,10 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     var targetType = Request.GetQueryString("target");
                     var targetTypeID = Request.GetQueryString("targetID");
 
-                    if (!string.IsNullOrEmpty(targetType) && !string.IsNullOrEmpty(targetTypeID))
-                    {
-                        var ttID = int.Parse(targetTypeID);
-                        var targetKeyFields = Company.Filter<FieldType>(i => i.Object == targetType && i.ObjectID == ttID && i.IsPartOfKey).OrderBy(i => i.SortOrder).ToList();
-                        items.InsertRange(0, targetKeyFields);
-                    }
-
-                    if (targetType == SystemObjects.ReferenceItemType.ToString() || targetType == SystemObjects.FusionAttributeType.ToString() || targetType == SystemObjects.ResourceType.ToString() || targetType == SystemObjects.GroupType.ToString())
-                    {
-                        columns.Add(
-                            new GridColumn { text = "Name", datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
-                        );
-                    }
+                    columns.Add(
+                            new GridColumn { text = "Asset Path", datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
+                    );
+                    
 
                     remainingWidth = 80;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
@@ -4654,7 +4645,7 @@ inner join AssetType AST on AST.Object = case when I.Subject = @type and I.Subje
 						    and AST.ObjectID = case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end 
 inner join Asset IA on	IA.Object = case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end
 						and IA.ObjectID = case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end 
-cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P 
+left join graph.AssetNodeDisplayPath P on P.ID = IA.ID
 {permissionJoins}";
                     }
                     else
@@ -4662,7 +4653,7 @@ cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P
                         assetJoin = $@"
 inner join AssetType AST on {(sourceIsObject ? "AST.Object = IT.Subject and AST.ObjectID = IT.SubjectID" : "AST.Object = IT.Object and AST.ObjectID = IT.ObjectID")}
 inner join Asset IA on	{(sourceIsObject ? " IA.Object = I.Subject and IA.ObjectID = I.SubjectID " : " IA.Object = I.Object and IA.ObjectID = I.ObjectID ")}
-cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P 
+left join graph.AssetNodeDisplayPath P on P.ID = IA.ID
 {permissionJoins}";
                     }
 
@@ -4685,7 +4676,7 @@ select	I.[Uid],
         IntersectTypeID,
         case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end as Object,
 		case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end as ObjectID,
-		P.TextPath as Name,
+		{(isTargetReferenceItemType ? "P.TextPath as Name," : "P.DisplayPath as Name,")}        
 		case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end as Type,
 		case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end as TypeID,
 		AST.Name as TypeName,
@@ -4723,7 +4714,7 @@ inner join AssetType AST on AST.Object = (case when I.Subject = @type and I.Subj
 						    and AST.ObjectID = {(includeInverse ? "(case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end)" : "IT.ObjectID")} 
 inner join Asset IA on	IA.Object = {(includeInverse ? "(case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end)" : "I.Object")}
 						and IA.ObjectID = {(includeInverse ? "(case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end)" : "I.ObjectID")} 
-cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P 
+left join graph.AssetNodeDisplayPath P on P.ID = IA.ID
 {permissionJoins}";
                 }
 
@@ -4734,7 +4725,7 @@ select	I.[Uid],
         case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end as Object,
 		case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end as ObjectID,
         IA.uid as ObjectUid,
-		P.TextPath as Name,        
+		{(isTargetReferenceItemType ? "P.TextPath as Name," :"P.DisplayPath as Name,")}        
 		IT.Object Type,
 		IT.ObjectID TypeID,
 		AST.Name as TypeName,
@@ -4773,7 +4764,7 @@ inner join AssetType AST on AST.Object = {(includeInverse ? "(case when I.Object
                             and AST.ObjectID = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then IT.SubjectID else IT.ObjectID end)" : "IT.SubjectID")}
 inner join Asset IA on IA.Object = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then I.Subject else I.Object end)" : "I.Subject")}
                        and IA.ObjectID = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then I.SubjectID else I.ObjectID end)" : "I.SubjectID")}
-cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P
+left join graph.AssetNodeDisplayPath P on P.ID = IA.ID
 {permissionJoins}";
                 }
 
@@ -4792,7 +4783,7 @@ select	I.[Uid],
             I.ObjectID
         end as ObjectID,
         IA.uid as ObjectUid,
-		P.TextPath as Name,        
+		{(isTargetReferenceItemType ? "P.TextPath as Name," : "P.DisplayPath as Name,")}              
 		IT.Subject as Type,
 		IT.SubjectID as TypeID,
 		AST.Name as TypeName,
