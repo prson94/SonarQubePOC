@@ -33,6 +33,7 @@ namespace d360.model
         DbSet<ApiEntityFieldType> ApiEntityFieldTypes { get; set; }
         DbSet<ApiEntityUri> ApiEntityUris { get; set; }
         DbSet<ApiExecution> ApiExecutions { get; set; }
+        DbSet<ApiExecutionsExternal> ApiExecutionsExternals { get; set; }
         DbSet<ApiNamespace> ApiNamespaces { get; set; }
         DbSet<ApiService> ApiServices { get; set; }
         DbSet<AssetApiModel> AssetApiModels { get; set; }

@@ -226,6 +226,74 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Added analyze connector status and needed immediate result.
+        /// </summary>        
+
+        /// <remarks>
+        /// Status Possible values are:  
+        /// - START
+        /// - COMPLETE_SUCCESS
+        /// - COMPLETE_FAILURE
+        /// - INFORMATION
+        /// </remarks>
+
+        /// <param name="model">The status of connector to be add.</param>
+        /// <returns>The required values of status of connector.</returns>
+        [
+            HttpPost,
+            Route("external"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "The status of connector was added, returns the required values of the added connector status.", typeof(ApiExecutionExternalViewModel)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PostConnectorStatus(ApiExecutionExternalRequestModel model)
+        {
+            if (model == null)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "You have submitted an invalid or empty request please check your request and try again."));
+            }
+
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+
+            if (model != null && model?.Status == null)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Status parameter value is required."));
+
+            if (model != null && model?.Detail != null && model.Detail.Length > 250)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Detail maximum length upto 250."));
+
+            if (model != null && model?.Component != null && model.Component.Length > 250)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Component maximum length upto 250."));
+
+            switch (model.Status)
+            {
+                case "START":
+                case "COMPLETE_SUCCESS":
+                case "COMPLETE_FAILURE":
+                case "INFORMATION":
+                    break;
+                default:
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid value for Status. Allowed values are: START, COMPLETE_SUCCESS, COMPLETE_FAILURE, INFORMATION"));
+            }
+
+            ApiExecutionExternalViewModel result = new ApiExecutionExternalViewModel();
+
+            try
+            {
+                result = AssetRepository.AddConnectorStatus(model);
+
+            }
+            catch (Exception e)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while add status of a connector endpoint", e.Message);
+            }
+
+            return ResponseMessage(Request.CreateResponse<ApiExecutionExternalViewModel>(HttpStatusCode.OK, result));
+        }
+
         #endregion
     }
 }
