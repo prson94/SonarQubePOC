@@ -62,6 +62,26 @@ namespace d360.model.helpers
                     WHEN 3 THEN 'Deleted' END)", SqlFieldType.Text));
 
             }
+
+            //Rule results do not have field type db records, so we need to add fields manually
+            if(parseType == FilterExpressionParseType.RuleResults)
+            {
+                allowedDefaultFields.Clear();
+                allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetClass", "E.EvaluatedAssetTypeClass", SqlFieldType.AssetTypeClass));
+                allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetTypePath", "P.[Path]", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetPath", "E.EvaluatedAssetPath", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetDisplayPath", "E.EvaluatedAssetDisplayPath", SqlFieldType.Text));
+               
+                allowedDefaultFields.Add(new DefaultFilter("EffectiveDate", "R.EffectiveDate", SqlFieldType.Date));
+                allowedDefaultFields.Add(new DefaultFilter("RunDate", "R.RunDate", SqlFieldType.Date));
+
+                allowedDefaultFields.Add(new DefaultFilter("PassCount", "R.PassCount", SqlFieldType.Number));
+                allowedDefaultFields.Add(new DefaultFilter("FailCount", "R.FailCount", SqlFieldType.Number));
+                allowedDefaultFields.Add(new DefaultFilter("TotalCount", "R.TotalCount", SqlFieldType.Number));
+                allowedDefaultFields.Add(new DefaultFilter("PassFraction", "R.PassFraction", SqlFieldType.Decimal));
+
+                allowedDefaultFields.Add(new DefaultFilter("Passed", "R.Passed", SqlFieldType.Boolean));
+            }
         }
 
         public void OverrideAllowedDefaultFields(List<DefaultFilter> defaultFilters)
@@ -205,7 +225,7 @@ namespace d360.model.helpers
 
             foreach (var token in FilterTokens)
             {
-                if (parseType == FilterExpressionParseType.CustomFields)
+                if (parseType == FilterExpressionParseType.CustomFields || parseType == FilterExpressionParseType.RuleResults)
                 {
                     ParseTokensForCustomFields(sqlParams, sb, token);
                 }
@@ -403,12 +423,13 @@ namespace d360.model.helpers
     public enum FilterExpressionParseType
     {
         CustomFields,
-        Relationships
+        Relationships,
+        RuleResults
     }
 
     public enum SqlFieldType
     {
-        Text, Boolean, Number, Decimal, Date, DateTime, Guid
+        Text, Boolean, Number, Decimal, Date, DateTime, Guid, AssetTypeClass
     }
 
     public class DefaultFilter

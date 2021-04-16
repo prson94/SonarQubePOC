@@ -481,6 +481,18 @@ namespace d360.model.helpers
                     }
 
                     break;
+                case "assettypeclass":
+                    var classes = AssetTypeClass.BusinessAsset.GetAsList();
+                    var match = classes.FirstOrDefault(x => x.Name.ToLower(CultureInfo.InvariantCulture) == value.ToString().ToLower(CultureInfo.InvariantCulture).Trim('\'')
+                    || x.Value.ToLower(CultureInfo.InvariantCulture) == value.ToString().ToLower(CultureInfo.InvariantCulture).Trim('\''));
+
+                    if (match == null)
+                    {
+                        throw new FormatException($"Invalid AssetTypeClass value for field '{field}'");
+                    }
+
+                    value = (int)match.ID;
+                    break;
                 default:
                     value = value.ToString().Trim('\'').Replace("&apos;", "'");
                     break;
@@ -578,6 +590,8 @@ namespace d360.model.helpers
                 case "date":
                 case "datetime":
                     return true;
+                case "assettypeclass":
+                    return new [] { "eq", "ne" }.Contains(operand);
                 default:
                     return new[] { "eq", "ne", "ct", "nct" }.Contains(operand);
             }
