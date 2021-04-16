@@ -42,6 +42,7 @@
     <div class="value-selection" [hidden]="!isSelectingValue">
         <div class="selectors">
             <p-dropdown igDropdown
+                        igAutoFocus
                         [options]="uiCurrentOperatorsList"
                         [(ngModel)]="currentOperator"
                         (onChange)="onOperatorSelected($event)"
