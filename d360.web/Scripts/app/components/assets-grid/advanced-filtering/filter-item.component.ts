@@ -274,7 +274,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     onFieldSelected($event) {
-
         this.isSelectingCurrentField = false;
         this.relationshipFieldIntersectTypeUid = "";
 
@@ -318,9 +317,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
             }
         }
         //if null, this method is not called from ui
-        if (event && event.type !== "load") {
+        if ((event && event.type !== "load") && !this.condition.isNew) {
             this.isSelectingValue = true;
         }
+        this.condition.isNew = false;
 
         if (this.uiCurrentOperatorsList) {
             this.currentOperator = (this.uiCurrentOperatorsList[0] as SelectItem).value;

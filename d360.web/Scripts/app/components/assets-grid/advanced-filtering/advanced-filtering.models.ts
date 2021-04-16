@@ -23,6 +23,7 @@ export class AdvancedFilterFieldCondition {
 
     friendlyFieldName: string = "";
     markForDeletion: boolean = false;
+    isNew: boolean = false;
     fieldType: string = "";
 
     type?: FieldTypeAPIModelField;
