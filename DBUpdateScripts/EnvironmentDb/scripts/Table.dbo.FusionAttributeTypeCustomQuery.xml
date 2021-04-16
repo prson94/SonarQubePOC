@@ -5,34 +5,28 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.FusionAttributeTypeCustomQuery-v1">
+  <changeSet author="kmcnamee" id="Table.dbo.FusionAttributeTypeCustomQuery-v2">
+    <comment>GOV-14306</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionAttributeTypeCustomQuery')
-BEGIN
-	CREATE TABLE [dbo].[FusionAttributeTypeCustomQuery](
-		[ID] [int] IDENTITY(1,1) NOT NULL,
-		[FusionID] [int] NOT NULL,
-		[FusionAttributeTypeID] [int] NOT NULL,
-		[Query] [nvarchar](max) NULL,
-		CONSTRAINT [PK_FusionAttributeTypeCustomQuery] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
-	)
-END
+    
+    IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionAttributeTypeCustomQuery')
+			BEGIN
+				exec sp_rename 'dbo.FusionAttributeTypeCustomQuery', 'FusionAttributeTypeCustomQuery_bak';
+			END
 
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_FusionAttributeTypeCustomQuery_Fusion')
-BEGIN
-	ALTER TABLE [dbo].[FusionAttributeTypeCustomQuery]  WITH CHECK ADD  CONSTRAINT [FK_FusionAttributeTypeCustomQuery_Fusion] FOREIGN KEY([FusionID]) REFERENCES [dbo].[Fusion] ([ID])
-	ALTER TABLE [dbo].[FusionAttributeTypeCustomQuery] CHECK CONSTRAINT [FK_FusionAttributeTypeCustomQuery_Fusion]
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_FusionAttributeTypeCustomQuery_FusionAttributeType')
-BEGIN
-	ALTER TABLE [dbo].[FusionAttributeTypeCustomQuery]  WITH CHECK ADD  CONSTRAINT [FK_FusionAttributeTypeCustomQuery_FusionAttributeType] FOREIGN KEY([FusionAttributeTypeID]) REFERENCES [dbo].[FusionAttributeType] ([ID])
-	ALTER TABLE [dbo].[FusionAttributeTypeCustomQuery] CHECK CONSTRAINT [FK_FusionAttributeTypeCustomQuery_FusionAttributeType]
-END
+			IF EXISTS (select * from sys.foreign_keys where name = 'FK_FusionAttributeTypeCustomQuery_Fusion')
+			BEGIN	
+				ALTER TABLE [dbo].[FusionAttributeTypeCustomQuery_bak] DROP CONSTRAINT [FK_FusionAttributeTypeCustomQuery_Fusion]
+			END
+			      
+			IF EXISTS (select * from sys.foreign_keys where name = 'FK_FusionAttributeTypeCustomQuery_FusionAttributeType')
+			BEGIN	
+				ALTER TABLE [dbo].[FusionAttributeTypeCustomQuery_bak] DROP CONSTRAINT [FK_FusionAttributeTypeCustomQuery_FusionAttributeType]
+			END			
 		]]>
     </sql>
 	<rollback>

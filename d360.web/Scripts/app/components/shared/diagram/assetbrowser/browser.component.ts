@@ -20,9 +20,8 @@ import {
     AssetBrowserPanelCommand,
     AssetBrowserPanelModel,
     DiagramTypesModel,
-
     FilterAncestryMode,
-    AssetBrowserResponseModel
+    AssetBrowserResponseModel,
 } from '../../../../models/lineage.model';
 
 import { BrowserService } from '../../../../services/browser.service';
@@ -32,7 +31,7 @@ import { MessagesObservableService } from '../../../../services/messages-observa
 
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { TreeNode } from 'primeng/api';
-import { Observable } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 import { PredicatesService } from '../../../../services/predicates.service';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
@@ -42,13 +41,24 @@ import { ProcessDiagramComponent } from '../process-diagram/process-diagram.comp
 import { ProcessService } from '../../../../services/process.service';
 import { AssetBrowserOverviewComponent } from './tools/overview.component';
 import { FontAwesomeHelper } from '../../../../static/font-awesome-helper';
+import { FieldsObservableService } from '../../../../services/fieldsObservable.service';
+import { AssetService } from '../../../../services/asset.service';
+import { ResponsibilityService } from '../../../../services/responsibility.service';
 
 declare var window: any;
 
 @Component({
     selector: 'd3s-assetbrowser',
     templateUrl: './browser.component.html',
-    providers: [BrowserService, PermissionsService, PredicatesService, ProcessService],
+    providers: [
+        BrowserService,
+        PermissionsService,
+        PredicatesService,
+        ProcessService,
+        FieldsObservableService,
+        AssetService,
+        ResponsibilityService,
+    ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AssetBrowserComponent extends DiagramBaseComponent implements OnInit, AfterViewInit, AfterViewChecked {
@@ -160,6 +170,19 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private readonly badgeFont: string = "14px 'Source Sans Pro'";
     private readonly badgeStrokeColor = "#d6d5d5";
     private readonly badgeTextColor = "#006fc0";
+    private readonly ignoredPanelFieldTypes = [
+        "Tag",
+        "Relationship",
+        "FieldFromRelationship",
+        "Score",
+        "ComputedRelationshipLookup",
+        "DataTableSelect",
+        "File",
+        "JsonElement",
+        "ComputedOwnershipLookup",
+        "Path",
+        "RefListRelationship"
+    ];
 
     //#endregion
 
@@ -175,7 +198,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         breadcrumbService: HeaderBreadcrumbService,
         protected messagesService: MessagesObservableService,
         private cdRef: ChangeDetectorRef,
-        private processService: ProcessService
+        private processService: ProcessService,
+        private fieldsService: FieldsObservableService,
+        private assetService: AssetService,
+        private responsibilityService: ResponsibilityService
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
@@ -1640,7 +1666,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         //#region Asset Types
 
         this.filter_AvailableOptions.FilterAssetTypes = [];
-        this.filter_AvailableOptions.AssetTypeOptions.forEach(at => {
+        this.filter_AvailableOptions.AssetTypeOptions.forEach(at => { 
             let inLoadedAssetTypes: boolean = loadedTypes.AssetTypes.findIndex(ix => { return ix == at.AssetTypeId }) > -1;
             if (inLoadedAssetTypes) {
                 this.filter_AvailableOptions.FilterAssetTypes.push({
@@ -1719,17 +1745,53 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             return;
 
         this.panel_Loading = true;
-        this.browserService.getDetailByAsset(assetUid).subscribe(response => {
-            try {
-                this.selectedDiagramAsset = response;
-                this.selectedDiagramAsset.Loaded = true;
-                this.selectedDiagramAsset.Url = "/" + this.selectedDiagramAsset.Url;
-                this.panel_Loading = false;
-                this.cdRef.markForCheck();
-            } catch (ex) {
-                console.warn("error when setting selected asset");
-            }
-        });
+
+        let diagramAsset = new AssetBrowserDiagramAsset();
+        this.assetService.getAsset(assetUid)
+            .subscribe((asset) => {
+                diagramAsset.Url = "/asset/" + assetUid; 
+                diagramAsset.Path = asset.Path;
+
+                forkJoin(
+                    this.fieldsService.getFieldsV2(asset.AssetTypeUid, null, null),
+                    this.assetService.getUIDetailsForAssetUID(assetUid),
+                    this.responsibilityService.getResponsibilityDetail(assetUid)
+                )
+                .subscribe(([fields, ui, responsibilities]) => {
+
+                    fields.forEach((fieldType) => {
+                        let typeName = Object.keys(fieldType.Type)[0];
+                        let type = fieldType.Type[typeName];
+
+                        if (type != null && this.ignoredPanelFieldTypes.indexOf(typeName) == -1) {
+                            if (type.IsDisplayable === true && (type.ShowIfEmpty === true || (type.ShowIfEmpty === false && asset[fieldType.Name] != null))) {
+                                diagramAsset.Fields.push(
+                                    {
+                                        Name: fieldType.FriendlyName,
+                                        Type: typeName,
+                                        Value: asset[fieldType.Name] == null ? "" : asset[fieldType.Name].toString()
+                                    });
+                            }
+                        }
+                    });
+
+                    responsibilities.forEach((responsibility) => {
+                        diagramAsset.Owners.push({
+                            ResourceName: responsibility.Resource,
+                            ResponsibilityTypeName: responsibility.Responsibility,
+                            ResponsibilityTypeUid: responsibility.ResponsibilityUid,
+                            ResourceUid: responsibility.ResourceUid
+                        });
+                    });
+
+                    diagramAsset.TypeName = ui.TypeName;
+                    diagramAsset.DisplayValue = ui.DisplayValue;
+                    diagramAsset.Loaded = true;
+                    this.selectedDiagramAsset = diagramAsset;
+                    this.panel_Loading = false;
+                    this.cdRef.markForCheck();
+                });
+            });
     }
 
     /**
@@ -2253,10 +2315,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private template_ContextMenu(): go.Adornment {
         return this.g(
             "ContextMenu",
-            { areaBackground: "#ffffff", background: "#ffffff" },
+            { areaBackground: "#ffffff", background: "#ffffff" },            
             this.g(
                 "ContextMenuButton",
-                this.g(go.TextBlock, { text: "Navigate to", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
+                this.g(go.TextBlock, { text: "Open", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
                 {
                     click: (e, obj) => {
                         let assetUidRedirect: string = '';
@@ -2281,7 +2343,35 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 },
                 new go.Binding("visible", "", (o) => (
                     !(o.part.data.template && o.part.data.template == 'Owner') &&
+                    o.part.data.assetUid != this.assetUid && 
                     (o.part.data.assetUid !== this.emptyUid && o.part.data.hasAssetReadAccess)
+                )).ofObject()
+            ),
+            this.g(
+                "ContextMenuButton",
+                this.g(go.TextBlock, { text: "Open in New Tab", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
+                {
+                    click: (e, obj) => {
+                        let assetUidRedirect: string = '';
+                        assetUidRedirect = obj.part.data.assetUid;
+                        if (assetUidRedirect == this.assetUid)
+                            return;
+
+                        if (obj.part.data.class && obj.part.data.class.toString() == 'DiagramAsset') {
+
+                            this.processService.getProcessUrlByDiagramAssetUid(obj.part.data.assetUid).subscribe(res => {
+                                window.open(res, '_blank');
+                            })
+                            return;
+                        }
+
+                        var url = window.location.protocol + '//' + window.location.hostname + '/' + SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT + '/' + 'browser' + '/' + assetUidRedirect;
+                        window.open(url, '_blank');
+                    }
+                },
+                new go.Binding("visible", "", (o) => (
+                    !(o.part.data.template && o.part.data.template == 'Owner') &&
+                    (o.part.data.assetUid !== this.emptyUid && o.part.data.assetUid != this.assetUid && o.part.data.hasAssetReadAccess)
                 )).ofObject()
             ),
             this.g(

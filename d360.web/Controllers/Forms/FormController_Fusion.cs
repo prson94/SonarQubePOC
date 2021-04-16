@@ -517,39 +517,6 @@ namespace d360.web.Controllers
 
         #endregion
 
-        #region Fusion Attribute Type Custom Query
-
-        [HttpDelete, Route("DeleteFusionAttributeTypeCustomQuery")]
-        public JsonResult DeleteFusionAttributeTypeCustomQuery(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("fusionattributetypecustomquery");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<FusionAttributeTypeCustomQuery>(id);
-                if (model == null) throw new NotFoundException("fusionattributetypecustomquery");
-
-                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.FusionID, Permission.DeleteAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(model);
-
-                return jsonSuccess("Override successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
         #region FusionAttributeType
 
         // used by filter icon in fusion page.
@@ -562,37 +529,6 @@ namespace d360.web.Controllers
                 Data = model.FusionType.FusionAttributeTypes.OrderBy(i => i.TextPath),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
-        }
-
-
-        #endregion
-
-        #region FusionQueryAttributeType
-
-        protected JsonResult DeleteFusionQueryAttribute(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("fusion attribute type");
-
-                var model = Company.GetById<FusionQueryAttributeType>(parseIntField(form, "ID"));
-                if (model == null) throw new NotFoundException("fusion query attribute type");
-
-                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.FusionID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(model);
-                return jsonSuccess("Item successfully removed.", model.ID.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
         }
 
 

@@ -176,20 +176,19 @@ namespace igx.jobs.databasetaskprocessor
 
                                 var checkoutAndGetQueueItemSql = $@"
 declare @IDs table (ID uniqueidentifier)
-insert into @IDs
-select top {numberOfQueueItems} ID 
-from [queue].[Task] 
-where MachineAssigned is null and NumberOfRetries < 2  and [date] < DATEADD(minute, -1, getutcdate()) 
-order by [Date] asc
 
-update  T
-set     T.MachineAssigned = @m
-from    [queue].[Task] T
-        inner join @IDs S on S.ID = T.ID
+;WITH CTE AS 
+( 
+    SELECT TOP {numberOfQueueItems} * 
+    FROM [queue].[task]
+    where MachineAssigned is null and NumberOfRetries < 2  and [date] < DATEADD(minute, -1, getutcdate()) 
+    ORDER BY [Date] ASC
+) 
+UPDATE CTE set MachineAssigned = @m OUTPUT deleted.ID into @IDs  
 
 select  T.* 
 from    [queue].[Task] T
-        inner join @IDs S on S.ID = T.ID                                
+        inner join @IDs S on S.ID = T.ID
 ";
 
                                 List<QueueTask> queueItems = null;
@@ -231,7 +230,7 @@ from    [queue].[Task] T
                                                     {
                                                         case "Add":
                                                         #region
-                                                        addAuditEntry(companyConnection, q.Object, q.ObjectID, "Created", q.Custom, q.AssetID);
+                                                            addAuditEntry(companyConnection, "Created", q);
                                                             resolveIndexItem(companyConnection, q.Object, q.ObjectID, "A", q.AssetID);
                                                             break;
                                                     #endregion
@@ -239,7 +238,7 @@ from    [queue].[Task] T
                                                         #region                                     
                                                         if (IsValidTypeForAuditAction(q.Action, q.Object))
                                                             {
-                                                                addAuditEntry(companyConnection, q.Object, q.ObjectID, "Removed", q.Custom, q.AssetID);
+                                                                addAuditEntry(companyConnection, "Removed", q);
                                                             }
                                                             resolveIndexItem(companyConnection, q.Object, q.ObjectID, "D", q.AssetID);
                                                             break;
@@ -308,12 +307,7 @@ from    [queue].[Task] T
                                                     #endregion
                                                     case "FusionCache":
                                                         #region
-                                                        if (settings == null)
-                                                            {
-                                                                settings = CompanyConnectionUtils.GetCompanySettings(c.CompanyID);
-                                                            }
-                                                            bool useNewMarkitLineage = settings.Any(s => s.SettingID == markitLineageSettingID && s.Value.ToLower() == "true");
-                                                            companyConnection.Execute("exec fusion.ProcessFusionCacheInQueue @FusionID, @useNewMarkitLineage", new { FusionID = q.ObjectID, useNewMarkitLineage }, null, 10800);    // 180 minute timeout.
+                                                            companyConnection.Execute("exec fusion.ProcessFusionCacheInQueue @FusionID", new { FusionID = q.ObjectID}, null, 10800);    // 180 minute timeout.
                                                         break;
                                                     #endregion
                                                     case "Notify":
@@ -413,18 +407,17 @@ from    [queue].[Task] T
                                                     #endregion
                                                     case "Update":
                                                         #region
-                                                        addAuditEntry(companyConnection, q.Object, q.ObjectID, "Updated", q.Custom, q.AssetID);
+                                                            addAuditEntry(companyConnection, "Updated", q);
 
                                                             if (q.Object != "PolicyType" && q.Object != "TaxonomyType")
                                                                 resolveIndexItem(companyConnection, q.Object, q.ObjectID, "U", q.AssetID);
                                                             break;
                                                     #endregion
                                                     case "TagConsolidated":
-                                                            addAuditEntry(companyConnection, q.Object, q.ObjectID, "Tag Consolidate", q.Custom, q.AssetID);
+                                                            addAuditEntry(companyConnection, "Tag Consolidate", q);
                                                             break;
                                                         case "CompanySettingsUpdate":
-                                                            addAuditEntry(companyConnection, q.Object, q.ObjectID, "Update settings", q.Custom, q.AssetID);
-
+                                                            addAuditEntry(companyConnection, "Update settings", q);
                                                             break;
                                                         case "QueueRebuild":
                                                             if (!string.IsNullOrEmpty(q.Custom))
@@ -576,23 +569,23 @@ from    [queue].[Task] T
             return true;
         }
 
-        private static void addAuditEntry(SqlConnection companyConnection, string @object, int objectID, string oper, string custom, long assetID)
+        private static void addAuditEntry(SqlConnection companyConnection, string oper, QueueTask queueRecord)
         {
-            if (!string.IsNullOrEmpty(custom))
+            if (!string.IsNullOrEmpty(queueRecord.Custom))
             {
-                var customXml = XElement.Parse(custom);
+                var customXml = XElement.Parse(queueRecord.Custom);
 
                 //ActionObjectValue holds new value, as target is not in company table
-                if (custom.Contains("ActionObjectValue"))
+                if (queueRecord.Custom.Contains("ActionObjectValue"))
                 {
                     companyConnection.Execute(
                     "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID, @NewValue",
                     new
                     {
-                        Object = @object,
-                        ObjectID = objectID,
+                        Object = queueRecord.Object,
+                        ObjectID = queueRecord.ObjectID,
                         ParentObject = customXml.Element("ActionObject").Value,
-                        date = DateTime.UtcNow,
+                        date = queueRecord.Date,
                         ParentObjectID = int.Parse(customXml.Element("ActionObjectID").Value),
                         ResourceID = int.Parse(customXml.Element("ResourceID").Value),
                         op = oper,
@@ -607,10 +600,10 @@ from    [queue].[Task] T
                             "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID",
                             new
                             {
-                                Object = @object,
-                                ObjectID = objectID,
+                                Object = queueRecord.Object,
+                                ObjectID = queueRecord.ObjectID,
                                 ParentObject = customXml.Element("ActionObject").Value,
-                                date = DateTime.UtcNow,
+                                date = queueRecord.Date,
                                 ParentObjectID = int.Parse(customXml.Element("ActionObjectID").Value),
                                 ResourceID = int.Parse(customXml.Element("ResourceID").Value),
                                 op = oper

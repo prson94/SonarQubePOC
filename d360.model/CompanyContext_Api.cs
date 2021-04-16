@@ -607,7 +607,7 @@ where	ExecutionID = @executionID
                     where   A.ExecutionID = @executionID
                             and A.ItemNumber between @beginItemNumber and @endItemNumber 
                             and A.Success is null 
-                            and A.[Object] not in( 'FusionAttribute', 'FusionQueryAttribute')
+                            and A.[Object] not in( 'FusionAttribute' )
                             and ADV.DisplayValue is not null
             ";
 
@@ -1712,7 +1712,6 @@ where T.ExecutionId = @executionid;
                 List<SystemObjects> filteredObjects = new List<SystemObjects>()
             {
                 SystemObjects.FusionAttributeType,
-                SystemObjects.FusionQueryAttributeType,
                 SystemObjects.FusionType
             };
 

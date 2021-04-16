@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Function.utility.ObjectDetail-v5">
-    <comment>GOV-10380,GOV-11593</comment>
+  <changeSet author="TKlok" id="Function.utility.ObjectDetail-v6">
+    <comment>GOV-9617</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -52,7 +52,6 @@ BEGIN
 		'Rule',
 		'Taxonomy',
 		'Group',
-		'FusionQueryAttribute',
 		'Resource',
 		'Task'
 	)
@@ -70,7 +69,6 @@ BEGIN
 		'AttributeType',
 		'FusionType',
 		'FusionAttributeType',
-		'FusionQueryAttributeType',
 		'PolicyType',
 		'ReferenceItemType',
 		'RuleType',
@@ -187,7 +185,7 @@ RETURNS @tbl TABLE
 	AssetTypeID int,
 	AssetTypeUid uniqueidentifier,
 	Name nvarchar(max),
-	TextPath nvarchar(2500),
+	TextPath nvarchar(max),
 	Description nvarchar(max),
 	ParentID int null,
 	ParentType nvarchar(250),

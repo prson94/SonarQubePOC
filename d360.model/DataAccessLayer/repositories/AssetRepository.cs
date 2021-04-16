@@ -82,28 +82,15 @@ namespace d360.model.DataAccessLayer
             string condition = string.Empty;
             string optionalJoin = string.Empty;
             string permissionsJoin = string.Empty;
-            
+
             if (Class.HasValue)
             {
-                if (fusionTypeUid.HasValue && fusionTypeUid.Value != Guid.Empty && (Class == AssetTypeClass.FusionAttribute || Class == AssetTypeClass.FusionQuery))
+                if (fusionTypeUid.HasValue && fusionTypeUid.Value != Guid.Empty && Class == AssetTypeClass.FusionAttribute)
                 {
-                    if (Class == AssetTypeClass.FusionAttribute)
-                    {
-                        optionalJoin = @"inner join FusionAttributeType FAT on A.[Object] = 'FusionAttributeType' and A.Objectid = FAT.ID 
-                                          inner join AssetType ATTFusionType on ATTFusionType.[Object] = 'FusionType' and ATTFusionType.ObjectID = FAT.FusionTypeID";
-                        dbArgs.Add("@fusionTypeUid", fusionTypeUid);
-                        condition += " and ATTFusionType.uid = @fusionTypeUid";
-                    }
-
-                    if (Class == AssetTypeClass.FusionQuery)
-                    {
-                        optionalJoin = @"inner join FusionQueryAttributeType FQAT ON A.Object = 'FusionQueryAttributeType' AND FQAT.ID = a.ObjectID
-                                         inner join Fusion F on F.ID = FQAT.FusionID
-                                         inner join AssetType ATQFusionType on ATQFusionType.[Object] = 'FusionType' and ATQFusionType.ObjectID = F.FusionTypeID";
-
-                        dbArgs.Add("@fusionTypeUid", fusionTypeUid);
-                        condition += " and ATQFusionType.uid = @fusionTypeUid";
-                    }
+                    optionalJoin = @"inner join FusionAttributeType FAT on A.[Object] = 'FusionAttributeType' and A.Objectid = FAT.ID 
+                                        inner join AssetType ATTFusionType on ATTFusionType.[Object] = 'FusionType' and ATTFusionType.ObjectID = FAT.FusionTypeID";
+                    dbArgs.Add("@fusionTypeUid", fusionTypeUid);
+                    condition += " and ATTFusionType.uid = @fusionTypeUid";
                 }
                 else
                 {
@@ -118,15 +105,12 @@ namespace d360.model.DataAccessLayer
 
                 optionalJoin += @"left join FusionAttributeType FAT on A.[Object] = 'FusionAttributeType' and A.Objectid = FAT.ID 
                                   left join AssetType ATTFusionType on ATTFusionType.[Object] = 'FusionType' and ATTFusionType.ObjectID = FAT.FusionTypeID 
-                                  left join FusionQueryAttributeType FQAT ON A.Object = 'FusionQueryAttributeType' AND FQAT.ID = a.ObjectID
-                                  left join Fusion F on F.ID = FQAT.FusionID
                                   left join AssetType ATQFusionType on ATQFusionType.[Object] = 'FusionType' and ATQFusionType.ObjectID = F.FusionTypeID ";
 
                 dbArgs.Add("@class1", (int)AssetTypeClass.FusionAttribute);
-                dbArgs.Add("@class2", (int)AssetTypeClass.FusionQuery);
                 dbArgs.Add("@fusionTypeUid", fusionTypeUid);
 
-                condition = string.Format(" and (A.[Class] = @class1 OR A.[Class] = @class2) AND (ATQFusionType.uid = @fusionTypeUid or ATTFusionType.uid = @fusionTypeUid)");
+                condition = string.Format(" and A.[Class] = @class1 AND (ATQFusionType.uid = @fusionTypeUid or ATTFusionType.uid = @fusionTypeUid)");
 
             }
 
@@ -205,7 +189,7 @@ namespace d360.model.DataAccessLayer
 
             }
 
-            if(!CompanyContext.CurrentResourceIsAdmin)
+            if (!CompanyContext.CurrentResourceIsAdmin)
             {
                 permissionsJoin = $"outer apply (select case when ua.PermissionsBitMask & {(int)Permission.ReadAsset} = 0 then 0 else 1 end as hasRead from UserAssetPermissions(@userId,a.id) ua where ua.AssetTypeID = a.id and ua.AssetID = 0) UserP";
                 condition += " and (UserP.hasRead is null or UserP.hasRead != 0)";
@@ -924,7 +908,6 @@ namespace d360.model.DataAccessLayer
                 {(includeAssetPathInCount ? " left join graph.AssetNodeDisplayPath Node on Node.id = a.id" : "")} 
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
-                {(assetType.Object == "FusionQueryAttributeType" ? " inner join FusionQueryAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {string.Join("\n", countJoins)}
                 {(includeParentInCount ? parentApplySQL : "")}
                 {whereSql}";
@@ -951,7 +934,7 @@ namespace d360.model.DataAccessLayer
                     A.[UID] as [AssetUid],
                     A.AssetTypeId,
                     T.[UID] as AssetTypeUid,
-                    {(includeCreatedByModifiedBy ? "UA.uid as UpdatedByUid,": "")}
+                    {(includeCreatedByModifiedBy ? "UA.uid as UpdatedByUid," : "")}
                     A.UpdatedOn,
                     {(includeCreatedByModifiedBy ? "CA.uid as CreatedByUid," : "")}                    
                     A.CreatedOn,
@@ -970,7 +953,6 @@ namespace d360.model.DataAccessLayer
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
-                {(assetType.Object == "FusionQueryAttributeType" ? " inner join FusionQueryAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {string.Join("\n", fieldJoins)}
                 {(includeSegments || hasAssetPathField || whereSql.Contains("Node.") ? " left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID" : "")} 
                 left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
@@ -2700,7 +2682,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         new List<string>() { "Uid" })
             });
 
-            foreach(var node in nodes)
+            foreach (var node in nodes)
             {
                 List<PathComponent> returnlist = new List<PathComponent>();
 
@@ -2816,7 +2798,6 @@ where	O.RowNum = 1";
                 AssetTypeClass.Diagram,
                 AssetTypeClass.Fusion,
                 AssetTypeClass.FusionAttribute,
-                AssetTypeClass.FusionQuery,
                 AssetTypeClass.Group,
                 AssetTypeClass.Model,
                 AssetTypeClass.Organization,
@@ -3304,7 +3285,7 @@ where   A.[uid] = @assetUid";
                             R.ResourceID = F.ResourceID
 						    inner join Asset A on F.ObjectID = A.ObjectID and F.ObjectType=A.[Object]
 						    where A.[uid]=@assetUid
-                            ";            
+                            ";
 
             bool includeTotal = true;
 
@@ -3361,7 +3342,7 @@ where   A.[uid] = @assetUid";
             dbArgs.Add("@assetUid", assetUid);
             dbArgs.Add("@pageSize", pageSize);
             dbArgs.Add("@offset", (pageSize * pageNum));
-            
+
             var itemsSQL = $@"
                             select R.Uid as resourceUid, R.resourceId, F.FollowerName as 'name'
                             {joinSQL}
@@ -3381,8 +3362,8 @@ where   A.[uid] = @assetUid";
             }
 
             count = includeTotal ? count : null;
-            
-            return new AssetWatchers { total = count, items = items};
+
+            return new AssetWatchers { total = count, items = items };
         }
 
 
@@ -3456,7 +3437,7 @@ where   A.[uid] = @assetUid";
             }
 
             var orderBySQL = $"order by {orderBy} {orderDirection}";
-            
+
             dbArgs.Add("@assetTypeUid", assetTypeUid);
             dbArgs.Add("@pageSize", pageSize);
             dbArgs.Add("@offset", (pageSize * pageNum));

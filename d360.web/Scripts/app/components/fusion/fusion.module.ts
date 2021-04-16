@@ -37,8 +37,6 @@ import { FusionProcessErrorsComponent } from './fusion-process-errors.component'
 import { FusionStatisticsComponent } from './fusion-statistics.component';
 import { FusionStructureTreeComponent } from './fusion-structure-tree.component';
 import { FusionAttributeSummaryFiltersComponent } from './fusion-attribute-summary-filters.component';
-import { FusionQueryListComponent } from './fusion-query-list.component';
-import { FusionQueryAttributeEditorComponent } from './fusion-query-attribute-editor.component';
 import { FusionHistoryComponent } from './fusion-history.component'
 import { FusionAttributeTabsComponent } from './fusion-attribute-tabs.component';
 import { FusionAttributeComponent } from './fusion-attribute.component';
@@ -120,8 +118,6 @@ import { CodemirrorModule } from 'ng2-codemirror';
         FusionProcessErrorsComponent,
         FusionStatisticsComponent,
         FusionStructureTreeComponent,
-        FusionQueryListComponent,
-        FusionQueryAttributeEditorComponent,  
         FusionAttributeTabsComponent,
         FusionAttributeComponent
     ],

@@ -593,10 +593,6 @@ namespace d360.web.Controllers
                     return DeleteCustomAPIEndPoint(form);
                 case "FUSIONCONFIGURATION":
                     return DeleteFusion(form);
-                case "FUSIONQUERYATTRIBUTE":
-                    return DeleteFusionQueryAttribute(form);
-                case "FUSIONATTRIBUTETYPECUSTOMQUERY":
-                    return DeleteFusionAttributeTypeCustomQuery(form);
                 case "INTERSECTTYPE":
                     IntersectType intersectType = Company.GetById<IntersectType>(objectID);
                     form.Add("IntersectTypeUid", intersectType.uid.ToString());
@@ -732,6 +728,7 @@ namespace d360.web.Controllers
             model.ShowAllUsersAPIKey = (settings.Any(i => i.SettingID == 57) ? bool.Parse(settings.Single(i => i.SettingID == 57).Value) : true);
             model.WorkflowCatchAllGroup = (settings.Any(i => i.SettingID == 58) ? Int32.Parse(settings.Single(i => i.SettingID == 58).Value) : 0);
             model.WorkflowDigestEmailEnabled = (settings.Any(i => i.SettingID == 59) ? bool.Parse(settings.Single(i => i.SettingID == 59).Value) : false);
+            model.WorkflowDigestEmailDays = (settings.Any(i => i.SettingID == 78) ? int.Parse(settings.Single(i => i.SettingID == 78).Value) : 0);
             model.MaxDropdownItems = (settings.Any(i => i.SettingID == 60) ? Int32.Parse(settings.Single(i => i.SettingID == 60).Value) : 10000);
             model.WriteActionDescription = (settings.Any(i => i.SettingID == 61) ? bool.Parse(settings.Single(i => i.SettingID == 61).Value) : true);
             model.MaxExcelExportRows = (settings.Any(i => i.SettingID == 71) ? Int32.Parse(settings.Single(i => i.SettingID == 71).Value) : 10000);
@@ -896,6 +893,7 @@ namespace d360.web.Controllers
                 updateCompanySetting(settings, 57, formModel.ShowAllUsersAPIKey.ToString().ToLower());
                 updateCompanySetting(settings, 58, formModel.WorkflowCatchAllGroup.ToString());
                 updateCompanySetting(settings, 59, formModel.WorkflowDigestEmailEnabled.ToString().ToLower());
+                updateCompanySetting(settings, 78, Math.Abs(formModel.WorkflowDigestEmailDays).ToString());
                 updateCompanySetting(settings, 60, Math.Abs(formModel.MaxDropdownItems).ToString());
                 updateCompanySetting(settings, 61, formModel.WriteActionDescription.ToString().ToLower());
                 updateCompanySetting(settings, 71, Math.Abs(formModel.MaxExcelExportRows).ToString());

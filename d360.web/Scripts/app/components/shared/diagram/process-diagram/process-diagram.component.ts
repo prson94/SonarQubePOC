@@ -1041,7 +1041,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     this.showDiscardChanges = true;
                     break;
                 case 'open-related-assets':
-                    this.actionMessage = 'Please save your changes to the diagram before opening Related Assets.';
+                    this.actionMessage = 'Please save your changes to the diagram before opening Relationships.';
                     this.showDiscardChanges = false;
                     this.actionAfterSaved = () => {
                         this.isRelatedAssetsVisible = !this.isRelatedAssetsVisible;

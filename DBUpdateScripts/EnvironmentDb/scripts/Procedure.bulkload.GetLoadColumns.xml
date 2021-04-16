@@ -5,14 +5,14 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="BHoward" id="Procedure.bulkload.GetLoadColumns-v7">
-    <comment>GOV-13107</comment>
+  <changeSet author="kmcnamee" id="Procedure.bulkload.GetLoadColumns-v8">
+    <comment>GOV-14299</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-    CREATE or ALTER   procedure [bulkload].[GetLoadColumns]
+CREATE OR ALTER procedure [bulkload].[GetLoadColumns]
 	@action varchar(2),
 	@type varchar(50),
 	@id int,
@@ -304,7 +304,7 @@ begin
 							V.[Text]
 				from		@fields F 
 							inner join FieldType FT on FT.ID = F.FieldTypeID and F.FieldTypeID <> 0
-							inner join FieldLookupValue V on V.FieldTypeID = F.FieldTypeID and F.IsLookup = 1 and V.LookupObjectType = FT.LookupObjectType and V.LookupObjectID = FT.LookupObjectID
+							inner join FieldLookupValue V on V.FieldTypeID = F.FieldTypeID and F.IsLookup = 1
 				order by	F.FieldTypeID, V.[Text];
 	end
 	
@@ -620,60 +620,11 @@ begin
 				select		F.FieldTypeID,
 							V.[Text]
 				from		@fields F 
-							inner join FieldLookupValue V on V.FieldTypeID = F.FieldTypeID and F.IsLookup = 1
+							inner join FieldType FT on FT.ID = F.FieldTypeID and F.FieldTypeID <> 0
+							inner join FieldLookupValue V on V.FieldTypeID = F.FieldTypeID and F.IsLookup = 1 and V.LookupObjectType = FT.LookupObjectType and V.LookupObjectID = FT.LookupObjectID
 				order by	F.FieldTypeID, V.[Text];
 	end
 	
-	if @action = 'BL'
-	begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (-4, 'Action', 1, 0, 0, 1, 1)
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (-2, 'Source Relation', 1, 1, 0, 1, 1)
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Source Subject Asset ID', 1, 1, 0, 0, 1)
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Source Object Asset ID', 1, 1, 0, 0, 1)
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (-3, 'Source Fusion Configuration', 0, 0, 0, 1, 1)
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Source Fusion Path', 0, 0, 0, 0, 1)
-
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (-2, 'Target Relation', 1, 1, 0, 1, 1)
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Target Subject Asset ID', 1, 1, 0, 0, 1)
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Target Object Asset ID', 1, 1, 0, 0, 1)
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (-3, 'Target Fusion Configuration', 0, 0, 0, 1, 1)
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Target Fusion Path', 0, 0, 0, 0, 1)
-
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Transformation', 0, 0, 0, 0, 1)
-
-			insert into @lookups (FieldTypeID, [Label]) values (-4, 'Add')
-			insert into @lookups (FieldTypeID, [Label]) values (-4, 'Remove')
-				
-			insert into @lookups (FieldTypeID, [Label])         
-				select	-2,
-						SubjectName + ' ' + coalesce(PredicateName,'/') + ' ' + ObjectName
-				from	IntersectTypeDetail
-				where	PredicateType in (1,7,8,9,10,11)
-
-			insert into @lookups (FieldTypeID, [Label])
-				select		-3,
-							Name 
-				from		Fusion
-				order by	Name
-	end
-  
-		if @action = 'TL'
-	begin
-		insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (-1, 'Source Fusion Configuration', 1, 0, 0, 1, 1)
-		insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Source Fusion Path', 1, 0, 0, 0, 1)
-
-		insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (-1, 'Target Fusion Configuration', 1, 0, 0, 1, 1)
-		insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Target Fusion Path', 1, 0, 0, 0, 1)
-
-		insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Group', 0, 0, 0, 0, 1)
-
-		insert into @lookups (FieldTypeID, [Label])
-			select		-1,
-						Name 
-			from		Fusion
-			order by	Name
-	end
-  
 	select	Name,
 			[Required],
 			PartOfKey,
@@ -691,6 +642,7 @@ begin
 	from	@fields F
 	for json path
 end
+
 ]]>
 	</rollback>
   </changeSet>
