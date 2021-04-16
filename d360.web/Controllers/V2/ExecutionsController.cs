@@ -253,20 +253,25 @@ namespace d360.web.Controllers.V2
         {
             if (model == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "You have submitted an invalid or empty request please check your request and try again."));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "You have submitted an invalid or empty request please check your request and try again.")).ConfigureAwait(false);
             }
 
             if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
-
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
+            }
             if (model != null && model?.Status == null)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Status parameter value is required."));
-
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Status parameter value is required.")).ConfigureAwait(false);
+            }
             if (model != null && model?.Detail != null && model.Detail.Length > 250)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Detail maximum length upto 250."));
-
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Detail maximum length upto 250.")).ConfigureAwait(false);
+            }
             if (model != null && model?.Component != null && model.Component.Length > 250)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Component maximum length upto 250."));
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Component maximum length upto 250.")).ConfigureAwait(false);
+            }
 
             switch (model.Status)
             {
@@ -279,19 +284,17 @@ namespace d360.web.Controllers.V2
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid value for Status. Allowed values are: START, COMPLETE_SUCCESS, COMPLETE_FAILURE, INFORMATION"));
             }
 
-            ApiExecutionExternalViewModel result = new ApiExecutionExternalViewModel();
-
             try
             {
-                result = AssetRepository.AddConnectorStatus(model);
+                ApiExecutionExternalViewModel result = AssetRepository.AddConnectorStatus(model);
 
+                return ResponseMessage(Request.CreateResponse<ApiExecutionExternalViewModel>(HttpStatusCode.OK, result));
             }
             catch (Exception e)
             {
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error while add status of a connector endpoint", e.Message);
             }
 
-            return ResponseMessage(Request.CreateResponse<ApiExecutionExternalViewModel>(HttpStatusCode.OK, result));
         }
 
         #endregion
