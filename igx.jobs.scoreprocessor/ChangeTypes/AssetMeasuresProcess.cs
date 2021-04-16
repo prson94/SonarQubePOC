@@ -120,34 +120,7 @@ from	metrics.Asset A
 
         const string SUPPORTING_DATA_SQL = @"
 select * from #AssetAllocations;
-
 select * from FieldType where AssetTypeID in (select AssetTypeID from #AssetAllocations group by AssetTypeID);";
-
-        /*
-select	A.Uid as AssetUid,
-		FT.ID as FieldTypeID,
-        FT.Name as FieldTypeName,
-		COALESCE (V.LookupValues, F.Value, F.FormattedValue, FT.DefaultValue) as [Values] 
-from	Asset A 
-        inner join (
-			select		AssetUid
-			from		#AssetAllocations		
-			group by	AssetUid
-		) Al on Al.AssetUid = A.Uid
-		inner join FieldType FT ON FT.AssetTypeID = A.AssetTypeID 
-		left join Field F ON F.FieldTypeID = FT.ID AND F.ObjectType = A.Object AND F.ObjectID = A.ObjectID
-		outer apply (
-			select	string_agg(lower(cast(LA.Uid as nvarchar(50))), ',') as LookupValues
-			from	STRING_SPLIT(COALESCE(F.Value, FT.DefaultValue),',') MV
-					inner join Asset LA on LA.ObjectID = MV.value
-					inner join AssetType LAT on LAT.Object = FT.LookupObjectType+'Type' and LAT.ObjectID = FT.LookupObjectID and LAT.ID = LA.AssetTypeID
-			where	FT.Type = 'Lookup'
-		) V
-where	(F.FormattedValue IS NOT NULL 
-		OR FT.DefaultValue IS NOT NULL 
-		OR FT.ShowIfEmpty = 1)
-		and FT.Type not in ('JSON','Path','Relationship','FieldFromRelationship','ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship','Tag','Score');         
-         */
 
         #endregion
 
