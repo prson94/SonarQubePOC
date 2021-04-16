@@ -198,10 +198,6 @@ where   Uid <> @uid
                     assets.Rows.Add(assetRow);
                 }
 
-                // Clear up memory for lists that are no longer needed.
-                assetMeasures = null;
-                rawAssetMeasures = null;
-
                 List<AllocationDataModel> allocations = null;
                 List<FieldType> fieldTypes = null;
                 List<ExternalMeasureResultsCreatedModel> models = null;
@@ -377,7 +373,7 @@ where   Uid <> @uid
 	    OR FT.DefaultValue IS NOT NULL 
 	    OR FT.ShowIfEmpty = 1)
 	    and FT.Type not in ('JSON','Path','Relationship','FieldFromRelationship','ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship','Tag','Score')
-    and A.Uid in (select Uid from @assets);", new { assets = thisSet.Select(i => new { Uid = i.AssetUid }).Distinct().AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" }) }).ToList();
+    and A.Uid in (select Uid from @assets);", new { assets = thisSet.Select(i => new { Uid = i.AssetUid }).Distinct().AsTableValuedParameter("dbo.UidTable", new List<string> { "Uid" }) }).ToList();
 
                     thisSet.ForEach(assetEffectiveDate =>
                     {
@@ -749,9 +745,6 @@ where   Uid <> @uid
                     runningTotal = uniqueAssetCombinations.Count;
                 }
 
-                // Clear up memory for lists that are no longer needed.
-                uniqueAssetCombinations = null;
-
                 updateExecution(company, executionRecord, true);
             }
         }
@@ -892,7 +885,7 @@ when not matched then
                             "metrics.ProcessAssetScores @allocationUid, @assets", 
                             new {
                                 allocationUid = items[0].AllocationUid,
-                                assets = items.Select(i => new { i.AssetUid, i.EffectiveDate }).Distinct().AsTableValuedParameter("dbo.AssetEffectiveDate", new List<string>() { "AssetUid", "EffectiveDate" }),
+                                assets = items.Select(i => new { i.AssetUid, i.EffectiveDate }).Distinct().AsTableValuedParameter("dbo.AssetEffectiveDate", new List<string> { "AssetUid", "EffectiveDate" }),
                             }, 
                             transaction: trans
                         );
@@ -909,7 +902,6 @@ when not matched then
                         {
                             updateExecution(company, executionRecord, false, ex);
                         }
-                        //throw ex;
                     }
                 }
 

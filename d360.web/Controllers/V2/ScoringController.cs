@@ -1018,7 +1018,7 @@ namespace d360.web.Controllers.V2
                             executions
                         )
                     )
-                );
+                ).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1045,7 +1045,7 @@ namespace d360.web.Controllers.V2
                 var res = ScoringRepository.GetExecutionById(uid);
                 if (res == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found.")).ConfigureAwait(false);
                 }
                 return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(
@@ -1063,13 +1063,13 @@ namespace d360.web.Controllers.V2
             catch (Exception ex)
             {
                 var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
+                SendException(ex, new Dictionary<string, string> {
                     { "Endpoint Method", "Scoring.GetExecutionStatus => " },
                     { "ExecutionID", uid.ToString() },
                     { "ExecutionUid", uid.ToString() }, //left to prevent a breaking change
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
             }
         }
 

@@ -26,7 +26,7 @@ namespace d360.core.entities
         public DateTime? ProcessingStartedOn { get; set; }
 
         [DataMember]
-        public bool Processing { get; set; } = false;
+        public bool Processing { get; set; }
 
         [DataMember]
         public Guid? TriggeredByExecutionUid { get; set; }
