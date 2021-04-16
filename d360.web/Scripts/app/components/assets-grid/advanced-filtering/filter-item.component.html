@@ -70,7 +70,7 @@
 
                     <ig-date *ngIf="currentInputType === 'date-time'" [(ngModel)]="condition.value" [showTime]="true" [appendTo]="'body'" [required]="true"></ig-date>
                     <ng-container *ngIf="currentInputType === 'multi-date-time'">
-                        <ig-date [(ngModel)]="condition.value2" [required]="true" [appendTo]="'body'" [showTime]="true"></ig-date>
+                        <ig-date [(ngModel)]="condition.value" [required]="true" [appendTo]="'body'" [showTime]="true"></ig-date>
                         <div class="value-separator">and</div>
                         <ig-date [(ngModel)]="condition.value2" [required]="true" [appendTo]="'body'" [showTime]="true"></ig-date>
                     </ng-container>
@@ -139,6 +139,7 @@
                                     [(ngModel)]="condition.value"
                                     (onChange)="onItemSelected($event)"
                                     igSize="full"
+                                    required="true"
                                     appendTo="body">
                             <ng-template let-item pTemplate="selectedItem">
                                 <div class="score-pill-small-rounded score-{{item.value}}"></div>

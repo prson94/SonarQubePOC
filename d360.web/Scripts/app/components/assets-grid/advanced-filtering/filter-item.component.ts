@@ -193,14 +193,14 @@ export class FilterItemComponent implements OnInit, OnChanges {
         let options: SelectItem[] = [];
         if (this.condition.field === SystemFields.OwnedByFieldCode) {
             options.push({ label: "contains", value: "Equals" });
-            options.push({ label: "not contains", value: "NotEquals" });
+            options.push({ label: "does not contain", value: "NotEquals" });
             return options;
         }
 
         if (this.currentField.IsRelationship) {
             options = [];
             options.push({ value: "Equals", label: " contains " });
-            options.push({ value: "NotEquals", label: " does not contains " });
+            options.push({ value: "NotEquals", label: " does not contain " });
             options.push({ value: "Populated", label: " exist " });
             options.push({ value: "NotPopulated", label: " do not exist " });
             return options;
@@ -221,14 +221,14 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
             if (this.relationshipFieldIntersectCardinality === "Many") {
                 options[0].label = "contains";
-                options[1].label = "does not contains";
+                options[1].label = "does not contain";
             }
             return options;
         }
 
         if (ft.Type.Lookup && ft.Type.Lookup.List.AllowMultipleValues) {
             ft.Operators[0].label = "contains";
-            ft.Operators[1].label = "does not contains";
+            ft.Operators[1].label = "does not contain";
         }
 
         return ft ? ft.Operators : [];
@@ -366,6 +366,16 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     onOperatorSelected($event) {
+        if (this.condition.fieldType === "Path") {
+            var dataType = typeof this.condition.value;
+
+            //Convert string to chips
+            if (dataType === "string" && (this.currentOperator !== "StartsWith" && this.currentOperator !== "EndsWith")) {
+                var values = (this.condition.value as string).split(",");
+                this.condition.value = values;
+            }
+        }
+
         this.condition.operator = this.currentOperator;
         this.updateOperatorData();
 
