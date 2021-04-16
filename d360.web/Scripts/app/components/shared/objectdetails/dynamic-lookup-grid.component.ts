@@ -128,6 +128,8 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
             params['_order'] = event.sortField;
         }
 
+        params['useUidUrls'] = 'false';
+
         if (event.sortOrder) {
             if (event.sortOrder == 1) {
                 params['_direction'] = 'ASC';

@@ -37,12 +37,6 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     private selectedFusionAttribute: any;
     private initialFusionAttributeId: number;
 
-    private selectedFusionQueryAttributeTypeId: number;
-    private selectedFusionQueryAttribute: any;
-    private initialFusionQueryAttributeId: number;
-
-    private isQueryConfigVisible: boolean = false;
-
     @ViewChild(FusionStructureTreeComponent, {static: false}) private fusionTreeComponent: FusionStructureTreeComponent;
     
     constructor(private headerBreadcrumbService: HeaderBreadcrumbService,
@@ -64,10 +58,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         this.routeParams = this.route.params.subscribe((params) => {
             let newFusionID = +params['fusionId'];
             this.selectedFusionAttributeTypeId = +params['fusionAttributeTypeId'];
-            this.initialFusionAttributeId = +params['fusionAttributeId'];            
-            this.selectedFusionQueryAttributeTypeId = +params['fusionQueryAttributeTypeId'];
-            this.initialFusionQueryAttributeId = +params['fusionQueryAttributeId'];
-            this.isQueryConfigVisible = params['showQueryConfig'] == 'true';         
+            this.initialFusionAttributeId = +params['fusionAttributeId'];
 
             if (this.fusionId != newFusionID) {
                 this.fusionId = newFusionID;
@@ -129,12 +120,6 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
                 this.treeNodeArray = this.buildTreeNodeArray(this.fusionTreeComponent.fusionAttributeTypes);
                 this.addFusionAttributeTypeBreadcrumb(this.selectedFusionAttributeTypeId);
             }
-            else if (this.selectedFusionQueryAttributeTypeId && this.fusionTreeComponent.fusionQueryAttributeTypes) {
-                this.addFusionQueryAttributeTypeBreadcrumb(this.selectedFusionQueryAttributeTypeId);
-            }
-            else if (this.isQueryConfigVisible) {
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Fusion Query Configuration', `/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};showQueryConfig=true`));
-            }
             this.headerBreadcrumbService.getFolderIcon(areaBreadcrumb.text).subscribe(icon => {
                 this.setRightSideBar(this.fusion.HasDashboards, this.fusion.Manual);
                 this.secondaryNavService.setLocalHomeUrl(this.router.url);
@@ -182,38 +167,16 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         }
     }
 
-    private addFusionQueryAttributeTypeBreadcrumb(id: number) {
-        var items = this.fusionTreeComponent.fusionQueryAttributeTypes.filter(x => x.ID == id);
-
-        if (items.length > 0) {
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Fusion Query Configuration', `/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};showQueryConfig=true`));
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(
-                items[0].Name,
-                `/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};fusionQueryAttributeTypeId=${items[0].ID}`));
-        }
-    }
-    
     private changeFusionAttributeTypeId(event) {
         if (event == this.selectedFusionAttributeTypeId) {
             this.buildBreadcrumb();
             return;
         }
         this.selectedFusionAttribute = null;
-        this.selectedFusionQueryAttribute = null;
         this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};fusionAttributeTypeId=${event}`);
         this.buildBreadcrumb();
     }   
 
-    private showQueryConfig(val) {
-        if(val) this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};showQueryConfig=true`);
-    }
-
-    private changeFusionQueryAttributeTypeId(event) {
-        this.selectedFusionAttribute = null;
-        this.selectedFusionQueryAttribute = null;
-        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};fusionQueryAttributeTypeId=${event}`);
-    }  
-    
     protected updateTree(tree) {
         tree.load();
     }

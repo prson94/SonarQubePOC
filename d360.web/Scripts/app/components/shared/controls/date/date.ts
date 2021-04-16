@@ -61,6 +61,7 @@ export class IgDate implements ControlValueAccessor, OnInit, AfterViewInit, OnDe
     @Input() dateFormat: string = "mm/dd/yy";
     @Input() name: string;
     @Input() label: string;
+    @Input() showTime: boolean = false;
 
     //PrimeNG p-calendar cannot set zIndex of overlay when using appendTo using [style] so we need to add it manually
     @Input() overlayLowerZIndex: boolean = false;

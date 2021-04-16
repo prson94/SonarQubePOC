@@ -434,7 +434,6 @@ namespace d360.web.Controllers
             {
                 ignoreObjects.Add(SystemObjects.FusionType.ToString());
                 ignoreObjects.Add(SystemObjects.FusionAttributeType.ToString());
-                ignoreObjects.Add(SystemObjects.FusionQueryAttributeType.ToString());
             }
 
             if (ignoreObjects.Count > 0)

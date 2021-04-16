@@ -71,8 +71,9 @@ namespace d360.core.enums
         ]
         Group = 12,
         [
-            Name("Fusion Query"),
-            Description("Fusion query assets.")
+            Name("Fusion Query-Obsolete"),
+            Obsolete("Fusion Queries no longer supported", false),
+            Description("Obsolete - do not use.")
         ]
         FusionQuery = 13,
         [

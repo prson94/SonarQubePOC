@@ -3,275 +3,289 @@
 
 ig-date {
 
-    &:required.ng-invalid .ig-date .ig-input {
-        background: @ig-lightblue-t4 !important;
-        border-color: @ig-field-border-color;
+  &:required.ng-invalid .ig-date .ig-input {
+    background: @ig-lightblue-t4 !important;
+    border-color: @ig-field-border-color;
+  }
+
+  &.ng-dirty.ng-invalid .ig-date .ig-input,
+  &.ng-invalid .ig-date .ig-input,
+  &.ng-touched.ng-invalid .ig-date .ig-input {
+    background: @ig-red-t5 !important;
+
+    &:required:invalid {
+      background: @ig-lightblue-t4 !important;
+      border-color: @ig-field-border-color;
     }
+  }
 
-    &.ng-dirty.ng-invalid .ig-date .ig-input,
-    &.ng-invalid .ig-date .ig-input,
-    &.ng-touched.ng-invalid .ig-date .ig-input {
-        background: @ig-red-t5 !important;
 
-        &:required:invalid {
-            background: @ig-lightblue-t4 !important;
-            border-color: @ig-field-border-color;
-        }
+
+
+  .ig-error-label {
+    background: @ig-red-s1;
+    color: @ig-white;
+    border-radius: 2px;
+    position: relative;
+    top: -14px;
+    padding: 2px 4px;
+  }
+
+  .control-container {
+    display: inline-block;
+    outline: none;
+
+    > p-calendar.ng-invalid.ng-touched.ng-dirty .ig-input {
+      background: @ig-red-t5;
     }
+  }
 
+  color: black;
+  border-top: 1px solid #dde0e3;
+  padding-top: 4px;
 
+  .p-timepicker {
+    color: black;
+    border-top: 1px solid #dde0e3;
+    padding: 16px;
 
-
-    .ig-error-label {
-        background: @ig-red-s1;
-        color: @ig-white;
-        border-radius: 2px;
-        position: relative;
-        top: -14px;
-        padding: 2px 4px;
+    .p-separator {
+      padding: 4px;
     }
-
-    .control-container {
-        display: inline-block;
-        outline: none;
-
-        > p-calendar.ng-invalid.ng-touched.ng-dirty .ig-input {
-            background: @ig-red-t5;
-        }
-    }
+  }
 }
 
 
 .ig-date, p-calendar .ig-date {
-    &.ig-date-overlay-normal-index {
-        z-index: 25000 !important;
+  &.ig-date-overlay-normal-index {
+    z-index: 25000 !important;
+  }
+
+  &.ig-date-overlay-lower-index {
+    z-index: 899 !important;
+  }
+
+  .ig-input {
+    width: 150px;
+    max-width: 100%;
+    background: @ig-white;
+    height: 32px;
+    border-radius: @ig-field-border-radius;
+    border-bottom-right-radius: @ig-field-border-radius !important;
+    border-top-right-radius: @ig-field-border-radius !important;
+    padding: 0 8px;
+
+
+
+    &:disabled {
+      opacity: 0.33;
     }
 
-    &.ig-date-overlay-lower-index {
-        z-index: 899 !important;
+    &:required:invalid {
+      background: @ig-lightblue-t4 !important;
     }
+  }
 
-    .ig-input {
-        width: 150px;
-        max-width: 100%;
+
+  .p-datepicker, &.p-datepicker {
+    border-radius: @ig-field-border-radius;
+    box-shadow: 0 1px 4px rgba(0,0,0,.5);
+
+    .p-datepicker-group {
+      padding: 8px;
+      border-radius: @ig-field-border-radius;
+
+      .p-datepicker-header {
         background: @ig-white;
-        height: 32px;
-        border-radius: @ig-field-border-radius;
-        border-bottom-right-radius: @ig-field-border-radius !important;
-        border-top-right-radius: @ig-field-border-radius !important;
-        padding: 0 8px;
+        border: none;
 
-
-
-        &:disabled {
-            opacity: 0.33;
-        }
-
-        &:required:invalid {
-            background: @ig-lightblue-t4 !important;
-        }
-    }
-
-
-    .p-datepicker, &.p-datepicker {
-        border-radius: @ig-field-border-radius;
-        box-shadow: 0 1px 4px rgba(0,0,0,.5);
-
-        .p-datepicker-group {
-            padding: 8px;
+        a {
+          &.p-datepicker-next {
             border-radius: @ig-field-border-radius;
+            height: 24px;
+            width: 24px;
+            right: 4px !important;
+            top: 4px;
 
-            .p-datepicker-header {
-                background: @ig-white;
-                border: none;
-
-                a {
-                    &.p-datepicker-next {
-                        border-radius: @ig-field-border-radius;
-                        height: 24px;
-                        width: 24px;
-                        right: 4px !important;
-                        top: 4px;
-
-                        span {
-                            margin-left: -0.5em;
-                            margin-top: -0.5em;
-                        }
-
-                        &:focus {
-                            outline: 0 none;
-                            outline-offset: 0;
-                            -webkit-box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
-                            -moz-box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
-                            box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
-                        }
-                    }
-
-                    &.p-datepicker-prev {
-                        border-radius: @ig-field-border-radius;
-                        height: 24px;
-                        width: 24px;
-                        left: 4px !important;
-                        top: 4px;
-
-                        span {
-                            margin-right: -0.5em;
-                            margin-top: -0.5em;
-                        }
-
-                        &:focus {
-                            outline: 0 none;
-                            outline-offset: 0;
-                            -webkit-box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
-                            -moz-box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
-                            box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
-                        }
-                    }
-                }
-
-                .p-datepicker-title {
-                    color: @ig-black;
-                    text-transform: none;
-                    text-shadow: none;
-                }
+            span {
+              margin-left: -0.5em;
+              margin-top: -0.5em;
             }
 
-            .p-datepicker-calendar-container {
-
-                .p-datepicker-today {
-                    border: none !important;
-                    background: @ig-grey-t4;
-                    border-radius: 2px;
-                }
-
-                .p-highlight {
-                    background: @ig-orange-t3 !important;
-                    border-radius: 2px;
-                    color: @ig-black !important;
-                }
-
-                table {
-                    thead {
-                        border: none;
-                    }
-
-                    th {
-                        background: @ig-white;
-                        color: @ig-black !important;
-                        border: none !important;
-                        text-shadow: none;
-                    }
-
-                    td {
-                        border: none;
-                        background: @ig-white;
-
-                        &.p-datepicker-today span {
-                            border: none !important;
-                            background: @ig-grey-t4;
-                            border-radius: 2px;
-
-                            &.p-disabled {
-                                background: none;
-                            }
-                        }
-
-                        span {
-                            border: none !important;
-                            width: 40px;
-                            height: 32px;
-                            border-radius: 2px;
-                            font-weight: normal !important;
-                            font-size: 14px;
-
-                            &.p-disabled {
-                                background: none;
-                            }
-                        }
-
-                        &.p-datepicker-other-month {
-                            border: none;
-                            color: @ig-grey;
-                        }
-
-                        span {
-                            text-decoration: none;
-                            background: @ig-white;
-                            color: @ig-black;
-                            border: none;
-                            width: 40px;
-                            height: 32px;
-                            border-radius: 2px;
-                            font-weight: normal !important;
-                            font-size: 14px;
-                            line-height: 32px;
-
-
-                            &:hover {
-                                background: @ig-orange-t4;
-                            }
-
-                            &:active {
-                                background: @ig-orange-t3;
-                            }
-
-
-                            &:focus {
-                                outline: 0 none;
-                                outline-offset: 0;
-                                -webkit-box-shadow: inset 0 0 0 @ig-focus-width @ig-focus-color;
-                                -moz-box-shadow: inset 0 0 0 @ig-focus-width @ig-focus-color;
-                                box-shadow: inset 0 0 0 @ig-focus-width @ig-focus-color;
-                            }
-
-
-
-                            &.p-highlight .p-datepicker-today {
-                                border: none !important;
-                                background: @ig-grey-t4;
-                                border-radius: 2px;
-                            }
-                        }
-                    }
-                }
+            &:focus {
+              outline: 0 none;
+              outline-offset: 0;
+              -webkit-box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+              -moz-box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+              box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
             }
+          }
+
+          &.p-datepicker-prev {
+            border-radius: @ig-field-border-radius;
+            height: 24px;
+            width: 24px;
+            left: 4px !important;
+            top: 4px;
+
+            span {
+              margin-right: -0.5em;
+              margin-top: -0.5em;
+            }
+
+            &:focus {
+              outline: 0 none;
+              outline-offset: 0;
+              -webkit-box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+              -moz-box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+              box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+            }
+          }
         }
+
+        .p-datepicker-title {
+          color: @ig-black;
+          text-transform: none;
+          text-shadow: none;
+        }
+      }
+
+      .p-datepicker-calendar-container {
+
+        .p-datepicker-today {
+          border: none !important;
+          background: @ig-grey-t4;
+          border-radius: 2px;
+        }
+
+        .p-highlight {
+          background: @ig-orange-t3 !important;
+          border-radius: 2px;
+          color: @ig-black !important;
+        }
+
+        table {
+          thead {
+            border: none;
+          }
+
+          th {
+            background: @ig-white;
+            color: @ig-black !important;
+            border: none !important;
+            text-shadow: none;
+          }
+
+          td {
+            border: none;
+            background: @ig-white;
+
+            &.p-datepicker-today span {
+              border: none !important;
+              background: @ig-grey-t4;
+              border-radius: 2px;
+
+              &.p-disabled {
+                background: none;
+              }
+            }
+
+            span {
+              border: none !important;
+              width: 40px;
+              height: 32px;
+              border-radius: 2px;
+              font-weight: normal !important;
+              font-size: 14px;
+
+              &.p-disabled {
+                background: none;
+              }
+            }
+
+            &.p-datepicker-other-month {
+              border: none;
+              color: @ig-grey;
+            }
+
+            span {
+              text-decoration: none;
+              background: @ig-white;
+              color: @ig-black;
+              border: none;
+              width: 40px;
+              height: 32px;
+              border-radius: 2px;
+              font-weight: normal !important;
+              font-size: 14px;
+              line-height: 32px;
+
+
+              &:hover {
+                background: @ig-orange-t4;
+              }
+
+              &:active {
+                background: @ig-orange-t3;
+              }
+
+
+              &:focus {
+                outline: 0 none;
+                outline-offset: 0;
+                -webkit-box-shadow: inset 0 0 0 @ig-focus-width @ig-focus-color;
+                -moz-box-shadow: inset 0 0 0 @ig-focus-width @ig-focus-color;
+                box-shadow: inset 0 0 0 @ig-focus-width @ig-focus-color;
+              }
+
+
+
+              &.p-highlight .p-datepicker-today {
+                border: none !important;
+                background: @ig-grey-t4;
+                border-radius: 2px;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+
+  button.p-button, button.p-button.p-button-icon-only {
+    color: @ig-black;
+    background: rgba(0,0,0,0.07);
+    border-radius: 2px;
+    position: absolute;
+    right: 3px;
+    top: 3px;
+    height: 24px;
+    width: 24px;
+
+    &.p-button-icon-only .p-button-icon-left {
+      font-weight: normal !important;
     }
 
+    &:hover {
+      &:not(:disabled) {
+        background: rgba(0,0,0,0.14);
+      }
 
-    button.p-button, button.p-button.p-button-icon-only {
-        color: @ig-black;
+      &:disabled {
         background: rgba(0,0,0,0.07);
-        border-radius: 2px;
-        position: absolute;
-        right: 3px;
-        top: 3px;
-        height: 24px;
-        width: 24px;
-
-        &.p-button-icon-only .p-button-icon-left {
-            font-weight: normal !important;
-        }
-
-        &:hover {
-            &:not(:disabled) {
-                background: rgba(0,0,0,0.14);
-            }
-
-            &:disabled {
-                background: rgba(0,0,0,0.07);
-            }
-        }
-
-        &:active {
-
-            &:not(:disabled) {
-                background: rgba(0,0,0,0.21);
-            }
-
-            &:disabled {
-                background: rgba(0,0,0,0.07);
-            }
-        }
+      }
     }
+
+    &:active {
+
+      &:not(:disabled) {
+        background: rgba(0,0,0,0.21);
+      }
+
+      &:disabled {
+        background: rgba(0,0,0,0.07);
+      }
+    }
+  }
 }
