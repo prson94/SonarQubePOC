@@ -42,8 +42,27 @@ export class AdvancedFilteringComponent implements OnChanges {
         {
             title: "Clear Filters",
             callback: () => {
-                this.conditions.filters = this.conditions.filters.filter((x) => x.isDefaultFilter === true);
+                this.conditions.filters = [];
+
+                this.fields.forEach((field) => {
+                    if (field.Type) {
+                        var key = Object.keys(field.Type)[0];
+                        var isDefaultFilter = false;
+                        if (Object.keys(field.Type).some((x) => x === key)) {
+                            isDefaultFilter = field.Type[key]["IsPrimaryFilter"];
+                        }
+
+                        if (isDefaultFilter === true) {
+                            var defaultFilter = new AdvancedFilterFieldCondition(this.datePipe);
+                            defaultFilter.field = field.Name;
+                            defaultFilter.isDefaultFilter = true;
+                            defaultFilter.isNew = true;
+                            this.conditions.filters.push(defaultFilter);
+                        }
+                    }
+                });
                 this.onItemChange();
+                this.cdRef.markForCheck();
             }
         },
         {
@@ -250,6 +269,7 @@ export class AdvancedFilteringComponent implements OnChanges {
                 newfilter.friendlyFieldName = filter.friendlyFieldName;
                 newfilter.isRelationship = filter.isRelationship;
                 newfilter.markForDeletion = filter.markForDeletion;
+                newfilter.relationshipFieldName = filter.relationshipFieldName;
                 newfilter.operator = filter.operator;
                 newfilter.type = filter.type;
                 newfilter.isDefaultFilter = filter.isDefaultFilter;
