@@ -240,6 +240,8 @@ namespace d360.model.DataAccessLayer
         public async Task<AssetsApiViewModel> GetAssets(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false)
         {
             var assetTypeID = 0;
+            Guid? parentUid = null;
+            bool parentUidPopulated = false;
             var includeRelationships = false;
             var fusionAttributeWithParent = false;
             var includeSegments = false;
@@ -511,12 +513,11 @@ namespace d360.model.DataAccessLayer
 
 
             if (includeRelationships)
+            {
                 whereStatements.Add("R.Relationships is not null");
-
-
+            }
 
             //Add read permission check for admin and non-admin users as in GetAssets procedure
-
             var restrictions = (await CompanyContext.QueryAsync<UserGetAPIRestrictionModel>(@"select
                     case when exists(
                     select AssetID from dbo.UserAssetPermissions(@userId,@assetTypeID) where ((PermissionsBitMask & @p)) = 0)
@@ -892,6 +893,74 @@ namespace d360.model.DataAccessLayer
                     whereStatements.Add(ownershipSQL);
                 }
             }
+
+
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_parentuid"))
+            {
+                parentUidPopulated = true;
+                var parentUidString = queryParams.FirstOrDefault(k => k.Key.ToLower() == "_parentuid").Value;
+                if (parentUidString != "null")
+                {
+                    Guid pUid;
+                    if (Guid.TryParse(parentUidString, out pUid))
+                    {
+                        parentUid = pUid;
+                        if (!CompanyContext.Any<Asset>(i => i.uid == pUid))
+                        {
+                            throw new ArgumentException($"_parentUid with value {pUid} does not correspond to a valid asset!");
+                        }
+                    }
+                    else
+                    {
+                        throw new ArgumentException("_parentUid parameter must be a valid Guid, be set to null, or not be present!");
+                    }
+                }
+            }
+
+            var hierachy = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_ishierachyitem").Value;
+            bool.TryParse(hierachy, out isHierachyItem);
+
+            if (isHierachyItem || parentUidPopulated)
+            {
+                if (isHierachyItem)
+                {
+                    hierarchyParentUidCol = " ,HParent.uid as ParentUid";
+                }
+
+                string predicateType = "0";
+                switch (assetType.Class)
+                {
+                    case AssetTypeClass.Model:
+                    case AssetTypeClass.Policy:
+                        predicateType = "4";
+                        break;
+                    default:
+                        predicateType = "3";
+                        break;
+                }
+                hierarchyParentUidSelect = $@" {(parentUid.HasValue ? "cross" : "outer")} apply (
+					select	PA.uid 
+					from	[Intersect] I
+                            inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
+							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = {predicateType}
+							inner join Asset PA on PA.Object = I.Subject and PA.ObjectID =I.SubjectID
+					) HParent ";
+
+                if (parentUidPopulated) 
+                {
+                    if (parentUid.HasValue)
+                    {
+                        dbArgs.Add("parentUid", parentUid.Value);
+                        whereStatements.Add("HParent.Uid = @parentUid");
+                    }
+                    else
+                    {
+                        whereStatements.Add("HParent.Uid is null");
+                    }
+                }
+
+            }
+
             var whereSql = "";
             if (whereStatements.Any())
                 whereSql = $"where {string.Join(" and ", whereStatements)}";
@@ -909,23 +978,9 @@ namespace d360.model.DataAccessLayer
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {string.Join("\n", countJoins)}
+                {hierarchyParentUidSelect}
                 {(includeParentInCount ? parentApplySQL : "")}
                 {whereSql}";
-
-            var hierachy = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_ishierachyitem").Value;
-            bool.TryParse(hierachy, out isHierachyItem);
-
-            if (isHierachyItem)
-            {
-                hierarchyParentUidCol = " ,Parent.uid as ParentUid";
-                hierarchyParentUidSelect = $@" outer apply (
-					select	PA.uid 
-					from	[Intersect] I
-                            inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
-							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
-							inner join Asset PA on PA.Object = I.Subject and PA.ObjectID =I.SubjectID
-					) Parent ";
-            }
 
             var sql = $@"
                 {populatePremissionAssetTableSQL}
