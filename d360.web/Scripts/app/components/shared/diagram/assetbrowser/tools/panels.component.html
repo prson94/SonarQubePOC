@@ -11,6 +11,6 @@
     <button *ngIf="diagramType != 3"  type="button" title="Download as PNG" aria-label="Download as PNG" (click)="execute(3)" [class]="'icon mr8' + (enableDownload ? '' : ' disabled')" [disabled]="!enableDownload"><i class="fa fa-download"></i></button>
     <div *ngIf="diagramType != 3"  class="button-spacer"></div>
     <button type="button" [title]="isFullScreen ? 'Shrink View':'Expand View'" [attr.aria-label]="isFullScreen ? 'Shrink View':'Expand View'" class="dark icon mr8" (click)="execute(6)">
-        <i class="fa" [ngClass]="{'fa-compress' : isFullScreen, 'fa-arrows-alt' : !isFullScreen}"></i>
+        <i class="fa" [ngClass]="{'fa-compress' : isFullScreen, 'fa-expand' : !isFullScreen}"></i>
     </button>
 </div>
