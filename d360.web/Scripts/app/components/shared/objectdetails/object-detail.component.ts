@@ -4,6 +4,8 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetService } from '../../../services/asset.service';
 
+declare var CurrentResourceID;
+
 @Component({
     selector: 'object-detail',
     templateUrl: './object-detail.component.html',
@@ -19,6 +21,7 @@ export class ObjectDetailComponent implements OnChanges {
     @Input() hasModifyRelationshipsPermissions: boolean;
     @Input() hasDeleteRelationshipsPermissions: boolean;
     private assetUID: string;
+    private assetTypeUID: string;
     private isLoading = false;
     DetailFieldType = DetailFieldType;
 
@@ -55,8 +58,8 @@ export class ObjectDetailComponent implements OnChanges {
                     this.rows = data.rows;
                     this.categories = [];
                     for (var i = 0; i < this.rows.length; i++) {
-                        if (this.rows[i].Category != null && this.rows[i].Category == '') {
-                            this.rows[i].Category = null;
+                        if (this.rows[i].Category == null || this.rows[i].Category === '' || this.rows[i].Category === this.noCategory) {
+                            this.rows[i].Category = "General";
                         }
                     }
 
@@ -87,6 +90,7 @@ export class ObjectDetailComponent implements OnChanges {
                     }
                     this.rows = displayRows;
                     this.loadCategory();
+                    this.loadState();
                     this.isLoading = false;
                     this.cdRef.markForCheck();
                 });
@@ -107,6 +111,27 @@ export class ObjectDetailComponent implements OnChanges {
         if (field.IsComplexLookupGrid) {
             field.Type = DetailFieldType.Lookup;
         }
+    }
+
+    private saveState() {
+        localStorage.setItem(this.storageKey, JSON.stringify(this.categories.map((c) => { return { name: c.name, active: c.active }})));
+    }
+
+    private loadState() {
+        var state = JSON.parse(localStorage.getItem(this.storageKey));
+
+        if (state != null) {
+            state.forEach((s) => {
+                let ix = this.categories.findIndex(c => c.name === s.name);
+                if (ix > -1) {
+                    this.categories[ix].active = s.active;
+                }
+            });
+        }
+    }
+
+    get storageKey(): string {
+        return `asset_detail_${CurrentResourceID}_${this.assetTypeUID}`;
     }
 
     private loadCategory() {
@@ -173,8 +198,13 @@ export class ObjectDetailComponent implements OnChanges {
                         }
                     });
             }
+
             if (s.Name == 'UID') {
                 this.assetUID = s.Value;
+            }
+
+            if ((s.FieldName || "").toUpperCase() === 'ASSETTYPEUID') {
+                this.assetTypeUID = s.Value;
             }
         });
 

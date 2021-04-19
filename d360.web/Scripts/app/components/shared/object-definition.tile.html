@@ -6,16 +6,14 @@
       (editClick)="formMode = FormMode.Editing; formModeChange.emit(formMode)"
     ></d3s-tile-actions>
   </header>
-  <simple-accordion header="Definition" [active]="true">
     <object-detail
-      [objectID]="objectID"
-      [objectType]="objectType"
-      [objectUID]="object?.UID"
-      [nymTypes]="nymTypes"
-      [hasModifyRelationshipsPermissions]="hasModifyRelationshipsPermissions"
-      [hasDeleteRelationshipsPermissions]="hasDeleteRelationshipsPermissions"
-    ></object-detail>
-  </simple-accordion>
+        [objectID]="objectID"
+        [objectType]="objectType"
+        [objectUID]="object?.UID"
+        [nymTypes]="nymTypes"
+        [hasModifyRelationshipsPermissions]="hasModifyRelationshipsPermissions"
+        [hasDeleteRelationshipsPermissions]="hasDeleteRelationshipsPermissions">
+    </object-detail>
 </div>
 <d3s-dynamic-editor
   *ngIf="formMode == FormMode.Editing && !useV2Api"
