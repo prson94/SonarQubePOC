@@ -147,6 +147,8 @@ namespace d360.model
         DbSet<WorkflowVersionStepTransition> WorkflowVersionStepTransitions { get; set; }
         DbSet<MetricAllocation> MetricAllocations { get; set; }
 
+        DbSet<AssetDataProfile> AssetDataProfile { get; set; }
+
         int ApiTimeout { get; }
         event EventHandler<AssetsPartiallyProcessedEventArgs> AssetsPartiallyProcessed;
         event EventHandler<RelationshipsPartiallyProcessedEventArgs> RelationshipsPartiallyProcessed;
@@ -321,6 +323,8 @@ namespace d360.model
         List<Guid> GetImpactedMeasureVersionsBy(MetricGovernanceCheckType check, int typeId);
 
         string GetOutputFieldValue(int stepId, long itemId, string fieldId);
+
+        List<DataProfileUpsertResponse> UpsertDataProfiles(List<DataProfileUpsertModel> request, ApiExecution execution, bool isInsert, int timeout = 3600);
 
         #region API Query Parameter Parsing
 

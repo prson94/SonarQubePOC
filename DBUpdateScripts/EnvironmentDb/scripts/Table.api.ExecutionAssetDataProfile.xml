@@ -1,0 +1,69 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="bquinlivan" id="Table.api.ExecutionAssetDataProfile-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionAssetDataProfile')
+BEGIN
+	CREATE TABLE [api].[ExecutionAssetDataProfile](
+		[ExecutionID] [uniqueidentifier] NOT NULL,
+		[ItemNumber] [int] NOT NULL,
+		[Success] bit NULL,
+		[Message] [nvarchar](2500) NULL,
+		[ExecutionItemUid] [uniqueidentifier] NULL,
+		[AssetUid] [uniqueidentifier] NOT NULL,
+		[ProfileSetDate] DATE NOT NULL,
+		[TotalCount] BIGINT NULL,
+		[DistinctValues] BIGINT NULL,
+		[NullCount] BIGINT NULL,
+		[BlankCount] BIGINT NULL,
+		[MeanValue] DECIMAL(22,4) NULL,		
+		[MinimumValue] NVARCHAR(500) NULL,
+		[MaximumValue] NVARCHAR(500) NULL,
+		[MinimumLength] INT NULL,
+		[MaximumLength] INT NULL,
+		[StandardDeviation] DECIMAL(28,4) NULL,
+		[NewType] NVARCHAR(200) NULL,
+		[Multiline] BIT NULL,
+		[Validation] NVARCHAR(200) NULL,
+		[Confidence] DECIMAL(28,4) NULL,
+		[TypeQualifier] NVARCHAR(200) NULL,
+		[CurrentType] NVARCHAR(200) NULL,
+		[JavaType] NVARCHAR(200) NULL,
+		[LogicalType] BIT NULL,
+		[LeadingWhiteSpace] BIT NULL,
+		[LeadingZeroCount] INT NULL,
+		[TrailingWhiteSpace] BIT NULL,
+		[MatchCount] BIGINT NULL,
+		[OutlierCardinality] INT NULL,
+		[PossibleKey] BIT NULL,
+		[PrimaryKey] DECIMAL(28,4) NULL,
+		[DataSignature] NVARCHAR(200) NULL,
+		[StructureSignature] NVARCHAR(200) NULL,
+		[Cardinality] INT NULL,
+		[ShapeCardinality] INT NULL,
+	 CONSTRAINT [PK_ExecutionAssetDataProfile] PRIMARY KEY CLUSTERED 
+	(
+		[ExecutionID] ASC,
+		[ItemNumber] ASC
+	)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+	) ON [PRIMARY]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
