@@ -3525,24 +3525,24 @@ where   A.[uid] = @assetUid";
 
             Guid guid = Guid.Empty;
 
-            if (model?.Uid == null || !model.Uid.HasValue || model.Uid == Guid.Empty)
+            if (model?.ExternalId == null || !model.ExternalId.HasValue || model.ExternalId == Guid.Empty)
             {
                 guid = Guid.NewGuid();
             }
             else
             {
-                guid = (Guid)model.Uid;
+                guid = (Guid)model.ExternalId;
             }
 
             result.Status = model.Status;
-            result.Uid = guid;
-            result.Detail = model?.Detail == null ? "" : model.Detail;
-            result.Component = model?.Component == null ? "" : model.Component;
+            result.ExternalId = guid;
+            result.Detail = model.Detail;
+            result.Component = model.Component;
             result.CreatedOn = DateTime.UtcNow;
 
             var ExecutionExternal = new ApiExecutionsExternal
             {
-                ExternalID = result.Uid,
+                ExternalId= result.ExternalId,
                 Status = result.Status,
                 Detail = result.Detail,
                 Component = result.Component,

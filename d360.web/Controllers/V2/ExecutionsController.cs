@@ -18,6 +18,7 @@ using d360.core.queue;
 using d360.extensions;
 using Newtonsoft.Json;
 using Resources;
+using d360.core.enums;
 
 namespace d360.web.Controllers.V2
 {
@@ -260,28 +261,23 @@ namespace d360.web.Controllers.V2
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
             }
-            if (model != null && model?.Status == null)
+            if (model?.Status == null)
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Status parameter value is required.")).ConfigureAwait(false);
             }
-            if (model != null && model?.Detail != null && model.Detail.Length > 250)
+            if (model.Detail?.Length > 250)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Detail maximum length upto 250.")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Detail cannot exceed 250 characters.")).ConfigureAwait(false);
             }
-            if (model != null && model?.Component != null && model.Component.Length > 250)
+            if (model.Component?.Length > 250)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Component maximum length upto 250.")).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Component cannot exceed 250 characters.")).ConfigureAwait(false);
             }
 
-            switch (model.Status)
+  
+            if (!Enum.IsDefined(typeof(ExecutionExternalStatus),model.Status))
             {
-                case "START":
-                case "COMPLETE_SUCCESS":
-                case "COMPLETE_FAILURE":
-                case "INFORMATION":
-                    break;
-                default:
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid value for Status. Allowed values are: START, COMPLETE_SUCCESS, COMPLETE_FAILURE, INFORMATION"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid value for Status. Allowed values are: START, COMPLETE_SUCCESS, COMPLETE_FAILURE, INFORMATION"));
             }
 
             try

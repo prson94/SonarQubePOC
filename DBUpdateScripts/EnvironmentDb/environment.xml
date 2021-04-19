@@ -272,7 +272,7 @@
 	<include file="scripts/Table.api.ExecutionDiagramAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionDiagramAssetField.xml"/>
 	<include file="scripts/Table.dbo.ConnectorLabel.xml"/>
-	<include file="scripts/Table.api.ExecutionsExternal.xml"/>
+	<include file="scripts/Table.api.ExecutionExternal.xml"/>
 	
 	<include file="scripts/Table.Deletions.xml"/>	  
 	  

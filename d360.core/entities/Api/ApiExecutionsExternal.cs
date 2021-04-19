@@ -7,11 +7,11 @@ using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), Table("ExecutionsExternal", Schema = "api")]
+    [DataContract(Namespace = NAMESPACE), Table("ExecutionExternal", Schema = "api")]
     public class ApiExecutionsExternal : BaseIntObject, IIntObject
     {
         [DataMember]
-        public Guid ExternalID { get; set; }
+        public Guid ExternalId { get; set; }
 
         [DataMember]
         [Column(TypeName = "varchar"), StringLength(50)]
@@ -33,7 +33,7 @@ namespace d360.core.entities
     public class ApiExecutionExternalRequestModel
     {
         public string Status { get; set; }
-        public Guid? Uid { get; set; }
+        public Guid? ExternalId { get; set; }
         public string Detail { get; set; }
         public string Component { get; set; }
     }
@@ -41,7 +41,7 @@ namespace d360.core.entities
     public class ApiExecutionExternalViewModel
     {
         public string Status { get; set; }
-        public Guid Uid { get; set; }
+        public Guid ExternalId { get; set; }
         public string Detail { get; set; }
         public string Component { get; set; }
         public DateTime? CreatedOn { get; set; }
