@@ -91,7 +91,7 @@
                                      [virtualRowHeight]="30"
                                      [rows]="20"
                                      [virtualScroll]="true"
-                                     [lazy]="true"
+                                     [lazy]="isLazyLoad()"
                                      (onLazyLoad)="loadListLazy($event)"
                                      [loading]="isLookupValuesLoading"
                                      [loadingIcon]="'fa fa-spinner fa-spin'">
