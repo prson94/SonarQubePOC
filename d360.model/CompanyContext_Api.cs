@@ -71,6 +71,8 @@ namespace d360.model
 
         public DbSet<ApiExecution> ApiExecutions { get; set; }
 
+        public DbSet<ApiExecutionsExternal> ApiExecutionsExternals { get; set; }
+
         public DbSet<ApiNamespace> ApiNamespaces { get; set; }
 
         #endregion

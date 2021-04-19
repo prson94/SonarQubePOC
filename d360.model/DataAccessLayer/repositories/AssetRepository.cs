@@ -3573,5 +3573,44 @@ where   A.[uid] = @assetUid";
 
             return new WatchedAssetTypeDetailModel { total = count, items = items };
         }
+
+        public ApiExecutionExternalViewModel AddConnectorStatus(ApiExecutionExternalRequestModel model)
+        {
+            var result = new ApiExecutionExternalViewModel();
+
+            Guid guid = Guid.Empty;
+
+            if (model?.ExternalId == null || !model.ExternalId.HasValue || model.ExternalId == Guid.Empty)
+            {
+                guid = Guid.NewGuid();
+            }
+            else
+            {
+                guid = (Guid)model.ExternalId;
+            }
+
+            result.Status = model.Status;
+            result.ExternalId = guid;
+            result.Detail = model.Detail;
+            result.Component = model.Component;
+            result.CreatedOn = DateTime.UtcNow;
+
+            var ExecutionExternal = new ApiExecutionsExternal
+            {
+                ExternalId= result.ExternalId,
+                Status = result.Status,
+                Detail = result.Detail,
+                Component = result.Component,
+                CreatedOn = (System.DateTime)result.CreatedOn
+            };
+
+            //add new issue record
+
+            CompanyContext.Add(ExecutionExternal);
+
+            CompanyContext.SaveChanges();
+            return result;
+        }
+
     }
 }
