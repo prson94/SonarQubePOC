@@ -1,12 +1,16 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE), Table("Execution", Schema = "metrics")]
-    public class ScoreExecution : BaseUidObject
+    public class ScoreExecution : BaseObject
     {
+        [DataMember, Key]
+        public Guid Uid { get; set; }
+
         [DataMember]
         public double PercentComplete { get; set; }
 

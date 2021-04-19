@@ -614,7 +614,7 @@ end";
 
         public ScoreExecution GetExecutionById(Guid uid)
         {
-            var execution = companyContext.GetByUid<ScoreExecution>(uid);
+            var execution = companyContext.Filter<ScoreExecution>(i => i.Uid == uid).SingleOrDefault();
 
             if (execution == null)
             {
