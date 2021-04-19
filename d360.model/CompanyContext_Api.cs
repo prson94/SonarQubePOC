@@ -10513,5 +10513,629 @@ EG.GroupUid
 
             return results;
         }
+
+        public List<DataProfileUpsertResponse> UpsertDataProfiles(List<DataProfileUpsertModel> request, ApiExecution execution, bool isInsert, int timeout = 3600)
+        {
+            var swBegin = Stopwatch.StartNew();
+            TelemetryClient client = new TelemetryClient();
+            const string METHOD_NAME = "UpsertDataProfiles";
+            bool isLog = true; // trace info for all assets is extermely useful
+
+            DynamicParameters dbArgs = new DynamicParameters();
+            bool generalChecksCompleted = false;
+            int itemNumber = 1;
+            List<DataProfileUpsertResponse> results = new List<DataProfileUpsertResponse>();
+            CurrentExecutionLocationModel currentLocation = null;
+            var metrics = new Dictionary<string, double>();
+            var sw = Stopwatch.StartNew();
+            var step = 0;
+
+            var currentUser = CurrentCompanyID;
+
+            var dups = request.Where(i => i.ExecutionItemUid.HasValue && i.ExecutionItemUid.Value != Guid.Empty).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+
+            var dupRecords = request.GroupBy(i => new { i.assetUid, i.profileSetDate}).Where(i => i.Count() > 1).Select(i => new { keyFields = i.Key, Count = i.Count() }).ToList();
+            
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
+            AddMeasurement(metrics, "Checks for duplicates in load", sw.ElapsedMilliseconds, ++step);
+
+            sw.Restart();
+
+            if (dups.Any() || dupRecords.Any())
+            {
+                if (dups.Any())
+                {
+                    execution.ErrorMessage = $"Duplicate Execution Item Identifiers: {string.Join(", ", dups.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
+                }
+                else
+                {
+                    execution.ErrorMessage = $"Duplicate Records: {string.Join(", ", dupRecords.Select(i => $"AssetUid: {i.keyFields.assetUid}, ProfileSetDate: {i.keyFields.profileSetDate}"))}. AssetUid and ProfileSetDate pairs are used as record identifiers and must be unique within a batch.";
+                }                
+                
+                results.AddRange(request.Select(i => new DataProfileUpsertResponse { ExecutionItemUid = execution.ExecutionID, Message = execution.ErrorMessage, Success = false }));
+            }
+            else
+            {
+                try
+                {
+                    currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionAssetDataProfile");
+
+                    AddMeasurement(metrics, "Getting execution current location", sw.ElapsedMilliseconds, ++step);
+                    sw.Restart();
+
+                    if (currentLocation.HighestItemNumberProcessed > 0)
+                    {
+                        results.AddRange(
+                            Query<DataProfileUpsertResponse>(
+                                $"select * from api.ExecutionAssetDataProfile where ExecutionID = @ExecutionID and ItemNumber <= {currentLocation.HighestItemNumberProcessed}",
+                                new { execution.ExecutionID }
+                            )
+                        );
+                    }
+
+                    #region Build data tables.
+                    var DataProfileTable = new DataTable();
+                    var DataProfileSampleTable = new DataTable();
+
+                    DataProfileTable.Columns.Add("ExecutionID", typeof(Guid));
+                    DataProfileTable.Columns.Add("ItemNumber", typeof(int));
+                    DataProfileTable.Columns.Add("ExecutionItemUid", typeof(Guid));
+                    DataProfileTable.Columns.Add("AssetUid", typeof(Guid));
+                    DataProfileTable.Columns.Add("ProfileSetDate", typeof(DateTime));
+
+                    DataProfileTable.Columns.Add("TotalCount", typeof(long));
+                    DataProfileTable.Columns.Add("DistinctValues", typeof(long));
+                    DataProfileTable.Columns.Add("NullCount", typeof(long));
+                    DataProfileTable.Columns.Add("BlankCount", typeof(long));
+                    DataProfileTable.Columns.Add("MeanValue", typeof(decimal));
+
+                    DataProfileTable.Columns.Add("MinimumValue", typeof(string));
+                    DataProfileTable.Columns.Add("MaximumValue", typeof(string));
+                    DataProfileTable.Columns.Add("MinimumLength", typeof(int));
+                    DataProfileTable.Columns.Add("MaximumLength", typeof(int));
+                    DataProfileTable.Columns.Add("StandardDeviation", typeof(decimal));
+
+                    DataProfileTable.Columns.Add("NewType", typeof(string));
+                    DataProfileTable.Columns.Add("Multiline", typeof(bool));
+                    DataProfileTable.Columns.Add("Validation", typeof(string));
+                    DataProfileTable.Columns.Add("Confidence", typeof(decimal));
+                    DataProfileTable.Columns.Add("TypeQualifier", typeof(string));
+
+                    DataProfileTable.Columns.Add("CurrentType", typeof(string));
+                    DataProfileTable.Columns.Add("JavaType", typeof(string));
+                    DataProfileTable.Columns.Add("LogicalType", typeof(bool));
+                    DataProfileTable.Columns.Add("LeadingWhiteSpace", typeof(bool));
+                    DataProfileTable.Columns.Add("LeadingZeroCount", typeof(int));
+
+                    DataProfileTable.Columns.Add("TrailingWhiteSpace", typeof(bool));
+                    DataProfileTable.Columns.Add("MatchCount", typeof(long));
+                    DataProfileTable.Columns.Add("OutlierCardinality", typeof(int));
+                    DataProfileTable.Columns.Add("PossibleKey", typeof(bool));
+
+                    DataProfileTable.Columns.Add("PrimaryKey", typeof(float));
+                    DataProfileTable.Columns.Add("DataSignature", typeof(string));
+                    DataProfileTable.Columns.Add("StructureSignature", typeof(string));
+                    DataProfileTable.Columns.Add("Cardinality", typeof(int));
+                    DataProfileTable.Columns.Add("ShapeCardinality", typeof(int));
+
+                    DataProfileSampleTable.Columns.Add("ExecutionID", typeof(Guid));
+                    DataProfileSampleTable.Columns.Add("ItemNumber", typeof(int));
+                    DataProfileSampleTable.Columns.Add("ExecutionItemUid", typeof(Guid));
+                    DataProfileSampleTable.Columns.Add("SampleType", typeof(string));
+                    DataProfileSampleTable.Columns.Add("Key", typeof(string));
+                    DataProfileSampleTable.Columns.Add("Value", typeof(string));
+
+                    #region Populate Data Tables
+                    foreach (var item in request)
+                    {
+                        var row = DataProfileTable.NewRow();
+
+                        row["ExecutionID"] = execution.ExecutionID;
+                        row["ItemNumber"] = itemNumber;
+                        if (item.ExecutionItemUid.HasValue)
+                        {
+                            row["ExecutionItemUid"] = item.ExecutionItemUid;
+                        }
+                        else
+                        {
+                            row["ExecutionItemUid"] = DBNull.Value;
+                        }                        
+                        row["AssetUid"] = item.assetUid;
+                        row["ProfileSetDate"] = item.profileSetDate.Date;
+
+                        row["TotalCount"] = item.totalCount ?? (object)DBNull.Value;
+                        row["DistinctValues"] = item.distinctValues ?? (object)DBNull.Value;
+                        row["NullCount"] = item.nullCount ?? (object)DBNull.Value;
+                        row["BlankCount"] = item.blankCount ?? (object)DBNull.Value;
+                        row["MeanValue"] = item.meanValue ?? (object)DBNull.Value;
+
+                        row["MinimumValue"] = item.minValue ?? (object)DBNull.Value;
+                        row["MaximumValue"] = item.maxValue ?? (object)DBNull.Value;
+                        row["MinimumLength"] = item.minLength ?? (object)DBNull.Value;
+                        row["MaximumLength"] = item.maxLength ?? (object)DBNull.Value;
+                        row["StandardDeviation"] = item.standardDeviation ?? (object)DBNull.Value;
+
+                        row["NewType"] = item.newType ?? (object)DBNull.Value;
+                        row["Multiline"] = item.multiline ?? (object)DBNull.Value;
+                        row["Validation"] = item.validation ?? (object)DBNull.Value;
+                        row["Confidence"] = item.confidence ?? (object)DBNull.Value;
+                        row["TypeQualifier"] = item.typeQualifier ?? (object)DBNull.Value;
+
+                        row["CurrentType"] = item.currentType ?? (object)DBNull.Value;
+                        row["JavaType"] = item.javaType ?? (object)DBNull.Value;
+                        row["LogicalType"] = item.logicalType ?? (object)DBNull.Value;
+                        row["LeadingWhiteSpace"] = item.leadingWhiteSpace ?? (object)DBNull.Value;
+                        row["LeadingZeroCount"] = item.leadingZeroCount ?? (object)DBNull.Value;
+
+                        row["TrailingWhiteSpace"] = item.trailingWhiteSpace ?? (object)DBNull.Value;
+                        row["MatchCount"] = item.matchCount ?? (object)DBNull.Value;
+                        row["OutlierCardinality"] = item.outlierCardinality ?? (object)DBNull.Value;
+                        row["PossibleKey"] = item.possibleKey ?? (object)DBNull.Value;
+
+                        row["PrimaryKey"] = item.primaryKey ?? (object)DBNull.Value;
+                        row["DataSignature"] = item.dataSignature ?? (object)DBNull.Value;
+                        row["StructureSignature"] = item.structureSignature ?? (object)DBNull.Value;
+                        row["Cardinality"] = item.cardinality ?? (object)DBNull.Value;
+                        row["ShapeCardinality"] = item.shapesCardinality ?? (object)DBNull.Value;
+
+                        DataProfileTable.Rows.Add(row);
+                        if (item.outlierDetail != null)
+                        {
+                            foreach (var outlier in item.outlierDetail)
+                            {
+                                var sampleRow = DataProfileSampleTable.NewRow();
+                                sampleRow["ExecutionID"] = execution.ExecutionID;
+                                sampleRow["ItemNumber"] = itemNumber;
+                                if (item.ExecutionItemUid.HasValue)
+                                {
+                                    row["ExecutionItemUid"] = item.ExecutionItemUid;
+                                }
+                                else
+                                {
+                                    row["ExecutionItemUid"] = DBNull.Value;
+                                }
+                                sampleRow["SampleType"] = "outlierDetail";
+                                sampleRow["Key"] = outlier.key ?? (object)DBNull.Value;
+                                sampleRow["Value"] = outlier.count.ToString();
+                                DataProfileSampleTable.Rows.Add(sampleRow);
+                            }
+                        }
+
+                        if (item.shapesDetail != null)
+                        {
+                            foreach (var shape in item?.shapesDetail)
+                            {
+                                var sampleRow = DataProfileSampleTable.NewRow();
+                                sampleRow["ExecutionID"] = execution.ExecutionID;
+                                sampleRow["ItemNumber"] = itemNumber;
+                                if (item.ExecutionItemUid.HasValue)
+                                {
+                                    sampleRow["ExecutionItemUid"] = item.ExecutionItemUid;
+                                }
+                                sampleRow["SampleType"] = "shapesDetail";
+                                sampleRow["Key"] = shape.key;
+                                sampleRow["Value"] = shape.count.ToString();
+                                DataProfileSampleTable.Rows.Add(sampleRow);
+                            }
+                        }
+
+                        if (item.cardinalityDetail != null)
+                        {
+                            foreach (var cardinality in item?.cardinalityDetail)
+                            {
+                                var sampleRow = DataProfileSampleTable.NewRow();
+                                sampleRow["ExecutionID"] = execution.ExecutionID;
+                                sampleRow["ItemNumber"] = itemNumber;
+                                if (item.ExecutionItemUid.HasValue)
+                                {
+                                    sampleRow["ExecutionItemUid"] = item.ExecutionItemUid;
+                                }
+                                sampleRow["SampleType"] = "cardinalityDetail";
+                                sampleRow["Key"] = cardinality.key;
+                                sampleRow["Value"] = cardinality.count.ToString();
+                                DataProfileSampleTable.Rows.Add(sampleRow);
+                            }
+                        }
+                            
+
+                        if (item.topK != null)
+                        {
+                            foreach (var topK in item?.topK)
+                            {
+                                var sampleRow = DataProfileSampleTable.NewRow();
+                                sampleRow["ExecutionID"] = execution.ExecutionID;
+                                sampleRow["ItemNumber"] = itemNumber;
+                                if (item.ExecutionItemUid.HasValue)
+                                {
+                                    sampleRow["ExecutionItemUid"] = item.ExecutionItemUid;
+                                }
+                                sampleRow["SampleType"] = "topK";
+                                sampleRow["Key"] = DBNull.Value;
+                                sampleRow["Value"] = topK;
+                                DataProfileSampleTable.Rows.Add(sampleRow);
+                            }
+                        }
+                            
+
+                        if (item.bottomK != null)
+                        {
+                            foreach (var bottomK in item?.bottomK)
+                            {
+                                var sampleRow = DataProfileSampleTable.NewRow();
+                                sampleRow["ExecutionID"] = execution.ExecutionID;
+                                sampleRow["ItemNumber"] = itemNumber;
+                                if (item.ExecutionItemUid.HasValue)
+                                {
+                                    sampleRow["ExecutionItemUid"] = item.ExecutionItemUid;
+                                }
+                                sampleRow["SampleType"] = "bottomK";
+                                sampleRow["Key"] = DBNull.Value;
+                                sampleRow["Value"] = bottomK;
+                                DataProfileSampleTable.Rows.Add(sampleRow);
+                            }
+                        }
+                                           
+                        itemNumber++;
+                    }
+                    #endregion
+                    #region Bulk Copy
+                    
+                    if (Database.Connection.State != ConnectionState.Open)
+                        Connection.Open();
+
+                    using (var transaction = Connection.BeginTransaction())
+                    {
+                        try 
+                        {
+                            #region Bulk Copy Data Profile
+                            using (var bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction)
+                            {
+                                BatchSize = DataProfileTable.Rows.Count,
+                                DestinationTableName = "[api].[ExecutionAssetDataProfile]",
+                                BulkCopyTimeout = SqlBulkBatchTimeout
+                            })
+                            {
+                                bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                                bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                                bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                                bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
+                                bulkCopy.ColumnMappings.Add("ProfileSetDate", "ProfileSetDate");
+                                bulkCopy.ColumnMappings.Add("TotalCount", "TotalCount");
+                                bulkCopy.ColumnMappings.Add("DistinctValues", "DistinctValues");
+                                bulkCopy.ColumnMappings.Add("NullCount", "NullCount");
+                                bulkCopy.ColumnMappings.Add("BlankCount", "BlankCount");
+                                bulkCopy.ColumnMappings.Add("MeanValue", "MeanValue");
+
+                                bulkCopy.ColumnMappings.Add("MinimumValue", "MinimumValue");
+                                bulkCopy.ColumnMappings.Add("MaximumValue", "MaximumValue");
+                                bulkCopy.ColumnMappings.Add("MinimumLength", "MinimumLength");
+                                bulkCopy.ColumnMappings.Add("MaximumLength", "MaximumLength");
+                                bulkCopy.ColumnMappings.Add("StandardDeviation", "StandardDeviation");
+
+                                bulkCopy.ColumnMappings.Add("NewType", "NewType");
+                                bulkCopy.ColumnMappings.Add("Multiline", "Multiline");
+                                bulkCopy.ColumnMappings.Add("Validation", "Validation");
+                                bulkCopy.ColumnMappings.Add("Confidence", "Confidence");
+                                bulkCopy.ColumnMappings.Add("TypeQualifier", "TypeQualifier");
+
+                                bulkCopy.ColumnMappings.Add("CurrentType", "CurrentType");
+                                bulkCopy.ColumnMappings.Add("JavaType", "JavaType");
+                                bulkCopy.ColumnMappings.Add("LogicalType", "LogicalType");
+                                bulkCopy.ColumnMappings.Add("LeadingWhiteSpace", "LeadingWhiteSpace");
+                                bulkCopy.ColumnMappings.Add("LeadingZeroCount", "LeadingZeroCount");
+
+                                bulkCopy.ColumnMappings.Add("TrailingWhiteSpace", "TrailingWhiteSpace");
+                                bulkCopy.ColumnMappings.Add("MatchCount", "MatchCount");
+                                bulkCopy.ColumnMappings.Add("OutlierCardinality", "OutlierCardinality");
+                                bulkCopy.ColumnMappings.Add("PossibleKey", "PossibleKey");
+
+                                bulkCopy.ColumnMappings.Add("PrimaryKey", "PrimaryKey");
+                                bulkCopy.ColumnMappings.Add("DataSignature", "DataSignature");
+                                bulkCopy.ColumnMappings.Add("StructureSignature", "StructureSignature");
+                                bulkCopy.ColumnMappings.Add("Cardinality", "Cardinality");
+                                bulkCopy.ColumnMappings.Add("ShapeCardinality", "ShapeCardinality");
+
+                                bulkCopy.WriteToServer(DataProfileTable);
+                            }
+                            #endregion
+
+                            #region Bulk Copy Data Profile Sample
+                            using (var bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction)
+                            {
+                                BatchSize = DataProfileSampleTable.Rows.Count,
+                                DestinationTableName = "[api].[ExecutionAssetDataProfileSample]",
+                                BulkCopyTimeout = SqlBulkBatchTimeout
+                            })
+                            {
+                                bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                                bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                                bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                                bulkCopy.ColumnMappings.Add("SampleType", "SampleType");
+                                bulkCopy.ColumnMappings.Add("Key", "Key");
+                                bulkCopy.ColumnMappings.Add("Value", "Value");
+
+                                bulkCopy.WriteToServer(DataProfileSampleTable);
+                            }
+                            #endregion
+                            
+                            transaction.Commit();
+
+                            AddMeasurement(metrics, "BulkCopy to api.Execution table", sw.ElapsedMilliseconds, ++step);
+                        } catch (Exception ex)
+                        {
+                            if (transaction != null)
+                            {
+                                transaction.Rollback();
+                            }                       
+                        throw ex;
+                        }
+
+                    }
+                    #endregion
+                    
+                    #endregion
+
+                    Connection.Execute($@"
+                        update	api.ExecutionAssetDataProfile
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'You must provide a valid Uid.'
+                        where	ExecutionID = @ExecutionID and ([AssetUid] is null or [AssetUid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER));
+
+                        update	EDP
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'Asset not found based on Uid provided'
+                        from
+                            api.ExecutionAssetDataProfile EDP
+                            left Join
+                            Asset A on EDP.AssetUid = A.Uid
+                        where	ExecutionID = @ExecutionID and A.Uid is null;",
+                                    new { execution.ExecutionID }, commandTimeout: timeout);
+
+                    AddMeasurement(metrics, "LogAssetDataProfileErrors", sw.ElapsedMilliseconds, ++step);
+                    sw.Restart();
+
+                    generalChecksCompleted = true;
+                }
+                catch (Exception generalEx)
+                {
+                    generalChecksCompleted = false;
+                    var msg = generalEx.GetFullExceptionData(false);
+                    execution.ErrorMessage = msg;
+                    execution.Processed = 0;
+                    execution.Error = request.Count();
+
+                    results = new List<DataProfileUpsertResponse>();
+                    results.AddRange(request.Select(i => new DataProfileUpsertResponse { ExecutionItemUid = i.ExecutionItemUid, Message = msg, Success = false }));
+                }
+
+                if (generalChecksCompleted)
+                {
+                    int loopSize = 250;
+                    int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
+                    int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
+                    int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
+
+                    for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
+                    {
+                        bool runCompleted = false;
+                        int retryCount = 0;
+
+                        while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+                        {
+                            var querySuffix = $"E.Success is null and E.ExecutionID = @ExecutionID and E.ItemNumber between @beginItemNumber and @endItemNumber";
+                            using (var trans = Connection.BeginTransaction())
+                            {
+                                #region Load valid items into table
+                                try
+                                {
+                                    Connection.Execute($@"
+                                        DROP TABLE IF EXISTS #mergeResultTable
+                                        CREATE TABLE #mergeResultTable (DataProfileId INT, ItemNumber INT) 
+
+                                        MERGE INTO AssetDataProfile ADP
+                                        USING (
+                                                SELECT
+                                                    A.ID as AssetId, E.*
+                                                FROM  
+                                                    api.ExecutionAssetDataProfile E
+                                                INNER JOIN
+                                                    Asset A ON A.Uid = E.AssetUid
+		                                        WHERE {querySuffix}
+                                                ) EDP
+                                        ON (EDP.AssetId = ADP.AssetID AND EDP.profileSetDate = ADP.profileSetDate)
+                                        WHEN MATCHED AND @IsInsert = 0 THEN
+                                        UPDATE SET
+                                            ADP.[TotalCount] = EDP.[TotalCount]
+                                            ,ADP.[DistinctValues] = EDP.[DistinctValues]
+                                            ,ADP.[NullCount] = EDP.[NullCount]
+                                            ,ADP.[BlankCount] = EDP.[BlankCount]
+                                            ,ADP.[MeanValue] = EDP.[MeanValue]
+                                            ,ADP.[MinimumValue] = EDP.[MinimumValue]
+                                            ,ADP.[MaximumValue] = EDP.[MaximumValue]
+                                            ,ADP.[MinimumLength] = EDP.[MinimumLength]
+                                            ,ADP.[MaximumLength] = EDP.[MaximumLength]
+                                            ,ADP.[StandardDeviation] = EDP.[StandardDeviation]
+                                            ,ADP.[NewType] = EDP.[NewType]
+                                            ,ADP.[Multiline] = EDP.[Multiline]
+                                            ,ADP.[Validation] = EDP.[Validation]
+                                            ,ADP.[Confidence] = EDP.[Confidence]
+                                            ,ADP.[TypeQualifier] = EDP.[TypeQualifier]
+                                            ,ADP.[CurrentType] = EDP.[CurrentType]
+                                            ,ADP.[JavaType] = EDP.[JavaType]
+                                            ,ADP.[LogicalType] = EDP.[LogicalType]
+                                            ,ADP.[LeadingWhiteSpace] = EDP.[LeadingWhiteSpace]
+                                            ,ADP.[LeadingZeroCount] = EDP.[LeadingZeroCount]
+                                            ,ADP.[TrailingWhiteSpace] = EDP.[TrailingWhiteSpace]
+                                            ,ADP.[MatchCount] = EDP.[MatchCount]
+                                            ,ADP.[OutlierCardinality] = EDP.[OutlierCardinality]
+                                            ,ADP.[PossibleKey] = EDP.[PossibleKey]
+                                            ,ADP.[PrimaryKey] = EDP.[PrimaryKey]
+                                            ,ADP.[DataSignature] = EDP.[DataSignature]
+                                            ,ADP.[StructureSignature] = EDP.[StructureSignature]
+                                            ,ADP.[Cardinality] = EDP.[Cardinality]
+                                            ,ADP.[ShapeCardinality] = EDP.[ShapeCardinality]
+                                            ,ADP.[UpdatedBy] = @CurrentResourceID
+                                            ,ADP.[UpdatedOn] = GETDATE()
+
+                                        WHEN NOT MATCHED AND @IsInsert = 1 THEN
+                                        INSERT ([AssetID]
+                                                    ,[ProfileSetDate]
+                                                    ,[TotalCount]
+                                                    ,[DistinctValues]
+                                                    ,[NullCount]
+                                                    ,[BlankCount]
+                                                    ,[MeanValue]
+                                                    ,[MinimumValue]
+                                                    ,[MaximumValue]
+                                                    ,[MinimumLength]
+                                                    ,[MaximumLength]
+                                                    ,[StandardDeviation]
+                                                    ,[NewType]
+                                                    ,[Multiline]
+                                                    ,[Validation]
+                                                    ,[Confidence]
+                                                    ,[TypeQualifier]
+                                                    ,[CurrentType]
+                                                    ,[JavaType]
+                                                    ,[LogicalType]
+                                                    ,[LeadingWhiteSpace]
+                                                    ,[LeadingZeroCount]
+                                                    ,[TrailingWhiteSpace]
+                                                    ,[MatchCount]
+                                                    ,[OutlierCardinality]
+                                                    ,[PossibleKey]
+                                                    ,[PrimaryKey]
+                                                    ,[DataSignature]
+                                                    ,[StructureSignature]
+                                                    ,[Cardinality]
+                                                    ,[ShapeCardinality]
+                                                    ,[CreatedBy]
+                                                    ,[CreatedOn]
+                                                    ,[UpdatedBy]
+                                                    ,[UpdatedOn])
+                                                VALUES
+                                                    (EDP.AssetID
+                                                    ,EDP.ProfileSetDate
+                                                    ,EDP.TotalCount
+                                                    ,EDP.DistinctValues
+                                                    ,EDP.NullCount
+                                                    ,EDP.BlankCount
+                                                    ,EDP.MeanValue
+                                                    ,EDP.MinimumValue
+                                                    ,EDP.MaximumValue
+                                                    ,EDP.MinimumLength
+                                                    ,EDP.MaximumLength
+                                                    ,EDP.StandardDeviation
+                                                    ,EDP.NewType
+                                                    ,EDP.Multiline
+                                                    ,EDP.Validation
+                                                    ,EDP.Confidence
+                                                    ,EDP.TypeQualifier
+                                                    ,EDP.CurrentType
+                                                    ,EDP.JavaType
+                                                    ,EDP.LogicalType
+                                                    ,EDP.LeadingWhiteSpace
+                                                    ,EDP.LeadingZeroCount
+                                                    ,EDP.TrailingWhiteSpace
+                                                    ,EDP.MatchCount
+                                                    ,EDP.OutlierCardinality
+                                                    ,EDP.PossibleKey
+                                                    ,EDP.PrimaryKey
+                                                    ,EDP.DataSignature
+                                                    ,EDP.StructureSignature
+                                                    ,EDP.Cardinality
+                                                    ,EDP.ShapeCardinality
+                                                    ,@CurrentResourceID
+                                                    ,GETDATE()
+                                                    ,@CurrentResourceID
+                                                    ,GETDATE())
+                                            OUTPUT  inserted.ID INT, EDP.ItemNumber INTO #mergeResultTable;
+                                            
+                                        Delete ADPS from AssetDataProfileSample ADPS inner join #mergeResultTable rt on ADPS.AssetDataProfileID = rt.DataProfileID                                      
+
+                                        insert into AssetDataProfileSample 
+                                                    ([AssetDataProfileID]
+                                                    ,[SampleType]
+                                                    ,[Key]
+                                                    ,[Value])                                            
+                                        SELECT  
+                                            rt.DataProfileID
+                                            ,EDPS.SampleType
+                                            ,EDPS.[Key]
+                                            ,EDPS.Value
+                                        FROM  
+                                            api.ExecutionAssetDataProfileSample EDPS
+			                            INNER JOIN
+				                            api.ExecutionAssetDataProfile E ON EDPS.ExecutionID=E.ExecutionID AND EDPS.itemnumber = E.itemnumber
+                                        INNER JOIN 
+                                            #mergeResultTable rt ON rt.itemNumber = EDPS.itemNumber
+			                            WHERE 
+                                            {querySuffix}
+                                            ", new { execution.ExecutionID, beginItemNumber, endItemNumber, isInsert, CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+
+                                #endregion                                
+
+                                // Update success flag.
+                                Connection.Execute(
+                                    $@"update E 
+                                            set Success = 1 
+                                       From api.ExecutionAssetDataProfile E
+                                       where {querySuffix};",
+                                    new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+                                    trans.Commit();
+                                    runCompleted = true;
+                                }
+                                catch (Exception ex)
+                                {
+                                    try
+                                    {
+                                        if (trans != null)
+                                        {
+                                            trans.Rollback();
+                                        }
+                                    }
+                                    catch
+                                    {
+                                    }
+
+                                    retryCount++;
+
+                                    if (retryCount > API_V2_RETRY_LIMIT)
+                                    {
+                                        sw.Restart();
+                                        LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionAssetDataProfile", ex.GetFullExceptionData(false), timeout);
+                                        AddMeasurement(metrics, $"LogLoopExecutionError >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                        sw.Restart();
+                                    }
+                                }
+                            }
+                        }
+
+                        sw.Restart();
+                        results.AddRange(
+                            Query<DataProfileUpsertResponse>(
+                                $"select [ItemNumber],[AssetUid] as uid,[ExecutionItemUid],[Message],[Success] from api.ExecutionAssetDataProfile where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber ",
+                                new { execution.ExecutionID, beginItemNumber, endItemNumber }
+                            )
+                        );
+                        AddMeasurement(metrics, $"results.AddRange >> DataProfileUpsertResponse>> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+                        sw.Restart();
+                    }
+                }
+            }
+
+            AddMeasurement(metrics, $"End of Method", swBegin.ElapsedMilliseconds, ++step);
+
+            this.AITrackMetric(client, execution, METHOD_NAME, metrics, isLog);
+
+            if (Database.Connection.State == ConnectionState.Open)
+            {
+                Connection.Close();
+            }
+                
+            return results;
+        }
     }
 }

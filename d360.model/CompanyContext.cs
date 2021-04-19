@@ -212,6 +212,8 @@ namespace d360.model
 
         public DbSet<Audit> Audits { get; set; }
 
+        public DbSet<AssetDataProfile> AssetDataProfile { get; set; }
+
         #endregion
 
         #region Legacy Lineage

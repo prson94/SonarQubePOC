@@ -133,6 +133,7 @@
     </Compile>
     <Compile Include="CompanyContext_MarkitLineage.cs" />
     <Compile Include="DataAccessLayer\ICommentRepository.cs" />
+    <Compile Include="DataAccessLayer\IDataProfileRepository.cs" />
     <Compile Include="DataAccessLayer\IGraphFilterRepository.cs" />
     <Compile Include="DataAccessLayer\IIssueRepository.cs" />
     <Compile Include="DataAccessLayer\IMembershipRepository.cs" />
@@ -142,6 +143,7 @@
     <Compile Include="DataAccessLayer\IResponsibilityRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\BaseRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\CommentRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\DataProfileRespository.cs" />
     <Compile Include="DataAccessLayer\repositories\FusionRepository.cs" />
     <Compile Include="DataAccessLayer\IMetricsRepository.cs" />
     <Compile Include="DataAccessLayer\IScoringRepository.cs" />
