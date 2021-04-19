@@ -58,7 +58,7 @@ export class ObjectDetailComponent implements OnChanges {
                     this.rows = data.rows;
                     this.categories = [];
                     for (var i = 0; i < this.rows.length; i++) {
-                        if (this.rows[i].Category == null || this.rows[i].Category === '' || this.rows[i].Category === this.noCategory) {
+                        if (this.rows[i].Category == null || this.rows[i].Category === "" || this.rows[i].Category === this.noCategory) {
                             this.rows[i].Category = "General";
                         }
                     }
@@ -114,7 +114,7 @@ export class ObjectDetailComponent implements OnChanges {
     }
 
     private saveState() {
-        localStorage.setItem(this.storageKey, JSON.stringify(this.categories.map((c) => { return { name: c.name, active: c.active }})));
+        localStorage.setItem(this.storageKey, JSON.stringify(this.categories.map((c) => { return { name: c.name, active: c.active };})));
     }
 
     private loadState() {
@@ -122,7 +122,7 @@ export class ObjectDetailComponent implements OnChanges {
 
         if (state != null) {
             state.forEach((s) => {
-                let ix = this.categories.findIndex(c => c.name === s.name);
+                let ix = this.categories.findIndex((c) => c.name === s.name);
                 if (ix > -1) {
                     this.categories[ix].active = s.active;
                 }
@@ -203,7 +203,7 @@ export class ObjectDetailComponent implements OnChanges {
                 this.assetUID = s.Value;
             }
 
-            if ((s.FieldName || "").toUpperCase() === 'ASSETTYPEUID') {
+            if ((s.FieldName || "").toUpperCase() === "ASSETTYPEUID") {
                 this.assetTypeUID = s.Value;
             }
         });
