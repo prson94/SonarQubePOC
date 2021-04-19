@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfile-v4">
+  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfile-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -40,7 +40,6 @@ BEGIN
 		[TrailingWhiteSpace] BIT NULL,
 		[MatchCount] BIGINT NULL,
 		[OutlierCardinality] INT NULL,
-		[OutlierDetail] NVARCHAR(max) NULL,
 		[PossibleKey] BIT NULL,
 		[PrimaryKey] DECIMAL(28,4) NULL,
 		[DataSignature] NVARCHAR(200) NULL,
@@ -66,6 +65,16 @@ BEGIN
 	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_DataSignature ON dbo.AssetDataProfile ([AssetID], [DataSignature]);
 	
 	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_StructureSignature ON dbo.AssetDataProfile ([AssetID], [StructureSignature]);
+END
+
+IF EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+         AND name = 'OutlierDetail'
+)
+BEGIN
+    ALTER TABLE [dbo].[AssetDataProfile] DROP COLUMN [OutlierDetail]
 END
 		]]>
     </sql>

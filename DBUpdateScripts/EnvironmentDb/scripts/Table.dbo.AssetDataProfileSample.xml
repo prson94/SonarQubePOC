@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfileSample-v1">
+  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfileSample-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -17,11 +17,57 @@ BEGIN
 		[ID] [BIGINT] IDENTITY(1,1) NOT NULL,
 		[AssetDataProfileID] BIGINT NOT NULL,			
 		[SampleType] NVARCHAR(100) NOT NULL,
+		[Key] NVARCHAR(200) NULL,
 		[Value] NVARCHAR(200) NOT NULL,		
 		CONSTRAINT [PK_AssetDataProfileSample] PRIMARY KEY CLUSTERED ([ID], AssetDataProfileID),
-		CONSTRAINT [FK_AssetDataProfileSample_AssetDataProfile] FOREIGN KEY (AssetDataProfileID) REFERENCES AssetDataProfile(ID)
+		CONSTRAINT [FK_AssetDataProfileSample_AssetDataProfile] FOREIGN KEY (AssetDataProfileID) REFERENCES AssetDataProfile(ID) ON DELETE CASCADE
 	)
 END
+
+IF NOT EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfileSample]') 
+         AND name = 'Key'
+)
+BEGIN
+    ALTER TABLE [dbo].[AssetDataProfileSample] ADD [Key] NVARCHAR(200) NULL
+END
+
+IF NOT EXISTS (
+	SELECT
+		*
+	FROM
+		sys.foreign_keys FK
+		INNER JOIN
+		sys.all_objects AO on FK.parent_object_id = AO.object_id     
+	where 
+		FK.[NAME] = 'FK_AssetDataProfileSample_AssetDataProfile' 
+		and 
+		delete_referential_action_desc = 'CASCADE'
+)
+BEGIN
+
+	IF EXISTS (
+		SELECT
+			*
+		FROM
+			sys.foreign_keys FK
+			INNER JOIN
+			sys.all_objects AO on FK.parent_object_id = AO.object_id     
+		where 
+			FK.[NAME] = 'FK_AssetDataProfileSample_AssetDataProfile' 
+	)
+	BEGIN
+		ALTER TABLE AssetDataProfileSample
+		DROP CONSTRAINT FK_AssetDataProfileSample_AssetDataProfile;
+	END
+	
+
+	ALTER TABLE AssetDataProfileSample
+	ADD CONSTRAINT [FK_AssetDataProfileSample_AssetDataProfile] FOREIGN KEY (AssetDataProfileID) REFERENCES AssetDataProfile(ID) ON DELETE CASCADE
+END
+
 		]]>
     </sql>
 	<rollback>
