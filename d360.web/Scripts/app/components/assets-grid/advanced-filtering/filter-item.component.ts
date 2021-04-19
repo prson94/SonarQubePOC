@@ -779,10 +779,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     isLazyLoad() {
-
-        if (this.currentField.Name === SystemFields.OwnedByFieldCode
-            || (this.currentField.Type && this.currentField.Type.Tag)
-        ) {
+        if ((this.currentField.Name === SystemFields.OwnedByFieldCode && this.currentField.Values && this.currentField.Values.length > 0)
+            || (this.currentField.Type && this.currentField.Type.Tag && this.currentField.Values)) {
             return false;
         }
         return true;
