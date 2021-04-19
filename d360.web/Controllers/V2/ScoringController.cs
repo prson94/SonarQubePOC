@@ -968,7 +968,7 @@ namespace d360.web.Controllers.V2
                         {
                             ExecutionID = executionUid,
                             Message = "Now processing request. Please check back with this ExecutionID for status.",
-                            Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{executionUid}"
+                            Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/scoring/executions/{executionUid}/status"
                         }
                     )
                 );
@@ -985,6 +985,91 @@ namespace d360.web.Controllers.V2
                     messages,
                     new Dictionary<string, string> { { "Method Name", "RecalculateMeasureScoreItems" } }
                 );
+            }
+        }
+
+
+        /// <summary>
+        /// GETs all score execution records.
+        /// </summary>
+        /// <remarks>
+        /// Depending on the size, each execution may take a significant amount of time to complete. You can check the PercentComplete property to see how far along the execution has progressed. 
+        /// Once complete, the execution should have a valid CompletedOn date. Execution tasks that have not yet started, or are not currently being processed, will have an empty ProcessingStartedOn 
+        /// date and the Processing flag will be false. It is possible that an execution will have finished yet still have a PercentComplete value less than 1 if the Failures count is greater than 0.
+        /// </remarks>
+        /// <param name="_pageNum">The page to return in results.</param>
+        /// <param name="_pageSize">The number of results to return per page. The default value is 200.</param>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("executions"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "A list of all execution statuses.", typeof(List<ScoreExecution>))
+        ]
+        public async Task<IHttpActionResult> GetExecutions(int _pageSize = 200, int _pageNum = 1)
+        {
+            var executions = ScoringRepository.GetExecutions(_pageSize, _pageNum);
+            return await Task.FromResult<IHttpActionResult>(
+                    ResponseMessage(
+                        Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            executions
+                        )
+                    )
+                ).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// GETs the status of an execution record, including the results for the execution.
+        /// </summary>
+        /// <remarks>
+        /// Depending on the size, each execution may take a significant amount of time to complete. You can check the PercentComplete property to see how far along the execution has progressed. 
+        /// Once complete, the execution should have a valid CompletedOn date. Execution tasks that have not yet started, or are not currently being processed, will have an empty ProcessingStartedOn 
+        /// date and the Processing flag will be false. It is possible that an execution will have finished yet still have a PercentComplete value less than 1 if the Failures count is greater than 0.
+        /// </remarks>
+        /// <param name="uid">The execution's unique identifier to retrieve status for.</param>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("executions/{uid:Guid}/status"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A scoring execution status.", typeof(ScoreExecution)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your status was not found.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetExecutionStatus(Guid uid)
+        {
+            try
+            {
+                var res = ScoringRepository.GetExecutionById(uid);
+                if (res == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found.")).ConfigureAwait(false);
+                }
+                return await Task.FromResult<IHttpActionResult>(
+                    ResponseMessage(
+                        Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            res
+                        )
+                    )
+                ).ConfigureAwait(false);
+            }
+            catch (ArgumentException)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found.")).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string> {
+                    { "Endpoint Method", "Scoring.GetExecutionStatus => " },
+                    { "ExecutionID", uid.ToString() },
+                    { "ExecutionUid", uid.ToString() }, //left to prevent a breaking change
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
             }
         }
 
