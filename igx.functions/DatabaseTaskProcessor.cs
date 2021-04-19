@@ -19,8 +19,7 @@ namespace igx.functions.databasetaskprocessor
     public static class DatabaseTaskProcessor
     {
         const string functionName = "DatabaseTask_ProcessScheduled";
-        const string timerSettings = "*/1 * * * * *";
-        const int markitLineageSettingID = 62;
+        const string timerSettings = "*/1 * * * * *";        
         const int DEFAULT_QUEUE_ITEMS = 1000;
 
 
@@ -48,8 +47,7 @@ namespace igx.functions.databasetaskprocessor
                         }
 
                         var indexCollectionModel = new ObjectIndexCollectionModel();
-                        List<CompanySetting> settings = null;
-
+                        
                         using (var outerCompanyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID))
                         {
                             outerCompanyConnection.Open();
@@ -443,25 +441,6 @@ from    [queue].[Task] T
             return true;
         }
 
-        private static bool ShouldItemBeIndexedForElasticSearch(string obj)
-        {
-            if (string.IsNullOrEmpty(obj)) return false;
-
-            // ignore intersects we dont want to add them to the search index.
-            if (string.Compare(obj, "IntersectType", true) == 0
-                    || string.Compare(obj, "ResponsibilityType", true) == 0
-                    || string.Compare(obj, "FusionAttributeType", true) == 0
-                    || string.Compare(obj, "Lookup", true) == 0
-                    || string.Compare(obj, "LookupType", true) == 0
-                    || string.Compare(obj, "Tag", true) == 0
-                    || string.Compare(obj, "FieldType", true) == 0
-                    || string.Compare(obj, "ArtifactType", true) == 0
-                    || string.Compare(obj, "IssueType", true) == 0
-                    ) return false;
-
-            return true;
-        }
-
         private static void addAuditEntry(SqlConnection companyConnection, string oper, QueueTask queueRecord)
         {
             if (!string.IsNullOrEmpty(queueRecord.Custom))
@@ -506,19 +485,6 @@ from    [queue].[Task] T
                 }
             }
         }
-    }
-
-    internal class TagSqlModel
-    {
-        public Guid TagUID { get; set; }
-        public string Value { get; set; }
-    }
-
-    internal class ResponsibilitySqlModel
-    {
-        public long AssetID { get; set; }
-        public string SecurityAsset { get; set; }
-        public int SecurityAssetID { get; set; }
     }
 
     public static class ThreadSafeRandom

@@ -17,6 +17,7 @@ using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Hosting;
 using System.Text.Json;
+using System.Data;
 
 namespace igx.jobs.databasetaskprocessor
 {
@@ -45,8 +46,7 @@ namespace igx.jobs.databasetaskprocessor
     public static class DatabaseTaskProcessor
     {
         const string functionName = "DatabaseTask_ProcessScheduled";
-        const string timerSettings = "*/1 * * * * *";
-        const int markitLineageSettingID = 62;
+        const string timerSettings = "*/1 * * * * *";        
         const int DEFAULT_QUEUE_ITEMS = 1000;
 
         public static void Run([TimerTrigger(timerSettings, RunOnStartup = true)]TimerInfo myTimer, TextWriter log)
@@ -56,7 +56,7 @@ namespace igx.jobs.databasetaskprocessor
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
-                companies = companies.Where(i => i.CompanyID == 1).ToList();
+                companies = companies.Where(i => i.CompanyID == 3).ToList();
 #endif
 
                 companies.Shuffle(); //Randomize
@@ -72,8 +72,7 @@ namespace igx.jobs.databasetaskprocessor
                         }
 
                         var indexCollectionModel = new ObjectIndexCollectionModel();
-                        List<CompanySetting> settings = null;
-
+                        
                         using (var outerCompanyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID))
                         {
                             outerCompanyConnection.Open();
@@ -549,83 +548,56 @@ from    [queue].[Task] T
             return true;
         }
 
-        private static bool ShouldItemBeIndexedForElasticSearch(string obj)
-        {
-            if (string.IsNullOrEmpty(obj)) return false;
-
-            // ignore intersects we dont want to add them to the search index.
-            if (string.Compare(obj, "IntersectType", true) == 0
-                    || string.Compare(obj, "ResponsibilityType", true) == 0
-                    || string.Compare(obj, "FusionAttributeType", true) == 0
-                    || string.Compare(obj, "Lookup", true) == 0
-                    || string.Compare(obj, "LookupType", true) == 0
-                    || string.Compare(obj, "Tag", true) == 0
-                    || string.Compare(obj, "FieldType", true) == 0
-                    || string.Compare(obj, "ArtifactType", true) == 0
-                    || string.Compare(obj, "IssueType", true) == 0
-                    || string.Compare(obj, "Task", true) == 0
-                    ) return false;
-
-            return true;
-        }
-
         private static void addAuditEntry(SqlConnection companyConnection, string oper, QueueTask queueRecord)
         {
             if (!string.IsNullOrEmpty(queueRecord.Custom))
             {
                 var customXml = XElement.Parse(queueRecord.Custom);
 
-                //ActionObjectValue holds new value, as target is not in company table
-                if (queueRecord.Custom.Contains("ActionObjectValue"))
-                {
-                    companyConnection.Execute(
-                    "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID, @NewValue",
-                    new
-                    {
-                        Object = queueRecord.Object,
-                        ObjectID = queueRecord.ObjectID,
-                        ParentObject = customXml.Element("ActionObject").Value,
-                        date = queueRecord.Date,
-                        ParentObjectID = int.Parse(customXml.Element("ActionObjectID").Value),
-                        ResourceID = int.Parse(customXml.Element("ResourceID").Value),
-                        op = oper,
-                        NewValue = customXml.Element("ActionObjectValue").Value
-                    },
-                    null,
-                    600);
-                }
-                else
-                {
-                    companyConnection.Execute(
-                            "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID",
-                            new
-                            {
-                                Object = queueRecord.Object,
-                                ObjectID = queueRecord.ObjectID,
-                                ParentObject = customXml.Element("ActionObject").Value,
-                                date = queueRecord.Date,
-                                ParentObjectID = int.Parse(customXml.Element("ActionObjectID").Value),
-                                ResourceID = int.Parse(customXml.Element("ResourceID").Value),
-                                op = oper
-                            },
-                            null,
-                            600);    // 5 minute timeout.
-                }
+                var parameters = new DynamicParameters();
+
+                parameters.Add("@MainObject", queueRecord.Object);
+                parameters.Add("@MainObjectID", queueRecord.ObjectID);
+                parameters.Add("@DependentObject", customXml.Element("ActionObject").Value);
+                parameters.Add("@DependentObjectID", int.Parse(customXml.Element("ActionObjectID").Value));
+                parameters.Add("@Date", queueRecord.Date);
+                parameters.Add("@ResourceID", int.Parse(customXml.Element("ResourceID").Value));
+                parameters.Add("@Action", oper);
+                parameters.Add("@NewValue", (customXml.Element("ActionObjectValue") == null ? null : customXml.Element("ActionObjectValue").Value));
+
+                if(customXml.Element("FieldInfo") != null)
+                    parameters.Add("@AuditFieldTable", getFieldsTable(customXml.Element("FieldInfo")).AsTableValuedParameter("[dbo].[AuditFieldTable]") );
+
+                var result = companyConnection.Query(
+                    "[utility].[AddAuditEntry]", 
+                    parameters, 
+                    commandType: System.Data.CommandType.StoredProcedure, 
+                    commandTimeout:600
+                    );
             }
         }
-    
+
+        private static DataTable getFieldsTable(XElement xElement)
+        {
+            var tb = new DataTable();
+
+            tb.Columns.Add("FieldTypeID", typeof(int));
+            tb.Columns.Add("FieldName", typeof(string));
+            tb.Columns.Add("Value", typeof(string));            
+
+            foreach (var child in xElement.Elements())
+            {
+                var fieldRow = tb.NewRow();
+                fieldRow["FieldName"] = (string)child.Element("Name");
+                fieldRow["FieldTypeID"] = int.Parse(child.Element("FieldTypeID").Value);
+                fieldRow["Value"] = (string)child.Element("Value");
+                
+                tb.Rows.Add(fieldRow);
+            }
+            return tb;
+        }
+
+       
     }
 
-    internal class TagSqlModel
-    {
-        public Guid TagUID { get; set; }
-        public string Value { get; set; }
-    }
-
-    internal class ResponsibilitySqlModel
-    {
-        public long AssetID { get; set; }
-        public string SecurityAsset { get; set; }
-        public int SecurityAssetID { get; set; }
-    }
 }
