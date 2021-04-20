@@ -115,10 +115,10 @@
                                     </ng-container>
                                     <ng-template #elseBlock>
                                         <tr [pSelectableRow]="item">
-                                            <td class="first-col">
+                                            <td class="first-col" (click)="selectSingleItem($event,item,el);">
                                                 <p-tableCheckbox [value]="item"></p-tableCheckbox>
                                             </td>
-                                            <td>
+                                            <td (click)="selectSingleItem($event,item,el);">
                                                 <span class="item-value" [innerHTML]="item.title"></span>
                                             </td>
                                         </tr>

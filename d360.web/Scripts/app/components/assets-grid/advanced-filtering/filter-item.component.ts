@@ -847,4 +847,61 @@ export class FilterItemComponent implements OnInit, OnChanges {
             }
         }
     }
+
+
+    //table extensions
+    @ViewChild('dataTable', { static: false }) tableEl: any;
+    private lastSelectedElementIndex: number;
+    selectSingleItem(event: MouseEvent, item: SelectItem, element: ElementRef = null) {
+        if (!this.condition.value) {
+            this.condition.value = [];
+        }
+        let valueRef = this.condition.value as SelectItem[];
+        let hasMetaKey: boolean = event.ctrlKey || event.shiftKey || event.metaKey;
+
+        if (hasMetaKey) {
+            if (event.ctrlKey || event.metaKey) {
+                let idx = valueRef.indexOf(item);
+                if (idx > -1) {
+                    valueRef.splice(idx, 1);
+                }
+                else {
+                    valueRef.push(item);
+                }
+            }
+            else {
+                //this handles shift key
+                if (this.lastSelectedElementIndex === -1) {
+                    valueRef.push(item);
+                }
+                else {
+                    var startIdx = this.lastSelectedElementIndex;
+                    var endIdx = this.currentField.Values.indexOf(item);
+                    if (startIdx > endIdx) {
+                        let temp = endIdx;
+                        endIdx = startIdx;
+                        startIdx = temp;
+                    }
+
+                    for (let i = startIdx; i <= endIdx; i++) {
+                        var toAdd = this.currentField.Values[i];
+
+                        if (!valueRef.some((x) => x.value === toAdd.value)) {
+                            valueRef.push(toAdd);
+                        }
+                    }
+
+                }
+            }
+        }
+        else {
+            valueRef = [];
+            valueRef.push(item);
+        }
+
+        //update reference
+        this.condition.value = [...valueRef];
+        this.lastSelectedElementIndex = this.currentField.Values.indexOf(item);
+    }
+
 }
