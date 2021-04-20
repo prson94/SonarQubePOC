@@ -859,7 +859,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
 
     //table extensions
-    @ViewChild('dataTable', { static: false }) tableEl: any;
+    @ViewChild("dataTable", { static: false }) tableEl: any;
     private lastSelectedElementIndex: number;
     selectSingleItem(event: MouseEvent, item: SelectItem, element: ElementRef = null) {
         if (!this.condition.value) {
