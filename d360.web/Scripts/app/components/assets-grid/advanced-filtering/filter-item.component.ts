@@ -2,7 +2,7 @@
 import { LazyLoadEvent, SelectItem, SelectItemGroup } from "primeng/api";
 import * as _ from "lodash";
 import { FieldTypeAPIModelFieldCondition } from "../../../models/field-condition-grid.models";
-import { OperatorModel } from "../../../models/operator.model";
+import { Operator, OperatorModel } from "../../../models/operator.model";
 import { AdvancedFilterFieldCondition, SystemFields } from "./advanced-filtering.models";
 import { FieldsObservableService } from "../../../services/fieldsObservable.service";
 import { AssetTypeService } from "../../../services/asset-type.service";
@@ -201,8 +201,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
             options = [];
             options.push({ value: "Equals", label: " contains " });
             options.push({ value: "NotEquals", label: " does not contain " });
-            options.push({ value: "Populated", label: " exist " });
-            options.push({ value: "NotPopulated", label: " do not exist " });
+            options.push({ value: "Populated", label: " exists " });
+            options.push({ value: "NotPopulated", label: " does not exist " });
             return options;
         }
 
@@ -216,8 +216,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
             options = [];
             options.push({ value: "Equals", label: " is " });
             options.push({ value: "NotEquals", label: " is not " });
-            options.push({ value: "Populated", label: " exist " });
-            options.push({ value: "NotPopulated", label: " do not exist " });
+            options.push({ value: "Populated", label: " exists " });
+            options.push({ value: "NotPopulated", label: " does not exist " });
 
             if (this.relationshipFieldIntersectCardinality === "Many") {
                 options[0].label = "contains";
@@ -556,6 +556,15 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     hasRemoveIcon() {
+        if (!this.condition.operator) {
+            return false;
+        }
+
+        if (this.condition.operator.toString() === "Populated"
+            || this.condition.operator.toString() === "NotPopulated") {
+            return true;
+        }
+
         if (!this.isEmpty(this.condition.value) && this.condition.operator) {
             return true;
         }

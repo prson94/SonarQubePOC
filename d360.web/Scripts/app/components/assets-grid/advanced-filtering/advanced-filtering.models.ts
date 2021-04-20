@@ -61,10 +61,20 @@ export class AdvancedFilterFieldCondition {
             case "IsFalse":
                 return this.friendlyFieldName + " is False";
             case "Contains":
-                str += " contains ";
+                if (this.field === "CreatedOn" || this.field === "UpdatedOn") {
+                    str += " is ";
+                }
+                else {
+                    str += " contains ";
+                }
                 break;
             case "NotContains":
-                str += " does not contain ";
+                if (this.field === "CreatedOn" || this.field === "UpdatedOn") {
+                    str += " is not ";
+                }
+                else {
+                    str += " does not contain ";
+                }
                 break;
             case "Equals":
                 if (this.isRelationship) {
@@ -152,8 +162,14 @@ export class AdvancedFilterFieldCondition {
             case "IsFalse":
                 return fieldName + " is False";
             case "Contains":
+                if (this.field === "CreatedOn" || this.field === "UpdatedOn") {
+                    return `${fieldName} is ${this.getTypedValue(this.value, true)}`;
+                }
                 return `${fieldName} : *${this.getTypedValue(this.value, true)}*`;
             case "NotContains":
+                if (this.field === "CreatedOn" || this.field === "UpdatedOn") {
+                    return `${fieldName} is not ${this.getTypedValue(this.value, true)}`;
+                }
                 return `${fieldName} &#8800; *${this.getTypedValue(this.value, true)}*`;
             case "Equals":
                 return `${fieldName} : ${this.getTypedValue(this.value, true)}`;

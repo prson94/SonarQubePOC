@@ -1,5 +1,5 @@
 ﻿<div class="filter-block" igAutoFocus>
-    <div class="ig-button filter-label {{(hasRemoveIcon() ? 'has-remove-icon' :'')}}"
+    <div class="ig-button filter-label {{(hasRemoveIcon() ? 'has-remove-icon' :'')}} {{(uiFilterLabel === 'Add filter' ? 'is-empty' : '')}}"
          (click)="updateFilter()"
          pTooltip="{{uiTooltipValue}}"
          tooltipPosition="top"
