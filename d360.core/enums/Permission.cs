@@ -73,7 +73,7 @@ namespace d360.core.enums
                     Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
                 };
 
-                //Add and Edit are available, so Modify is not
+                //Add and Edit are available, so Modify is no longer in the category list
                 if (new List<string>{ "R", "D", "A", "E" }.Contains(info.Category))
                 {
                     list.Add(info);
