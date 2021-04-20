@@ -897,7 +897,16 @@ when not matched then
                     }
                     catch (Exception ex)
                     {
-                        trans.Rollback();
+                        try
+                        {
+                            if (trans != null)
+                            {
+                                trans.Rollback();
+                            }
+                        }
+                        catch
+                        {
+                        }
                         if (executionRecord != null)
                         {
                             updateExecution(company, executionRecord, false, ex);
