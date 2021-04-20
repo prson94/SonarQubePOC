@@ -10618,37 +10618,33 @@ EG.GroupUid
                     DataProfileTable.Columns.Add("AssetUid", typeof(Guid));
                     DataProfileTable.Columns.Add("ProfileSetDate", typeof(DateTime));
 
-                    DataProfileTable.Columns.Add("TotalCount", typeof(long));
-                    DataProfileTable.Columns.Add("DistinctValues", typeof(long));
+                    DataProfileTable.Columns.Add("SampleCount", typeof(long));
                     DataProfileTable.Columns.Add("NullCount", typeof(long));
                     DataProfileTable.Columns.Add("BlankCount", typeof(long));
                     DataProfileTable.Columns.Add("MeanValue", typeof(decimal));
-
                     DataProfileTable.Columns.Add("MinimumValue", typeof(string));
+
                     DataProfileTable.Columns.Add("MaximumValue", typeof(string));
                     DataProfileTable.Columns.Add("MinimumLength", typeof(int));
                     DataProfileTable.Columns.Add("MaximumLength", typeof(int));
                     DataProfileTable.Columns.Add("StandardDeviation", typeof(decimal));
+                    DataProfileTable.Columns.Add("Type", typeof(string));
 
-                    DataProfileTable.Columns.Add("NewType", typeof(string));
                     DataProfileTable.Columns.Add("Multiline", typeof(bool));
-                    DataProfileTable.Columns.Add("Validation", typeof(string));
+                    DataProfileTable.Columns.Add("RegExp", typeof(string));
                     DataProfileTable.Columns.Add("Confidence", typeof(decimal));
                     DataProfileTable.Columns.Add("TypeQualifier", typeof(string));
-
-                    DataProfileTable.Columns.Add("CurrentType", typeof(string));
-                    DataProfileTable.Columns.Add("JavaType", typeof(string));
                     DataProfileTable.Columns.Add("LogicalType", typeof(bool));
+
                     DataProfileTable.Columns.Add("LeadingWhiteSpace", typeof(bool));
                     DataProfileTable.Columns.Add("LeadingZeroCount", typeof(int));
-
                     DataProfileTable.Columns.Add("TrailingWhiteSpace", typeof(bool));
+
                     DataProfileTable.Columns.Add("MatchCount", typeof(long));
                     DataProfileTable.Columns.Add("OutlierCardinality", typeof(int));
                     DataProfileTable.Columns.Add("PossibleKey", typeof(bool));
-
-                    DataProfileTable.Columns.Add("PrimaryKey", typeof(float));
                     DataProfileTable.Columns.Add("DataSignature", typeof(string));
+
                     DataProfileTable.Columns.Add("StructureSignature", typeof(string));
                     DataProfileTable.Columns.Add("Cardinality", typeof(int));
                     DataProfileTable.Columns.Add("ShapeCardinality", typeof(int));
@@ -10678,36 +10674,31 @@ EG.GroupUid
                         row["AssetUid"] = item.assetUid;
                         row["ProfileSetDate"] = item.profileSetDate.Date;
 
-                        row["TotalCount"] = item.totalCount ?? (object)DBNull.Value;
-                        row["DistinctValues"] = item.distinctValues ?? (object)DBNull.Value;
+                        row["SampleCount"] = item.sampleCount ?? (object)DBNull.Value;
                         row["NullCount"] = item.nullCount ?? (object)DBNull.Value;
                         row["BlankCount"] = item.blankCount ?? (object)DBNull.Value;
                         row["MeanValue"] = item.meanValue ?? (object)DBNull.Value;
-
                         row["MinimumValue"] = item.minValue ?? (object)DBNull.Value;
+
                         row["MaximumValue"] = item.maxValue ?? (object)DBNull.Value;
                         row["MinimumLength"] = item.minLength ?? (object)DBNull.Value;
                         row["MaximumLength"] = item.maxLength ?? (object)DBNull.Value;
                         row["StandardDeviation"] = item.standardDeviation ?? (object)DBNull.Value;
+                        row["Type"] = item.type ?? (object)DBNull.Value;
 
-                        row["NewType"] = item.newType ?? (object)DBNull.Value;
                         row["Multiline"] = item.multiline ?? (object)DBNull.Value;
-                        row["Validation"] = item.validation ?? (object)DBNull.Value;
+                        row["RegExp"] = item.regExp ?? (object)DBNull.Value;
                         row["Confidence"] = item.confidence ?? (object)DBNull.Value;
                         row["TypeQualifier"] = item.typeQualifier ?? (object)DBNull.Value;
-
-                        row["CurrentType"] = item.currentType ?? (object)DBNull.Value;
-                        row["JavaType"] = item.javaType ?? (object)DBNull.Value;
                         row["LogicalType"] = item.logicalType ?? (object)DBNull.Value;
+
                         row["LeadingWhiteSpace"] = item.leadingWhiteSpace ?? (object)DBNull.Value;
                         row["LeadingZeroCount"] = item.leadingZeroCount ?? (object)DBNull.Value;
-
                         row["TrailingWhiteSpace"] = item.trailingWhiteSpace ?? (object)DBNull.Value;
                         row["MatchCount"] = item.matchCount ?? (object)DBNull.Value;
                         row["OutlierCardinality"] = item.outlierCardinality ?? (object)DBNull.Value;
-                        row["PossibleKey"] = item.possibleKey ?? (object)DBNull.Value;
 
-                        row["PrimaryKey"] = item.primaryKey ?? (object)DBNull.Value;
+                        row["PossibleKey"] = item.possibleKey ?? (object)DBNull.Value;
                         row["DataSignature"] = item.dataSignature ?? (object)DBNull.Value;
                         row["StructureSignature"] = item.structureSignature ?? (object)DBNull.Value;
                         row["Cardinality"] = item.cardinality ?? (object)DBNull.Value;
@@ -10835,8 +10826,7 @@ EG.GroupUid
                                 bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
                                 bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
                                 bulkCopy.ColumnMappings.Add("ProfileSetDate", "ProfileSetDate");
-                                bulkCopy.ColumnMappings.Add("TotalCount", "TotalCount");
-                                bulkCopy.ColumnMappings.Add("DistinctValues", "DistinctValues");
+                                bulkCopy.ColumnMappings.Add("SampleCount", "SampleCount");
                                 bulkCopy.ColumnMappings.Add("NullCount", "NullCount");
                                 bulkCopy.ColumnMappings.Add("BlankCount", "BlankCount");
                                 bulkCopy.ColumnMappings.Add("MeanValue", "MeanValue");
@@ -10847,14 +10837,12 @@ EG.GroupUid
                                 bulkCopy.ColumnMappings.Add("MaximumLength", "MaximumLength");
                                 bulkCopy.ColumnMappings.Add("StandardDeviation", "StandardDeviation");
 
-                                bulkCopy.ColumnMappings.Add("NewType", "NewType");
+                                bulkCopy.ColumnMappings.Add("Type", "Type");
                                 bulkCopy.ColumnMappings.Add("Multiline", "Multiline");
-                                bulkCopy.ColumnMappings.Add("Validation", "Validation");
+                                bulkCopy.ColumnMappings.Add("RegExp", "RegExp");
                                 bulkCopy.ColumnMappings.Add("Confidence", "Confidence");
                                 bulkCopy.ColumnMappings.Add("TypeQualifier", "TypeQualifier");
 
-                                bulkCopy.ColumnMappings.Add("CurrentType", "CurrentType");
-                                bulkCopy.ColumnMappings.Add("JavaType", "JavaType");
                                 bulkCopy.ColumnMappings.Add("LogicalType", "LogicalType");
                                 bulkCopy.ColumnMappings.Add("LeadingWhiteSpace", "LeadingWhiteSpace");
                                 bulkCopy.ColumnMappings.Add("LeadingZeroCount", "LeadingZeroCount");
@@ -10864,7 +10852,6 @@ EG.GroupUid
                                 bulkCopy.ColumnMappings.Add("OutlierCardinality", "OutlierCardinality");
                                 bulkCopy.ColumnMappings.Add("PossibleKey", "PossibleKey");
 
-                                bulkCopy.ColumnMappings.Add("PrimaryKey", "PrimaryKey");
                                 bulkCopy.ColumnMappings.Add("DataSignature", "DataSignature");
                                 bulkCopy.ColumnMappings.Add("StructureSignature", "StructureSignature");
                                 bulkCopy.ColumnMappings.Add("Cardinality", "Cardinality");
@@ -10980,8 +10967,7 @@ EG.GroupUid
                                         ON (EDP.AssetId = ADP.AssetID AND EDP.profileSetDate = ADP.profileSetDate)
                                         WHEN MATCHED AND @IsInsert = 0 THEN
                                         UPDATE SET
-                                            ADP.[TotalCount] = EDP.[TotalCount]
-                                            ,ADP.[DistinctValues] = EDP.[DistinctValues]
+                                            ADP.[SampleCount] = EDP.[SampleCount]
                                             ,ADP.[NullCount] = EDP.[NullCount]
                                             ,ADP.[BlankCount] = EDP.[BlankCount]
                                             ,ADP.[MeanValue] = EDP.[MeanValue]
@@ -10990,13 +10976,11 @@ EG.GroupUid
                                             ,ADP.[MinimumLength] = EDP.[MinimumLength]
                                             ,ADP.[MaximumLength] = EDP.[MaximumLength]
                                             ,ADP.[StandardDeviation] = EDP.[StandardDeviation]
-                                            ,ADP.[NewType] = EDP.[NewType]
+                                            ,ADP.[Type] = EDP.[Type]
                                             ,ADP.[Multiline] = EDP.[Multiline]
-                                            ,ADP.[Validation] = EDP.[Validation]
+                                            ,ADP.[RegExp] = EDP.[RegExp]
                                             ,ADP.[Confidence] = EDP.[Confidence]
                                             ,ADP.[TypeQualifier] = EDP.[TypeQualifier]
-                                            ,ADP.[CurrentType] = EDP.[CurrentType]
-                                            ,ADP.[JavaType] = EDP.[JavaType]
                                             ,ADP.[LogicalType] = EDP.[LogicalType]
                                             ,ADP.[LeadingWhiteSpace] = EDP.[LeadingWhiteSpace]
                                             ,ADP.[LeadingZeroCount] = EDP.[LeadingZeroCount]
@@ -11004,7 +10988,6 @@ EG.GroupUid
                                             ,ADP.[MatchCount] = EDP.[MatchCount]
                                             ,ADP.[OutlierCardinality] = EDP.[OutlierCardinality]
                                             ,ADP.[PossibleKey] = EDP.[PossibleKey]
-                                            ,ADP.[PrimaryKey] = EDP.[PrimaryKey]
                                             ,ADP.[DataSignature] = EDP.[DataSignature]
                                             ,ADP.[StructureSignature] = EDP.[StructureSignature]
                                             ,ADP.[Cardinality] = EDP.[Cardinality]
@@ -11015,8 +10998,7 @@ EG.GroupUid
                                         WHEN NOT MATCHED AND @IsInsert = 1 THEN
                                         INSERT ([AssetID]
                                                     ,[ProfileSetDate]
-                                                    ,[TotalCount]
-                                                    ,[DistinctValues]
+                                                    ,[SampleCount]
                                                     ,[NullCount]
                                                     ,[BlankCount]
                                                     ,[MeanValue]
@@ -11025,13 +11007,11 @@ EG.GroupUid
                                                     ,[MinimumLength]
                                                     ,[MaximumLength]
                                                     ,[StandardDeviation]
-                                                    ,[NewType]
+                                                    ,[Type]
                                                     ,[Multiline]
-                                                    ,[Validation]
+                                                    ,[RegExp]
                                                     ,[Confidence]
                                                     ,[TypeQualifier]
-                                                    ,[CurrentType]
-                                                    ,[JavaType]
                                                     ,[LogicalType]
                                                     ,[LeadingWhiteSpace]
                                                     ,[LeadingZeroCount]
@@ -11039,7 +11019,6 @@ EG.GroupUid
                                                     ,[MatchCount]
                                                     ,[OutlierCardinality]
                                                     ,[PossibleKey]
-                                                    ,[PrimaryKey]
                                                     ,[DataSignature]
                                                     ,[StructureSignature]
                                                     ,[Cardinality]
@@ -11051,8 +11030,7 @@ EG.GroupUid
                                                 VALUES
                                                     (EDP.AssetID
                                                     ,EDP.ProfileSetDate
-                                                    ,EDP.TotalCount
-                                                    ,EDP.DistinctValues
+                                                    ,EDP.SampleCount
                                                     ,EDP.NullCount
                                                     ,EDP.BlankCount
                                                     ,EDP.MeanValue
@@ -11061,13 +11039,11 @@ EG.GroupUid
                                                     ,EDP.MinimumLength
                                                     ,EDP.MaximumLength
                                                     ,EDP.StandardDeviation
-                                                    ,EDP.NewType
+                                                    ,EDP.Type
                                                     ,EDP.Multiline
-                                                    ,EDP.Validation
+                                                    ,EDP.RegExp
                                                     ,EDP.Confidence
                                                     ,EDP.TypeQualifier
-                                                    ,EDP.CurrentType
-                                                    ,EDP.JavaType
                                                     ,EDP.LogicalType
                                                     ,EDP.LeadingWhiteSpace
                                                     ,EDP.LeadingZeroCount
@@ -11075,7 +11051,6 @@ EG.GroupUid
                                                     ,EDP.MatchCount
                                                     ,EDP.OutlierCardinality
                                                     ,EDP.PossibleKey
-                                                    ,EDP.PrimaryKey
                                                     ,EDP.DataSignature
                                                     ,EDP.StructureSignature
                                                     ,EDP.Cardinality

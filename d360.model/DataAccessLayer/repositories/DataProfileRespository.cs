@@ -21,11 +21,6 @@ namespace d360.model.DataAccessLayer
             this.Community = community;
         }
 
-        public Task<List<DataProfileUpsertResponse>> PostDataProfiles(DataProfileModel model)
-        {
-            throw new NotImplementedException();
-        }
-
         public List<DataProfileUpsertResponse> UpsertDataProfiles(List<DataProfileUpsertModel> DataProfileUpsertModels, ApiExecution execution, bool isInsert)
         {
             CompanyContext.Add(execution);

@@ -15,9 +15,7 @@ namespace d360.core.entities
         [DataMember]        
         public DateTime ProfileSetDate { get; set; }
         [DataMember]
-        public long? TotalCount { get; set; }
-        [DataMember]
-        public long? DistinctValues { get; set; }
+        public long? SampleCount { get; set; }        
         [DataMember]
         public long? BlankCount { get; set; }
         [DataMember]
@@ -34,20 +32,16 @@ namespace d360.core.entities
         public int MaximumLength { get; set; }
         [DataMember]
         public Decimal? StandardDeviation { get; set; }
-        [DataMember]        
-        public string NewType { get; set; }
         [DataMember]
         public bool? Multiline { get; set; }
         [DataMember]
-        public string Validation { get; set; }
+        public string RegExp { get; set; }
         [DataMember]
         public Decimal? Confidence { get; set; }
         [DataMember]
+        public string Type { get; set; }
+        [DataMember]
         public string TypeQualifier { get; set; }
-        [DataMember]
-        public string CurrentType { get; set; }
-        [DataMember]
-        public string JavaType { get; set; }
         [DataMember]
         public bool? LogicalType { get; set; }
         [DataMember]
@@ -62,8 +56,6 @@ namespace d360.core.entities
         public int? OutlierCardinality { get; set; }
         [DataMember]
         public bool? PossibleKey { get; set; }
-        [DataMember]
-        public Decimal? PrimaryKey { get; set; }
         [DataMember]
         public string DataSignature { get; set; }
         [DataMember]
@@ -89,73 +81,126 @@ namespace d360.core.entities
         public string Value { get; set; }
 
     }
+    [DataContract]
     public class DataProfileModel
     {
         [Required]
+        [DataMember]
         public Guid assetUid { get; set; }
 
         [Required]
+        [DataMember]
         [DataType(System.ComponentModel.DataAnnotations.DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}")]
         public DateTime profileSetDate { get; set; }
 
-        public long? totalCount { get; set; }
-        public long? distinctValues { get; set; }
+        [DataMember]
+        public long? sampleCount { get; set; }
+        
+        [DataMember]
         public long? blankCount { get; set; }
+
+        [DataMember]
         public long? nullCount { get; set; }
 
+        [DataMember(Name = "min")]
         [StringLength(500, ErrorMessage = "{0} cannot be more than {1} characters.")]
         public string minValue { get; set; }
 
+        [DataMember(Name = "max")]
         [StringLength(500, ErrorMessage = "{0} cannot be more than {1} characters.")]
-        public string maxValue { get; set; }       
+        public string maxValue { get; set; }
+
+        [DataMember(Name = "mean")]
         [Range(0, 999999999999999999.9999, ErrorMessage = "{0} must be between {1} and {2}.")]
         [RegularExpression(@"^\d+.?\d{0,4}$", ErrorMessage = "{0} is limited to a maximum of 4 decimal places.")]
         public Decimal? meanValue { get; set; }
+
+        [DataMember]
         public int? minLength { get; set; }
+
+        [DataMember]
         public int? maxLength { get; set; }
+
+        [DataMember]
         [Range(0, 999999999999999999999999.9999, ErrorMessage = "{0} must be between {1} and {2}.")]
         [RegularExpression(@"^\d+.?\d{0,4}$", ErrorMessage = "{0} is limited to a maximum of 4 decimal places.")]
         public Decimal? standardDeviation { get; set; }
-        [StringLength(200, ErrorMessage = "{0} cannot be more than {1} characters.")]
-        public string newType { get; set; }
+
+        [DataMember]
         public bool? multiline { get; set; }
+
+        [DataMember]
         [StringLength(200, ErrorMessage = "{0} cannot be more than {1} characters.")]
-        public string validation { get; set; }
+        public string regExp { get; set; }
+
+        [DataMember]
         [Range(0, 999999999999999999999999.9999, ErrorMessage = "{0} must be between {1} and {2}.")]
         [RegularExpression(@"^\d+.?\d{0,4}$", ErrorMessage = "{0} is limited to a maximum of 4 decimal places.")]
         public Decimal? confidence { get; set; }
+
+        [DataMember]
+        [StringLength(200, ErrorMessage = "{0} cannot be more than {1} characters.")]
+        public string type { get; set; }
+
+        [DataMember]
         [StringLength(200, ErrorMessage = "{0} cannot be more than {1} characters.")]
         public string typeQualifier { get; set; }
-        [StringLength(200, ErrorMessage = "{0} cannot be more than {1} characters.")]
-        public string currentType { get; set; }
-        [StringLength(200, ErrorMessage = "{0} cannot be more than {1} characters.")]
-        public string javaType { get; set; }
+
+        [DataMember]
         public bool? logicalType { get; set; }
+
+        [DataMember]
         public bool? leadingWhiteSpace { get; set; }
+
+        [DataMember]
         public int? leadingZeroCount { get; set; }
+
+        [DataMember]
         public bool? trailingWhiteSpace { get; set; }
+
+        [DataMember]
         public long? matchCount { get; set; }
+
+        [DataMember]
         public int? outlierCardinality { get; set; }
+
+        [DataMember]
         public List<DataProfileSampleDetail> outlierDetail { get; set; }
+
+        [DataMember]
         public bool? possibleKey { get; set; }
-        [Range(0, 999999999999999999999999.9999, ErrorMessage = "{0} must be between {1} and {2}.")]
-        [RegularExpression(@"^\d+.?\d{0,4}$", ErrorMessage = "{0} is limited to a maximum of 4 decimal places.")]
-        public Decimal? primaryKey { get; set; }
+
+        [DataMember]
         [StringLength(200, ErrorMessage = "{0} cannot be more than {1} characters.")]
         public string dataSignature { get; set; }
+
+        [DataMember]
         [StringLength(200, ErrorMessage = "{0} cannot be more than {1} characters.")]
         public string structureSignature { get; set; }
+
+        [DataMember]
         public List<string> bottomK { get; set; }
+
+        [DataMember]
         public List<string> topK { get; set; }
+
+        [DataMember]
         public int? cardinality { get; set; }
+
+        [DataMember]
         public List<DataProfileSampleDetail> cardinalityDetail { get; set; }
+
+        [DataMember]
         public int? shapesCardinality { get; set; }
+
+        [DataMember]
         public List<DataProfileSampleDetail> shapesDetail { get; set; }                
     }
 
     public class DataProfileUpsertModel: DataProfileModel, IExecutionItem
     {
+        [DataMember]
         public Guid? ExecutionItemUid { get; set; }
     }
 
