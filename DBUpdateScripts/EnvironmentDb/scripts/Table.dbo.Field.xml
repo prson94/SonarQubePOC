@@ -105,7 +105,7 @@ END
 	</rollback>
   </changeSet> 
 
-  <changeSet author="kmcnamee" id="Table.dbo.Field-Field_AfterUpsert-v7">
+  <changeSet author="kmcnamee" id="Table.dbo.Field-Field_AfterUpsert-v7.1">
     <comment>GOV-14347</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -180,6 +180,7 @@ AS
 	END
 
 
+
 	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
 				select	distinct @ActionName, 
 						i.ObjectType, 
@@ -207,9 +208,81 @@ AS
 						group by ObjectType, ObjectID, UpdatedBy
 						for xml path('fields'))
 						,
-						i.AssetID
-				from inserted i;
-		]]>
+						coalesce(i.AssetID,0) as [AssetID]
+				from inserted i where i.[ObjectType] != 'Intersect';
+
+	-- handle relationships both sides need audit entries
+	if exists(select 1 from inserted where [objecttype]= 'Intersect')
+	begin
+		-- object side of relationship
+		INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+				select	distinct @ActionName, 
+						i.ObjectType, 
+						i.ObjectID,
+						(select 	
+							@ActionName as Action,
+							a.Object as ActionObject,
+							a.ObjectID as ActionObjectID,
+							coalesce(i2.UpdatedBy, 0) as ResourceID,
+							  (
+								select 
+								(select 
+									f.FieldTypeID,
+									ft.FriendlyName as [Name], 
+									f.FormattedValue as [Value] 
+								from field f 
+									inner join fieldtype ft on f.fieldtypeid = ft.id 
+								where f.objectid = i.objectid for xml path('Field'), TYPE
+								)
+								for xml path('FieldInfo'), TYPE
+								)
+						from 
+							inserted i2 
+						where i2.ObjectID = i.ObjectID and i2.ObjectType = i.ObjectType
+						group by ObjectType, ObjectID, UpdatedBy
+						for xml path('fields'))
+						,
+						coalesce(a.ID,0) as [AssetID]
+				from inserted i 
+				inner join [intersect] inter on(i.ObjectID = inter.ID and i.[ObjectType] = 'Intersect')
+				inner join asset a on(a.ObjectID = inter.ObjectID and a.[Object] = inter.[Object])
+				where i.[ObjectType] = 'Intersect';
+
+			-- subject side
+			INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+				select	distinct @ActionName, 
+						i.ObjectType, 
+						i.ObjectID,
+						(select 	
+							@ActionName as Action,
+							a.Object as ActionObject,
+							a.ObjectID as ActionObjectID,
+							coalesce(i2.UpdatedBy, 0) as ResourceID,
+							  (
+								select 
+								(select 
+									f.FieldTypeID,
+									ft.FriendlyName as [Name], 
+									f.FormattedValue as [Value] 
+								from field f 
+									inner join fieldtype ft on f.fieldtypeid = ft.id 
+								where f.objectid = i.objectid for xml path('Field'), TYPE
+								)
+								for xml path('FieldInfo'), TYPE
+								)
+						from 
+							inserted i2 
+						where i2.ObjectID = i.ObjectID and i2.ObjectType = i.ObjectType
+						group by ObjectType, ObjectID, UpdatedBy
+						for xml path('fields'))
+						,
+						coalesce(a.ID,0) as [AssetID]
+				from inserted i 
+				inner join [intersect] inter on(i.ObjectID = inter.ID and i.[ObjectType] = 'Intersect')
+				inner join asset a on(a.ObjectID = inter.SubjectID and a.[Object] = inter.[Subject])
+				where i.[ObjectType] = 'Intersect';
+	end
+]]>
     </sql>
 	<rollback>
 		<![CDATA[	
@@ -274,7 +347,7 @@ AS
   </changeSet>
 
 
-  <changeSet author="kmcnamee" id="Table.dbo.Field-Field_AfterDelete-v3">
+  <changeSet author="kmcnamee" id="Table.dbo.Field-Field_AfterDelete-v3.2">
     <comment>GOV-14347</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -292,11 +365,11 @@ BEGIN
 
     -- audit field delete
 	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
-				select	distinct 'Removed', 
-						i.ObjectType, 
-						i.ObjectID,
+				select	distinct 'Delete', 
+						d.ObjectType, 
+						d.ObjectID,
 						(select 	
-							'Removed' as Action,
+							'Delete' as Action,
 							i2.ObjectType as ActionObject,
 							i2.ObjectID as ActionObjectID,
 							coalesce(i2.UpdatedBy, 0) as ResourceID,
@@ -304,8 +377,8 @@ BEGIN
 								select 
 								(select 
 									d3.FieldTypeID,
-									coalesce(ft.FriendlyName, '<deleted field type>'), 
-									coalesce(d3.FormattedValue,'<deleted value>') as [Value]
+									coalesce(ft.FriendlyName, '<deleted field type>') as [Name], 
+									'' as [Value]
 								from deleted d3 
 									left join fieldtype ft on d3.fieldtypeid = ft.id 
 								   for xml path('Field'), TYPE
@@ -314,14 +387,13 @@ BEGIN
 								)
 						from 
 							deleted i2 
-						where i2.ObjectID = i.ObjectID and i2.ObjectType = i.ObjectType
+						where i2.ObjectID = d.ObjectID and i2.ObjectType = d.ObjectType
 						group by ObjectType, ObjectID, UpdatedBy
 						for xml path('fields'))
 						,
-						i.AssetID
-				from deleted i;
+						coalesce(d.AssetID,0) as [AssetID]
+				from deleted d;		
 END
-
 ]]>
     </sql>
     <rollback>

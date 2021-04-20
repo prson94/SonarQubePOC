@@ -13,6 +13,7 @@ using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
 using System.Collections.Concurrent;
+using System.Data;
 
 namespace igx.functions.databasetaskprocessor
 {    
@@ -208,11 +209,8 @@ from    [queue].[Task] T
                                                             break;
                                                     #endregion
                                                     case "Delete":
-                                                        #region                                     
-                                                        if (IsValidTypeForAuditAction(q.Action, q.Object))
-                                                            {
-                                                                addAuditEntry(companyConnection, "Removed", q);
-                                                            }
+                                                        #region                                                                                             
+                                                            addAuditEntry(companyConnection, "Removed", q);
                                                             resolveIndexItem(companyConnection, q.Object, q.ObjectID, "D", q.AssetID);
                                                             break;
                                                     #endregion
@@ -427,63 +425,53 @@ from    [queue].[Task] T
             }
         }
 
-
-        private static bool IsValidTypeForAuditAction(string action, string obj)
-        {
-            if ((action ?? "").ToUpper() == "DELETE")
-            {
-                if (obj == SystemObjects.Tag.ToString())
-                    return true;
-                else if ((obj ?? "").ToUpper() == "RESPONSIBILITYTYPERELATIONOVERRIDEITEM")
-                    return true;
-                return false;
-            }
-            return true;
-        }
-
         private static void addAuditEntry(SqlConnection companyConnection, string oper, QueueTask queueRecord)
         {
             if (!string.IsNullOrEmpty(queueRecord.Custom))
             {
                 var customXml = XElement.Parse(queueRecord.Custom);
 
-                //ActionObjectValue holds new value, as target is not in company table
-                if (queueRecord.Custom.Contains("ActionObjectValue"))
-                {
-                    companyConnection.Execute(
-                    "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID, @NewValue",
-                    new
-                    {
-                        Object = queueRecord.Object,
-                        ObjectID = queueRecord.ObjectID,
-                        ParentObject = customXml.Element("ActionObject").Value,
-                        date = queueRecord.Date,
-                        ParentObjectID = int.Parse(customXml.Element("ActionObjectID").Value),
-                        ResourceID = int.Parse(customXml.Element("ResourceID").Value),
-                        op = oper,
-                        NewValue = customXml.Element("ActionObjectValue").Value
-                    },
-                    null,
-                    600);
-                }
-                else
-                {
-                    companyConnection.Execute(
-                            "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID",
-                            new
-                            {
-                                Object = queueRecord.Object,
-                                ObjectID = queueRecord.ObjectID,
-                                ParentObject = customXml.Element("ActionObject").Value,
-                                date = queueRecord.Date,
-                                ParentObjectID = int.Parse(customXml.Element("ActionObjectID").Value),
-                                ResourceID = int.Parse(customXml.Element("ResourceID").Value),
-                                op = oper
-                            },
-                            null,
-                            600);    // 5 minute timeout.
-                }
+                var parameters = new DynamicParameters();
+
+                parameters.Add("@MainObject", queueRecord.Object, System.Data.DbType.AnsiString, size: 50);
+                parameters.Add("@MainObjectID", queueRecord.ObjectID);
+                parameters.Add("@DependentObject", customXml.Element("ActionObject").Value, System.Data.DbType.AnsiString, size: 50);
+                parameters.Add("@DependentObjectID", int.Parse(customXml.Element("ActionObjectID").Value));
+                parameters.Add("@Date", queueRecord.Date);
+                parameters.Add("@ResourceID", int.Parse(customXml.Element("ResourceID").Value));
+                parameters.Add("@Action", oper, System.Data.DbType.AnsiString, size: 15);
+                parameters.Add("@NewValue", (customXml.Element("ActionObjectValue") == null ? null : customXml.Element("ActionObjectValue").Value), System.Data.DbType.AnsiString, size: 50);
+
+                if (customXml.Element("FieldInfo") != null)
+                    parameters.Add("@AuditFieldTable", getFieldsTable(customXml.Element("FieldInfo")).AsTableValuedParameter("[dbo].[AuditFieldTable]"));
+
+                var result = companyConnection.Query(
+                    "[utility].[AddAuditEntry]",
+                    parameters,
+                    commandType: System.Data.CommandType.StoredProcedure,
+                    commandTimeout: 600
+                    );
             }
+        }
+
+        private static DataTable getFieldsTable(XElement xElement)
+        {
+            var tb = new DataTable();
+
+            tb.Columns.Add("FieldTypeID", typeof(int));
+            tb.Columns.Add("FieldName", typeof(string));
+            tb.Columns.Add("Value", typeof(string));
+
+            foreach (var child in xElement.Elements())
+            {
+                var fieldRow = tb.NewRow();
+                fieldRow["FieldName"] = (string)child.Element("Name") ?? "";
+                fieldRow["FieldTypeID"] = int.Parse(child.Element("FieldTypeID") == null ? "" : child.Element("FieldTypeID").Value);
+                fieldRow["Value"] = (string)child.Element("Value") ?? "";
+
+                tb.Rows.Add(fieldRow);
+            }
+            return tb;
         }
     }
 

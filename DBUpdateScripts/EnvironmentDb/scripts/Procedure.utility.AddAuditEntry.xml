@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Procedure.utility.AddAuditEntry-v9">
+  <changeSet author="kmcnamee" id="Procedure.utility.AddAuditEntry-v9.2">
   <comment>GOV-14347</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -466,6 +466,17 @@ begin
 			@value nvarchar(max),
 			@updated bit
 	select	@max = max(ID) from @tbl
+
+	-- test if there is a previous created entry in global audit for this then it cant be a create change to update..
+	if @Action = 'Created' and exists(select 1 from reporting.Global_Audit where [Object] = @DependentObject and [ObjectID] = @DependentObjectID)
+	begin
+		set @Action = 'Updated';
+	end
+	-- this is the case where the last value of a field was removed and the asset remains its not the asset being deleted just an update.
+	else if @Action = 'Removed' and exists(select 1 from asset where [object] = @DependentObject and [ObjectID] = @DependentObjectID)
+	begin
+		set @Action = 'Updated';
+	end
 
 	if @Action = 'Created'
 	begin
