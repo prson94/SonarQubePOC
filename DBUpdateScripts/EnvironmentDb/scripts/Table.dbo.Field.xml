@@ -193,7 +193,7 @@ AS
 								select 
 								(select 
 									f.FieldTypeID,
-									ft.Name, 
+									ft.FriendlyName as [Name], 
 									f.FormattedValue as [Value] 
 								from field f 
 									inner join fieldtype ft on f.fieldtypeid = ft.id 
@@ -209,8 +209,6 @@ AS
 						,
 						i.AssetID
 				from inserted i;
-
-GO
 		]]>
     </sql>
 	<rollback>
@@ -276,7 +274,7 @@ AS
   </changeSet>
 
 
-  <changeSet author="kmcnamee" id="Table.dbo.Field-Field_AfterDelete-v1">
+  <changeSet author="kmcnamee" id="Table.dbo.Field-Field_AfterDelete-v3">
     <comment>GOV-14347</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -293,49 +291,38 @@ BEGIN
 	SET NOCOUNT ON;
 
     -- audit field delete
-
-	
-	-- temp table maps audit id to object changed.  Cannot use asset id because issues and fields on relationships
-	create table #audiDeleteIdentifiers (AuditID bigint not null, [Object] varchar(50) not null, [ObjectID] int not null);
-	create table #auditFieldVersion (FieldTypeID int not null, [Object] varchar(50) not null, [ObjectID] int not null, [Version] int default(1));
-		
-
-	merge       [reporting].[global_audit] as T
-		using       (
-						select distinct ft.object as [ObjectType],ft.objectid as [ObjectTypeID], d.updatedBy, d.[ObjectType] as [Object], d.[ObjectID] from 
-							deleted d left join fieldtype ft on ft.id = d.fieldtypeid 							
-					) as S 
-		on          1 = 0		
-		when		not matched by target then
-		insert		([Object], [ObjectID], [ObjectName], [ResourceID], [Date], [Action], [ActionObject], [ActionObjectID], [ActionObjectTypeName], [ActionObjectName], [ActionDescription])
-		values		(S.[Object],S.ObjectID,'<type name>',S.UpdatedBy, GetUtcDate(),'Deleted',S.[Object],S.ObjectID,'<type>','<type name>','Field deleted')
-		output		inserted.ID, S.[Object], S.[ObjectID] into #audiDeleteIdentifiers;
-			
-
-		
-	-- get the current max version
-	 insert into #auditFieldVersion 
-		select
-			F.FieldTypeID,
-			d.[ObjectType],
-			d.[ObjectID],
-			max([Version]) as [Version]			
-		from		deleted d
-			inner join reporting.Global_Audit A on A.[Object] = d.[ObjectType] and A.ObjectID = d.ObjectID and A.ActionObject = d.[ObjectType] and A.ActionObjectID = d.[ObjectID]
-			inner join reporting.Global_FieldAudit F on F.AuditID = A.ID and d.FieldTypeID = F.FIeldTypeID group by F.FieldTypeID, d.[ObjectType], d.[ObjectID]
-											
-
---	
-		-- audit the corresponding field values us audit id from insert above insert actual new value
-		insert into reporting.Global_FieldAudit
-			select au.AuditID,d.FieldTypeID, ft.[Name],coalesce(aFV.Version+1,1),f.[FormattedValue] 
-			from deleted d inner join #audiDeleteIdentifiers au 
-				on d.[ObjectType] = au.[Object] and d.[ObjectID] = au.[ObjectID] left join fieldtype ft on ft.ID = d.FieldTypeID inner join field f on d.id = f.id
-				left join #auditFieldVersion aFV on aFV.FieldTypeID = ft.ID and aFV.Object = au.Object and aFV.ObjectID = au.ObjectID
-
+	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+				select	distinct 'Removed', 
+						i.ObjectType, 
+						i.ObjectID,
+						(select 	
+							'Removed' as Action,
+							i2.ObjectType as ActionObject,
+							i2.ObjectID as ActionObjectID,
+							coalesce(i2.UpdatedBy, 0) as ResourceID,
+							  (
+								select 
+								(select 
+									d3.FieldTypeID,
+									coalesce(ft.FriendlyName, '<deleted field type>'), 
+									coalesce(d3.FormattedValue,'<deleted value>') as [Value]
+								from deleted d3 
+									left join fieldtype ft on d3.fieldtypeid = ft.id 
+								   for xml path('Field'), TYPE
+								)
+								for xml path('FieldInfo'), TYPE
+								)
+						from 
+							deleted i2 
+						where i2.ObjectID = i.ObjectID and i2.ObjectType = i.ObjectType
+						group by ObjectType, ObjectID, UpdatedBy
+						for xml path('fields'))
+						,
+						i.AssetID
+				from deleted i;
 END
-GO
-      ]]>
+
+]]>
     </sql>
     <rollback>
       <![CDATA[	]]>

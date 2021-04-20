@@ -253,7 +253,7 @@ AS
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.Asset-Asset_AfterInsert-v1">
+  <changeSet author="kmcnamee" id="Table.dbo.Asset-Asset_AfterInsert-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -270,7 +270,8 @@ AS
 				I.ObjectID,
 				[queue].WriteIndexXml('', I.[Object], I.ObjectID, coalesce(I.CreatedBy, 0)),
 				I.ID
-		from	inserted I where  I.Object not in('FusionAttribute', 'FusionQueryAttribute');
+		from	inserted I where  I.Object in('Group');
+GO
 		]]>
     </sql>
 	<rollback>
