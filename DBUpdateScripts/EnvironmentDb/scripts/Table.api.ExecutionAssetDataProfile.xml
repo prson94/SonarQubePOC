@@ -5,17 +5,21 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfile-v5">
+  <changeSet author="bquinlivan" id="Table.api.ExecutionAssetDataProfile-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetDataProfile')
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionAssetDataProfile')
 BEGIN
-	CREATE TABLE [dbo].[AssetDataProfile](
-		[ID] BIGINT IDENTITY(1,1) NOT NULL,
-		[AssetID] BIGINT NOT NULL,
+	CREATE TABLE [api].[ExecutionAssetDataProfile](
+		[ExecutionID] [uniqueidentifier] NOT NULL,
+		[ItemNumber] [int] NOT NULL,
+		[Success] bit NULL,
+		[Message] [nvarchar](2500) NULL,
+		[ExecutionItemUid] [uniqueidentifier] NULL,
+		[AssetUid] [uniqueidentifier] NOT NULL,
 		[ProfileSetDate] DATE NOT NULL,
 		[TotalCount] BIGINT NULL,
 		[DistinctValues] BIGINT NULL,
@@ -46,35 +50,12 @@ BEGIN
 		[StructureSignature] NVARCHAR(200) NULL,
 		[Cardinality] INT NULL,
 		[ShapeCardinality] INT NULL,
-		[CreatedBy] INT NOT NULL,
-		[CreatedOn] DATETIME NOT NULL,
-		[UpdatedBy] INT NOT NULL,
-		[UpdatedOn] DATETIME NOT NULL,
-		CONSTRAINT [PK_AssetDataProfile_ID] PRIMARY KEY NONCLUSTERED ([ID]),
-		CONSTRAINT [FK_AssetDataProfile_Asset] FOREIGN KEY (AssetID) REFERENCES Asset(ID)
-	)
-	
-	CREATE CLUSTERED INDEX IX_AssetDataProfile_AssetID_ProfileSetDate ON dbo.AssetDataProfile ([AssetID], [ProfileSetDate]);
-	
-	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID ON dbo.AssetDataProfile ([AssetID]);
-	
-	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_Confidence ON dbo.AssetDataProfile ([AssetID], [Confidence]);
-	
-	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_TypeQualifier ON dbo.AssetDataProfile ([AssetID], [TypeQualifier]);
-
-	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_DataSignature ON dbo.AssetDataProfile ([AssetID], [DataSignature]);
-	
-	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_StructureSignature ON dbo.AssetDataProfile ([AssetID], [StructureSignature]);
-END
-
-IF EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-         AND name = 'OutlierDetail'
-)
-BEGIN
-    ALTER TABLE [dbo].[AssetDataProfile] DROP COLUMN [OutlierDetail]
+	 CONSTRAINT [PK_ExecutionAssetDataProfile] PRIMARY KEY CLUSTERED 
+	(
+		[ExecutionID] ASC,
+		[ItemNumber] ASC
+	)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+	) ON [PRIMARY]
 END
 		]]>
     </sql>
@@ -84,4 +65,5 @@ END
 		]]>
 	</rollback>
   </changeSet>
+
 </databaseChangeLog>

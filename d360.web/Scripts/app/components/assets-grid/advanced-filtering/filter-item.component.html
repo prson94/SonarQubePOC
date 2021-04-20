@@ -1,5 +1,5 @@
 ﻿<div class="filter-block" igAutoFocus>
-    <div class="ig-button filter-label {{(condition.isDefaultFilter ? '' :'has-remove-icon')}}"
+    <div class="ig-button filter-label {{(hasRemoveIcon() ? 'has-remove-icon' :'')}}"
          (click)="updateFilter()"
          pTooltip="{{uiTooltipValue}}"
          tooltipPosition="top"
@@ -7,7 +7,7 @@
          [escape]="false">
         <span class="text" [innerHTML]="uiFilterLabel"></span>
     </div>
-    <i *ngIf="condition.field && !condition.isDefaultFilter"
+    <i *ngIf="condition.field && hasRemoveIcon()"
        class="remove-button fa fa-times-circle"
        (click)="remove()"
        pTooltip="Remove filter"
@@ -42,6 +42,7 @@
     <div class="value-selection" [hidden]="!isSelectingValue">
         <div class="selectors">
             <p-dropdown igDropdown
+                        igAutoFocus
                         [options]="uiCurrentOperatorsList"
                         [(ngModel)]="currentOperator"
                         (onChange)="onOperatorSelected($event)"
@@ -69,7 +70,7 @@
 
                     <ig-date *ngIf="currentInputType === 'date-time'" [(ngModel)]="condition.value" [showTime]="true" [appendTo]="'body'" [required]="true"></ig-date>
                     <ng-container *ngIf="currentInputType === 'multi-date-time'">
-                        <ig-date [(ngModel)]="condition.value2" [required]="true" [appendTo]="'body'" [showTime]="true"></ig-date>
+                        <ig-date [(ngModel)]="condition.value" [required]="true" [appendTo]="'body'" [showTime]="true"></ig-date>
                         <div class="value-separator">and</div>
                         <ig-date [(ngModel)]="condition.value2" [required]="true" [appendTo]="'body'" [showTime]="true"></ig-date>
                     </ng-container>
@@ -90,7 +91,7 @@
                                      [virtualRowHeight]="30"
                                      [rows]="20"
                                      [virtualScroll]="true"
-                                     [lazy]="true"
+                                     [lazy]="isLazyLoad()"
                                      (onLazyLoad)="loadListLazy($event)"
                                      [loading]="isLookupValuesLoading"
                                      [loadingIcon]="'fa fa-spinner fa-spin'">
@@ -138,6 +139,7 @@
                                     [(ngModel)]="condition.value"
                                     (onChange)="onItemSelected($event)"
                                     igSize="full"
+                                    required="true"
                                     appendTo="body">
                             <ng-template let-item pTemplate="selectedItem">
                                 <div class="score-pill-small-rounded score-{{item.value}}"></div>

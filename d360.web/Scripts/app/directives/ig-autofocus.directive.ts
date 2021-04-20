@@ -1,7 +1,7 @@
-﻿import { Directive, ElementRef, DoCheck, ChangeDetectorRef } from '@angular/core';
+﻿import { Directive, ElementRef, DoCheck, ChangeDetectorRef } from "@angular/core";
 
 @Directive({
-    selector: '[igAutoFocus]'
+    selector: "[igAutoFocus]"
 
 })
 export class AutoFocusDirective implements DoCheck {
@@ -14,14 +14,16 @@ export class AutoFocusDirective implements DoCheck {
     ngDoCheck() {
         var currentState = this.isVisible;
         this.isVisible = !this.isElementHidden(this.el.nativeElement as HTMLElement);
-        if (currentState != this.isVisible && this.isVisible === true) {
+        if (currentState !== this.isVisible && this.isVisible === true) {
             this.focusElement();
         }
     }
 
     private isElementHidden(element: HTMLElement): boolean {
         if (element) {
-            if (window.getComputedStyle(element)['visibility'] == 'hidden') {
+            if (window.getComputedStyle(element)["visibility"] === "hidden"
+                || element.getAttribute("hidden") !== null
+            ) {
                 return true
             }
             return this.isElementHidden(element.parentElement);
@@ -32,8 +34,8 @@ export class AutoFocusDirective implements DoCheck {
     private focusElement() {
         var htmlElement = (this.el.nativeElement as HTMLElement);
         var tagName = htmlElement.tagName;
-        if (tagName === 'P-AUTOCOMPLETE' || tagName === 'P-CHECKBOX') {
-            var inputF = htmlElement.getElementsByTagName('input');
+        if (tagName === "P-AUTOCOMPLETE" || tagName === "P-CHECKBOX" || tagName === "P-DROPDOWN") {
+            var inputF = htmlElement.getElementsByTagName("input");
             if (inputF && inputF.length != 0) {
                 inputF[0].focus();
             }

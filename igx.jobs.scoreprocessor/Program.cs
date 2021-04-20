@@ -7,7 +7,15 @@ namespace igx.jobs.scoreprocessor
     {
         static async Task Main()
         {
-            using (var host = CoreFunction.JobHostConfigBuilder().Build())
+            var builder = CoreFunction.JobHostConfigBuilder();
+            builder.ConfigureWebJobs(c =>
+            {
+                c.AddAzureStorageCoreServices()
+                .AddAzureStorage()
+                .AddTimers();
+            });
+
+            using (var host = builder.Build())
             {
                 await host.RunAsync();
             }

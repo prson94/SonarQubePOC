@@ -99,6 +99,7 @@ namespace d360.model.helpers
             {
                 UpdateTokenForNullValue();
             }
+
             return stringBuilder.ToString();
         }
 
@@ -149,7 +150,21 @@ namespace d360.model.helpers
             stringBuilder.Append($"@filter_{parameterIdx}");
 
             sqlParamsRef.Add($"@filter_{parameterIdx}", value);
+
+            this.AppendNullOperatorForNotOperators(filter.SqlExpression);
             return stringBuilder.ToString();
+        }
+
+        private void AppendNullOperatorForNotOperators(string fieldName)
+        {
+            if (this.@operator == "ne" || this.@operator == "nct")
+            {
+                stringBuilder.Insert(0, "(");
+                stringBuilder.Append(" or ");
+                stringBuilder.Append(fieldName);
+                stringBuilder.Append(" is null");
+                stringBuilder.Append(")");
+            }
         }
 
         public string GetSQLForOwnerField(Dictionary<string, object> sqlParams)
@@ -222,7 +237,7 @@ namespace d360.model.helpers
             this.sqlParamsRef = sqlParams;
             stringBuilder.Clear();
 
-            if (!new [] { "eq", "ne" }.Contains(@operator))
+            if (!new[] { "eq", "ne" }.Contains(@operator))
             {
                 throw new Exception($"Operator '{@operator}' is not valid when filtering relationship. Use 'eq' or 'ne'.");
             }
@@ -256,7 +271,7 @@ namespace d360.model.helpers
             this.sqlParamsRef = sqlParams;
             stringBuilder.Clear();
 
-            if (!new [] { "eq", "ne" }.Contains(@operator))
+            if (!new[] { "eq", "ne" }.Contains(@operator))
             {
                 throw new Exception($"Operator '{@operator}' is not valid when filtering relationship. Use 'eq' or 'ne'.");
             }
@@ -345,7 +360,7 @@ namespace d360.model.helpers
                 }
             }
 
-            string[] lookupFieldTypes = new [] { "Lookup", "Relationship" };
+            string[] lookupFieldTypes = new[] { "Lookup", "Relationship" };
 
             if (lookupFieldTypes.Select(x => x.ToLower()).Contains(fieldType.Type.ToLower()))
             {
@@ -374,6 +389,8 @@ namespace d360.model.helpers
                 stringBuilder.Append(fieldSql);
                 stringBuilder.Append(GetSQLOperator(@operator));
                 stringBuilder.Append($"@filter_{parameterIdx}");
+
+                this.AppendNullOperatorForNotOperators(fieldSql);
             }
 
             sqlParamsRef.Add($"@filter_{parameterIdx}", value);
@@ -464,6 +481,18 @@ namespace d360.model.helpers
                     }
 
                     break;
+                case "assettypeclass":
+                    var classes = AssetTypeClass.BusinessAsset.GetAsList();
+                    var match = classes.FirstOrDefault(x => x.Name.ToLower(CultureInfo.InvariantCulture) == value.ToString().ToLower(CultureInfo.InvariantCulture).Trim('\'')
+                    || x.Value.ToLower(CultureInfo.InvariantCulture) == value.ToString().ToLower(CultureInfo.InvariantCulture).Trim('\''));
+
+                    if (match == null)
+                    {
+                        throw new FormatException($"Invalid AssetTypeClass value for field '{field}'");
+                    }
+
+                    value = (int)match.ID;
+                    break;
                 default:
                     value = value.ToString().Trim('\'').Replace("&apos;", "'");
                     break;
@@ -553,16 +582,18 @@ namespace d360.model.helpers
                 case "boolean":
                 case "lookup":
                 case "relationship":
-                    return new [] { "eq", "ne", "ct" }.Contains(operand);
+                    return new[] { "eq", "ne", "ct" }.Contains(operand);
                 case "number":
                 case "decimal":
                 case "score":
-                    return !(new [] { "ct", "nct" }.Contains(operand));
+                    return !(new[] { "ct", "nct" }.Contains(operand));
                 case "date":
                 case "datetime":
                     return true;
+                case "assettypeclass":
+                    return new [] { "eq", "ne" }.Contains(operand);
                 default:
-                    return new [] { "eq", "ne", "ct", "nct" }.Contains(operand);
+                    return new[] { "eq", "ne", "ct", "nct" }.Contains(operand);
             }
         }
 

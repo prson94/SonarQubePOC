@@ -58,6 +58,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     maxNumberOfFilterCharacters: number = 50;
 
+    relationshipFieldIntersectTypeUid: string = "";
+    relationshipFieldIntersectCardinality: string = "";
+    relationshipFieldName: string = "";
+
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
     @ViewChild("multiInput", { static: false }) multiInputRef: MultiInputField;
 
@@ -189,14 +193,14 @@ export class FilterItemComponent implements OnInit, OnChanges {
         let options: SelectItem[] = [];
         if (this.condition.field === SystemFields.OwnedByFieldCode) {
             options.push({ label: "contains", value: "Equals" });
-            options.push({ label: "not contains", value: "NotEquals" });
+            options.push({ label: "does not contain", value: "NotEquals" });
             return options;
         }
 
         if (this.currentField.IsRelationship) {
             options = [];
             options.push({ value: "Equals", label: " contains " });
-            options.push({ value: "NotEquals", label: " does not contains " });
+            options.push({ value: "NotEquals", label: " does not contain " });
             options.push({ value: "Populated", label: " exist " });
             options.push({ value: "NotPopulated", label: " do not exist " });
             return options;
@@ -204,9 +208,27 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
         var ft = this.getFieldType(item);
 
+        if (!ft) {
+            return [];
+        }
+
+        if (ft.Type.Relationship) {
+            options = [];
+            options.push({ value: "Equals", label: " is " });
+            options.push({ value: "NotEquals", label: " is not " });
+            options.push({ value: "Populated", label: " exist " });
+            options.push({ value: "NotPopulated", label: " do not exist " });
+
+            if (this.relationshipFieldIntersectCardinality === "Many") {
+                options[0].label = "contains";
+                options[1].label = "does not contain";
+            }
+            return options;
+        }
+
         if (ft.Type.Lookup && ft.Type.Lookup.List.AllowMultipleValues) {
             ft.Operators[0].label = "contains";
-            ft.Operators[1].label = "does not contains";
+            ft.Operators[1].label = "does not contain";
         }
 
         return ft ? ft.Operators : [];
@@ -252,13 +274,26 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     onFieldSelected($event) {
-
         this.isSelectingCurrentField = false;
+        this.relationshipFieldIntersectTypeUid = "";
+
         var type = this.getFieldType(this.condition);
         if (this.fields.filter((x) => x.Name === this.condition.field).length !== 0) {
             this.currentField = this.fields.filter((x) => x.Name === this.condition.field)[0];
         }
         if (type.Type) {
+            if (type.Type.Relationship) {
+                this.relationshipFieldIntersectTypeUid = type.Type.Relationship.IntersectTypeUid;
+                var relationship = this.relationshipTypes.filter((r) => r.Uid === this.relationshipFieldIntersectTypeUid)[0];
+
+                this.relationshipFieldIntersectCardinality =
+                    relationship.Object.Uid === this.assetTypeUid
+                        ? relationship.Subject.Cardinality : relationship.Object.Cardinality;
+
+                this.relationshipFieldName = this.relationshipFieldIntersectTypeUid + "|" + (relationship.Object.Uid === this.assetTypeUid ? relationship.Subject.Uid : relationship.Object.Uid);
+                this.condition.relationshipFieldName = this.relationshipFieldName;
+            }
+
             this.condition.friendlyFieldName = type.FriendlyName;
             this.condition.fieldType = this.getTypeForCondition(this.condition);
             this.condition.type = this.currentField;
@@ -282,9 +317,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
             }
         }
         //if null, this method is not called from ui
-        if (event && event.type !== "load") {
+        if ((event && event.type !== "load") && !this.condition.isNew) {
             this.isSelectingValue = true;
         }
+        this.condition.isNew = false;
 
         if (this.uiCurrentOperatorsList) {
             this.currentOperator = (this.uiCurrentOperatorsList[0] as SelectItem).value;
@@ -298,10 +334,11 @@ export class FilterItemComponent implements OnInit, OnChanges {
         if (!this.condition.isRelationship) {
             return "";
         }
+
         var data = this.condition.field.split("|");
         var obj = this.relationshipTypes.filter((x) => x.Uid === data[0])[0];
 
-        return obj.Object.Uid === data[1] ? obj.Object.Cardinality : obj.Subject.Cardinality;
+        return obj.Object.Uid === data[1] ? obj.Subject.Cardinality : obj.Object.Cardinality;
     }
 
     loadListLazy(event: LazyLoadEvent) {
@@ -313,6 +350,9 @@ export class FilterItemComponent implements OnInit, OnChanges {
             }
             if (this.condition.fieldType === "Tag") {
                 this.loadTagValues();
+            }
+            if (this.condition.fieldType === "Relationship") {
+                this.loadRelationshipValues(params);
             }
         }
         else {
@@ -326,6 +366,16 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     onOperatorSelected($event) {
+        if (this.condition.fieldType === "Path") {
+            var dataType = typeof this.condition.value;
+
+            //Convert string to chips
+            if (dataType === "string" && (this.currentOperator !== "StartsWith" && this.currentOperator !== "EndsWith")) {
+                var values = (this.condition.value as string).split(",");
+                this.condition.value = values;
+            }
+        }
+
         this.condition.operator = this.currentOperator;
         this.updateOperatorData();
 
@@ -431,8 +481,14 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
         this.isLookupValuesLoading = true;
 
+        let nameAsParam: string = this.currentField.Name;
+
+        if (this.condition.fieldType === "Relationship") {
+            nameAsParam = this.relationshipFieldName;
+        }
+
         this.lazyLoadSubscription = this.relationshipService
-            .getRelationshipLookupValues(this.currentField.Name.split("|")[1], this.currentField.Name.split("|")[0], params)
+            .getRelationshipLookupValues(nameAsParam.split("|")[1], nameAsParam.split("|")[0], params)
             .subscribe((res) => {
                 if (!this.currentField.Values || this.currentField.Values.length === 0) {
                     this.currentField.Values = Array.from({ length: 0 });
@@ -493,6 +549,14 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     hasRemoveButton() {
         if (this.condition.isDefaultFilter || (!this.isEmpty(this.condition.value) && this.condition.operator)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    hasRemoveIcon() {
+        if (!this.isEmpty(this.condition.value) && this.condition.operator) {
             return true;
         }
 
@@ -600,6 +664,20 @@ export class FilterItemComponent implements OnInit, OnChanges {
             }
         }
 
+        if (this.condition.fieldType === "Relationship") {
+            if (this.relationshipFieldIntersectCardinality === "Many" && this.condition.value && (this.condition.value as any[]).length > 1) {
+                this.uiIsAllDisabled = false;
+                this.uiIsAnyDisabled = false;
+            }
+            else {
+                if (this.relationshipFieldIntersectCardinality === "One") {
+                    this.condition.connectingOperator = "or";
+                }
+                this.uiIsAllDisabled = true;
+                this.uiIsAnyDisabled = true;
+            }
+        }
+
         if (this.condition.fieldType === "Path") {
             if (this.currentOperator.toString() === "Contains" && (this.condition.value && (this.condition.value as any[]).length > 1)) {
                 this.uiIsAllDisabled = false;
@@ -685,7 +763,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             return "date-time";
         }
 
-        if (type === "Lookup" || type === "Tag" || this.currentField.IsRelationship) {
+        if (type === "Lookup" || type === "Tag" || type === "Relationship" || this.currentField.IsRelationship) {
             return "lookup";
         }
 
@@ -701,10 +779,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     isLazyLoad() {
-
-        if (this.currentField.Name === SystemFields.OwnedByFieldCode
-            || (this.currentField.Type && this.currentField.Type.Tag)
-        ) {
+        if ((this.currentField.Name === SystemFields.OwnedByFieldCode && this.currentField.Values && this.currentField.Values.length > 0)
+            || (this.currentField.Type && this.currentField.Type.Tag && this.currentField.Values)) {
             return false;
         }
         return true;
@@ -726,7 +802,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
         if (Array.isArray(value) && (value as []).length > 0) {
             return false;
         }
-
         if (value === null || (typeof value === "undefined") || (value as string).length === 0) {
             return true;
         }

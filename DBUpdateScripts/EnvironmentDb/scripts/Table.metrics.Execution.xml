@@ -1,0 +1,64 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.metrics.Execution-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Execution')
+BEGIN
+	CREATE TABLE [metrics].[Execution] (
+		[Uid] [uniqueidentifier] NOT NULL,
+		[PercentComplete] float NOT NULL,
+		[Failures] [int] NOT NULL,
+		ErrorMessage nvarchar(max) NULL,
+		[StartedOn] [datetime] NOT NULL,
+		[CompletedOn] [datetime] NULL,
+		[ProcessingStartedOn] [datetime] NULL,
+		[Processing] [bit] NOT NULL,
+		TriggeredByExecutionUid uniqueidentifier SPARSE NULL,
+		TriggeredByMeasureUid uniqueidentifier SPARSE NULL,
+		CONSTRAINT [PK_MetricsExecution] PRIMARY KEY NONCLUSTERED ( [Uid] DESC )
+	)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Execution')
+BEGIN
+	DROP TABLE [metrics].[Execution]
+END
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Constraint.metrics.Execution-Indexes-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select * from sys.indexes where name = 'CIX_MetricsExecution')
+begin
+	CREATE CLUSTERED INDEX [CIX_MetricsExecution] ON [metrics].[Execution] ( Processing DESC )
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+if exists (select * from sys.indexes where name = 'CIX_MetricsExecution')
+begin
+	DROP INDEX [CIX_MetricsExecution] ON [metrics].[Execution] WITH ( ONLINE = OFF )
+end
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

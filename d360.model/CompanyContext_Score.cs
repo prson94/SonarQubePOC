@@ -48,6 +48,8 @@ namespace d360.model
 
         public DbSet<Score> Scores { get; set; }
 
+        public DbSet<ScoreExecution> ScoreExecutions { get; set; }
+
         #endregion
 
         #region Methods
@@ -878,36 +880,25 @@ where   E.ExecutionID = @ExecutionID
             return model;
         }
 
-        public Guid SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid? fromExecutionUid = null, TimeSpan? timespan = null)
+        public Guid SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid? triggeredByExecutionUid = null, Guid? triggeredByMeasureUid = null, TimeSpan? timespan = null)
         {
-            var fields = new { 
-                originalExecutionUid = fromExecutionUid ?? Guid.Empty
-            };
-
-            return SendScoreEventWithPayload(changeType, item, fields, timespan);
-        }
-
-        public Guid SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, dynamic fields, TimeSpan? timespan = null)
-        {
-            var apiExecution = new ApiExecution
+            var execution = new ScoreExecution
             {
-                ExecutionID = Guid.NewGuid(),
-                Fields = JsonConvert.SerializeObject(fields),
+                Uid = Guid.NewGuid(),
+                TriggeredByExecutionUid = triggeredByExecutionUid,
+                TriggeredByMeasureUid = triggeredByMeasureUid,
                 StartedOn = DateTime.UtcNow,
-                ResourceID = CurrentResourceID,
-                Method = "SCORE",
-                State = State.Unknown,
-                Total = 0
+                PercentComplete = 0
             };
-            Add(apiExecution);
+            Add(execution);
 
             var info = new ScoreQueueInfo
             {
                 CompanyID = CurrentCompanyID,
                 ResourceID = CurrentResourceID,
                 ChangeType = changeType,
-                ExecutionUid = apiExecution.ExecutionID,
-                StartedOn = apiExecution.StartedOn,
+                ExecutionUid = execution.Uid,
+                StartedOn = execution.StartedOn,
                 Location = ScoreQueueExecutionDataLocation.File
             };
             Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.StorageFile, item).Wait();
@@ -920,7 +911,7 @@ where   E.ExecutionID = @ExecutionID
                 QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
             }
             
-            return apiExecution.ExecutionID;
+            return execution.Uid;
         }
 
         public async Task SendContinuingScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid executionUid, DateTime startedOn)
@@ -1196,7 +1187,7 @@ from	metrics.AssetVersion V
             if (Connection.State != ConnectionState.Open)
                 Connection.Open();
 
-            var list = Connection.Query<AssetMeasureModel>(query.Sql, args)
+            var list = Connection.Query<AssetMeasureModel>(query.Sql, args, commandTimeout: 600)
                 .ToList()
                 .Select(o => new AssetMeasureModel {
                     AssetUid = o.AssetUid, 

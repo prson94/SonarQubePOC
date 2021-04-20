@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.metrics.BuildDataQualityMeasureQuery-v2.3">
+  <changeSet author="Pappas" id="Procedure.metrics.BuildDataQualityMeasureQuery-v3.0">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -182,15 +182,21 @@ where 1=1'
 	set @sql =	'select	distinct O.StartingAssetUid as AssetUid, R.EffectiveDate from (
 select	distinct ' + @c + ' null as NullVal from ' + @t + ' where match('+@m+')' + @w + '{{FILTERS}}) O 
 cross apply (
-select	EffectiveDate
-from	(select	ROW_NUMBER() over (partition by ERO.$from_id, ERE.$from_id, R.EffectiveDate order by R.UpdatedOn desc) as RowNumber, 
-		R.Uid, 
-		R.PassFraction,
-		R.EffectiveDate
-from	graph.AssetNode TA, graph.AssetNode RA, dbo.AssetResultEdge ERO, dbo.AssetResultEdge ERE, dbo.AssetResult R
-where	match(RA-(ERO)->R<-(ERE)-TA) and TA.Uid = O.TechnicalAssetUid and RA.Uid = O.RuleAssetUid and ERO.[Class] = 1 and ERE.[Class] = 2 and R.EffectiveDate >= @AssetVersionEffectiveDate
-		) O 
-where	RowNumber = 1) R
+	select	max(R.UpdatedOn) as MaxUpdatedOn,
+			R.EffectiveDate
+	from	graph.AssetNode TA, 
+			graph.AssetNode RA, 
+			dbo.AssetResultEdge ERO, 
+			dbo.AssetResultEdge ERE, 
+			dbo.AssetResult R
+	where	match(RA-(ERO)->R<-(ERE)-TA) 
+			and TA.Uid = O.TechnicalAssetUid 
+			and RA.Uid = O.RuleAssetUid 
+			and ERO.[Class] = 1 
+			and ERE.[Class] = 2 
+			and R.EffectiveDate >= @AssetVersionEffectiveDate
+	group by ERO.$from_id, ERE.$from_id, R.EffectiveDate
+) R
 where 1=1'
 	end
 
@@ -467,7 +473,6 @@ where 1=1'
 									and RA.Uid = '+@RuleAssetUidColumn+'
 									and ERO.[Class] = 1
 									and ERE.[Class] = 2
-									and R.EffectiveDate >= @MinimumEffectiveDate
 									and R.EffectiveDate <= @MaximumEffectiveDate
 							) O 
 					where	RowNumber = 1
@@ -490,7 +495,7 @@ where 1=1'
 			Pos.WhereQuery
 	from	[metrics].[AssetVersionRollupPath] P
 			inner join [metrics].[AssetVersionRollupPathFilter] F on F.[AssetVersionRollupPathUid] = P.Uid and P.Uid = @AssetVersionRollupPathUid
-			inner join [metrics].[AssetVersionRollupPathFilterValue] V on V.[AssetVersionRollupPathFilterUid] = F.Uid
+			left join [metrics].[AssetVersionRollupPathFilterValue] V on V.[AssetVersionRollupPathFilterUid] = F.Uid
 			inner join FieldType FT on FT.AssetTypeID = F.AssetTypeID and FT.ID = F.FieldTypeID
 			cross apply (
 				select	top 1

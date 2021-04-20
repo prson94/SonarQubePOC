@@ -212,6 +212,8 @@ namespace d360.model
 
         public DbSet<Audit> Audits { get; set; }
 
+        public DbSet<AssetDataProfile> AssetDataProfile { get; set; }
+
         #endregion
 
         #region Legacy Lineage
@@ -2671,7 +2673,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 else if (f.Type == DataType.Lookup.ToString() && LookupFieldHasColorItem(f))
                 {
                     string fieldJoin = f.AllowMultipleValues ? "cross apply STRING_SPLIT(fi.Value, ',') SPFfi" : "";
-                    string fieldclause = f.AllowMultipleValues ? "try_cast(SPFfi.value as int)" : "fi.Value";
+                    string fieldclause = f.AllowMultipleValues ? "try_cast(SPFfi.value as int)" : "try_cast(fi.Value as int) and datalength(fi.Value) < 1000";
                     string whereClause = (type == SystemObjects.Intersect.ToString()) ? $@" fi.ObjectID = A.ID and fi.ObjectType = '{type}'" : "fi.AssetID = A.Id";
 
                     columnbuilder.Append($"{name}_T.value as [{name}],");

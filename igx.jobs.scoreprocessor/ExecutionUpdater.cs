@@ -21,7 +21,7 @@ namespace igx.jobs.scoreprocessor
                         company.Open();
                     }
 
-                    var exec = await company.QueryFirstOrDefaultAsync<ApiExecution>("select * from api.Execution where ExecutionID = @id", new { id = Info.ExecutionUid });
+                    var exec = await company.QueryFirstOrDefaultAsync<ScoreExecution>("select * from metrics.Execution where Uid = @id", new { id = Info.ExecutionUid });
                     if (exec != null)
                     {
                         closedExecution = updateExecution(company, exec, false, ex);
