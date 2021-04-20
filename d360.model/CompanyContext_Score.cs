@@ -334,7 +334,17 @@ from    #InternalMeasures T
                 }
                 catch (Exception ex)
                 {
-                    trans.Rollback();
+                    try
+                    {
+                        if (trans != null)
+                        {
+                            trans.Rollback();
+                        }
+                    }
+                    catch
+                    {
+                    }
+
                     execution.ErrorMessage = ex.GetFullExceptionData(false);
                     execution.CompletedOn = DateTime.UtcNow;
                     Update(execution);
@@ -770,7 +780,16 @@ where   E.ExecutionID = @ExecutionID
                         }
                         catch (Exception ex)
                         {
-                            trans.Rollback();
+                            try
+                            {
+                                if (trans != null)
+                                {
+                                    trans.Rollback();
+                                }
+                            }
+                            catch
+                            {
+                            }
 
                             retryCount++;
 

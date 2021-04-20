@@ -591,7 +591,16 @@ new
                 }
                 catch (Exception ex)
                 {
-                    trans.Rollback();
+                    try
+                    {
+                        if (trans != null)
+                        {
+                            trans.Rollback();
+                        }
+                    }
+                    catch
+                    {
+                    }
 
                     execution.ErrorMessage = ex.GetFullExceptionData(false);
                     execution.CompletedOn = DateTime.UtcNow;

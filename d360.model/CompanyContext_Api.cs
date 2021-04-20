@@ -3136,8 +3136,16 @@ where	T.ExecutionID = @ExecutionID
                                     }
                                     catch (Exception)
                                     {
-                                        if (trans != null)
-                                            trans.Rollback();
+                                        try
+                                        {
+                                            if (trans != null)
+                                            {
+                                                trans.Rollback();
+                                            }
+                                        }
+                                        catch
+                                        {
+                                        }
 
                                         AddMeasurement(metrics, "Error occurred > Building Deletion Tree", sw.ElapsedMilliseconds, 1);
                                         sw.Restart();
@@ -3207,9 +3215,15 @@ where	T.ExecutionID = @ExecutionID
                                                     }
                                                     catch (Exception ex)
                                                     {
-                                                        if (trans != null)
+                                                        try
                                                         {
-                                                            trans.Rollback();
+                                                            if (trans != null)
+                                                            {
+                                                                trans.Rollback();
+                                                            }
+                                                        }
+                                                        catch
+                                                        {
                                                         }
 
                                                         Connection.Query(@"update api.executiondeletedassettype
@@ -3249,9 +3263,15 @@ where	T.ExecutionID = @ExecutionID
                                                     }
                                                     catch (Exception ex)
                                                     {
-                                                        if (trans != null)
+                                                        try
                                                         {
-                                                            trans.Rollback();
+                                                            if (trans != null)
+                                                            {
+                                                                trans.Rollback();
+                                                            }
+                                                        }
+                                                        catch
+                                                        {
                                                         }
 
                                                         Connection.Query(@"update api.executiondeletedassettype
@@ -3312,9 +3332,15 @@ where	T.ExecutionID = @ExecutionID
                                                 }
                                                 catch (Exception ex)
                                                 {
-                                                    if (trans != null)
+                                                    try
                                                     {
-                                                        trans.Rollback();
+                                                        if (trans != null)
+                                                        {
+                                                            trans.Rollback();
+                                                        }
+                                                    }
+                                                    catch
+                                                    {
                                                     }
                                                     hasError = true;
                                                     Connection.Query(@"update api.executiondeletedassettype
@@ -9976,8 +10002,16 @@ SET DefinitionConverted = cd.[Definition];
                                 }
                                 catch (Exception ex)
                                 {
-                                    trans.Rollback();
-
+                                    try
+                                    {
+                                        if (trans != null)
+                                        {
+                                            trans.Rollback();
+                                        }
+                                    }
+                                    catch
+                                    {
+                                    }
                                     retryCount++;
 
                                     if (retryCount > API_V2_RETRY_LIMIT)
