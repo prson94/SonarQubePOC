@@ -156,7 +156,7 @@ declare @IDs table (ID uniqueidentifier)
 ( 
     SELECT TOP {numberOfQueueItems} * 
     FROM [queue].[task]
-    where MachineAssigned is null and NumberOfRetries < 2  and [date] < DATEADD(minute, -1, getutcdate()) 
+    where MachineAssigned is null and NumberOfRetries < 2  and [date] < DATEADD(second, -30, getutcdate()) 
     ORDER BY [Date] ASC
 ) 
 UPDATE CTE set MachineAssigned = @m OUTPUT deleted.ID into @IDs  
@@ -443,9 +443,11 @@ from    [queue].[Task] T
                 parameters.Add("@NewValue", (customXml.Element("ActionObjectValue") == null ? null : customXml.Element("ActionObjectValue").Value), System.Data.DbType.AnsiString, size: 50);
 
                 if (customXml.Element("FieldInfo") != null)
+                {
                     parameters.Add("@AuditFieldTable", getFieldsTable(customXml.Element("FieldInfo")).AsTableValuedParameter("[dbo].[AuditFieldTable]"));
+                }
 
-                var result = companyConnection.Query(
+                companyConnection.Query(
                     "[utility].[AddAuditEntry]",
                     parameters,
                     commandType: System.Data.CommandType.StoredProcedure,

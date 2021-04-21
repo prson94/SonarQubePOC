@@ -180,7 +180,7 @@ declare @IDs table (ID uniqueidentifier)
 ( 
     SELECT TOP {numberOfQueueItems} * 
     FROM [queue].[task]
-    where MachineAssigned is null and NumberOfRetries < 2  and [date] < DATEADD(minute, -1, getutcdate()) 
+    where MachineAssigned is null and NumberOfRetries < 2  and [date] < DATEADD(second, -30, getutcdate()) 
     ORDER BY [Date] ASC
 ) 
 UPDATE CTE set MachineAssigned = @m OUTPUT deleted.ID into @IDs  
@@ -540,19 +540,21 @@ from    [queue].[Task] T
 
                 var parameters = new DynamicParameters();
 
-                parameters.Add("@MainObject", queueRecord.Object, System.Data.DbType.AnsiString, size: 50);
+                parameters.Add("@MainObject", queueRecord.Object, DbType.AnsiString, size: 50);
                 parameters.Add("@MainObjectID", queueRecord.ObjectID);
                 parameters.Add("@DependentObject", customXml.Element("ActionObject").Value, System.Data.DbType.AnsiString, size: 50);
                 parameters.Add("@DependentObjectID", int.Parse(customXml.Element("ActionObjectID").Value));
                 parameters.Add("@Date", queueRecord.Date);
                 parameters.Add("@ResourceID", int.Parse(customXml.Element("ResourceID").Value));
-                parameters.Add("@Action", oper, System.Data.DbType.AnsiString, size: 15);
+                parameters.Add("@Action", oper, DbType.AnsiString, size: 15);
                 parameters.Add("@NewValue", (customXml.Element("ActionObjectValue") == null ? null : customXml.Element("ActionObjectValue").Value), System.Data.DbType.AnsiString, size: 50);
 
                 if (customXml.Element("FieldInfo") != null)
+                {
                     parameters.Add("@AuditFieldTable", getFieldsTable(customXml.Element("FieldInfo")).AsTableValuedParameter("[dbo].[AuditFieldTable]"));
+                }
 
-                var result = companyConnection.Query(
+                companyConnection.Query(
                     "[utility].[AddAuditEntry]",
                     parameters,
                     commandType: System.Data.CommandType.StoredProcedure,
