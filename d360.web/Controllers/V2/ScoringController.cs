@@ -863,11 +863,6 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    throw new StatusCodeException(HttpStatusCode.Unauthorized);
-                }
-
                 var models = MetricsRepository.GetMetricVersionHistory(measureUid);
                 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models.OrderByDescending(x => x.Version)));
