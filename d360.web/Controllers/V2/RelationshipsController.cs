@@ -1487,6 +1487,11 @@ namespace d360.web.Controllers.V2
             {
                 string pagingQuery = "";
                 string whereQuery = "";
+                string whereQueryGraph = "";
+
+                //at which total asset count per type we are switching to graph search
+                int graphTablesThreshold = 1000;
+
                 if (skip != null && take != null)
                 {
                     pagingQuery = " OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY ";
@@ -1495,40 +1500,51 @@ namespace d360.web.Controllers.V2
                 if (!string.IsNullOrEmpty(filter))
                 {
                     filter = "%" + filter + "%";
-                    whereQuery += " and ankp.[keypath] like @filter";
+                    whereQuery += " where label like @filter ";
+                    whereQueryGraph += " and P.DisplayPath like @filter";
                 }
 
-                var results = Company.Connection.QueryMultiple($@"
-                        drop table if exists #tempTable
-                        create table #tempTable (
-                            [value] uniqueidentifier,
-	                        label nvarchar(max)
-                        )
+                var results = Company.Connection.Query($@"
+                    declare @assetTypeId int = (select top 1 id from assettype where uid = @assetTypeuid)
+                    declare @totalCount int = (select count(1) from asset where assettypeid = @assetTypeId)
 
-                        insert into #tempTable
-                        select 
+                    if @totalCount < @graphTablesThreshold
+                    begin
+                        drop table if exists #tempTable
+	                    create table #tempTable (
+	                        [value] uniqueidentifier,
+	                        label nvarchar(max)
+	                    )
+	
+	                    insert into #tempTable
+	                    select 
 	                        ankp.[Uid] as 'value',
 	                        ankp.[keypath] as 'label'
 	                         from assettype at 
 	                            inner join asset a on a.assettypeid = at.id
 	                            inner join graph.assetnodekeypath ankp on ankp.id = a.id
-	                        where at.uid = @assettypeuid {whereQuery}
+	                        where at.uid = @assettypeuid 
+	
+	                    select * from #tempTable
+		                    {whereQuery}
+		                    order by label asc
+		                    {pagingQuery}
+                    end
+                    else
+                    begin
 
-                        select * from #tempTable
-                            order by label asc
-                        {pagingQuery}
+                    select	N.Uid as value,
+		                    P.DisplayPath as label
+		                    from	graph.AssetNode N
+		                            inner join graph.AssetNodeDisplayPath P on P.ID = N.ID
+		                            inner join AssetType T on T.ID = N.AssetTypeID
+		                    where  T.UID = @assetTypeUid {whereQueryGraph}
+		                    order by P.DisplayPath asc
+		                    {pagingQuery}
+                    end
+                    ", new { assetTypeUid, skip, take, filter, graphTablesThreshold });
 
-                        select count(1) from #tempTable
-                    ", new { assetTypeUid, skip, take, filter });
-
-
-                var data = new
-                {
-                    items = results.Read<dynamic>().ToList(),
-                    count = results.Read<int>().FirstOrDefault()
-                };
-
-                return Request.CreateResponse(HttpStatusCode.OK, data);
+                return Request.CreateResponse(HttpStatusCode.OK, results);
             }
             catch (Exception ex)
             {

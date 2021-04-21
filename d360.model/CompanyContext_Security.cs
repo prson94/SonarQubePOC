@@ -354,7 +354,16 @@ order by RT.Name", new { id }).AsQueryable();
                 }
                 catch
                 {
-                    trans.Rollback();
+                    try
+                    {
+                        if (trans != null)
+                        {
+                            trans.Rollback();
+                        }
+                    }
+                    catch
+                    {
+                    }
                     throw;
                 }
             }

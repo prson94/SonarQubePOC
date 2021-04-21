@@ -64,6 +64,7 @@ import { SearchFieldModule } from '../shared/controls/search-field/search-field.
 import { GallerySearchFieldComponent } from './gallery.search-field.component';
 import { GalleryMultiInputFieldComponent } from './gallery.multi-input-field.component';
 import { MultiInputFieldModule } from '../shared/controls/multi-input-field/multi-input-field.component';
+import { GalleryInputGroupComponent } from './gallery.input-group.component';
 
 @NgModule({
     imports: [
@@ -132,7 +133,8 @@ import { MultiInputFieldModule } from '../shared/controls/multi-input-field/mult
         GalleryFieldConditionGridComponent,
         GalleryRadioButtonComponent,
         GallerySearchFieldComponent,
-        GalleryMultiInputFieldComponent
+        GalleryMultiInputFieldComponent,
+        GalleryInputGroupComponent
     ],
     providers: [
         GalleryGuard,

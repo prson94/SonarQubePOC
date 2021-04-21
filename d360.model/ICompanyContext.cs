@@ -33,6 +33,7 @@ namespace d360.model
         DbSet<ApiEntityFieldType> ApiEntityFieldTypes { get; set; }
         DbSet<ApiEntityUri> ApiEntityUris { get; set; }
         DbSet<ApiExecution> ApiExecutions { get; set; }
+        DbSet<ApiExecutionsExternal> ApiExecutionsExternals { get; set; }
         DbSet<ApiNamespace> ApiNamespaces { get; set; }
         DbSet<ApiService> ApiServices { get; set; }
         DbSet<AssetApiModel> AssetApiModels { get; set; }
@@ -123,6 +124,8 @@ namespace d360.model
         DbSet<ResponsibilityType> ResponsibilityTypes { get; set; }
         DbSet<d360.core.entities.Rule> Rules { get; set; }
         DbSet<Score> Scores { get; set; }
+
+        DbSet<ScoreExecution> ScoreExecutions { get; set; }
         DbSet<ShoppingCartItem> ShoppingCartItems { get; set; }
         DbSet<ShoppingCart> ShoppingCarts { get; set; }
         DbSet<ShoppingCartType> ShoppingCartTypes { get; set; }
@@ -145,6 +148,8 @@ namespace d360.model
         DbSet<WorkflowVersionStep> WorkflowVersionSteps { get; set; }
         DbSet<WorkflowVersionStepTransition> WorkflowVersionStepTransitions { get; set; }
         DbSet<MetricAllocation> MetricAllocations { get; set; }
+
+        DbSet<AssetDataProfile> AssetDataProfile { get; set; }
 
         int ApiTimeout { get; }
         event EventHandler<AssetsPartiallyProcessedEventArgs> AssetsPartiallyProcessed;
@@ -296,8 +301,7 @@ namespace d360.model
         void SendGraphAssetTypeEvent(Guid assetTypeUid);
         void SendApiGraphEvent(ApiExecutionInfo info);
         Task SaveScoreProcessingResultsAsync<T>(Guid executionUid, ScoreQueueChangeType changeType, string resultFileSuffix, T item, DateTime? startedOn = null);
-        Guid SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid? fromExecutionUid = null, TimeSpan? timespan = null);
-        Guid SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, dynamic fields, TimeSpan? timespan = null);
+        Guid SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid? triggeredByExecutionUid = null, Guid? triggeredByMeasureUid = null, TimeSpan? timespan = null);
         Task SendContinuingScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid executionUid, DateTime startedOn);
         int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value);
         List<DataQualityResponseModel> UpsertAssetResults(List<IDataQualityUpsert> request, ApiExecution execution, int timeout = 3600, bool sendWorkflowEvents = true);
@@ -320,6 +324,8 @@ namespace d360.model
         List<Guid> GetImpactedMeasureVersionsBy(MetricGovernanceCheckType check, int typeId);
 
         string GetOutputFieldValue(int stepId, long itemId, string fieldId);
+
+        List<DataProfileUpsertResponse> UpsertDataProfiles(List<DataProfileUpsertModel> request, ApiExecution execution, bool isInsert, int timeout = 3600);
 
         #region API Query Parameter Parsing
 

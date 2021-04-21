@@ -923,4 +923,13 @@ namespace d360.core.entities
         public decimal? governanceScore { get; set; }
         public decimal? dataQualityScore { get; set; }
     }
+
+    public class DataProfileUpsertResponse : IExecutionItem
+    {
+        public int ItemNumber { get; set; }
+        public Guid? uid { get; set; }
+        public Guid? ExecutionItemUid { get; set; }
+        public string Message { get; set; }
+        public bool Success { get; set; }
+    }
 }

@@ -3,6 +3,7 @@ using d360.core.entities.Metric;
 using d360.core.enums;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
@@ -24,5 +25,7 @@ namespace d360.model.DataAccessLayer
         List<ExternalScoreResultApiResponseModel> PostExternalResults(ScoreType scoreType, List<ExternalScoreResultApiRequestModel> model, ApiExecution execution);
         List<InternalScoreResultApiResponseModel> PostScoreResults(ScoreType scoreType, ApiExecution execution, List<InternalScoreResultApiRequestModel> results);
         List<InternalScoreResultApiResponseModel> PostScoreResults(MetricAllocation allocation, ApiExecution execution, List<InternalScoreResultApiRequestModel> results);
+        ScoreExecution GetExecutionById(Guid uid);
+        IQueryable<ScoreExecution> GetExecutions(int pageSize, int pageNumber);
     }
 }

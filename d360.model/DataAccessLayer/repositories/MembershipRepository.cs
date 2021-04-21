@@ -325,7 +325,16 @@ namespace d360.model.DataAccessLayer
                     execution.CompletedOn = DateTime.UtcNow;
                     CompanyContext.Update(execution);
 
-                    trans.Rollback();
+                    try
+                    {
+                        if (trans != null)
+                        {
+                            trans.Rollback();
+                        }
+                    }
+                    catch
+                    {
+                    }
                     throw ex;
                 }
             }

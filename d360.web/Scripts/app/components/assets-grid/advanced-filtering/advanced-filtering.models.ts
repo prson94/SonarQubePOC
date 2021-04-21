@@ -23,6 +23,7 @@ export class AdvancedFilterFieldCondition {
 
     friendlyFieldName: string = "";
     markForDeletion: boolean = false;
+    isNew: boolean = false;
     fieldType: string = "";
 
     type?: FieldTypeAPIModelField;
@@ -33,6 +34,8 @@ export class AdvancedFilterFieldCondition {
     isDefaultFilter?: boolean = false;
 
     isPreloaded?: boolean = false;
+
+    relationshipFieldName?: string = "";
 
     constructor(private datePipe: DatePipe) {
 
@@ -58,10 +61,20 @@ export class AdvancedFilterFieldCondition {
             case "IsFalse":
                 return this.friendlyFieldName + " is False";
             case "Contains":
-                str += " contains ";
+                if (this.field === "CreatedOn" || this.field === "UpdatedOn") {
+                    str += " is ";
+                }
+                else {
+                    str += " contains ";
+                }
                 break;
             case "NotContains":
-                str += " does not contain ";
+                if (this.field === "CreatedOn" || this.field === "UpdatedOn") {
+                    str += " is not ";
+                }
+                else {
+                    str += " does not contain ";
+                }
                 break;
             case "Equals":
                 if (this.isRelationship) {
@@ -149,8 +162,14 @@ export class AdvancedFilterFieldCondition {
             case "IsFalse":
                 return fieldName + " is False";
             case "Contains":
+                if (this.field === "CreatedOn" || this.field === "UpdatedOn") {
+                    return `${fieldName} is ${this.getTypedValue(this.value, true)}`;
+                }
                 return `${fieldName} : *${this.getTypedValue(this.value, true)}*`;
             case "NotContains":
+                if (this.field === "CreatedOn" || this.field === "UpdatedOn") {
+                    return `${fieldName} is not ${this.getTypedValue(this.value, true)}`;
+                }
                 return `${fieldName} &#8800; *${this.getTypedValue(this.value, true)}*`;
             case "Equals":
                 return `${fieldName} : ${this.getTypedValue(this.value, true)}`;
@@ -253,7 +272,7 @@ export class AdvancedFilterFieldCondition {
                 return +value;
             }
 
-            if (this.fieldType === "Lookup" || this.fieldType === "Tag" || this.field === SystemFields.OwnedByFieldCode || this.isRelationship) {
+            if (this.fieldType === "Lookup" || this.fieldType === "Tag" || this.fieldType === "Relationship" || this.field === SystemFields.OwnedByFieldCode || this.isRelationship) {
                 let valueAsString = "";
                 if (Array.isArray(value)) {
                     var arr = value as SelectItem[];
@@ -482,12 +501,18 @@ export class AdvancedFilterFieldConditionCollection {
                     }
                 }
             }
-            else if (cond.fieldType == null && cond.field.indexOf("|") === 36) {
+            else if ((cond.fieldType == null && cond.field.indexOf("|") === 36) || cond.relationshipFieldName.indexOf("|") === 36) {
                 let subConditions: AdvancedFilterFieldCondition[] = [];
                 if (cond.value) {
                     valuesArr = cond.value as SelectItem[];
                     valuesArr.forEach((r) => {
                         var copyCond = cond.getCopyWithNewValue(r.value);
+
+                        //in case of relationship field, but still treat as realtionship
+                        if (cond.relationshipFieldName.indexOf("|") === 36) {
+                            copyCond.field = cond.relationshipFieldName;
+                        }
+
                         copyCond.field = "$Related:" + copyCond.field.split("|")[0];
                         subConditions.push(copyCond);
                     });
