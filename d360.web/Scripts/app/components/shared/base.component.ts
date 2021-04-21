@@ -125,7 +125,7 @@ export class BaseComponent {
     }
 
     hasModifyResponsibilitiesPermissions(object: string) {
-        return this.hasPermission(Permission.ModifyResponsibilities);
+        return this.hasPermission(Permission.AddResponsibilities) || this.hasPermission(Permission.EditResponsibilities);
     }
 
     hasDeleteResponsibilitiesPermissions(object: string) {
@@ -133,7 +133,7 @@ export class BaseComponent {
     }
 
     hasModifyAssetPermissions() {
-        return this.hasPermission(Permission.ModifyAsset);
+        return this.hasPermission(Permission.AddAsset) || this.hasPermission(Permission.EditAsset);
     }
 
     hasDeleteAssetPermissions() {
@@ -141,7 +141,7 @@ export class BaseComponent {
     }
 
     hasModifyRelationshipsPermissions() {
-        return this.hasPermission(Permission.ModifyRelationships);
+        return this.hasPermission(Permission.AddRelationships) || this.hasPermission(Permission.EditRelationships);
     }
 
     hasDeleteRelationshipsPermissions() {
