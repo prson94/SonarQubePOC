@@ -12,6 +12,7 @@ import { TableModule } from 'primeng/table';
 import { EditorModule } from 'primeng/editor';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { CheckboxModule } from 'primeng/checkbox';
+import { TooltipModule } from "primeng/tooltip";
 
 import { CoreModule } from '../core.module';
 import { TilesModule  } from '../tiles/tiles.module';
@@ -50,6 +51,7 @@ import { PipesModule } from '../../../pipes/pipes.module';
         MultiSelectModule,
         SharedModule,
         TableModule,
+        TooltipModule,
     ],
     declarations: [
         ResponsibilityItemForm,
