@@ -88,12 +88,21 @@
                         </td>
                         <td>{{item.action}}</td>
                         <td>{{item.field}}</td>
-                        <td>
-                            <div *ngIf="item.newValue" [innerHtml]="item.newValue"></div>
+                        <td *ngIf="item.newValue;else emptyValue">
+                            <span [ngSwitch]="(item.fieldType?item.fieldType:'').toLowerCase()">
+                                <div *ngSwitchCase="'date'" [innerHtml]="item.newValue | date: 'shortDate'"></div>
+                                <div *ngSwitchCase="'datetime'" [innerHtml]="item.newValue | date: 'medium'"></div>
+                                <div *ngSwitchDefault [innerHtml]="item.newValue"></div>
+                            </span>
+                        </td>                        
+                        <td *ngIf="item.previousValue;else emptyValue">
+                            <span [ngSwitch]="item.fieldType">
+                                <div *ngSwitchCase="'date'" [innerHtml]="item.previousValue | date: 'shortDate'"></div>
+                                <div *ngSwitchCase="'datetime'" [innerHtml]="item.previousValue | date: 'medium'"></div>
+                                <div *ngSwitchDefault [innerHtml]="item.previousValue"></div>
+                            </span>
                         </td>
-                        <td>
-                            <div *ngIf="item.previousValue" [innerHtml]="item.previousValue"></div>
-                        </td>
+                        <ng-template #emptyValue><td></td></ng-template>
                         <td>{{item.actionObject}}</td>
                         <td>{{item.actionObjectTypeName}}</td>
                         <td>{{item.actionObjectName}}</td>
