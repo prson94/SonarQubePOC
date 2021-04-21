@@ -79,11 +79,8 @@ export class ResponsibilityTypeRelationPermission {
 
     static hasPermission(permissions: ResponsibilityTypeRelationPermission[], p: Permission): boolean {
 
-        let index = permissions.findIndex(i => i.Value == p);
-
-        if (index >= 0 && index < permissions.length) return true;
-
-        return false;
+        let permmissionMask = permissions.reduce((acc, curr) => acc + curr.Value, 0);
+        return ((permmissionMask & p) == p);
     }
 }
 
