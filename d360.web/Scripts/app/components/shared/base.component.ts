@@ -124,24 +124,36 @@ export class BaseComponent {
         return ResponsibilityTypeRelationPermission.hasPermission(this.permissions, permission);
     }
 
+    hasAddResponsibilitiesPermissions(object: string) {
+        return this.hasPermission(Permission.AddResponsibilities);
+    }
+
     hasModifyResponsibilitiesPermissions(object: string) {
-        return this.hasPermission(Permission.AddResponsibilities) || this.hasPermission(Permission.EditResponsibilities);
+        return this.hasPermission(Permission.EditResponsibilities);
     }
 
     hasDeleteResponsibilitiesPermissions(object: string) {
         return this.hasPermission(Permission.DeleteResponsibilities);
     }
 
+    hasAddAssetPermissions() {
+        return this.hasPermission(Permission.AddAsset);
+    }
+
     hasModifyAssetPermissions() {
-        return this.hasPermission(Permission.AddAsset) || this.hasPermission(Permission.EditAsset);
+        return this.hasPermission(Permission.EditAsset);
     }
 
     hasDeleteAssetPermissions() {
         return this.hasPermission(Permission.DeleteAsset);
     }
 
+    hasAddRelationshipsPermissions() {
+        return this.hasPermission(Permission.AddRelationships);
+    }
+
     hasModifyRelationshipsPermissions() {
-        return this.hasPermission(Permission.AddRelationships) || this.hasPermission(Permission.EditRelationships);
+        return this.hasPermission(Permission.EditRelationships);
     }
 
     hasDeleteRelationshipsPermissions() {

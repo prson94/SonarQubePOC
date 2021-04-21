@@ -129,7 +129,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                 this.canReadSelectedType = r;
                 if (this.selectedReferenceListId && !isNaN( this.selectedReferenceListId)) {
                     this.loadPermissions(this.permissionsService, "ReferenceItemType", this.selectedReferenceListId).then((perms) => {
-                        this.canAddReferenceItem = this.hasModifyAssetPermissions();
+                        this.canAddReferenceItem = this.hasAddAssetPermissions();
                         this.canEditReferenceItem = this.hasModifyAssetPermissions();
                         this.canRemoveReferenceItem = this.hasDeleteAssetPermissions();
                     });

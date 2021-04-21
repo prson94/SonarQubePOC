@@ -16,6 +16,7 @@ export class ObjectDetailComponent implements OnChanges {
     @Input() objectID: number;
     @Input() nymTypes: NymType[] = [];
     @Input() objectUID: string;
+    @Input() hasAddRelationshipsPermissions: boolean;
     @Input() hasModifyRelationshipsPermissions: boolean;
     @Input() hasDeleteRelationshipsPermissions: boolean;
     private assetUID: string;
