@@ -21,7 +21,7 @@
 })
 
 export class GalleryComponent implements OnInit {
-    activeControl: string = "multi-input-field";
+    activeControl: string = "input-group";
     controls = [
         { label: "Switch Input", key: "switch", type: "Form" },
         { label: "Button Directive", key: "button", type: "Form" },
@@ -50,6 +50,7 @@ export class GalleryComponent implements OnInit {
         { label: "Field Condition Grid", key: "field-condition-grid", type: "Govern Components" },
         { label: "Search Field", key: "search-field", type: "Govern Components"},
         { label: "Multi Input Field", key: "multi-input-field", type: "Govern Components"},
+        { label: "Input Group", key: "input-group", type: "Form"},
     ];
 
     categories: any[] = [];
