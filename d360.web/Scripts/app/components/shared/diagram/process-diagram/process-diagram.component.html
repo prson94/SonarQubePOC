@@ -2,13 +2,13 @@
     <div class="menu asset-browser-header" *ngIf="isEditMode">
         <div class="asset-browser-button-group">
 
-            <button pTooltip="Exit Designer" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-chevron-circle-left" label="Exit Designer" title="Exit Designer" (click)="doControlledAction('switchModes')"></button>
+            <button igButton icon="fa-chevron-circle-left" label="Exit Designer" (click)="doControlledAction('switchModes')"></button>
             <div class="button-spacer"></div>
 
-            <button pTooltip="Save" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-save" tooltip="Save changes" [disabled]="isSaveDisabled" (click)="save()"></button>
+            <button pTooltip="Save changes" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-save"[disabled]="isSaveDisabled" (click)="save()"></button>
             <div class="button-spacer"></div>
-            <button pTooltip="Delete selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-trash" tooltip="Delete selected item" [disabled]="!isDeleteEnabled()" (click)="onDeleteClick()"></button>
-            <button pTooltip="View and edit relationships for selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton label="Item Relationships" id="igx-relationship-items" tooltip="View and edit relationships for selected item" [disabled]="!isRelatedAssetsEnabled()" (click)="doControlledAction('open-related-assets')"></button>
+            <button pTooltip="Delete selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-trash" [disabled]="!isDeleteEnabled()" (click)="onDeleteClick()"></button>
+            <button pTooltip="View and edit relationships for selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton label="Item Relationships" id="igx-relationship-items" [disabled]="!isRelatedAssetsEnabled()" (click)="doControlledAction('open-related-assets')"></button>
             <div class="button-spacer"></div>
             <div class="menu-wrapper">
                 <button type="button" igButton icon="fa-ellipsis-v" (click)="menu.toggle($event)" pTooltip="More actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
@@ -16,10 +16,10 @@
             </div>
         </div>
         <div class="controls-right">
-            <button pTooltip="Diagram View" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton class="ig-button ig-button-icon-only {{viewType == 'diagram' ? 'ig-state-active' : ''}}" icon="fa-sitemap" (click)="changeViewType('diagram')" tooltip="Diagram View"></button>
-            <button pTooltip="List View" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton class="ig-button ig-button-icon-only {{viewType == 'list' ? 'ig-state-active' : ''}}" icon="fa-list" (click)="changeViewType('list')" tooltip="List View"></button>
+            <button pTooltip="Diagram View" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton class="ig-button ig-button-icon-only {{viewType == 'diagram' ? 'ig-state-active' : ''}}" icon="fa-sitemap" (click)="changeViewType('diagram')"></button>
+            <button pTooltip="List View" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton class="ig-button ig-button-icon-only {{viewType == 'list' ? 'ig-state-active' : ''}}" icon="fa-list" (click)="changeViewType('list')"></button>
             <div class="button-spacer"></div>
-            <button pTooltip="Information Panel" tooltipPosition="left" tooltipStyleClass="ig-tooltip" igButton icon="fa-info-circle" class="ig-button ig-button-icon-only {{isInfoPanelOpened ? 'ig-state-active' : ''}}" tooltip="Information Panel" (click)="changeInfoPanelMode()"></button>
+            <button pTooltip="Information Panel" tooltipPosition="left" tooltipStyleClass="ig-tooltip" igButton icon="fa-info-circle" class="ig-button ig-button-icon-only {{isInfoPanelOpened ? 'ig-state-active' : ''}}" (click)="changeInfoPanelMode()"></button>
         </div>
     </div>
 
