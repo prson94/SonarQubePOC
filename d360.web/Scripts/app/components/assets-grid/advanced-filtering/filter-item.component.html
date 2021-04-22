@@ -40,16 +40,17 @@
     </div>
 
     <div class="value-selection" [hidden]="!isSelectingValue">
-        <div class="selectors">
-            <p-dropdown igDropdown
-                        igAutoFocus
-                        [options]="uiCurrentOperatorsList"
-                        [(ngModel)]="currentOperator"
-                        (onChange)="onOperatorSelected($event)"
-                        igSize="full"
-                        required
-                        appendTo="body">
-            </p-dropdown>
+        <div class="selectors" pFocusTrap>
+            <div class="operator-selector">
+                <p-dropdown igDropdown
+                            [options]="uiCurrentOperatorsList"
+                            [(ngModel)]="currentOperator"
+                            (onChange)="onOperatorSelected($event)"
+                            igSize="full"
+                            required
+                            appendTo="body">
+                </p-dropdown>
+            </div>
             <div class="value-selector">
                 <ng-container *ngIf="doesNeedValue">
                     <input *ngIf="currentInputType === 'text'" igInput igSize="full" type="text" [(ngModel)]="condition.value" required maxlength="{{maxNumberOfFilterCharacters}}" />
@@ -87,8 +88,8 @@
                                      [globalFilterFields]="['title']"
                                      dataKey="value"
                                      [scrollable]="true"
-                                     scrollHeight="250px"
-                                     [virtualRowHeight]="30"
+                                     [scrollHeight]="selectionScrollHeight"
+                                     [virtualRowHeight]="32"
                                      [rows]="20"
                                      [virtualScroll]="true"
                                      [lazy]="isLazyLoad()"
