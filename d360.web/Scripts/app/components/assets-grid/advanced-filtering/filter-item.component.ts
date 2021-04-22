@@ -872,7 +872,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     //table extensions
     selectSingleItem(event: MouseEvent, item: SelectItem) {
-        console.log(this.condition.value);
         if (!this.condition.value) {
             this.condition.value = [];
         }
