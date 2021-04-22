@@ -352,6 +352,8 @@ namespace d360.core.enums
 
         public static List<OperatorInfo> GetAsList(this Operator type)
         {
+            //ignore operators which are used only on advanced filters
+            var ignoreList = new List<Operator> { Operator.In, Operator.NotIn };
             var list = new List<OperatorInfo>();
 
             var checkInfos = MetricGovernanceCheckType.External.GetAsList();
@@ -390,7 +392,7 @@ namespace d360.core.enums
                 }
             }
 
-            return list.OrderBy(i => i.Name).ToList();
+            return list.OrderBy(i => i.Name).Where(x => !ignoreList.Contains(x.ID)).ToList();
         }
 
         public static List<OperatorInfo> GetAsListForAdvancedFilters(this Operator type)
