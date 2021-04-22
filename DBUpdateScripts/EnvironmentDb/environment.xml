@@ -16,6 +16,7 @@
 	<include file="scripts/Udt.dbo.AssetBrowserImpactTable.xml"/>
 	<include file="scripts/Udt.dbo.AssetEffectiveDate.xml"/>
 	<include file="scripts/Udt.dbo.AssetFiltersTable.xml"/>
+  <include file="scripts/Udt.dbo.AuditFieldTable.xml"/>
 	<include file="scripts/Udt.dbo.Ids.xml"/>
 	<include file="scripts/Udt.dbo.IDTable.xml"/>
 	<include file="scripts/Udt.dbo.IntegrationAssetHashType.xml"/>
