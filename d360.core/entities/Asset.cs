@@ -105,6 +105,7 @@ namespace d360.core.entities
         public string actionObjectName { get; set; }
         public string actionDescription { get; set; }
         public string field { get; set; }
+        public string fieldType { get; set; }
         public string newValue { get; set; }
         public int @class { get; set; }
         public int version { get; set; }
