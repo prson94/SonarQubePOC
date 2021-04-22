@@ -23,7 +23,7 @@
     </div>
     <advanced-filtering [assetTypeUid]="gridObject.AssetTypeUID" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
     <div class="grid-action-buttons">
-        <button *ngIf="showAddButton && hasModifyAssetPermissions()"
+        <button *ngIf="showAddButton && hasAddAssetPermissions()"
                 igButton
                 pTooltip="Add"
                 tooltipPosition="top"
