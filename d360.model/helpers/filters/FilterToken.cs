@@ -281,19 +281,37 @@ namespace d360.model.helpers
             if (@operator == "ne")
             {
                 stringBuilder.Append($@"(
-				 exists (SELECT top 1 *
+				  exists (
+                    SELECT top 1 *
                     FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
                     WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{this.parameterIdx}
-				              AND S.Uid = A.Uid))");
+				              AND S.Uid = A.Uid
+                )
+                or exists (
+                    SELECT top 1 *
+                    FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
+                    WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{this.parameterIdx}
+				              AND O.Uid = A.Uid
+                )
+                )");
             }
 
             if (@operator == "eq")
             {
                 stringBuilder.Append($@"(
-				 not exists (SELECT top 1 *
+				 not exists (
+                    SELECT top 1 *
                     FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
                     WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{this.parameterIdx}
-				              AND S.Uid = A.Uid))");
+				              AND S.Uid = A.Uid
+                )
+                and not exists (
+                    SELECT top 1 *
+                    FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
+                    WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{this.parameterIdx}
+				              AND O.Uid = A.Uid
+                )
+                )");
             }
 
             return stringBuilder.ToString();

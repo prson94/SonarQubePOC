@@ -493,10 +493,10 @@ export class AdvancedFilterFieldConditionCollection {
                     }
                     else {
                         if (cond.operator.toString() === "Equals") {
-                            queries.push(`(${cond.field} ct '${(stringArr.join(' > '))}')`);
+                            queries.push(`(${cond.field} eq '${(stringArr.join(' > '))}')`);
                         }
                         if (cond.operator.toString() === "NotEquals") {
-                            queries.push(`(${cond.field} nct '${(stringArr.join(' > '))}')`);
+                            queries.push(`(${cond.field} ne '${(stringArr.join(' > '))}')`);
                         }
                     }
                 }
