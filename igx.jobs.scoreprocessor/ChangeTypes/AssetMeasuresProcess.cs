@@ -822,6 +822,7 @@ where   Uid <> @uid
 
                         company.Execute(@"
 CREATE TABLE #StagingScoreItem (
+    RowNumber int identity not null,
 	AllocationUid uniqueidentifier NOT NULL,
     AssetUid uniqueidentifier NOT NULL,
 	MeasureUid uniqueidentifier NOT NULL,
@@ -853,6 +854,17 @@ CREATE TABLE #StagingScoreItem (
 
                             bulkCopy.WriteToServer(itemsTable);
                         }
+
+                        company.Execute(@"
+delete  #StagingScoreItem
+where   RowNumber in (
+        select      min(RowNumber) as RowNumber
+        from        #StagingScoreItem
+        group by    AssetUid,
+                    MeasureUid,
+                    EffectiveDate
+        having      count(1) > 1
+        );", transaction: trans);
 
                         company.Execute(@"
 merge [metrics].[StagingScoreItem] as T
