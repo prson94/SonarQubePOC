@@ -299,6 +299,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.condition.type = this.currentField;
             this.uiCurrentOperatorsList = this.getOperators(this.condition);
             this.uiFilterLabel = this.condition.getFilterLabel();
+
+            if (type.Type.Score && !this.condition.value) {
+                this.condition.value = "poor";
+            }
         }
         else {
             if (this.condition.field === SystemFields.OwnedByFieldCode) {
@@ -515,6 +519,14 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.isSelectingValue = false;
         this.condition.operator = this.currentOperator;
         this.updateOperatorData();
+
+        if (this.condition.operator.toString() === "Between") {
+            if (this.condition.value > this.condition.value2) {
+                var temp = this.condition.value;
+                this.condition.value = this.condition.value2;
+                this.condition.value2 = temp;
+            }
+        }
 
         this.uiTooltipValue = this.condition.getTooltipValue();
         this.uiFilterLabel = this.condition.getFilterLabel();
@@ -859,58 +871,22 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
 
     //table extensions
-    @ViewChild("dataTable", { static: false }) tableEl: any;
-    private lastSelectedElementIndex: number;
-    selectSingleItem(event: MouseEvent, item: SelectItem, element: ElementRef = null) {
+    selectSingleItem(event: MouseEvent, item: SelectItem) {
         if (!this.condition.value) {
             this.condition.value = [];
         }
         let valueRef = this.condition.value as SelectItem[];
-        let hasMetaKey: boolean = event.ctrlKey || event.shiftKey || event.metaKey;
+        let elIdx = valueRef.findIndex((x) => x.value === item.value);
 
-        if (hasMetaKey) {
-            if (event.ctrlKey || event.metaKey) {
-                let idx = valueRef.indexOf(item);
-                if (idx > -1) {
-                    valueRef.splice(idx, 1);
-                }
-                else {
-                    valueRef.push(item);
-                }
-            }
-            else {
-                //this handles shift key
-                if (this.lastSelectedElementIndex === -1) {
-                    valueRef.push(item);
-                }
-                else {
-                    var startIdx = this.lastSelectedElementIndex;
-                    var endIdx = this.currentField.Values.indexOf(item);
-                    if (startIdx > endIdx) {
-                        let temp = endIdx;
-                        endIdx = startIdx;
-                        startIdx = temp;
-                    }
-
-                    for (let i = startIdx; i <= endIdx; i++) {
-                        var toAdd = this.currentField.Values[i];
-
-                        if (!valueRef.some((x) => x.value === toAdd.value)) {
-                            valueRef.push(toAdd);
-                        }
-                    }
-
-                }
-            }
+        if (elIdx > -1) {
+            valueRef.splice(elIdx, 1);
         }
         else {
-            valueRef = [];
             valueRef.push(item);
         }
-
         //update reference
         this.condition.value = [...valueRef];
-        this.lastSelectedElementIndex = this.currentField.Values.indexOf(item);
+        this.updateAllAnyData();
     }
 
 }

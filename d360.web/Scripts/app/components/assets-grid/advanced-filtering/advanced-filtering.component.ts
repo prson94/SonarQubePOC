@@ -43,7 +43,7 @@ export class AdvancedFilteringComponent implements OnChanges {
             title: "Clear Filters",
             callback: () => {
                 this.conditions.filters = [];
-
+                this.clearFiltersStorage();
                 this.fields.forEach((field) => {
                     if (field.Type) {
                         var key = Object.keys(field.Type)[0];
@@ -247,6 +247,10 @@ export class AdvancedFilteringComponent implements OnChanges {
 
     private saveFilters() {
         localStorage.setItem(this.getLocalStorageKey(), JSON.stringify(this.conditions.filters));
+    }
+
+    private clearFiltersStorage() {
+        localStorage.removeItem(this.getLocalStorageKey());
     }
 
     private loadFilters(): AdvancedFilterFieldCondition[] {
