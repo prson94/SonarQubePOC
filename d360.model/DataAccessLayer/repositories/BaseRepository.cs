@@ -859,12 +859,17 @@ namespace d360.model.DataAccessLayer.repositories
             }
         }
 
-        private struct AssetOwnershipLookupRecord
+        private struct AssetOwnershipLookupRecord : IEquatable<AssetOwnershipLookupRecord>
         {
             public string ResourceName;
             public Guid ResourceUid;
             public string ResponsibilityTypes;
             public string ResourceItemUrl;
+
+            public bool Equals(AssetOwnershipLookupRecord other)
+            {
+                return other.ResourceUid == ResourceUid;
+            }
         }
 
         protected void SetExcelColumnWidths(SLDocument document, List<FieldType> fields, int totalRows = -1)
