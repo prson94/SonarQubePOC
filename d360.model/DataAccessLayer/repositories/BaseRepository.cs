@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.enums;
 using Dapper;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SpreadsheetLight;
 using System;
 using System.Collections.Generic;
@@ -836,6 +837,18 @@ namespace d360.model.DataAccessLayer.repositories
                     }
                     document.SetCellValue(rowIndex, colIndex, txt);
                     break;
+                case "OWNERSHIPLOOKUP":
+                    if (value != null)
+                    {
+                        string owners = "";
+                        if (value.GetType() == typeof(JArray))
+                        {
+                            var ownerships = ((JArray)value).ToObject<List<AssetOwnershipLookupRecord>>();
+                            owners = string.Join(" | ", ownerships.OrderBy(o => o.ResourceName).Select(o => $"{o.ResourceName} ({o.ResponsibilityTypes})"));
+                        }
+                        document.SetCellValue(rowIndex, colIndex, owners);
+                    }
+                    break;
                 default:
                     if (valueString.StartsWith("="))
                     {
@@ -844,6 +857,14 @@ namespace d360.model.DataAccessLayer.repositories
                     document.SetCellValue(rowIndex, colIndex, valueString);
                     break;
             }
+        }
+
+        private struct AssetOwnershipLookupRecord
+        {
+            public string ResourceName;
+            public Guid ResourceUid;
+            public string ResponsibilityTypes;
+            public string ResourceItemUrl;
         }
 
         protected void SetExcelColumnWidths(SLDocument document, List<FieldType> fields, int totalRows = -1)

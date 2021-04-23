@@ -1086,6 +1086,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dayofweek-input\dayofweek-input.component.ts" />
     <Content Include="Scripts\app\components\shared\social\social-comment.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\ownership-list\ownership-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\social\comment-form.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\info-tooltip.component.ts" />
     <Content Include="Scripts\app\components\workflow\workflow-view-details.component.html" />

@@ -248,6 +248,7 @@ namespace d360.model.DataAccessLayer
             var includePermissionDetails = false;
             bool includeOnlyListableFields = false;
             string populatePremissionAssetTableSQL = " ";
+            string populateOwnershipLookupTableSQL = " ";
             string permissionDetailSQL = " ";
             string includePermissionFields = " ";
             bool listColorsAsJSON = false;
@@ -258,6 +259,9 @@ namespace d360.model.DataAccessLayer
             string hierarchyParentUidCol = "";
             string hierarchyParentUidSelect = "";
             bool includeCreatedByModifiedBy = false;
+            bool includeOwnershipLookup = false;
+            bool simpleFilterOwnershipOnResource = false;
+            bool simpleFilterOwnershipOnSecurityAsset = false;
 
             if (assetType == null)
                 throw new Exception("Invalid assetType specified");
@@ -269,12 +273,14 @@ namespace d360.model.DataAccessLayer
 
             assetTypeID = assetType.ID;
 
-            List<string> hiddenFieldTypes = new List<string>() { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
+            List<string> hiddenFieldTypes = new List<string>() { "ComplexRelationLookup", "", "RefListRelationship" };
             var allFieldTypes = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).ToList();
             var fieldTypes = allFieldTypes.Where(f => !hiddenFieldTypes.Contains(f.Type)).ToList();
 
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_predicateuid"))
+            {
                 includeRelationships = true;
+            }
 
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_onlylistablefields"))
             {
@@ -341,12 +347,16 @@ namespace d360.model.DataAccessLayer
                 bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includecreatedmodifiedby").Value, out includeCreatedByModifiedBy);
             }
 
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includeownershiplookup"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includeownershiplookup").Value, out includeOwnershipLookup);
+            }
+
             //check for asset path fields now after include fields have been filtered
             if (fieldTypes.Any(x => x.Type == "Path"))
             {
                 hasAssetPathField = true;
             }
-
 
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
@@ -364,7 +374,9 @@ namespace d360.model.DataAccessLayer
             dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
             dbArgs.Add("@isAdmin", CompanyContext.CurrentResourceIsAdmin);
 
-            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "A.[Object]", "A.[ObjectId]", listColorsAsJSON);
+            //Don't get field sql for OwnershipLookup fields, as that will return the definition rather than the json we want
+            //The sql for OwnershipLookup fields will be added below at the includeOwnershipLookup conditional
+            getFieldSql(fieldTypes.Where(f => f.Type != "OwnershipLookup").ToList(), dbArgs, fieldJoins, fieldColumns, "A.[Object]", "A.[ObjectId]", listColorsAsJSON);
             List<string> countJoins = new List<string>(fieldJoins);
 
             if (includeRelationships)
@@ -558,6 +570,89 @@ namespace d360.model.DataAccessLayer
                 {
                     whereStatements.Add($"not exists (select AssetID from #PermissiondAssets where AssetID = A.ID and ((PermissionsBitMask & {(int)Permission.ReadAsset})) = 0)");
                 }
+            }
+
+            var ownershipFieldTypes = fieldTypes.Where(f => f.Type == "OwnershipLookup").ToList();
+            if (includeOwnershipLookup && ownershipFieldTypes.Any())
+            {
+                populateOwnershipLookupTableSQL = @"
+                    drop table if exists #OwnershipLookupAssets;
+                    create table #OwnershipLookupAssets (
+						AssetID bigint,
+                        ResponsibilityTypeName nvarchar(250),
+                        ResourceName nvarchar(501),
+                        SecurityAsset char(1),
+                        SecurityAssetName nvarchar(501),
+                        Context nvarchar(max),
+                        ResourceId int,
+                        ResourceUid uniqueidentifier,
+                        SecurityAssetId int,
+                        SecurityAssetUid uniqueidentifier
+					);
+					insert into #OwnershipLookupAssets
+                        SELECT [AssetID]
+                              ,[ResponsibilityTypeName]
+                              ,[ResourceName]
+                              ,[SecurityAsset]
+                              ,[SecurityAssetName]
+                              ,[Context]
+                              ,[ResourceId]
+                              ,[ResourceUid]
+                              ,[SecurityAssetId]
+                              ,[SecurityAssetUid]
+                        FROM [dbo].[ResponsibilityDetail] rd
+                        where rd.assetid <> 0 and IsVisible = 1 and rd.[AssetTypeID] = @assetTypeId
+                        union all
+                        select a.[ID] as AssetID
+                              ,rd.[ResponsibilityTypeName]
+                              ,rd.[ResourceName]
+                              ,rd.[SecurityAsset]
+                              ,rd.[SecurityAssetName]
+                              ,rd.[Context]
+                              ,rd.[ResourceId]
+                              ,rd.[ResourceUid]
+                              ,rd.[SecurityAssetId]
+                              ,rd.[SecurityAssetUid]
+                        from ResponsibilityDetail rd
+                        inner join asset a on rd.assettypeid = a.assettypeid
+                        where rd.assetid = 0 and IsVisible = 1and rd.assettypeid = @assetTypeId;
+
+                    create index cix_OwnershipLookupAssetId on #OwnershipLookupAssets (AssetId);
+                    ";
+
+                ownershipFieldTypes.ForEach(f => {
+                    FieldTypeLookup lookup = CompanyContext.FieldTypeLookups.Where(ftl => ftl.FieldTypeID == f.ID).FirstOrDefault();
+                    var definition = (dynamic)JsonConvert.DeserializeObject(lookup.Definition);
+                    string innerOwnershipQuery = "";
+                    if((bool)definition.ExpandGroupMembership)
+                    {
+                        innerOwnershipQuery = $@"select ResponsibilityTypeName, ResourceName, ResourceUid, ResourceItemUrl from #OwnershipLookupAssets ola{f.ID}
+                            cross apply (select  concat('resource/', cast(ResourceID as varchar)) as ResourceItemUrl) ola{f.ID}x
+			                where ola{f.ID}.assetid = a.id
+			                group by ResponsibilityTypeName, ResourceName, ResourceUid, ResourceItemUrl";
+                        simpleFilterOwnershipOnResource = true;
+                    } else
+                    {
+                        innerOwnershipQuery = $@"select ResponsibilityTypeName, SecurityAssetName as ResourceName, SecurityAssetUid as ResourceUid, ResourceItemUrl  from #OwnershipLookupAssets ola{f.ID}
+                            cross apply (select  concat(case SecurityAsset when 'R' then '/resource/' else '/group/' end, cast(SecurityAssetID as varchar)) as ResourceItemUrl) ola{f.ID}x
+                			where ola{f.ID}.assetid = a.id
+                            group by ResponsibilityTypeName, SecurityAssetName, SecurityAssetUid, ResourceItemUrl";
+                        simpleFilterOwnershipOnSecurityAsset = true;
+                    }
+
+                    string ownershipQuery = $@"
+                        outer apply(
+                            select FormattedValue = (
+		                        select ResourceName, string_agg(ResponsibilityTypeName,', ') AS ResponsibilityTypes, ResourceUid, ResourceItemUrl
+		                        from ( {innerOwnershipQuery} ) Responsibilites{f.ID}
+                                group by ResourceName, ResourceUid, ResourceItemUrl
+                                order by ResourceName
+	                         FOR JSON PATH)
+                        ) F{f.ID} (FormattedValue) ";
+
+                    fieldColumns.Add($"F{f.ID}.FormattedValue as [{f.Name}]");
+                    fieldJoins.Add(ownershipQuery);
+                });
             }
 
             if (!CompanyContext.CurrentResourceIsAdmin && !useAsAdmin)
@@ -758,7 +853,8 @@ namespace d360.model.DataAccessLayer
                     dbArgs.Add("@simpleFilter", simpleFilter);
 
                     List<string> simpleFilters = new List<string>();
-                    foreach (var ft in fieldTypes.Where(x => x.IsListable == true))
+                    //There may be multiple OwnershipLookup fields, but they all look to the same table for filtering, so that will be dealt with below
+                    foreach (var ft in fieldTypes.Where(x => x.IsListable == true && x.Type != DataType.OwnershipLookup.ToString()))
                     {
                         if (ft.Type == DataType.Tag.ToString())
                         {
@@ -786,6 +882,23 @@ namespace d360.model.DataAccessLayer
                         {
                             simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
                         }
+                    }
+                    if (includeOwnershipLookup)
+                    {
+                        List<string> ownershipSimpleFilterFields = new List<string>();
+                        ownershipSimpleFilterFields.Add("ResponsibilityTypeName");
+
+                        if (simpleFilterOwnershipOnResource)
+                        {
+                            ownershipSimpleFilterFields.Add("ResourceName");
+                        }
+                        if (simpleFilterOwnershipOnSecurityAsset)
+                        {
+                            ownershipSimpleFilterFields.Add("SecurityAssetName");
+                        }
+                        string simpleFilterOwnership = $@"exists (select 1 from #OwnershipLookupAssets ola where ola.assetid = a.id
+                                                    and ({string.Join(" or ", ownershipSimpleFilterFields.Select(f => $"{f} like @simpleFilter"))}))";
+                        simpleFilters.Add(simpleFilterOwnership);
                     }
 
                     if (includeParent)
@@ -969,9 +1082,11 @@ namespace d360.model.DataAccessLayer
             if (fieldColumns.Any())
                 fieldsSql = $",\n {string.Join(",\n", fieldColumns)}";
 
+            string populateOwnershipLookupTableCountSQL = (simpleFilterOwnershipOnResource || simpleFilterOwnershipOnSecurityAsset) ? populateOwnershipLookupTableSQL : " ";
 
             var countSql = $@"
                 {populatePremissionAssetTableSQL}
+                {populateOwnershipLookupTableCountSQL}
                 select  count(*)
                 from    Asset A 
                 {(includeAssetPathInCount ? " left join graph.AssetNodeDisplayPath Node on Node.id = a.id" : "")} 
@@ -984,6 +1099,7 @@ namespace d360.model.DataAccessLayer
 
             var sql = $@"
                 {populatePremissionAssetTableSQL}
+                {populateOwnershipLookupTableSQL}
                 select
                     A.ID as AssetId,
                     A.[UID] as [AssetUid],
@@ -1030,56 +1146,67 @@ namespace d360.model.DataAccessLayer
 
             var results = await CompanyContext.QueryAsync(sql, dbArgs, ApiTimeout);
 
-            if (includeRelationships)
+            //Loop results once for if any applicable conversions
+            if (includeRelationships || includePermissionDetails || includeSegments || (includeOwnershipLookup && ownershipFieldTypes.Any()))
             {
                 foreach (var result in results)
                 {
-                    result.Relationships = JsonConvert.DeserializeObject(result.Relationships);
-                }
-            }
-
-            if (includePermissionDetails)
-            {
-                foreach (var result in results)
-                {
-                    AssetsApiPermissionViewModel permissionObject = JsonConvert.DeserializeObject<AssetsApiPermissionViewModel>(result.Permissions);
-
-                    //Override responsibilities for Admin users (as in GetAssets procedure)
-                    if (CompanyContext.CurrentResourceIsAdmin)
+                    if (includeRelationships)
                     {
-                        permissionObject.ModifyAsset = true;
-                        permissionObject.DeleteAsset = true;
+                        result.Relationships = JsonConvert.DeserializeObject(result.Relationships);
                     }
 
-                    result.Permissions = permissionObject;
-                }
-            }
-
-            if (includeSegments)
-            {
-                foreach (var result in results)
-                {
-                    try
+                    if (includePermissionDetails)
                     {
-                        var xmlString = result.Segments;
-                        if (xmlString != null)
-                        {
-                            List<AssetsByPathItemSegmentApiViewModel> segments = new List<AssetsByPathItemSegmentApiViewModel>();
-                            var xml = XDocument.Parse(xmlString as string);
-                            foreach (var segment in xml.Descendants("segment"))
-                            {
-                                segments.Add(new AssetsByPathItemSegmentApiViewModel()
-                                {
-                                    Value = segment.Value
-                                });
-                            }
+                        AssetsApiPermissionViewModel permissionObject = JsonConvert.DeserializeObject<AssetsApiPermissionViewModel>(result.Permissions);
 
-                            result.Segments = segments;
+                        //Override responsibilities for Admin users (as in GetAssets procedure)
+                        if (CompanyContext.CurrentResourceIsAdmin)
+                        {
+                            permissionObject.ModifyAsset = true;
+                            permissionObject.DeleteAsset = true;
+                        }
+
+                        result.Permissions = permissionObject;
+                    }
+
+                    if (includeSegments)
+                    {
+                        try
+                        {
+                            var xmlString = result.Segments;
+                            if (xmlString != null)
+                            {
+                                List<AssetsByPathItemSegmentApiViewModel> segments = new List<AssetsByPathItemSegmentApiViewModel>();
+                                var xml = XDocument.Parse(xmlString as string);
+                                foreach (var segment in xml.Descendants("segment"))
+                                {
+                                    segments.Add(new AssetsByPathItemSegmentApiViewModel()
+                                    {
+                                        Value = segment.Value
+                                    });
+                                }
+
+                                result.Segments = segments;
+                            }
+                        }
+                        catch
+                        {
+                            result.Segments = null;
                         }
                     }
-                    catch
+
+                    if (includeOwnershipLookup && ownershipFieldTypes.Any())
                     {
-                        result.Segments = null;
+                        var data = (IDictionary<string, object>)result;
+                        ownershipFieldTypes.ForEach(ft =>
+                        {
+                            var val = (string)data[ft.Name];
+                            if (!string.IsNullOrEmpty(val))
+                            {
+                                data[ft.Name] = JsonConvert.DeserializeObject(val);
+                            }
+                        });
                     }
                 }
             }
@@ -1176,8 +1303,7 @@ namespace d360.model.DataAccessLayer
             }
             var typesToAvoid = new List<string>() {
                 DataType.ComplexRelationLookup.ToString(),
-                DataType.DataTableSelect.ToString(),
-                DataType.OwnershipLookup.ToString()
+                DataType.DataTableSelect.ToString()
             };
 
             //add default fields

@@ -33,7 +33,7 @@
     <span *ngSwitchCase="'lookup'">
         <d3s-lookup-tooltip [objectType]="item[column.objectfield]"
                             [objectId]="item[column.objectidfield]">
-             <a (click)="navigate(item[column.urlfield])"
+            <a (click)="navigate(item[column.urlfield])"
                [innerText]="fieldValue"></a>
         </d3s-lookup-tooltip>
     </span>
@@ -72,6 +72,9 @@
     </span>
     <span *ngSwitchCase="'ListColor'">
         <d3s-color-display [colorsJSON]="fieldValue"></d3s-color-display>
+    </span>
+    <span *ngSwitchCase="'ownershiplookup'">
+        <d3s-ownership-list [list]="fieldValue"></d3s-ownership-list>
     </span>
     <ng-template ngSwitchDefault>
         <span *ngIf="fieldValue != null"

@@ -133,6 +133,7 @@ export class AssetService extends BaseObservableService {
         var qString = '';
         if (onlyListableFields) {
             params._onlyListableFields = true;
+            params._includeOwnershipLookup = true;
         }
         if (params) {
             qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');

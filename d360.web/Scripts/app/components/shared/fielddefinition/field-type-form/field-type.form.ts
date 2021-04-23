@@ -1368,7 +1368,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'IsEditable':
                 return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Tag', 'Score'].indexOf(this.currentType) > -1);
             case 'IsListable':
-                return (['ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship', 'Json', 'JSON'].indexOf(this.currentType) > -1
+                return (['ComplexRelationLookup', 'RefListRelationship', 'Json', 'JSON'].indexOf(this.currentType) > -1
                     || (this.currentType == 'Relationship' && !this.isListableRelationship));
             case 'IsRequired':
                 if (this.objectType && this.objectType.toLowerCase() == 'fusionattributetype')
