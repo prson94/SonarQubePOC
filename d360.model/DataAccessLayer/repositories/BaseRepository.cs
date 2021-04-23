@@ -862,7 +862,7 @@ namespace d360.model.DataAccessLayer.repositories
         private struct AssetOwnershipLookupRecord : IEquatable<AssetOwnershipLookupRecord>
         {
             public string ResourceName;
-            public Guid ResourceUid;
+            public string ResourceUid;
             public string ResponsibilityTypes;
             public string ResourceItemUrl;
 
