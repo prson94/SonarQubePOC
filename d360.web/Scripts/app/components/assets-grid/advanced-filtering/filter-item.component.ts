@@ -647,9 +647,11 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     private resetPersistedFilter() {
-        this.condition.operator = undefined;
         this.currentOperator = this.uiCurrentOperatorsList[0].value;
+        this.condition.operator = undefined;
         this.condition.value = undefined;
+        this.condition.value2 = undefined;
+        this.currentInputType = this.fieldInputType();
 
         this.uiTooltipValue = this.condition.getTooltipValue();
         this.uiFilterLabel = this.condition.getFilterLabel();

@@ -397,7 +397,7 @@ export class AdvancedFilterFieldCondition {
                 return `'${value.value}'`;
             }
         }
-        return `'${value}'`;
+        return `'${encodeURIComponent(value)}'`;
     }
     getValue2(): string {
         return this.getValue(this.value2);
@@ -557,7 +557,7 @@ export class AdvancedFilterFieldConditionCollection {
             }
 
             if (minValue === null) {
-                return `(${cond.field} lt '${maxValue}')`;
+                return `(${cond.field} le '${maxValue}')`;
             }
 
             if (maxValue === null) {
@@ -631,35 +631,41 @@ export class SystemFields {
         var fields: FieldTypeAPIModelFieldCondition[] = [];
 
         relTypes.forEach((r) => {
-            let predicate: string = "";
-            let typeName: string = "";
-            let sideUid: string = "";
-            if (r.Object.Uid === assetType) {
-                predicate = r.Predicate.Inverse;
-                typeName = r.Subject.Name;
-                sideUid = r.Subject.Uid;
+            try {
+                let predicate: string = "";
+                let typeName: string = "";
+                let sideUid: string = "";
+                if (r.Object.Uid === assetType) {
+                    predicate = r.Predicate.Inverse;
+                    typeName = r.Subject.Name;
+                    sideUid = r.Subject.Uid;
+                }
+                else {
+                    predicate = r.Predicate.Name;
+                    typeName = r.Object.Name;
+                    sideUid = r.Object.Uid;
+                }
+
+                typeName = typeName.split("/").join("<i class='slim-fa fa fa-chevron-right'></i>");
+
+                var field = {
+                    Category: "Relationships",
+                    FriendlyName: `${predicate} ${typeName}`,
+                    Name: r.Uid + "|" + sideUid,
+                    Type: null,
+                    Operators: [],
+                    Values: [],
+                    IsRelationship: true
+                };
+                field["predicate"] = predicate;
+
+                fields.push(field);
             }
-            else {
-                predicate = r.Predicate.Name;
-                typeName = r.Object.Name;
-                sideUid = r.Object.Uid;
+            catch (ex) {
+                //GOV-14432 - catch error if there is something wrong with relationship type (missing prop)
+                //to avoid breaking all advanced filtering 
+                console.warn(ex, r);
             }
-
-            typeName = typeName.split("/").join("<i class='slim-fa fa fa-chevron-right'></i>");
-
-            var field = {
-                Category: "Relationships",
-                FriendlyName: `${predicate} ${typeName}`,
-                Name: r.Uid + "|" + sideUid,
-                Type: null,
-                Operators: [],
-                Values: [],
-                IsRelationship: true
-            };
-            field["predicate"] = predicate;
-
-            fields.push(field);
-
         });
         return fields.sort((a, b) => { return a.FriendlyName > b.FriendlyName ? 1 : -1; });
     }
