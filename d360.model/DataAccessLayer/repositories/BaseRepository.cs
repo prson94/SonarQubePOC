@@ -843,7 +843,7 @@ namespace d360.model.DataAccessLayer.repositories
                         string owners = "";
                         if (value.GetType() == typeof(JArray))
                         {
-                            var ownerships = ((JArray)value).ToObject<List<AssetOwnershipLookupRecord>>();
+                            var ownerships = ((JArray)value).ToObject<List<dynamic>>();
                             owners = string.Join(" | ", ownerships.OrderBy(o => o.ResourceName).Select(o => $"{o.ResourceName} ({o.ResponsibilityTypes})"));
                         }
                         document.SetCellValue(rowIndex, colIndex, owners);
@@ -856,19 +856,6 @@ namespace d360.model.DataAccessLayer.repositories
                     }
                     document.SetCellValue(rowIndex, colIndex, valueString);
                     break;
-            }
-        }
-
-        private struct AssetOwnershipLookupRecord : IEquatable<AssetOwnershipLookupRecord>
-        {
-            public string ResourceName;
-            public string ResourceUid;
-            public string ResponsibilityTypes;
-            public string ResourceItemUrl;
-
-            public bool Equals(AssetOwnershipLookupRecord other)
-            {
-                return other.ResourceUid == ResourceUid;
             }
         }
 
