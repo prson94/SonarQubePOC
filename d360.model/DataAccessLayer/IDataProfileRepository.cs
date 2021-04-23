@@ -10,5 +10,7 @@ namespace d360.model.DataAccessLayer
     public interface IDataProfileRepository
     {
         List<DataProfileUpsertResponse> UpsertDataProfiles(List<DataProfileUpsertModel> DataProfileModels, ApiExecution execution, bool isInsert);
+
+        Task<AssetDataProfilesApiViewModel> GetDataProfiles(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams);
     }
 }
