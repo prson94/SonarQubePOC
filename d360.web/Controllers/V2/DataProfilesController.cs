@@ -73,18 +73,16 @@ namespace d360.web.Controllers.V2
             catch (Exception ex)
             {
                 var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
+                SendException(ex, new Dictionary<string, string> {
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage));                
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage)).ConfigureAwait(false);                
             }           
         }
 
         private WorkHttpStatus ValidateDataProfileGetParmeters(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
-
-            var validationErrors = new List<string>();
             var isValid = isPageSizeAndNumValid(queryParams);
 
             var asset = AssetRepository.GetAssetByUID(assetUid);
