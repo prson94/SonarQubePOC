@@ -28,7 +28,7 @@ begin
 	set nocount on;
 
     declare @offLimitImpactFunctionalTypes table (ID int)
-	declare @maxLineageDescendants int = 2
+	declare @maxLineageDescendants int = 500
 
 	insert into @offLimitImpactFunctionalTypes (ID) values (15)
 	if @ancestry = 1
