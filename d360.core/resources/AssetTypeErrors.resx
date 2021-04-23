@@ -213,4 +213,10 @@
   <data name="InvalidParameterProvided" xml:space="preserve">
     <value>Invalid {0} provided</value>
   </data>
+  <data name="CanEditParentClassRestriction" xml:space="preserve">
+    <value>Can Edit Parent can be set only asset types that are a Business or Technical class and are the child of another asset type.</value>
+  </data>
+  <data name="CanEditParentRestriction" xml:space="preserve">
+    <value>Can Edit Parent can be set only on children asset types.</value>
+  </data>
 </root>

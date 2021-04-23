@@ -211,8 +211,10 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_subjectUid", "The Uid of the subject side of a relationship to filter by in addition to filtering by predicate type. _predicateUid is required.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_objectUid", "The Uid of the object side of a relationship to filter by in addition to filtering by predicate type. _predicateUid is required.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_assetUid", "Filter by provided asset Uid. Multiple asset Uids can be provided delimited by comma", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_parentUid", "Filter by provided parent asset Uid.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an asset. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_ownedBy", "The parameter takes a comma separated list of user or group uids. Only assets which are owned by any one or more of the provided owners are returned.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_notOwnedBy", "The parameter takes a comma separated list of user or group uids. Only assets which are not owned by any one or more of the provided owners are returned.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_relationFilter", "The filter expression used to filter assets by relation to other asset.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("useTypeLevelDefaultSorts", "If the value is False and the _order parameter is not specified the results will be ordered by Asset ID by default. If True, results are sorted by sort field defined in Asset Type field definition.", DataType = "boolean", ParameterType = "query", Required = false),
@@ -223,6 +225,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_includeFields", "A comma delimited list of fields to include in the results. By default all fields are included.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_includeColor", "Allows you to disable returning the Color value for assets. The default value is true.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_exporttemplateuid", "The Uid of the template which will be used when exporting results.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeCreatedModifiedBy", "Include the CreatedByUid, and ModifiedByUid fields in the response. The default value is false meaning these values are not returned.", DataType = "boolean", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid)
         {
@@ -253,7 +256,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 //if the user is not an admin make sure they can read this asset type if not tell them they are forbidden
-                if (!Company.CurrentResourceIsAdmin && !(await Company.HasAssetTypeReadPermission(assetType.ID)))
+                if (!Company.CurrentResourceIsAdmin && !Company.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))//(await Company.HasAssetTypeReadPermission(assetType.ID)))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Invalid request", "You do not have permissions to read the specified asset type."));
                 }
@@ -562,6 +565,9 @@ namespace d360.web.Controllers.V2
 
                 if (model.AutoDisplayParent.HasValue && (!model.Class.AllowsAutoDisplayParent() || parentAssetType == null))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Auto Display Parent", AssetTypeErrors.AutoDisplayParentRestriction));
+
+                if (model.CanEditParent.HasValue && ((model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset) || parentAssetType == null))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Can Edit Parent", AssetTypeErrors.CanEditParentClassRestriction));
 
                 if (model.CanOwnFusion.HasValue && model.CanOwnFusion.Value && model.Class != AssetTypeClass.BusinessAsset)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Can Own Fusion", "Can Own Fusion can be set only asset types that are of class Business"));
@@ -1279,6 +1285,7 @@ namespace d360.web.Controllers.V2
                 bool useFriendlyNames = true;
                 bool useUnflattedStructure = true;
                 bool returnForUI = false;
+                bool returnuseUidUrls = true;
                 string orderBy = string.Empty;
                 string direction = string.Empty;
 
@@ -1303,6 +1310,14 @@ namespace d360.web.Controllers.V2
                     if (!bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "forui").Value.Trim().ToLower(), out returnForUI))
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid boolean value for parameter 'forUI'"));
+                    }
+                }
+
+                if (qparams.Any(x => x.Key.ToLower() == "useuidurls"))
+                {
+                    if (!bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "useuidurls").Value.Trim().ToLower(), out returnuseUidUrls))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid boolean value for parameter 'useUidUrls'"));
                     }
                 }
 
@@ -1415,7 +1430,7 @@ namespace d360.web.Controllers.V2
                 dbArgs.Add("simpleFilter", simpleFilter);
                 dbArgs.Add("orderBy", orderBy);
                 dbArgs.Add("orderDirection", direction);
-                dbArgs.Add("useUidUrls", true);
+                dbArgs.Add("useUidUrls", returnuseUidUrls);
                 dbArgs.Add("filters", advFilters.AsTableValuedParameter("dbo.AssetFiltersTable"));
 
                 var reader = await Company.QueryMultipleAsync(
@@ -2271,7 +2286,7 @@ namespace d360.web.Controllers.V2
                     resultList.Add(result);
                     continue;
                 }
-                if (!Company.HasAssetDefaultReadPermission(asset.Object, asset.ObjectID))
+                if (!Company.HasAssetPermission(asset.Object, asset.ObjectID, Permission.ReadAsset))
                 {
                     result = new AssetTagSuccessApiModel()
                     {

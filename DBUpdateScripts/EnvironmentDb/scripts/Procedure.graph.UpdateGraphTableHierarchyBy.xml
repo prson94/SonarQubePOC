@@ -5,13 +5,13 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Procedure.graph.UpdateGraphTableHierarchyBy-v12">
+  <changeSet author="Pappas" id="Procedure.graph.UpdateGraphTableHierarchyBy-v13">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-alter procedure [graph].[UpdateGraphTableHierarchyBy]
+create or alter procedure [graph].[UpdateGraphTableHierarchyBy]
 	@executionId uniqueidentifier = null,
 	@assetTypeId int = null,
 	@assetId bigint = null
@@ -348,7 +348,7 @@ end
     </sql>
 	<rollback>
 		<![CDATA[	
-alter procedure [graph].[UpdateGraphTableHierarchyBy]
+create or alter alter procedure [graph].[UpdateGraphTableHierarchyBy]
 	@executionId uniqueidentifier = null,
 	@assetTypeId int = null,
 	@assetId bigint = null

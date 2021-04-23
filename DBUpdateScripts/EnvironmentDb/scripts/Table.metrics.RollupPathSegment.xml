@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.metrics.RollupPathSegment-v1.1">
+  <changeSet author="Pappas" id="Table.metrics.RollupPathSegment-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -13,37 +13,85 @@
 		<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'RollupPathSegment')
 BEGIN
-	CREATE TABLE [metrics].[RollupPathSegment](
-		[RollupPathUid] uniqueidentifier NOT NULL,
-		[Position] int NOT NULL,
-		[AssetTypeID] int NULL,
+	CREATE TABLE [metrics].[RollupPathSegment] (
+		[RollupPathUid] [uniqueidentifier] NOT NULL,
+		[Position] [int] NOT NULL,
+		[AssetTypeID] [int] NULL,
 		CONSTRAINT [PK_MetricRollupPathSegment] PRIMARY KEY CLUSTERED ( [RollupPathUid] ASC, [Position] ASC )
 	)
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricRollupPathSegment_MetricRollupPath')
-BEGIN
-	ALTER TABLE [metrics].[RollupPathSegment]  WITH CHECK ADD CONSTRAINT [FK_MetricRollupPathSegment_MetricRollupPath] FOREIGN KEY([RollupPathUid]) REFERENCES [metrics].[RollupPath] ([Uid]) ON DELETE CASCADE
-	ALTER TABLE [metrics].[RollupPathSegment] CHECK CONSTRAINT [FK_MetricRollupPathSegment_MetricRollupPath]
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricRollupPathSegment_AssetType')
-BEGIN
-	ALTER TABLE [metrics].[RollupPathSegment]  WITH CHECK ADD CONSTRAINT [FK_MetricRollupPathSegment_AssetType] FOREIGN KEY([AssetTypeID]) REFERENCES [dbo].[AssetType] ([ID]) ON DELETE SET NULL
-	ALTER TABLE [metrics].[RollupPathSegment] CHECK CONSTRAINT [FK_MetricRollupPathSegment_AssetType]
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_MetricRollupPathSegment_AssetTypeID')
-BEGIN
-	CREATE NONCLUSTERED INDEX IX_MetricRollupPathSegment_AssetTypeID ON [metrics].RollupPathSegment ( AssetTypeID ASC )
 END
 		]]>
     </sql>
 	<rollback>
-		<![CDATA[	
-DROP TABLE IF EXISTS [metrics].[RollupPathSegment]
+		<![CDATA[
 		]]>
 	</rollback>
   </changeSet>
+
+  <changeSet author="Pappas" id="Constraint.metrics.RollupPathSegment-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricRollupPathSegment')
+begin
+	ALTER TABLE [metrics].[RollupPathSegment] ADD CONSTRAINT [PK_MetricRollupPathSegment] PRIMARY KEY CLUSTERED ( [RollupPathUid] ASC, [Position] ASC )
+end
+
+if not exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricRollupPathSegment_AssetType')
+begin
+	ALTER TABLE [metrics].[RollupPathSegment]  WITH CHECK ADD  CONSTRAINT [FK_MetricRollupPathSegment_AssetType] FOREIGN KEY([AssetTypeID]) REFERENCES [dbo].[AssetType] ([ID]) ON DELETE SET NULL;
+	ALTER TABLE [metrics].[RollupPathSegment] CHECK CONSTRAINT [FK_MetricRollupPathSegment_AssetType];
+end
+
+if not exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricRollupPathSegment_MetricRollupPath')
+begin
+	ALTER TABLE [metrics].[RollupPathSegment]  WITH CHECK ADD  CONSTRAINT [FK_MetricRollupPathSegment_MetricRollupPath] FOREIGN KEY([RollupPathUid]) REFERENCES [metrics].[RollupPath] ([Uid]) ON DELETE CASCADE;
+	ALTER TABLE [metrics].[RollupPathSegment] CHECK CONSTRAINT [FK_MetricRollupPathSegment_MetricRollupPath];
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+if exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricRollupPathSegment_AssetType')
+begin
+	ALTER TABLE [metrics].[RollupPathSegment] DROP CONSTRAINT [FK_MetricRollupPathSegment_AssetType]
+end
+
+if exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricRollupPathSegment_MetricRollupPath')
+begin
+	ALTER TABLE [metrics].[RollupPathSegment] DROP CONSTRAINT [FK_MetricRollupPathSegment_MetricRollupPath]
+end
+
+if exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricRollupPathSegment')
+begin
+	ALTER TABLE [metrics].[RollupPathSegment] DROP CONSTRAINT PK_MetricRollupPathSegment WITH ( ONLINE = OFF )
+end
+		]]>
+	</rollback>
+  </changeSet>
+  
+  <changeSet author="Pappas" id="Index.metrics.RollupPathSegment-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select * from sys.indexes where name = 'IX_MetricRollupPathSegment_AssetTypeID')
+begin
+	CREATE NONCLUSTERED INDEX [IX_MetricRollupPathSegment_AssetTypeID] ON [metrics].[RollupPathSegment] ( [AssetTypeID] ASC )
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+if exists (select * from sys.indexes where name = 'IX_MetricRollupPathSegment_AssetTypeID')
+begin
+	DROP INDEX [IX_MetricRollupPathSegment_AssetTypeID] ON [metrics].[RollupPathSegment] WITH ( ONLINE = OFF )
+end
+		]]>
+	</rollback>
+  </changeSet> 
 
 </databaseChangeLog>

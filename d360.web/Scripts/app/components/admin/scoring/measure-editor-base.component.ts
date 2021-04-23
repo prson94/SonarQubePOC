@@ -29,7 +29,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
-    public conditionGroupLink = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Conditio";
+    public conditionGroupLink = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Asset_conditions";
     public conditionAndWeightLink = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Asset_conditions";
     //#region Tooltip data
 
@@ -61,6 +61,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     closeLabel: string = "Cancel";
     conditionFormMode = FormMode.Default;
     conditionGroups: MetricAssetVersionConditionViewModel[] = [];
+    matchConditionsOnly: string = "true";
     currentEffectiveDate: Date;
     displayWeight: number;
     displayEffectiveDate: Date;

@@ -12,11 +12,11 @@ import { State } from '../../models/asset.model';
             <div class="col s9">
                 <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
                 <div *ngIf="!isLoading">
-                    <table style="width: 100%">
+                    <table style="table-layout: fixed">
                         <tbody>
                             <tr>
                                 <td>
-                                    <p-multiSelect [options]="items" [style]="{'width':'98%'}" [ngModel]="selection" (ngModelChange)="change($event)"></p-multiSelect>
+                                    <p-multiSelect [options]="items" [style]="{'width':'98%'}" [ngModel]="selection" (ngModelChange)="change($event)" selectedItemsLabel="{0} items selected"></p-multiSelect>
                                 </td>
                                 <td *ngIf="showFilter" style="width:32px">
                                     <a style="font-size:1.1em" [style.color]="filterMode ? null : '#f00'" (click)="filterModeChange.emit(!filterMode)"><i class="fa fa-filter"></i></a>

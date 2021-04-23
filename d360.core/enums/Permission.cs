@@ -11,11 +11,11 @@ namespace d360.core.enums
     {
         [Name("Read asset"), Description("Read an asset and its properties."), Category("R")]
         ReadAsset = 1,
-        [Name("Add asset"), Description("Add an asset."), Category("A")]
+        [Name("Create asset"), Description("Add an asset."), Category("A")]
         AddAsset = 2,
         [Name("Remove asset"), Description("Remove an asset."), Category("D")]
         DeleteAsset = 4,
-        [Name("Edit asset"), Description("Update an asset's properties."), Category("E")]
+        [Name("Modify asset"), Description("Update an asset's properties."), Category("E")]
         EditAsset = 8,
 
         [Name("Modify asset"), Description("Add or update an asset's properties."), Category("M")]
@@ -23,11 +23,11 @@ namespace d360.core.enums
 
         [Name("Read responsibilties"), Description("Read an asset's roles and responsibilities."), Category("R")]
         ReadResponsibilities = 32,
-        [Name("Add responsibilties"), Description("Add an asset's roles and responsibilities."), Category("A")]
+        [Name("Create responsibilties"), Description("Add roles and responsibilities to an asset."), Category("A")]
         AddResponsibilities = 64,
         [Name("Remove responsibilties"), Description("Remove an asset's roles and responsibilities."), Category("D")]
         DeleteResponsibilities = 128,
-        [Name("Edit responsibilties"), Description("Modify an asset's roles and responsibilities."), Category("E")]
+        [Name("Modify responsibilties"), Description("Modify an asset's roles and responsibilities."), Category("E")]
         EditResponsibilities = 256,
 
         [Name("Modify responsibilties"), Description("Add or modify an asset's roles and responsibilities."), Category("M")]
@@ -35,11 +35,11 @@ namespace d360.core.enums
 
         [Name("Read relationships"), Description("Read an asset's relationships."), Category("R")]
         ReadRelationships = 1024,
-        [Name("Add relationships"), Description("Add an asset's relationships."), Category("A")]
+        [Name("Create relationships"), Description("Add relationships to an asset"), Category("A")]
         AddRelationships = 2048,
         [Name("Remove relationships"), Description("Remove an asset's relationships."), Category("D")]
         DeleteRelationships = 4096,
-        [Name("Edit relationships"), Description("Modify an asset's relationships."), Category("E")]
+        [Name("Modify relationships"), Description("Modify an asset's relationships."), Category("E")]
         EditRelationships = 8192,
 
         [Name("Modify relationships"), Description("Add or modify an asset's relationships."), Category("M")]
@@ -73,8 +73,8 @@ namespace d360.core.enums
                     Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
                 };
 
-                //Add/Edit permissions not supported currently
-                if (new List<string>{ "R", "D", "M" }.Contains(info.Category))
+                //Add and Edit are available, so Modify is no longer in the category list
+                if (new List<string>{ "R", "D", "A", "E" }.Contains(info.Category))
                 {
                     list.Add(info);
                 }

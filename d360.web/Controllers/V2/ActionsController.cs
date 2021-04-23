@@ -824,7 +824,7 @@ for json path";
             {
                 var assetType = Company.AssetTypes.FirstOrDefault(i => i.Object== issueModel.Issue.ObjectType && i.ObjectID == issueModel.Issue.ObjectTypeID);
                
-                if (!Company.CurrentResourceIsAdmin && !(await Company.HasAssetTypeReadPermission(assetType.ID)))
+                if (!Company.CurrentResourceIsAdmin && !Company.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ActionApiMessages.AssetTypeAddActionPermissionsDenied)).ConfigureAwait(false);
                 }
@@ -836,11 +836,11 @@ for json path";
                     if (actionAsset != null && resourceAsset != null) 
                     {
                          var comment = new CommentApiPostModel { 
-                            AssetUid = resourceAsset.uid,
+                            AssetUid = resourceAsset.uid,                           
                             Body = issueModel.Comment ?? $"New {issueType.Name} Raised.",
                             Tags = new List<Guid> { actionAsset.uid }       // Add relation to current artifact
                          };
-                        var dtl = await commentRepository.AddComment(comment);
+                        var dtl = await commentRepository.AddComment(comment, CommentType.Issue);
                         issueModel.Issue.CommentID = dtl.ID;
                     }
                 }
@@ -918,7 +918,7 @@ for json path";
                     return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetNotFound, model.AssetUid.Value));
                 }
 
-                if (!Company.HasAssetDefaultReadPermission(asset.Object, asset.ObjectID, Permission.ReadAsset))
+                if (!Company.HasAssetPermission(asset.Object, asset.ObjectID, Permission.ReadAsset))
                 {
                     return new WorkHttpStatus(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ActionApiMessages.AssetAddActionPermissionsDenied);
                 }

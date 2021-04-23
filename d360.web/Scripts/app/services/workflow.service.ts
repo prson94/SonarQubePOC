@@ -171,14 +171,6 @@ export class WorkflowService extends BaseObservableService {
             );  
     }
 
-    getIssueDetails(issueId: number): Observable<IssueInfo> {
-        return this.http.get(`api/issue/${issueId}`)
-            .pipe(
-                map(response => <IssueInfo>response),
-                catchError(err=>this.handleError(err))
-        );
-    }
-
     //#region diagram
 
     public getWorkflowDiagram(id: number,uid:string, version?: number, filteredObject?: string, filteredObjectId?: number): Observable<WorkflowDiagramModel> {

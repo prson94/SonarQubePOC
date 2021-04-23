@@ -33,7 +33,6 @@ const routes: Routes = [
     { path: 'gallery', loadChildren: () => import('./components/gallery/gallery.module').then((m) => m.GalleryModule) },
     { path: 'search', loadChildren: () => import('./components/search/search.module').then((m) => m.SearchModule) },
     { path: 'workflow', loadChildren: () => import('./components/workflow/workflow.module').then((m) => m.WorkflowModule) },
-    { path: 'mapping', loadChildren: () => import('./components/mapping/mapping.module').then((m) => m.MappingModule) },
     { path: 'sidebar/audit', loadChildren: () => import('./components/sidebar/audit/audit.module').then((m) => m.AuditModule) },
     { path: 'dashboard', loadChildren: () => import('./components/sidebar/dashboard/dashboard.module').then((m) => m.DashboardModule) },
     { path: 'sidebar/followers', loadChildren: () => import('./components/sidebar/followers/followers.module').then((m) => m.FollowersModule) },

@@ -1,11 +1,17 @@
-﻿<div class="row">
+﻿<div class="row social-board">
     <div class="col s12">
-        <header>{{socialMessage}}</header>
-        <d3s-social-input (commented)="addComment($event);" *ngIf="allowComments()"></d3s-social-input>
         <d3s-loading [isLoading]="isLoading" showTransparentLoader="true"></d3s-loading>
-        <div *ngFor="let comment of comments">
-            <d3s-social-comment [comment]="comment" (delete)="deleteComment($event);" [isAdmin]="isAdmin" (reply)="replyToComment($event);" (edit)="editComment($event);"></d3s-social-comment>
+        <header>{{socialMessage}}</header>
+
+        <div class="row" *ngIf="!isAddingNew">
+            <input type="text" placeholder="Add a comment" class="fakeInput" (click)="isAddingNew = true">
         </div>
+        <d3s-comment-form [assetUid]="assetUid" [comment]="newComment" [isVisible]="isAddingNew" (onCancel)="closeEditor()" (onSave)="onSave($event)"></d3s-comment-form>
+
+        <div *ngFor="let comment of comments">
+            <d3s-social-comment [comment]="comment" [assetUid]="assetUid" (delete)="deleteComment($event);" [isAdmin]="isAdmin" (edit)="onSave($event);"></d3s-social-comment>
+        </div>
+
         <div style="margin-top:10px;">
             <button pButton type="button" [disabled]="!hasMore" (click)="loadComments();" label="Load more comments..."></button>
             <button *ngIf="hasCloseButton" pButton type="button" (click)="close.emit();" label="Close" style="width: 150px;"></button>

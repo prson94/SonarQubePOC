@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.metrics.ScoreItem-v1">
+  <changeSet author="Core" id="Table.metrics.ScoreItem-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -13,16 +13,18 @@
 		<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem')
 BEGIN
-	CREATE TABLE [metrics].[ScoreItem](
-		[AssetUid] [uniqueidentifier] NOT NULL,
-		[MetricAssetUid] [uniqueidentifier] NOT NULL,
-		[EffectiveDate] [date] NOT NULL,
+	CREATE TABLE [metrics].[ScoreItem] (
 		[UpdatedOn] [datetime] NOT NULL,
-		[Value] [bit] NOT NULL,
-		[AdjustedWeight] [decimal](5, 3) NULL,
+		[Value] [bit] NULL,
+		[AdjustedWeight] [decimal](8, 6) NULL,
 		[RunDate] [datetime] NULL,
-		[EndDate] [date] NULL,
-		CONSTRAINT [PK_MetricScoreItem] PRIMARY KEY CLUSTERED ( [AssetUid] ASC, [MetricAssetUid] ASC, [EffectiveDate] DESC )
+		[Uid] [uniqueidentifier] NOT NULL,
+		[AssetVersionUid] [uniqueidentifier] NOT NULL,
+		[Evidence] [nvarchar](max) NULL,
+		[ConditionUid] [uniqueidentifier] NULL,
+		[AdjustedMaxWeight] [decimal](8, 6) NULL,
+		[DecimalValue] [float] NULL,
+		[OtherConditions] [nvarchar](max) NOT NULL
 	)
 END
 		]]>
@@ -34,165 +36,67 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.metrics.ScoreItem-v2.2">
+  <changeSet author="Pappas" id="Constraint.metrics.ScoreItem-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'Uid')
-BEGIN
-	ALTER TABLE [metrics].[ScoreItem] ADD [Uid] uniqueidentifier constraint DF_MetricScoreItem_Uid default(newid()) not null
-END
-
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'AssetVersionUid')
-BEGIN
-	ALTER TABLE [metrics].[ScoreItem] ADD [AssetVersionUid] uniqueidentifier null
-END
-
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'Evidence')
-BEGIN
-	ALTER TABLE [metrics].[ScoreItem] ADD [Evidence] nvarchar(max) null
-END
-
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'ConditionUid')
-BEGIN
-	ALTER TABLE [metrics].[ScoreItem] ADD [ConditionUid] uniqueidentifier null
-END
-
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'AdjustedMaxWeight')
-BEGIN
-	ALTER TABLE [metrics].[ScoreItem] ADD [AdjustedMaxWeight] decimal(5,3) null
-END
-
-if exists (select * from sys.key_constraints where  name = 'PK_MetricScoreItem')
+if not exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricScoreItem')
 begin
-	alter table [metrics].[ScoreItem] drop constraint [PK_MetricScoreItem]
-	alter table [metrics].[ScoreItem] add constraint [PK_MetricScoreItem] primary key nonclustered ( [Uid] asc )
+	ALTER TABLE [metrics].[ScoreItem] ADD CONSTRAINT [PK_MetricScoreItem] PRIMARY KEY CLUSTERED ( [Uid] ASC )
 end
 
-if not exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_MetricScoreItem')
+if not exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricScoreItem_MetricAssetVersion')
 begin
-	alter table [metrics].[ScoreItem] add constraint UQ_MetricScoreItem unique clustered ( [AssetUid], [MetricAssetUid], [EffectiveDate] ); 
+	ALTER TABLE [metrics].[ScoreItem]  WITH CHECK ADD  CONSTRAINT [FK_MetricScoreItem_MetricAssetVersion] FOREIGN KEY([AssetVersionUid]) REFERENCES [metrics].[AssetVersion] ([Uid])
+	ALTER TABLE [metrics].[ScoreItem] CHECK CONSTRAINT [FK_MetricScoreItem_MetricAssetVersion]
+end
+
+if not exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricScoreItem_MetricAssetVersionCondition')
+begin
+	ALTER TABLE [metrics].[ScoreItem]  WITH CHECK ADD  CONSTRAINT [FK_MetricScoreItem_MetricAssetVersionCondition] FOREIGN KEY([ConditionUid]) REFERENCES [metrics].[AssetVersionCondition] ([Uid])
+	ALTER TABLE [metrics].[ScoreItem] CHECK CONSTRAINT [FK_MetricScoreItem_MetricAssetVersionCondition]
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricScoreItem_Uid')
+begin
+	ALTER TABLE [metrics].[ScoreItem] ADD  CONSTRAINT [DF_MetricScoreItem_Uid]  DEFAULT (newid()) FOR [Uid]
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricsScoreItem_OtherConditions')
+begin
+	ALTER TABLE [metrics].[ScoreItem] ADD  CONSTRAINT [DF_MetricsScoreItem_OtherConditions]  DEFAULT ('[]') FOR [OtherConditions]
 end
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'Uid')
-BEGIN
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricScoreItem_Uid')
+begin
 	ALTER TABLE [metrics].[ScoreItem] DROP CONSTRAINT [DF_MetricScoreItem_Uid]
-	ALTER TABLE [metrics].[ScoreItem] DROP COLUMN [Uid]
-END
-
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'AssetVersionUid')
-BEGIN
-	ALTER TABLE [metrics].[ScoreItem] DROP COLUMN [AssetVersionUid]
-END
-
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'Evidence')
-BEGIN
-	ALTER TABLE [metrics].[ScoreItem] DROP COLUMN [Evidence]
-END
-
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'ConditionUid')
-BEGIN
-	ALTER TABLE [metrics].[ScoreItem] DROP COLUMN [ConditionUid]
-END
-
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'AdjustedMaxWeight')
-BEGIN
-	ALTER TABLE [metrics].[ScoreItem] DROP COLUMN [AdjustedMaxWeight]
-END
-
-if exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_MetricScoreItem')
-begin
-	alter table [metrics].[ScoreItem] drop constraint UQ_MetricScoreItem 
 end
 
-if exists (select * from sys.key_constraints where  name = 'PK_MetricScoreItem')
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricsScoreItem_OtherConditions')
 begin
-	alter table [metrics].[ScoreItem] drop constraint [PK_MetricScoreItem]
-	alter table [metrics].[ScoreItem] add constraint [PK_MetricScoreItem] primary key clustered ( [AssetUid] ASC, [MetricAssetUid] ASC, [EffectiveDate] DESC )
+	ALTER TABLE [metrics].[ScoreItem] DROP CONSTRAINT [DF_MetricsScoreItem_OtherConditions]
+end
+
+if exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricScoreItem_MetricAssetVersion')
+begin
+	ALTER TABLE [metrics].[ScoreItem] DROP CONSTRAINT [FK_MetricScoreItem_MetricAssetVersion]
+end
+
+if exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_MetricScoreItem_MetricAssetVersionCondition')
+begin
+	ALTER TABLE [metrics].[ScoreItem] DROP CONSTRAINT [FK_MetricScoreItem_MetricAssetVersionCondition]
+end
+
+if exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricScoreItem')
+begin
+	ALTER TABLE [metrics].[ScoreItem] DROP CONSTRAINT PK_MetricScoreItem WITH ( ONLINE = OFF )
 end
 		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Pappas" id="Table.metrics.ScoreItem-v3.0">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'DecimalValue')
-BEGIN
-	ALTER TABLE [metrics].[ScoreItem] ADD [DecimalValue] float null
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'DecimalValue')
-BEGIN
-	ALTER TABLE [metrics].[ScoreItem] DROP COLUMN [DecimalValue]
-END
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Pappas" id="Table.metrics.ScoreItem-v4.1">
-    <sql dbms="mssql"
-		endDelimiter="\nGO" 
-		splitStatements="true"
-        stripComments="false">
-		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'AdjustedWeight')
-BEGIN
-	alter table metrics.ScoreItem alter column [AdjustedWeight] decimal(8,6) null
-END
-GO
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'AdjustedMaxWeight')
-BEGIN
-	alter table metrics.ScoreItem alter column [AdjustedMaxWeight] decimal(8,6) null
-END
-		]]>
-    </sql>
-	<rollback>
-	<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'AdjustedWeight')
-BEGIN
-	alter table metrics.ScoreItem alter column [AdjustedWeight] decimal(5,3) null
-END
-GO
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'AdjustedMaxWeight')
-BEGIN
-	alter table metrics.ScoreItem alter column [AdjustedMaxWeight] decimal(5,3) null
-END
-	]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Pappas" id="Table.metrics.ScoreItem-v4.2">
-    <sql dbms="mssql"
-		endDelimiter="\nGO" 
-		splitStatements="true"
-        stripComments="false">
-		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'OtherConditions')
-BEGIN
-	alter table metrics.ScoreItem add OtherConditions nvarchar(max) constraint DF_MetricsScoreItem_OtherConditions default('[]') not null
-END
-		]]>
-    </sql>
-	<rollback>
-	<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'OtherConditions')
-BEGIN
-	alter table metrics.ScoreItem drop constraint DF_MetricsScoreItem_OtherConditions;
-	alter table metrics.ScoreItem drop column OtherConditions;
-END
-	]]>
 	</rollback>
   </changeSet>
 

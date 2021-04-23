@@ -325,7 +325,16 @@ namespace d360.model.DataAccessLayer
                     execution.CompletedOn = DateTime.UtcNow;
                     CompanyContext.Update(execution);
 
-                    trans.Rollback();
+                    try
+                    {
+                        if (trans != null)
+                        {
+                            trans.Rollback();
+                        }
+                    }
+                    catch
+                    {
+                    }
                     throw ex;
                 }
             }
@@ -1001,8 +1010,26 @@ namespace d360.model.DataAccessLayer
                         ", transaction: trans);
 
                     if (!IsChangePasswordReqeust)
-                    { 
-                        CompanyContext.MergeFields(executionID, trans, "api.ExecutionUser", "A.[Object]", "A.ObjectID", 0, itemNumber, sendWorkflowEvents: true, isInsert: isInsert);
+                    {
+                        bool isInsertForMergeField = isInsert;
+
+                        if (isInsert == true)
+                        {
+                          var  UserUpdateCountResult = (await CompanyContext.Connection.QueryAsync<int>(@"
+                                select count(1) 
+                                from api.ExecutionUser U
+                                inner join #UserResults R 
+                                on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and U.IsNew = 0
+                                ", new { executionID }, transaction: trans));
+                           var UserUpdateCount = UserUpdateCountResult.First();
+
+                            if (UserUpdateCount > 0)
+                            {
+                                isInsertForMergeField = false;
+                            }
+                        }
+
+                        CompanyContext.MergeFields(executionID, trans, "api.ExecutionUser", "A.[Object]", "A.ObjectID",  0, itemNumber, sendWorkflowEvents: true, isInsert: isInsertForMergeField);
 
                         if (hasRelationshipFieldTypes)
                         {
@@ -1030,9 +1057,6 @@ namespace d360.model.DataAccessLayer
                 }
                 catch (Exception ex)
                 {
-                    execution.ErrorMessage = ex.GetFullExceptionData(false);
-                    execution.CompletedOn = DateTime.UtcNow;
-                    CompanyContext.Update(execution);
                     try
                     {
                         if (trans != null)
@@ -1043,6 +1067,10 @@ namespace d360.model.DataAccessLayer
                     catch
                     {
                     }
+
+                    execution.ErrorMessage = ex.GetFullExceptionData(false);
+                    execution.CompletedOn = DateTime.UtcNow;
+                    CompanyContext.Update(execution);
 
                     throw ex;
                 }

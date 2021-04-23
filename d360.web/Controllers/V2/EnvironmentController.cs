@@ -126,7 +126,7 @@ namespace d360.web.Controllers.V2
         }
 
         [HttpPut, Route("styles"), ApiExplorerSettings(IgnoreApi = true)]
-        public HttpResponseMessage UpdateStyleCustomizations(UpdateCss UpdateCss)
+        public async Task<HttpResponseMessage> UpdateStyleCustomizations(UpdateCss UpdateCss)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return ReturnApiError(HttpStatusCode.Forbidden, "You do not have permissions to update this.");
@@ -134,7 +134,7 @@ namespace d360.web.Controllers.V2
             //delete the old css file
             try
             {
-                _storage.DeleteFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css");
+                await _storage.DeleteFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css");
             }
             catch { }
 
@@ -159,7 +159,7 @@ namespace d360.web.Controllers.V2
                         Community.SaveChanges();
                     }
 
-                    _storage.CreateFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css", UpdateCss.css, "text/css", false);
+                    await _storage.CreateFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css", UpdateCss.css, "text/css", false);
                 }
                 else
                 {
@@ -441,9 +441,13 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Gets a list of operators.", typeof(List<OperatorInfo>))
         ]
-        public async Task<IHttpActionResult> GetOperators()
+        public async Task<IHttpActionResult> GetOperators(bool isForAdvancedFilters = false)
         {
-            var response = Operator.Equals.GetAsList();
+            var response = Operator.Equals.GetAsList().OrderBy(x=> x.SortOrder);
+            if (isForAdvancedFilters)
+            {
+                response = Operator.Equals.GetAsListForAdvancedFilters().OrderBy(x => x.SortOrder);
+            }
             return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
 
         }
@@ -789,7 +793,6 @@ namespace d360.web.Controllers.V2
                     AssetTypeClass.Diagram,
                     AssetTypeClass.Fusion,
                     AssetTypeClass.FusionAttribute,
-                    AssetTypeClass.FusionQuery,
                     AssetTypeClass.Group,
                     AssetTypeClass.Model,
                     AssetTypeClass.Organization,
@@ -824,7 +827,7 @@ namespace d360.web.Controllers.V2
 	                    AssetTypeID int
                     )
                     insert into #AssetTypesWithResponsibilities 
-                    SELECT AT.ID from AssetType AT 
+                    SELECT DISTINCT AT.ID from AssetType AT 
                     left join [dbo].[ResponsibilityTypeRelation] RT on AT.Object = RT.ObjectType and RT.ObjectID = AT.ObjectID
                     left join [dbo].[ResponsibilityTypeRelationRule] RTR on AT.Object = RTR.Object and RTR.ObjectID = AT.ObjectID
                     left join [dbo].[ResponsibilityRuleResultAsset] RRA on RRA.AssetTypeID = AT.ID
@@ -833,15 +836,10 @@ namespace d360.web.Controllers.V2
                     WHERE A.ID = RTOR.AssetID
 
 
-                    SELECT count(*) from reporting.global_resource GR
+                    SELECT count(1) from reporting.global_resource GR
 	                    where exists (
 		                    SELECT 
-		                    AT.AssetTypeID,
-		                    GR.resourceid,
-		                    Case 
-		                                                       when permission.PermissionsBitMask is null then gr.IsAdministrator
-		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pm = @pm then 1
-		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pd = @pd then 1 END as Permissionsfound 
+                            1
 		                    from #AssetTypesWithResponsibilities AT
 			                    outer apply (Select * from UserAssetPermissions(GR.ResourceID,AT.AssetTypeID)) permission 
 			                    where 1 = Case 

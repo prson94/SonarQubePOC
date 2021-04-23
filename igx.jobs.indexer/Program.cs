@@ -17,31 +17,26 @@ using d360.core.entities;
 using d360.extensions.info;
 using d360.extensions.caching;
 using d360.model;
+using Microsoft.Extensions.Hosting;
 
 namespace igx.jobs.indexer
 {
     class Program
     {
-        static void Main()
+        static async Task Main()
         {
-            var config = CoreFunction.GetJobHostConfiguration();
+            var builder = CoreFunction.JobHostConfigBuilder();
+            builder.ConfigureWebJobs(c =>
+            {
+                c.AddAzureStorageCoreServices()
+                .AddAzureStorage()
+                .AddTimers();
+            });
 
-            /*
-             * Timer execution disabled (GOV-10646 - Lower / Stop rebuild of search indexes every weekend)
-             * To enable, uncomment the following line
-             */
-            //config.UseTimers();
-
-            //We should only process one reindex queue item at a time
-            config.Queues.BatchSize = 1;
-
-#if DEBUG
-            config.UseDevelopmentSettings();
-#endif
-
-            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
-            var host = new JobHost(config);
-            host.RunAndBlock();
+            using (var host = builder.Build())
+            {
+                await host.RunAsync();
+            }
         }
     }
 

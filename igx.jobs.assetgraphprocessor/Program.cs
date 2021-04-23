@@ -1,23 +1,25 @@
-﻿using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Extensions.Hosting;
 using System;
+using System.Threading.Tasks;
 
 namespace igx.jobs.assetgraphprocessor
 {
     class Program
     {
-        static void Main()
+        public static async Task Main()
         {
-            var config = new JobHostConfiguration();
-
-#if DEBUG
-            config.UseDevelopmentSettings();
-#endif
-            config.UseTimers();
-            config.UseServiceBus();
+            var builder = CoreFunction.JobHostConfigBuilder();
+            builder.ConfigureWebJobs(c =>
+            {
+                c.AddTimers();
+                c.AddServiceBus();
+            });
 
             System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
-            var host = new JobHost(config);
-            host.RunAndBlock();
+            using (var host = builder.Build())
+            {
+                await host.RunAsync();
+            }
         }
     }
 }

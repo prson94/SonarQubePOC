@@ -6016,6 +6016,14 @@ p-table .p-datatable-scrollable-body {
     margin-right: 4px;
 }
 
+.score-pill-small-rounded {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
 .score-pill-small-label {
     display: inline-block;
     color: @d3s-primary-gray;
@@ -6191,6 +6199,10 @@ table {
 
 .dropdown-z-correction {
     z-index: 899 !important;
+}
+
+.dropdown-govrole-correction {
+    top: 0px !important;
 }
 
 .gov-form-v2 {
@@ -6939,7 +6951,7 @@ table {
     background: @ig-slate-t5;
     border-radius: 8px;
     padding: 16px;
-    margin-right: 24px;
+    margin-right: 10px;
     margin-bottom: 8px;
 
     .cg-field-group-container {
@@ -7006,4 +7018,21 @@ table {
         background: white;
         margin-top: 8px;
     }
+}
+
+.field-tooltip {
+  position: relative;
+
+  .ig-tooltip {
+    position: absolute;
+    display: block;
+    top: -18px;
+    left: 3px;
+  }
+}
+
+//Fixes issue with PrimeNG editor adding "auto" to width and height to the Quill style
+.p-editor-container .p-editor-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-options .ql-picker-item {
+    min-height: 16px;
+    min-width: 16px;
 }

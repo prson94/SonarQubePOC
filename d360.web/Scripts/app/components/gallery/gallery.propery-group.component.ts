@@ -62,6 +62,7 @@ export class GalleryPropertyGroupComponent implements OnInit {
             myFormColor: [null, { validators: [Validators.required] }],
             myFormPetName: [null, { validators: [Validators.required, this.wordsIDontLike(["No", "Defect", "Bug"])], updateOn: "blur" }],
             myFormAddr: [null, { validators: [Validators.required, this.wordsIDontLike(["No", "Defect", "Bug"])], updateOn: "blur" }],
+            myFormDate: [null, { validators: [Validators.required], updateOn: "blur" }],
             myFormEmail: [null, { validators: [Validators.required, this.wordsIDontLike(["No", "Defect", "Bug"])], updateOn: "blur" }]
         });
 

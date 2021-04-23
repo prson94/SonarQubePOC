@@ -12,6 +12,7 @@ import { CoreModule } from "../../core.module";
 import { TableModule } from "primeng/table";
 import { SharedGridPagingInfoModule } from "../../grid-paging-info.component";
 import { SearchFieldModule } from "../../controls/search-field/search-field.component";
+import { PipesModule } from "../../../../pipes/pipes.module";
 
 @NgModule({
     imports: [
@@ -21,6 +22,7 @@ import { SearchFieldModule } from "../../controls/search-field/search-field.comp
         HttpClientModule,
         DirectivesModule,
         CoreModule,
+        PipesModule,
         SiteModalModule,
         TableModule,
         SharedGridPagingInfoModule,

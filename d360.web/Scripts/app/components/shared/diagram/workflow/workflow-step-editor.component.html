@@ -2,7 +2,7 @@
     <div class="col s12">
         <div class="FieldName">Name</div>
         <div>
-            <input type="text" style="width: 95%" [ngModel]="step.name" (ngModelChange)="step.name = $event; stepChange.emit(step)" />
+            <input type="text" style="width: 95%" [ngModel]="step.name" (ngModelChange)="changeName($event)" />
         </div>
     </div>
     <div [ngSwitch]="step.activityType">
@@ -63,12 +63,11 @@
                     <p-editor [ngModel]="step.settings.MessageBodyTemplate" (ngModelChange)="step.settings.MessageBodyTemplate = $event; stepChange.emit(step)" #ed>
                         <p-header>
                             <d3s-editor-header></d3s-editor-header>
-                            <d3s-workflow-template-tool 
-                                                        [step]="step"
+                            <d3s-workflow-template-tool [step]="step"
                                                         [diagram]="diagram"
-                                                        [issueObject]="issueObject" 
-                                                        [objectType]="objectType" 
-                                                        [objectId]="objectId" 
+                                                        [issueObject]="issueObject"
+                                                        [objectType]="objectType"
+                                                        [objectId]="objectId"
                                                         (onItemClick)="appendField($event)"></d3s-workflow-template-tool>
                         </p-header>
                     </p-editor>
@@ -97,7 +96,8 @@
                                            [workflowChangeType]="ChangeType"
                                            [step]="step"
                                            [diagram]="diagram"
-                                           [httpFields]="httpFields" 
+                                           [httpFields]="httpFields"
+                                           [outputFields]="outputFields"
                                            [issueObject]="issueObject"
                                            (stepChange)="step = $event; stepChange.emit(step)">
             </d3s-workflow-step-form-editor>
@@ -115,7 +115,10 @@
         </div>
         <div class="row" *ngSwitchCase="WorkflowActivityType.FieldChange">
             <d3s-workflow-step-field-change [formFields]="formFields"
-                                            [httpFields]="httpFields" 
+                                            [httpFields]="httpFields"
+                                            [outputFields]="outputFields"
+                                            [step]="step"
+                                            [diagram]="diagram"
                                             [objectId]="objectId"
                                             [objectType]="objectType"
                                             [issueObject]="issueObject"
@@ -125,54 +128,64 @@
         </div>
         <div class="row" *ngSwitchCase="WorkflowActivityType.HTTPRequest">
             <d3s-workflow-step-http [formFields]="formFields"
+                                    [outputFields]="outputFields"
                                     [step]="step"
+                                    [diagram]="diagram"
                                     (stepChange)="step = $event; stepChange.emit(step)"
                                     [objectId]="objectId"
                                     [objectType]="objectType"
                                     [issueObject]="issueObject">
             </d3s-workflow-step-http>
         </div>
-
-
-    <div class="row" *ngSwitchCase="WorkflowActivityType.RelationshipUpdate">
-        <div class="col s12">
-            <div class="FieldName">Relationship Form Field</div>
-            <div>
-                <select [ngModel]="formRelationship" (ngModelChange)="changeRelationship($event)" style="width:95%">
-                    <option></option>
-                    <option *ngFor="let f of formRelationshipFields" [value]="f['@FormFieldId']">
-                        Form :: {{f['@label']}}
-                    </option>
-                </select>
-            </div>
-            <div style="padding-top: 10px">
-                <input type="checkbox" [ngModel]="step.settings.RelationshipUpdate.Relationship['@AppendValue']" (ngModelChange)="changeValueType($event, '@AppendValue');" /> Append relationships?
-            </div>
-            <div style="padding-top: 10px">
-                <input type="checkbox" [ngModel]="step.settings.RelationshipUpdate.Relationship['@ClearValue']" (ngModelChange)="changeValueType($event, '@ClearValue');" /> Clear relationships?
+        <div class="row" *ngSwitchCase="WorkflowActivityType.HTTPResponse">
+            <d3s-workflow-step-http-response [formFields]="formFields"
+                                    [step]="step"
+                                    [diagram]="diagram"
+                                    (stepChange)="step = $event; stepChange.emit(step)"
+                                    [objectId]="objectId"
+                                    [objectType]="objectType"
+                                    [issueObject]="issueObject">
+            </d3s-workflow-step-http-response>
+        </div>
+        <div class="row" *ngSwitchCase="WorkflowActivityType.RelationshipUpdate">
+            <div class="col s12">
+                <div class="FieldName">Relationship Form Field</div>
+                <div>
+                    <select [ngModel]="formRelationship" (ngModelChange)="changeRelationship($event)" style="width:95%">
+                        <option></option>
+                        <option *ngFor="let f of formRelationshipFields" [value]="f['@FormFieldId']">
+                            Form :: {{f['@label']}}
+                        </option>
+                    </select>
+                </div>
+                <div style="padding-top: 10px">
+                    <input type="checkbox" [ngModel]="step.settings.RelationshipUpdate.Relationship['@AppendValue']" (ngModelChange)="changeValueType($event, '@AppendValue');" /> Append relationships?
+                </div>
+                <div style="padding-top: 10px">
+                    <input type="checkbox" [ngModel]="step.settings.RelationshipUpdate.Relationship['@ClearValue']" (ngModelChange)="changeValueType($event, '@ClearValue');" /> Clear relationships?
+                </div>
             </div>
         </div>
-    </div>
-    <div class="row" *ngSwitchCase="WorkflowActivityType.StateChange">
-        <div class="col s12">
-            <div class="FieldName">State</div>
-            <div>
-                <select [ngModel]="step.settings.State" (ngModelChange)="step.settings.State = $event; stepChange.emit(step)" style="width: 95%">
-                    <option value=""></option>
-                    <option *ngFor="let s of states" [value]="s.value">{{s.label}}</option>
-                </select>
+        <div class="row" *ngSwitchCase="WorkflowActivityType.StateChange">
+            <div class="col s12">
+                <div class="FieldName">State</div>
+                <div>
+                    <select [ngModel]="step.settings.State" (ngModelChange)="step.settings.State = $event; stepChange.emit(step)" style="width: 95%">
+                        <option value=""></option>
+                        <option *ngFor="let s of states" [value]="s.value">{{s.label}}</option>
+                    </select>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="row" *ngSwitchCase="WorkflowActivityType.Delete">
-        <div class="col s12">
+        <div class="row" *ngSwitchCase="WorkflowActivityType.Delete">
+            <div class="col s12">
 
+            </div>
         </div>
+        <ng-container *ngSwitchCase="WorkflowActivityType.None">
+            <!-- for terminal steps -->
+        </ng-container>
     </div>
-    <ng-container *ngSwitchCase="WorkflowActivityType.None">
-        <!-- for terminal steps -->
-    </ng-container>
-</div>
     <div *ngIf="step.hasMultipleInputs" class="col s12" style="padding-top: 8px">
         <input type="checkbox" [ngModel]="step.settings.WaitForAllTransitions" (ngModelChange)="step.settings.WaitForAllTransitions = $event; stepChange.emit(step)" /> Wait for all transitions to complete?
     </div>

@@ -557,9 +557,15 @@ namespace d360.web.Controllers.V2
                     }
                     catch (Exception ex)
                     {
-                        if (trans != null)
+                        try
                         {
-                            trans.Rollback();
+                            if (trans != null)
+                            {
+                                trans.Rollback();
+                            }
+                        }
+                        catch
+                        {
                         }
 
                         throw ex;

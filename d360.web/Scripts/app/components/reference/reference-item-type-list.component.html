@@ -1,7 +1,7 @@
 <div class="tile tile-detail">
     <header *ngIf="!showEditor">Reference Lists
         <d3s-tile-actions (addClick)="selected=null;showEditor=true;"
-                          [hasAdd]="!showDelete && hasModifyAssetPermissions()"></d3s-tile-actions>
+                          [hasAdd]="!showDelete && hasAddAssetPermissions()"></d3s-tile-actions>
     </header>
     <span *ngIf="!showEditor && !showDelete">
                         <input (input)="dt.filterGlobal($event.target.value, 'contains')"

@@ -1,19 +1,16 @@
 ﻿using d360.core.queue;
-using Microsoft.ServiceBus.Messaging;
-using d360.core.enums;
-using d360.core;
 using System;
-using Microsoft.WindowsAzure.Storage.Auth;
-using Microsoft.WindowsAzure.Storage.Queue;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Collections.Generic;
 using d360.core.enums.Workflow;
 using System.Threading.Tasks;
-using System.Configuration;
 using Microsoft.Azure;
-using Microsoft.ServiceBus;
-using Microsoft.WindowsAzure.Storage.RetryPolicies;
+using Microsoft.Azure.Storage.Queue;
+using Microsoft.Azure.Storage.Auth;
+using Microsoft.Azure.Storage.RetryPolicies;
+using System.Text;
+using Azure.Messaging.ServiceBus;
 
 namespace d360.extensions.queue
 {
@@ -22,10 +19,6 @@ namespace d360.extensions.queue
         public string QueueStorageName { get { return CloudConfigurationManager.GetSetting("QueueStorageName"); } }
         public string QueueStorageKey { get { return CloudConfigurationManager.GetSetting("QueueStorageKey"); } }
         public string EventServiceBusConnectionString { get { return CloudConfigurationManager.GetSetting("EventServiceBus"); } }
-
-        //https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quotas
-        //256KB message size limit, minus 64KB for header
-        private const long MAX_MESSAGE_SIZE = (1024 * 256) - (1024 * 64);
 
         private CloudQueueClient cloudClient {
             get
@@ -50,6 +43,16 @@ namespace d360.extensions.queue
 
                 return new QueueRequestOptions { RetryPolicy = expRetryPolicy };
             }
+        }
+
+        private ServiceBusMessage GetServiceBusMessageFromObject(object o)
+        {
+            var eString = JsonConvert.SerializeObject(o);
+            var eBytes = Encoding.UTF8.GetBytes(eString);
+            var bm = new ServiceBusMessage(new BinaryData(eBytes));
+            bm.MessageId = Guid.NewGuid().ToString();
+
+            return bm;
         }
 
         public bool CreateMessage<T>(string queueName, T item)
@@ -153,18 +156,17 @@ namespace d360.extensions.queue
         public void CreateTopicMessage(EventInfo e)
         {
             var topicName = getTopicName();
-            var bm = new BrokeredMessage(e);
-            bm.Properties["topic"] = topicName;
-            var client = CreateTopicClient(topicName);
-            client.Send(bm);
+            var bm = GetServiceBusMessageFromObject(e);
+
+            var sender = CreateServiceBusSender(topicName);
+            sender.SendMessageAsync(bm).Wait();
         }
 
         public void CreateTopicMessage(string topicName, EventInfo e)
         {
-            var bm = new BrokeredMessage(e);
-            bm.Properties["topic"] = topicName;
-            var client = CreateTopicClient(topicName);
-            client.Send(bm);            
+            var bm = GetServiceBusMessageFromObject(e);
+            var sender = CreateServiceBusSender(topicName);
+            sender.SendMessageAsync(bm).Wait();
         }
 
         public async Task CreateTopicMessageAsync(EventInfo e)
@@ -175,10 +177,9 @@ namespace d360.extensions.queue
 
         public async Task CreateTopicMessageAsync(string topicName, EventInfo e)
         {
-            var bm = new BrokeredMessage(e);
-            bm.Properties["topic"] = topicName;
-            var client = CreateTopicClient(topicName);
-            await client.SendAsync(bm);
+            var bm = GetServiceBusMessageFromObject(e);
+            var sender = CreateServiceBusSender(topicName);
+            await sender.SendMessageAsync(bm);
         }
 
         public void CreateTopicMessages(List<EventInfo> events)
@@ -189,32 +190,46 @@ namespace d360.extensions.queue
 
         public void CreateTopicMessages(string topicName, List<EventInfo> events)
         {
-            var batches = new List<List<BrokeredMessage>>();
-            long batchSize = 0;
-
-            batches.Add(new List<BrokeredMessage>());
+            var sender = CreateServiceBusSender(topicName);
+            var messages = new Queue<ServiceBusMessage>();
 
             foreach (var e in events)
             {
-                var bm = new BrokeredMessage(e);
+                var msg = GetServiceBusMessageFromObject(e);
+                messages.Enqueue(msg);
                 var messageId = $"C{e.CompanyID}_A{e.Action}_W{e.WorkflowItemID}_S{e.VersionStepTransitionID}_I{e.ItemStepID}";
+                if (e.Object != null)
+                {
+                    msg.MessageId += $"_O{e.Object.Object}|{e.Object.ObjectID}";
+                }
+                msg.MessageId = messageId;
 
-                if (e.Object != null) messageId += $"_O{e.Object.Object}|{e.Object.ObjectID}";
-                bm.Properties["topic"] = topicName;
-                bm.MessageId = messageId;
-
-                if(e.Action == ChangeType.Add || e.Action == ChangeType.Update) //delay the processing if add or edit so update has chance to process
-                    bm.ScheduledEnqueueTimeUtc = DateTime.UtcNow.AddSeconds(15);
-
-                batchSize = AddMessageToBatch(bm, batches, batchSize);
-
+                if (e.Action == ChangeType.Add || e.Action == ChangeType.Update) //delay the processing if add or edit so update has chance to process
+                    msg.ScheduledEnqueueTime = DateTime.UtcNow.AddSeconds(15);
             }
 
-            var client = CreateTopicClient(topicName);
+            while (messages.Count > 0)
+            {
+                var partitionKey = Guid.NewGuid().ToString();
+                using (ServiceBusMessageBatch batch = sender.CreateMessageBatchAsync().Result)
+                {
 
-            foreach (var batch in batches)
-            {                
-                client.SendBatch(batch);
+                    while (messages.Count > 0)
+                    {
+                        var msg = messages.Peek();
+                        msg.PartitionKey = partitionKey;
+                        if (batch.TryAddMessage(msg))
+                        {
+                            messages.Dequeue();
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    sender.SendMessagesAsync(batch).Wait();
+                }
             }
         }
 
@@ -228,144 +243,141 @@ namespace d360.extensions.queue
             return (GetTopicNameBySetting("EventBusTopicName") ?? "events-debug");
         }
 
-        private RetryPolicy DefaultTopicRetryPolicy
+        private ServiceBusSender CreateServiceBusSender(string topicName)
         {
-            get
-            {
-                return new RetryExponential( // default strategy
-                minBackoff: TimeSpan.FromSeconds(0), // default
-                maxBackoff: TimeSpan.FromSeconds(30), // default
-                maxRetryCount: 15); // increased from default of 10
-            }
-        }
-
-        private TopicClient CreateTopicClient(string topicName)
-        {
-            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);            
-
-            client.RetryPolicy = DefaultTopicRetryPolicy;
-
-            return client;
+            var client = new ServiceBusClient(EventServiceBusConnectionString);
+            var sender = client.CreateSender(topicName);
+            return sender;
         }
 
         public async Task CreateTopicMessagesAsync(List<EventInfo> events)
         {
             var topicName = getTopicName();
             await CreateTopicMessagesAsync(topicName, events);
-        }
-
-        
+        }     
 
         public async Task CreateTopicMessagesAsync(string topicName, List<EventInfo> events)
         {
-            var batches = new List<List<BrokeredMessage>>();
-            long batchSize = 0;
+            var sender = CreateServiceBusSender(topicName);
+            var messages = new Queue<ServiceBusMessage>();
 
-            batches.Add(new List<BrokeredMessage>());
-
-            foreach (var e in events)
+            foreach(var @event in events)
             {
-                var bm = new BrokeredMessage(e);
-                bm.Properties["topic"] = topicName;
-
-                batchSize = AddMessageToBatch(bm, batches, batchSize);
+                messages.Enqueue(GetServiceBusMessageFromObject(@event));
             }
 
-            var client = CreateTopicClient(topicName);
+            while (messages.Count > 0)
+            {
+                var partitionKey = Guid.NewGuid().ToString();
+                using (ServiceBusMessageBatch batch = await sender.CreateMessageBatchAsync())
+                {
 
-            foreach (var batch in batches)
-            {                
-                await client.SendBatchAsync(batch);
+                    while (messages.Count > 0)
+                    {
+                        var msg = messages.Peek();
+                        msg.PartitionKey = partitionKey;
+                        if (batch.TryAddMessage(msg))
+                        {
+                            messages.Dequeue();
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    await sender.SendMessagesAsync(batch);
+                }
             }
         }
 
         public void CreateTopicMessage<T>(string topicName, T e)
         {
-            var bm = new BrokeredMessage(e);
-            bm.Properties["topic"] = topicName;
-            var client = CreateTopicClient(topicName);
-            client.Send(bm);
+            var bm = GetServiceBusMessageFromObject(e);
+            var sender = CreateServiceBusSender(topicName);
+            sender.SendMessageAsync(bm).Wait();
         }
 
         public async Task CreateTopicMessageAsync<T>(string topicName, T e)
         {
-            var bm = new BrokeredMessage(e);
-            bm.Properties["topic"] = topicName;
-
-            var client = CreateTopicClient(topicName);
-            await client.SendAsync(bm);
+            var bm = GetServiceBusMessageFromObject(e);
+            var sender = CreateServiceBusSender(topicName);
+            await sender.SendMessageAsync(bm);
         }
 
         public void CreateTopicMessages<T>(string topicName, List<T> events, DateTime? scheduledEnqueueTime = null)
         {
-            var batches = new List<List<BrokeredMessage>>();
-            long batchSize = 0;
+            var sender = CreateServiceBusSender(topicName);
+            var messages = new Queue<ServiceBusMessage>();
 
-            batches.Add(new List<BrokeredMessage>());
-
-            foreach (var e in events)
+            foreach (var @event in events)
             {
-                
-                var bm = new BrokeredMessage(e);
-
-                if (e is IServiceBusMessageType)
+                var msg = GetServiceBusMessageFromObject(@event);
+                if (scheduledEnqueueTime.HasValue)
                 {
-                    bm.Properties.Add("MessageType", (e as IServiceBusMessageType).MessageType);
+                    msg.ScheduledEnqueueTime = scheduledEnqueueTime.Value;
                 }
-
-                bm.Properties["topic"] = topicName;
-
-                if(scheduledEnqueueTime.HasValue)
-                {
-                    bm.ScheduledEnqueueTimeUtc = scheduledEnqueueTime.Value;
-                }
-
-                batchSize = AddMessageToBatch(bm, batches, batchSize);
+                messages.Enqueue(msg);
             }
 
-            var client = CreateTopicClient(topicName);
+            while (messages.Count > 0)
+            {
+                var partitionKey = Guid.NewGuid().ToString();
+                using (ServiceBusMessageBatch batch = sender.CreateMessageBatchAsync().Result)
+                {
 
-            foreach (var batch in batches)
-            {                
-                client.SendBatch(batch);
+                    while (messages.Count > 0)
+                    {
+                        var msg = messages.Peek();
+                        msg.PartitionKey = partitionKey;
+                        if (batch.TryAddMessage(msg))
+                        {
+                            messages.Dequeue();
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    sender.SendMessagesAsync(batch).Wait();
+                }
             }
-
         }
 
         public async Task CreateTopicMessagesAsync<T>(string topicName, List<T> events)
         {
-            var batches = new List<List<BrokeredMessage>>();
-            long batchSize = 0;
+            var sender = CreateServiceBusSender(topicName);
+            var messages = new Queue<ServiceBusMessage>();
 
-            foreach (var e in events)
+            foreach (var @event in events)
             {
-                var bm = new BrokeredMessage(e);
-                bm.Properties["topic"] = topicName;
-
-                batchSize = AddMessageToBatch(bm, batches, batchSize);
+                messages.Enqueue(GetServiceBusMessageFromObject(@event));
             }
 
-            var client = CreateTopicClient(topicName);
-
-            foreach (var batch in batches)
-            {                
-                await client.SendBatchAsync(batch);
-            }
-
-        }
-
-        private long AddMessageToBatch(BrokeredMessage bm, List<List<BrokeredMessage>> batches, long batchSize)
-        {
-            batchSize += bm.Size;
-            if (batchSize > MAX_MESSAGE_SIZE)
+            while (messages.Count > 0)
             {
-                batchSize = 0;
-                batches.Add(new List<BrokeredMessage>());
+                var partitionKey = Guid.NewGuid().ToString();
+                using (ServiceBusMessageBatch batch = await sender.CreateMessageBatchAsync())
+                {
+
+                    while (messages.Count > 0)
+                    {
+                        var msg = messages.Peek();
+                        msg.PartitionKey = partitionKey;
+                        if (batch.TryAddMessage(msg))
+                        {
+                            messages.Dequeue();
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    await sender.SendMessagesAsync(batch);
+                }
             }
-
-            batches[batches.Count - 1].Add(bm);
-
-            return batchSize;
         }
     }
 }

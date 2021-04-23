@@ -167,6 +167,7 @@ namespace d360.web.Models
         public Guid uid { get; set; }
         public int hopCount { get; set; }
         public bool includeNonLeaf { get; set; } = true;
+        public bool includeDescendantAssets { get; set; } = true;
     }
 
     public class AssetBrowserImpactInitialModel
@@ -182,6 +183,8 @@ namespace d360.web.Models
         public Guid uid { get; set; }
         public int hopCount { get; set; }
         public bool includeNonLeaf { get; set; } = true;
+        public bool includeDescendantAssets { get; set; } = true;
+
     }
 
     public abstract class AssetBrowserHopModelBase
@@ -196,6 +199,7 @@ namespace d360.web.Models
         public List<long> preloadedIntersects { get; set; }
         public AssetBrowserApiHopDirection direction { get; set; }
         public bool includeNonLeaf { get; set; } = true;
+        public bool includeDescendantAssets { get; set; } = true;
     }
 
     public class AssetBrowserLineageHopModel : AssetBrowserHopModelRelationBase

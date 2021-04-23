@@ -1,6 +1,6 @@
 ﻿<header *ngIf="!showEditor && !showDelete && !showResetPwd">
     Users
-    <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()" (addClick)="add()" hasFilterMode="true"
+    <d3s-tile-actions [hasAdd]="hasAddAssetPermissions()" (addClick)="add()" hasFilterMode="true"
                       [(filterMode)]="showSimpleFilter" hasExport="true"
                       (exportClick)="export()"></d3s-tile-actions>
 </header>

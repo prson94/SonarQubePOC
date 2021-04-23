@@ -5,15 +5,15 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="sDooley" id="Procedure.fusion.ProcessFusionCacheInQueue-v4">
+  <changeSet author="Puneet Gupta" id="Procedure.fusion.ProcessFusionCacheInQueue-v6">
+	 <comment>GOV-14255</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
 create or alter procedure [fusion].[ProcessFusionCacheInQueue]
-	@FusionID int,
-	@UseNewMarkitLineage bit = 0
+	@FusionID int
 as
 begin
 	set nocount, ansi_padding on;
@@ -29,15 +29,6 @@ begin
 	from	Fusion
 	where	ID = @FusionID;
 
-	if @fusionTypeId = 13
-	begin
-		exec fusion.GenerateMarkitMapLineageData @FusionID, @UseNewMarkitLineage
-	end
-	else if @fusionTypeId = 16
-	begin
-		exec [fusion].[GenerateEagleLineageData] @FusionID
-	end
-	
 	declare @executionUid uniqueidentifier = newid(),
 			@dummyAssetTypeUid uniqueidentifier = newid()
 	insert into [api].[Execution] ([ExecutionID], [ResourceID], [Total], [Processed], [Error], [StartedOn], [State], [MarkedForProcessing], Fields)
@@ -142,14 +133,6 @@ begin
 	if @fusionTypeId = 13
 	begin
 		exec fusion.GenerateMarkitMapLineageData @FusionID, @UseNewMarkitLineage
-	end
-	else if @fusionTypeId = 16
-	begin
-		exec [fusion].[GenerateEagleLineageData] @FusionID
-	end
-	else if @fusionTypeId = 111
-	begin
-		exec [fusion].[GenerateFoundationLineage] @FusionID
 	end
 	
 	declare @executionUid uniqueidentifier = newid(),

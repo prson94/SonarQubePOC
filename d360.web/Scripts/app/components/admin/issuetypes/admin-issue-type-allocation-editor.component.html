@@ -28,8 +28,9 @@
                                 placeholder="Optional"
                                 [(ngModel)]="selection.ResponsibilityTypeUid"
                                 [disabled]="!selection?.AssetTypeUid"
-                                [style]="{'width':'100%'}"
-                                name="responsibilities">
+                                class="d3s-color-picker multi fullWidth"
+                                name="responsibilities"
+                                selectedItemsLabel="{0} items selected">
                 </p-multiSelect>
             </div>
         </div>

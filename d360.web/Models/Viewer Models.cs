@@ -222,13 +222,6 @@ namespace d360.web.Models
         public Guid Uid { get; set; }
     }
 
-    public class FusionQueryAttributeTypeKeyField
-    {
-        public int ID { get; set; }
-
-        public string Name { get; set; }
-    }
-
     [DataContract]
     public class GridColumnGroup
     {
@@ -506,26 +499,7 @@ namespace d360.web.Models
             if (PermissionsBitMask > 0)
             {
                 var rawList = Permission.DeleteAsset.GetList();
-                if ((PermissionsBitMask & (int)Permission.ReadAsset) == (int)Permission.ReadAsset)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.ReadAsset));
-                if ((PermissionsBitMask & (int)Permission.ModifyAsset) == (int)Permission.ModifyAsset)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.ModifyAsset));
-                if ((PermissionsBitMask & (int)Permission.DeleteAsset) == (int)Permission.DeleteAsset)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.DeleteAsset));
-
-                if ((PermissionsBitMask & (int)Permission.ReadRelationships) == (int)Permission.ReadRelationships)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.ReadRelationships));
-                if ((PermissionsBitMask & (int)Permission.ModifyRelationships) == (int)Permission.ModifyRelationships)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.ModifyRelationships));
-                if ((PermissionsBitMask & (int)Permission.DeleteRelationships) == (int)Permission.DeleteRelationships)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.DeleteRelationships));
-
-                if ((PermissionsBitMask & (int)Permission.ReadResponsibilities) == (int)Permission.ReadResponsibilities)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.ReadResponsibilities));
-                if ((PermissionsBitMask & (int)Permission.ModifyResponsibilities) == (int)Permission.ModifyResponsibilities)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.ModifyResponsibilities));
-                if ((PermissionsBitMask & (int)Permission.DeleteResponsibilities) == (int)Permission.DeleteResponsibilities)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.DeleteResponsibilities));
+                Permissions.AddRange(rawList.Where(i => (PermissionsBitMask & (int)i.ID) == (int)i.ID));
             }
         }
 

@@ -35,6 +35,15 @@
         </div>
     </div>
     <div class="gallery-section">
+        <h4>Time</h4>
+        <div>
+            <ig-date [(ngModel)]="time" [showTime]="true"></ig-date>
+        </div>
+        <div>
+            Selected value: {{time}}
+        </div>
+    </div>
+    <div class="gallery-section">
         <h4>Binding</h4>
         <div>
             <ig-date [(ngModel)]="val"></ig-date>

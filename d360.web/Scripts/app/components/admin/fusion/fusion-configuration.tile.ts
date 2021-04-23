@@ -106,6 +106,5 @@ enum FormModeConfig {
     Filters,
     AddingFilter,
     Scheduling,
-    QueryOverrides,
     MarkitLineage
 }

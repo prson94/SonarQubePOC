@@ -31,6 +31,7 @@ declare var VersionNumber: string;
                                         <li><b>Build Version:</b> {{this.versionNumber}}</li>
                                         <li><b>Build Date:</b> {{this.buildDate | date:'short'}}</li>
                                         <li><b>Support:</b> <a href="http://support.infogix.com" target="_blank">http://support.infogix.com</a></li>
+                                        <li><a class="thirdPartyLicence" href="/Content/thirdpartylicenses.html" target="_blank">Third Party Licenses</a></li>
                                         <li><b>Usage information:</b> <br/></li>
                                         <ul class="licence-info" *ngIf="licenceData">
                                             <li>Asset count: {{numberWithCommas(licenceData.assets.count)}}</li>
@@ -38,6 +39,7 @@ declare var VersionNumber: string;
                                             <li>Contributor count: {{numberWithCommas(licenceData.users.contributors)}}</li>
                                             <li>Administrator count: {{numberWithCommas(licenceData.users.administrators)}}</li>
                                         </ul>
+                                        <d3s-loading [isLoading]="isLoading"></d3s-loading>
                                     </ul>
                                     <p>© 2005-{{this.buildDate | date:'yyyy'}} Infogix. All rights reserved.</p>
                                     <p>Confidential - Limited distribution to authorized persons only, pursuant to the terms of Infogix Inc. license agreement. This software is protected as an unpublished work and constitutes a trade secret of Infogix Inc.</p>
@@ -62,13 +64,18 @@ declare var VersionNumber: string;
             list-style: disc;
 
         }
+        .thirdPartyLicence 
+        {
+            padding-left:0px;
+        }
         `]
 })
 
-export class HeaderHelpComponent implements AfterViewInit{
+export class HeaderHelpComponent {
     public active: boolean = false;
     private hideHandle: number = 0;
     display: boolean = false;
+    isLoading: boolean = false;
 
     public userGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#c-user-guide/user-guide.htm%3FTocPath%3DUser%2520guide%7C_____0";
     public adminGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/admin-intro.htm%3FTocPath%3DAdministration%2520guide%7C_____0";
@@ -86,9 +93,15 @@ export class HeaderHelpComponent implements AfterViewInit{
         private settingService: CompanySettingsService
     ) { }
 
-    ngAfterViewInit(): void {
+    loadLicensingDetails(): void {
+        this.licenceData = null;
+        this.isLoading = true;
         this.settingService.getLicensingDetails().subscribe((x) => {
-            this.licenceData = x;
+            if (x) {
+                this.licenceData = x;
+                this.isLoading = false;
+                this.ref.markForCheck();
+            }
         });
     }
 
@@ -114,6 +127,7 @@ export class HeaderHelpComponent implements AfterViewInit{
     }
     showAbout() {
         this.isModalVisible = true;
+        this.loadLicensingDetails();
     }
 
     closeAbout() {

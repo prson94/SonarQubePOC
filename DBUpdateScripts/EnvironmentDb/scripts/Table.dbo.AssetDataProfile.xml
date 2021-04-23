@@ -5,59 +5,148 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Table.dbo.AssetDataProfile-v3">
-    <comment>GOV-10732</comment>
-	<sql dbms="mssql"
+  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfile-v6">
+    <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetDataProfile_bak')
-			BEGIN
-				DROP TABLE dbo.AssetDataProfile_bak
-			END
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetDataProfile')
+BEGIN
+	CREATE TABLE [dbo].[AssetDataProfile](
+		[ID] BIGINT IDENTITY(1,1) NOT NULL,
+		[AssetID] BIGINT NOT NULL,
+		[ProfileSetDate] DATE NOT NULL,
+		[SampleCount] BIGINT NULL,
+		[NullCount] BIGINT NULL,
+		[BlankCount] BIGINT NULL,
+		[MeanValue] DECIMAL(22,4) NULL,		
+		[MinimumValue] NVARCHAR(500) NULL,
+		[MaximumValue] NVARCHAR(500) NULL,
+		[MinimumLength] INT NULL,
+		[MaximumLength] INT NULL,
+		[StandardDeviation] DECIMAL(28,4) NULL,		
+		[Multiline] BIT NULL,
+		[RegExp] NVARCHAR(200) NULL,
+		[Confidence] DECIMAL(28,4) NULL,
+		[Type] NVARCHAR(200) NULL,
+		[TypeQualifier] NVARCHAR(200) NULL,		
+		[LogicalType] BIT NULL,
+		[LeadingWhiteSpace] BIT NULL,
+		[LeadingZeroCount] INT NULL,
+		[TrailingWhiteSpace] BIT NULL,
+		[MatchCount] BIGINT NULL,
+		[OutlierCardinality] INT NULL,
+		[PossibleKey] BIT NULL,
+		[DataSignature] NVARCHAR(200) NULL,
+		[StructureSignature] NVARCHAR(200) NULL,
+		[Cardinality] INT NULL,
+		[ShapeCardinality] INT NULL,
+		[CreatedBy] INT NOT NULL,
+		[CreatedOn] DATETIME NOT NULL,
+		[UpdatedBy] INT NOT NULL,
+		[UpdatedOn] DATETIME NOT NULL,
+		CONSTRAINT [PK_AssetDataProfile_ID] PRIMARY KEY NONCLUSTERED ([ID]),
+		CONSTRAINT [FK_AssetDataProfile_Asset] FOREIGN KEY (AssetID) REFERENCES Asset(ID)
+	)
+	
+	CREATE CLUSTERED INDEX IX_AssetDataProfile_AssetID_ProfileSetDate ON dbo.AssetDataProfile ([AssetID], [ProfileSetDate]);
+	
+	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID ON dbo.AssetDataProfile ([AssetID]);
+	
+	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_Confidence ON dbo.AssetDataProfile ([AssetID], [Confidence]);
+	
+	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_TypeQualifier ON dbo.AssetDataProfile ([AssetID], [TypeQualifier]);
+
+	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_DataSignature ON dbo.AssetDataProfile ([AssetID], [DataSignature]);
+	
+	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_StructureSignature ON dbo.AssetDataProfile ([AssetID], [StructureSignature]);
+END
+
+IF EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+         AND name = 'OutlierDetail'
+)
+BEGIN
+    ALTER TABLE [dbo].[AssetDataProfile] DROP COLUMN [OutlierDetail]
+END
+
+IF EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+         AND name = 'DistinctValues'
+)
+BEGIN
+    ALTER TABLE [dbo].[AssetDataProfile] DROP COLUMN [DistinctValues]
+END
+
+IF EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+         AND name = 'JavaType'
+)
+BEGIN
+    ALTER TABLE [dbo].[AssetDataProfile] DROP COLUMN [JavaType]
+END
+
+IF EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+         AND name = 'PrimaryKey'
+)
+BEGIN
+    ALTER TABLE [dbo].[AssetDataProfile] DROP COLUMN [PrimaryKey]
+END
+
+IF EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+         AND name = 'NewType'
+)
+BEGIN
+    ALTER TABLE [dbo].[AssetDataProfile] DROP COLUMN [NewType]
+END
+
+IF EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+         AND name = 'CurrentType'
+)
+BEGIN
+    EXEC sp_rename 'dbo.AssetDataProfile.CurrentType', 'Type', 'COLUMN';
+END
+
+IF EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+         AND name = 'Validation'
+)
+BEGIN
+    EXEC sp_rename 'dbo.AssetDataProfile.Validation', 'RegExp', 'COLUMN';
+END
+
+IF EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+         AND name = 'TotalCount'
+)
+BEGIN
+    EXEC sp_rename 'dbo.AssetDataProfile.TotalCount', 'SampleCount', 'COLUMN';
+END
 		]]>
     </sql>
 	<rollback>
-		<![CDATA[
-			IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetDataProfile_bak')
-			BEGIN
-				CREATE TABLE [dbo].[AssetDataProfile_bak]
-				(
-					[ID] [int] IDENTITY(1,1) NOT NULL,
-					[AssetID] [bigint] NOT NULL,
-					[RowCount] [int] NULL,
-					[Uniqueness] [decimal](22, 4) NULL,
-					[UniqueCount] [int] NULL,
-					[Completeness] [decimal](22, 4) NULL,
-					[NullCount] [int] NULL,
-					[BlankCount] [int] NULL,
-					[DataType] [nvarchar](250) NULL,
-					[MinimumValue] [nvarchar](500) NULL,
-					[MaximumValue] [nvarchar](500) NULL,
-					[Precision] [int] NULL,
-					[Scale] [int] NULL,
-					[Average] [decimal](22, 4) NULL,
-					[Median] [decimal](22, 4) NULL,
-					[StandardDeviation] [decimal](28, 4) NULL,
-					[Top10Values] [nvarchar](max) NULL,
-					[ProcessIdentifier] [nvarchar](250) NULL,
-					[CreatedBy] [int] NULL,
-					[CreatedOn] [datetime] NULL,
-					CONSTRAINT [PK_AssetDataProfile_ID] PRIMARY KEY CLUSTERED ( [ID] ASC )
-				)
-			END
+		<![CDATA[	
 
-			IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_AssetDataprofile_AssetID')
-			BEGIN
-				ALTER TABLE [dbo].[AssetDataProfile_bak]  WITH CHECK ADD  CONSTRAINT [FK_AssetDataprofile_AssetID] FOREIGN KEY([AssetID]) REFERENCES [dbo].[Asset] ([ID]) ON DELETE CASCADE
-				ALTER TABLE [dbo].[AssetDataProfile_bak] CHECK CONSTRAINT [FK_AssetDataprofile_AssetID]
-			END
-
-			IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetDataProfile_AssetID')
-			BEGIN
-				CREATE NONCLUSTERED INDEX [IX_AssetDataProfile_AssetID] ON [dbo].[AssetDataProfile_bak] ( [AssetID] ASC )
-			END
 		]]>
 	</rollback>
   </changeSet>

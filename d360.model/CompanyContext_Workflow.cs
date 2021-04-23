@@ -117,11 +117,26 @@ namespace d360.model
         {
             var companySettings = Community.GetCompanySettings();
 
-            // 0 check if the workflow digest emails are enabled
+            // 0 check if the workflow digest emails are enabled for today
 
-            var enabledString = companySettings["WorkflowDigestEmailEnabled"] ?? "false";
+            int digestDays = int.TryParse(companySettings["WorkflowDigestEmailDays"], out digestDays) ? digestDays : 0;
+            int todayDayOfWeek = (int)DateTime.UtcNow.DayOfWeek;
 
-            if (!bool.TryParse(enabledString, out bool isEnabled) || !isEnabled) return; // setting is off or we cant figure out if it is on / off
+            //Check if today is a day to send digest emails
+            if(( (int)Math.Pow(2,todayDayOfWeek) & digestDays) == 0)
+            {
+                return; 
+            }
+
+            // 0.5 determine how many days ago last digest was sent
+            int newDelta = 0;
+            int previousDayOfWeek;
+            do
+            {
+                newDelta++;
+                previousDayOfWeek = (7 + todayDayOfWeek - newDelta) % 7;
+            } while (((int)Math.Pow(2, previousDayOfWeek) & digestDays) == 0);
+
 
             // 1 determine which users have outstanding workflows
             var users = await GetUsersWithOutstandingWorkflows();
@@ -140,7 +155,7 @@ namespace d360.model
                 string tblTRWhite = string.Empty;
                 #region table formating
 
-                tblHeader = @"<table style='width: 692px; border-style: none; border-width: 0px; box-sizing: border-box; line-height: 18px;'><thead style='background-color: #999999; '>
+                tblHeader = @"<table style='width: 692px; border-style: none; border-width: 0px; box-sizing: border-box; line-height: 18px;'><thead style='background-color: #252c41; '>
                     <tr>
                     <th style='text-align:left;padding-left:5px;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif;color:#FFF;'>Name</th>
                     <th style='text-align:center;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif;color:#FFF;'>Version</th>
@@ -152,7 +167,7 @@ namespace d360.model
                     </thead>
                     <tbody>";
 
-                tblTR = @"<tr style='background-color: #def1fd; box-sizing: border-box; color: #646464; display: table-row; border: 0px none #d9d9d9;'>";
+                tblTR = @"<tr style='background-color: #f1f1f1; box-sizing: border-box; color: #646464; display: table-row; border: 0px none #d9d9d9;'>";
 
                 tblTRWhite = @"<tr style='background-color: #FFF; box-sizing: border-box; color: #646464; display: table-row; border: 0px none #d9d9d9;'>";
 
@@ -165,7 +180,7 @@ namespace d360.model
                 // 3 get oustanding assignments
                 foreach (var user in users)
                 {
-                    var workflows = await GetUsersOutstandingWorkflows(user.ID);
+                    var workflows = await GetUsersOutstandingWorkflows(user.ID, newDelta);
 
 
                     StringBuilder sb = new StringBuilder();
@@ -241,7 +256,7 @@ namespace d360.model
                                      WI.CompletedOn is null and WVS.StepType = 2 and WVS.ActivityType = 3 and GRAA.State = 1");
         }
 
-        private async Task<IEnumerable<dynamic>> GetUsersOutstandingWorkflows(int resourceId)
+        private async Task<IEnumerable<dynamic>> GetUsersOutstandingWorkflows(int resourceId, int newOffset = 1)
         {
             return await Database.Connection.QueryAsync<dynamic>(@"
                     Select wfm.Name as Name,wfm.Id as Id,wfm.Version as Version,wfm.Step as Step,wfm.StepId as StepId,wfm.Total as Total,Isnull(Sub.New,0) as New
@@ -281,11 +296,11 @@ namespace d360.model
                     inner join [workflow].[itemassignment] wia on(wia.itemstepid = wis.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
                     inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
                     where
-                    wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3  and wia.CreatedOn > getdate()-1
+                    wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3  and wia.CreatedOn > getdate()-@newOffset
                     group by wt.name, wt.id,wv.[version],wvs.name,wvs.Id
                     ) as Sub on
                     wfm.Id =Sub.Id and wfm.Version=Sub.Version and wfm.StepId = sub.stepid
-                    order by wfm.Name asc,wfm.[version] desc,wfm.Step asc", new { r = resourceId });
+                    order by wfm.Name asc,wfm.[version] desc,wfm.Step asc", new { r = resourceId, newOffset });
         }
 
         public bool AssignActivityWorkflowToNewObject(WorkflowEventRegistration reg, int itemId, int workflowId, int objectId, string @object)
@@ -904,6 +919,10 @@ namespace d360.model
                         await SendHttpRequestAsync(itemStep, objectInfo, stepSettings);
                         isStepCompleted = true;
                         break;
+                    case WorkflowActivityType.HTTPResponse:
+                        await ParseHttpResponseAsync(itemStep, objectInfo, stepSettings);
+                        isStepCompleted = true;
+                        break;
                     default:
                         isStepCompleted = true;
                         break;
@@ -997,7 +1016,7 @@ namespace d360.model
 
                 if (!string.IsNullOrEmpty(requestSettings.Body))
                 {
-                    var body = await ProcessMessageTokens(requestSettings.Body, info, prefix, item);
+                    var body = await ProcessMessageTokens(requestSettings.Body, info, prefix, item, false);
                     var contentArray = Encoding.UTF8.GetBytes(body);
                     request.Content = new ByteArrayContent(contentArray);
                 }
@@ -1029,7 +1048,7 @@ namespace d360.model
                         });
                     }
 
-                    var uri = await ProcessMessageTokens(requestSettings.Url, info, prefix, item);
+                    var uri = await ProcessMessageTokens(requestSettings.Url, info, prefix, item, false);
 
                     if (!Uri.IsWellFormedUriString(uri, UriKind.Absolute))
                         throw new Exception($"ERROR - INVALID HTTP REQUEST URL SPECIFIED.");
@@ -1047,6 +1066,98 @@ namespace d360.model
 
                 await SaveHttpResponseResultsAsync(item, requestSettings, response);
             }
+        }
+
+        private async Task ParseHttpResponseAsync(WorkflowItemStep item, EventObjectInfo info, WorkflowItemStepSettingModel settings)
+        {
+            if (settings == null)
+                throw new Exception($"ERROR - INVALID HTTP RESPONSE SETTINGS SPECIFIED.");
+
+            var responseSettings = settings.HttpResponseSettings;
+
+            if (string.IsNullOrEmpty(responseSettings.InputStepId))
+            {
+                throw new Exception($"ERROR - INVALID HTTP RESPONSE STEP MISSING INPUT STEP ID.");
+            }
+
+            var stepId = -1;
+            int.TryParse(responseSettings.InputStepId, out stepId);
+
+            var requestStep = WorkflowItemSteps.FirstOrDefault(s => s.StepID == stepId && s.ItemID == item.ItemID);
+            if (requestStep == null)
+            {
+                throw new Exception($"ERROR - INVALID HTTP RESPONSE STEP MISSING REQUEST STEP.");
+            }
+
+            var requestStepFields = requestStep.FieldsDocument;
+            var requestStepBody = requestStepFields?.Element("HTTPResponse")?.Element("Body")?.Value;
+
+            if (string.IsNullOrEmpty(requestStepBody))
+            {
+                Console.WriteLine($"ERROR - INVALID HTTP RESPONSE BODY IS NULL OR EMPTY.");
+            }
+
+            JToken body = null;
+            try
+            {
+                body = JToken.Parse(requestStepBody);
+            }
+            catch
+            {
+                Console.WriteLine($"ERROR - INVALID HTTP RESPONSE BODY IS NOT VALID JSON.");
+            }
+
+            if (!string.IsNullOrEmpty(item.Fields))
+            {
+                var root = XElement.Parse(item.Fields);
+                var xOutputs = new XElement("Outputs");
+
+                foreach (var output in responseSettings.Outputs)
+                {
+                    string value = "";
+                    var xOutput = new XElement("Output");
+                    if (body != null)
+                    {
+                        value = body.SelectToken(output?.Path ?? "", false)?.ToString() ?? "";
+                    }
+
+                    xOutput.Add(new XElement("Id", output.Id));
+                    xOutput.Add(new XElement("Value", value));
+
+                    xOutputs.Add(xOutput);
+                }
+
+                root.Add(xOutputs);
+                item.Fields = root.ToString();
+            }
+
+            if (!string.IsNullOrEmpty(item.Settings))
+            {
+                var root = XElement.Parse(item.Settings);
+
+                var xResponse = new XElement("HTTPResponse");
+                xResponse.Add(new XElement("InputStepId", settings?.HttpResponseSettings?.InputStepId ?? ""));
+
+                if (settings?.HttpResponseSettings?.Outputs?.Any() == true)
+                {
+                    var xOutputs = new XElement("Outputs");
+                    foreach (var output in settings.HttpResponseSettings?.Outputs)
+                    {
+                        var o = new XElement("Output");
+                        o.Add(new XElement("Id", output.Id));
+                        o.Add(new XElement("Name", output.Name));
+                        o.Add(new XElement("Path", output.Path));
+                        o.Add(new XElement("Type", output.Type));
+                        o.Add(new XElement("Format", output.Format));
+                        xOutputs.Add(o);
+                    }
+                    xResponse.Add(xOutputs);
+                    root.Add(xResponse);
+                    item.Settings = root.ToString();
+                }
+            }
+
+            await SaveChangesAsync();
         }
 
         private void DeleteItemWorkflowActivity(EventObjectInfo objectInfo)
@@ -1337,7 +1448,7 @@ namespace d360.model
                     var val = DateTime.UtcNow.Date.ToShortDateString();
                     this.UpdateField(objectId, objectType, fieldType, item, val);
                 }
-                else if (!item.IsActionForm && !item.UseFormValue)
+                else if (!item.IsActionForm && !item.UseFormValue && !item.UseOutputValue)
                 {
                     var val = item.Value;
                     this.UpdateField(objectId, objectType, fieldType, item, val);
@@ -1385,6 +1496,11 @@ namespace d360.model
                         }
                     }
                     this.UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
+                }
+                else if (item.UseOutputValue)
+                {
+                    var val = GetOutputFieldValue(item.FormStepID, itemStep.ItemID, item.FormField);
+                    UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
                 }
             }
 
@@ -1483,6 +1599,32 @@ namespace d360.model
             foreach (XElement el in fields)
                 yield return (string)el.Attribute("value");
 
+        }
+
+        public string GetOutputFieldValue(int stepId, long itemId, string fieldId)
+        {
+            var step = WorkflowItemSteps.FirstOrDefault(s => s.StepID == stepId && s.ItemID == itemId);
+            if (step != null)
+            {
+                var stepFields = step.FieldsDocument;
+
+                if (stepFields != null)
+                {
+                    var outputs = stepFields.Element("Outputs").Elements("Output");
+                    if (outputs != null)
+                    {
+                        foreach (var output in outputs)
+                        {
+                            if (output.Element("Id")?.Value == fieldId)
+                            {
+                                return output.Element("Value")?.Value ?? "";
+                            }
+                        }
+                    }
+                }
+            }
+
+            return "";
         }
 
         private void ExecuteProc(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
@@ -2760,6 +2902,25 @@ namespace d360.model
                             }
                         }
                     }
+                }
+            }
+
+            if (Regex.IsMatch(result, "\\[HTTPRESPONSE\\|([0-9.]+)\\|([0-9.]+)\\]"))
+            {
+                var fields = Regex.Matches(result, "\\[HTTPRESPONSE\\|([0-9.]+)\\|([0-9.]+)\\]");
+
+                foreach (var field in fields)
+                {
+                    var item = field.ToString();
+
+                    var fieldTypeIdStringitem = item.Replace("[HTTPRESPONSE|", "");
+                    fieldTypeIdStringitem = fieldTypeIdStringitem.Replace("]", "");
+
+                    var stepId = -1;
+                    var fieldId = fieldTypeIdStringitem.Split('|')[1];
+                    int.TryParse(fieldTypeIdStringitem.Split('|')[0], out stepId);
+
+                    result = result.Replace(item, GetOutputFieldValue(stepId, itemStep.ItemID, fieldId));
                 }
             }
 

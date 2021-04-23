@@ -83,6 +83,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 
         this.treeSub = this.headerBreadcrumbService.breadcrumbTreeSource$.subscribe(
             id => {
+                this.selectHierarchy(id);
                 this.showHierarchy(id);
             });
 

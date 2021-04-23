@@ -9,7 +9,6 @@ export interface ICompanySettingsService {
 
 export class CompanySettings {
     DisableCommunityPosting: boolean;
-    DisableIssuePosting: boolean;
     DisableIssueManagement: boolean;
     SubjectAreaNodeName: string;
     IpRestrictions = new Array<IpRestriction>();
@@ -28,7 +27,6 @@ export class CompanySettings {
     DefaultRoute: string;
     EnableSearchExactMatch: boolean;
     WorkflowCatchAllGroup: number;
-    ShowDefaultHelpVideos: boolean;
     ShowHomeAssignmentTile: boolean;
     ShowHomeBoardTile: boolean;
     ShowHomeActivityTile: boolean;
@@ -39,6 +37,7 @@ export class CompanySettings {
     ClearHomePageBackgroundImage: boolean = false;
     BrowserTitlePrefix: string;
     WorkflowDigestEmailEnabled: boolean = false;
+    WorkflowDigestEmailDays: number = 0;
     MaxDropdownItems: number;
     WriteActionDescription: boolean;
     CurrentCompanyLogoPath: string;

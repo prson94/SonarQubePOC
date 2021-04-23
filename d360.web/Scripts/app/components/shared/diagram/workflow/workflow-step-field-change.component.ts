@@ -6,7 +6,7 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
 import { FormMode } from '../../../../models/form.model';
 import { map } from 'rxjs/operators';
 import * as _ from 'lodash';
-import { FormGroup, FormGroupDirective } from '@angular/forms';
+import { NodeModel } from '../../../../models/lineage.model';
 
 @Component({
     selector: 'd3s-workflow-step-field-change',
@@ -15,11 +15,14 @@ import { FormGroup, FormGroupDirective } from '@angular/forms';
 })
 
 export class WorkflowStepFieldChangeComponent extends BaseComponent implements OnChanges {
+    @Input() step: NodeModel;
+    @Input() diagram: go.Diagram;
     @Input() objectId: number;
     @Input() objectType: string;
     @Input() fieldUpdate: any = {};
     @Input() formFields = [];
     @Input() httpFields = [];
+    @Input() outputFields = [];
     @Input() issueObject: string;
     @Output() fieldUpdateChange = new EventEmitter();
 
@@ -32,6 +35,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         { value: 'true', label: 'True' }
     ];
     private hasFormResponses = false;
+    private hasOutputFields = false;
     private canSelectFromAction = false;
     private selectedFormFieldId;
 
@@ -56,6 +60,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         this.fields = [];
         this.initField(this.selectedField);
         this.hasFormResponses = this.formFields != null && this.formFields.length > 0;
+        this.hasOutputFields = this.outputFields != null && this.outputFields.length > 0;
 
         this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType, true, this.issueObject)
             .pipe(
@@ -102,8 +107,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                             }
                             this.formFields.push(actionFormField);
                         }, this);
-                    }
-              
+                    }            
                 }),
                 map(() => this.isLoading = false)
             ).subscribe();     
@@ -142,6 +146,8 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
             f['@UseCurrentDate'] = f['@UseCurrentDate'].toString().toLowerCase() == 'true' ? true : false;
         if (f['@UseFormValue'] != null)
             f['@UseFormValue'] = f['@UseFormValue'].toString().toLowerCase() == 'true' ? true : false;
+        if (f['@UseOutputValue'] != null)
+            f['@UseOutputValue'] = f['@UseOutputValue'].toString().toLowerCase() == 'true' ? true : false;
 
     }
 
@@ -222,6 +228,24 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         }
         this.selectedField['@FormStepId'] = field['@stepId'];
         this.selectedField['@FormLabel'] = field['@label'];
+
+    }
+
+    changeOutputValue(e: any) {
+        this.selectedFormFieldId = e;
+        let stepId = this.selectedFormFieldId.split("|")[1];
+        let fieldId = this.selectedFormFieldId.split("|")[0];
+        let field = this.outputFields.find(f => f.Id == fieldId && f.StepId == stepId);
+
+        if (field == null) {
+            this.selectedField['@FormFieldId'] = null;
+            this.selectedField['@FormStepId'] = null;
+            return;
+        } else {
+            this.selectedField['@FormFieldId'] = field.Id;
+            this.selectedField['@FormStepId'] = field.StepId;
+            this.selectedField['@FormLabel'] = field['@FormLabel'];
+        }
 
     }
 
@@ -355,11 +379,13 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
         this.setValueType();
 
-        if (this.valueType == 'form')
+        if (this.valueType == 'form' || this.valueType == 'output') {
             this.selectedFormFieldId = this.selectedField['@FormFieldId'] + '|' + this.selectedField['@FormStepId'];
+        }
 
-        if (this.valueType == "actionForm")
+        if (this.valueType == "actionForm") {
             this.selectedFormFieldId = this.selectedField['@FormFieldId'];
+        }       
 
         this.select(this.selectedField['@FieldId'], false);
         this.formMode = FormMode.Editing;
@@ -408,9 +434,13 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
 
         let useCurrentDate = this.selectedField['@UseCurrentDate'] == null ? false : (this.selectedField['@UseCurrentDate'].toString() == 'true' ? true : false);
+        let useOutputValue = this.selectedField['@UseOutputValue'] == null ? false : (this.selectedField['@UseOutputValue'].toString() == 'true' ? true : false);
         let useFormValue = this.selectedField['@UseFormValue'] == null ? false : (this.selectedField['@UseFormValue'].toString() == 'true' ? true : false);
-        if (!useFormValue)
+
+        if (!useFormValue) {
             useFormValue = this.selectedField['@IsActionForm'] == null ? false : (this.selectedField['@IsActionForm'].toString() == 'true' ? true : false);
+
+        }
 
         let clearValue = this.selectedField['@ClearValue'] == null ? false : (this.selectedField['@ClearValue'].toString() == 'true' ? true : false);
 
@@ -419,7 +449,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                 return false;
         }
 
-        if (!useCurrentDate && !clearValue && !useFormValue) {
+        if (!useCurrentDate && !clearValue && !useFormValue && !useOutputValue) {
             if (this.selectedField['@Value'] == null || this.selectedField['@Value'] == '')
                 return false;
 
@@ -436,12 +466,14 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                 delete this.selectedField['@ClearValue'];
                 delete this.selectedField['@UseCurrentDate'];
                 delete this.selectedField['@IsActionForm'];
+                delete this.selectedField['@UseOutputValue'];
                 break;
             case 'clear':
                 delete this.selectedField['@UseFormValue'];
                 delete this.selectedField['@Value'];
                 delete this.selectedField['@UseCurrentDate'];
                 delete this.selectedField['@IsActionForm'];
+                delete this.selectedField['@UseOutputValue'];
                 this.selectedField['@ClearValue'] = true;
                 break;
             case 'form':
@@ -449,6 +481,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                 delete this.selectedField['@Value'];
                 delete this.selectedField['@UseCurrentDate'];
                 delete this.selectedField['@AppendValue'];
+                delete this.selectedField['@UseOutputValue'];
                 this.selectedField['@UseFormValue'] = true;
                 this.selectedField['@IsActionForm'] = false;
 
@@ -459,6 +492,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                 delete this.selectedField['@Value'];
                 delete this.selectedField['@UseCurrentDate'];
                 delete this.selectedField['@AppendValue'];
+                delete this.selectedField['@UseOutputValue'];
                 this.selectedField['@UseFormValue'] = true;
                 this.selectedField['@IsActionForm'] = true;
                 break;
@@ -467,7 +501,17 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                 delete this.selectedField['@IsActionForm'];
                 delete this.selectedField['@ClearValue'];
                 delete this.selectedField['@Value'];
+                delete this.selectedField['@UseOutputValue'];
                 this.selectedField['@UseCurrentDate'] = true;
+                break;
+            case 'output':
+                delete this.selectedField['@UseFormValue'];
+                delete this.selectedField['@IsActionForm'];
+                delete this.selectedField['@ClearValue'];
+                delete this.selectedField['@Value'];
+                delete this.selectedField['@UseCurrentDate'];
+                delete this.selectedField['@IsActionForm'];
+                this.selectedField['@UseOutputValue'] = true;
                 break;
         }
     }
@@ -483,6 +527,8 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
             this.valueType = 'clear';
         else if (this.selectedField['@UseCurrentDate'] != null)
             this.valueType = 'timestamp';
+        else if (this.selectedField['@UseOutputValue'] != null && this.selectedField['@UseOutputValue'].toString() == 'true')
+            this.valueType = 'output';
         else
             this.valueType = 'manual';
     }
@@ -555,7 +601,6 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         }
     }
 
-
     get availableFormFields(): any[] {
         let field = this.fields.find(f => f.ID.toString() == this.selectedField['@FieldId']);
         if (field == null)
@@ -586,6 +631,20 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                 return formFieldsWithoutAction.filter(f => f['@type'] == 'text');
         }
 
+    }
+
+    get availableOutputFields(): any[] {
+        let field = this.fields.find(f => f.ID.toString() == this.selectedField['@FieldId']);
+        if (field == null)
+            return null;
+
+        let fieldType = field.Type;
+        switch (fieldType) {
+            case 'Html':
+            case 'Text':
+                return this.outputFields.filter(f => f.Type == "text").map(f => { return { key: f.Id + '|' + f.StepId, '@FormFieldId': f.Id, '@FormStepId': f.StepId, '@FormLabel': f['@FormLabel'] }; });
+        }
+        return null;
     }
 }
 

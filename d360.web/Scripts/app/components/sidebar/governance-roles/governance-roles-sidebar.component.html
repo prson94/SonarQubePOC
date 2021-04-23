@@ -7,7 +7,7 @@
                 <div class="row">
                     <div class="col s12">
                         <div class="FieldName">Governance Role Reference List</div>
-                        <p-dropdown name="refListDDL" [(ngModel)]="model.RefListUid" [options]="refListDDL" [style]="{'width':'100%'}"></p-dropdown>
+                        <p-dropdown igDropdown igSize="full" placeholder="Select Reference List..." panelStyleClass="dropdown-govrole-correction" name="refListDDL" [(ngModel)]="model.RefListUid" [options]="refListDDL" styleClass="filter-dropdown" [overlayLowerZIndex]="true"></p-dropdown>
                     </div>
                 </div>
                 <div class="row">

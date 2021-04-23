@@ -536,7 +536,7 @@ namespace d360.web.Controllers.V2
         /// This method only works for assets, not asset types
         /// Use the version of the method that accepts Object and ID as paramneters for that
         /// </summary>
-        /// <returns>A bease quert with @uid</returns>
+        /// <returns>A base query with @uid</returns>
         private string GetBaseAuditQueryForUid()
         {
             //This query should generally match the one in GetBaseAuditQueryForId except UID columns are returned instead of Object/id same
@@ -578,13 +578,15 @@ namespace d360.web.Controllers.V2
 		            and fa_sub.fieldname = fa.FieldName 
 		            and fa_sub.fieldtypeid = fa.FieldTypeId 
 		            and ga_sub.actionObjectId=ga.actionObjectId)
-	            END AS 'PreviousValue'    
+	            END AS 'PreviousValue',
+                ft.[Type] as FieldType
             from reporting.global_audit ga
             left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
             inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
             left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
             left join Asset ActionA on ActionA.Object = ga.ActionObject and ActionA.ObjectID = ga.ActionObjectID
             left join AssetType ActionAT on ActionA.AssetTypeID = ActionAT.ID
+            left join FieldType FT on FT.ID = fa.FieldTypeID
             inner join  (
     			select uid, DisplayValue, Object, objectid, AssetTypeClass from AssetDetail where uid = @uid
     			union
@@ -642,13 +644,14 @@ namespace d360.web.Controllers.V2
 		            and fa_sub.fieldname = fa.FieldName 
 		            and fa_sub.fieldtypeid = fa.FieldTypeId 
 		            and ga_sub.actionObjectId=ga.actionObjectId)
-	            END AS 'PreviousValue'    
+	            END AS 'PreviousValue'
             from reporting.global_audit ga
             left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
             inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
             inner join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID and at.uid = @uid
             left join Asset ActionA on ActionA.Object = ga.ActionObject and ActionA.ObjectID = ga.ActionObjectID
-            left join AssetType ActionAT on ActionA.AssetTypeID = ActionAT.ID";
+            left join AssetType ActionAT on ActionA.AssetTypeID = ActionAT.ID            
+            ";
 
             if(includeReferenceItem)
             {

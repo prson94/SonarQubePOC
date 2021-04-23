@@ -248,57 +248,6 @@ where A.FusionTypeID = @id", columns, joins);
             return Request.CreateResponse<Dictionary<string, object>>(HttpStatusCode.OK, model);
         }
 
-        [Route("{typeID:int}/configurations/{id:int}/attributetypes")]
-        public IEnumerable<FusionAttributeTypeWithQuery> GetFusionAttributeTypes(int typeID, int id)
-        {
-            return Company.Query<FusionAttributeTypeWithQuery>(@"
-                    select	A.ID,
-                            A.Name,
-                            A.ScanEnabled,
-                            Q.Query
-                    from    Fusion C
-                            inner join FusionAttributeType A on A.FusionTypeID = C.FusionTypeID and C.ID = @id
-                            left join FusionAttributeTypeCustomQuery Q on Q.FusionAttributeTypeID = A.ID and Q.FusionID = C.ID", 
-                                new { id }
-                            );
-            
-        }
-
-        /// <summary>
-        /// Get a specific fusion configuration's query attribute types.  This list will provide required SQL statement to execute against the underlying relational source.
-        /// </summary>
-        /// <returns>The specific configuration's query attribute types.</returns>
-        [Route("{typeID:int}/configurations/{id:int}/queries")]
-        public HttpResponseMessage GetConfigurationQueries(int typeID, int id)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to see the fusion configuration details.");
-
-            try
-            {
-                var keyFields = Company.Query<FusionQueryAttributeTypeKeyField>("select Q.ID, F.Name from FusionQueryAttributeType Q inner join FieldType F on F.Object = 'FusionQueryAttributeType' and F.ObjectID = Q.ID and F.IsPartOfKey = 1 and Q.FusionID = @id", new { id });
-
-                var models = Company.Filter<FusionQueryAttributeType>(i => i.FusionID == id)
-                    .ToList()
-                    .Select(i => new FusionQueryAttributeTypeApiModel
-                    {
-                        ID = i.ID,
-                        KeyColumns = keyFields.Where(f => f.ID == i.ID).Select(f => f.Name).ToList(),
-                        Name = i.Name,
-                        Query = i.Query
-                    });
-
-                if (models == null)
-                {
-                    return Request.CreateResponse(HttpStatusCode.NotFound);
-                }
-                return Request.CreateResponse(HttpStatusCode.OK, models);
-            }
-            catch (Exception ex)
-            {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
-            }
-        }
 
         /// <summary>
         /// Get a specific fusion configuration.  This configuration will provide required connection and security credentials to connect to the underlying source.
@@ -864,44 +813,6 @@ where A.FusionTypeID = @id", columns, joins);
         }
 
         /// <summary>
-        /// Gets all overrides queries for a given fusion attribute type within a specific fusion configuration.
-        /// </summary>
-        /// <returns>A list of available overrides for a configuration.</returns>
-        [Route("{fusionTypeID:int}/configurations/{fusionID:int}/queryoverrides")]
-        public HttpResponseMessage GetQueryOverridesByConfiguration(int fusionTypeID, int fusionID)
-        {
-            if (Company.CurrentResourceIsAdmin)
-            {
-                return Request.CreateResponse(
-                    HttpStatusCode.OK,
-                    Company.Filter<FusionAttributeTypeCustomQuery>(i => i.FusionID == fusionID, i => i.FusionAttributeType).Select(o => new {
-                        FusionAttributeType = o.FusionAttributeType.TextPath,
-                        o.FusionAttributeTypeID,
-                        o.FusionID,
-                        o.ID,
-                        o.Query
-                    })
-                );
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Internal endpoint.
-        /// </summary>
-        /// <param name="typeID">The ID of the fusion type.</param>
-        /// <param name="fusionID">The ID of the fusion configuration.</param>
-        /// <returns></returns>
-        [Route("{typeID:int}/configurations/{fusionID:int}/queryattributetypes")]
-        public IQueryable<FusionQueryAttributeType> GetQueryAttributesByFusion(int typeID, int fusionID)
-        {
-            return Company.Filter<FusionQueryAttributeType>(i => i.FusionID == fusionID);
-        }
-
-        /// <summary>
         /// Takes a given set of fusion data for a particular fusion configuration.
         /// </summary>
         /// <param name="typeID">The ID of the fusion type.</param>
@@ -957,9 +868,9 @@ where A.FusionTypeID = @id", columns, joins);
             try
             {
                 var folder = $"bulk-fusion-{Company.CurrentCompanyID}";
-                Storage.CreateFolder(folder);
+                await Storage.CreateFolder(folder);
                 fileName = $"{typeID}.{fusionID}.{DateTime.UtcNow.ToString("yyyy-MM-dd_hh.mm.ss")}.json";
-                Storage.CreateFile(folder, fileName, json);
+                await Storage.CreateFile(folder, fileName, json);
 
                 Trace.TraceInformation("{0}{1}", prefix, "Saved raw json data to storage container.");
 
@@ -1219,9 +1130,9 @@ where A.FusionTypeID = @id", columns, joins);
                         var json = JsonConvert.SerializeObject(import);
 
                         var folder = $"bulk-fusion-{Company.CurrentCompanyID}";
-                        Storage.CreateFolder(folder);
+                        await Storage.CreateFolder(folder);
                         var fileName = $"{typeID}.{id}.{DateTime.UtcNow.ToString("yyyy-MM-dd_hh.mm.ss")}.json";
-                        Storage.CreateFile(folder, fileName, json);
+                        await Storage.CreateFile(folder, fileName, json);
 
                         await Queue.CreateMessageAsync(Config.GetValue<string>("FusionLoadQueue"), new FusionProcessingData
                         {
@@ -1306,7 +1217,7 @@ where A.FusionTypeID = @id", columns, joins);
 
                 var date = DateTime.UtcNow;
 
-                Storage.CreateFile("agent-log", $"{Company.CurrentCompanyID}/{date.ToString("yyyy-MM-dd_hh.mm.ss")}.json", json);
+                await Storage.CreateFile("agent-log", $"{Company.CurrentCompanyID}/{date.ToString("yyyy-MM-dd_hh.mm.ss")}.json", json);
                 
                 Trace.TraceInformation("{0}{1}", prefix, "Saved raw json data to storage container.");
 
@@ -1319,83 +1230,6 @@ where A.FusionTypeID = @id", columns, joins);
                 SendException(ex, new Dictionary<string, string>());
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(), ex);
             }
-        }
-
-        [Route("{fusionID:int}/{fusionQueryAttributeTypeID:int}/data")]
-        public HttpResponseMessage GetFusionQueryAttributesByFusionAndType(int fusionID, int fusionQueryAttributeTypeID, bool? metadata = false)
-        {
-            HttpResponseMessage response = null;
-
-            try
-            {
-                var joins = "";
-                var columns = "";
-
-                var fields = Company.Filter<FieldType>(i => i.Object == "FusionQueryAttributeType" && i.ObjectID == fusionQueryAttributeTypeID).OrderBy(i => i.SortOrder).ToList();
-
-                foreach (var f in fields)
-                {
-                    var tableName = $"Field{f.ID}";
-                    columns += ((string.IsNullOrEmpty(columns)) ? "" : ", ") + $"{tableName}_T.FormattedValue as [{f.Name}]";
-                    joins += $@" left join FieldWithRelation {tableName}_T on {tableName}_T.ObjectType = 'FusionQueryAttribute' and {tableName}_T.ObjectID = A.ID and {tableName}_T.FieldTypeID = {f.ID} ";
-                }
-
-                if (columns.Contains("[type]"))
-                {
-                    columns = columns.Replace("[type]", "[_type]");
-                }
-
-                var dbArgs = new Dapper.DynamicParameters();
-                dbArgs.Add("f", fusionID);
-                dbArgs.Add("t", fusionQueryAttributeTypeID);
-
-                #region Query
-
-                var sql = $@"
-select  {columns} 
-from	FusionQueryAttribute A 
-        inner join FusionQueryAttributeType T on T.ID = A.FusionQueryAttributeTypeID and T.FusionID = @f and T.ID = @t 
-        {joins} 
-where   A.Deleted = 0";
-
-                var models = Company.Query<dynamic>(sql, dbArgs);
-
-                #endregion
-
-                if (metadata.GetValueOrDefault())
-                {
-                    List<dynamic> header = new List<dynamic>();
-
-                    var firstRow = models.FirstOrDefault();
-
-                    if (firstRow != null)
-                    {
-                        foreach (KeyValuePair<string, object> kvp in firstRow)
-                        { // enumerating over it exposes the Properties and Values as a KeyValuePair
-                            var dataType = typeof(string).ToString();
-
-                            if (kvp.Value != null)
-                            {
-                                dataType = kvp.Value.GetType().ToString();
-                            }
-
-                            header.Add(new { field = kvp.Key, type = dataType });
-                        }
-                    }
-
-                    response = Request.CreateResponse(HttpStatusCode.OK, new { metadata = header, data = models });
-                }
-                else
-                {
-                    response = Request.CreateResponse(HttpStatusCode.OK, models);
-                }
-            }
-            catch (SqlException ex)
-            {
-                response = Request.CreateErrorResponse(HttpStatusCode.PreconditionFailed, ex.GetFullExceptionData(), ex);
-            }
-
-            return response;
         }
     }
 }

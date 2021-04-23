@@ -4,7 +4,26 @@
     xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+  <changeSet author="TDuric" id="Data.Corrections.GOV-11816-2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+update AssetType
+set CanEditParent = 1
+from assettype at
+	inner join [intersecttype] it on it.object = at.object and it.objectid = at.objectid
+	inner join [predicate] p on it.predicateid = p.id
+where p.type in (3,4)
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
 
+		]]>
+    </rollback>
+  </changeSet>
   <changeSet author="MDonato" id="Data.Corrections.GOV-13702">
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -211,196 +230,6 @@ drop view if exists [dbo].MapRuleItemDetail;
 		<![CDATA[
 drop table if exists metrics.TempScore;
 drop table if exists metrics.TempScoreItem;
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="MDonato" id="Data.Corrections.GOV-10149">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
---remove duplicate historical scoring records where the score has not changed
-		
-SET ANSI_WARNINGS OFF;
-go
-
-if (not exists (SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Score' AND COLUMN_NAME = 'NewEffectiveDate')) 
-begin
-     alter table metrics.Score add NewEffectiveDate date;
-end
-
-if (not exists (SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'NewEffectiveDate')) 
-begin
-     alter table metrics.ScoreItem add NewEffectiveDate date;
-end
-
-if (not exists (SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Score' AND COLUMN_NAME = 'FlagForUpdate')) 
-begin
-     alter table metrics.Score add FlagForUpdate bit;
-end
-
-if (not exists (SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'FlagForUpdate')) 
-begin
-     alter table metrics.ScoreItem add FlagForUpdate bit;
-end
-
-go
-
-begin
-	begin try
-
-		begin tran;
-
-		drop table if exists metrics.TempScoreItem
-		select * into metrics.TempScoreItem from metrics.ScoreItem;
-
-		drop table if exists metrics.TempScore
-		select * into metrics.TempScore from metrics.Score;
-		
-
-		drop table if exists #tempScore;
-		create table #tempScore
-		(
-			AssetUid uniqueidentifier,
-			EffectiveDate date,
-			EndDate date,
-			[Value] decimal (5,3),
-			ScoreType int
-		);
-
-		drop table if exists #tempScoreItem;
-		create table #tempScoreItem
-		(
-			AssetUid uniqueidentifier,
-			MetricAssetUid uniqueidentifier,
-			EffectiveDate date,
-			EndDate date,
-			[Value] bit
-		);
-
-		insert into #tempScore
-		select	S.AssetUid, 
-				min(S.EffectiveDate) as EffectiveDate, 
-				case when max(case when S.EndDate is null then 1 else 0 end) = 0 
-					then max(S.EndDate) 
-					else null 
-				end as EndDate, 
-				S.[Value],
-				S.ScoreType
-		from	metrics.Score s	
-				outer apply (
-					select	max(EffectiveDate) as MinDate 
-					from	metrics.Score M
-					where	M.AssetUid = S.AssetUid 
-							and M.ScoreType = S.ScoreType and M.[Value] <> S.[Value]
-							and M.EffectiveDate < S.EffectiveDate
-				) R
-		group by S.Assetuid, S.Scoretype, S.[Value], R.MinDate
-		having	count(*) > 1;
-
-
-		insert into #tempScoreItem
-		select	S.AssetUid, 
-				S.MetricAssetUid,
-				min(S.EffectiveDate) as EffectiveDate, 
-				case when max(case when S.EndDate is null then 1 else 0 end) = 0 
-					then max(S.EndDate) 
-					else null 
-				end as EndDate, 
-				S.[Value]
-		from	metrics.ScoreItem s	
-				outer apply (
-					select	max(EffectiveDate) as MinDate 
-					from	metrics.ScoreItem M
-					where	M.AssetUid = S.AssetUid 
-							and M.MetricAssetUid = S.MetricAssetUid and M.[Value] <> S.[Value]
-							and M.EffectiveDate < S.EffectiveDate
-				) R
-		group by S.Assetuid, S.MetricAssetUid, S.[Value], R.MinDate
-		having	count(*) > 1;
-
-
-
-		update	S
-		set		S.NewEffectiveDate = T.EffectiveDate,
-				S.FlagForUpdate = 1
-		from	metrics.Score S
-				inner join #tempScore T on T.AssetUid = S.AssetUid and T.[Value] = S.[Value] and T.ScoreType = S.ScoreType 
-					and coalesce(S.EffectiveDate,'0001-01-01') between T.EffectiveDate and coalesce(T.EndDate,'9999-01-01');
-
-		delete	S
-		from	metrics.Score S
-				inner join #tempScore T on T.AssetUid = S.AssetUid and T.[Value] = S.[Value] and T.ScoreType = S.ScoreType
-					and coalesce(S.NewEffectiveDate,'0001-01-01') between T.EffectiveDate and coalesce(T.EndDate,'9999-01-01')
-		where	coalesce(S.EndDate,'0001-01-01') <> coalesce(T.EndDate,'0001-01-01');
-
-		update	S
-		set		S.EffectiveDate = S.NewEffectiveDate 
-		from	metrics.Score S
-		where	S.FlagForUpdate = 1
-				and not exists (select 1 from metrics.Score where AssetUid = S.AssetUid and ScoreType = S.ScoreType 
-				and EffectiveDate = S.EffectiveDate);
-		
-
-		update	S
-		set		S.NewEffectiveDate = T.EffectiveDate,
-				S.FlagForUpdate = 1
-		from	metrics.ScoreItem S
-				inner join #tempScoreItem T on T.AssetUid = S.AssetUid and T.[Value] = S.[Value] and T.MetricAssetUid = S.MetricAssetUid 
-					and coalesce(S.EffectiveDate,'0001-01-01') between T.EffectiveDate and coalesce(T.EndDate,'9999-01-01');
-
-		delete	S
-		from	metrics.ScoreItem S
-				inner join #tempScoreItem T on T.AssetUid = S.AssetUid and T.[Value] = S.[Value] and T.MetricAssetUid = S.MetricAssetUid
-					and coalesce(S.NewEffectiveDate,'0001-01-01') between T.EffectiveDate and coalesce(T.EndDate,'9999-01-01')
-		where	coalesce(S.EndDate,'0001-01-01') <> coalesce(T.EndDate,'0001-01-01');
-
-		update	S
-		set		S.EffectiveDate = S.NewEffectiveDate 
-		from	metrics.ScoreItem S
-		where	S.FlagForUpdate = 1
-		and not exists (select 1 from metrics.Scoreitem where AssetUid = S.AssetUid
-			and MetricAssetUid = S.MetricAssetUid and EffectiveDate = S.NewEffectiveDate);
-		
-		drop table if exists #tempScore;
-		drop table if exists #tempScoreItem;
-
-		commit tran;
-
-	end try
-	begin catch
-		select ERROR_MESSAGE() as ErrorMessage;
-		rollback tran;
-	end catch
-end
-
-
-if (exists (SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Score' AND COLUMN_NAME = 'NewEffectiveDate')) 
-begin
-     alter table metrics.Score drop column NewEffectiveDate;
-end
-
-if (exists (SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'NewEffectiveDate')) 
-begin
-     alter table metrics.ScoreItem drop column NewEffectiveDate;
-end
-
-if (exists (SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Score' AND COLUMN_NAME = 'FlagForUpdate')) 
-begin
-     alter table metrics.Score drop column FlagForUpdate;
-end
-
-if (exists (SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'FlagForUpdate')) 
-begin
-     alter table metrics.ScoreItem drop column FlagForUpdate;
-end
 		]]>
     </sql>
 	<rollback>
@@ -1125,24 +954,7 @@ where CreatedBy is null
 ]]>
 		</sql>
 	</changeSet>
-	<changeSet author="bquinlivan" id="Data.Corrections.GOV-11741-2">
-		<sql dbms="mssql" splitStatements="false" stripComments="false">
-<![CDATA[
-if((select Count(1) from AssetTypeExportTemplateField) = 0) BEGIN
-insert into AssetTypeExportTemplateField (templateId, FieldTypeId, [Order])
-select 
-	ATET.ID as templateId, 
-	includeFields.value as FieldTypeId, 
-	ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS [Order] 
-FROM 
-	AssetTypeExportTemplate ATET 
-	CROSS APPLY 
-	STRING_SPLIT(IncludeFields, ',') includefields
-	inner join FieldType FT on FT.ID = includeFields.value
-END
-]]>
-		</sql>
-	</changeSet>
+
 	<changeSet author="Pappas" id="Data.Corrections.GOV-12158">
 		<sql dbms="mssql" splitStatements="false" stripComments="false">
 <![CDATA[
@@ -1164,6 +976,7 @@ update assettype set hashvalue = null where [object] = 'ArtifactType'
 ]]>
 		</sql>
 	</changeSet>
+
   <changeSet author="Pappas" id="Data.Corrections.GOV-10896">
     <sql dbms="mssql" splitStatements="false" stripComments="false">
       <![CDATA[
@@ -1328,99 +1141,8 @@ inner join [workflow].[EventRegistration] ER ON ER.ChangeType = 7 AND ER.TypeID 
 ]]>
     </sql>
   </changeSet>
-	<changeSet author="Pappas" id="Data.Corrections.GOV-12994">
-    <sql dbms="mssql" splitStatements="false" stripComments="false">
-<![CDATA[
-update 	V 
-set 	V.Value = lower(A.Uid) 
-from	[metrics].[AssetVersionConditionItemValue] V 
-		inner join [metrics].[AssetVersionConditionItem] I on I.Uid = V.Uid and TRY_CAST(V.Value as int) > 0 
-		inner join FieldType F on F.ID = I.ConditionFieldTypeID and F.[Type] = 'Lookup' 
-		inner join Asset A on A.Object = 'ReferenceItem' and A.ObjectID = TRY_CAST(V.Value as int) 
-]]>
-    </sql>
-	</changeSet>
 
-	<changeSet author="Pappas" id="Data.Corrections.GOV-13300">
-    <sql dbms="mssql" splitStatements="false" stripComments="false">
-<![CDATA[
-drop table if exists #adjustments;
-
-select	L.*,
-		W.NewGroupAdjustedWeight,
-		newid() as NewScoreItemUid
-into	#adjustments
-from	metrics.ScoreItem I
-		inner join metrics.ScoreItemLink L on L.ScoreItemUid = I.Uid 
-		inner join metrics.Score S on S.Uid = L.ScoreUid
-		inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid
-		inner join metrics.Asset A on A.Uid = V.AssetUid and A.IsGroup = 1
-		cross apply (
-			select	sum(II.AdjustedWeight) as AdjustedWeight,
-					sum(II.AdjustedMaxWeight) as AdjustedMaxWeight,
-					coalesce(
-						round(
-							(
-								case
-									when sum(II.AdjustedMaxWeight) = 0 then 0
-									else sum(II.AdjustedWeight) / sum(II.AdjustedMaxWeight)
-								end
-							) * I.AdjustedMaxWeight, 
-						3), 
-					0) as NewGroupAdjustedWeight
-			from	metrics.Asset IA 
-					inner join metrics.AssetVersion IV on IV.AssetUid = IA.Uid 
-					cross apply (
-						select	max(EffectiveDate) as MaxEffectiveDate
-						from	metrics.AssetVersion
-						where	AssetUid = IA.Uid
-								and EffectiveDate <= S.EffectiveDate
-					) MIV 
-					inner join metrics.ScoreItem II on II.AssetVersionUid = IV.Uid
-					inner join metrics.ScoreItemLink IL on II.Uid = IL.ScoreItemUid and IL.ScoreUid = L.ScoreUid
-			where	IA.ParentUid = V.AssetUid
-					and IV.EffectiveDate = MIV.MaxEffectiveDate
-		) W;
-
-INSERT INTO metrics.ScoreItem ([UpdatedOn], [Value], [AdjustedWeight], [RunDate], [Uid], [AssetVersionUid], [Evidence], [ConditionUid], [AdjustedMaxWeight], [DecimalValue])
-	select	I.UpdatedOn,
-			I.Value,
-			A.NewGroupAdjustedWeight,
-			I.RunDate,
-			A.NewScoreItemUid,
-			I.AssetVersionUid,
-			I.Evidence,
-			I.ConditionUid,
-			I.AdjustedMaxWeight,
-			I.DecimalValue
-	from	#adjustments A
-			inner join metrics.ScoreItem I on I.Uid = A.ScoreItemUid;
-
-insert into metrics.ScoreItemLink (ScoreUid, ScoreItemUid)
-	select	ScoreUid,
-			NewScoreItemUid
-	from	#adjustments;
-
-delete	T
-from	metrics.ScoreItemLink T
-		inner join #adjustments A on A.ScoreUid = T.ScoreUid and A.ScoreItemUid = T.ScoreItemUid;
-
---set the score end dates correctly.
-update 	P 
-set 	P.EndDate = dateadd(dd, -1, N.EffectiveDate)
-from	metrics.Score P
-		outer apply (
-			select	min(EffectiveDate) as EffectiveDate 
-			from	metrics.Score 
-			where	AllocationUid = P.AllocationUid 
-					and AssetUid = P.Assetuid 
-					and EffectiveDate > P.EffectiveDate
-		) N;
-]]>
-    </sql>
-	</changeSet>
-
-	<changeSet author="TKlok" id="Data.Corrections.GOV-13242">
+  <changeSet author="TKlok" id="Data.Corrections.GOV-13242">
 		<sql dbms="mssql" splitStatements="false" stripComments="false">
 <![CDATA[
 BEGIN
@@ -1454,5 +1176,18 @@ delete T from CommentRelation T inner join Comment C on C.ID = T.CommentID and C
 delete Comment where CommentType not in (1,2,5);
 ]]>
 		</sql>
-	</changeSet>	
+	</changeSet>
+	<changeSet author="bquinlivan" id="Data.Corrections.GOV-13585">
+			<sql dbms="mssql" splitStatements="false" stripComments="false">
+	<![CDATA[
+			UPDATE G
+				set G.[Uid] = A.Uid
+			from 
+				[Group] G
+				Inner Join Asset A on A.SourceID = G.ID and A.Object = 'Group'
+			Where 
+				G.[Uid] is null		
+	]]>
+		</sql>
+	</changeSet>		
 </databaseChangeLog>

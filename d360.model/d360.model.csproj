@@ -121,7 +121,6 @@
     <Compile Include="BaseContext.cs" />
     <Compile Include="CommunityContext.cs" />
     <Compile Include="CompanyContext_Api.cs" />
-    <Compile Include="CompanyContext_Integration.cs" />
     <Compile Include="CompanyContext_Organization.cs" />
     <Compile Include="CompanyContext_BulkLoad.cs" />
     <Compile Include="CompanyContext_Asset.cs" />
@@ -134,6 +133,7 @@
     </Compile>
     <Compile Include="CompanyContext_MarkitLineage.cs" />
     <Compile Include="DataAccessLayer\ICommentRepository.cs" />
+    <Compile Include="DataAccessLayer\IDataProfileRepository.cs" />
     <Compile Include="DataAccessLayer\IGraphFilterRepository.cs" />
     <Compile Include="DataAccessLayer\IIssueRepository.cs" />
     <Compile Include="DataAccessLayer\IMembershipRepository.cs" />
@@ -143,6 +143,7 @@
     <Compile Include="DataAccessLayer\IResponsibilityRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\BaseRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\CommentRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\DataProfileRespository.cs" />
     <Compile Include="DataAccessLayer\repositories\FusionRepository.cs" />
     <Compile Include="DataAccessLayer\IMetricsRepository.cs" />
     <Compile Include="DataAccessLayer\IScoringRepository.cs" />
@@ -197,6 +198,7 @@
     <Compile Include="workflow\WorkflowFormFormModel.cs" />
     <Compile Include="workflow\WorkflowFormModel.cs" />
     <Compile Include="workflow\WorkflowHttpRequestSettingsModel.cs" />
+    <Compile Include="workflow\WorkflowHttpResponseSettingsModel.cs" />
     <Compile Include="workflow\WorkflowItemStepSettingsModel.cs" />
     <Compile Include="workflow\WorkflowRegistrationCriteriaProcessor.cs" />
     <Compile Include="workflow\WorkflowRegistrationSettingsModel.cs" />

@@ -1,9 +1,10 @@
-﻿using d360.core.enums;
+﻿using Azure.Messaging.ServiceBus;
 using d360.core.queue;
 using Microsoft.Azure;
-using Microsoft.ServiceBus.Messaging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace d360.extensions.queue
@@ -51,9 +52,14 @@ namespace d360.extensions.queue
 
         public async Task CreateTopicMessageAsync(string topicName, EventInfo e)
         {
-            var bm = new BrokeredMessage(e);
-            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName); 
-            await client.SendAsync(bm);
+            var eString = JsonConvert.SerializeObject(e);
+            var eBytes = Encoding.UTF8.GetBytes(eString);
+            var bm = new ServiceBusMessage(new BinaryData(eBytes));
+            bm.MessageId = Guid.NewGuid().ToString();
+
+            var client = new ServiceBusClient(EventServiceBusConnectionString);
+            var sender = client.CreateSender(topicName);
+            await sender.SendMessageAsync(bm);
         }
 
         public void CreateTopicMessages(List<EventInfo> events)
@@ -73,15 +79,43 @@ namespace d360.extensions.queue
 
         public async Task CreateTopicMessagesAsync(string topicName, List<EventInfo> events)
         {
-            var list = new List<BrokeredMessage>();
+            var client = new ServiceBusClient(EventServiceBusConnectionString);
+            var sender = client.CreateSender(topicName);
+
+            var messages = new Queue<ServiceBusMessage>();
+
             foreach (var e in events)
             {
-                var bm = new BrokeredMessage(e);
-                list.Add(bm);
+                var eString = JsonConvert.SerializeObject(e);
+                var eBytes = Encoding.UTF8.GetBytes(eString);
+                var bm = new ServiceBusMessage(new BinaryData(eBytes));
+                bm.MessageId = Guid.NewGuid().ToString();
+                messages.Enqueue(bm);
             }
 
-            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, "Events");
-            await client.SendBatchAsync(list);
+            while (messages.Count > 0)
+            {
+                var partitionKey = Guid.NewGuid().ToString();
+                using (ServiceBusMessageBatch batch = await sender.CreateMessageBatchAsync())
+                {
+
+                    while (messages.Count > 0)
+                    {
+                        var msg = messages.Peek();
+                        msg.PartitionKey = partitionKey;
+                        if (batch.TryAddMessage(msg))
+                        {
+                            messages.Dequeue();
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    await sender.SendMessagesAsync(batch);
+                }
+            }
         }
 
         public void CreateTopicMessage<T>(string topicName, T e)
@@ -91,9 +125,14 @@ namespace d360.extensions.queue
 
         public async Task CreateTopicMessageAsync<T>(string topicName, T e)
         {
-            var bm = new BrokeredMessage(e);
-            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
-            await client.SendAsync(bm);
+            var eString = JsonConvert.SerializeObject(e);
+            var eBytes = Encoding.UTF8.GetBytes(eString);
+            var bm = new ServiceBusMessage(new BinaryData(eBytes));
+            bm.MessageId = Guid.NewGuid().ToString();
+
+            var client = new ServiceBusClient(EventServiceBusConnectionString);
+            var sender = client.CreateSender(topicName);
+            await sender.SendMessageAsync(bm);
         }
 
         public void CreateTopicMessages<T>(string topicName, List<T> events, DateTime? scheduledEnqueueTime = null)
@@ -103,15 +142,43 @@ namespace d360.extensions.queue
 
         public async Task CreateTopicMessagesAsync<T>(string topicName, List<T> events)
         {
-            var list = new List<BrokeredMessage>();
+            var client = new ServiceBusClient(EventServiceBusConnectionString);
+            var sender = client.CreateSender(topicName);
+
+            var messages = new Queue<ServiceBusMessage>();
+
             foreach (var e in events)
             {
-                var bm = new BrokeredMessage(e);
-                list.Add(bm);
+                var eString = JsonConvert.SerializeObject(e);
+                var eBytes = Encoding.UTF8.GetBytes(eString);
+                var bm = new ServiceBusMessage(new BinaryData(eBytes));
+                bm.MessageId = Guid.NewGuid().ToString();
+                messages.Enqueue(bm);
             }
 
-            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, "Events");
-            await client.SendBatchAsync(list);
+            while (messages.Count > 0)
+            {
+                var partitionKey = Guid.NewGuid().ToString();
+                using (ServiceBusMessageBatch batch = await sender.CreateMessageBatchAsync())
+                {
+
+                    while (messages.Count > 0)
+                    {
+                        var msg = messages.Peek();
+                        msg.PartitionKey = partitionKey;
+                        if (batch.TryAddMessage(msg))
+                        {
+                            messages.Dequeue();
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    await sender.SendMessagesAsync(batch);
+                }
+            }
         }
         public string GetTopicNameBySetting(string settingName)
         {

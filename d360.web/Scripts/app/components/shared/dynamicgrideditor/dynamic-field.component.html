@@ -1,5 +1,10 @@
 ﻿<ng-container *ngIf="!useNewUI">
-    <div [formGroup]="form">
+    <div *ngIf="tooltipVisible && field.TooltipText" class="field-tooltip">
+        <div class="p-tooltip p-component p-tooltip-top ig-tooltip">
+            <div class="p-tooltip-text">{{field.TooltipText}}</div>
+        </div>
+    </div>
+    <div [formGroup]="form" (mouseenter)="tooltipVisible = true" (mouseleave)="tooltipVisible = false">
         <input *ngIf="field.FieldType=='Hidden'" [formControlName]="field.FieldName" type="hidden" />
         <div [ngSwitch]="field.FieldType" class="col s12" *ngIf="field.FieldType!='Hidden'">
             <div class="FieldName">
@@ -35,7 +40,7 @@
                                 </div>
                             </ng-template>
                         </p-multiSelect>
-                        <p-multiSelect *ngIf="!field.UseColorControl" [formControlName]="field.FieldName" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl [placeholder]="multiselectLabel()"></p-multiSelect>
+                        <p-multiSelect *ngIf="!field.UseColorControl" [formControlName]="field.FieldName" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl [placeholder]="multiselectLabel()" selectedItemsLabel="{0} items selected"></p-multiSelect>
                     </div>
                     <ng-template #singleSelect>
                         <ng-container *ngIf="field.UseNativeLookupControl">
@@ -129,7 +134,8 @@
                                        [formControlName]="field.FieldName"
                                        [options]="field.Items | selectItemTextToLabel"
                                        [style]="{width: '100%'}"
-                                       ngDefaultControl [placeholder]="multiselectLabel()">
+                                       ngDefaultControl [placeholder]="multiselectLabel()"
+                                       selectedItemsLabel="{0} items selected">
                             <ng-template let-item pTemplate="item">
                                 <div class="selectlistinfoitem-wrapper-multiselect">
                                     <div class="selectlistinfoitem-text" [style.width]="item.Info ? '' : '100%'">{{item.Text}}</div><div class="selectlistinfoitem-info">{{item.Info}}</div>

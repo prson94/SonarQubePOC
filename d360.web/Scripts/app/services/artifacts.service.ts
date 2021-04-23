@@ -9,13 +9,15 @@ import { AssetDetail } from '../models/asset.model';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
 import { ApiResult } from "../models/apiresult.model";
+import { Router } from "@angular/router";
 
 @Injectable()
 export class ArtifactService extends BaseObservableService {
 
     constructor(
         private http: HttpClient,
-        protected messagesService: MessagesObservableService
+        protected messagesService: MessagesObservableService,
+        private router: Router
     ) {
         super(messagesService);
     }
@@ -26,7 +28,7 @@ export class ArtifactService extends BaseObservableService {
             .get(`api/artifact/${id}`)
             .pipe(
                 map(response => <Artifact>response),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err, false, this.router))
             )
             ;
     }

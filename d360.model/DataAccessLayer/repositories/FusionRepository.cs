@@ -50,7 +50,7 @@ namespace d360.model.DataAccessLayer
             };
 
             // Save to storage container.
-            StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(new AssetDeletes() { new AssetDelete() { Cascade = Cascade, Uid = assetUid } }));
+            await StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(new AssetDeletes() { new AssetDelete() { Cascade = Cascade, Uid = assetUid } }));
 
             // Save to queue.
             await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);

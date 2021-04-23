@@ -154,7 +154,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     );
                     this.secondaryNavService.showItem(this.itemsFollow);
                     this.hasRelations = new SecondaryNavItem(
-                        'Related Assets', 'hasRelations', ['fa-retweet'],
+                        'Relationships', 'hasRelations', ['fa-retweet'],
                         `/sidebar/relationships/resource/${resourceId}`, null, 10
                     );
                     this.secondaryNavService.showItem(this.hasRelations);

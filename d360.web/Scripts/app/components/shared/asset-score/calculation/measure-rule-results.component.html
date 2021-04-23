@@ -2,81 +2,95 @@
     <div class="description">Showing rule results for the measure <strong>{{scoreItem?.Name}}</strong> on the asset <strong>{{assetName}}</strong> (<strong>{{assetTypeName}}</strong>):</div>
     <div class="scoring-v2">
         <div class="score-left-content">
-            <p-table #dt
-                     [value]="Evidence?.items"
-                     selectionMode="single"
-                     [metaKeySelection]="true"
-                     dataKey="ResultUid"
-                     [globalFilterFields]="['OwningAssetDisplayPath']"
-                     [pageLinks]="3"
-                     [paginator]="true"
-                     [rows]="rowsPerPage"
-                     [rowsPerPageOptions]="defaultPagingOptions"
-                     [(selection)]="selected"
-                     (onRowSelect)="selectedItemChange(selected?.ResultUid)"
-                     [lazy]="true"
-                     (onLazyLoad)="performLazyLoad($event)"
-                     [totalRecords]="totalRecords"
-                     [loading]="isLoading"
-                     [loadingIcon]="'fa fa-spinner fa-spin'">
-                <ng-template pTemplate="caption">
-                    <div style="margin-bottom: 8px; display: flex; flex-direction: row;">
-                        <span style="width: 300px; padding: 2px 0px 0px 2px">
-                            <ig-search-field maxLength="100" placeholder="Search rule results" mode="Keypress" debounce="1000" (onSearch)="performSimpleSearch($event)"></ig-search-field>
-                        </span>
-                        <span class="grow"></span>
-                        <button igButton icon="fa-download" (click)="performDownload()" [disabled]="downloadDisabled()" [title]="downloadTooltip()"></button>
-                    </div>
-                </ng-template>
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th [pSortableColumn]="'OwningAssetDisplayPath'" style="width: 25%">
-                            Rule
-                            <d3s-sortIcon [field]="'OwningAssetDisplayPath'"></d3s-sortIcon>
-                        </th>
-                        <th [pSortableColumn]="'EvaluatedAssetDisplayPath'">
-                            Asset
-                            <d3s-sortIcon [field]="'EvaluatedAssetDisplayPath'"></d3s-sortIcon>
-                        </th>
-                        <th [pSortableColumn]="'EffectiveDate'" style="width: 15%">
-                            Effective Date
-                            <d3s-sortIcon [field]="'EffectiveDate'"></d3s-sortIcon>
-                        </th>
-                        <th [pSortableColumn]="'PassFraction'" style="width: 15%">
-                            Pass Fraction
-                            <d3s-sortIcon [field]="'PassFraction'"></d3s-sortIcon>
-                        </th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-item>
-                    <tr (dblclick)="selected=item;" [pSelectableRow]="item">
-                        <td><div class="path-column-wrapper"><div class="path-column" [title]="item.OwningAssetDisplayPath">{{item.OwningAssetDisplayPath}}</div></div></td>
-                        <td><div class="path-column-wrapper"><div class="path-column" [title]="item.EvaluatedAssetDisplayPath">{{item.EvaluatedAssetDisplayPath}}</div></div></td>
-                        <td><span>{{ item.EffectiveDate | date:'shortDate':'GMT'}}</span></td>
-                        <td>{{item.PassFraction}}</td>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="summary">
-                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                </ng-template>
-            </p-table>
+            <div class="score-definition-container">
+                <div class="definition-wrapper">
+                    <p-table #dt
+                             [value]="Evidence?.items"
+                             selectionMode="single"
+                             [metaKeySelection]="true"
+                             [dataKey]="ResultUid"
+                             [globalFilterFields]="['OwningAssetDisplayPath']"
+                             [pageLinks]="3"
+                             [paginator]="true"
+                             [rows]="rowsPerPage"
+                             [rowsPerPageOptions]="defaultPagingOptions"
+                             [(selection)]="selected"
+                             (onRowSelect)="selectedItemChange(selected?.ResultUid)"
+                             [lazy]="true"
+                             (onLazyLoad)="performLazyLoad($event)"
+                             [scrollable]="true" scrollHeight="flex"
+                             [totalRecords]="totalRecords"
+                             [loading]="isLoading"
+                             [loadingIcon]="'fa fa-spinner fa-spin'">
+                        <ng-template pTemplate="caption">
+                            <div style="margin-bottom: 8px; display: flex; flex-direction: row;">
+                                <span style="width: 300px; padding: 2px 0px 0px 2px">
+                                    <ig-search-field maxLength="100" placeholder="Search rule results" mode="Keypress" debounce="1000" (onSearch)="performSimpleSearch($event)"></ig-search-field>
+                                </span>
+                                <span class="grow"></span>
+                                <button igButton icon="fa-download" (click)="performDownload()" [disabled]="downloadDisabled()" [title]="downloadTooltip()"></button>
+                            </div>
+                        </ng-template>
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th [pSortableColumn]="'OwningAssetDisplayPath'" style="width: 25%">
+                                    Rule
+                                    <d3s-sortIcon [field]="'OwningAssetDisplayPath'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'EvaluatedAssetDisplayPath'">
+                                    Asset
+                                    <d3s-sortIcon [field]="'EvaluatedAssetDisplayPath'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'EffectiveDate'" style="width: 150px">
+                                    Effective Date
+                                    <d3s-sortIcon [field]="'EffectiveDate'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'PassFraction'" style="width: 150px">
+                                    Pass Fraction
+                                    <d3s-sortIcon [field]="'PassFraction'"></d3s-sortIcon>
+                                </th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr (dblclick)="selected=item;" [pSelectableRow]="item">
+                                <td style="width: 25%"><div class="path-column-wrapper"><div class="path-column" [title]="item.OwningAssetDisplayPath" [innerHtml]="item.OwningAssetDisplayPath | safeHtml"></div></div></td>
+                                <td><div class="path-column-wrapper"><div class="path-column" [title]="item.EvaluatedAssetDisplayPath" [innerHtml]="item.EvaluatedAssetDisplayPath | safeHtml"></div></div></td>
+                                <td style="width: 150px">
+                                    <span *ngIf="item.EffectiveDate">{{ item.EffectiveDate | date:'shortDate':'GMT'}}</span>
+                                    <span *ngIf="!item.EffectiveDate" class="fa fa-exclamation-triangle" style="margin-right: 6px"></span>
+                                    <span *ngIf="!item.EffectiveDate">No result found</span>
+                                </td>
+                                <td style="width: 150px">{{item.PassFraction}}</td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </div>
         </div>
         <div class="score-right-content">
             <div class="score-definition-container">
                 <div *ngIf="selected" class="definition-wrapper">
+                    <div class="measure-details-warning" *ngIf="!selected.EffectiveDate">
+                        <span class="fa fa-info-circle"></span>
+                        <span [innerText]="getMissingRuleResultMessage()"></span>
+                    </div>
+
                     <div class="measure-details-item">
                         <div class="details-header">Rule</div>
-                        <div class="details-content"><a [routerLink]="'/asset/' + selected.OwningAssetUid" target="MeasureEvidenceRuleResult">{{selected.OwningAssetDisplayPath}}</a></div>
+                        <div class="details-content"><a [routerLink]="'/asset/' + selected.OwningAssetUid" target="MeasureEvidenceRuleResult" [innerHtml]="selected.OwningAssetDisplayPath | safeHtml"></a></div>
                     </div>
                     <div class="measure-details-item">
                         <div class="details-header">Asset</div>
-                        <div class="details-content"><a [routerLink]="'/asset/' + selected.EvaluatedAssetUid" target="MeasureEvidenceRuleResult">{{selected.EvaluatedAssetDisplayPath}}</a></div>
+                        <div class="details-content"><a [routerLink]="'/asset/' + selected.EvaluatedAssetUid" target="MeasureEvidenceRuleResult" [innerHtml]="selected.EvaluatedAssetDisplayPath | safeHtml"></a></div>
                     </div>
                     <div class="measure-details-item">
                         <div class="details-header">Rule Selection</div>
                         <div class="details-content">
                             <div *ngFor="let item of selected.RollupPath; index as i">
-                                <a [routerLink]="'/asset/' + item.Uid" target="MeasureEvidenceRuleResult">{{item.AssetPath}}</a> ({{item.AssetTypePath}}){{getFormattedPredicate(i)}}
+                                <a [routerLink]="'/asset/' + item.Uid" target="MeasureEvidenceRuleResult" [innerHtml]="item.AssetPath | safeHtml"></a> (<span [innerHtml]="item.AssetTypePath | safeHtml"></span>){{getFormattedPredicate(i)}}
                             </div>
                         </div>
                     </div>
@@ -116,4 +130,4 @@
             <button igButton class="ig-button-primary" type="button" (click)="cancel()" label="Close"></button>
         </div>
     </div>
-</div>
+        </div>

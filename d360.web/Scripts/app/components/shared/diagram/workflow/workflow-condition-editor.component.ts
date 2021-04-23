@@ -21,6 +21,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     @Input() issueObject: string = null;
     @Input() formFields: any[] = [];
     @Input() httpFields: any[] = [];
+    @Input() outputFields: any[] = []
     @Input() condition: any = null;
     @Input() changeType: WorkflowChangeType = null;
     @Input() diagram: go.Diagram;
@@ -66,12 +67,14 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         let formFieldsChanged = changes['formFields'] != null && !changes['formFields'].isFirstChange();
         let changeTypeChanged = changes['changeType'] != null && !changes['changeType'].isFirstChange();
         let httpFieldsChanged = changes['httpFields'] != null && !changes['httpFields'].isFirstChange();
+        let outputFieldsChanged = changes['outputFields'] != null && !changes['outputFields'].isFirstChange();
         let objectChanged = (changes['objectType'] != null && !changes['objectType'].isFirstChange()) || (changes['objectId'] != null && !changes['objectId'].isFirstChange());
 
-        if (formFieldsChanged || httpFieldsChanged || changeTypeChanged || objectChanged)    {
+        if (outputFieldsChanged || formFieldsChanged || httpFieldsChanged || changeTypeChanged || objectChanged)    {
             this.loadContextualFields();
             this.loadFormFields();
             this.loadHttpFields();
+            this.loadOutputFields();
 
             this.fieldList = [];
 
@@ -84,6 +87,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
             this.loadFormFields();
             this.loadHttpFields();
+            this.loadOutputFields();
             this.loadContextualFields();
 
         }
@@ -106,6 +110,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
                     this.loadFormFields();
                     this.loadHttpFields();
+                    this.loadOutputFields();
                     this.loadContextualFields();
 
                 })
@@ -151,6 +156,17 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                 this.fieldList.push({
                     value: 'HTTPRequest|' + f['@stepId'] + '|' + f['@id'],
                     label: 'HTTP Request :: ' + f['@label']
+                });
+            });
+        }
+    }
+
+    loadOutputFields() {
+        if (this.outputFields.length > 0) {
+            this.outputFields.forEach((f) => {
+                this.fieldList.push({
+                    value: 'HTTPResponse|' + f.StepId + '|' + f.Id,
+                    label: 'HTTP Response :: ' + f.Name
                 });
             });
         }
@@ -293,6 +309,28 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             this.condition['@VersionStepID'] = field['@stepId'];
             this.condition['@FormInputID'] = field['@id'];
         }
+        else if (this.selectedField.split('|')[0] == 'HTTPResponse') {
+            
+            let field = this.outputFields.find(f => f.StepId == this.selectedField.split('|')[1] && f.Id == this.selectedField.split('|')[2]);
+            console.log(this.selectedField, this.outputFields, this.httpFields, field);
+
+            delete this.condition['@FormInputID'];
+            delete this.condition['@VersionStepID'];
+            delete this.condition['@label'];
+            delete this.condition['@id'];
+            delete this.condition['@type'];
+            delete this.condition['@ContextualFieldID'];
+            delete this.condition['@Operator'];
+            delete this.condition['@Value'];
+
+            this.selectedType = 'text';
+            this.setOperators(field, ConditionFieldType.HttpResponse);
+
+            this.condition['@FieldName'] = 'HTTP Response :: ' + field.Name;
+            this.condition['@ValueType'] = this.getValueType(this.selectedType);
+            this.condition['@VersionStepID'] = field.StepId;
+            this.condition['@FormInputID'] = field.Id;
+        }
     }
 
     setOperators(field: any = null, fieldType: ConditionFieldType = null) {
@@ -318,6 +356,10 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             case ConditionFieldType.HttpRequest:
                 type = field['@type'];
                 fieldId = field['@id'];
+                break;
+            case ConditionFieldType.HttpResponse:
+                type = 'text';
+                fieldId = field.Id;
                 break;
         }
 

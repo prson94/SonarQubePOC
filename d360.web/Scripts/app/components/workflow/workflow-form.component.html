@@ -88,6 +88,7 @@
                                                    [(ngModel)]="field.Value"
                                                    [options]="field.Values | dropdownItemToSelectItemPipe"
                                                    [style]="{width:'100%'}"
+                                                   selectedItemsLabel="{0} items selected"
                                                    ngDefaultControl></p-multiSelect>
                                 </div>
                                 <div *ngSwitchCase="fieldType.RelationshipType">
@@ -106,6 +107,7 @@
                                                    [(ngModel)]="field.Value"
                                                    [options]="field.Values | dropdownItemToSelectItemPipe"
                                                    [style]="{width:'100%'}"
+                                                   selectedItemsLabel="{0} items selected"
                                                    ngDefaultControl></p-multiSelect>
                                 </div>
                                 <div *ngSwitchCase="fieldType.Link">

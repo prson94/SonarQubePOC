@@ -62,6 +62,9 @@ import { GalleryFieldConditionGridComponent } from './gallery.field-condition-gr
 import { FieldConditionGridModule } from '../shared/controls/field-condition-grid/field-condition-grid.module';
 import { SearchFieldModule } from '../shared/controls/search-field/search-field.component';
 import { GallerySearchFieldComponent } from './gallery.search-field.component';
+import { GalleryMultiInputFieldComponent } from './gallery.multi-input-field.component';
+import { MultiInputFieldModule } from '../shared/controls/multi-input-field/multi-input-field.component';
+import { GalleryInputGroupComponent } from './gallery.input-group.component';
 
 @NgModule({
     imports: [
@@ -98,7 +101,8 @@ import { GallerySearchFieldComponent } from './gallery.search-field.component';
         OverlayPanelModule,
         DropdownModule,
         RadioButtonModule,
-        FieldConditionGridModule
+        FieldConditionGridModule,
+        MultiInputFieldModule
     ],
     declarations: [
         GalleryComponent,
@@ -128,7 +132,9 @@ import { GallerySearchFieldComponent } from './gallery.search-field.component';
         GalleryPropertyGroupComponent,
         GalleryFieldConditionGridComponent,
         GalleryRadioButtonComponent,
-        GallerySearchFieldComponent
+        GallerySearchFieldComponent,
+        GalleryMultiInputFieldComponent,
+        GalleryInputGroupComponent
     ],
     providers: [
         GalleryGuard,

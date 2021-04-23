@@ -821,6 +821,17 @@ from	IntersectType I
                             return;
                         }
 
+                        var RelationRefListInfo = Company.Query<dynamic>(
+                            "select T.ID as IntersectTypeID from IntersectType T where T.uid = @intersectUid and ((T.object = @AssetType and T.ObjectID = 0) or (T.Subject = @AssetType and T.SubjectID = 0))",
+                            new { uid = i.AssetTypeUid, intersectUid = i.IntersectTypeUid, AssetType = SystemObjects.ReferenceItemType.ToString() }
+                        ).SingleOrDefault();
+
+                        if (RelationRefListInfo != null)
+                        {
+                            hasDefinitionError = true;
+                            return;
+                        }
+
                         string relationObject = relationInfo.Object;
                         int relationObjectId = relationInfo.ObjectID;
                         int relationIntersectId = relationInfo.IntersectTypeID;
@@ -1670,7 +1681,7 @@ from	IntersectType I
             foreach(var rule in rules)
             {
                 rule.SetDefinitionFromRaw();
-                anyResponsibilityUsingField = rule.StructuredDefinition.When.Any(x => fieldTypes.Any(f=>f.ID == x.FieldTypeID));
+                anyResponsibilityUsingField = rule.StructuredDefinition?.When != null && rule.StructuredDefinition.When.Any(x => fieldTypes.Any(f=>f.ID == x.FieldTypeID));
                 if (anyResponsibilityUsingField)
                 {
                     break;

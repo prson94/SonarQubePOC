@@ -17,6 +17,11 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         {
             var measureChangedModel = await Storage.DeserializeJsonObjectFromBlobAsync<MeasureRemovedModel>(Info.StorageFolder, Info.StorageFile);
 
+            if (measureChangedModel == null)
+            {
+                throw new ArgumentNullException("measureChangedModel","Cannot load score file from storage");
+            }
+
             if (measureChangedModel.EffectiveEndDate.Date <= DateTime.UtcNow.Date)
             {
                 // We can continue processing it.
@@ -121,7 +126,7 @@ select Uid from #Scores where OtherMeasuresCount = 0 and EffectiveDate = @today;
                     {
                         var secondsToAdd = new Random().Next(10, 50);
                         var timespan = new TimeSpan(0, 0, secondsToAdd);
-                        Db.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, list, Info.ExecutionUid, timespan);
+                        Db.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, list, triggeredByExecutionUid: Info.ExecutionUid, timespan: timespan);
                     }
                 }
             }

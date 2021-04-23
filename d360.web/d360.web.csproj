@@ -34,7 +34,7 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <TypeScriptToolsVersion>3.9</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>4.0</TypeScriptToolsVersion>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -47,17 +47,26 @@
     <Reference Include="AngleSharp, Version=0.14.0.0, Culture=neutral, PublicKeyToken=e83494dcdc6d31ea, processorArchitecture=MSIL">
       <HintPath>..\packages\AngleSharp.0.14.0\lib\net461\AngleSharp.dll</HintPath>
     </Reference>
-    <Reference Include="AngleSharp.Css, Version=0.14.0.0, Culture=neutral, PublicKeyToken=e83494dcdc6d31ea, processorArchitecture=MSIL">
-      <HintPath>..\packages\AngleSharp.Css.0.14.0\lib\net461\AngleSharp.Css.dll</HintPath>
+    <Reference Include="AngleSharp.Css, Version=0.14.2.0, Culture=neutral, PublicKeyToken=e83494dcdc6d31ea, processorArchitecture=MSIL">
+      <HintPath>..\packages\AngleSharp.Css.0.14.2\lib\net472\AngleSharp.Css.dll</HintPath>
     </Reference>
-    <Reference Include="Autofac, Version=5.1.2.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\packages\Autofac.5.1.2\lib\net461\Autofac.dll</HintPath>
+    <Reference Include="Autofac, Version=6.1.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.6.1.0\lib\netstandard2.0\Autofac.dll</HintPath>
     </Reference>
-    <Reference Include="Autofac.Integration.Mvc, Version=5.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\packages\Autofac.Mvc5.5.0.0\lib\net461\Autofac.Integration.Mvc.dll</HintPath>
+    <Reference Include="Autofac.Integration.Mvc, Version=6.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.Mvc5.6.0.0\lib\net472\Autofac.Integration.Mvc.dll</HintPath>
     </Reference>
-    <Reference Include="Autofac.Integration.WebApi, Version=5.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\packages\Autofac.WebApi2.5.0.0\lib\net461\Autofac.Integration.WebApi.dll</HintPath>
+    <Reference Include="Autofac.Integration.Mvc.Owin, Version=6.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.Mvc5.Owin.6.0.0\lib\net472\Autofac.Integration.Mvc.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac.Integration.Owin, Version=6.0.1.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.Owin.6.0.1\lib\net472\Autofac.Integration.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac.Integration.WebApi, Version=6.0.1.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.WebApi2.6.0.1\lib\net472\Autofac.Integration.WebApi.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac.Integration.WebApi.Owin, Version=6.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.WebApi2.Owin.6.0.0\lib\net472\Autofac.Integration.WebApi.Owin.dll</HintPath>
     </Reference>
     <Reference Include="ComponentSpace.SAML2, Version=2.5.0.20, Culture=neutral, PublicKeyToken=7c51d97b3a0a8ff9, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -290,6 +299,9 @@
     <Reference Include="System.Web.Http.OData, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.OData.5.7.0\lib\net45\System.Web.Http.OData.dll</HintPath>
     </Reference>
+    <Reference Include="System.Web.Http.Owin, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Owin.5.2.7\lib\net45\System.Web.Http.Owin.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web.Http.WebHost, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.7\lib\net45\System.Web.Http.WebHost.dll</HintPath>
     </Reference>
@@ -377,6 +389,7 @@
     <Compile Include="Controllers\Services\CustomController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
     <Compile Include="Controllers\V2\CommentsController.cs" />
+    <Compile Include="Controllers\V2\DataProfilesController.cs" />
     <Compile Include="Controllers\V2\ProcessController.cs" />
     <Compile Include="Controllers\V2\FieldsController.cs" />
     <Compile Include="Controllers\V2\AuditController.cs" />
@@ -442,6 +455,7 @@
     <Compile Include="Filters\StringEnumControllerAttribute.cs" />
     <Compile Include="Filters\SwaggerContentTypesAttribute.cs" />
     <Compile Include="Filters\SwaggerExcludeFilter.cs" />
+    <Compile Include="Filters\SwaggerOrderFilter.cs" />
     <Compile Include="Filters\SwaggerParameterAttribute.cs" />
     <Compile Include="Handlers\ErrorMessageHandler.cs" />
     <Compile Include="Handlers\MethodOverrideHandler.cs" />
@@ -503,6 +517,7 @@
     <Content Include="Content\images\Governance Icons\report_circle.png" />
     <Content Include="Content\images\home.background.new.jpg" />
     <Content Include="Content\images\home.background.png" />
+    <Content Include="Content\images\logo.mail.small.png" />
     <Content Include="Content\images\logo.new.png" />
     <Content Include="Content\images\related-assets-icon.svg" />
     <Content Include="Content\primeicons\1.0.0-beta.10\fonts\primeicons.svg" />
@@ -726,7 +741,6 @@
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-700.svg" />
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.svg" />
     <Content Include="index.html" />
-    <Content Include="Scripts\ai.0.22.9-build00167.min.js" />
     <Content Include="Scripts\app\components\admin\issuetypes\admin-issue-type-allocation-editor.component.html" />
     <Content Include="Scripts\app\components\admin\scoring\admin-metric-pass-test-details.component.html" />
     <Content Include="Scripts\app\components\admin\scoring\detail.component.html" />
@@ -754,6 +768,8 @@
     <Content Include="Scripts\app\components\admin\hierarchies\admin-level-list.component.html" />
     <Content Include="Scripts\app\components\admin\hierarchies\admin-hierarchies.component.html" />
     <Content Include="Scripts\app\components\admin\hierarchies\admin-level-editor.component.html" />
+    <Content Include="Scripts\app\components\assets-grid\advanced-filtering\filter-item.component.html" />
+    <Content Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.component.html" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.html" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid-column-filter.component.html" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid.component.html" />
@@ -767,6 +783,8 @@
     <Content Include="Scripts\app\components\fusion\fusion-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.input-group.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.multi-input-field.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.radio-button.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.property-group.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.checkbox.component.html" />
@@ -797,7 +815,6 @@
     <Content Include="Scripts\app\components\hierarchy\hierarchy-item-structure.component.html" />
     <Content Include="Scripts\app\components\hierarchy\hierarchy-item.component.html" />
     <Content Include="Scripts\app\components\hierarchy\hierarchy-list.component.html" />
-    <Content Include="Scripts\app\components\mapping\mapping.component.html" />
     <Content Include="Scripts\app\components\reference\reference-item-list.component.html" />
     <Content Include="Scripts\app\components\reference\reference-item-type-list.component.html" />
     <Content Include="Scripts\app\components\rule\rule-column-filter.component.html" />
@@ -838,15 +855,20 @@
     <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.woff" />
     <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.woff2" />
     <Content Include="Scripts\app\components\shared\asset-score\calculation\measure-rule-results.less" />
+    <Content Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.component.less" />
+    <Content Include="Scripts\app\components\assets-grid\asset-grid.less" />
+    <Content Include="Content\styles\infogix-ui\IgInputGroup.less" />
     <Content Include="angular.json" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
     <Content Include="Scripts\app\components\shared\controls\message-box\message-box.less" />
     <Content Include="Scripts\app\components\shared\controls\field-condition-grid\field-condition-grid.component.html" />
+    <Content Include="Scripts\app\components\shared\controls\multi-input-field\multi-input-field.component.html" />
     <Content Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.less" />
     <Content Include="Scripts\app\components\shared\controls\property-group\property-group.less" />
     <Content Include="Scripts\app\components\shared\controls\search-field\search-field.component.less" />
+    <Content Include="Scripts\app\components\shared\controls\multi-input-field\multi-input-field.component.less" />
     <None Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.less" />
     <Content Include="Scripts\app\components\shared\controls\number-picker\number-input.component.html" />
     <Content Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.html" />
@@ -879,6 +901,7 @@
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-technical-relationships.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\model-diagram.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\addpanel.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-step-http-response.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-step-http.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-template-tool.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-editor-v2.component.html" />
@@ -909,6 +932,7 @@
     <Content Include="Scripts\app\components\shared\small-widgets\status-badge\status-badge.component.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\synonyms.tile.html" />
     <Content Include="Scripts\app\components\shared\social\social-board.component.html" />
+    <Content Include="Scripts\app\components\shared\social\comment-form.component.html" />
     <Content Include="Scripts\app\components\shared\tags\d3s-tag-view.html" />
     <Content Include="Scripts\app\components\shared\user\user-list.component.html" />
     <Content Include="Scripts\app\components\shared\where-used\where-used.component.html" />
@@ -969,9 +993,15 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets-grid\advanced-filtering\filter-item.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.models.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.input-group.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.multi-input-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.radio-button.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.propery-group.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.checkbox.component.ts" />
@@ -1024,12 +1054,14 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\message-box\message-box.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\message-box\message-box.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\field-condition-grid\field-condition-grid.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\multi-input-field\multi-input-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\property-group\property-group.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\search-field\search-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\tools\overview.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-list-view.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-step-http-response.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-step-http.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\directives\delayed-input.directive.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-label-editor.component.ts" />
@@ -1056,6 +1088,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dayofweek-input\dayofweek-input.component.ts" />
     <Content Include="Scripts\app\components\shared\social\social-comment.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\social\comment-form.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\info-tooltip.component.ts" />
     <Content Include="Scripts\app\components\workflow\workflow-view-details.component.html" />
     <Content Include="Scripts\dist\*.js" />
@@ -1281,6 +1314,7 @@
     <Content Include="Scripts\app\components\shared\asset-score\asset-score.less" />
     <Content Include="Scripts\app\components\shared\menu\site-menu.less" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\overview.component.less" />
+    <Content Include="Scripts\app\components\shared\social\social-board.less" />
     <Content Include="Scripts\tsconfig.aot.json" />
     <Content Include="Scripts\tsconfig.json" />
     <None Include="Web.Debug.config">
@@ -1320,7 +1354,9 @@
       <CustomToolNamespace>Resources</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Views\DataProfiles\" />
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App_GlobalResources\FormInfo.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
@@ -1439,10 +1475,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\customizations\admin-customizations.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-dashboards-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion\admin-fusion.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-attribute-type-custom-query-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-schedule-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-attribute-type-custom-query.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-schedule.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-types.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-types.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-types.routes.ts" />
@@ -1562,6 +1594,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-field-change-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-form-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-grid.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-http-response-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-http-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflow\shared-workflow.module.ts" />
@@ -1599,11 +1632,6 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\followers\followers.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\followers\followers.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-details.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-query-attribute-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-query-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\itemown\itemown.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\itemown\itemown.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\itemown\itemown.routes.ts" />
@@ -1896,7 +1924,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\social\social-board.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\social\social-comment.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\social\social-input.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\activity-details-tile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\activity-tile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assignments\assignments.component.ts" />

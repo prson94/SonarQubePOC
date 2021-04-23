@@ -72,22 +72,6 @@ export class ScoreService extends BaseObservableService {
             );
     }
 
-    getScoreDefinition(assetUid: string): Observable<any> {
-        return this.http.get(`/api/v2/metrics/${assetUid}/definition`)
-            .pipe(
-                map((response) => <any>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
-
-    //getScoreTypes(assetUid: string): Observable<any[]> {
-    //    return this.http.get(`/api/v2/metrics/ScoreTypes/${assetUid}`)
-    //        .pipe(
-    //            map((response) => <any>response),
-    //            catchError((err) => this.handleError(err))
-    //        );
-    //}
-
     getAssetScoreGraphPoints(assetUid: string, type: ScoreType): Observable<number[]> {
         return this.http.get(`/api/v2/metrics/${type}/${assetUid}/graphPoints`)
             .pipe(

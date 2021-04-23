@@ -40,7 +40,12 @@ export class BaseObservableService {
                             errorMessage = JSON.parse(error["_body"]).message;
                         } else {
                             if (isErrorError) {
-                                errorMessage = error.error.message;
+                                if (error.error !== null) {
+                                    errorMessage = error.error.message;
+                                }
+                                else if (error.message !== null) {
+                                    errorMessage = error.message;
+                                }
                             } else {
                                 errorMessage = error.toString();
                             }

@@ -106,6 +106,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Can Edit Parent can be set only asset types that are a Business or Technical class and are the child of another asset type..
+        /// </summary>
+        public static string CanEditParentClassRestriction {
+            get {
+                return ResourceManager.GetString("CanEditParentClassRestriction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Can Edit Parent can be set only on children asset types..
+        /// </summary>
+        public static string CanEditParentRestriction {
+            get {
+                return ResourceManager.GetString("CanEditParentRestriction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Please check your request and try again..
         /// </summary>
         public static string CheckRequest {

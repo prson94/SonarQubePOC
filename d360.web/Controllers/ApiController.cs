@@ -404,7 +404,7 @@ begin
 	from	FieldDetail
 	where	FieldTypeID = @fieldTypeID and [Object] = @obj and ObjectID = @objID
 end
-select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAnsi = true, Length= 50 }, objID }).ConfigureAwait(false)).SingleOrDefault();
+select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAnsi = true, Length = 50 }, objID }).ConfigureAwait(false)).SingleOrDefault();
 
                     if (rfld != null)
                     {
@@ -508,8 +508,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 if (indx != 0) dynamicSql += " or ";
 
                 dynamicSql += $"[object] = @obj{indx} and [objectid] = @objId{indx}";
-                                
-                dbParams.Add($"obj{indx}", item.ObjectName,System.Data.DbType.AnsiString, size:50);
+
+                dbParams.Add($"obj{indx}", item.ObjectName, System.Data.DbType.AnsiString, size: 50);
                 dbParams.Add($"objId{indx}", item.ObjectID);
 
                 indx++;
@@ -892,19 +892,10 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     var targetType = Request.GetQueryString("target");
                     var targetTypeID = Request.GetQueryString("targetID");
 
-                    if (!string.IsNullOrEmpty(targetType) && !string.IsNullOrEmpty(targetTypeID))
-                    {
-                        var ttID = int.Parse(targetTypeID);
-                        var targetKeyFields = Company.Filter<FieldType>(i => i.Object == targetType && i.ObjectID == ttID && i.IsPartOfKey).OrderBy(i => i.SortOrder).ToList();
-                        items.InsertRange(0, targetKeyFields);
-                    }
-
-                    if (targetType == SystemObjects.ReferenceItemType.ToString() || targetType == SystemObjects.FusionAttributeType.ToString() || targetType == SystemObjects.ResourceType.ToString() || targetType == SystemObjects.GroupType.ToString() || targetType == SystemObjects.FusionQueryAttributeType.ToString())
-                    {
-                        columns.Add(
-                            new GridColumn { text = "Name", datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
-                        );
-                    }
+                    columns.Add(
+                            new GridColumn { text = "Asset Path", datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
+                    );
+                    
 
                     remainingWidth = 80;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
@@ -1078,29 +1069,6 @@ where   h.ID <> @t order by h.[Level] desc;
                         filterColumns.Add(col);
                     });
 
-                    break;
-                #endregion
-                case SystemObjects.FusionQueryAttributeType:
-                    #region
-
-                    remainingWidth = 90;
-
-                    dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
-
-                    filterColumns.Add(new GridFilterColumn { text = "ID", datafield = "ID", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
-                    fields.Add(new GridField { name = "ID", type = "number" });
-
-                    parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
-
-                    items.ForEach(i =>
-                    {
-                        GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, dynamicFieldWidth, true));
-
-                        col.id = i.ID.ToString();
-                        col.hiddenfield = false;
-
-                        filterColumns.Add(col);
-                    });
                     break;
                 #endregion
                 case SystemObjects.FusionType:
@@ -1640,7 +1608,7 @@ order by    rnk, [Name]";
         private async Task<List<DetailReadOnlyRowModel>> RenderComplexLookupField(string type, int id, FieldType ft)
         {
             var list = new List<DetailReadOnlyRowModel>();
-            
+
             if (ft != null)
             {
                 var lookup = await Company.QueryFirstOrDefaultAsync<FieldTypeLookup>("select FieldTypeID, HideHeader, HideFooter, LookupType, Definition, HideFilter from FieldTypeLookup where FieldTypeID = @id", new { id = ft.ID });
@@ -1745,13 +1713,13 @@ order by    rnk, [Name]";
         }
 
         private async Task<bool> AnyComplexLookupGridValues(string type, int id, int fieldTypeId)
-        {            
+        {
             bool any = false;
 
             try
             {
                 any = await Company.QueryFirstOrDefaultAsync<bool>("exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, @countOnly, @checkExists",
-                    new { @object = new DbString { Value = type, IsAnsi= true, Length = 50 }, objectId = id, fieldTypeId, resourceId = Company.CurrentResourceID, countOnly = true, checkExists = true }
+                    new { @object = new DbString { Value = type, IsAnsi = true, Length = 50 }, objectId = id, fieldTypeId, resourceId = Company.CurrentResourceID, countOnly = true, checkExists = true }
                 );
             }
             catch (Exception ex)
@@ -1820,8 +1788,8 @@ order by    rnk, [Name]";
                 }
 
                 if (objectsWithoutReadAccess != null && objectsWithoutReadAccess.Any(x => (x.Object == obj && x.ObjectID == objID)))
-                {                    
-                        url = null;                 
+                {
+                    url = null;
                 }
 
                 values.Add(new ReadOnlyFieldValue { Value = intersectDisplayValue, TooltipContext = "Preview", TooltipID = objID, TooltipType = obj, TooltipUrl = url });
@@ -2026,10 +1994,10 @@ order by    rnk, [Name]";
                 bool includeSelected = offset < preselectedCount;
                 if (includeSelected)
                 {
-                    items.OrderBy(x=> x.Text.ToString()).Skip(offset).Take(rows).ToList().ForEach(d =>
-                    {
-                        selection.Add(new System.Web.Mvc.SelectListItem { Text = d.Text, Value = d.Value.ToString(), Selected = true });
-                    });
+                    items.OrderBy(x => x.Text.ToString()).Skip(offset).Take(rows).ToList().ForEach(d =>
+                     {
+                         selection.Add(new System.Web.Mvc.SelectListItem { Text = d.Text, Value = d.Value.ToString(), Selected = true });
+                     });
                 }
 
 
@@ -2060,7 +2028,7 @@ order by    rnk, [Name]";
                     List<dynamic> items = (List<dynamic>)result["Items"];
                     items.ForEach(d =>
                     {
-                        if(!excludeValues.Contains(d.Value.ToString()))
+                        if (!excludeValues.Contains(d.Value.ToString()))
                             selection.Add(new System.Web.Mvc.SelectListItem { Text = d.Text, Value = d.Value.ToString(), Selected = false });
                     });
                 }
@@ -3324,16 +3292,6 @@ from    (
                     fusionAttributeType = null;
                     break;
                 #endregion
-                case SystemObjects.FusionQueryAttribute:
-                    #region Fields
-                    var fusionQueryAttribute = Company.GetById<FusionQueryAttribute>(id);
-                    if (fusionQueryAttribute != null)
-                    {
-                        model.rows.AddRange(await loadDynamicDisplayFields(type, id).ConfigureAwait(false));
-                    }
-                    fusionQueryAttribute = null;
-                    break;
-                #endregion
                 case SystemObjects.FusionExecution:
                     #region Fields
                     var fusionExecution = Company.GetById<FusionExecution>(id);
@@ -4548,8 +4506,6 @@ where v.id = {0}", id)).FirstOrDefault();
 
             if (obj == SystemObjects.FusionAttribute)
                 sql = string.Format(QueryConstants.FusionAttributeRelationshipAllCountsWithZero, disallowEditFilter);
-            else if (obj == SystemObjects.FusionQueryAttribute)
-                sql = string.Format(QueryConstants.FusionQueryAttributeRelationshipAllCountsWithZero, disallowEditFilter);
             else if (obj == SystemObjects.ReferenceItemType)
                 sql = string.Format(QueryConstants.ReferenceListTypeRelationshipsAllCountsWithZero, disallowEditFilter);
             else
@@ -4560,8 +4516,7 @@ where v.id = {0}", id)).FirstOrDefault();
             if (!Community.IsFusionEnabled())
             {
                 data = data.Where(x => x.Object != SystemObjects.FusionType.ToString()
-                && x.Object != SystemObjects.FusionAttributeType.ToString()
-                && x.Object != SystemObjects.FusionQueryAttributeType.ToString());
+                && x.Object != SystemObjects.FusionAttributeType.ToString());
             }
             return data;
 
@@ -4690,7 +4645,7 @@ inner join AssetType AST on AST.Object = case when I.Subject = @type and I.Subje
 						    and AST.ObjectID = case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end 
 inner join Asset IA on	IA.Object = case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end
 						and IA.ObjectID = case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end 
-cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P 
+left join graph.AssetNodeDisplayPath P on P.ID = IA.ID
 {permissionJoins}";
                     }
                     else
@@ -4698,7 +4653,7 @@ cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P
                         assetJoin = $@"
 inner join AssetType AST on {(sourceIsObject ? "AST.Object = IT.Subject and AST.ObjectID = IT.SubjectID" : "AST.Object = IT.Object and AST.ObjectID = IT.ObjectID")}
 inner join Asset IA on	{(sourceIsObject ? " IA.Object = I.Subject and IA.ObjectID = I.SubjectID " : " IA.Object = I.Object and IA.ObjectID = I.ObjectID ")}
-cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P 
+left join graph.AssetNodeDisplayPath P on P.ID = IA.ID
 {permissionJoins}";
                     }
 
@@ -4721,7 +4676,7 @@ select	I.[Uid],
         IntersectTypeID,
         case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end as Object,
 		case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end as ObjectID,
-		P.TextPath as Name,
+		{(isTargetReferenceItemType ? "P.TextPath as Name," : "P.DisplayPath as Name,")}        
 		case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end as Type,
 		case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end as TypeID,
 		AST.Name as TypeName,
@@ -4759,7 +4714,7 @@ inner join AssetType AST on AST.Object = (case when I.Subject = @type and I.Subj
 						    and AST.ObjectID = {(includeInverse ? "(case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end)" : "IT.ObjectID")} 
 inner join Asset IA on	IA.Object = {(includeInverse ? "(case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end)" : "I.Object")}
 						and IA.ObjectID = {(includeInverse ? "(case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end)" : "I.ObjectID")} 
-cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P 
+left join graph.AssetNodeDisplayPath P on P.ID = IA.ID
 {permissionJoins}";
                 }
 
@@ -4770,7 +4725,7 @@ select	I.[Uid],
         case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end as Object,
 		case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end as ObjectID,
         IA.uid as ObjectUid,
-		P.TextPath as Name,        
+		{(isTargetReferenceItemType ? "P.TextPath as Name," :"P.DisplayPath as Name,")}        
 		IT.Object Type,
 		IT.ObjectID TypeID,
 		AST.Name as TypeName,
@@ -4809,7 +4764,7 @@ inner join AssetType AST on AST.Object = {(includeInverse ? "(case when I.Object
                             and AST.ObjectID = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then IT.SubjectID else IT.ObjectID end)" : "IT.SubjectID")}
 inner join Asset IA on IA.Object = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then I.Subject else I.Object end)" : "I.Subject")}
                        and IA.ObjectID = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then I.SubjectID else I.ObjectID end)" : "I.SubjectID")}
-cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P
+left join graph.AssetNodeDisplayPath P on P.ID = IA.ID
 {permissionJoins}";
                 }
 
@@ -4828,7 +4783,7 @@ select	I.[Uid],
             I.ObjectID
         end as ObjectID,
         IA.uid as ObjectUid,
-		P.TextPath as Name,        
+		{(isTargetReferenceItemType ? "P.TextPath as Name," : "P.DisplayPath as Name,")}              
 		IT.Subject as Type,
 		IT.SubjectID as TypeID,
 		AST.Name as TypeName,
@@ -5254,9 +5209,15 @@ SELECT (
         }
 
         [Route("catalogs/{typeID:int}")]
-        public HttpResponseMessage GetTaxonomyType(int typeID)
+        public async Task<HttpResponseMessage> GetTaxonomyType(int typeID)
         {
-            var row = Company.Query<dynamic>(QueryConstants.TaxonomySettingsItem, new { id = typeID }).Single();
+            var row = await Company.QueryFirstOrDefaultAsync<dynamic>(QueryConstants.TaxonomySettingsItem, new { id = typeID });
+
+            if (row == null)
+            {
+                throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
+            }
+
             return Request.CreateResponse<dynamic>(
                 new Dictionary<string, object> {
                     { "ID", row.ID },
@@ -5349,7 +5310,7 @@ SELECT (
             var rangeStart = rangeEnd.AddDays(days);
             var countsRequest = await commentsRepository.GetCommentCountsByFollower(resourceId, null, rangeStart, rangeEnd);
             var counts = countsRequest.OrderBy(i => i.CommentTypeName);
-            
+
             List<CountModel> items = new List<CountModel>();
 
             //need to add a record for social, Issue, Task, DataEvent, Question
@@ -5488,68 +5449,9 @@ from	ResponsibilityDetail
 where	Type = 'ReferenceItemType'
 		and TypeID = @id 
 		and PermissionsBitMask & @p = 0
-		and ResourceID = @resource", new { id, resource = Company.CurrentResourceID, p = (int)Permission.ReadAsset});
+		and ResourceID = @resource", new { id, resource = Company.CurrentResourceID, p = (int)Permission.ReadAsset });
 
             return Request.CreateResponse(HttpStatusCode.OK, !records.Any());
-        }
-
-        #endregion
-
-        #region Issue Types
-
-        [Route("issue/{issueID:int}")]
-        public HttpResponseMessage GetIssue(int issueID)
-        {
-            var issue = Company.GetById<Issue>(issueID);
-
-            if (issue == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
-
-            var fields = Company.GetFieldRelationsByObject(SystemObjects.Issue, issueID).OrderBy(x => x.SortOrder).ToList();
-            List<dynamic> values = new List<dynamic>();
-
-            foreach (var field in fields)
-            {
-                values.Add(new { FieldName = field.FriendlyName, Value = field.FormattedValue, Type = field.Type });
-            }
-
-            return Request.CreateResponse(HttpStatusCode.OK, new
-            {
-                Issue = issue,
-                Fields = values,
-            });
-
-        }
-        #endregion
-
-        #region Metrics
-
-        internal class MetricAssetTypeViewModel
-        {
-            public Guid Uid { get; set; }
-            public AssetTypeClass Class { get; set; }
-            public string ClassName { get { return Class.GetDisplayName(); } }
-            public string Name { get; set; }
-        }
-
-        [Route("metrics/assettypes")]
-        public HttpResponseMessage GetMetricAssetTypes()
-        {
-            List<int> classes = new List<int>() {
-                (int)AssetTypeClass.BusinessAsset,
-                (int)AssetTypeClass.Model,
-                (int)AssetTypeClass.Policy,
-                (int)AssetTypeClass.Rule,
-                (int)AssetTypeClass.TechnicalAsset
-            };
-            var models = Company.Query<MetricAssetTypeViewModel>(@"
-select	T.[Uid],
-        T.[Class], 
-		P.[Path] as Name
-from	AssetType T
-		cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
-where   T.[Class] in @classes", new { classes }).OrderBy(i => i.ClassName).ThenBy(i => i.Name).ToList();
-
-            return Request.CreateResponse(HttpStatusCode.OK, models);
         }
 
         #endregion

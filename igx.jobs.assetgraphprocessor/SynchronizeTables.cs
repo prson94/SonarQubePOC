@@ -22,7 +22,8 @@ namespace igx.jobs.assetgraphprocessor
 #else        
         const string timerSettings = "0 0 0 * * 6";
 #endif
-        public static async Task Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
+
+        public static async Task RunSyncTables([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
 #if DEBUG
             var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 1).ToList();

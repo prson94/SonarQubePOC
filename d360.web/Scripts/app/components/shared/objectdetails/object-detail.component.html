@@ -3,50 +3,8 @@
         <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
     </div>
     <div *ngIf="!isLoading">
-        <div style="line-height:10px">&nbsp;</div>
-        <div *ngFor="let row of rows">
-            <div class="row" style="margin-bottom: 10px" attr.data-category="{{row.Category}}">
-                <div *ngIf="row.columns == 1">
-                    <div class="col l2 m3 s12">
-                        <div *ngFor="let field of row.FirstColumnFields">
-                            <div *ngIf="field.FieldDescription && field.FieldDescription != ''" class="FieldName FieldDisplayName" [pTooltip]="field.FieldDescription" tooltipPosition="top">{{field.Name}}</div>
-                            <div *ngIf="!field.FieldDescription || field.FieldDescription == ''" title="{{field.Name}}" class="FieldName FieldDisplayName">{{field.Name}}</div>
-                        </div>
-                    </div>
-                    <div class="col l10 m9 s12">
-                        <div *ngFor="let field of row.FirstColumnFields">
-                            <object-detail-field [field]="field" [assetUID]="assetUID"></object-detail-field>
-                        </div>
-                    </div>
-                </div>
-                <div *ngIf="row.columns != 1">
-                    <div class="col l2 m3 s12">
-                        <div *ngFor="let field of row.FirstColumnFields">
-                            <div *ngIf="field.FieldDescription && field.FieldDescription != ''" class="FieldName FieldDisplayName" [pTooltip]="field.FieldDescription" tooltipPosition="top">{{field.Name}}</div>
-                            <div *ngIf="!field.FieldDescription || field.FieldDescription == ''" title="{{field.Name}}" class="FieldName FieldDisplayName">{{field.Name}}</div>
-                        </div>
-                    </div>
-                    <div class="col l4 m3 s12">
-                        <div *ngFor="let field of row.FirstColumnFields">
-                            <object-detail-field [field]="field" [assetUID]="assetUID"></object-detail-field>
-                        </div>
-                    </div>
-                    <div class="col l2 m3 s12">
-                        <div *ngFor="let field of row.SecondColumnFields">
-                            <div *ngIf="field.FieldDescription && field.FieldDescription != ''" class="FieldName FieldDisplayName" [pTooltip]="field.FieldDescription" tooltipPosition="top">{{field.Name}}</div>
-                            <div *ngIf="!field.FieldDescription || field.FieldDescription == ''" title="{{field.Name}}" class="FieldName FieldDisplayName">{{field.Name}}</div>
-                        </div>
-                    </div>
-                    <div class="col l4 m3 s12">
-                        <div *ngFor="let field of row.SecondColumnFields">
-                            <object-detail-field [field]="field" [assetUID]="assetUID"></object-detail-field>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
         <div *ngFor="let category of categories">
-            <simple-accordion *ngIf="category.loaded && category.hasData" [header]="category.name" [active]="category.active">
+            <simple-accordion *ngIf="category.loaded && category.hasData" [header]="category.name" [active]="category.active" (activeChange)="category.active = $event; saveState()">
                 <object-detail-category [category]="category" [assetUID]="assetUID"></object-detail-category>
             </simple-accordion>        
         </div>
@@ -61,10 +19,10 @@
                                    [objectType]="objectType"
                                    [assetUid]="objectUID"
                                    [readonly]="false"
-                                   [hasAdd]="hasModifyRelationshipsPermissions"
+                                   [hasAdd]="hasAddRelationshipsPermissions"
                                    [hasDelete]="hasDeleteRelationshipsPermissions"></d3s-synonyms-tile>
             </simple-accordion>
-            <simple-accordion *ngIf="systemPropertiesCategory.loaded && systemPropertiesCategory.hasData" [header]="systemPropertiesCategory.name" [active]="systemPropertiesCategory.active">
+            <simple-accordion *ngIf="systemPropertiesCategory.loaded && systemPropertiesCategory.hasData" [header]="systemPropertiesCategory.name" [active]="systemPropertiesCategory.active" (activeChange)="systemPropertiesCategory.active = $event; saveState()">
                 <object-detail-category [category]="systemPropertiesCategory" assetUID="assetUID"></object-detail-category>
             </simple-accordion>                                    
         </div>
