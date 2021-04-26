@@ -574,11 +574,32 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.updateOperatorData();
 
         if (this.condition.operator.toString() === "Between") {
-            if (this.condition.value > this.condition.value2) {
-                var temp = this.condition.value;
-                this.condition.value = this.condition.value2;
-                this.condition.value2 = temp;
+            var type = this.fieldInputType();
+            switch (type) {
+                case "multi-number":
+                    if (parseFloat(this.condition.value) > parseFloat(this.condition.value2)) {
+                        var temp = this.condition.value;
+                        this.condition.value = this.condition.value2;
+                        this.condition.value2 = temp;
+                    }
+                    break; 
+                case "multi-date":
+                case "multi-date-time":
+                    if (new Date(this.condition.value) > new Date(this.condition.value2)) {
+                        var temp = this.condition.value;
+                        this.condition.value = this.condition.value2;
+                        this.condition.value2 = temp;
+                    }
+                    break;
+                default:
+                    if (this.condition.value > this.condition.value2) {
+                        var temp = this.condition.value;
+                        this.condition.value = this.condition.value2;
+                        this.condition.value2 = temp;
+                    }
+                    break;
             }
+
         }
 
         this.uiTooltipValue = this.condition.getTooltipValue();
