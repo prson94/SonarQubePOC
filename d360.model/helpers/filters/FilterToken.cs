@@ -519,7 +519,7 @@ namespace d360.model.helpers
 
         private void LoadLookupSql()
         {
-            bool isFieldFromRel = CompanyContext.FieldTypes.FirstOrDefault(x => x.ID == fieldType.ID).Type == "FieldFromRelationship";
+            bool isFieldFromRel = CompanyContext.FieldTypes.FirstOrDefault(x => x.ID == fieldType.ID)?.Type == "FieldFromRelationship";
 
             string type = fieldType.Type;
             int fieldTypeId = fieldType.ID;
