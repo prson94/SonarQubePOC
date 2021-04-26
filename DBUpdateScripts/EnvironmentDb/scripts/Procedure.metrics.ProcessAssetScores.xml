@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.metrics.ProcessAssetScores-v1">
+  <changeSet author="Pappas" id="Procedure.metrics.ProcessAssetScores-v1.11">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -192,13 +192,13 @@ begin
 		select	distinct		
 				St.AssetUid,
 				Ei.MeasureUid,
-				Ei.AssetVersionUid as MeasureVersionUid,
+				Ei.MeasureVersionUid,
 				St.EffectiveDate,
 				Ei.[Value],
 				Ei.RawWeight,
 				Ei.ConditionUid,
-				Ei.Evidence,
-				Ei.OtherConditions,
+				coalesce(Ei.Evidence, '{}'),
+				coalesce(Ei.OtherConditions, '[]'),
 				
 				Ei.Uid as PriorScoreItemUid,
 				Ei.AssetVersionUid as PriorMeasureVersionUid,
@@ -214,6 +214,7 @@ begin
 									select	ROW_NUMBER() over (partition by V.AssetUid order by St.EffectiveDate desc) as RowNumber,
 											St.EffectiveDate, 
 											V.AssetUid as MeasureUid,
+											V.Uid as MeasureVersionUid,
 											V.Weight as RawWeight,
 											Sc.*
 									from	metrics.AssetVersion V
@@ -229,7 +230,7 @@ begin
 														inner join metrics.ScoreItemLink L on L.ScoreUid = S.Uid and S.AssetUid = St.AssetUid and S.EffectiveDate <= St.EffectiveDate
 														inner join metrics.ScoreItem I on I.Uid = L.ScoreItemUid and I.AssetVersionUid = V.Uid
 											) Sc
-									where	Sc.ScoreRowNumber = 1
+									where	Sc.ScoreRowNumber = 1 or Sc.ScoreRowNumber is null
 									) Ims
 							where Ims.RowNumber = 1
 				) Ei;
