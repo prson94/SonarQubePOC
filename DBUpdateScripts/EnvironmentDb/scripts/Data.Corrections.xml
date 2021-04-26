@@ -1189,5 +1189,17 @@ delete Comment where CommentType not in (1,2,5);
 				G.[Uid] is null		
 	]]>
 		</sql>
-	</changeSet>		
+	</changeSet>
+
+	<changeSet author="Pappas" id="Data.Corrections.GOV-14463">
+			<sql dbms="mssql" splitStatements="false" stripComments="false">
+	<![CDATA[
+update	V
+set		V.Definition = '{"DataQuality":null,"Governance":{"Check":"External","Field":null,"Predicate":null,"Relation":null,"Owner":null,"External":null}}' 
+from	metrics.AssetVersion V
+		inner join metrics.Asset A on A.Uid = V.AssetUid and A.IsGroup = 1
+		inner join metrics.Allocation S on S.Uid = A.AllocationUid and S.ScoreType = 1
+	]]>
+		</sql>
+	</changeSet>	
 </databaseChangeLog>
