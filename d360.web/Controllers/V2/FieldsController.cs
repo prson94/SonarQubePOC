@@ -428,7 +428,7 @@ namespace d360.web.Controllers.V2
                 bool anyExistingItems = FieldsRepository.HasExistingItems(typeIdentifierInfoModel);
 
                 List<FieldType> currentFieldTypes = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
-                bool anyResponsibilitiesUsingField = FieldsRepository.hasResponsibilityUsingField(typeIdentifierInfoModel, currentFieldTypes.FindAll(x => model.Fields.Any(f=>f.Name==x.Name)));
+                bool anyResponsibilitiesUsingField = FieldsRepository.hasResponsibilityUsingField(typeIdentifierInfoModel, currentFieldTypes.FindAll(x => model.Fields.Any(f => f.Name == x.Name)));
 
                 if (anyResponsibilitiesUsingField)
                 {
@@ -921,7 +921,7 @@ namespace d360.web.Controllers.V2
                         break;
                     case SystemObjects.ReferenceItem:
                     case SystemObjects.ReferenceItemType:
-                        list = list.Prepend(new KeyValuePair<string, string>("Code", "Code")).ToDictionary(d => d.Key, d => d.Value);                        
+                        list = list.Prepend(new KeyValuePair<string, string>("Code", "Code")).ToDictionary(d => d.Key, d => d.Value);
                         break;
                     case SystemObjects.PolicyType:
                         list.Add("TextPath", "TextPath");
@@ -1411,7 +1411,7 @@ namespace d360.web.Controllers.V2
             try
             {
                 var intersectTypes = await Company.QueryAsync<dynamic>($@"select value, title from utility.GetIntersectTypesByType(@assetTypeUid) t 
-                                                                          where not exists(select 1 from intersecttypedetail itd where itd.uid = t.uid and ((itd.object = @ObjectType and itd.ObjectID = 0) or (itd.subject = @ObjectType and itd.subjectID = 0)))", 
+                                                                          where not exists(select 1 from intersecttypedetail itd where itd.uid = t.uid and ((itd.object = @ObjectType and itd.ObjectID = 0) or (itd.subject = @ObjectType and itd.subjectID = 0)))",
                                                                           new { assetTypeUid, ObjectType = SystemObjects.ReferenceItemType.ToString() }, ApiTimeout);
                 return Request.CreateResponse(HttpStatusCode.OK, intersectTypes);
             }
@@ -2034,11 +2034,21 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     whereQuery += " and text like @filter ";
                 }
 
-                var query = $@"declare @fieldTypeId int = (
-                    select top 1 ft.ID from fieldtype ft
-                    inner join assettype at on at.object = ft.object and at.objectid = ft.objectid
-                    where at.uid = @assetTypeUid and ft.Name = @fieldName)
+                int fieldTypeId = -1;
 
+                var assetTypeId = Company.AssetTypes
+                    .FirstOrDefault(x => x.uid == assetTypeUid).ID;
+                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetTypeId && x.Name == fieldName);
+                if (fieldType.Type == "FieldFromRelationship" && fieldType.LookupObjectFieldTypeID > 0)
+                {
+                    fieldTypeId = fieldType.LookupObjectFieldTypeID.Value;
+                }
+                else
+                {
+                    fieldTypeId = fieldType.ID;
+                }
+
+                var query = $@"
                     select text from FieldLookupValue where @fieldTypeId = FieldTypeID
                     {whereQuery}
                     order by text asc
@@ -2047,7 +2057,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     select count(1) from FieldLookupValue where @fieldTypeId = FieldTypeID {whereQuery};
                     ";
 
-                var results = Company.Connection.QueryMultiple(query, new { assetTypeUid, fieldName, skip, take, filter });
+                var results = Company.Connection.QueryMultiple(query, new { fieldTypeId, skip, take, filter });
 
                 var data = new
                 {

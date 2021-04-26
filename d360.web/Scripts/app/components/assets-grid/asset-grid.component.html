@@ -15,7 +15,7 @@
 <div class="grid-actions-header {{(this.showEditor || this.showDelete || this.isEditing ? 'hidden' : '')}}">
     <div class="simple-search">
         <ig-search-field mode="Keypress" 
-                         [debounce]="2000"
+                         [debounce]="600"
                          (onSearch)="onSimpleSearch($event)"
                          [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter"
                          [infoTooltip]="simpleSearchTooltipHTML">

@@ -397,6 +397,7 @@ export class AdvancedFilterFieldCondition {
                 return `'${value.value}'`;
             }
         }
+        value = (value as string).replace(/'/g, "&apos;");
         return `'${encodeURIComponent(value)}'`;
     }
     getValue2(): string {
