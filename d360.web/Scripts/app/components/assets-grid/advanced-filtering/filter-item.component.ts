@@ -11,7 +11,6 @@ import { RelationshipType } from "../../../models/relationship.model";
 import { RelationshipsService } from "../../../services/relationships.service";
 import { Subscription } from "rxjs";
 import { MultiInputField } from "../../shared/controls/multi-input-field/multi-input-field.component";
-import { difference } from "lodash";
 
 @Component({
     selector: "filter-item",
@@ -323,6 +322,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
     onFieldSelected($event) {
         this.isSelectingCurrentField = false;
         this.relationshipFieldIntersectTypeUid = "";
+
 
         var type = this.getFieldType(this.condition);
         if (this.fields.filter((x) => x.Name === this.condition.field).length !== 0) {

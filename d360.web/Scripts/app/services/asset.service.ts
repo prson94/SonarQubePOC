@@ -145,9 +145,6 @@ export class AssetService extends BaseObservableService {
             .pipe(debounceTime(500),
                 map(res => { return <any>res }),
                 catchError(err => {
-                    if (this.isErrorFromFilterExpression(err)) {
-                        return throwError(err);
-                    }
                     return this.handleError(err);
                 }));
     }
