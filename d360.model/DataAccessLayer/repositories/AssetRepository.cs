@@ -274,7 +274,7 @@ namespace d360.model.DataAccessLayer
             assetTypeID = assetType.ID;
 
             List<string> hiddenFieldTypes = new List<string>() { "ComplexRelationLookup", "", "RefListRelationship" };
-            var allFieldTypes = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).ToList();
+            var allFieldTypes = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).AsNoTracking().ToList();
             var fieldTypes = allFieldTypes.Where(f => !hiddenFieldTypes.Contains(f.Type)).ToList();
 
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_predicateuid"))
@@ -742,6 +742,12 @@ namespace d360.model.DataAccessLayer
                     List<string> tempFieldColumns = new List<string>();
                     getFieldSql(allFieldTypes, tempArgs, tempJoins, tempFieldColumns);
 
+                    foreach (var ft in allFieldTypes.Where(x => x.LookupObjectFieldTypeID > 0))
+                    {
+                        var origFieldType = CompanyContext.FieldTypes.FirstOrDefault(x => x.ID == ft.LookupObjectFieldTypeID);
+                        ft.Type = origFieldType.Type;
+                    }
+
                     var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, includeParent);
                     filterExpressionParser.LoadFieldTypes(allFieldTypes, tempFieldColumns);
                     Dictionary<string, object> sqlParams = new Dictionary<string, object>();
@@ -1059,7 +1065,7 @@ namespace d360.model.DataAccessLayer
 							inner join Asset PA on PA.Object = I.Subject and PA.ObjectID =I.SubjectID
 					) HParent ";
 
-                if (parentUidPopulated) 
+                if (parentUidPopulated)
                 {
                     if (parentUid.HasValue)
                     {
@@ -3723,7 +3729,7 @@ where   A.[uid] = @assetUid";
 
             var ExecutionExternal = new ApiExecutionsExternal
             {
-                ExternalId= result.ExternalId,
+                ExternalId = result.ExternalId,
                 Status = result.Status,
                 Detail = result.Detail,
                 Component = result.Component,

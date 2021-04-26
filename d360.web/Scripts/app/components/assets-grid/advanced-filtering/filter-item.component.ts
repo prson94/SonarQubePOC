@@ -11,7 +11,6 @@ import { RelationshipType } from "../../../models/relationship.model";
 import { RelationshipsService } from "../../../services/relationships.service";
 import { Subscription } from "rxjs";
 import { MultiInputField } from "../../shared/controls/multi-input-field/multi-input-field.component";
-import { difference } from "lodash";
 
 @Component({
     selector: "filter-item",
@@ -324,6 +323,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.isSelectingCurrentField = false;
         this.relationshipFieldIntersectTypeUid = "";
 
+
         var type = this.getFieldType(this.condition);
         if (this.fields.filter((x) => x.Name === this.condition.field).length !== 0) {
             this.currentField = this.fields.filter((x) => x.Name === this.condition.field)[0];
@@ -574,11 +574,33 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.updateOperatorData();
 
         if (this.condition.operator.toString() === "Between") {
-            if (this.condition.value > this.condition.value2) {
-                var temp = this.condition.value;
-                this.condition.value = this.condition.value2;
-                this.condition.value2 = temp;
+            var type = this.fieldInputType();
+            var temp;
+            switch (type) {
+                case "multi-number":
+                    if (parseFloat(this.condition.value) > parseFloat(this.condition.value2)) {
+                        temp = this.condition.value;
+                        this.condition.value = this.condition.value2;
+                        this.condition.value2 = temp;
+                    }
+                    break; 
+                case "multi-date":
+                case "multi-date-time":
+                    if (new Date(this.condition.value) > new Date(this.condition.value2)) {
+                        temp = this.condition.value;
+                        this.condition.value = this.condition.value2;
+                        this.condition.value2 = temp;
+                    }
+                    break;
+                default:
+                    if (this.condition.value > this.condition.value2) {
+                        temp = this.condition.value;
+                        this.condition.value = this.condition.value2;
+                        this.condition.value2 = temp;
+                    }
+                    break;
             }
+
         }
 
         this.uiTooltipValue = this.condition.getTooltipValue();
