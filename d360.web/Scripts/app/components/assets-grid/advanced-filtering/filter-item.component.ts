@@ -575,10 +575,11 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
         if (this.condition.operator.toString() === "Between") {
             var type = this.fieldInputType();
+            var temp;
             switch (type) {
                 case "multi-number":
                     if (parseFloat(this.condition.value) > parseFloat(this.condition.value2)) {
-                        var temp = this.condition.value;
+                        temp = this.condition.value;
                         this.condition.value = this.condition.value2;
                         this.condition.value2 = temp;
                     }
@@ -586,14 +587,14 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 case "multi-date":
                 case "multi-date-time":
                     if (new Date(this.condition.value) > new Date(this.condition.value2)) {
-                        var temp = this.condition.value;
+                        temp = this.condition.value;
                         this.condition.value = this.condition.value2;
                         this.condition.value2 = temp;
                     }
                     break;
                 default:
                     if (this.condition.value > this.condition.value2) {
-                        var temp = this.condition.value;
+                        temp = this.condition.value;
                         this.condition.value = this.condition.value2;
                         this.condition.value2 = temp;
                     }

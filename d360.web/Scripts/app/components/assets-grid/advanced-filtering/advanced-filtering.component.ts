@@ -181,8 +181,8 @@ export class AdvancedFilteringComponent implements OnChanges {
             results.forEach((f) => {
                 var refField = f[0];
                 var idx = toLoad.findIndex((tl) => tl.uid === refField["AssetTypeUid"] && tl.field === refField.Name);
-                var origField = res.findIndex((rf) => rf.Name === toLoad[idx].origField);
-                res[origField].Type = refField.Type;
+                var origField = res.findIndex((rf) => rf.Name === toLoad[parseInt(idx.toString())].origField);
+                res[parseInt(origField.toString())].Type = refField.Type;
             });
             this.processLoadedData(res);
         });
