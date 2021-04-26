@@ -226,6 +226,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_includeColor", "Allows you to disable returning the Color value for assets. The default value is true.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_exporttemplateuid", "The Uid of the template which will be used when exporting results.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_includeCreatedModifiedBy", "Include the CreatedByUid, and ModifiedByUid fields in the response. The default value is false meaning these values are not returned.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeOwnershipLookup", "Include the OwnershipLookup fields in the response. The default value is false meaning these values are not returned.", DataType = "boolean", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid)
         {
@@ -339,8 +340,12 @@ namespace d360.web.Controllers.V2
                         bool isHierachyItem = false;
                         var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_ishierachyitem").Value;
                         bool.TryParse(value, out isHierachyItem);
-                        queryParams = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson");
+                        var paramList = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson").ToList();
 
+                        paramList.RemoveAll(x => x.Key.ToLower() == "_includeownershiplookup");
+                        paramList.Add(new KeyValuePair<string, string>("_includeownershiplookup", "true"));
+
+                        queryParams = paramList;
 
                         SLDocument results;
                         if (isHierachyItem)

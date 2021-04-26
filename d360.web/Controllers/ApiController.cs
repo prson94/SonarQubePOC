@@ -724,6 +724,9 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                         var foundColorOnList = Company.Assets.Any(x => x.Color != null && x.AssetType.Object == lookupType && item.LookupObjectID == x.AssetType.ObjectID);
                         if (foundColorOnList) fieldType = "ListColor";
                         break;
+                    case "OwnershipLookup":
+                        fieldType = "ownershiplookup";
+                        break;
                 }
             }
 

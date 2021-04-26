@@ -39,6 +39,7 @@ import { IgColorPickerModule } from '../controls/color-picker/color-picker.modul
 import { SwitchModule } from '../controls/switch/switch';
 import { IgDateModule } from '../controls/date/date';
 import { IgNumberFieldModule } from '../controls/number-picker/number-input.component';
+import { OwnershipListModule } from "../small-widgets/ownership-list/ownership-list.component";
 
 @NgModule({
     imports: [
@@ -62,6 +63,7 @@ import { IgNumberFieldModule } from '../controls/number-picker/number-input.comp
         SwitchModule,
         IgDateModule,
         IgNumberFieldModule,
+        OwnershipListModule,
         //prime        
         CalendarModule,
         DropdownModule,

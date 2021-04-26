@@ -272,11 +272,17 @@ namespace d360.core.entities
         [DataMember]
         public int? ColumnOrder { get; set; }
         [DataMember]
+        public int? ColumnWidth { get; set; }
+        [DataMember]
+        public int SortOrder { get; set; }
+        [DataMember]
         public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
         [DataMember]
         public FieldTypeOwnershipLookupDefinition Definition { get; set; }
         [DataMember]
         public bool IsDisplayable { get; set; }
+        [DataMember]
+        public bool IsListable { get; set; }
         [DataMember]
         public bool ShowIfEmpty { get; set; }
 
