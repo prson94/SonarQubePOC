@@ -19,7 +19,7 @@
                                    [objectType]="objectType"
                                    [assetUid]="objectUID"
                                    [readonly]="false"
-                                   [hasAdd]="hasModifyRelationshipsPermissions"
+                                   [hasAdd]="hasAddRelationshipsPermissions"
                                    [hasDelete]="hasDeleteRelationshipsPermissions"></d3s-synonyms-tile>
             </simple-accordion>
             <simple-accordion *ngIf="systemPropertiesCategory.loaded && systemPropertiesCategory.hasData" [header]="systemPropertiesCategory.name" [active]="systemPropertiesCategory.active" (activeChange)="systemPropertiesCategory.active = $event; saveState()">

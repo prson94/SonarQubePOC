@@ -19,7 +19,7 @@
                         <ng-container *ngIf="displayConfiguration.DiagramType == 3">
                             <ng-container *ngIf="!canEditProcessDiagram()">
                                 <ng-container *ngIf="!isProcessDiagramEmpty()">
-                                    <button pTooltip="View and edit relationships for the selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton label="Item Relationships" id="igx-relationship-items" [disabled]="!processDiagramRef || !processDiagramRef.selectedNodeData" (click)="processDiagramRef.doControlledAction('open-related-assets')"></button>
+                                    <button pTooltip="View and edit relationships for the selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton label="Item Relationships" id="igx-relationship-items" class="ig-button-pad-right" [disabled]="!processDiagramRef || !processDiagramRef.selectedNodeData" tooltip="View and edit relationships for the selected item" (click)="processDiagramRef.doControlledAction('open-related-assets')"></button>
                                     <button pTooltip="Export to Excel" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-download" tooltip="Export to Excel" [disabled]="!processDiagramRef || !processDiagramRef.isDiagramLoaded" (click)="processDiagramRef.doControlledAction('export')"></button>
                                 </ng-container>
                             </ng-container>
@@ -27,7 +27,7 @@
                                 <button pTooltip="Edit Process Diagram" tooltipPosition="top" tooltipStyleClass="ig-tooltip" *ngIf="canEditProcessDiagram()" igButton [disabled]="!processDiagramRef || !processDiagramRef.isDiagramLoaded" class="ig-button-primary" icon="fa-pencil" label="Edit" (click)="editProcess()"></button>&nbsp;&nbsp;
                                 <ng-container *ngIf="!isProcessDiagramEmpty()">
                                     <div class="button-spacer"></div>
-                                    <button pTooltip="View and edit relationships for the selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton label="Item Relationships" id="igx-relationship-items" [disabled]="!processDiagramRef || !processDiagramRef.selectedNodeData" (click)="processDiagramRef.doControlledAction('open-related-assets')"></button>
+                                    <button pTooltip="View and edit relationships for the selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton label="Item Relationships" id="igx-relationship-items" class="ig-button-pad-right" [disabled]="!processDiagramRef || !processDiagramRef.selectedNodeData" tooltip="View and edit relationships for the selected item" (click)="processDiagramRef.doControlledAction('open-related-assets')"></button>
                                     <div class="menu-wrapper" *ngIf="processDiagramRef">
                                         <button type="button" igButton icon="fa-ellipsis-v" (click)="menu.toggle($event)" pTooltip="More actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
                                         <ig-popup-menu [items]="processDiagramRef.popupMenuItems" #menu [tabIndex]="10"></ig-popup-menu>

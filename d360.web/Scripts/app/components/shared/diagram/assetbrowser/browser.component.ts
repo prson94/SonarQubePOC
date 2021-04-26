@@ -1737,7 +1737,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private helper_ShowDetail(assetUid: string) {
-        if (assetUid === this.emptyUid) {
+        if (assetUid === this.emptyUid || assetUid == null) {
             return;
         }
         this.panel_TabIndex = 0;

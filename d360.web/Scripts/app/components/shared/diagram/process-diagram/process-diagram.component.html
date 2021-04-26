@@ -8,7 +8,7 @@
             <button pTooltip="Save changes" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-save"[disabled]="isSaveDisabled" (click)="save()"></button>
             <div class="button-spacer"></div>
             <button pTooltip="Delete selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-trash" [disabled]="!isDeleteEnabled()" (click)="onDeleteClick()"></button>
-            <button pTooltip="View and edit relationships for selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton label="Item Relationships" id="igx-relationship-items" [disabled]="!isRelatedAssetsEnabled()" (click)="doControlledAction('open-related-assets')"></button>
+            <button pTooltip="View and edit relationships for selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton label="Item Relationships" id="igx-relationship-items" class="ig-button-pad-left" [disabled]="!isRelatedAssetsEnabled()" (click)="doControlledAction('open-related-assets')"></button>
             <div class="button-spacer"></div>
             <div class="menu-wrapper">
                 <button type="button" igButton icon="fa-ellipsis-v" (click)="menu.toggle($event)" pTooltip="More actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>

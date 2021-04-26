@@ -850,7 +850,7 @@ namespace d360.extensions.search
             }
             if(joins.Any())
             {
-                sql = $@"SELECT q.* FROM ({sql}) q {string.Join("", joins)}";
+                sql = $@"SELECT q.* FROM ({sql}) q {string.Join(" ", joins)}";
                 if (conditions.Any())
                 {
                     sql += $" WHERE {string.Join(" AND ", conditions)}";

@@ -89,8 +89,9 @@ For general API usage and instructions please see the <a href='{HelpBaseUri}' ta
                     c.OperationFilter<Consumes>();
                     c.OperationFilter<Produces>();
                     c.OperationFilter<ExamplesOperationFilter>();
-                    c.OperationFilter<SwaggerParameterAttributeFilter>();
+                    c.OperationFilter<SwaggerParameterAttributeFilter>();                    
                     c.SchemaFilter<SwaggerExcludeFilter>();
+                    c.DocumentFilter<SwaggerOrderFilter>();
                     c.PrettyPrint();
                     c.DescribeAllEnumsAsStrings(false);
                     c.MultipleApiVersions(versionSupportResolver, versionInfoBuilder);

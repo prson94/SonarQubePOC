@@ -11,6 +11,7 @@ import { RelationshipType } from "../../../models/relationship.model";
 import { RelationshipsService } from "../../../services/relationships.service";
 import { Subscription } from "rxjs";
 import { MultiInputField } from "../../shared/controls/multi-input-field/multi-input-field.component";
+import { difference } from "lodash";
 
 @Component({
     selector: "filter-item",
@@ -57,6 +58,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
     rollbackValue2: any;
 
     maxNumberOfFilterCharacters: number = 50;
+    selectionScrollHeight: string = "34px";
 
     relationshipFieldIntersectTypeUid: string = "";
     relationshipFieldIntersectCardinality: string = "";
@@ -106,6 +108,41 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     }
 
+    setSelectionVirtualScrollHeight(res: any) {
+        try {
+            let count: number = 0;
+            let calculatedHeight: number = 0;
+
+            if (res.length) {
+                count = res.length;
+            }
+
+            if (res?.items) {
+                count = res.items.length;
+            }
+
+            if (this.condition.field === SystemFields.OwnedByFieldCode) {
+                //add one row count for group name
+                count++;
+            }
+
+            if (count < 10) {
+                calculatedHeight = count * 34;
+                if (calculatedHeight < 34) {
+                    calculatedHeight = 34;
+                }
+                this.selectionScrollHeight = calculatedHeight + "px";
+            }
+            else {
+                this.selectionScrollHeight = "340px";
+            }
+        }
+        catch
+        {
+            this.selectionScrollHeight = "340px";
+        }
+    }
+
     interval: any = {};
     setTableWidth() {
         if (this.isSelectingValue) {
@@ -129,43 +166,34 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
     }
 
-    updateDynamicWidths() {
+    removePositionStyling() {
+        var html = this.elRef.nativeElement as HTMLElement;
+        var selectionElement = html.getElementsByClassName("value-selection")[0] as HTMLElement;
+        selectionElement.style.removeProperty("top");
+        selectionElement.style.removeProperty("left");
+    }
 
+    updateDynamicWidths() {
         try {
             var html = this.elRef.nativeElement as HTMLElement;
-            var topPosition = html.getBoundingClientRect().bottom;
-            var tableElements = html.getElementsByClassName("item-value");
             var scrollWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0];
             if (scrollWrapper) {
-                let width = scrollWrapper.clientWidth;
-                let oldWidth = width;
-                if (tableElements.length > 0) {
-                    for (let i = 0; i < tableElements.length; i++) {
-                        var elementWidth = tableElements[i].clientWidth;
-                        if (elementWidth > width) {
-                            width = elementWidth;
-                        }
-                    }
-                }
-
-                if (width > (window.outerWidth - 50)) {
-                    width = window.outerWidth - 50;
-                }
+                var topPosition = html.getBoundingClientRect().bottom;
+                let width = 500;
 
                 var tableWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0] as HTMLElement;
 
-                if (tableWrapper && (Math.abs(oldWidth - width)) > 16) {
-                    tableWrapper.style.width = (width + 45) + "px";
-                    var difference = window.outerWidth - tableWrapper.getBoundingClientRect().right;
-                    if (difference < 0) {
-                        var selectionElement = html.getElementsByClassName("value-selection")[0] as HTMLElement;
-                        var leftLocation = window.outerWidth - selectionElement.clientWidth;
-                        if (leftLocation < 0) {
-                            leftLocation = 0;
-                        }
-                        selectionElement.style.left = leftLocation + "px";
-                        selectionElement.style.top = topPosition + "px";
+                if (tableWrapper) {
+                    var selectionElement = html.getElementsByClassName("value-selection")[0] as HTMLElement;
+                    tableWrapper.style.width = width + "px";
+
+                    let distanceFromRight = window.outerWidth - html.getBoundingClientRect().left;
+
+                    if (distanceFromRight < width) {
+                        let diff = Math.abs(width - distanceFromRight);
+                        selectionElement.style.left = (html.getBoundingClientRect().left - diff - 50) + "px";
                     }
+                    selectionElement.style.top = topPosition + "px";
                 }
             }
         }
@@ -271,6 +299,25 @@ export class FilterItemComponent implements OnInit, OnChanges {
         else {
             this.isSelectingValue = true;
         }
+        this.updateFocus();
+    }
+
+    updateFocus() {
+        setTimeout(() => {
+            var home = this.elRef.nativeElement as HTMLElement;
+            if (this.condition.operator) {
+                var valueRef = home.querySelector(".value-selector input") as HTMLElement;
+                if (valueRef) {
+                    valueRef.focus();
+                }
+            }
+            else {
+                var operatorRef = home.querySelector(".operator-selector input") as HTMLElement;
+                if (operatorRef) {
+                    operatorRef.focus();
+                }
+            }
+        }, 25);
     }
 
     onFieldSelected($event) {
@@ -299,6 +346,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.condition.type = this.currentField;
             this.uiCurrentOperatorsList = this.getOperators(this.condition);
             this.uiFilterLabel = this.condition.getFilterLabel();
+
+            if (type.Type.Score && !this.condition.value) {
+                this.condition.value = "poor";
+            }
         }
         else {
             if (this.condition.field === SystemFields.OwnedByFieldCode) {
@@ -328,6 +379,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         this.uiTooltipValue = this.condition.getTooltipValue();
+        this.updateFocus();
     }
 
     getRelationshipCardinality(): string {
@@ -380,6 +432,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.updateOperatorData();
 
         this.updateAllAnyData();
+        this.removePositionStyling();
     }
 
     private updateOperatorData() {
@@ -411,6 +464,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.setTableWidth();
 
                 this.isLookupValuesLoading = false;
+                this.setSelectionVirtualScrollHeight(res);
+
                 this.cdRef.markForCheck();
             });
     }
@@ -428,6 +483,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
                 this.isLookupValuesLoading = false;
                 this.setTableWidth();
+                this.setSelectionVirtualScrollHeight(res);
                 this.cdRef.markForCheck();
             });
 
@@ -469,6 +525,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
                 this.isLookupValuesLoading = false;
                 this.setTableWidth();
+                this.setSelectionVirtualScrollHeight(res);
 
                 this.cdRef.markForCheck();
             });
@@ -506,7 +563,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.currentField.Values = [...this.currentField.Values];
                 this.setTableWidth();
                 this.isLookupValuesLoading = false;
-
+                this.setSelectionVirtualScrollHeight(res);
                 this.cdRef.markForCheck();
             });
     }
@@ -515,6 +572,14 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.isSelectingValue = false;
         this.condition.operator = this.currentOperator;
         this.updateOperatorData();
+
+        if (this.condition.operator.toString() === "Between") {
+            if (this.condition.value > this.condition.value2) {
+                var temp = this.condition.value;
+                this.condition.value = this.condition.value2;
+                this.condition.value2 = temp;
+            }
+        }
 
         this.uiTooltipValue = this.condition.getTooltipValue();
         this.uiFilterLabel = this.condition.getFilterLabel();
@@ -582,9 +647,11 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     private resetPersistedFilter() {
-        this.condition.operator = undefined;
         this.currentOperator = this.uiCurrentOperatorsList[0].value;
+        this.condition.operator = undefined;
         this.condition.value = undefined;
+        this.condition.value2 = undefined;
+        this.currentInputType = this.fieldInputType();
 
         this.uiTooltipValue = this.condition.getTooltipValue();
         this.uiFilterLabel = this.condition.getFilterLabel();
@@ -859,58 +926,21 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
 
     //table extensions
-    @ViewChild("dataTable", { static: false }) tableEl: any;
-    private lastSelectedElementIndex: number;
-    selectSingleItem(event: MouseEvent, item: SelectItem, element: ElementRef = null) {
+    selectSingleItem(event: MouseEvent, item: SelectItem) {
         if (!this.condition.value) {
             this.condition.value = [];
         }
         let valueRef = this.condition.value as SelectItem[];
-        let hasMetaKey: boolean = event.ctrlKey || event.shiftKey || event.metaKey;
+        let elIdx = valueRef.findIndex((x) => x.value === item.value);
 
-        if (hasMetaKey) {
-            if (event.ctrlKey || event.metaKey) {
-                let idx = valueRef.indexOf(item);
-                if (idx > -1) {
-                    valueRef.splice(idx, 1);
-                }
-                else {
-                    valueRef.push(item);
-                }
-            }
-            else {
-                //this handles shift key
-                if (this.lastSelectedElementIndex === -1) {
-                    valueRef.push(item);
-                }
-                else {
-                    var startIdx = this.lastSelectedElementIndex;
-                    var endIdx = this.currentField.Values.indexOf(item);
-                    if (startIdx > endIdx) {
-                        let temp = endIdx;
-                        endIdx = startIdx;
-                        startIdx = temp;
-                    }
-
-                    for (let i = startIdx; i <= endIdx; i++) {
-                        var toAdd = this.currentField.Values[i];
-
-                        if (!valueRef.some((x) => x.value === toAdd.value)) {
-                            valueRef.push(toAdd);
-                        }
-                    }
-
-                }
-            }
+        if (elIdx > -1) {
+            valueRef.splice(elIdx, 1);
         }
         else {
-            valueRef = [];
             valueRef.push(item);
         }
-
         //update reference
         this.condition.value = [...valueRef];
-        this.lastSelectedElementIndex = this.currentField.Values.indexOf(item);
+        this.updateAllAnyData();
     }
-
 }

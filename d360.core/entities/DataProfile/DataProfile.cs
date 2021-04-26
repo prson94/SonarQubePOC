@@ -209,4 +209,11 @@ namespace d360.core.entities
         public string key { get; set; }
         public int count { get; set; }
     }
+
+    public class AssetDataProfilesApiViewModel : PagedApiBaseViewModel
+    {
+        [DataMember]
+        public IEnumerable<DataProfileModel> items { get; set; }
+    }
+
 }
