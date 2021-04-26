@@ -111,6 +111,14 @@ export class AssetTypeApiModel {
     ID: number;
     AssetTypeID: number;
     count: number = 0; //not currently loaded from API.
+
+    Levels: AssetTypeLevelApiModel[];
+}
+
+export class AssetTypeLevelApiModel {
+    Level: number;
+    Name: string;
+    Description: string;
 }
 
 export class IconStyle {

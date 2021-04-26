@@ -40,7 +40,7 @@ export class AdminIssueTypeAllocationEditorComponent extends BaseComponent {
             this.assetTypeChanged();                       
         }
 
-        this.assetTypeService.getAssetTypes()
+        this.assetTypeService.getAssetTypes(null)
             .subscribe((result) => {
                 var data = result
                     .filter((r) =>

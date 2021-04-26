@@ -1,6 +1,6 @@
-﻿import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { AssetTypeClass } from '../../models/asset.model';
+import { AssetTypeClass, AssetTypeLevelApiModel } from '../../models/asset.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AssetTypeService } from '../../services/asset-type.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -22,7 +22,6 @@ import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { TreeTable } from 'primeng/treetable';
 import { V2ApiFilters } from '../../models/asset-search.model';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
-import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'd3s-hierarchy-item-structure',
@@ -39,7 +38,7 @@ import { Subscription } from 'rxjs';
     templateUrl: 'hierarchy-item-structure.component.html'
 })
 
-export class HierarchyItemStructureComponent extends BaseComponent implements OnInit, OnDestroy {
+export class HierarchyItemStructureComponent extends BaseComponent implements OnInit {
 
     rowsPerPage: number = 25;
 
@@ -52,7 +51,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     navFolderName: string;
     showDiagram: boolean = false;
 
-    levels: any[] = [];
+    levels: AssetTypeLevelApiModel[] = [];
     hierarchy: any[] = [];
     
 
@@ -76,7 +75,6 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     filterColumns: string[] = ['DisplayValue'];
     totalRecords: number = 0;
     totalRecordsFiltered: number = 0;
-    private getAssetSub: Subscription;
 
     @ViewChild("treeTable", { static: false }) treeTable: TreeTable;
     @ViewChild("inputBox", { static: false }) filterText: any;
@@ -84,6 +82,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     constructor(
         private route: ActivatedRoute,
         private router: Router,
+        private cdRef: ChangeDetectorRef,
         private assetTypeService: AssetTypeService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
@@ -128,25 +127,27 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         this.routeSub = this.route.params.subscribe((params) => {
             this.objectTypeId = +params['typeId'];
             this.assetTypeUid = params['uid'];
+            let uriParams: any = {};
 
             if (this.assetTypeUid) {
-                this.assetTypeService.getAssetTypeObjectAndID(this.assetTypeUid).subscribe((res) => {
-                    this.isLoading = true;
-                    this.objectTypeId = res.ObjectID
-                    this.load();
-                    this.logAction("open", this.objectType, this.objectTypeId);
-                });
+                uriParams.assetTypeUid = this.assetTypeUid;
             } else {
-                this.isLoading = true;
+                uriParams.obj = this.objectType;
+                uriParams.objId = this.objectTypeId;
                 this.logAction("open", this.objectType, this.objectTypeId);
-                this.load();
             }
+            uriParams.includelevels = "true";
 
+            this.isLoading = true;
+            this.assetTypeService.getAssetTypes(uriParams).subscribe((result) => {
+                this.assetType = result[0];
+                this.assetTypeUid = result[0].uid;
+                this.levels = result[0].Levels;
+                this.load();
+
+                this.loadNodes({ first: 1, rows: 25 });
+            });
         });
-    }
-
-    ngOnDestroy(): void {
-        this.getAssetSub.unsubscribe();
     }
 
     load() {
@@ -156,38 +157,14 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             .getAreaName(this.objectType, this.objectTypeId)
             .subscribe((result) => { this.currentAreaName = result });  
         
-            this.getFieldsDefinition();        
-            this.loadPermissions(this.permissionsService, this.objectType, this.objectTypeId);
-            this.setObjectInfo(this.objectType, this.objectTypeId);
-            this.headerBreadcrumbService.setCurrentObjectInfo(this.objectType, this.objectTypeId);            
-            
-            switch (this.assetTypeClass) {
-                case AssetTypeClass.Model:
-                    this.isLoading = true;
-                    this.modelsService.getModel(this.objectTypeId)
-                        .subscribe((result) => {
-                            this.searchValue = "";
-                            this.assetType = result;
-                            this.buildNav();
-                        });
-                    break;
-                case AssetTypeClass.Policy:
-                    this.isLoading = true;
-                    this.policiesService.getPolicyType(this.objectTypeId)
-                        .subscribe((result) => {
-                            this.searchValue = "";
-                            this.assetType = result;
-                            this.buildNav();
-                        });
-                    break;         
-            }
-       
-        this.levelsService.getObjectLevels(this.objectTypeId, this.objectType)
-            .subscribe((result) => {
-                this.levels = result;
-            });
-    }
+        this.getFieldsDefinition();        
+        this.loadPermissions(this.permissionsService, this.objectType, this.objectTypeId);
+        this.setObjectInfo(this.objectType, this.objectTypeId);
+        this.headerBreadcrumbService.setCurrentObjectInfo(this.objectType, this.objectTypeId);            
 
+        this.searchValue = "";
+        this.buildNav();
+    }
 
     buildNav() {
         this.headerBreadcrumbService.getFolderTitle(this.navFolderName).then((res) => {
@@ -276,8 +253,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     public onDeleted() {
         this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was removed        
-        this.deleteSelectedTreeNode(this.selected.data.ID);
-        this.hierarchy = this.hierarchy.filter(x => x.ID != this.selected.data.ID);
+        this.deleteSelectedTreeNode(this.selected.data.AssetUid);
+        this.hierarchy = this.hierarchy.filter(x => x.AssetUid != this.selected.data.AssetUid);
         //this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1);
 
         this.selected = null;
@@ -289,7 +266,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
         // add root nodes
         for (let i = 0; i < this.treeNodeArray.length; i++) {
-            if (this.treeNodeArray[i].data.ID && this.treeNodeArray[i].data.ID == id) {
+            if (this.treeNodeArray[i].data.AssetUid && this.treeNodeArray[i].data.AssetUid == id) {
                 this.treeNodeArray.splice(i, 1);
                 return
             }            
@@ -304,14 +281,14 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         let node = nodes[0];
 
         while (node) {
-            if (node.data.ID && node.data.ID == id) {
+            if (node.data.AssetUid && node.data.AssetUid == id) {
                 return node;
             }
 
             //push children
             if (node.children) {
                 for (let i = 0; i < node.children.length; i++) {
-                    if (node.children[i].data.ID && node.children[i].data.ID == id) {
+                    if (node.children[i].data.AssetUid && node.children[i].data.AssetUid == id) {
                         node.children.splice(i, 1);
                         return
                     }                    
@@ -361,11 +338,10 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     private showAdd(level: number) {
         this.showEditor = true;
-        this.selectedParentId = level == 0 ? undefined : this.selected ? this.selected.data.ID : undefined;
+        this.selectedParentId = level == 0 ? undefined : this.selected ? this.selected.data.AssetUid : undefined;
         this.selectedLevel = level;
         this.selected = null;
     }
-
 
     setTreeNodeStyles(node) {
         if (!node.data) return null;
@@ -418,7 +394,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     private expandNodes() {        
         if (this.treeTable.filters["global"]) { // only expand if global filter populated.
             this.totalRecordsFiltered = 0;
-            this.totalRecordsFiltered = this.treeTable.filteredNodes.length;
+            this.totalRecordsFiltered = this.treeTable.filteredNodes ? this.treeTable.filteredNodes.length : 0;
             this.expandChildNodes(this.treeTable.filteredNodes, this.treeTable.globalFilterFields, this.treeTable.filters["global"].value);
         }
     }
@@ -457,49 +433,27 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     loadNodes(event) {
         this.isLoading = true;
 
-        if (this.getAssetSub) {
-            this.getAssetSub.unsubscribe();
-        }
-
         //event.first = First row offset
         //event.rows = Number of rows per page
         //event.sortField = Field name to sort with
         //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
         //filters: FilterMetadata object having field as key and filter value, filter matchMode as value
-        //if (this.assetType) {
-        //this.assetType.AssetTypeUID
-        this.assetService.getAssets("7c5084de-9ee7-477c-9464-f31536e639cc", { _parentUid: "null" }).subscribe((result) => {
-            this.totalRecords = result.total;
-            this.buildScoreAllocationThresholds();
-            let res: TreeNode[] = [];
-
-            for (let root of result.items) {
-                root.Level = 1;
-                res.push({
-                    label: root.Path,
-                    expanded: false,
-                    leaf: false,
-                    data: root
-                });
+        if (this.assetTypeUid) {
+            let uriParams: any = {
+                _parentUid: "null",
+                _pageSize: event.rows ?? 25,
+                _pageNum: Math.floor(event.first ?? 1 / event.rows ?? 25)
+            };
+            if (event.filters) {
+                uriParams = { _simpleFilter: event.filters.global.value, _includeParent: "true" };
             }
-            this.treeNodeArray = res;
-            this.isLoading = false;
-        });
-        //}
-    }
-
-    onNodeExpand(event) {
-        this.isLoading = true;
-
-        setTimeout(() => {
-            this.isLoading = false;
-            const node = event.node;
-
-            this.assetService.getAssets("7c5084de-9ee7-477c-9464-f31536e639cc", { _parentUid: node.data.AssetUid }).subscribe((result) => {
+            this.assetService.getAssets(this.assetTypeUid, uriParams).subscribe((result) => {
+                this.totalRecords += result.total;
+                this.buildScoreAllocationThresholds();
                 let res: TreeNode[] = [];
 
                 for (let root of result.items) {
-                    root.Level = node.Level + 1;
+                    root.Level = 1;
                     res.push({
                         label: root.Path,
                         expanded: false,
@@ -507,31 +461,39 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                         data: root
                     });
                 }
-                node.expanded = true;
-                node.children = res;
-
+                this.treeNodeArray = res;
+                this.isLoading = false;
             });
+        }
+    }
 
-            //node.children = [
-            //    {
-            //        data: {
-            //            name: node.data.name + ' - 0',
-            //            size: Math.floor(Math.random() * 1000) + 1 + 'kb',
-            //            type: 'File'
-            //        },
-            //    },
-            //    {
-            //        data: {
-            //            name: node.data.name + ' - 1',
-            //            size: Math.floor(Math.random() * 1000) + 1 + 'kb',
-            //            type: 'File'
-            //        }
-            //    }
-            //];
+    onNodeExpand(event) {
+        const node = event.node;
 
-            //this.files = [...this.files];
-        }, 250);
-
+        if (!node.children) {
+            this.isLoading = true;
+            this.assetService.getAssets(this.assetTypeUid, { _parentUid: node.data.AssetUid }).subscribe((result) => {
+                let res: TreeNode[] = [];
+                this.totalRecords += result.total;
+                for (let item of result.items) {
+                    item.Level = node.Level + 1;
+                    res.push({
+                        label: item.Path,
+                        expanded: false,
+                        leaf: false,
+                        data: item
+                    });
+                }
+                node.children = [...res];
+                node.expanded = true;
+                if (node.children.length == 0) {
+                    node.leaf = true;
+                }
+                this.treeNodeArray = [...this.treeNodeArray];
+                this.isLoading = false;
+                //this.cdRef.detectChanges();
+            });
+        }
     }
 
     canExportRecords() {

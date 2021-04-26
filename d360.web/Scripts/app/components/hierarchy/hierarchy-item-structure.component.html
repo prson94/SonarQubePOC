@@ -29,7 +29,7 @@
                          [lazy]="true"
                          (onLazyLoad)="loadNodes($event)"
                          (onNodeExpand)="onNodeExpand($event)"
-                         dataKey="ID">
+                         dataKey="AssetUid">
                 <!--(onFilter)="expandNodes()"-->
                 <ng-template pTemplate="caption">
                     <div>
@@ -38,7 +38,7 @@
                 </ng-template>
                 <ng-template pTemplate="header">
                     <tr>
-                        <th>Item</th>
+                        <th style="width:100px"></th>
                         <th *ngFor="let column of columns"
                             [ttSortableColumn]="column.sortable === true ? column.datafield : null">
                             {{column.text}}
@@ -54,7 +54,7 @@
                              let-rowNode
                              let-item="rowData">
                     <tr [ttSelectableRow]="rowNode">
-                        <td class="no-text-overflow" style="width:100px">
+                        <td class="no-text-overflow">
                             <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
                         </td>
                         <td class="no-text-overflow" *ngFor="let column of columns">
@@ -93,23 +93,23 @@
                                           [totalRecords]="treeTable.totalRecords"></d3s-grid-paging-info>
                 </ng-template>
             </p-treeTable>
-            <d3s-asset-delete-editor *ngIf="showDelete"
-                                     [uid]="selected?.data?.Uid"
-                                     [assetTypeUid]="assetType?.AssetTypeUID"
-                                     [displayValue]="(selected?.data?.DisplayValue ? selected?.data?.DisplayValue : objectName)"
-                                     (onCancel)="showDelete = false; filter(null);"
-                                     (onDeleted)="onDeleted();">
-            </d3s-asset-delete-editor>
             <d3s-dynamic-editor *ngIf="showEditor"
-                                [objectID]="selected ? selected?.data?.ID : assetType.ID"
-                                [objectType]="object"
-                                [objectTypeUid]="assetType?.AssetTypeUID"
-                                [parentID]="selectedParentId"
-                                [title]="selected?.data?.DisplayValue ? selected?.data?.DisplayValue : assetTypeTitle"
-                                [selection]="selected?.data"
-                                (saveClick)="save()"
-                                (closeClick)="closeEditor();"
-                                [isV2API]="true"></d3s-dynamic-editor>
+                                [objectID]="selected ? selected?.ObjectID : gridObject?.ID"
+                                [objectType]="gridObject.Object"
+                                [title]="selected?.Name ? selected?.Name : gridObject?.Name + ' Item'"
+                                [selection]="selected"
+                                [rowID]="rowID"
+                                [objectTypeUid]="gridObject?.AssetTypeUID"
+                                (saveClick)="saveItem($event)"
+                                [isV2API]="true"
+                                (closeClick)="closeEditor()"></d3s-dynamic-editor>
+            <d3s-asset-delete-editor *ngIf="showDelete"
+                                     [uid]="selected?.AssetUid"
+                                     [assetTypeUid]="gridObject?.AssetTypeUID"
+                                     [displayValue]="(deleteName ? deleteName : 'Artifact')"
+                                     (onCancel)="showDelete = false"
+                                     (onDeleted)="onDeleted()">
+            </d3s-asset-delete-editor>
         </div>
 
     </div>
