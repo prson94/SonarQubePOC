@@ -150,6 +150,42 @@ END
     </rollback>
   </changeSet>
   
+  <changeSet author="Puneet Gupta" id="Table.dbo.FieldType-v4">
+    <comment>GOV-14287</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] 
+		   where TABLE_SCHEMA = 'dbo' 
+		   and TABLE_NAME = 'FieldType' 
+		   and COLUMN_NAME = 'name'
+		   and character_maximum_length > 128)
+begin
+	print '11111';
+	update dbo.FieldType
+	set name = substring(name,1,128)
+	where len(name)>128;
+
+	alter table dbo.FieldType alter column name [nvarchar](128) NOT NULL
+end
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] 
+		   where TABLE_SCHEMA = 'dbo' 
+		   and TABLE_NAME = 'FieldType' 
+		   and COLUMN_NAME = 'name'
+		   and character_maximum_length = 128)
+begin
+	alter table dbo.FieldType alter column name [nvarchar](250) NOT NULL
+end
+	  ]]>
+    </rollback>
+  </changeSet>
+
   <changeSet author="Core" id="Table.dbo.Field-FieldType_AfterInsert-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
