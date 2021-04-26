@@ -163,7 +163,6 @@ if exists (select * from [INFORMATION_SCHEMA].[COLUMNS]
 		   and COLUMN_NAME = 'name'
 		   and character_maximum_length > 128)
 begin
-	print '11111';
 	update dbo.FieldType
 	set name = substring(name,1,128)
 	where len(name)>128;
