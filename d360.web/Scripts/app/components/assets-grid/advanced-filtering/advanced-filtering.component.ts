@@ -147,7 +147,6 @@ export class AdvancedFilteringComponent implements OnChanges {
                     this.loadFieldFromRelationshipData(res);
                 }
                 catch (ex) {
-                    console.warn(ex);
                     this.processLoadedData(res);
                 }
             }
