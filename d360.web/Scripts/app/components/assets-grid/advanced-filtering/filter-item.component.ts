@@ -11,6 +11,7 @@ import { RelationshipType } from "../../../models/relationship.model";
 import { RelationshipsService } from "../../../services/relationships.service";
 import { Subscription } from "rxjs";
 import { MultiInputField } from "../../shared/controls/multi-input-field/multi-input-field.component";
+import { Table } from "primeng/table";
 
 @Component({
     selector: "filter-item",
@@ -65,6 +66,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
     @ViewChild("multiInput", { static: false }) multiInputRef: MultiInputField;
+    @ViewChild("dataTable", { static: false }) dataTable: Table;
 
     constructor(public cdRef: ChangeDetectorRef,
         private elRef: ElementRef,
@@ -107,10 +109,25 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     }
 
+    filterTable($event: any) {
+        this.dataTable.filterGlobal($event.target.value, 'contains');
+        setTimeout(() => this.setSelectionVirtualScrollHeight(null), 50);
+    }
+
     setSelectionVirtualScrollHeight(res: any) {
         try {
             let count: number = 0;
-            let calculatedHeight: number = 0;
+
+            if (res == null) {
+                if (this.isLazyLoad() === true || !this.dataTable) {
+                    return;
+                }
+                else {
+                    var filter = this.dataTable?.filters?.global["value"] as string;
+                    var filtered = this.dataTable.value.filter((x) => (x["title"] as string).toLowerCase().indexOf(filter.toLowerCase()) !== -1);
+                    res = new Array(filtered.length);
+                }
+            }
 
             if (res.length) {
                 count = res.length;
@@ -120,26 +137,46 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 count = res.items.length;
             }
 
-            if (this.condition.field === SystemFields.OwnedByFieldCode) {
+            if (this.condition && this.condition.field && this.condition.field === SystemFields.OwnedByFieldCode) {
                 //add one row count for group name
                 count++;
             }
+
+            let calculatedHeight: number = 0;
+            let maxHeight: number = 340;
+            let minHeight: number = 34;
+            let margins: number = 180;
+            let bottomPos: number = (this.elRef.nativeElement as HTMLElement).getBoundingClientRect().bottom;
 
             if (count < 10) {
                 calculatedHeight = count * 34;
                 if (calculatedHeight < 34) {
                     calculatedHeight = 34;
                 }
-                this.selectionScrollHeight = calculatedHeight + "px";
+
             }
             else {
-                this.selectionScrollHeight = "340px";
+                calculatedHeight = maxHeight;
             }
+
+            var diff = window.innerHeight - calculatedHeight - margins - bottomPos;
+            if (diff < 0) {
+                calculatedHeight += diff;
+            }
+
+            if (calculatedHeight > maxHeight) {
+                calculatedHeight = maxHeight;
+            }
+            if (calculatedHeight < minHeight) {
+                calculatedHeight = minHeight;
+            }
+            this.selectionScrollHeight = calculatedHeight + "px";
         }
-        catch
-        {
+        catch (ex) {
+            console.log(ex);
             this.selectionScrollHeight = "340px";
         }
+        this.cdRef.markForCheck();
     }
 
     interval: any = {};
@@ -195,6 +232,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
                     selectionElement.style.top = topPosition + "px";
                 }
             }
+
+            this.setSelectionVirtualScrollHeight(null);
         }
         catch (ex) {
             console.warn(ex);
@@ -299,6 +338,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.isSelectingValue = true;
         }
         this.updateFocus();
+        setTimeout(() => this.setSelectionVirtualScrollHeight(null), 50);
     }
 
     updateFocus() {
@@ -374,7 +414,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.condition.isNew = false;
 
         if (this.uiCurrentOperatorsList) {
-            this.currentOperator = (this.uiCurrentOperatorsList[0] as SelectItem).value;
+            if (this.condition.operator) {
+                this.currentOperator = this.condition.operator;
+            }
+            else {
+                this.currentOperator = (this.uiCurrentOperatorsList[0] as SelectItem).value;
+            }
             this.updateOperatorData();
         }
 
@@ -583,7 +628,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
                         this.condition.value = this.condition.value2;
                         this.condition.value2 = temp;
                     }
-                    break; 
+                    break;
                 case "multi-date":
                 case "multi-date-time":
                     if (new Date(this.condition.value) > new Date(this.condition.value2)) {
