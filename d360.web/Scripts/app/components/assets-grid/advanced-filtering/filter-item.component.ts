@@ -110,7 +110,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     filterTable($event: any) {
-        this.dataTable.filterGlobal($event.target.value, 'contains');
+        this.dataTable.filterGlobal($event.target.value, "contains");
         setTimeout(() => this.setSelectionVirtualScrollHeight(null), 50);
     }
 
@@ -173,7 +173,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.selectionScrollHeight = calculatedHeight + "px";
         }
         catch (ex) {
-            console.log(ex);
             this.selectionScrollHeight = "340px";
         }
         this.cdRef.markForCheck();
