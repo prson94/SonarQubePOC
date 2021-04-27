@@ -278,42 +278,6 @@ namespace d360.web.Controllers.V2
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Record does not exist for AssetUid {model.assetUid} and ProfileSetDate {model.profileSetDate.Date:yyyy-MM-dd}");
                 }                
 
-                if (model.bottomK != null && model.bottomK.Count > 0)
-                {
-                    var bottomKValue = string.Join(",", model.bottomK);
-                    if (bottomKValue.Length > 200)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"topK value must be less than 200 characters");
-                    }
-                }
-
-                if (model.topK != null && model.topK.Count > 0)
-                {
-                    var topKValue = string.Join(",", model.topK);
-                    if (topKValue.Length > 200)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"topK value must be less than 200 characters");
-                    }
-                }
-
-                if (model.shapesDetail != null && model.shapesDetail.Count > 0)
-                {
-                    var shapesDetailValue = JsonConvert.SerializeObject(model.shapesDetail);
-                    if (shapesDetailValue.Length > 200)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"shapesDetail value must be less than 200 characters");
-                    }
-                }
-
-                if (model.cardinalityDetail != null && model.cardinalityDetail.Count > 0)
-                {
-                    var cardinalityDetailValue = JsonConvert.SerializeObject(model.cardinalityDetail);
-                    if (cardinalityDetailValue.Length > 200)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"cardinalityDetail value must be less than 200 characters");
-                    }
-                }
-
                 bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
                 if (!isValid)
                 {
