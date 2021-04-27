@@ -273,19 +273,19 @@ namespace d360.web.Controllers.V2
 
                 if (asset == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"AssetUid {assetUid} is invalid"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"AssetUid {assetUid} is invalid")).ConfigureAwait(false);
                 }
 
                 var recordCount = Company.AssetDataProfile.Count(x => x.ID == asset.ID && x.ProfileSetDate >= startDate.Date && x.ProfileSetDate <= endDate.Date);
 
                 if (recordCount > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only delete a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} dataprofile records in this request. Please use the BATCH API endpoint."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only delete a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} dataprofile records in this request. Please use the BATCH API endpoint.")).ConfigureAwait(false);
                 }
 
                 if (startDate > endDate)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Start Date must be before the end date"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Start Date must be before the end date")).ConfigureAwait(false);
                 }
 
                 var results = DataProfiles.DeleteDataProfiles(asset, startDate, endDate, execution, cascade);

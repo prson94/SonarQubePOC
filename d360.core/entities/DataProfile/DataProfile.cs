@@ -228,7 +228,7 @@ namespace d360.core.entities
         public DateTime EndDate { get; set; }
 
         [DataMember]
-        public bool Cascade { get; set; } = false;
+        public bool Cascade { get; set; }
         [DataMember]
         public Guid? ExecutionItemUid { get; set; }
     }

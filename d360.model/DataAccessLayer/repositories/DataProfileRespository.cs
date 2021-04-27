@@ -265,7 +265,7 @@ namespace d360.model.DataAccessLayer
         {            
             CompanyContext.Add(execution);
             
-            var assetDataProfileDeleteModel = new AssetDataProfileDeleteModel() { AssetUid = asset.uid, StartDate = startDate, EndDate = endDate, Cascade = cascade };
+            var assetDataProfileDeleteModel = new AssetDataProfileDeleteModel { AssetUid = asset.uid, StartDate = startDate, EndDate = endDate, Cascade = cascade };
             
             List<AssetDataProfileDeleteModel> models = new List<AssetDataProfileDeleteModel>();
             models.Add(assetDataProfileDeleteModel);
