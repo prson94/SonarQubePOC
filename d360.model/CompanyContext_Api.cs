@@ -11146,5 +11146,367 @@ EG.GroupUid
                 
             return results;
         }
+        public List<DataProfileDeleteResponse> DeleteDataProfiles(List<AssetDataProfileDeleteModel> models, ApiExecution execution)
+        {
+            var swBegin = Stopwatch.StartNew();
+            TelemetryClient client = new TelemetryClient();
+            const string METHOD_NAME = "DeleteDataProfiles";
+            bool isLog = true; // trace info for all assets is extermely useful            
+
+            DynamicParameters dbArgs = new DynamicParameters();
+            bool generalChecksCompleted = false;
+            int itemNumber = 1;
+            List<DataProfileDeleteResponse> results = new List<DataProfileDeleteResponse>();
+            CurrentExecutionLocationModel currentLocation = null;
+            var metrics = new Dictionary<string, double>();
+            var sw = Stopwatch.StartNew();
+            var step = 0;
+
+            var dups = models.Where(i => i.ExecutionItemUid.HasValue && i.ExecutionItemUid.Value != Guid.Empty).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();            
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
+            AddMeasurement(metrics, "Checks for duplicates in load", sw.ElapsedMilliseconds, ++step);
+
+            sw.Restart();
+
+            if (dups.Any())
+            {
+                execution.ErrorMessage = $"Duplicate Execution Item Identifiers: {string.Join(", ", dups.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
+
+                results.AddRange(models.Select(i => new DataProfileDeleteResponse { ExecutionItemUid = execution.ExecutionID, Message = execution.ErrorMessage, Success = false }));
+            }
+            else
+            {                
+                try
+                {
+                    currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionDeleteAssetDataProfile");
+
+                    AddMeasurement(metrics, "Getting execution current location", sw.ElapsedMilliseconds, ++step);
+                    sw.Restart();
+
+                    if (currentLocation.HighestItemNumberProcessed > 0)
+                    {
+                        results.AddRange(
+                            Query<DataProfileDeleteResponse>(
+                                $"select * from api.ExecutionDeleteAssetDataProfile where ExecutionID = @ExecutionID and ItemNumber <= {currentLocation.HighestItemNumberProcessed}",
+                                new { execution.ExecutionID }
+                            )
+                        );
+                    }
+
+                    var table = new DataTable();
+                    table.Columns.Add("ExecutionID", typeof(Guid));
+                    table.Columns.Add("ItemNumber", typeof(int));
+                    table.Columns.Add("ExecutionItemUid", typeof(Guid));
+                    table.Columns.Add("AssetUid", typeof(Guid));
+                    table.Columns.Add("StartDate", typeof(DateTime));
+                    table.Columns.Add("EndDate", typeof(DateTime));
+                    table.Columns.Add("Cascade", typeof(bool));
+                    table.Columns.Add("Message", typeof(string));
+                    table.Columns.Add("Success", typeof(bool));
+
+                    foreach (var item in models)
+                    {
+                        var row = table.NewRow();
+
+                        row["ExecutionID"] = execution.ExecutionID;
+                        row["ItemNumber"] = itemNumber;
+                        if (item.ExecutionItemUid.HasValue)
+                        {
+                            row["ExecutionItemUid"] = item.ExecutionItemUid;
+                        }
+                        else
+                        {
+                            row["ExecutionItemUid"] = DBNull.Value;
+                        }
+                        row["AssetUid"] = item.AssetUid;
+                        row["StartDate"] = item.StartDate.Date;
+
+                        row["EndDate"] = item.EndDate.Date;
+                        row["Cascade"] = item.Cascade;
+
+                        table.Rows.Add(row);
+
+                        itemNumber++;
+                    }
+
+                    #region Bulk Copy
+
+                    if (Database.Connection.State != ConnectionState.Open)
+                        Connection.Open();
+
+                    using (var transaction = Connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            #region Bulk Copy Data Profile
+                            using (var bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction)
+                            {
+                                BatchSize = table.Rows.Count,
+                                DestinationTableName = "[api].[ExecutionDeleteAssetDataProfile]",
+                                BulkCopyTimeout = SqlBulkBatchTimeout
+                            })
+                            {
+                                bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                                bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                                bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                                bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
+                                bulkCopy.ColumnMappings.Add("StartDate", "StartDate");
+                                bulkCopy.ColumnMappings.Add("EndDate", "EndDate");
+                                bulkCopy.ColumnMappings.Add("Cascade", "Cascade");
+
+                                bulkCopy.WriteToServer(table);
+                            }
+                            #endregion
+
+                            transaction.Commit();
+
+                            AddMeasurement(metrics, "BulkCopy to api.Execution table", sw.ElapsedMilliseconds, ++step);
+                            sw.Restart();
+                        }
+                        catch (Exception ex)
+                        {
+                            if (transaction != null)
+                            {
+                                transaction.Rollback();
+                            }
+                            throw ex;
+                        }
+
+
+
+                    }
+                    #endregion
+                    Connection.Execute($@"
+                        update	api.ExecutionDeleteAssetDataProfile
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'You must provide a valid Uid.'
+                        where	ExecutionID = @ExecutionID and ([AssetUid] is null or [AssetUid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER));
+
+                        update	DEDP
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'Asset not found based on Uid provided'
+                        from
+                            api.ExecutionDeleteAssetDataProfile DEDP
+                            left Join
+                            Asset A on DEDP.AssetUid = A.Uid
+                        where	ExecutionID = @ExecutionID and A.Uid is null;
+
+                        update	api.ExecutionDeleteAssetDataProfile
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'StartDate must be before EndDate.'
+                        where	ExecutionID = @ExecutionID and startdate > enddate;",
+                                    new { execution.ExecutionID }, commandTimeout: timeout);
+
+                    AddMeasurement(metrics, "LogDeleteAssetDataProfileErrors", sw.ElapsedMilliseconds, ++step);
+                    sw.Restart();
+
+                    generalChecksCompleted = true;
+                }
+                catch (Exception generalEx)
+                {
+                    generalChecksCompleted = false;
+                    var msg = generalEx.GetFullExceptionData(false);
+                    execution.ErrorMessage = msg;
+                    execution.Processed = 0;
+                    execution.Error = models.Count();
+
+                    results = new List<DataProfileDeleteResponse>();
+                    results.AddRange(models.Select(i => new DataProfileDeleteResponse { ExecutionItemUid = i.ExecutionItemUid, Message = msg, Success = false }));
+                }
+
+                if (generalChecksCompleted)
+                {
+                    int loopSize = 250;
+                    int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
+                    int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
+                    int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
+                    var querySuffix = $"E.Success is null and E.ExecutionID = @ExecutionID and E.ItemNumber between @beginItemNumber and @endItemNumber";
+
+                    var sql = $@"
+                                drop table if exists #child
+                                create table #child (
+	                                itemnumber int,
+	                                assetID bigint,
+	                                startDate date,
+	                                endDate date
+                                )
+
+                                drop table if exists #parent
+                                create table #parent (
+	                                itemnumber int,
+	                                assetID bigint,
+	                                startDate date,
+	                                endDate date
+                                )
+
+                                drop table if exists #deleteAssetDataProfile
+                                create table #deleteAssetDataProfile (
+	                                itemnumber int,
+	                                assetID bigint,
+	                                startDate date,
+	                                endDate date
+                                )
+
+                                insert into #parent
+                                select 
+	                                ItemNumber,
+	                                ID,
+	                                startdate,
+	                                enddate
+                                from 
+	                                Asset A
+	                                inner join
+	                                API.ExecutionDeleteAssetDataProfile E on A.uid = E.AssetUid and E.[Cascade] = 1
+                                Where
+                                    {querySuffix}	                                
+
+                                insert into #deleteAssetDataProfile
+                                select * from #parent
+
+                                WHILE ((Select Count(*) from #parent) > 0)
+                                BEGIN
+	                                insert into #child
+	                                select 
+		                                ItemNumber,
+		                                AAP.Assetid,
+		                                p.startDate,
+		                                p.endDate
+	                                from 
+		                                #parent P 
+		                                inner join 
+		                                [utility].[ArtifactAssetParent] AAP on P.assetID = AAP.ParentAssetID
+
+	                                delete from #parent 
+	
+	                                insert into #parent
+	                                select * from #child
+
+	                                insert into #deleteAssetDataProfile
+	                                select 
+		                                c.* 
+	                                from 
+		                                #child c 
+		                                left join 
+		                                #deleteAssetDataProfile a on c.assetID=a.assetID and a.startdate =c.startdate and a.enddate=c.enddate
+	                                where a.assetID is null
+
+	                                delete from #child
+                                END
+
+                                insert into #deleteAssetDataProfile
+                                select 
+	                                ItemNumber,
+	                                id,
+	                                startdate,
+	                                enddate
+                                from 
+	                                Asset A
+	                                inner join
+	                                API.ExecutionDeleteAssetDataProfile E on A.uid = E.AssetUid and E.[Cascade] = 0
+                                where
+                                    {querySuffix}	                                
+
+                                drop table if exists #deletedResults
+                                create table #deletedResults (
+	                                itemnumber int,
+	                                id bigint
+                                )
+
+                                merge AssetDataProfile as ADP
+                                using (select * from #deleteAssetDataProfile) DADP
+                                on DADP.assetID = ADP.AssetID and ADP.ProfileSetDate between DADP.startDate and DADP.endDate
+                                when matched then
+                                DELETE
+                                OUTPUT DADP.itemNumber, DELETED.ID into #deletedResults;
+
+                                Update E
+                                set E.DeletedCount = DR.DeletedCount
+                                from 
+                                api.ExecutionDeleteAssetDataProfile E 
+                                cross apply (select itemNumber, Count(ID) as DeletedCount from #deletedResults DR where DR.itemnumber = E.itemNumber group by itemNumber) DR
+                                where 
+                                {querySuffix}";
+
+                    for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
+                    {
+                        bool runCompleted = false;
+                        int retryCount = 0;
+
+                        while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+                        {                            
+                            using (var trans = Connection.BeginTransaction())
+                            {
+                                #region Load valid items into table
+                                try
+                                {
+                                    Connection.Query<KeyValuePair<long, long>>(sql, new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+
+                                    #endregion
+
+                                    // Update success flag.
+                                    Connection.Execute(
+                                        $@"update E 
+                                            set Success = 1 
+                                       From api.ExecutionDeleteAssetDataProfile E
+                                       where {querySuffix};",
+                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+                                    trans.Commit();
+                                    runCompleted = true;
+                                }
+                                catch (Exception ex)
+                                {
+                                    try
+                                    {
+                                        if (trans != null)
+                                        {
+                                            trans.Rollback();
+                                        }
+                                    }
+                                    catch
+                                    {
+                                    }
+
+                                    retryCount++;
+
+                                    if (retryCount > API_V2_RETRY_LIMIT)
+                                    {
+                                        sw.Restart();
+                                        LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionDeleteAssetDataProfile", ex.GetFullExceptionData(false), timeout);
+                                        AddMeasurement(metrics, $"LogLoopExecutionError >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                        sw.Restart();
+                                    }
+                                }
+                            }
+                        }
+
+                        sw.Restart();
+                        results.AddRange(
+                            Query<DataProfileDeleteResponse>(
+                                $"select [ItemNumber],[AssetUid] as uid,[ExecutionItemUid],[DeletedCount],[Message],[Success] from api.ExecutionDeleteAssetDataProfile where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber ",
+                                new { execution.ExecutionID, beginItemNumber, endItemNumber }
+                            )
+                        );
+                        AddMeasurement(metrics, $"results.AddRange >> DataProfileUpsertResponse>> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+                        sw.Restart();
+                    }
+                }                                
+
+                AddMeasurement(metrics, $"End of Method", swBegin.ElapsedMilliseconds, ++step);
+
+                this.AITrackMetric(client, execution, METHOD_NAME, metrics, isLog);
+
+                if (Database.Connection.State == ConnectionState.Open)
+                {
+                    Connection.Close();
+                }
+
+                //return results;                
+            }            
+
+            return results;
+        }       
     }
 }
