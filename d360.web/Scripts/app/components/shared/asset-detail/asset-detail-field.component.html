@@ -1,0 +1,54 @@
+﻿<ng-container *ngIf="shouldShowEmptyValue; else showFieldValue">
+    <div>{{emptyValue}}</div>
+</ng-container>
+<ng-template #showFieldValue>
+    <ng-container [ngSwitch]="fieldDataType">
+        <ng-container *ngSwitchCase="'text'">
+            <div>{{field.Value}}</div>
+        </ng-container>
+        <ng-container *ngSwitchCase="'path'">
+            <div [innerHtml]="field.Value | safeHtml"></div>
+        </ng-container>
+        <ng-container *ngSwitchCase="'html'">
+            <div [innerHtml]="field.Value | safeHtml"></div>
+        </ng-container>
+        <ng-container *ngSwitchCase="'link'">
+            <div><a [href]="linkUrl" target="_blank">{{linkName}}<span style="text-decoration:none !important">&nbsp;&nbsp;<i class="fa fa-external-link" pTooltip="This link will open in a new tab" tooltipStyleClass="ig-tooltip" tooltipPosition="top"></i></span></a></div>
+        </ng-container>
+        <ng-container *ngSwitchCase="'json'">
+            <div>
+                <div *ngIf="json == 'Error'; else showJSON">{{field.Value}}</div>
+                <ng-template #showJSON>
+                    <ngx-json-view [data]="json"></ngx-json-view>
+                </ng-template>
+            </div>
+        </ng-container>
+        <ng-container *ngSwitchCase="'number'">
+            <div>{{formattedNumber}}</div>
+        </ng-container>
+        <ng-container *ngSwitchCase="'bool'">
+            <div>
+                <ng-container *ngIf="(field.Value || '').toUpperCase() == 'TRUE'">
+                    <i class="fa fa-check-circle enabled" title="True"></i> True
+                </ng-container>
+                <ng-container *ngIf="(field.Value || '').toUpperCase() == 'FALSE'">
+                    <i class="fa fa-times-circle disabled" title="False"></i> False
+                </ng-container>
+            </div>
+        </ng-container>
+        <ng-container *ngSwitchCase="'date'">
+            <div class="FieldDisplayContent">
+                <div>{{(field.Value | date: dateFormat)}}</div>
+            </div>
+        </ng-container>
+        <ng-container *ngSwitchCase="'datetime'">
+            <div class="FieldDisplayContent">
+                <div *ngIf="!isUtcDate">{{(field.Value | utcDate | date: dateTimeFormat)}}</div>
+                <div *ngIf="isUtcDate">{{(field.Value | date: dateTimeFormat)}}</div>
+            </div>
+        </ng-container>
+        <ng-container *ngSwitchDefault>
+            <div>default: {{field.Value}}</div>
+        </ng-container>
+    </ng-container>
+</ng-template>

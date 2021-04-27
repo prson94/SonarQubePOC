@@ -825,6 +825,7 @@
     <Content Include="Scripts\app\components\search\search-result-item.component.html" />
     <Content Include="Scripts\app\components\search\search-results-component.html" />
     <Content Include="Scripts\app\components\search\search.component.html" />
+    <Content Include="Scripts\app\components\shared\asset-detail\asset-detail-field.component.html" />
     <Content Include="Scripts\app\components\shared\asset-score\calculation\measure-rule-results.component.html" />
     <Content Include="Scripts\app\components\shared\asset-score\definition\measure-conditions-details.component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
@@ -1027,11 +1028,13 @@
     <TypeScriptCompile Include="Scripts\app\components\search\asset-path-widget\asset-path-widget.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\asset-path-widget\asset-path-widget.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search-session.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-detail\asset-detail-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\calculation\measure-rule-results.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\calculation\score-calculation.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\definition\measure-conditions-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\definition\score-definition.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\history\score-history.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-detail\asset-detail.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\browser-warning\browser-warning.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\badge\badge.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\badge\badge.module.ts" />

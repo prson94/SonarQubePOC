@@ -83,7 +83,26 @@ namespace d360.web.Controllers
                 }
             }
 
-            if (!string.IsNullOrEmpty(formattedValue))
+            if (ft.Type == DataType.Link.ToString())
+            {
+                var ro = new ReadOnlyField
+                {
+                    Name = ft.FriendlyName,
+                    Value = value,
+                    FieldDescription = ft.DisplayDescription,
+                    FieldName = ft.Name,
+                    ShowIfEmpty = ft.ShowIfEmpty,
+                    DataType = ft.Type
+                };
+
+                list.Add(new DetailReadOnlyRowModel
+                {
+                    columns = 1,
+                    FirstColumnFields = new List<ReadOnlyField> { ro },
+                    Category = ft.Category
+                });
+            }
+            else if (!string.IsNullOrEmpty(formattedValue))
             {
                 var ro = new ReadOnlyField
                 {
