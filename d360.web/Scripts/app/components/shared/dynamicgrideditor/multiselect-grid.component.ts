@@ -3,7 +3,9 @@ import { BaseComponent } from '../base.component';
 import { UriBasedService } from '../../../services/uri-based.service';
 import { EditorField } from '../../../models/editor-field.model';
 import * as _ from 'lodash';
-import {NG_VALUE_ACCESSOR, ControlValueAccessor} from '@angular/forms';
+import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
+import { LazyLoadEvent } from 'primeng/api';
+import { AssetService } from '../../../services/asset.service';
 
 export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
@@ -13,47 +15,12 @@ export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
 
 @Component({
     selector: 'd3s-multiselect-grid',
-    template: ` 
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <span *ngIf="!isLoading">
-                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                    <p-table #dt [value]="items" [selectionMode]="multiple ? 'multiple' : 'single'" [selection]="selectedItems" (selectionChange)="handleItemSelection($event);" [globalFilterFields]="['Text']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th style="width: 38px">
-                                    <p-tableHeaderCheckbox *ngIf="multiple"></p-tableHeaderCheckbox>
-                                </th>
-                                <th>Asset Path</th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
-                            <tr [pSelectableRow]="item">
-                                <td class="front-elide">                                        
-                                        <div *ngIf="!field?.MultiSelect" class="relationTableRadioButton">
-                                            <input type="radio" [attr.name]="name"
-                                           [checked]="rowIndex == selectedRelationRowIndex" (click)="handleItemSelection(item);" value="{{item.Value}}">
-                                        </div> 
-                                        <p-tableCheckbox *ngIf="multiple" [value]="item"></p-tableCheckbox>
-                                </td>
-                                <td class="front-elide">
-                                    <d3s-preview-tooltip [objectType]="getObjectTypeForTooltip(item)" [objectId]="getObjectIdForTooltip(item)">{{item.Text}}</d3s-preview-tooltip>
-                                </td>
-                            </tr>
-                        </ng-template>
-                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                            <div *ngIf="selectedItems && selectedItems.length > 0" class="multiselect-grid-sel">Selected Items:
-                                <p *ngIf="selectedItems && selectedItems.length > 0"><span *ngFor="let item of selectedItems;let last = last" >{{last?item.Text:item.Text +','}} </span></p>
-                            </div>
-                        </ng-template>
-                    </p-table>
-                </span>
-                `,
-    providers: [MULTISELECT_GRID_VALUE_ACCESSOR],
-    changeDetection: ChangeDetectionStrategy.OnPush, 
+    templateUrl: "multiselect-grid.component.html",
+    providers: [MULTISELECT_GRID_VALUE_ACCESSOR, AssetService],
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
-export class MultiSelectGridComponent extends BaseComponent implements OnInit, ControlValueAccessor  {   
+export class MultiSelectGridComponent extends BaseComponent implements OnInit, ControlValueAccessor {
     @Input() field: EditorField;
     @Input() multiple: boolean = true;
 
@@ -67,12 +34,61 @@ export class MultiSelectGridComponent extends BaseComponent implements OnInit, C
 
     public onModelTouched: Function = () => { };
 
-    constructor(private uriBasedService: UriBasedService, private ref: ChangeDetectorRef) {
+    isLazyLoad: boolean = false;
+    lazyLoadTotalCount: number = 0;
+
+    constructor(private uriBasedService: UriBasedService,
+        private assetService: AssetService,
+        private ref: ChangeDetectorRef) {
         super();
     }
 
     ngOnInit() {
-        this.load();
+        console.log(this.field);
+        if (this.field.IsAssetLazyLoad) {
+            this.isLazyLoad = true;
+        }
+        else {
+            this.load();
+        }
+    }
+
+    loadAssetsLazy($event: LazyLoadEvent) {
+        console.log($event);
+
+        var params = {};
+        params["_pageSize"] = $event.rows;
+        params["_pageNum"] = ($event.first / $event.rows) + 1;
+        params["_order"] = "Name";
+        params["_direction"] = "asc";
+        params["_includeFields"] = "Name";
+        var filter = "$Related:" + this.field.IntersectTypeUid + " ne " + this.field.AssetUid;
+        params["_filter"] = filter;
+
+        if (this.lazyLoadTotalCount) {
+            params["_includeTotal"] = false;
+        }
+
+        //$Related:3734351b-963d-4846-98ca-6b2c7e214352%20ne%20%27dc676a73-2b32-4d43-84e7-7c8289fed5fd%27
+
+        this.isLoading = true;
+        this.assetService.getAssets(this.field.TargetAssetTypeUid, params, true).subscribe((res) => {
+            if (res.total) {
+                this.lazyLoadTotalCount = +res.total;
+            }
+            this.items = [];
+            (res.items as any[]).forEach((item) => {
+                var path = item["Path"] as string;
+                path = (path as string).replace(/].\[/g, " > ").replace("[", "").replace("]", "");
+
+                this.items.push({
+                    "Text": path,
+                    "Value": item["AssetUid"]
+                });
+            })
+            this.isLoading = false;
+            this.ref.markForCheck();
+        });
     }
 
     private getObjectTypeForTooltip(item: any): string {
@@ -114,7 +130,7 @@ export class MultiSelectGridComponent extends BaseComponent implements OnInit, C
                 sel.push(event);
                 this.selectedItems = sel;
                 this.value = _.cloneDeep(items);
-                this.onModelChange(this.value);                
+                this.onModelChange(this.value);
                 this.selectedRelationRowIndex = this.items.findIndex((i) => (i.Value === this.value[0]));
             }
         }

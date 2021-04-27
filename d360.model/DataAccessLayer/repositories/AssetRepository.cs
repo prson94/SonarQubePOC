@@ -745,7 +745,10 @@ namespace d360.model.DataAccessLayer
                     foreach (var ft in allFieldTypes.Where(x => x.LookupObjectFieldTypeID > 0))
                     {
                         var origFieldType = CompanyContext.FieldTypes.FirstOrDefault(x => x.ID == ft.LookupObjectFieldTypeID);
-                        ft.Type = origFieldType.Type;
+                        if (origFieldType != null)
+                        {
+                            ft.Type = origFieldType.Type;
+                        }
                     }
 
                     var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, includeParent);

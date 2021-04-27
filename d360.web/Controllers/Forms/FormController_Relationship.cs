@@ -101,13 +101,16 @@ namespace d360.web.Controllers
 
 
             var targetCardinality = Cardinality.Many;
+            Guid targetAssetTypeUid;
             if (relationshipType.Subject == obj.Type && relationshipType.SubjectID == obj.TypeID)
             {
                 targetCardinality = relationshipType.ObjectCardinality;
+                targetAssetTypeUid = relationshipType.ObjectUid.Value;
             }
             else
             {
                 targetCardinality = relationshipType.SubjectCardinality;
+                targetAssetTypeUid = relationshipType.SubjectUid.Value;
             }
 
             list.Add(new EditableField { FieldName = "IntersectTypeID", FieldType = DataType.Hidden.ToString(), Value = it.ToString() });
@@ -123,7 +126,10 @@ namespace d360.web.Controllers
                 Name = "What items are you relating?",
                 MultiSelect = (targetCardinality == Cardinality.Many),
                 FieldType = DataType.DataTableSelect.ToString(),
-                TypeaheadUri = $"/form/Relationship_DataTable?intersectTypeId={it}&type={type}&objectId={id}"
+                IsAssetLazyLoad = true,
+                AssetUid = obj.UID.Value,
+                TargetAssetTypeUid = targetAssetTypeUid,
+                IntersectTypeUid = relationshipType.uid
             });
 
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IntersectType, it).ToList(), 2);
@@ -601,7 +607,7 @@ order by r.Name";
             }
 
             #endregion
-            
+
             var items = Company.Query<dynamic>(sql, new { targetAssetTypeId = targetAssetType.ID, targetType, targetTypeID, source = type.ToString(), id = objectId, it = intersectTypeId, userId = Company.CurrentResourceID }).Select(i => new { Text = WebUtility.HtmlDecode(i.Name), Value = $"{i.uid}", ObjectType = i.Object }).ToList();
 
             return Json(items, JsonRequestBehavior.AllowGet);
@@ -610,7 +616,7 @@ order by r.Name";
         #endregion
 
         #endregion
-                
+
         #region IntersectType
 
         #region Json Feeds To Support Editing

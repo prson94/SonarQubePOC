@@ -17,7 +17,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -906,6 +906,7 @@
     <Content Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-field-value-v2.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-field-v2.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-field-value.component.html" />
+    <Content Include="Scripts\app\components\shared\dynamicgrideditor\multiselect-grid.component.html" />
     <Content Include="Scripts\app\components\shared\editor-header.component.html" />
     <Content Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.html" />
     <Content Include="Scripts\app\components\shared\menu\site-menu.component.html" />
