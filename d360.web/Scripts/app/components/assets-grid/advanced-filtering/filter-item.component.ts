@@ -695,7 +695,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         if (this.condition.operator.toString() === "Populated"
-            || this.condition.operator.toString() === "NotPopulated") {
+            || this.condition.operator.toString() === "NotPopulated"
+            || this.condition.operator.toString() === "IsTrue"
+            || this.condition.operator.toString() === "IsFalse"
+        ) {
             return true;
         }
 
