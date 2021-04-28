@@ -1,7 +1,7 @@
 ﻿using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.PowerBI.Api;
-using Microsoft.PowerBI.Api.V2;
-using Microsoft.PowerBI.Api.V2.Models;
+using Microsoft.PowerBI.Api.Models;
+using Microsoft.PowerBI.Api.Models.Credentials;
 using Microsoft.Rest;
 using Newtonsoft.Json;
 using System;
@@ -38,17 +38,18 @@ namespace d360.extensions.powerbi
         /// <param name="filePath">A local file path on your computer</param>
         /// <returns></returns>
         public static async Task<Import> ImportPbix(string user, string pwd, string clientId, string groupId, string datasetName, Stream fileStream)
-        {            
+        {
+            var groupUid = Guid.Parse(groupId);
                 // Create a dev token for import                
                 using (var client = await CreateClient(user, pwd, clientId))
                 {
                     // Import PBIX file from the file stream
-                    var import = await client.Imports.PostImportWithFileAsync(groupId, fileStream, datasetName);
+                    var import = await client.Imports.PostImportWithFileAsync(groupUid, fileStream, datasetName);
 
                     // Example of polling the import to check when the import has succeeded.
                     while (import.ImportState != "Succeeded" && import.ImportState != "Failed")
                     {
-                        import = await client.Imports.GetImportByIdAsync(groupId, import.Id);
+                        import = await client.Imports.GetImportAsync(groupUid, import.Id);
                         Debug.WriteLine("Checking import state... {0}", import.ImportState);
                         Thread.Sleep(1000);
                     }
@@ -69,7 +70,7 @@ namespace d360.extensions.powerbi
             
             using (var client = await CreateClient(user,pwd,clientId))
             {
-                await client.Datasets.DeleteDatasetByIdAsync(groupId, datasetId);
+                await client.Datasets.DeleteDatasetAsync(Guid.Parse(groupId), datasetId);
             }
         }
 
@@ -125,10 +126,11 @@ namespace d360.extensions.powerbi
                 throw new Exception("authentication failed");
             }
 
+            var groupUid = Guid.Parse(groupId);
             using (var client = await CreateClient(pbiUser, pbiPwd, clientId))
             {                
                 // Get the newly created dataset from the previous import process
-                var datasets = await client.Datasets.GetDatasetsAsync(groupId);
+                var datasets = await client.Datasets.GetDatasetsAsync(groupUid);
 
                 if (datasets == null || datasets.Value == null) return;
 
@@ -141,13 +143,13 @@ namespace d360.extensions.powerbi
                         ConnectionDetails det = new ConnectionDetails();
                         det.ConnectionString = connectionString;
                         
-                        await client.Datasets.SetAllDatasetConnectionsAsync(groupId, dataset.Id, det);
+                        await client.Datasets.SetAllDatasetConnectionsAsync(groupUid, dataset.Id, det);
                     }
 
                     try
                     {
                         // Get the datasources from the dataset
-                        var datasources = await client.Datasets.GetDatasourcesInGroupAsync(groupId, dataset.Id);
+                        var datasources = await client.Datasets.GetDatasourcesInGroupAsync(groupUid, dataset.Id);
 
                         if ((datasources.Value[datasources.Value.Count - 1].DatasourceType ?? "").ToUpper() == "SQL")
                         {                            
@@ -165,11 +167,7 @@ namespace d360.extensions.powerbi
                               new DataSourceCredentials
                               {
                                   credentialType = "Basic",
-                                  basicCredentials = new BasicCredentials
-                                  {
-                                      Username = username,
-                                      Password = password
-                                  }
+                                  basicCredentials = new BasicCredentials(username, password)
                               };
 
                             // serialize C# object into JSON
