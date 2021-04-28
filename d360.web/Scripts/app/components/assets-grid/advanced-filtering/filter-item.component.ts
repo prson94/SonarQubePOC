@@ -263,11 +263,23 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         if (this.currentField.IsRelationship) {
+            var intersectTypeUid = this.currentField.Name.split('|')[0];
+            var intersectType = this.relationshipTypes.filter((r) => r.Uid === intersectTypeUid)[0];
+
+            this.relationshipFieldIntersectCardinality =
+                intersectType.Object.Uid === this.assetTypeUid
+                    ? intersectType.Subject.Cardinality : intersectType.Object.Cardinality;
+
             options = [];
-            options.push({ value: "Equals", label: " contains " });
-            options.push({ value: "NotEquals", label: " does not contain " });
+            options.push({ value: "Equals", label: " is " });
+            options.push({ value: "NotEquals", label: " is not " });
             options.push({ value: "Populated", label: " exists " });
             options.push({ value: "NotPopulated", label: " does not exist " });
+
+            if (this.relationshipFieldIntersectCardinality === "Many") {
+                options[0].label = "contains";
+                options[1].label = "does not contain";
+            }
             return options;
         }
 
@@ -424,17 +436,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
         this.uiTooltipValue = this.condition.getTooltipValue();
         this.updateFocus();
-    }
-
-    getRelationshipCardinality(): string {
-        if (!this.condition.isRelationship) {
-            return "";
-        }
-
-        var data = this.condition.field.split("|");
-        var obj = this.relationshipTypes.filter((x) => x.Uid === data[0])[0];
-
-        return obj.Object.Uid === data[1] ? obj.Subject.Cardinality : obj.Object.Cardinality;
     }
 
     loadListLazy(event: LazyLoadEvent) {
@@ -758,6 +759,9 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     private updateAllAnyData(event = null) {
+        if (this.currentOperator === "Populated" || this.currentOperator === "NotPopulated") {
+            return;
+        }
 
         if (this.condition.fieldType === "Lookup") {
             if (this.currentField.Type.Lookup.List.AllowMultipleValues !== true) {
@@ -849,12 +853,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         if (this.condition.isRelationship) {
-            if (this.getRelationshipCardinality() === "Many" && this.condition.value && (this.condition.value as any[]).length > 1) {
+            if (this.relationshipFieldIntersectCardinality === "Many" && this.condition.value && (this.condition.value as any[]).length > 1) {
                 this.uiIsAllDisabled = false;
                 this.uiIsAnyDisabled = false;
             }
             else {
-                if (this.getRelationshipCardinality() === "One") {
+                if (this.relationshipFieldIntersectCardinality === "One") {
                     this.condition.connectingOperator = "or";
                 }
                 this.uiIsAllDisabled = true;
