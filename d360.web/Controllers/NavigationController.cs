@@ -1122,6 +1122,11 @@ namespace d360.web.Controllers
                     }
                 }
             }
+            if (responseModel != null)
+            {
+                var showChangeLogTab = Community.GetCompanySettings().Single(x => x.Key == "ShowCommentsTab");
+                responseModel.Items.ShowCommentsTab = Convert.ToBoolean(showChangeLogTab.Value);
+            }
             return new JsonNetResult
             {
                 Data = responseModel,

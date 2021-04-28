@@ -244,7 +244,8 @@ export class BaseComponent {
         hasChild?: boolean,
         hasRuleResult?: boolean,
         hasGovernanceRoleSet?: boolean,
-        hasProcessDiagram?: boolean
+        hasProcessDiagram?: boolean,
+        ShowCommentsTab?: boolean
     ) {
         if (this.secondaryNavService && this.objectType) {
             this.clearSidebar();
@@ -404,12 +405,14 @@ export class BaseComponent {
 
                 this.secondaryNavService.showItem(this.scoreSidebar);
 
-                this.commentsSidebar = new SecondaryNavItem(
-                    'Comments', 'Comments', ['fa-comments'],
-                    `/sidebar/comments/${this.uid}`, null, 33
-                );
+                if (ShowCommentsTab) {
+                    this.commentsSidebar = new SecondaryNavItem(
+                        'Comments', 'Comments', ['fa-comments'],
+                        `/sidebar/comments/${this.uid}`, null, 33
+                    );
 
-                this.secondaryNavService.showItem(this.commentsSidebar);
+                    this.secondaryNavService.showItem(this.commentsSidebar);
+                }
 
                 if (CompanySettings.DisableIssueManagement != 'true') {
                     this.actionsSidebar = new SecondaryNavItem(
@@ -903,7 +906,7 @@ export class BaseComponent {
                 areaIcon = 'fa-tag';
             this.secondaryNavService.setCurrentArea(areaName, areaIcon, mainTabTitle);
 
-            this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild, this.objectType == 'Rule', r.Items.HasGovernanceRoleUidSet, r.Items.HasProcessDiagram);
+            this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild, this.objectType == 'Rule', r.Items.HasGovernanceRoleUidSet, r.Items.HasProcessDiagram, r.Items.ShowCommentsTab);
             var isType = this.IsType(r.Object);
             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, r.ObjectTypeId, this.objectType, this.objectID, isType, r.Items.HasWorkflow, this.uid));
             this.secondaryNavService.showHeader(true);
