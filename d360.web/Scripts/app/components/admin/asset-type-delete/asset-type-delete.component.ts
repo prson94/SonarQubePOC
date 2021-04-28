@@ -85,7 +85,6 @@ export class AssetTypeDeleteComponent extends BaseComponent implements OnInit {
 
         }
 
-        //this.isLoading = false;
     }
 
     cancel(): void {
