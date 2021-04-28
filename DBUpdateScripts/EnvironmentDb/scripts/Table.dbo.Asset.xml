@@ -253,12 +253,37 @@ AS
 	</rollback>
   </changeSet>
 
-  <changeSet author="kmcnamee" id="Table.dbo.Asset-Asset_AfterInsert-v2">
+  <changeSet author="kmcnamee" id="Table.dbo.Asset-Asset_AfterInsert-v2.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+CREATE OR ALTER   TRIGGER [dbo].[Asset_AfterInsert]
+   ON  [dbo].[Asset] 
+   AFTER INSERT
+AS 
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+        select	'Add', 
+				I.Object, 
+				I.ObjectID,
+				[queue].WriteIndexXml('', I.[Object], I.ObjectID, coalesce(I.CreatedBy, 0)),
+				I.ID
+		from	inserted I where  I.Object in('Group');
+
+	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+        select	'Add', 
+				I.Object, 
+				I.ObjectID,
+				[queue].WriteIndexXml('', I.[Object], I.ObjectID, coalesce(I.CreatedBy, 0)),
+				I.ID
+		from	inserted I where  I.AssetTypeID in(select id from assettype att where not exists (select 1 from fieldtype ft where ft.AssetTypeID = att.id) and att.Class = 9)
+GO
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER TRIGGER [dbo].[Asset_AfterInsert]
    ON  [dbo].[Asset] 
    AFTER INSERT
@@ -273,15 +298,10 @@ AS
 		from	inserted I where  I.Object in('Group');
 GO
 		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
 	</rollback>
   </changeSet>
 
-  <changeSet author="kmcnamee" id="Table.dbo.Asset-Asset_AfterUpdate-v4">
+  <changeSet author="kmcnamee" id="Table.dbo.Asset-Asset_AfterUpdate-v4.1">
     <comment>GOV-14347</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -359,6 +379,21 @@ AS
 				on TF.FieldTypeID = TFV.FieldTypeID and TFV.[Value] = TF.[Value];
 				
 			end
+      INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+        select	'Update', 
+				I.Object, 
+				I.ObjectID,
+				[queue].WriteIndexXml('', I.[Object], I.ObjectID, coalesce(I.CreatedBy, 0)),
+				I.ID
+		from	inserted I where  I.Object in('Group');
+
+	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+        select	'Update', 
+				I.Object, 
+				I.ObjectID,
+				[queue].WriteIndexXml('', I.[Object], I.ObjectID, coalesce(I.CreatedBy, 0)),
+				I.ID
+		from	inserted I where  I.AssetTypeID in(select id from assettype att where not exists (select 1 from fieldtype ft where ft.AssetTypeID = att.id) and att.Class = 9)
 	end
 		]]>
     </sql>
