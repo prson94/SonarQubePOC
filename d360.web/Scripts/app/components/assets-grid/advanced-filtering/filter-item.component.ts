@@ -263,7 +263,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         if (this.currentField.IsRelationship) {
-            var intersectTypeUid = this.currentField.Name.split('|')[0];
+            var intersectTypeUid = this.currentField.Name.split("|")[0];
             var intersectType = this.relationshipTypes.filter((r) => r.Uid === intersectTypeUid)[0];
 
             this.relationshipFieldIntersectCardinality =
@@ -567,10 +567,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
                     var groups = data.map((m: any) => m.group).join(", ");
                     var title = name + " (" + groups + ")";
 
-                    this.currentField.Values.push({ title: title, value: value });
+                    this.currentField.Values.push({ title, value });
                 });
 
-                this.currentField.Values = this.currentField.Values.sort((a, b) => { return a.title > b.title ? 1 : 0 });
+                this.currentField.Values = this.currentField.Values.sort((a, b) => { return a.title > b.title ? 1 : 0; });
 
                 this.isLookupValuesLoading = false;
                 this.setTableWidth();
