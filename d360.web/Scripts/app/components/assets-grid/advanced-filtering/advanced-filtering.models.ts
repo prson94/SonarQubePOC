@@ -461,7 +461,14 @@ export class AdvancedFilterFieldConditionCollection {
                 let subConditions: AdvancedFilterFieldCondition[] = [];
                 valuesArr = cond.value as SelectItem[];
                 valuesArr.forEach((r) => {
-                    subConditions.push(cond.getCopyWithNewValue(r.value));
+                    if (cond.field === SystemFields.OwnedByFieldCode) {
+                        if ((r.value as string).length === 36) {
+                            subConditions.push(cond.getCopyWithNewValue(r.value));
+                        }
+                    }
+                    else {
+                        subConditions.push(cond.getCopyWithNewValue(r.value));
+                    }
                 });
 
                 let subQueries: string[] = [];
