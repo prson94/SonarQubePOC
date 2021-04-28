@@ -1,0 +1,53 @@
+﻿@import './IgColorVariables.less';
+
+.ig-inputgroup {
+  display: flex;
+  position: relative;
+
+  *,
+  .ig-number-field {
+    border-radius: 0;
+  }
+
+  .ig-input-addon {
+    height: 32px;
+    line-height: 28px;
+    padding: 0 8px;
+    background: @ig-grey-t5;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    color: @ig-black;
+  }
+
+  :nth-child(1) input {
+    border-right: 0;
+  }
+
+  :nth-child(2) input {
+    border-left: 0;
+    border-right: 0;
+  }
+
+  :first-child.ig-input-addon,
+  :first-child input {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-left: 1px solid rgba(0, 0, 0, 0.2);
+  }
+
+  :last-child.ig-input-addon,
+  :last-child input {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    border-right: 1px solid rgba(0, 0, 0, 0.2);
+  }
+
+  ig-number-input {
+    z-index: 1;
+  }
+
+  .ig-text-required {
+    position: absolute;
+    top: 32px;
+    left: 0px;
+  }
+}

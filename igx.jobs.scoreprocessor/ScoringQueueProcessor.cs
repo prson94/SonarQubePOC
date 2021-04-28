@@ -30,15 +30,15 @@ namespace igx.jobs.scoreprocessor
 
         {
 #if DEBUG
-            //var scoreInfo = new ScoreQueueInfo { ChangeType = ScoreQueueChangeType.AssetMeasures, CompanyID = 2, StartedOn = DateTime.Parse("2020-12-29"), ExecutionUid = Guid.Parse("826c51c0-3b4b-4df7-a763-a35d1f1e1fad") };
+            //var scoreInfo = new ScoreQueueInfo { ChangeType = ScoreQueueChangeType.AssetMeasures, CompanyID = 2, StartedOn = DateTime.Parse("2021-04-06"), ExecutionUid = Guid.Parse("0001F0C6-1262-4CD4-9091-0CD35C6C6C51") };
             var scoreInfo = JsonConvert.DeserializeObject<ScoreQueueInfo>(myQueueItem);
 #else
             var scoreInfo = JsonConvert.DeserializeObject<ScoreQueueInfo>(myQueueItem);
 #endif
+            AzureStorageProvider storage = new AzureStorageProvider();
 
             try
             {
-                AzureStorageProvider storage = new AzureStorageProvider();
                 IScoreProcess process = null;
 
                 switch (scoreInfo.ChangeType)
@@ -87,19 +87,27 @@ namespace igx.jobs.scoreprocessor
             }
             catch (Exception ex)
             {
-                var props = new Dictionary<string, string>() {
-                    { "ExecutionUid", scoreInfo.ExecutionUid.ToString() },
-                    { "ChangeType", scoreInfo.ChangeType.ToString() }
-                };
+                var execUpdater = new ExecutionUpdater { Info = scoreInfo, Storage = storage };
+                var closedExecution = await execUpdater.UpdateAsync(ex);
 
-                CoreFunction.AITrackException(functionName, ex, scoreInfo.CompanyID, props);
-
-                lock (log)
+                if (closedExecution)
                 {
-                    log.WriteLine($"Company [{scoreInfo.CompanyID}]: [{ex.GetFullExceptionData()}]");
-                }
+                    var props = new Dictionary<string, string>() {
+                        { "ExecutionUid", scoreInfo.ExecutionUid.ToString() },
+                        { "ChangeType", scoreInfo.ChangeType.ToString() }
+                    };
 
-                throw ex;
+                    CoreFunction.AITrackException(functionName, ex, scoreInfo.CompanyID, props);
+
+                    lock (log)
+                    {
+                        log.WriteLine($"Company [{scoreInfo.CompanyID}]: [{ex.GetFullExceptionData()}]");
+                    }
+                }
+                else
+                {
+                    throw ex;
+                }
             }
         }
     }

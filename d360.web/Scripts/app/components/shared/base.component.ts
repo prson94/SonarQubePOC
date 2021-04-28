@@ -124,24 +124,36 @@ export class BaseComponent {
         return ResponsibilityTypeRelationPermission.hasPermission(this.permissions, permission);
     }
 
+    hasAddResponsibilitiesPermissions(object: string) {
+        return this.hasPermission(Permission.AddResponsibilities);
+    }
+
     hasModifyResponsibilitiesPermissions(object: string) {
-        return this.hasPermission(Permission.ModifyResponsibilities);
+        return this.hasPermission(Permission.EditResponsibilities);
     }
 
     hasDeleteResponsibilitiesPermissions(object: string) {
         return this.hasPermission(Permission.DeleteResponsibilities);
     }
 
+    hasAddAssetPermissions() {
+        return this.hasPermission(Permission.AddAsset);
+    }
+
     hasModifyAssetPermissions() {
-        return this.hasPermission(Permission.ModifyAsset);
+        return this.hasPermission(Permission.EditAsset);
     }
 
     hasDeleteAssetPermissions() {
         return this.hasPermission(Permission.DeleteAsset);
     }
 
+    hasAddRelationshipsPermissions() {
+        return this.hasPermission(Permission.AddRelationships);
+    }
+
     hasModifyRelationshipsPermissions() {
-        return this.hasPermission(Permission.ModifyRelationships);
+        return this.hasPermission(Permission.EditRelationships);
     }
 
     hasDeleteRelationshipsPermissions() {
@@ -334,7 +346,7 @@ export class BaseComponent {
 
             if (hasRelationships) {
                 this.relationsSidebar = new SecondaryNavItem(
-                    'Related Assets',
+                    'Relationships',
                     'relationship',
                     ['fa-retweet'],
                     `/sidebar/relationships${this.objectContextUrl()}`, null, 20
@@ -1108,6 +1120,7 @@ export class BaseComponent {
 
                     if (selected && selected.ID > 0) {
                         this.setObjectInfo(objectName, selected.ID, selected.DisplayValue, selected.AssetID, undefined, selected.Uid);
+                        this.baseCrumbs = [];
                         this.checkParentBase(selected, this.preloadedTreeData, data.ObjectTypeId, objectName);
                         this.breadcrumbsService.showBreadcrumb(
                             new Breadcrumb(

@@ -5,18 +5,20 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.queue.Task-v1">
+  <changeSet author="kmcnamee" id="Table.queue.Task-v2">
+    <comment>GOV-14347</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+   
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'queue' AND TABLE_NAME = 'Task')
 BEGIN
 	CREATE TABLE [queue].[Task](
 		[ID] [uniqueidentifier] CONSTRAINT [DF_QueueTask_ID] DEFAULT (newid()) NOT NULL,
 		[Action] [varchar](50) NOT NULL,
-		[Custom] [varchar](500) NULL,
+		[Custom] [nvarchar](max) NULL,
 		[Object] [varchar](50) NOT NULL,
 		[ObjectID] [int] NOT NULL,
 		[Date] [datetime] CONSTRAINT [DF_QueueTask_Date] DEFAULT (getutcdate()) NOT NULL,
@@ -28,6 +30,10 @@ BEGIN
 		[AssetID] [bigint] CONSTRAINT [DF_QueueTask_AssetID] DEFAULT (0) NOT NULL,
 		CONSTRAINT [PK_QueueTask] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
 	)
+END
+ELSE
+BEGIN
+		ALTER TABLE [queue].[task] ALTER COLUMN [Custom] nvarchar(max) null
 END
 
 IF NOT EXISTS (select * from sys.indexes where name = 'CIX_QueueTask')

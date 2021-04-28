@@ -85,9 +85,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
         "FusionAttribute",
         "FusionAttributeType",
         "FusionType",
-        "FusionExecution",
-        "FusionQueryAttribute",
-        "FusionQueryAttributeType"
+        "FusionExecution"
     ];
     updateFrequencyOptions: MetricUpdateFrequency[] = [];
 

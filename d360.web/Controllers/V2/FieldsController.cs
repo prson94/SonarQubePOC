@@ -418,7 +418,7 @@ namespace d360.web.Controllers.V2
                 #endregion
 
                 #region Validation
-                
+
                 var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel);
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                 {
@@ -428,7 +428,7 @@ namespace d360.web.Controllers.V2
                 bool anyExistingItems = FieldsRepository.HasExistingItems(typeIdentifierInfoModel);
 
                 List<FieldType> currentFieldTypes = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
-                bool anyResponsibilitiesUsingField = FieldsRepository.hasResponsibilityUsingField(typeIdentifierInfoModel, currentFieldTypes.FindAll(x => model.Fields.Any(f=>f.Name==x.Name)));
+                bool anyResponsibilitiesUsingField = FieldsRepository.hasResponsibilityUsingField(typeIdentifierInfoModel, currentFieldTypes.FindAll(x => model.Fields.Any(f => f.Name == x.Name)));
 
                 if (anyResponsibilitiesUsingField)
                 {
@@ -619,7 +619,7 @@ namespace d360.web.Controllers.V2
                             value = i.Name
                         })
                         .OrderBy(i => i.title).ToList();
-                
+
                 if (ActionTypeUid != null || RelationshipTypeUid != null)
                 {
                     dataTypeOptions = dataTypeOptions.Where(x => x.value != "Path" && x.value != "Score").ToList();
@@ -921,7 +921,7 @@ namespace d360.web.Controllers.V2
                         break;
                     case SystemObjects.ReferenceItem:
                     case SystemObjects.ReferenceItemType:
-                        list = list.Prepend(new KeyValuePair<string, string>("Code", "Code")).ToDictionary(d => d.Key, d => d.Value);                        
+                        list = list.Prepend(new KeyValuePair<string, string>("Code", "Code")).ToDictionary(d => d.Key, d => d.Value);
                         break;
                     case SystemObjects.PolicyType:
                         list.Add("TextPath", "TextPath");
@@ -1410,7 +1410,9 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var intersectTypes = await Company.QueryAsync<dynamic>($@"select value, title from utility.GetIntersectTypesByType(@assetTypeUid)", new { assetTypeUid }, ApiTimeout);
+                var intersectTypes = await Company.QueryAsync<dynamic>($@"select value, title from utility.GetIntersectTypesByType(@assetTypeUid) t 
+                                                                          where not exists(select 1 from intersecttypedetail itd where itd.uid = t.uid and ((itd.object = @ObjectType and itd.ObjectID = 0) or (itd.subject = @ObjectType and itd.subjectID = 0)))",
+                                                                          new { assetTypeUid, ObjectType = SystemObjects.ReferenceItemType.ToString() }, ApiTimeout);
                 return Request.CreateResponse(HttpStatusCode.OK, intersectTypes);
             }
             catch (RestApiException ex)
@@ -1661,11 +1663,6 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 else if (type == SystemObjects.FusionAttributeType)
                 {
                     list.Add("Name", 0);
-                }
-                else if (type == SystemObjects.FusionQueryAttributeType)
-                {
-                    list.Add("Name", 0);
-                    list.Add("DisplayValue", 0);
                 }
                 else
                 {
@@ -2005,5 +2002,81 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
 
         #endregion
 
+
+        /// <summary>
+        /// Retrieves details about assets being watched for a given asset type.
+        /// </summary>
+        /// <returns>Returns a list of watched asset details</returns>        
+        /// <param name="assetTypeUid">Uid of the asset type</param>
+        /// <param name="fieldName">Field name</param>
+        [HttpGet,
+            Route("{assetTypeUid:Guid}/lookupvalues/{fieldName}"),
+             SwaggerResponse(HttpStatusCode.OK, "A list of filter values for a given asset type and field name.", typeof(List<string>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+            ]
+        public HttpResponseMessage GetFilterVales(Guid assetTypeUid, string fieldName, int? skip = null, int? take = 0, string filter = null)
+        {
+            var prefix = "Fields.GetFilterVales => ";
+            try
+            {
+                string pagingQuery = "";
+                string whereQuery = "";
+                if (skip != null && take != null)
+                {
+                    pagingQuery = " OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY ";
+                }
+
+                if (!string.IsNullOrEmpty(filter))
+                {
+                    filter = "%" + filter + "%";
+                    whereQuery += " and text like @filter ";
+                }
+
+                int fieldTypeId = -1;
+
+                var assetTypeId = Company.AssetTypes
+                    .FirstOrDefault(x => x.uid == assetTypeUid).ID;
+                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetTypeId && x.Name == fieldName);
+                if (fieldType.Type == "FieldFromRelationship" && fieldType.LookupObjectFieldTypeID > 0)
+                {
+                    fieldTypeId = fieldType.LookupObjectFieldTypeID.Value;
+                }
+                else
+                {
+                    fieldTypeId = fieldType.ID;
+                }
+
+                var query = $@"
+                    select text from FieldLookupValue where @fieldTypeId = FieldTypeID
+                    {whereQuery}
+                    order by text asc
+					{pagingQuery};
+
+                    select count(1) from FieldLookupValue where @fieldTypeId = FieldTypeID {whereQuery};
+                    ";
+
+                var results = Company.Connection.QueryMultiple(query, new { fieldTypeId, skip, take, filter });
+
+                var data = new
+                {
+                    items = results.Read<string>().ToList(),
+                    count = results.Read<int>().FirstOrDefault()
+                };
+
+                return Request.CreateResponse(HttpStatusCode.OK, data);
+
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
     }
 }

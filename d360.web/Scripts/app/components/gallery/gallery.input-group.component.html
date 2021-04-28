@@ -1,0 +1,106 @@
+﻿<div class="tile tile-detail">
+    <header>Loading Component</header>
+    <p>Angular component that shows a loading wheel</p>
+</div>
+
+<div class="tile tile-detail">
+    <header>Usage</header>
+    <code><pre>{{sampleUsage}}</pre></code>
+</div>
+
+<div class="tile tile-detail">
+    <header>Examples</header>
+    <div class="gallery-section">
+        <h4>Basic prefix</h4>
+        <div>
+            <div class="ig-inputgroup">
+                <span class="ig-input-addon">DQ-</span>
+                <ig-number-input></ig-number-input>
+            </div>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Basic sufix</h4>
+        <div>
+            <div class="ig-inputgroup">
+                <ig-number-input></ig-number-input>
+                <span class="ig-input-addon">%</span>
+            </div>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Basic prefix + sufix</h4>
+        <div>
+            <div class="ig-inputgroup">
+                <span class="ig-input-addon">DQ-</span>
+                <ig-number-input></ig-number-input>
+                <span class="ig-input-addon">%</span>
+            </div>
+        </div>
+    </div>
+
+    <header>Validation</header>
+    <div class="gallery-section">
+        <h4>Optional</h4>
+        <div>
+            <div class="ig-inputgroup">
+                <span class="ig-input-addon">DQ-</span>
+                <ig-number-input></ig-number-input>
+            </div>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Required</h4>
+        <div>
+            <div class="ig-inputgroup">
+                <span class="ig-input-addon">DQ-</span>
+                <ig-number-input [required]="true"></ig-number-input>
+            </div>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Valid Value</h4>
+        <div>
+            <div class="ig-inputgroup">
+                <span class="ig-input-addon">DQ-</span>
+                <ig-number-input [(ngModel)]="validValue"></ig-number-input>
+            </div>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Invalid Value</h4>
+        <p> * enter number higher than 100</p>
+        <div>
+            <form *ngIf="form != null" [formGroup]="form">
+
+                <div class="ig-inputgroup">
+                    <span class="ig-input-addon">DQ-</span>
+                    <ig-number-input formControlName="myNumber" required="true"></ig-number-input>
+                    <div *ngIf="form.get('myNumber').invalid && (form.get('myNumber').dirty || form.get('myNumber').touched)">
+                        <div *ngIf="form.get('myNumber').errors.min" class="ig-text-required">
+                            Please enter a number between 1 and 100
+                        </div>
+                        <div *ngIf="form.get('myNumber').errors.max" class="ig-text-required">
+                            Please enter a number between 1 and 100
+                        </div>
+                    </div>
+                </div>
+
+
+            </form>
+
+        </div>
+    </div>
+
+    <div class="gallery-section">
+        <h4>Disabled</h4>
+        <div>
+            <div class="ig-inputgroup">
+                <span class="ig-input-addon">DQ-</span>
+                <ig-number-input [(ngModel)]="validValue" [disabled]="true"></ig-number-input>
+            </div>
+        </div>
+    </div>
+</div>
+
+

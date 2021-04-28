@@ -129,7 +129,7 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
     }
 
     save() {
-        const permCreate = this.hasModifyRelationshipsPermissions();
+        const permCreate = this.hasAddRelationshipsPermissions();
         const permEdit = this.hasModifyRelationshipsPermissions();
 
         if (!permEdit || !permCreate) {

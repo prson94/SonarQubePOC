@@ -1,24 +1,17 @@
 ﻿using d360.core;
 using d360.core.entities;
-using d360.core.entities.Metric;
 using d360.core.enums;
 using d360.core.helpers;
 using d360.core.queue;
-using d360.extensions.caching;
-using d360.extensions.info;
-using d360.extensions.queue;
 using d360.extensions.storage;
 using d360.model;
 using d360.utils.company;
 using Dapper;
 using igx.jobs.scoreprocessor.Models;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace igx.jobs.scoreprocessor.ChangeTypes
 {
@@ -202,109 +195,6 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
             return metConditions;
         }
 
-        internal decimal AdjustScoreItemWeights(
-            List<AllocationDataModel> allMeasures, List<ScoreItem> items)
-        {
-            var all = new List<AllocationDataModel>(allMeasures);
-
-            var measuresThatAreNotPresent = all.Where(m => !m.IsGroup && !items.Any(i => i.MetricAssetUid == m.MetricAssetUid)).Select(m => m.MetricAssetUid);
-            all.RemoveAll(m => measuresThatAreNotPresent.Contains(m.MetricAssetUid));
-
-            var groupsWithoutAChild = all
-                .Where(g => !g.MetricParentAssetUid.HasValue  && g.IsGroup  && !all.Any(c => c.MetricParentAssetUid == g.MetricAssetUid))
-                .Select(g => g.MetricAssetUid)
-                .Distinct()
-                .ToList();
-            all.RemoveAll(m => groupsWithoutAChild.Contains(m.MetricAssetUid));
-
-            decimal scoreValue = 0;
-
-            var rootUids = all.Where(o => !o.MetricParentAssetUid.HasValue).Select(o => o.MetricAssetUid).ToList();
-            
-            // Root-level measures
-            foreach(var o in items.Where(o => rootUids.Contains(o.MetricAssetUid)))
-            {
-                o.AdjustedMaxWeight = o.RawMeasureWeight / 
-                    items.Where(i => rootUids.Contains(i.MetricAssetUid)).Sum(i => i.RawMeasureWeight);
-
-                o.AdjustedMaxWeight = Math.Round(o.AdjustedMaxWeight ?? 0, 6, MidpointRounding.AwayFromZero);
-
-                if (o.AdjustedMaxWeight > 1)
-                {
-                    o.AdjustedMaxWeight = 1;
-                }
-
-                decimal totalChildPassingWeights = 0;
-                // Child-level measures.
-                if (all.Any(c => c.MetricParentAssetUid == o.MetricAssetUid))
-                {
-                    var childMeasures = (from item in items 
-                                        join m in all on item.MetricAssetUid equals m.MetricAssetUid
-                                        where m.MetricParentAssetUid == o.MetricAssetUid
-                                        select item).ToList();
-
-                    foreach (var c in childMeasures)
-                    {
-                        c.AdjustedMaxWeight = c.RawMeasureWeight / childMeasures.Sum(i => i.RawMeasureWeight);
-                        c.AdjustedMaxWeight = Math.Round(c.AdjustedMaxWeight ?? 0, 6, MidpointRounding.AwayFromZero);
-                        if (c.AdjustedMaxWeight > 1)
-                        {
-                            c.AdjustedMaxWeight = 1;
-                        }
-                        if (c.DecimalValue.HasValue)
-                        {
-                            // Typically applies when deling with a DataQuality measure that is NOT threshold-based.
-                            c.AdjustedWeight = (c.AdjustedMaxWeight ?? 0) * (decimal)c.DecimalValue.Value;
-                        }
-                        else 
-                        {
-                            c.AdjustedWeight = c.Value ? c.AdjustedMaxWeight : 0;
-                        }
-
-                        if (c.AdjustedWeight > 1)
-                        {
-                            c.AdjustedWeight = 1;
-                        }
-
-                        totalChildPassingWeights += c.AdjustedWeight.Value;
-                    }
-                }
-
-                var rootMeasure = all.Single(r => r.MetricAssetUid == o.MetricAssetUid);
-                if (rootMeasure.IsGroup)
-                {
-                    o.AdjustedWeight = totalChildPassingWeights * (o.AdjustedMaxWeight ?? 0);
-                }
-                else
-                {
-                    if (o.DecimalValue.HasValue)
-                    {
-                        // Typically applies when deling with a DataQuality measure that is NOT threshold-based.
-                        o.AdjustedWeight = (o.AdjustedMaxWeight ?? 0) * (decimal)o.DecimalValue.Value;
-                    }
-                    else
-                    {
-                        o.AdjustedWeight = o.Value ? (o.AdjustedMaxWeight ?? 0) : 0;
-                        o.DecimalValue = (float)o.AdjustedWeight;
-                    }
-                }
-                o.AdjustedWeight = Math.Round(o.AdjustedWeight.Value, 6, MidpointRounding.AwayFromZero);
-                if (o.AdjustedWeight > 1)
-                {
-                    o.AdjustedWeight = 1;
-                }
-                scoreValue += o.AdjustedWeight.Value;
-            }
-
-            scoreValue = Math.Round(scoreValue, 6, MidpointRounding.AwayFromZero);
-            if (scoreValue > 1)
-            {
-                scoreValue = 1; // Catch if the score is more than 100%, for whatever reason. 
-            }
-
-            return scoreValue;
-        }
-
         internal SqlBulkCopy CreateBulkCopy(SqlConnection company, SqlTransaction trans, string tableName)
         {
             return new SqlBulkCopy(company, SqlBulkCopyOptions.TableLock, trans) {
@@ -312,6 +202,54 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                 DestinationTableName = tableName,
                 BulkCopyTimeout = 0
             };
+        }
+
+        protected void updateExecution(SqlConnection Db, ScoreExecution executionRecord)
+        {
+            Db.Execute(@"update metrics.Execution 
+set     PercentComplete = @PercentComplete,
+        Failures = @Failures, 
+        ErrorMessage = @ErrorMessage,
+        StartedOn = @StartedOn,
+        CompletedOn = @CompletedOn, 
+        ProcessingStartedOn = @ProcessingStartedOn,
+        Processing = @Processing,
+        TriggeredByExecutionUid = @TriggeredByExecutionUid,
+        TriggeredByMeasureUid = @TriggeredByMeasureUid
+where   Uid = @Uid", executionRecord);
+        }
+
+        protected bool updateExecution(SqlConnection Db, ScoreExecution executionRecord, bool completed, Exception ex = null)
+        {
+            bool closedExecution = false;
+
+            try
+            {
+                // Reset on failure so it does not interfere with any other executing thread.
+                if (executionRecord != null)
+                {
+                    executionRecord.Processing = false;
+                    executionRecord.ProcessingStartedOn = null;
+                    if (completed)
+                    {
+                        executionRecord.CompletedOn = DateTime.UtcNow;
+                        closedExecution = true;
+                    }
+                    if (ex != null)
+                    {
+                        executionRecord.Failures += 1;
+                        executionRecord.ErrorMessage += ex.GetFullExceptionData(false);
+                    }
+
+                    updateExecution(Db, executionRecord);
+                }
+            }
+            catch
+            {
+                //do nothing.
+            }
+            
+            return closedExecution;
         }
     }
 }

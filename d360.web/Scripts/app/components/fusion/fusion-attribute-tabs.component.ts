@@ -18,9 +18,6 @@ export class FusionAttributeTabsComponent extends BaseComponent  implements OnCh
     @Input() selectedFusionAttribute: any;
     @Input() initialFusionAttributeId: number;
 
-    @Input() selectedFusionQueryAttributeTypeId: number;
-    @Input() selectedFusionQueryAttribute: any;
-    @Input() initialFusionQueryAttributeId: number;
     @Input() objectPermissions: ResponsibilityTypeRelationPermission[] = [];
     
     constructor(private stateService: StateService) {

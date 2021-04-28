@@ -14,8 +14,6 @@ export class TechnicalNameToDisplayValuePipe implements PipeTransform {
                 return "Model";
             case "FUSIONATTRIBUTETYPE":
                 return "Fusion";
-            case "FUSIONQUERYATTRIBUTETYPE":
-                return "Fusion";
             case "RULETYPE":
                 return "Rule";
             case "REFERENCEITEMTYPE":

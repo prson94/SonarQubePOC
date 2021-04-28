@@ -428,6 +428,9 @@
     <Compile Include="Models\AssetMeasuresProcessField.cs" />
     <Compile Include="Models\MeasureRemovedScoreRequeueDataItem.cs" />
     <Compile Include="Models\AssetVersionCheckObjectType.cs" />
+    <Compile Include="ExecutionUpdater.cs" />
+    <Compile Include="Models\StagingScoreItem.cs" />
+    <Compile Include="Models\UniqueAssetEffectiveDateModel.cs" />
     <Compile Include="ScoringQueueProcessor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

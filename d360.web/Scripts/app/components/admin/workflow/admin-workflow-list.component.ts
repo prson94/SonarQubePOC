@@ -158,7 +158,14 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
                                 this.selection = this.items[0];
                             }
                             this.items.forEach(i => {
-                                i.ChangeTypeName = this.changeTypes.find(c => c.ID == i.ChangeType).Description;
+                                var ChangeTypeDescription = this.changeTypes.find(c => c.ID == i.ChangeType);
+                                if (ChangeTypeDescription) {
+                                    i.ChangeTypeName = ChangeTypeDescription.Description;
+                                }
+                                else
+                                {
+                                    i.ChangeTypeName = "";
+                                }
                             });
                         })),
                 map(() => this.isLoading = false))

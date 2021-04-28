@@ -17,7 +17,6 @@ using System.Linq;
 using d360.model.DataAccessLayer;
 using d360.model.validators;
 
-
 namespace d360.web
 {
     public class DiModel
@@ -59,6 +58,7 @@ namespace d360.web
             builder.RegisterType<GraphFilterRepository>().As<IGraphFilterRepository>().InstancePerRequest();
             builder.RegisterType<ProcessRepository>().As<IProcessRepository>().InstancePerRequest();
             builder.RegisterType<ConnectorLabelRepository>().As<IConnectorLabelRepository>().InstancePerRequest();
+            builder.RegisterType<DataProfileRepository>().As<IDataProfileRepository>().InstancePerRequest();
 
 
             builder.RegisterType<d360.extensions.info.UriSecurityContextProvider>().As<ISecurityContextProvider>()

@@ -462,7 +462,6 @@ left join graph.AssetNodeKeyPath OKP on OKP.ID = O.ID
             {
                 List<string> filteredObjects = new List<string>();
                 filteredObjects.Add(SystemObjects.FusionAttributeType.ToString());
-                filteredObjects.Add(SystemObjects.FusionQueryAttributeType.ToString());
                 string notInSql = $"not in ({string.Join(",", filteredObjects.Select(x => "'" + x + "'"))})";
 
                 whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (I.Object {notInSql} and I.Subject {notInSql})";

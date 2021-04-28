@@ -1002,7 +1002,16 @@ where   Success is null", transaction: trans);
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();
+                    try
+                    {
+                        if (trans != null)
+                        {
+                            trans.Rollback();
+                        }
+                    }
+                    catch
+                    {
+                    }
                 }   
             }
             

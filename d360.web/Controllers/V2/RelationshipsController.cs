@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using System.IO;
+using Dapper;
 
 namespace d360.web.Controllers.V2
 {
@@ -298,7 +299,7 @@ namespace d360.web.Controllers.V2
         public IHttpActionResult ExportToExcel(string intersectTypeUid)
         {
             Guid guid = Guid.Parse(intersectTypeUid);
-            
+
             var intersectType = RelationshipRepository.GetIntersectTypeByUid(guid);
 
             if (intersectType == null)
@@ -537,7 +538,7 @@ namespace d360.web.Controllers.V2
                     response = Request.CreateResponse(HttpStatusCode.OK, results);
                     return response;
                 }
-                
+
             }
             catch (Exception ex)
             {
@@ -570,13 +571,13 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                
+
                 var intersect = Company.Intersects.FirstOrDefault(x => x.uid == uid);
-                if(intersect == null || uid == Guid.Empty)
+                if (intersect == null || uid == Guid.Empty)
                 {
                     return ReturnApiError(HttpStatusCode.NotFound, $"Specified relationship with uid [{uid}] could not be found.");
                 }
-                
+
                 var hasObjectReadPermission = Company.HasAssetPermission(intersect.Object, intersect.ObjectID, Permission.ReadRelationships);
                 var hasSubjectReadPermission = Company.HasAssetPermission(intersect.Subject, intersect.SubjectID, Permission.ReadRelationships);
                 if (!hasObjectReadPermission || !hasSubjectReadPermission)
@@ -585,7 +586,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 var result = await RelationshipRepository.GetRelationship(uid);
-                if(result == null)
+                if (result == null)
                 {
                     return ReturnApiError(HttpStatusCode.NotFound, $"Invalid GUID {uid}.");
                 }
@@ -634,19 +635,19 @@ namespace d360.web.Controllers.V2
                 }
 
 
-                var queryParams = Request.GetQueryNameValuePairs().ToList();                
+                var queryParams = Request.GetQueryNameValuePairs().ToList();
                 long pageSize = 5000;
                 long pageNum = 1;
                 bool includeTotal = true;
                 string owner = null;
 
                 if (queryParams.Any(x => x.Key.ToLower() == "_pagenum"))
-                {                    
+                {
                     var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value;
-                    if(!long.TryParse(value, out pageNum))                    
+                    if (!long.TryParse(value, out pageNum))
                     {
                         return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid _pageNum parameter passed in the request");
-                    }                    
+                    }
                 }
 
                 if (queryParams.Any(x => x.Key.ToLower() == "_pagesize"))
@@ -655,14 +656,14 @@ namespace d360.web.Controllers.V2
                     if (!long.TryParse(value, out pageSize))
                     {
                         return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid _pageSize parameter passed in the request");
-                    }       
-                    
-                    if(pageSize > 100000)
+                    }
+
+                    if (pageSize > 100000)
                     {
                         return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid _pageSize parameter passed in the request value is greater than the maximum supported value of 100,000.");
                     }
 
-                    if(pageSize<= 0)
+                    if (pageSize <= 0)
                     {
                         return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid _pageSize parameter passed in the request value is less than or equal to zero.");
                     }
@@ -700,7 +701,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 var results = await RelationshipRepository.GetRelationshipsUids(intersectTypeID, pageSize, pageNum, includeTotal, owner);
-                HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK, results );
+                HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK, results);
                 return response;
 
 
@@ -1328,7 +1329,7 @@ namespace d360.web.Controllers.V2
             HttpDelete,
             MapToApiVersion("2.0"),
             Route("types/{intersectTypeUid}"),
-            Route("{intersectTypeUid}"),            
+            Route("{intersectTypeUid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(List<DatabaseBulkRelationshipResult>)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
@@ -1460,7 +1461,6 @@ namespace d360.web.Controllers.V2
 
             return ResponseMessage(result);
         }
-
     }
 
 }

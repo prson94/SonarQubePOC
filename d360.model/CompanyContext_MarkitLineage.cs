@@ -95,10 +95,6 @@ namespace d360.model
 
             client.TrackEvent($"Saved mapping {mappings.Count()} records to table for lineage processing");
 
-            await Database.ExecuteSqlCommandAsync("[fusion].[GenerateMarkitMapLineage]");
-
-            client.TrackEvent($"Completed lineage generation for company id {CurrentCompanyID}");
-
             await SaveMarkitLineageRunDetails(maps.Count(), mappings.Count(), objectMaps.Count());
 
         }

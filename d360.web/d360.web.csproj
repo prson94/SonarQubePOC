@@ -389,6 +389,7 @@
     <Compile Include="Controllers\Services\CustomController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
     <Compile Include="Controllers\V2\CommentsController.cs" />
+    <Compile Include="Controllers\V2\DataProfilesController.cs" />
     <Compile Include="Controllers\V2\ProcessController.cs" />
     <Compile Include="Controllers\V2\FieldsController.cs" />
     <Compile Include="Controllers\V2\AuditController.cs" />
@@ -454,6 +455,7 @@
     <Compile Include="Filters\StringEnumControllerAttribute.cs" />
     <Compile Include="Filters\SwaggerContentTypesAttribute.cs" />
     <Compile Include="Filters\SwaggerExcludeFilter.cs" />
+    <Compile Include="Filters\SwaggerOrderFilter.cs" />
     <Compile Include="Filters\SwaggerParameterAttribute.cs" />
     <Compile Include="Handlers\ErrorMessageHandler.cs" />
     <Compile Include="Handlers\MethodOverrideHandler.cs" />
@@ -765,6 +767,8 @@
     <Content Include="Scripts\app\components\admin\hierarchies\admin-level-list.component.html" />
     <Content Include="Scripts\app\components\admin\hierarchies\admin-hierarchies.component.html" />
     <Content Include="Scripts\app\components\admin\hierarchies\admin-level-editor.component.html" />
+    <Content Include="Scripts\app\components\assets-grid\advanced-filtering\filter-item.component.html" />
+    <Content Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.component.html" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.html" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid-column-filter.component.html" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid.component.html" />
@@ -778,6 +782,7 @@
     <Content Include="Scripts\app\components\fusion\fusion-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.input-group.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.multi-input-field.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.radio-button.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.property-group.component.html" />
@@ -849,6 +854,9 @@
     <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.woff" />
     <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.woff2" />
     <Content Include="Scripts\app\components\shared\asset-score\calculation\measure-rule-results.less" />
+    <Content Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.component.less" />
+    <Content Include="Scripts\app\components\assets-grid\asset-grid.less" />
+    <Content Include="Content\styles\infogix-ui\IgInputGroup.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
@@ -983,9 +991,14 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets-grid\advanced-filtering\filter-item.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.models.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.input-group.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.multi-input-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.radio-button.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.propery-group.component.ts" />
@@ -1073,6 +1086,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dayofweek-input\dayofweek-input.component.ts" />
     <Content Include="Scripts\app\components\shared\social\social-comment.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\ownership-list\ownership-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\social\comment-form.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\info-tooltip.component.ts" />
     <Content Include="Scripts\app\components\workflow\workflow-view-details.component.html" />
@@ -1335,7 +1349,9 @@
       <CustomToolNamespace>Resources</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Views\DataProfiles\" />
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App_GlobalResources\FormInfo.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
@@ -1454,10 +1470,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\customizations\admin-customizations.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-dashboards-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion\admin-fusion.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-attribute-type-custom-query-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-schedule-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-attribute-type-custom-query.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-schedule.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-types.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-types.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-types.routes.ts" />
@@ -1615,8 +1627,6 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\followers\followers.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\followers\followers.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-details.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-query-attribute-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-query-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\itemown\itemown.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\itemown\itemown.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\itemown\itemown.routes.ts" />

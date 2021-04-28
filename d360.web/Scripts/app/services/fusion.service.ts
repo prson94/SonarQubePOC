@@ -4,26 +4,18 @@ import { Observable } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 
 import { JsonResult } from '../models/jsonresult.model';
-import {
-    AttributeNode,
+import {    
     Fusion,
     FusionAgentError,
     FusionAgentExecutionStats,
-    FusionAttributeItem,
     FusionAttributeType,
-    FusionAttributeTypeCustomQuery,
     FusionConfigurationDetails,
     FusionExecutionError,
     FusionExecutionResultPaged,
-    FusionProcessError,
-    FusionPromotionExecutionStats,
-    FusionQueryAttributeType,
-    FusionSchedule,
+    FusionProcessError,    
     FusionSummaryStats,
     FusionType,
     FusionWorkerExecution,
-    MapRuleItemDetail,
-    RelationIntersectType,
 } from '../models/fusion.model';
 import { GridColumn } from '../models/grid-definition.model';
 import { SortOrder } from '../models/enums.model';
@@ -75,17 +67,6 @@ export class FusionService extends BaseObservableService {
         return this
             .http
             .get(`services/fusion/configurationById/${fusionId}`)
-            .pipe(
-                map(response => <FusionConfigurationDetails>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    /* FIXME: looks like never called */
-    getFusionConfigurationFromObjectId(fusionAttributeId: number): Observable<FusionConfigurationDetails> {
-        return this
-            .http
-            .get(`services/fusion/configurationByObjectId/${fusionAttributeId}`)
             .pipe(
                 map(response => <FusionConfigurationDetails>response),
                 catchError(err => this.handleError(err))
@@ -156,23 +137,6 @@ export class FusionService extends BaseObservableService {
                 map(response => <FusionAgentError[]>response),
                 catchError(err => this.handleError(err))
             );
-    }
-
-    getFusionAttributeTypeCustomQueries(
-        fusionTypeId: number,
-        fusionId: number
-    ): Observable<FusionAttributeTypeCustomQuery[]> {
-        return this
-            .http
-            .get(`services/fusion/${fusionTypeId}/configurations/${fusionId}/queryoverrides`)
-            .pipe(
-                map(response => <FusionAttributeTypeCustomQuery[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    deleteFusionAttributeTypeCustomQuery(id: number): Observable<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'fusionattributetypecustomquery', id);
     }
 
     deleteFusionConfiguration(id: number): Observable<JsonResult> {
@@ -275,20 +239,6 @@ export class FusionService extends BaseObservableService {
             .get(`form/getfusionattributetypes?fusionID=${fusionID}`)
             .pipe(
                 map(response => <FusionAttributeType[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getFusionQueryAttributeTypes(
-        typeid: number,
-        id: number,
-        query: string = ''
-    ): Observable<FusionQueryAttributeType[]> {
-        return this
-            .http
-            .get(`services/fusion/${typeid}/configurations/${id}/queryattributetypes?${query}`)
-            .pipe(
-                map(response => <FusionQueryAttributeType[]>response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -492,16 +442,6 @@ export class FusionService extends BaseObservableService {
                 map(response => <FusionConfigurationDetails>response[0]),
                 catchError(err => this.handleError(err))
             );
-    }
-
-
-
-
-
-
-
-    deleteFusionQuery(id: number): Observable<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'FusionQueryAttribute', id);
     }
 
     postRunMarkitLineage(id: number) {

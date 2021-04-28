@@ -14,7 +14,9 @@
 	
 	<!-- Types (object-based naming) -->
 	<include file="scripts/Udt.dbo.AssetBrowserImpactTable.xml"/>
+	<include file="scripts/Udt.dbo.AssetEffectiveDate.xml"/>
 	<include file="scripts/Udt.dbo.AssetFiltersTable.xml"/>
+  <include file="scripts/Udt.dbo.AuditFieldTable.xml"/>
 	<include file="scripts/Udt.dbo.Ids.xml"/>
 	<include file="scripts/Udt.dbo.IDTable.xml"/>
 	<include file="scripts/Udt.dbo.IntegrationAssetHashType.xml"/>
@@ -70,6 +72,7 @@
 	<include file="scripts/Table.dbo.Asset.xml"/>
 	<include file="scripts/Table.dbo.AssetCrossReference.xml"/>
 	<include file="scripts/Table.dbo.AssetDataProfile.xml"/>
+	<include file="scripts/Table.dbo.AssetDataProfileSample.xml"/>
 	<include file="scripts/Table.dbo.AssetProcessDiagram.xml"/>
 	<include file="scripts/Table.dbo.AssetDisplayValue.xml"/>
 	<include file="scripts/Table.dbo.AssetResult.xml"/>
@@ -211,6 +214,7 @@
 	<include file="scripts/Table.metrics.AssetVersionCondition.xml"/>
 	<include file="scripts/Table.metrics.AssetVersionConditionItem.xml"/>
 	<include file="scripts/Table.metrics.AssetVersionConditionItemValue.xml"/>
+	<include file="scripts/Table.metrics.Execution.xml"/>
 	<include file="scripts/Table.metrics.RollupPath.xml"/>
 	<include file="scripts/Table.metrics.RollupPathLink.xml"/>
 	<include file="scripts/Table.metrics.RollupPathSegment.xml"/>
@@ -220,6 +224,7 @@
 	<include file="scripts/Table.metrics.Score.xml"/>
 	<include file="scripts/Table.metrics.ScoreItem.xml"/>
 	<include file="scripts/Table.metrics.ScoreItemLink.xml"/>
+	<include file="scripts/Table.metrics.StagingScoreItem.xml"/>
 	<include file="scripts/Table.queue.Task.xml"/>
 	<include file="scripts/Table.reporting.Dates.xml"/>
 	<include file="scripts/Table.reporting.Global_Audit.xml"/>
@@ -249,7 +254,10 @@
 	<include file="scripts/Table.api.ExecutionAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionAssetCrossReference.xml"/>
 	<include file="scripts/Table.api.ExecutionAssetError.xml"/>
-	<include file="scripts/Table.api.ExecutionAssetResult.xml"/>
+	<include file="scripts/Table.api.ExecutionAssetResult.xml"/>	
+	<include file="scripts/Table.api.ExecutionAssetDataProfile.xml"/>
+	<include file="scripts/Table.api.ExecutionAssetDataProfileSample.xml"/>	
+	<include file="scripts/Table.api.ExecutionDeleteAssetDataProfile.xml"/>	
 	<include file="scripts/Table.api.ExecutionDeleteAssetResult.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedAssetType.xml"/>
@@ -271,7 +279,8 @@
 	<include file="scripts/Table.api.ExecutionDiagramAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionDiagramAssetField.xml"/>
 	<include file="scripts/Table.dbo.ConnectorLabel.xml"/>
-	  
+	<include file="scripts/Table.api.ExecutionExternal.xml"/>
+	
 	<include file="scripts/Table.Deletions.xml"/>	  
 	  
 	<!-- Views (object-based naming) -->
@@ -476,6 +485,7 @@
 	<include file="scripts/Procedure.metrics.BuildDataQualityMeasureQuery.xml"/>
 	<include file="scripts/Procedure.metrics.CalculateRollups.xml"/>
 	<include file="scripts/Procedure.metrics.LoadFromStaging.xml"/>
+	<include file="scripts/Procedure.metrics.ProcessAssetScores.xml"/>
 	<include file="scripts/Procedure.tile.GetObjectStatistics.xml"/>
 	<include file="scripts/Procedure.utility.AddAuditEntry.xml"/>
 	<include file="scripts/Procedure.utility.GetAssignedResponsibilityNameForWorkflow.xml"/>
@@ -485,7 +495,8 @@
 	<include file="scripts/Procedure.workflow.changeItemState.xml"/>
 
 	<include file="scripts/Procedure.Deletions.xml"/>
-    
+    <include file="scripts/Procedure.dbo.SimpleAssetSearch.xml"/>
+
 	<!-- Data Changes -->
 	<include file="scripts/Data.Initial.xml"/>
 	<include file="scripts/Data.Corrections.xml"/>

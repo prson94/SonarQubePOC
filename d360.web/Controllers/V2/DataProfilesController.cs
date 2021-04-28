@@ -1,0 +1,353 @@
+﻿using d360.core.entities;
+using d360.model;
+using d360.model.DataAccessLayer;
+using d360.web.Filters;
+using d360.web.Models;
+using Microsoft.Web.Http;
+using Newtonsoft.Json;
+using Resources;
+using Swashbuckle.Swagger.Annotations;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Data.Entity;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Web.Http;
+
+namespace d360.web.Controllers.V2
+{
+    [ApiVersion("2.0"), RoutePrefix("api/v{version:apiVersion}/dataprofiles"), Authorize]
+    public class DataProfilesController : BaseV2ApiController
+    {
+        internal IDataProfileRepository DataProfiles;
+        internal IAssetRepository AssetRepository;
+
+        public DataProfilesController(ICommunityContext community, ICompanyContext company, IDataProfileRepository dataProfileRepository, IAssetRepository assetRepository)
+            : base(community, company)
+        {
+            this.DataProfiles = dataProfileRepository;
+            this.AssetRepository = assetRepository;
+        }
+
+        /// <summary>
+        /// Retrieves Data Profile results for a given asset.
+        /// </summary>
+        /// <param name="assetUid">The unique identifier of an asset.</param>
+        /// <returns>A list of Data Profile results</returns>
+        [
+            HttpGet,
+            Route("{assetUid:Guid}"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
+            SwaggerProduces("application/json", "text/json", "application/xml", "text/xml", "application/octet-stream"),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this asset is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerParameter("_startDate", "Start date to get data profile data for. Defaults to current date UTC", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_endDate", "End date to get data profile data for. Defaults to current date UTC", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeChildAssets", " If true returns the data profiles results for all child assets of the specified asset.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
+        ]
+        public async Task<IHttpActionResult> GetDataProfiles(Guid assetUid)
+        {
+            var prefix = "DataProfiles.GetDataProfiles => ";
+            try
+            {
+                var queryParams = Request.GetQueryNameValuePairs();                
+
+                var validationResult = ValidateDataProfileGetParmeters(assetUid, queryParams);
+                
+                if (validationResult.StatusCode != HttpStatusCode.OK)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
+                }                
+
+                var results = await DataProfiles.GetDataProfiles(assetUid, queryParams);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string> {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage)).ConfigureAwait(false);                
+            }           
+        }
+
+        private WorkHttpStatus ValidateDataProfileGetParmeters(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            var isValid = isPageSizeAndNumValid(queryParams);
+
+            var asset = AssetRepository.GetAssetByUID(assetUid);
+
+            if (asset == null)
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"AssetUid {assetUid} is invalid");
+            }
+
+            if (isValid.Length > 0)
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, isValid);
+            }
+
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_includetotal"))
+            {
+                if (!bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value, out bool includeTotal))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Invalid _includeTotal provided");
+                }
+            }
+            
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_startdate"))
+            {
+
+                if (!DateTime.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_startdate").Value, out DateTime endDate))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Invalid _startDate provided");
+                }
+
+            }
+            
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_enddate"))
+            {
+
+                if (!DateTime.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_enddate").Value, out DateTime endDate))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Invalid _endDate provided");
+                }                
+            }
+
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_includechildassets"))
+            {
+                if (!bool.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_includechildassets").Value, out bool includeTotal))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Invalid _includeChildAssets provided");
+                }
+            }
+
+            return new WorkHttpStatus(HttpStatusCode.OK, "", "");
+        }
+
+        /// <summary>
+        /// Provides support for adding Data Profile records.
+        /// </summary>
+        /// <param name="models">Data Profile record collection.</param>
+        /// <returns>Results response stating the success or failure or the request.</returns>
+        [
+            HttpPost,
+            Route(""),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Adding Data Profile Records.", typeof(DataProfileUpsertResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> PostDataProfiles(List<DataProfileUpsertModel> models)
+        {
+            var prefix = "DataProfiles.PostDataProfiles => ";
+            var execution = getApiExecution(models.Count);
+
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
+            }
+
+            try
+            {
+                if (models.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} Data Profile records in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items.")).ConfigureAwait(false);
+                }
+
+                var validationResult =  ValidateDataProfileUpsertRequest(models, true);
+                if(validationResult.StatusCode != HttpStatusCode.OK)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
+                }
+
+                var results =  DataProfiles.UpsertDataProfiles(models, execution, true);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string> {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Provides support for updating Data Profile records.
+        /// </summary>
+        /// <param name="models">Data Profile record collection.</param>
+        /// <returns>Results response stating the success or failure or the request.</returns>
+        [
+            HttpPut,
+            Route(""),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Updating Data Profile Records.", typeof(DataProfileUpsertResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> PutDataProfiles(List<DataProfileUpsertModel> models)
+        {
+            var prefix = "DataProfiles.PutDataProfiles => ";
+            var execution = getApiExecution(models.Count);
+
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
+            }
+
+            try
+            {
+                if (models.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} Data Profile records in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items.")).ConfigureAwait(false);
+                }
+
+                var validationResult = ValidateDataProfileUpsertRequest(models, false);
+                if (validationResult.StatusCode != HttpStatusCode.OK)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
+                }
+
+                var results = DataProfiles.UpsertDataProfiles(models, execution, false);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string> {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Removes Data Profile results for a given asset. 
+        /// </summary>
+        /// <param name="assetUid">The unique identifier of an asset.</param>
+        /// <param name="startDate">Start date of data profile data to be deleted.</param>
+        /// <param name="endDate">End date of data profile data to be deleted.</param>
+        /// <param name="cascade">True/false flag used to indicate if assets children should be deleted.</param>
+        /// <returns>Results response with the count of records deleted.</returns>
+        [
+            HttpDelete,
+            Route("{assetUID:Guid}/{startDate}/{endDate}/{cascade}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Count of Data Profile Records Deleted.", typeof(int)),           
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> DeleteDataProfiles(Guid assetUid, DateTime startDate, DateTime endDate, bool cascade)
+        {
+            var prefix = "DataProfiles.PostDataProfiles => ";
+            var execution = getApiExecution(1);
+
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
+            }
+
+            try
+            {
+                Asset asset = AssetRepository.GetAssetByUID(assetUid);
+
+                if (asset == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"AssetUid {assetUid} is invalid")).ConfigureAwait(false);
+                }
+
+                var recordCount = Company.AssetDataProfile.Count(x => x.ID == asset.ID && x.ProfileSetDate >= startDate.Date && x.ProfileSetDate <= endDate.Date);
+
+                if (recordCount > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only delete a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} dataprofile records in this request. Please use the BATCH API endpoint.")).ConfigureAwait(false);
+                }
+
+                if (startDate > endDate)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Start Date must be before the end date")).ConfigureAwait(false);
+                }
+
+                var results = DataProfiles.DeleteDataProfiles(asset, startDate, endDate, execution, cascade);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results.FirstOrDefault().DeletedCount));
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string> {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage)).ConfigureAwait(false);
+            }
+        }
+
+        public WorkHttpStatus ValidateDataProfileUpsertRequest(List<DataProfileUpsertModel> models, bool IsInsert)
+        {
+            //Key Field Validation
+            if (models.Any(dp => dp.profileSetDate == null || dp.assetUid == null))
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, BAD_REQUEST_GENERIC_MESSAGE);
+            }
+            var dupRecords = models.GroupBy(i => new { i.assetUid, i.profileSetDate }).Where(i => i.Count() > 1).Select(i => new { keyFields = i.Key, Count = i.Count() }).ToList();
+            if (dupRecords.Any())
+            {
+                var ErrorMessage = $"Duplicate Records: {string.Join(", ", dupRecords.Select(i => $"(AssetUid: {i.keyFields.assetUid}, ProfileSetDate: {i.keyFields.profileSetDate.Date: yyyy-MM-dd})"))}. AssetUid and ProfileSetDate pairs are used as record identifiers and must be unique within a batch.";
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ErrorMessage);
+            }
+
+            List<ValidationResult> validationResults = new List<ValidationResult>();
+            foreach (var model in models)
+            {
+                validationResults.Clear();
+                Asset asset = AssetRepository.GetAssetByUID(model.assetUid);
+
+                if (asset == null)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"AssetUid {model.assetUid} is invalid");
+                }
+
+                var profileSetDate = model.profileSetDate.Date;                
+                var recordExists = Company.AssetDataProfile.Any(x => x.AssetId == asset.ID && DbFunctions.TruncateTime(x.ProfileSetDate) == profileSetDate);
+                //check insert
+                if (recordExists && IsInsert)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Record already exists for AssetUid {model.assetUid} and ProfileSetDate {model.profileSetDate.Date:yyyy-MM-dd}");
+                }
+                //check update
+                if (!recordExists && !IsInsert)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Record does not exist for AssetUid {model.assetUid} and ProfileSetDate {model.profileSetDate.Date:yyyy-MM-dd}");
+                }                
+
+                bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
+                if (!isValid)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResults.First().ErrorMessage);
+                }
+            }
+            return new WorkHttpStatus(HttpStatusCode.OK, "", "");
+        }
+    }
+}

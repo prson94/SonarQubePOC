@@ -40,7 +40,7 @@
                                 </div>
                             </ng-template>
                         </p-multiSelect>
-                        <p-multiSelect *ngIf="!field.UseColorControl" [formControlName]="field.FieldName" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl [placeholder]="multiselectLabel()"></p-multiSelect>
+                        <p-multiSelect *ngIf="!field.UseColorControl" [formControlName]="field.FieldName" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl [placeholder]="multiselectLabel()" selectedItemsLabel="{0} items selected"></p-multiSelect>
                     </div>
                     <ng-template #singleSelect>
                         <ng-container *ngIf="field.UseNativeLookupControl">
@@ -134,7 +134,8 @@
                                        [formControlName]="field.FieldName"
                                        [options]="field.Items | selectItemTextToLabel"
                                        [style]="{width: '100%'}"
-                                       ngDefaultControl [placeholder]="multiselectLabel()">
+                                       ngDefaultControl [placeholder]="multiselectLabel()"
+                                       selectedItemsLabel="{0} items selected">
                             <ng-template let-item pTemplate="item">
                                 <div class="selectlistinfoitem-wrapper-multiselect">
                                     <div class="selectlistinfoitem-text" [style.width]="item.Info ? '' : '100%'">{{item.Text}}</div><div class="selectlistinfoitem-info">{{item.Info}}</div>

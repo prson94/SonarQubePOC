@@ -316,14 +316,10 @@ from	FollowDetail F
 
         [HttpGet, Route("HelpResources")]
         public JsonNetResult GetHelpResources()
-        {
-            var showDefaultVideoSetting = Community.Filter<CompanySetting>(i => i.CompanyID == Community.CurrentCompanyID && i.SettingID == 35).FirstOrDefault();
-
-            var showDefaultVideo = (showDefaultVideoSetting != null) ? bool.Parse(showDefaultVideoSetting.Value) : true;
-
+        {            
             var resources = Community
                 .Filter<CompanyHelpResource>(
-                    i => i.CompanyID == Community.CurrentCompanyID || (showDefaultVideo && i.CompanyID == 0),
+                    i => i.CompanyID == Community.CurrentCompanyID,
                     i => i.HelpResource)
                 .OrderBy(i => i.HelpResource.Type)
                 .ThenBy(i => i.SortOrder)
@@ -400,6 +396,25 @@ from	FollowDetail F
                     },
                     JsonRequestBehavior.AllowGet);
                 }
+
+                if (objectType == "ResponsibilityType")
+                {
+                    var responbility = Company.ResponsibilityTypes.FirstOrDefault(x => x.UID == uid);
+                    return Json(
+                    new
+                    {
+                        ShowTooltip = true,
+                        AssetID = -1,
+                        UID = uid,
+                        DisplayName = responbility?.Name,
+                        TypeName = "Responsibility Type",
+                        Url = "",
+                        Description = responbility?.Description
+
+                    },
+                    JsonRequestBehavior.AllowGet);
+                }
+
             }
 
 

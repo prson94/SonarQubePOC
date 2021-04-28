@@ -270,7 +270,12 @@ export class WorkflowFieldsService {
     }
 
     pushOutputField(field: HTTPResponseOutput) {
-        this.outputFields.push(field);
+        let i = this.outputFields.findIndex(o => o.StepId == field.StepId && o.Id == field.Id);
+        if (i == -1) {
+            this.outputFields.push(field);
+        }
+
+        
         this.outputFieldsSource.next(this.outputFields);
     }
 

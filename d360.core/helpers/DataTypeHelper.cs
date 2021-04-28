@@ -112,7 +112,6 @@ namespace d360.core.helpers
                 DataType.ComplexRelationLookup.ToString(),
                 DataType.DataTableSelect.ToString(),
                 DataType.File.ToString(),
-                DataType.OwnershipLookup.ToString(),
                 DataType.JSON.ToString(),
                 DataType.RefListRelationship.ToString()
             };

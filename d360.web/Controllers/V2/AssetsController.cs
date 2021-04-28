@@ -211,6 +211,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_subjectUid", "The Uid of the subject side of a relationship to filter by in addition to filtering by predicate type. _predicateUid is required.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_objectUid", "The Uid of the object side of a relationship to filter by in addition to filtering by predicate type. _predicateUid is required.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_assetUid", "Filter by provided asset Uid. Multiple asset Uids can be provided delimited by comma", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_parentUid", "Filter by provided parent asset Uid.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an asset. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_ownedBy", "The parameter takes a comma separated list of user or group uids. Only assets which are owned by any one or more of the provided owners are returned.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_notOwnedBy", "The parameter takes a comma separated list of user or group uids. Only assets which are not owned by any one or more of the provided owners are returned.", DataType = "string", ParameterType = "query", Required = false),
@@ -224,7 +225,8 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_includeFields", "A comma delimited list of fields to include in the results. By default all fields are included.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_includeColor", "Allows you to disable returning the Color value for assets. The default value is true.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_exporttemplateuid", "The Uid of the template which will be used when exporting results.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_includeCreatedModifiedBy", "Include the CreatedByUid, and ModifiedByUid fields in the response. The default value is false meaning these values are not returned.", DataType = "boolean", ParameterType = "query", Required = false),            
+            SwaggerParameter("_includeCreatedModifiedBy", "Include the CreatedByUid, and ModifiedByUid fields in the response. The default value is false meaning these values are not returned.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeOwnershipLookup", "Include the OwnershipLookup fields in the response. The default value is false meaning these values are not returned.", DataType = "boolean", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid)
         {
@@ -338,8 +340,12 @@ namespace d360.web.Controllers.V2
                         bool isHierachyItem = false;
                         var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_ishierachyitem").Value;
                         bool.TryParse(value, out isHierachyItem);
-                        queryParams = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson");
+                        var paramList = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson").ToList();
 
+                        paramList.RemoveAll(x => x.Key.ToLower() == "_includeownershiplookup");
+                        paramList.Add(new KeyValuePair<string, string>("_includeownershiplookup", "true"));
+
+                        queryParams = paramList;
 
                         SLDocument results;
                         if (isHierachyItem)
@@ -565,7 +571,7 @@ namespace d360.web.Controllers.V2
                 if (model.AutoDisplayParent.HasValue && (!model.Class.AllowsAutoDisplayParent() || parentAssetType == null))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Auto Display Parent", AssetTypeErrors.AutoDisplayParentRestriction));
 
-                if (model.AutoDisplayParent.HasValue && ((model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset) || parentAssetType == null))
+                if (model.CanEditParent.HasValue && ((model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset) || parentAssetType == null))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Can Edit Parent", AssetTypeErrors.CanEditParentClassRestriction));
 
                 if (model.CanOwnFusion.HasValue && model.CanOwnFusion.Value && model.Class != AssetTypeClass.BusinessAsset)
@@ -1284,6 +1290,7 @@ namespace d360.web.Controllers.V2
                 bool useFriendlyNames = true;
                 bool useUnflattedStructure = true;
                 bool returnForUI = false;
+                bool returnuseUidUrls = true;
                 string orderBy = string.Empty;
                 string direction = string.Empty;
 
@@ -1308,6 +1315,14 @@ namespace d360.web.Controllers.V2
                     if (!bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "forui").Value.Trim().ToLower(), out returnForUI))
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid boolean value for parameter 'forUI'"));
+                    }
+                }
+
+                if (qparams.Any(x => x.Key.ToLower() == "useuidurls"))
+                {
+                    if (!bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "useuidurls").Value.Trim().ToLower(), out returnuseUidUrls))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid boolean value for parameter 'useUidUrls'"));
                     }
                 }
 
@@ -1420,7 +1435,7 @@ namespace d360.web.Controllers.V2
                 dbArgs.Add("simpleFilter", simpleFilter);
                 dbArgs.Add("orderBy", orderBy);
                 dbArgs.Add("orderDirection", direction);
-                dbArgs.Add("useUidUrls", true);
+                dbArgs.Add("useUidUrls", returnuseUidUrls);
                 dbArgs.Add("filters", advFilters.AsTableValuedParameter("dbo.AssetFiltersTable"));
 
                 var reader = await Company.QueryMultipleAsync(
@@ -2950,6 +2965,61 @@ namespace d360.web.Controllers.V2
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Return all assets from asset type formatted for dropdown list item list and used for lazy load
+        /// </summary>
+        /// <param name="assetTypeUid"></param>
+        [
+            HttpGet,
+            ApiExplorerSettings(IgnoreApi = true),
+            MapToApiVersion("2.0"),
+            Route("lookupvalues/{assetTypeUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "true/false based on relationship exists on assettype.", typeof(bool)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+            ]
+        public async Task<HttpResponseMessage> GetAssetLookupValues(Guid assetTypeUid, int? skip = null, int? take = 0, string filter = null)
+        {
+            var prefix = "Assets.GetAssetLookupValues => ";
+            var errorMessage = "";
+
+            try
+            {
+
+                var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
+
+                if (assetType.Object == "ReferenceItemType" && assetType.ObjectID == 0)
+                {
+                    //handle reference lists
+                    IQueryable<AssetType> query = Company.AssetTypes.Where(x => x.Object == "ReferenceItemType" && x.ObjectID != 0);
+
+                    if (!string.IsNullOrEmpty(filter))
+                    {
+                        query = query.Where(x => x.Name.Contains(filter));
+                    }
+
+                    var refListResults = query.OrderBy(x => x.Name)
+                        .Skip(skip.Value)
+                        .Take(take.Value)
+                        .Select(x => new { value = x.uid, label = x.Name }).ToList();
+
+                    return Request.CreateResponse(HttpStatusCode.OK, refListResults);
+                }
+
+                filter = "%" + (filter ?? "") + "%";
+                var results = await Company.QueryAsync<dynamic>($@"exec [SimpleAssetSearch] @assetTypeId, @filter,@skip,@take", new { assetTypeId = assetType.ID, skip, take, filter });
+
+                return Request.CreateResponse(HttpStatusCode.OK, results);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
     }

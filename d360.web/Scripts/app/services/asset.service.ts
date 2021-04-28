@@ -133,6 +133,7 @@ export class AssetService extends BaseObservableService {
         var qString = '';
         if (onlyListableFields) {
             params._onlyListableFields = true;
+            params._includeOwnershipLookup = true;
         }
         if (params) {
             qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
@@ -145,9 +146,6 @@ export class AssetService extends BaseObservableService {
             .pipe(debounceTime(500),
                 map(res => { return <any>res }),
                 catchError(err => {
-                    if (this.isErrorFromFilterExpression(err)) {
-                        return throwError(err);
-                    }
                     return this.handleError(err);
                 }));
     }
@@ -192,7 +190,7 @@ export class AssetService extends BaseObservableService {
         }
     }
 
-    public downloadAssetsExcel(assetTypeUid: string, params: any, fileName) {
+    public downloadAssetsExcel(assetTypeUid: string, params: any, fileName, callback: Function = null) {
         var copyParams = _.clone(params);
 
         //Setup paging for export
@@ -209,7 +207,12 @@ export class AssetService extends BaseObservableService {
         this.
             http
             .get(`/api/v2/assets/${assetTypeUid}${qString}`, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
-            .subscribe(data => this.downloadFile(data, fileName));
+            .subscribe(data => {
+                this.downloadFile(data, fileName);
+                if (callback) {
+                    callback();
+                }
+            });
     }
 
     public searchAssetPath(filterValue: AssetSearchFilter): Observable<AssetSearchApiResponse> {
@@ -236,6 +239,30 @@ export class AssetService extends BaseObservableService {
             .pipe(
                 map(response => <any>response),
                 catchError(err => this.handleError(err, true))
+            );
+    }
+
+    public getAsset(uid: string): Observable<any> {
+        return this
+            .http
+            .get(`/api/v2/assets/asset/${uid}`)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err, true))
+            );
+    }
+
+    getAssetsLookupValues(assetTypeUID: string, params: any): Observable<any> {
+        var qString = '';
+        if (params) {
+            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            if (qString)
+                qString = '?' + qString;
+        }
+        return this.http.get(`api/v2/assets/lookupvalues/${assetTypeUID}` + qString)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
             );
     }
 }

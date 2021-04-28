@@ -2,7 +2,7 @@
     <div class="col s12">        
         <div class="tile tile-detail">
             <header *ngIf="!showDelete && !showEditor">
-                &nbsp; <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()"
+                &nbsp; <d3s-tile-actions [hasAdd]="hasAddAssetPermissions()"
                                          [hasExport]="true"
                                          [isExportDisabled]="!canExportRecords()"
                                          [exportDisabledMessage]="'Export not available for over ' + maxExportRows + ' rows'"
@@ -69,7 +69,7 @@
                             <div class="RowTools">
                                 <a style="cursor:pointer;"
                                    (click)="selected = rowNode.node; showAdd(item.Level)"
-                                   *ngIf="(assetType.MaximumDepth > item.Level) && hasModifyAssetPermissions()"><i class="fa fa-plus"></i></a>
+                                   *ngIf="(assetType.MaximumDepth > item.Level) && hasAddAssetPermissions()"><i class="fa fa-plus"></i></a>
                             </div>
                         </td>
                         <td>

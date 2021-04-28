@@ -18,7 +18,7 @@ namespace d360.model.helpers
         private string field { get; set; }
         public string @operator { get; set; }
         private object value { get; set; }
-        private bool isNullValue { get; set; }
+        public bool IsNullValue { get; set; }
         private FieldType fieldType { get; set; }
         private string fieldColumn { get; set; }
         private bool isLookupField { get; set; }
@@ -34,6 +34,22 @@ namespace d360.model.helpers
             get
             {
                 return field == null && value == null;
+            }
+        }
+
+        public bool IsOwnerFilter
+        {
+            get
+            {
+                return field == "$ownedby";
+            }
+        }
+
+        public bool IsRlationshipFilter
+        {
+            get
+            {
+                return field.StartsWith("$related");
             }
         }
 
@@ -62,11 +78,11 @@ namespace d360.model.helpers
 
             if (this.value != null && this.value.ToString().ToLower(CultureInfo.InvariantCulture) == "null")
             {
-                this.isNullValue = true;
+                this.IsNullValue = true;
             }
         }
 
-        public string GetSQLForField(ref Dictionary<string, object> sqlParams)
+        public string GetSQLForField(Dictionary<string, object> sqlParams)
         {
             if (field == null)
             {
@@ -74,7 +90,7 @@ namespace d360.model.helpers
             }
             sqlParamsRef = sqlParams;
             stringBuilder.Clear();
-            if (!this.isNullValue)
+            if (!this.IsNullValue)
             {
                 ValidateTokenForType();
                 UpdateTokenValueForType();
@@ -83,6 +99,7 @@ namespace d360.model.helpers
             {
                 UpdateTokenForNullValue();
             }
+
             return stringBuilder.ToString();
         }
 
@@ -104,7 +121,7 @@ namespace d360.model.helpers
             return stringBuilder.ToString();
         }
 
-        public string GetSQLForDefaultField(ref Dictionary<string, object> sqlParams, DefaultFilter filter)
+        public string GetSQLForDefaultField(Dictionary<string, object> sqlParams, DefaultFilter filter)
         {
             this.sqlParamsRef = sqlParams;
 
@@ -116,7 +133,7 @@ namespace d360.model.helpers
             CheckFieldValue(filter);
 
             value = value.ToString().Trim('\'');
-            if (this.@operator == "ct")
+            if (this.@operator == "ct" || this.@operator == "nct")
             {
                 value = $"%{wildcardValue(escapeForSQLLike(value.ToString()))}%";
             }
@@ -133,10 +150,83 @@ namespace d360.model.helpers
             stringBuilder.Append($"@filter_{parameterIdx}");
 
             sqlParamsRef.Add($"@filter_{parameterIdx}", value);
+
+            this.AppendNullOperatorForNotOperators(filter.SqlExpression);
             return stringBuilder.ToString();
         }
 
-        public string GetSQLForRelationship(ref Dictionary<string, object> sqlParams)
+        private void AppendNullOperatorForNotOperators(string fieldName)
+        {
+            if (this.@operator == "ne" || this.@operator == "nct")
+            {
+                stringBuilder.Insert(0, "(");
+                stringBuilder.Append(" or ");
+                stringBuilder.Append(fieldName);
+                stringBuilder.Append(" is null");
+                stringBuilder.Append(")");
+            }
+        }
+
+        public string GetSQLForOwnerField(Dictionary<string, object> sqlParams)
+        {
+            this.sqlParamsRef = sqlParams;
+            stringBuilder.Clear();
+            var valueStr = this.value.ToString().Trim('\'');
+            sqlParamsRef.Add($"@filter_{parameterIdx}", valueStr);
+
+            string querySql = $@"EXISTS(
+                                            SELECT 1 
+                                            FROM 
+                                                [dbo].[ResponsibilityDetail] rd 
+                                            WHERE 
+                                                rd.SecurityAssetUid = @filter_{parameterIdx}
+                                                and 
+                                                a.ID=rd.AssetID 
+                                                and
+                                                rd.isVisible = 1
+                                            UNION
+                                            SELECT 1 
+                                            FROM 
+                                                [dbo].[ResponsibilityDetail] rd 
+                                            WHERE 
+                                                rd.SecurityAssetUid = @filter_{parameterIdx} 
+                                                and 
+                                                rd.ApplyToType = 1 
+                                                and 
+                                                rd.AssetID = 0 
+                                                and 
+                                                rd.AssetTypeId=a.AssetTypeId
+                                                and
+                                                rd.isVisible = 1
+                                            )";
+
+            if (this.@operator == "ne")
+            {
+                querySql = " NOT " + querySql;
+            }
+
+            return querySql;
+        }
+
+        public string GetSQLForRelationField(Dictionary<string, object> sqlParams)
+        {
+            this.sqlParamsRef = sqlParams;
+            stringBuilder.Clear();
+            var origQuery = $"{this.field} {this.@operator} {this.value.ToString().Trim('\'')}";
+
+            var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.Relationships);
+            var query = filterExpressionParser.Parse(origQuery.Replace("$related:", ""), out sqlParams, out _);
+
+            foreach (var item in sqlParams)
+            {
+                string updatedKey = item.Key + "_" + parameterIdx;
+                query = query.Replace(item.Key, updatedKey);
+                this.sqlParamsRef.Add(updatedKey, item.Value);
+            }
+            return query;
+        }
+
+        public string GetSQLForRelationship(Dictionary<string, object> sqlParams)
         {
 
             if (assetType == null || intersectType == null)
@@ -147,7 +237,7 @@ namespace d360.model.helpers
             this.sqlParamsRef = sqlParams;
             stringBuilder.Clear();
 
-            if (!new string[] { "eq", "ne" }.Contains(@operator))
+            if (!new[] { "eq", "ne" }.Contains(@operator))
             {
                 throw new Exception($"Operator '{@operator}' is not valid when filtering relationship. Use 'eq' or 'ne'.");
             }
@@ -173,6 +263,57 @@ namespace d360.model.helpers
 
             sqlParams.Add($"@intersectFilter{this.parameterIdx}", Guid.Parse(field));
             sqlParams.Add($"@intersectAssetFilter{this.parameterIdx}", Guid.Parse(ValueAsString));
+            return stringBuilder.ToString();
+        }
+
+        public string GetSQLForRelationshipNull(Dictionary<string, object> sqlParams)
+        {
+            this.sqlParamsRef = sqlParams;
+            stringBuilder.Clear();
+
+            if (!new[] { "eq", "ne" }.Contains(@operator))
+            {
+                throw new Exception($"Operator '{@operator}' is not valid when filtering relationship. Use 'eq' or 'ne'.");
+            }
+
+            sqlParams.Add($"@intersectFilter{this.parameterIdx}", Guid.Parse(field));
+
+            if (@operator == "ne")
+            {
+                stringBuilder.Append($@"(
+				  exists (
+                    SELECT top 1 *
+                    FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
+                    WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{this.parameterIdx}
+				              AND S.Uid = A.Uid
+                )
+                or exists (
+                    SELECT top 1 *
+                    FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
+                    WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{this.parameterIdx}
+				              AND O.Uid = A.Uid
+                )
+                )");
+            }
+
+            if (@operator == "eq")
+            {
+                stringBuilder.Append($@"(
+				 not exists (
+                    SELECT top 1 *
+                    FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
+                    WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{this.parameterIdx}
+				              AND S.Uid = A.Uid
+                )
+                and not exists (
+                    SELECT top 1 *
+                    FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
+                    WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{this.parameterIdx}
+				              AND O.Uid = A.Uid
+                )
+                )");
+            }
+
             return stringBuilder.ToString();
         }
 
@@ -220,12 +361,24 @@ namespace d360.model.helpers
         {
             CheckFieldValue();
 
-            if (@operator == "ct")
+            if (@operator == "ct" || @operator == "nct")
             {
-                value = $"%{wildcardValue(escapeForSQLLike(value.ToString()))}%";
+                bool isStartWith = value.ToString().Last() == '*';
+                bool isEndWith = value.ToString().First() == '*';
+                bool isBoth = (isStartWith && isEndWith) || (!isStartWith && !isEndWith);
+
+                if (isBoth)
+                {
+                    value = $"%{wildcardValue(escapeForSQLLike(value.ToString()))}%";
+                }
+                else
+                {
+                    //Wildcard will be present from request
+                    value = $"{wildcardValue(escapeForSQLLike(value.ToString()))}";
+                }
             }
 
-            string[] lookupFieldTypes = new string[] { "Lookup", "Relationship" };
+            string[] lookupFieldTypes = new[] { "Lookup", "Relationship" };
 
             if (lookupFieldTypes.Select(x => x.ToLower()).Contains(fieldType.Type.ToLower()))
             {
@@ -246,9 +399,16 @@ namespace d360.model.helpers
                     fieldSql = $"CONVERT(VARCHAR,{fieldSql},120)";
                 }
 
+                if (this.fieldType.Type == "Score")
+                {
+                    fieldSql = $"CONVERT(DECIMAL(7,2),REPLACE({fieldSql},'%',''))";
+                }
+
                 stringBuilder.Append(fieldSql);
                 stringBuilder.Append(GetSQLOperator(@operator));
                 stringBuilder.Append($"@filter_{parameterIdx}");
+
+                this.AppendNullOperatorForNotOperators(fieldSql);
             }
 
             sqlParamsRef.Add($"@filter_{parameterIdx}", value);
@@ -257,7 +417,7 @@ namespace d360.model.helpers
 
         private void UpdateTokenForNullValue()
         {
-            if (!(new []{ "eq", "ne" }.Contains(@operator)))
+            if (!(new[] { "eq", "ne" }.Contains(@operator)))
             {
                 throw new FormatException($"NULL value filter can be used only with 'eq' and 'ne' operator!");
             }
@@ -314,7 +474,7 @@ namespace d360.model.helpers
                     DateTime date = new DateTime();
                     if (!DateTime.TryParse(value.ToString().Trim('\''), out date))
                     {
-                        if (@operator == "ct")
+                        if (@operator == "ct" || @operator == "nct")
                         {
                             value = value.ToString().Trim('\'').Replace("&apos;", "'");
                             this.convertToNVarChar = true;
@@ -327,7 +487,7 @@ namespace d360.model.helpers
                     else
                     {
                         value = date;
-                        if (@operator == "ct")
+                        if (@operator == "ct" || @operator == "nct")
                         {
                             this.convertToNVarChar = true;
 
@@ -339,6 +499,18 @@ namespace d360.model.helpers
                     }
 
                     break;
+                case "assettypeclass":
+                    var classes = AssetTypeClass.BusinessAsset.GetAsList();
+                    var match = classes.FirstOrDefault(x => x.Name.ToLower(CultureInfo.InvariantCulture) == value.ToString().ToLower(CultureInfo.InvariantCulture).Trim('\'')
+                    || x.Value.ToLower(CultureInfo.InvariantCulture) == value.ToString().ToLower(CultureInfo.InvariantCulture).Trim('\''));
+
+                    if (match == null)
+                    {
+                        throw new FormatException($"Invalid AssetTypeClass value for field '{field}'");
+                    }
+
+                    value = (int)match.ID;
+                    break;
                 default:
                     value = value.ToString().Trim('\'').Replace("&apos;", "'");
                     break;
@@ -347,20 +519,47 @@ namespace d360.model.helpers
 
         private void LoadLookupSql()
         {
-            if (fieldType.Type == "Lookup")
+            bool isFieldFromRel = CompanyContext.FieldTypes.FirstOrDefault(x => x.ID == fieldType.ID)?.Type == "FieldFromRelationship";
+
+            string type = fieldType.Type;
+            int fieldTypeId = fieldType.ID;
+            int fieldTypeIdForLookupValue = fieldType.ID;
+            string lookupObjectType = fieldType.LookupObjectType;
+            int lookupObjectId = fieldType.LookupObjectID.HasValue ? fieldType.LookupObjectID.Value : 0;
+            string defaultValue = fieldType.DefaultValue;
+            bool allowAllValue = fieldType.AllowAllValue;
+            string valueQueryPart = "Value";
+
+            //handle field from relationship list values
+            if (isFieldFromRel)
+            {
+                var lookupFieldType = CompanyContext.FieldTypes.FirstOrDefault(x => x.ID == fieldType.LookupObjectFieldTypeID);
+                fieldTypeIdForLookupValue = lookupFieldType.ID;
+                lookupObjectType = lookupFieldType.LookupObjectType;
+                lookupObjectId = lookupFieldType.LookupObjectID.HasValue ? lookupFieldType.LookupObjectID.Value : 0;
+                defaultValue = lookupFieldType.DefaultValue;
+                allowAllValue = lookupFieldType.AllowAllValue;
+                valueQueryPart = "FormattedValue";
+            }
+
+            if (type == "Lookup")
             {
                 if (@operator == "ct")
                 {
-                    stringBuilder.Append($"F{fieldType.ID}.FormattedValue like @filter_{parameterIdx}");
+                    stringBuilder.Append($"F{fieldTypeId}.FormattedValue like @filter_{parameterIdx}");
                 }
                 else
                 {
 
-                    int lookupValue = CompanyContext.GetFieldLookupValue(fieldType.LookupObjectType, fieldType.LookupObjectID.Value, fieldType.ID, value.ToString());
+                    int lookupValue = CompanyContext.GetFieldLookupValue(lookupObjectType, lookupObjectId, fieldTypeIdForLookupValue, value.ToString());
                     if (lookupValue <= 0)
                         throw new Exception($"Invalid lookup value '{value}' for field '{field}'");
 
-                    value = lookupValue.ToString();
+                    if (!isFieldFromRel)
+                    {
+                        value = lookupValue.ToString();
+                    }
+
 
                     string condition = "in";
                     if (@operator == "ne")
@@ -369,26 +568,26 @@ namespace d360.model.helpers
                     }
                     var basicSqlExpression = string.Empty;
 
-                    if (!string.IsNullOrEmpty(fieldType.DefaultValue))
+                    if (!string.IsNullOrEmpty(defaultValue))
                     {
-                        basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(coalesce(F{fieldType.ID}.Value,@defLookupValue{parameterIdx}),','))";
-                        sqlParamsRef.Add($"@defLookupValue{parameterIdx}", fieldType.DefaultValue);
+                        basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(coalesce(F{fieldTypeId}.{valueQueryPart},@defLookupValue{parameterIdx}),','))";
+                        sqlParamsRef.Add($"@defLookupValue{parameterIdx}", defaultValue);
                     }
                     else
                     {
-                        basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(F{fieldType.ID}.Value,','))";
+                        basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(F{fieldTypeId}.{valueQueryPart},','))";
                     }
 
-                    if (fieldType.AllowAllValue)
+                    if (allowAllValue)
                     {
-                        basicSqlExpression = $"(F{fieldType.ID}.Value = '0' or {basicSqlExpression})";
+                        basicSqlExpression = $"(F{fieldTypeId}.{valueQueryPart} = '0' or {basicSqlExpression})";
                     }
                     stringBuilder.Append(basicSqlExpression);
 
                 }
             }
 
-            if (fieldType.Type == "Relationship")
+            if (type == "Relationship")
             {
                 string condition = "exists";
                 if (@operator == "ne")
@@ -397,8 +596,8 @@ namespace d360.model.helpers
                 }
 
                 var whereStatement = $@"{condition}
-                                    (select id from intersectdetail where intersecttypeid = {fieldType.LookupObjectID} and subjectuid = a.uid and subjecttypeid = T.ObjectId and subjecttype = T.Object and objectname {(@operator == "ct" ? "like" : "=")} @filter_{parameterIdx}
-                                    union select id from IntersectDetail where intersecttypeid = {fieldType.LookupObjectID} and objectuid = a.uid and objecttypeid = T.ObjectId and objecttype = T.Object and subjectname {(@operator == "ct" ? "like" : "=")} @filter_{parameterIdx})";
+                                    (select id from intersectdetail where intersecttypeid = {lookupObjectId} and subjectuid = a.uid and subjecttypeid = T.ObjectId and subjecttype = T.Object and objectname {(@operator == "ct" ? "like" : "=")} @filter_{parameterIdx}
+                                    union select id from IntersectDetail where intersecttypeid = {lookupObjectId} and objectuid = a.uid and objecttypeid = T.ObjectId and objecttype = T.Object and subjectname {(@operator == "ct" ? "like" : "=")} @filter_{parameterIdx})";
 
                 stringBuilder.Append(whereStatement);
             }
@@ -407,7 +606,7 @@ namespace d360.model.helpers
         private void ValidateTokenForType()
         {
             bool hasApostrophe = value.ToString().First() == '\'' && value.ToString().Last() == '\'';
-            if (!hasApostrophe && !(fieldType.Type == "Number" || fieldType.Type == "Decimal" || fieldType.Type == "Boolean"))
+            if (!hasApostrophe && !(fieldType.Type == "Number" || fieldType.Type == "Decimal" || fieldType.Type == "Boolean" || fieldType.Type == "Score"))
             {
                 throw new Exception("Text values should be placed within quotations.");
             }
@@ -428,15 +627,18 @@ namespace d360.model.helpers
                 case "boolean":
                 case "lookup":
                 case "relationship":
-                    return new string[] { "eq", "ne", "ct" }.Contains(operand);
+                    return new[] { "eq", "ne", "ct" }.Contains(operand);
                 case "number":
                 case "decimal":
-                    return !(new string[] { "ct" }.Contains(operand));
+                case "score":
+                    return !(new[] { "ct", "nct" }.Contains(operand));
                 case "date":
                 case "datetime":
                     return true;
+                case "assettypeclass":
+                    return new[] { "eq", "ne" }.Contains(operand);
                 default:
-                    return new string[] { "eq", "ne", "ct" }.Contains(operand);
+                    return new[] { "eq", "ne", "ct", "nct" }.Contains(operand);
             }
         }
 
@@ -446,7 +648,7 @@ namespace d360.model.helpers
             {
                 return $"Node.DisplayPath";
             }
-            else 
+            else
             {
                 if (fieldColumn == null || fieldColumn.LastIndexOf(" as ") <= 0)
                 {
@@ -467,6 +669,7 @@ namespace d360.model.helpers
                 case "lt": return " < ";
                 case "le": return " <= ";
                 case "ct": return " like ";
+                case "nct": return " not like ";
                 default: throw new Exception($"Invalid comparison operator '{value}'");
             }
         }

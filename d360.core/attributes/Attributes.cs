@@ -233,7 +233,7 @@ namespace d360.core
                 {
                     isValidEnum = false;
                 }
-                if(!isNumeric && !Enum.IsDefined(objectType, reader.Value))
+                if (!isNumeric && !Enum.IsDefined(objectType, reader.Value))
                 {
                     isValidEnum = false;
                 }
@@ -266,6 +266,15 @@ namespace d360.core
         }
     }
 
+    public class OperatorAllowedDataTypesAdvancedFilterAttribute : Attribute
+    {
+        public DataType[] DataTypes { get; private set; }
+        public OperatorAllowedDataTypesAdvancedFilterAttribute(params DataType[] dataTypes)
+        {
+            DataTypes = dataTypes;
+        }
+    }
+
     public class OperatorAllowedMeasureChecksAttribute : Attribute
     {
         public MetricGovernanceCheckType[] Checks { get; private set; }
@@ -292,6 +301,16 @@ namespace d360.core
         {
             Min = min;
             Max = max;
+        }
+    }
+
+
+    public class SortOrderAttribute : Attribute
+    {
+        public int Order { get; private set; }
+        public SortOrderAttribute(int order)
+        {
+            Order = order;
         }
     }
 

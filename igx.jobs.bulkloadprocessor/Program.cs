@@ -592,7 +592,10 @@ from	LoadItem T
                 {
                     try
                     {
-                        trans.Rollback();
+                        if (trans != null)
+                        {
+                            trans.Rollback();
+                        }
                         throw;
                     }
                     catch { }
@@ -863,7 +866,10 @@ where	T.Success = 1", transaction: trans);
                 {
                     try
                     {
-                        trans.Rollback();
+                        if (trans != null)
+                        {
+                            trans.Rollback();
+                        }
                         throw;
                     } 
                     catch { }
@@ -1042,7 +1048,10 @@ where	ID = @loadId", new { loadId }, transaction: trans);
                 {
                     try
                     {
-                        trans.Rollback();
+                        if (trans != null)
+                        {
+                            trans.Rollback();
+                        }
                         throw;
                     }
                     catch { }

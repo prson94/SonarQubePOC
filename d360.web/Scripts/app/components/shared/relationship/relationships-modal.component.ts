@@ -27,7 +27,7 @@ export class RelationshipsModalComponent extends BaseComponent implements OnInit
 
     @ViewChild(ObjectRelationshipsComponent, { static: false }) private relationComponent: ObjectRelationshipsComponent;  
 
-    componentTitle: string = 'Related Assets';
+    componentTitle: string = 'Relationships';
     
 
     constructor(

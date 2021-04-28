@@ -1,0 +1,41 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Puneet Gupta" id="Table.api.ExecutionExternal-v1">
+    <comment>GOV-14302</comment>
+	<sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionExternal')
+BEGIN
+	CREATE TABLE [api].[ExecutionExternal](
+		[ID] [bigint] IDENTITY(1,1) NOT NULL,
+		[ExternalID] [uniqueidentifier] NOT NULL,
+		[Status] [varchar](250) NOT NULL,
+		[Detail] [nvarchar](250) NULL,
+		[Component] [nvarchar](250) NULL,
+		[CreatedOn] [datetime] NOT NULL,
+		CONSTRAINT [PK_ApiExecutionExternal] PRIMARY KEY CLUSTERED ([ID])
+	)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Api_ExecutionExternal_component_externalid')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Api_ExecutionExternal_component_externalid] ON [api].[ExecutionExternal] ([Component],[ExternalID])
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+			Drop table if exists [api].[ExecutionExternal]
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

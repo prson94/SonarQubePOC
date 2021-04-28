@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.enums;
 using Dapper;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SpreadsheetLight;
 using System;
 using System.Collections.Generic;
@@ -835,6 +836,18 @@ namespace d360.model.DataAccessLayer.repositories
                         txt = "'" + txt;
                     }
                     document.SetCellValue(rowIndex, colIndex, txt);
+                    break;
+                case "OWNERSHIPLOOKUP":
+                    if (value != null)
+                    {
+                        string owners = "";
+                        if (value.GetType() == typeof(JArray))
+                        {
+                            var ownerships = ((JArray)value).ToObject<List<dynamic>>();
+                            owners = string.Join(" | ", ownerships.OrderBy(o => o.ResourceName).Select(o => $"{o.ResourceName} ({o.ResponsibilityTypes})"));
+                        }
+                        document.SetCellValue(rowIndex, colIndex, owners);
+                    }
                     break;
                 default:
                     if (valueString.StartsWith("="))

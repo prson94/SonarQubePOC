@@ -315,7 +315,7 @@ namespace d360.model.workflow
                                 {
                                     if (output.Element("Id")?.Value == item.FormInputId)
                                     {
-                                        item.IsValueMatch(output.Element("Value")?.Value ?? "");
+                                        return item.IsValueMatch(output.Element("Value")?.Value ?? "");
                                     }
                                 }
                             }

@@ -1,0 +1,289 @@
+﻿@import "../../../../../Content/styles/infogix-ui/infogix-ui.less";
+
+.advanced-filtering-component {
+  flex-grow: 1;
+  margin-left: 8px;
+}
+
+.advanced-filtering {
+  .ig-button-container {
+    top: 8px;
+    left: 199px;
+  }
+
+  .lookup-selection {
+    margin-top: 8px;
+    min-width: 250px;
+
+    .p-datatable {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 1px;
+    }
+
+    .p-datatable-scrollable-wrapper {
+      min-width: 100%;
+    }
+
+    .p-datatable-scrollable-header-box {
+      padding-right: 0 !important;
+    }
+  }
+
+  .ig-multi-input-field {
+    width: 220px;
+    margin-top: 8px;
+  }
+
+  .any-all-picker {
+    margin-top: 4px;
+    padding-bottom: 8px;
+
+    .p-radiobutton-label {
+      margin-right: 8px;
+    }
+
+    &.disabled {
+      pointer-events: none;
+      opacity: 0.33;
+    }
+  }
+
+  .remove-button {
+    position: absolute;
+    top: 5px;
+    right: 4px;
+    cursor: pointer;
+  }
+
+  .filters-list {
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    max-width: 100%;
+    padding-right: 40px;
+    padding-bottom: 3px;
+    position: relative;
+
+    .filters-list-menu {
+      position: absolute;
+      top: 0;
+      right: 0;
+    }
+
+    button.menu {
+      width: 24px;
+      height: 24px;
+      position: absolute;
+      top: 4px;
+      right: 4px;
+    }
+
+    .filter-item {
+      display: inline-block;
+    }
+
+    .filter-block {
+      margin-top: 3px;
+      margin-left: 3px;
+      position: relative;
+      max-height: 26px;
+
+      .filter-label {
+        height: 24px;
+        padding: 0 8px;
+        max-width: 240px;
+        color: black;
+
+        span.text {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        &.has-remove-icon {
+          padding-right: 20px;
+        }
+
+        &.is-empty {
+          color: @ig-grey;
+        }
+      }
+
+      .field-selection {
+        position: absolute;
+        min-width: 308px;
+        z-index: 200;
+        top: -10px;
+      }
+
+      .value-selector {
+        margin-bottom: 8px;
+      }
+
+      .value-selection {
+        position: fixed;
+        min-width: 220px;
+        max-width: 100%;
+        z-index: 1000;
+        box-shadow: @ig-box-shadow;
+        background: white;
+        padding: 8px;
+        padding-top: 0;
+        border-radius: 4px;
+
+        .buttons {
+          display: flex;
+
+          button {
+            margin-left: 8px;
+          }
+        }
+
+        input {
+          margin-top: 8px;
+        }
+
+        input.ig-date {
+          margin-top: 0;
+        }
+
+        .ig-multi-input-field {
+          input {
+            margin-top: 0;
+          }
+        }
+      }
+    }
+  }
+
+  .ig-number-field {
+    width: 100% !important;
+  }
+
+  .value-separator {
+    margin-bottom: -8px;
+    padding: 8px 0;
+  }
+
+  .ig-dropdown {
+    margin-top: 8px;
+  }
+
+  .ig-date,
+  .ig-input {
+    width: 204px;
+  }
+
+  span.ig-date {
+    margin-top: 8px;
+  }
+}
+
+.ig-filter-table {
+  table-layout: auto !important;
+
+  thead {
+    border-bottom: 1px solid #ccc;
+  }
+
+  .p-checkbox {
+    margin: 0 !important;
+
+    .p-checkbox-box {
+      width: 16px;
+      height: 16px;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+    }
+  }
+
+  .p-selectable-row {
+    .p-checkbox {
+      pointer-events: auto;
+    }
+  }
+
+  tr {
+    color: black;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    outline: 0;
+
+    td,
+    th {
+      background: white !important;
+      padding: 0 !important;
+      height: 32px;
+      line-height: 32px;
+
+      .item-value {
+        white-space: nowrap;
+        display: block;
+        color: black;
+      }
+
+      .filter-item-table-filter {
+        margin: 0;
+        border: 0;
+        outline: 0;
+        padding: 0;
+        color: black;
+        font-weight: normal;
+      }
+    }
+
+    &.group-name {
+      pointer-events: none;
+
+      .item-value {
+        padding: 3px 0 !important;
+        font-weight: bold;
+        color: #818385;
+      }
+    }
+
+    td.first-col,
+    th.first-col {
+      width: 16px;
+      padding: 0 8px !important;
+    }
+
+    &:hover {
+      td,
+      .p-checkbox {
+        background-color: @ig-orange-t4 !important;
+      }
+    }
+
+    &.p-highlight {
+      td,
+      .p-checkbox {
+        background-color: @ig-orange-t3 !important;
+      }
+    }
+
+    .p-highlight {
+      color: black;
+      background: white;
+    }
+  }
+}
+
+.slim-fa {
+  font-size: 8px !important;
+  padding: 0 4px !important;
+  color: black;
+  position: relative;
+  top: -1px;
+}
+
+.p-timepicker {
+  color: black;
+  font-size: 14px;
+  padding: 8px;
+
+  .p-separator {
+    color: black;
+    padding: 4px;
+  }
+}

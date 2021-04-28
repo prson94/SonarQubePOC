@@ -494,26 +494,6 @@ order by 3";
                     }
                     break;
                 #endregion
-                case "FusionQueryAttributeType":
-                    #region                    
-                    sql = $@"
-select	'FusionQueryAttribute' as [Object], 
-        FA.ID as ObjectID, 
-        A.uid,
-        F.Name + '.' + FA.DisplayValue as Name
-from	FusionQueryAttribute FA with(nolock)
-        inner join FusionQueryAttributeType FAT on (FA.FusionQueryAttributeTypeID = FAT.ID)
-		inner join Fusion F with(nolock) on F.ID = FAT.FusionID and FA.FusionQueryAttributeTypeID = @targetTypeID and FA.Deleted = 0
-        inner join Asset A on A.object = 'FusionQueryAttribute' and A.ObjectID =  FA.ID
-where	FA.ID not in (
-					select	1 
-					from	[IntersectDetail]
-					where	( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
-					)
-        and FA.ID != @id 
-order by F.Name, FA.DisplayValue";
-                    break;
-                #endregion
                 case "Group":
                 case "GroupType":
                     #region

@@ -252,7 +252,7 @@ namespace d360.core.validators
             if (!String.IsNullOrEmpty(isHierachyItem))
             {
                 var order = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_order").Value;
-                if(!String.IsNullOrEmpty(order))
+                if (!String.IsNullOrEmpty(order))
                 {
                     int orderID = 0;
                     order = order.Split(new[] { "Field" }, StringSplitOptions.None)[1];
@@ -353,7 +353,7 @@ namespace d360.core.validators
             }
             return true;
         }
-        
+
         public bool IsValidGetAssets(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             if (queryParams.Any(x => x.Key.Trim().ToLower() == "_assetuid"))

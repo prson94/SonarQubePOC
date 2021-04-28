@@ -1,0 +1,76 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.metrics.StagingScoreItem-v1.1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'StagingScoreItem')
+BEGIN
+	CREATE TABLE [metrics].[StagingScoreItem] (
+		AllocationUid uniqueidentifier NOT NULL,
+		AssetUid uniqueidentifier NOT NULL,
+		MeasureUid uniqueidentifier NOT NULL,
+		MeasureVersionUid uniqueidentifier NOT NULL,
+		EffectiveDate datetime NOT NULL,
+		[Value] bit NULL,
+		DecimalValue float NULL,
+		RawWeight decimal(8, 6) NULL,
+		ConditionUid uniqueidentifier NULL,
+		Evidence nvarchar(max) NOT NULL,
+		OtherConditions nvarchar(max) NOT NULL,
+		IsRemoved bit constraint DF_MetricsStagingScoreItem_IsRemoved default(0) not null,
+		CONSTRAINT [PK_MetricsStagingScoreItem] PRIMARY KEY NONCLUSTERED ( [AssetUid] ASC, MeasureUid ASC, EffectiveDate DESC )
+	)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'StagingScoreItem')
+BEGIN
+	DROP TABLE [metrics].[StagingScoreItem]
+END
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Constraint.metrics.StagingScoreItem-Constraints-v1.0">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricsStagingScoreItem_Evidence')
+begin
+	ALTER TABLE [metrics].[StagingScoreItem] ADD  CONSTRAINT [DF_MetricsStagingScoreItem_Evidence] DEFAULT ('{}') FOR [Evidence]
+end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricsStagingScoreItem_OtherConditions')
+begin
+	ALTER TABLE [metrics].[StagingScoreItem] ADD  CONSTRAINT [DF_MetricsStagingScoreItem_OtherConditions] DEFAULT ('[]') FOR [OtherConditions]
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricsStagingScoreItem_Evidence')
+begin
+	ALTER TABLE [metrics].[StagingScoreItem] DROP CONSTRAINT [DF_MetricsStagingScoreItem_Evidence]
+end
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricsScoreItem_OtherConditions')
+begin
+	ALTER TABLE [metrics].[StagingScoreItem] DROP CONSTRAINT [DF_MetricsScoreItem_OtherConditions]
+end
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
