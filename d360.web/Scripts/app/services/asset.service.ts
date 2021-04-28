@@ -251,4 +251,18 @@ export class AssetService extends BaseObservableService {
                 catchError(err => this.handleError(err, true))
             );
     }
+
+    getAssetsLookupValues(assetTypeUID: string, params: any): Observable<any> {
+        var qString = '';
+        if (params) {
+            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            if (qString)
+                qString = '?' + qString;
+        }
+        return this.http.get(`api/v2/assets/lookupvalues/${assetTypeUID}` + qString)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
+    }
 }

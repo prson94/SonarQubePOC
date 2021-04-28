@@ -494,7 +494,8 @@
 	<include file="scripts/Procedure.workflow.changeItemState.xml"/>
 
 	<include file="scripts/Procedure.Deletions.xml"/>
-    
+    <include file="scripts/Procedure.dbo.SimpleAssetSearch.xml"/>
+
 	<!-- Data Changes -->
 	<include file="scripts/Data.Initial.xml"/>
 	<include file="scripts/Data.Corrections.xml"/>
