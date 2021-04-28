@@ -894,7 +894,7 @@ namespace d360.model.DataAccessLayer
                             simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
                         }
                     }
-                    if (includeOwnershipLookup)
+                    if (includeOwnershipLookup && ownershipFieldTypes.Any())
                     {
                         List<string> ownershipSimpleFilterFields = new List<string>();
                         ownershipSimpleFilterFields.Add("ResponsibilityTypeName");
