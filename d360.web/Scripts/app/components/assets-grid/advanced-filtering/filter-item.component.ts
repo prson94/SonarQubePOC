@@ -555,17 +555,21 @@ export class FilterItemComponent implements OnInit, OnChanges {
                     this.currentField.Values.push({ title: str.title, value: str.value });
                 });
 
-                var grouped = _.mapValues(_.groupBy(mapped, "group"),
-                    (clist) => clist.map((item) => _.omit(item, "group")));
+                var grouped = _.mapValues(_.groupBy(mapped, "value"),
+                    (clist) => clist.map((item) => _.omit(item, "value")));
 
                 var keys = Object.keys(grouped);
                 keys.forEach((key) => {
-                    this.currentField.Values.push({ title: key, value: key, disabled: true, styleClass: "group-name" });
-                    grouped[key].forEach((d: SelectItem) => {
-                        this.currentField.Values.push({ title: d.title, value: d.value });
-                    });
+                    var value = key;
+                    var data = grouped[key] as any[];
+                    var name = data[0].title;
+                    var groups = data.map((m: any) => m.group).join(", ");
+                    var title = name + " (" + groups + ")";
 
+                    this.currentField.Values.push({ title: title, value: value });
                 });
+
+                this.currentField.Values = this.currentField.Values.sort((a, b) => { return a.title > b.title ? 1 : 0 });
 
                 this.isLookupValuesLoading = false;
                 this.setTableWidth();
@@ -830,7 +834,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.uiIsAnyDisabled = true;
             }
         }
-        if (this.condition.field === SystemFields.OwnedByFieldCode) {
+        if (this.condition.field === SystemFields.OwnedByFieldCode && (this.condition.value && (this.condition.value as any[]).length > 1)) {
             if (this.currentOperator.toString() === "Equals") {
                 this.uiIsAllDisabled = false;
                 this.uiIsAnyDisabled = false;
