@@ -79,7 +79,7 @@ namespace d360.extensions.powerbi
             if (auth == null)
             {
                 // Authenticate using created credentials
-                var authenticationResult = await AuthenticateAsync(user, pwd, clientId);
+                var authenticationResult = await AuthenticateAsync(user, pwd, clientId).ConfigureAwait(false);
 
                 if (authenticationResult == null)
                 {
@@ -119,7 +119,7 @@ namespace d360.extensions.powerbi
 
         public static async Task UpdateConnectionCredentials(string pbiUser, string pbiPwd, string clientId, string groupId, string username, string password, string connectionString = "")
         {
-            var authenticationResult = await AuthenticateAsync(pbiUser, pbiPwd, clientId);
+            var authenticationResult = await AuthenticateAsync(pbiUser, pbiPwd, clientId).ConfigureAwait(false);
 
             if (authenticationResult == null)
             {
