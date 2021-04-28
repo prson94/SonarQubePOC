@@ -100,7 +100,7 @@ export class AdvancedFilterFieldCondition {
                 break;
             case "Populated":
                 if (this.isRelationship) {
-                    str += " exists ";
+                    str += " relationships exists ";
                 }
                 else {
                     str += " is populated ";
@@ -108,7 +108,7 @@ export class AdvancedFilterFieldCondition {
                 break;
             case "NotPopulated":
                 if (this.isRelationship) {
-                    str += " does not exist ";
+                    str += " relationships do not exist ";
                 }
                 else {
                     str += " is not populated ";
