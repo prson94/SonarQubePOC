@@ -2,22 +2,22 @@
 import { LazyLoadEvent, SelectItem, SelectItemGroup } from "primeng/api";
 import * as _ from "lodash";
 import { FieldTypeAPIModelFieldCondition } from "../../../models/field-condition-grid.models";
-import { Operator, OperatorModel } from "../../../models/operator.model";
+import { OperatorModel } from "../../../models/operator.model";
 import { AdvancedFilterFieldCondition, SystemFields } from "./advanced-filtering.models";
 import { FieldsObservableService } from "../../../services/fieldsObservable.service";
 import { AssetTypeService } from "../../../services/asset-type.service";
 import { TagService } from "../../../services/tag.service";
 import { RelationshipType } from "../../../models/relationship.model";
-import { RelationshipsService } from "../../../services/relationships.service";
 import { Subscription } from "rxjs";
 import { MultiInputField } from "../../shared/controls/multi-input-field/multi-input-field.component";
 import { Table } from "primeng/table";
+import { AssetService } from "../../../services/asset.service";
 
 @Component({
     selector: "filter-item",
     templateUrl: "filter-item.component.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [FieldsObservableService, AssetTypeService, TagService, RelationshipsService]
+    providers: [FieldsObservableService, AssetTypeService, TagService, AssetService]
 })
 export class FilterItemComponent implements OnInit, OnChanges {
     @Input() assetTypeUid: string = "";
@@ -73,7 +73,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         private fieldsService: FieldsObservableService,
         private assetTypeService: AssetTypeService,
         private tagService: TagService,
-        private relationshipService: RelationshipsService
+        private assetService: AssetService
     ) {
     }
 
@@ -144,7 +144,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
             let calculatedHeight: number = 0;
             let maxHeight: number = 340;
-            let minHeight: number = 34;
+            let minHeight: number = 50;
             let margins: number = 180;
             let bottomPos: number = (this.elRef.nativeElement as HTMLElement).getBoundingClientRect().bottom;
 
@@ -588,19 +588,18 @@ export class FilterItemComponent implements OnInit, OnChanges {
             nameAsParam = this.relationshipFieldName;
         }
 
-        this.lazyLoadSubscription = this.relationshipService
-            .getRelationshipLookupValues(nameAsParam.split("|")[1], nameAsParam.split("|")[0], params)
+        this.lazyLoadSubscription = this.assetService
+            .getAssetsLookupValues(nameAsParam.split("|")[1], params)
             .subscribe((res) => {
-                if (!this.currentField.Values || this.currentField.Values.length === 0) {
-                    this.currentField.Values = Array.from({ length: 0 });
-                }
+                this.currentField.Values = Array.from({ length: 0 });
 
                 let loadedData = [];
 
                 res.forEach((str) => {
-                    let label: string = (str.label as string).split("].[").join(" <i class='slim-fa fa fa-chevron-right'></i> ").replace("[", "").replace("]", "");
+                    let label: string = (str.label as string).split(">").join(" <i class='slim-fa fa fa-chevron-right'></i> ");
                     loadedData.push({ title: label, value: str.value });
                 });
+
 
                 Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
 
