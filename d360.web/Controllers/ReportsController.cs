@@ -3,7 +3,7 @@ using d360.core.entities;
 using d360.model;
 using d360.web.Models;
 using d360.web.Models.Attributes;
-using Microsoft.PowerBI.Api;
+using Microsoft.PowerBI.Api.V2;
 using Microsoft.Rest;
 using System;
 using System.Collections.Generic;
@@ -64,21 +64,20 @@ namespace d360.web.Controllers
             }
 
             var tokenCredentials = new TokenCredentials(authenticationResult.AccessToken, "Bearer");
-            var groupUid = Guid.Parse(groupId);
 
             using (var client = new PowerBIClient(new Uri(pbiUrl), tokenCredentials))
             {
-                var reportsResponse = await client.Reports.GetReportsAsync(groupUid);               
-                var report = reportsResponse.Value.FirstOrDefault(r => string.Compare(r.Id.ToString(), reportId,true) == 0 );
+                var reportsResponse = await client.Reports.GetReportsAsync(groupId);               
+                var report = reportsResponse.Value.FirstOrDefault(r => string.Compare(r.Id,reportId,true) == 0 );
 
                 if(report == null)
                 {
                     throw new Exception("No such report");
                 }
 
-                Microsoft.PowerBI.Api.Models.GenerateTokenRequest generateTokenRequestParameters = new Microsoft.PowerBI.Api.Models.GenerateTokenRequest(accessLevel: "view");
+                Microsoft.PowerBI.Api.V2.Models.GenerateTokenRequest generateTokenRequestParameters = new Microsoft.PowerBI.Api.V2.Models.GenerateTokenRequest(accessLevel: "view");
 
-                var tokenResponse = await client.Reports.GenerateTokenInGroupAsync(groupUid, report.Id, generateTokenRequestParameters);
+                var tokenResponse = await client.Reports.GenerateTokenInGroupAsync(groupId, report.Id, generateTokenRequestParameters);
 
                 if (tokenResponse == null)
                 {

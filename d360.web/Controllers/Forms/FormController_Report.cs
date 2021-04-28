@@ -56,7 +56,7 @@ namespace d360.web.Controllers
                                 throw new Exception("FAILED TO LOAD POWER BI WORKSHEET INTO WORKSPACE!");
 
                             datasetID = importResult.Datasets.FirstOrDefault().Id;
-                            powerBIID = importResult.Reports.FirstOrDefault().Id.ToString();
+                            powerBIID = importResult.Reports.FirstOrDefault().Id;
                             filename = file.FileName;
                         }
                     }
@@ -270,7 +270,7 @@ namespace d360.web.Controllers
                         var rpt = importResult.Reports.FirstOrDefault();
 
                         if (rpt != null)
-                            powerBIID = rpt.Id.ToString();
+                            powerBIID = rpt.Id;
 
                         filename = file.FileName;
                     }
@@ -380,22 +380,22 @@ namespace d360.web.Controllers
 
                 if (workspaceSetting == null)
                 {
-                    Community.Add<CompanySetting>(new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 56, Value = res.Id.ToString() });
+                    Community.Add<CompanySetting>(new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 56, Value = res.Id });
                 }
                 else
                 {
-                    workspaceSetting.Value = res.Id.ToString();
+                    workspaceSetting.Value = res.Id;
 
                     Community.Update<CompanySetting>(workspaceSetting);
                 }
 
-                return res.Id.ToString();
+                return res.Id;
             }
 
             return groupId;
         }
 
-        private async Task<Microsoft.PowerBI.Api.Models.Import> uploadPowerBIReport(HttpPostedFileBase file, string name, string datasetId = "")
+        private async Task<Microsoft.PowerBI.Api.V2.Models.Import> uploadPowerBIReport(HttpPostedFileBase file, string name, string datasetId = "")
         {
             var companySettings = Community.GetCompanySettings();
             var groupId = string.Empty;
