@@ -947,6 +947,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         }
 
                         item.SortOrderList = s;
+                        this.validate("RelationItems");
                     }
                 ));
         } catch (e) {
@@ -1258,6 +1259,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             })());
         }
 
+        if (fieldname === "RelationItems" && this.currentType === "ComplexRelationLookup") {
+            let relationAssetUids = this.model.RelationItems.map((r) => r.AssetTypeUid.toLowerCase());
+
+            this.setValidation("relationItems_origin", "Relation Lookup refers back to the Asset Type this field is defined on.", relationAssetUids.some((u) => u === this.assetTypeUid.toLowerCase()));
+            this.setValidation("relationItems_circula", "Relation Lookup contains a circular reference.", relationAssetUids.some((r, idx, arr) => idx !== arr.indexOf(r)));
+        }
+
         this.errorMessage = Array.from(this.validationErrors.values()).join('\n');
     }
 
@@ -1298,6 +1306,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         //only last item can be deleted
         this.model.RelationItems.pop();
         this.relationItemCount = this.model.RelationItems.length;
+        this.validate("RelationItems");
     }
 
     private anyDisplayFieldsSelected(e: any) {
