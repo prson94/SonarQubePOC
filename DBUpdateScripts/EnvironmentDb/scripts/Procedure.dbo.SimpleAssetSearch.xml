@@ -32,7 +32,7 @@ BEGIN
             
 	select AssetUid as value,
 	case when len([Path]) > 0 then [Path]
-	else 'ERR:NO SEGMENTS'
+	else 'ERR:MISSING PATH SEGMENTS'
 	end as label 
 	from #tempTable
 END
