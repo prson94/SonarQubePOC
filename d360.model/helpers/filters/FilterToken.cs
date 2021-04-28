@@ -496,6 +496,18 @@ namespace d360.model.helpers
                                 value = date.ToString("yyyy-MM-dd");
                             }
                         }
+
+                        if (@operator == "le" && ft.ToLower() == "datetime"
+                            && (filter.ApiName == "CreatedOn" || filter.ApiName == "UpdatedOn"))
+                        {
+                            //CreatedOn and UpdatedOn system fields are DateTime, but UI filtering is treating them as
+                            //date fields. In case of "Less or Equal" we need to update date to take into account equal dates
+                            date = date.AddHours(23);
+                            date = date.AddMinutes(59);
+                            date = date.AddSeconds(59);
+                            date = date.AddMilliseconds(999);
+                            value = date;
+                        }
                     }
 
                     break;

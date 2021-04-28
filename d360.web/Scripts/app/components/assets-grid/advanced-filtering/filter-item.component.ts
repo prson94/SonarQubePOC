@@ -355,7 +355,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
     updateFocus() {
         setTimeout(() => {
             var home = this.elRef.nativeElement as HTMLElement;
-            if (this.condition.operator) {
+            if (this.condition.operator && this.currentInputType !== "date") {
                 var valueRef = home.querySelector(".value-selector input") as HTMLElement;
                 if (valueRef) {
                     valueRef.focus();
