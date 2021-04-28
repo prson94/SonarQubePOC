@@ -562,7 +562,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 var keys = Object.keys(grouped);
                 keys.forEach((key) => {
                     var value = key;
-                    var data = grouped[key] as any[];
+                    var data = [];
+                    if (grouped.hasOwnProperty(key)) {
+                        data = grouped[key] as any[];
+                    }
                     var name = data[0].title;
                     var groups = data.map((m: any) => m.group).join(", ");
                     var title = name + " (" + groups + ")";
