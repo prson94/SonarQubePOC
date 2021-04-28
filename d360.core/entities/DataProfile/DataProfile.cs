@@ -131,7 +131,6 @@ namespace d360.core.entities
         public bool? multiline { get; set; }
 
         [DataMember]
-        [StringLength(200, ErrorMessage = "{0} cannot be more than {1} characters.")]
         public string regExp { get; set; }
 
         [DataMember]
