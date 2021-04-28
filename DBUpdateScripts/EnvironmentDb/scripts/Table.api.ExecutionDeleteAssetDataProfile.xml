@@ -14,22 +14,22 @@
 			IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionDeleteAssetDataProfile')
 			BEGIN
 				CREATE TABLE [api].[ExecutionDeleteAssetDataProfile](
-											[ExecutionID] [uniqueidentifier] NOT NULL,
-											[ItemNumber] [int] NOT NULL,
-											[Success] [bit] NULL,
-											[Message] [nvarchar](2500) NULL,
-											[ExecutionItemUid] [uniqueidentifier] NULL,
-											[AssetUid] [uniqueidentifier] NOT NULL,
-											[StartDate] [date] NOT NULL,
-											[EndDate] [date] NOT NULL,
-											[Cascade] [bit] NOT NULL DEFAULT 0,
-											[DeletedCount] [bigint] NULL,
-											CONSTRAINT [PK_ExecutionDeleteAssetDataProfile] PRIMARY KEY CLUSTERED 
-											(
-												[ExecutionID] ASC,
-												[ItemNumber] ASC
-											)
-										)
+								[ExecutionID] [uniqueidentifier] NOT NULL,
+								[ItemNumber] [int] NOT NULL,
+								[Success] [bit] NULL,
+								[Message] [nvarchar](2500) NULL,
+								[ExecutionItemUid] [uniqueidentifier] NULL,
+								[AssetUid] [uniqueidentifier] NOT NULL,
+								[StartDate] [date] NOT NULL,
+								[EndDate] [date] NOT NULL,
+								[Cascade] [bit] NOT NULL DEFAULT 0,
+								[DeletedCount] [bigint] NULL,
+								CONSTRAINT [PK_ExecutionDeleteAssetDataProfile] PRIMARY KEY NONCLUSTERED 
+								(
+									[ExecutionID] ASC,
+									[ItemNumber] ASC
+								)
+							)
 			END
 		]]>
     </sql>
