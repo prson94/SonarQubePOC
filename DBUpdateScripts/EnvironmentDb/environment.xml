@@ -257,6 +257,7 @@
 	<include file="scripts/Table.api.ExecutionAssetResult.xml"/>	
 	<include file="scripts/Table.api.ExecutionAssetDataProfile.xml"/>
 	<include file="scripts/Table.api.ExecutionAssetDataProfileSample.xml"/>	
+	<include file="scripts/Table.api.ExecutionDeleteAssetDataProfile.xml"/>	
 	<include file="scripts/Table.api.ExecutionDeleteAssetResult.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedAssetType.xml"/>

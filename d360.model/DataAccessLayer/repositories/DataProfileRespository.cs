@@ -260,5 +260,35 @@ namespace d360.model.DataAccessLayer
 
             return results;
         }
+
+        public List<DataProfileDeleteResponse> DeleteDataProfiles(Asset asset, DateTime startDate, DateTime endDate, ApiExecution execution, bool cascade = false)
+        {            
+            CompanyContext.Add(execution);
+            
+            var assetDataProfileDeleteModel = new AssetDataProfileDeleteModel { AssetUid = asset.uid, StartDate = startDate, EndDate = endDate, Cascade = cascade };
+            
+            List<AssetDataProfileDeleteModel> models = new List<AssetDataProfileDeleteModel>();
+            models.Add(assetDataProfileDeleteModel);
+
+            List<DataProfileDeleteResponse> results = null;
+
+            try
+            {
+                results = CompanyContext.DeleteDataProfiles(models, execution);
+
+                execution.Processed = results.Count;
+                execution.Error = results.Count(i => !i.Success);
+                execution.CompletedOn = DateTime.UtcNow;
+                CompanyContext.Update(execution);
+            }
+            catch (Exception ex)
+            {
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                CompanyContext.Update(execution);
+            }
+
+            return results;
+        }          
     }
 }
