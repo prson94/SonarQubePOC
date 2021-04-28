@@ -19,7 +19,6 @@ import { Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { MessagesObservableService } from '../../../../services/messages-observable.service';
 import { FieldTypeAPIModelField, FieldType, FieldTypeAPIModel, DefinitionField, Relation } from '../../../../models/fieldtype-api.model';
-import { String } from 'core-js';
 
 
 @Component({
