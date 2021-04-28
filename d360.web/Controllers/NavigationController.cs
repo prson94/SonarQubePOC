@@ -846,7 +846,7 @@ namespace d360.web.Controllers
         public JsonNetResult GetSecondaryNavigationSettings(SecondaryNavigationPostModel model)
         {
             bool execProcedure = true;
-            SecondaryNavigationResponseModel responseModel = new SecondaryNavigationResponseModel() { Items = new SecondaryNavItems() };
+            SecondaryNavigationResponseModel responseModel = new SecondaryNavigationResponseModel() { Items = new SecondaryNavItems() };            
             //Static nav
             if (model.AssetUid == null)
             {
@@ -1121,6 +1121,11 @@ namespace d360.web.Controllers
                         responseModel.Items.HasRelationship = false;
                     }
                 }
+            }
+            if (responseModel != null)
+            {
+                var showChangeLogTab = Community.GetCompanySettings().Single(x => x.Key == "ShowChangeLogTab");
+                responseModel.Items.ShowChangeLogTab = Convert.ToBoolean(showChangeLogTab.Value);
             }
             return new JsonNetResult
             {
