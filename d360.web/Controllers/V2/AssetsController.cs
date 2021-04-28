@@ -2983,16 +2983,34 @@ namespace d360.web.Controllers.V2
             ]
         public async Task<HttpResponseMessage> GetAssetLookupValues(Guid assetTypeUid, int? skip = null, int? take = 0, string filter = null)
         {
-            var prefix = "Relationships.IsTransformPredicateExists => ";
+            var prefix = "Assets.GetAssetLookupValues => ";
             var errorMessage = "";
 
             try
             {
+
+                var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
+
+                if (assetType.Object == "ReferenceItemType" && assetType.ObjectID == 0)
+                {
+                    //handle reference lists
+                    IQueryable<AssetType> query = Company.AssetTypes.Where(x => x.Object == "ReferenceItemType" && x.ObjectID != 0);
+
+                    if (!string.IsNullOrEmpty(filter))
+                    {
+                        query = query.Where(x => x.Name.Contains(filter));
+                    }
+
+                    var refListResults = query.OrderBy(x => x.Name)
+                        .Skip(skip.Value)
+                        .Take(take.Value)
+                        .Select(x => new { value = x.uid, label = x.Name }).ToList();
+
+                    return Request.CreateResponse(HttpStatusCode.OK, refListResults);
+                }
+
                 filter = "%" + (filter ?? "") + "%";
-
-                var assetTypeId = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid).ID;
-
-                var results = await Company.QueryAsync<dynamic>($@"exec [SimpleAssetSearch] @assetTypeId, @filter,@skip,@take", new { assetTypeId, skip, take, filter });
+                var results = await Company.QueryAsync<dynamic>($@"exec [SimpleAssetSearch] @assetTypeId, @filter,@skip,@take", new { assetTypeId = assetType.ID, skip, take, filter });
 
                 return Request.CreateResponse(HttpStatusCode.OK, results);
             }
