@@ -156,7 +156,7 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var sql = "exec graph.AssetBrowser_ImpactHop @ancestry, @hierarchyKey, @assets, @preloadedIntersects, @predicateUid, @direction, @resourceId, @isAdmin, @includeNonLeaf";
+                var sql = "exec graph.AssetBrowser_ImpactHop @ancestry, @hierarchyKey, @assets, @preloadedIntersects, @predicateUid, @direction, @resourceId, @isAdmin, @includeNonLeaf, @includeDescendantAssets";
                 var reader = await Company.QueryMultipleAsync(
                     sql,
                     new
@@ -169,7 +169,8 @@ namespace d360.web.Controllers.V2
                         direction = (hopModel.direction == AssetBrowserApiHopDirection.Backward) ? "B" : "F",
                         resourceId = Company.CurrentResourceID,
                         isAdmin = Company.CurrentResourceIsAdmin,
-                        hopModel.includeNonLeaf
+                        hopModel.includeNonLeaf,
+                        hopModel.includeDescendantAssets
                     },
                     timeout: 60
                 );

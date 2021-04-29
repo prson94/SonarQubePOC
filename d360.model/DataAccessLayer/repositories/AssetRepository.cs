@@ -620,18 +620,20 @@ namespace d360.model.DataAccessLayer
                     create index cix_OwnershipLookupAssetId on #OwnershipLookupAssets (AssetId);
                     ";
 
-                ownershipFieldTypes.ForEach(f => {
+                ownershipFieldTypes.ForEach(f =>
+                {
                     FieldTypeLookup lookup = CompanyContext.FieldTypeLookups.Where(ftl => ftl.FieldTypeID == f.ID).FirstOrDefault();
                     var definition = (dynamic)JsonConvert.DeserializeObject(lookup.Definition);
                     string innerOwnershipQuery = "";
-                    if((bool)definition.ExpandGroupMembership)
+                    if ((bool)definition.ExpandGroupMembership)
                     {
                         innerOwnershipQuery = $@"select ResponsibilityTypeName, ResourceName, ResourceUid, ResourceItemUrl from #OwnershipLookupAssets ola{f.ID}
                             cross apply (select  concat('resource/', cast(ResourceID as varchar)) as ResourceItemUrl) ola{f.ID}x
 			                where ola{f.ID}.assetid = a.id
 			                group by ResponsibilityTypeName, ResourceName, ResourceUid, ResourceItemUrl";
                         simpleFilterOwnershipOnResource = true;
-                    } else
+                    }
+                    else
                     {
                         innerOwnershipQuery = $@"select ResponsibilityTypeName, SecurityAssetName as ResourceName, SecurityAssetUid as ResourceUid, ResourceItemUrl  from #OwnershipLookupAssets ola{f.ID}
                             cross apply (select  concat(case SecurityAsset when 'R' then '/resource/' else '/group/' end, cast(SecurityAssetID as varchar)) as ResourceItemUrl) ola{f.ID}x
@@ -892,7 +894,7 @@ namespace d360.model.DataAccessLayer
                             simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
                         }
                     }
-                    if (includeOwnershipLookup)
+                    if (includeOwnershipLookup && ownershipFieldTypes.Any())
                     {
                         List<string> ownershipSimpleFilterFields = new List<string>();
                         ownershipSimpleFilterFields.Add("ResponsibilityTypeName");

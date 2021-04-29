@@ -1,7 +1,7 @@
 ﻿using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.PowerBI.Api;
-using Microsoft.PowerBI.Api.V2;
-using Microsoft.PowerBI.Api.V2.Models;
+using Microsoft.PowerBI.Api.Models;
+using Microsoft.PowerBI.Api.Models.Credentials;
 using Microsoft.Rest;
 using Newtonsoft.Json;
 using System;
@@ -38,17 +38,18 @@ namespace d360.extensions.powerbi
         /// <param name="filePath">A local file path on your computer</param>
         /// <returns></returns>
         public static async Task<Import> ImportPbix(string user, string pwd, string clientId, string groupId, string datasetName, Stream fileStream)
-        {            
+        {
+            var groupUid = Guid.Parse(groupId);
                 // Create a dev token for import                
                 using (var client = await CreateClient(user, pwd, clientId))
                 {
                     // Import PBIX file from the file stream
-                    var import = await client.Imports.PostImportWithFileAsync(groupId, fileStream, datasetName);
+                    var import = await client.Imports.PostImportWithFileAsync(groupUid, fileStream, datasetName);
 
                     // Example of polling the import to check when the import has succeeded.
                     while (import.ImportState != "Succeeded" && import.ImportState != "Failed")
                     {
-                        import = await client.Imports.GetImportByIdAsync(groupId, import.Id);
+                        import = await client.Imports.GetImportAsync(groupUid, import.Id);
                         Debug.WriteLine("Checking import state... {0}", import.ImportState);
                         Thread.Sleep(1000);
                     }
@@ -69,20 +70,16 @@ namespace d360.extensions.powerbi
             
             using (var client = await CreateClient(user,pwd,clientId))
             {
-                await client.Datasets.DeleteDatasetByIdAsync(groupId, datasetId);
+                await client.Datasets.DeleteDatasetAsync(Guid.Parse(groupId), datasetId);
             }
         }
-
 
         public static async Task<PowerBIClient> CreateClient(string user, string pwd, string clientId, AuthenticationResult auth = null)
         {
             if (auth == null)
             {
-                var credential = new UserPasswordCredential(user, pwd);
-
                 // Authenticate using created credentials
-                var authenticationContext = new AuthenticationContext(pbiAuthorityUrl);
-                var authenticationResult = await authenticationContext.AcquireTokenAsync(pbiResourceUrl, clientId, credential);
+                var authenticationResult = await AuthenticateAsync(user, pwd, clientId).ConfigureAwait(false);
 
                 if (authenticationResult == null)
                 {
@@ -122,20 +119,18 @@ namespace d360.extensions.powerbi
 
         public static async Task UpdateConnectionCredentials(string pbiUser, string pbiPwd, string clientId, string groupId, string username, string password, string connectionString = "")
         {
-            var credential = new UserPasswordCredential(pbiUser, pbiPwd);
-
-            var authenticationContext = new AuthenticationContext(pbiAuthorityUrl);
-            var authenticationResult = await authenticationContext.AcquireTokenAsync(pbiResourceUrl, clientId, credential);
+            var authenticationResult = await AuthenticateAsync(pbiUser, pbiPwd, clientId).ConfigureAwait(false);
 
             if (authenticationResult == null)
             {
                 throw new Exception("authentication failed");
             }
 
-            using (var client = await CreateClient(pbiUser, pbiPwd, clientId, authenticationResult))
+            var groupUid = Guid.Parse(groupId);
+            using (var client = await CreateClient(pbiUser, pbiPwd, clientId))
             {                
                 // Get the newly created dataset from the previous import process
-                var datasets = await client.Datasets.GetDatasetsAsync(groupId);
+                var datasets = await client.Datasets.GetDatasetsAsync(groupUid);
 
                 if (datasets == null || datasets.Value == null) return;
 
@@ -148,13 +143,13 @@ namespace d360.extensions.powerbi
                         ConnectionDetails det = new ConnectionDetails();
                         det.ConnectionString = connectionString;
                         
-                        await client.Datasets.SetAllDatasetConnectionsAsync(groupId, dataset.Id, det);
+                        await client.Datasets.SetAllDatasetConnectionsAsync(groupUid, dataset.Id, det);
                     }
 
                     try
                     {
                         // Get the datasources from the dataset
-                        var datasources = await client.Datasets.GetDatasourcesInGroupAsync(groupId, dataset.Id);
+                        var datasources = await client.Datasets.GetDatasourcesInGroupAsync(groupUid, dataset.Id);
 
                         if ((datasources.Value[datasources.Value.Count - 1].DatasourceType ?? "").ToUpper() == "SQL")
                         {                            
@@ -172,11 +167,7 @@ namespace d360.extensions.powerbi
                               new DataSourceCredentials
                               {
                                   credentialType = "Basic",
-                                  basicCredentials = new BasicCredentials
-                                  {
-                                      Username = username,
-                                      Password = password
-                                  }
+                                  basicCredentials = new BasicCredentials(username, password)
                               };
 
                             // serialize C# object into JSON
@@ -205,6 +196,49 @@ namespace d360.extensions.powerbi
                     }
                 }                
             }
+        }
+
+        private static async Task<OAuthResult> AuthenticateAsync(string pbiUser, string pbiPwd, string clientId)
+        {
+            var oauthEndpoint = new Uri(pbiAuthorityUrl);
+
+            using (var client = new HttpClient())
+            {
+                var result = await client.PostAsync(oauthEndpoint, new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string, string>("resource", pbiResourceUrl),
+                    new KeyValuePair<string, string>("client_id", clientId),
+                    new KeyValuePair<string, string>("grant_type", "password"),
+                    new KeyValuePair<string, string>("username", pbiUser),
+                    new KeyValuePair<string, string>("password", pbiPwd),
+                    new KeyValuePair<string, string>("scope", "openid"),
+                }));
+
+                var content = await result.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<OAuthResult>(content);
+            }
+        }
+
+        class OAuthResult
+        {
+            [JsonProperty("token_type")]
+            public string TokenType { get; set; }
+            [JsonProperty("scope")]
+            public string Scope { get; set; }
+            [JsonProperty("experies_in")]
+            public int ExpiresIn { get; set; }
+            [JsonProperty("ext_experies_in")]
+            public int ExtExpiresIn { get; set; }
+            [JsonProperty("experies_on")]
+            public int ExpiresOn { get; set; }
+            [JsonProperty("not_before")]
+            public int NotBefore { get; set; }
+            [JsonProperty("resource")]
+            public Uri Resource { get; set; }
+            [JsonProperty("access_token")]
+            public string AccessToken { get; set; }
+            [JsonProperty("refresh_token")]
+            public string RefreshToken { get; set; }
         }
     }
 }

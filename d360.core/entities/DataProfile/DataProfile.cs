@@ -131,7 +131,6 @@ namespace d360.core.entities
         public bool? multiline { get; set; }
 
         [DataMember]
-        [StringLength(200, ErrorMessage = "{0} cannot be more than {1} characters.")]
         public string regExp { get; set; }
 
         [DataMember]
@@ -214,6 +213,23 @@ namespace d360.core.entities
     {
         [DataMember]
         public IEnumerable<DataProfileModel> items { get; set; }
+    }
+
+    public class AssetDataProfileDeleteModel: IExecutionItem
+    {
+        [DataMember]
+        public Guid AssetUid { get; set; }
+
+        [DataMember]
+        public DateTime StartDate { get; set; }
+
+        [DataMember]
+        public DateTime EndDate { get; set; }
+
+        [DataMember]
+        public bool Cascade { get; set; }
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
     }
 
 }

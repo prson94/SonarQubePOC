@@ -100,7 +100,7 @@ namespace d360.model.DataAccessLayer
                                 ,ADP.[Cardinality]
 	                            ,JSON_QUERY(cardinalityDetail.[value]) as cardinalityDetail
                                 ,ADP.[ShapeCardinality] as shapesCardinality
-	                            ,JSON_QUERY(shapeDetail.[value]) as shapeDetail
+	                            ,JSON_QUERY(shapesDetail.[value]) as shapesDetail
                                 ,JSON_QUERY((select CONCAT('[""', STRING_AGG(STRING_ESCAPE(cast([value] as nvarchar(36)), 'JSON'), '"",""'), '""]')
                                                         from AssetDataProfileSample
                                                         where
@@ -121,7 +121,7 @@ namespace d360.model.DataAccessLayer
 	                            AssetDataProfile ADP on A.ID = ADP.AssetID
 	                            outer apply (
                                                 select  (
-                                                        select [key], [value]
+                                                        select [key], [value] as Count
                                                         from AssetDataProfileSample
                                                         where   
 								                            AssetDataProfileId = ADP.ID
@@ -132,7 +132,7 @@ namespace d360.model.DataAccessLayer
                                                 ) outlierDetail 
 	                            outer apply (
                                                 select  (
-                                                        select [key], [value]
+                                                        select [key], [value] as Count
                                                         from AssetDataProfileSample
                                                         where   
 								                            AssetDataProfileId = ADP.ID
@@ -143,7 +143,7 @@ namespace d360.model.DataAccessLayer
                                                 ) cardinalityDetail 
 	                            outer apply (
                                                 select  (
-                                                        select [key], [value]
+                                                        select [key], [value] as Count
                                                         from AssetDataProfileSample
                                                         where   
 								                            AssetDataProfileId = ADP.ID
@@ -151,7 +151,7 @@ namespace d360.model.DataAccessLayer
 								                            lower(SampleType) = 'shapesdetail'
                                                         for json path
                                                         ) as [value]
-                                                ) shapeDetail";
+                                                ) shapesDetail";
 
             var assetIds = new List<long>();
             assetIds.Add(asset.ID);
@@ -260,5 +260,35 @@ namespace d360.model.DataAccessLayer
 
             return results;
         }
+
+        public List<DataProfileDeleteResponse> DeleteDataProfiles(Asset asset, DateTime startDate, DateTime endDate, ApiExecution execution, bool cascade = false)
+        {            
+            CompanyContext.Add(execution);
+            
+            var assetDataProfileDeleteModel = new AssetDataProfileDeleteModel { AssetUid = asset.uid, StartDate = startDate, EndDate = endDate, Cascade = cascade };
+            
+            List<AssetDataProfileDeleteModel> models = new List<AssetDataProfileDeleteModel>();
+            models.Add(assetDataProfileDeleteModel);
+
+            List<DataProfileDeleteResponse> results = null;
+
+            try
+            {
+                results = CompanyContext.DeleteDataProfiles(models, execution);
+
+                execution.Processed = results.Count;
+                execution.Error = results.Count(i => !i.Success);
+                execution.CompletedOn = DateTime.UtcNow;
+                CompanyContext.Update(execution);
+            }
+            catch (Exception ex)
+            {
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                CompanyContext.Update(execution);
+            }
+
+            return results;
+        }          
     }
 }

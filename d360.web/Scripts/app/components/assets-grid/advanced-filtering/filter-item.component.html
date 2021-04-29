@@ -102,7 +102,7 @@
                                             <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
                                         </th>
                                         <th>
-                                            <input type="text" class="filter-item-table-filter" (input)="dataTable.filterGlobal($event.target.value, 'contains')" placeholder="Search list" />
+                                            <input type="text" class="filter-item-table-filter" (input)="filterTable($event)" placeholder="Search list" />
                                         </th>
                                     </tr>
                                 </ng-template>

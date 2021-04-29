@@ -253,12 +253,37 @@ AS
 	</rollback>
   </changeSet>
 
-  <changeSet author="kmcnamee" id="Table.dbo.Asset-Asset_AfterInsert-v2">
+  <changeSet author="kmcnamee" id="Table.dbo.Asset-Asset_AfterInsert-v2.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+CREATE OR ALTER   TRIGGER [dbo].[Asset_AfterInsert]
+   ON  [dbo].[Asset] 
+   AFTER INSERT
+AS 
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+        select	'Add', 
+				I.Object, 
+				I.ObjectID,
+				[queue].WriteIndexXml('', I.[Object], I.ObjectID, coalesce(I.CreatedBy, 0)),
+				I.ID
+		from	inserted I where  I.Object in('Group');
+
+	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+        select	'Add', 
+				I.Object, 
+				I.ObjectID,
+				[queue].WriteIndexXml('', I.[Object], I.ObjectID, coalesce(I.CreatedBy, 0)),
+				I.ID
+		from	inserted I where  I.AssetTypeID in(select id from assettype att where not exists (select 1 from fieldtype ft where ft.AssetTypeID = att.id) and att.Class = 9)
+GO
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER TRIGGER [dbo].[Asset_AfterInsert]
    ON  [dbo].[Asset] 
    AFTER INSERT
@@ -273,22 +298,17 @@ AS
 		from	inserted I where  I.Object in('Group');
 GO
 		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
 	</rollback>
   </changeSet>
 
-  <changeSet author="kmcnamee" id="Table.dbo.Asset-Asset_AfterUpdate-v4">
-    <comment>GOV-14347</comment>
+  <changeSet author="kmcnamee" id="Table.dbo.Asset-Asset_AfterUpdate-v5">
+    <comment>GOV-14502</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[Asset_AfterUpdate]
+CREATE OR ALTER  TRIGGER [dbo].[Asset_AfterUpdate]
    ON  [dbo].[Asset] 
    AFTER UPDATE
 AS 
@@ -353,12 +373,27 @@ AS
 						TF.ObjectType, 
 						TF.ObjectID,
 						[queue].WriteIndexXml('', TF.ObjectType, TF.ObjectID, coalesce(@UpdatedBy, 0)),
-						TF.AssetID
+						coalesce(TF.AssetID,0) as AssetID
 				from	Field TF
 				inner join #TempFormattedValue TFV
 				on TF.FieldTypeID = TFV.FieldTypeID and TFV.[Value] = TF.[Value];
 				
 			end
+      INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+        select	'Update', 
+				I.Object, 
+				I.ObjectID,
+				[queue].WriteIndexXml('', I.[Object], I.ObjectID, coalesce(I.CreatedBy, 0)),
+				I.ID
+		from	inserted I where  I.Object in('Group');
+
+	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+        select	'Update', 
+				I.Object, 
+				I.ObjectID,
+				[queue].WriteIndexXml('', I.[Object], I.ObjectID, coalesce(I.CreatedBy, 0)),
+				I.ID
+		from	inserted I where  I.AssetTypeID in(select id from assettype att where not exists (select 1 from fieldtype ft where ft.AssetTypeID = att.id) and att.Class = 9)
 	end
 		]]>
     </sql>
@@ -374,14 +409,6 @@ AS
 
 	SET NOCOUNT ON;
 	
-	
-	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
-        select	'Update', 
-				I.Object, 
-				I.ObjectID,
-				[queue].WriteIndexXml('', I.[Object], I.ObjectID, coalesce(I.UpdatedBy, 0)),
-				I.ID
-		from	inserted I where I.Object not in('FusionAttribute','FusionQueryAttribute');
 
 	select @InsCount = count(1) from inserted I where I.object = 'ReferenceItem';
 	select @DelCount = count(1) from deleted d where d.object = 'ReferenceItem';
@@ -443,8 +470,23 @@ AS
 				on TF.FieldTypeID = TFV.FieldTypeID and TFV.[Value] = TF.[Value];
 				
 			end
+      INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+        select	'Update', 
+				I.Object, 
+				I.ObjectID,
+				[queue].WriteIndexXml('', I.[Object], I.ObjectID, coalesce(I.CreatedBy, 0)),
+				I.ID
+		from	inserted I where  I.Object in('Group');
+
+	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+        select	'Update', 
+				I.Object, 
+				I.ObjectID,
+				[queue].WriteIndexXml('', I.[Object], I.ObjectID, coalesce(I.CreatedBy, 0)),
+				I.ID
+		from	inserted I where  I.AssetTypeID in(select id from assettype att where not exists (select 1 from fieldtype ft where ft.AssetTypeID = att.id) and att.Class = 9)
 	end
-		]]>
+]]>
 	</rollback>
   </changeSet>
 </databaseChangeLog>

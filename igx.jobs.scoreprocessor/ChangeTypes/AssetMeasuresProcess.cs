@@ -326,9 +326,9 @@ where   Uid <> @uid
                         AllocationUid = i.AllocationUid.Value,
                         AssetTypeId = i.AssetTypeId,
                         AssetUid= i.AssetUid,
-                        EffectiveDate= i.EffectiveDate
+                        EffectiveDate= i.EffectiveDate.Date
                     })
-                    .Distinct()
+                    .Distinct(new UniqueAssetEffectiveDateModelComparer())
                     .ToList();
 
                 var scoreItems = new List<StagingScoreItem>();
