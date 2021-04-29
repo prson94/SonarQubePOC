@@ -497,7 +497,7 @@ namespace d360.model.helpers
                             }
                         }
 
-                        if (@operator == "le" && ft.ToLower(CultureInfo.InvariantCulture) == "datetime"
+                        if (filter != null && @operator == "le" && ft.ToLower(CultureInfo.InvariantCulture) == "datetime"
                             && (filter.ApiName == "CreatedOn" || filter.ApiName == "UpdatedOn"))
                         {
                             //CreatedOn and UpdatedOn system fields are DateTime, but UI filtering is treating them as

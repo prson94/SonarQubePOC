@@ -178,29 +178,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.cdRef.markForCheck();
     }
 
-    interval: any = {};
-    setTableWidth() {
-        if (this.isSelectingValue) {
-            if (this.interval) {
-                clearInterval(this.interval);
-            }
-
-            var html = this.elRef.nativeElement as HTMLElement;
-            var scrollWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0];
-            var selectionElement = html.getElementsByClassName("value-selection")[0];
-
-            if (scrollWrapper) {
-                (scrollWrapper as HTMLElement).style.width = 250 + "px";
-            }
-
-            if (selectionElement) {
-                (selectionElement as HTMLElement).style.removeProperty("left");
-            }
-
-            this.interval = setInterval(() => this.updateDynamicWidths(), 20);
-        }
-    }
-
     removePositionStyling() {
         var html = this.elRef.nativeElement as HTMLElement;
         var selectionElement = html.getElementsByClassName("value-selection")[0] as HTMLElement;
@@ -220,10 +197,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
                 if (tableWrapper) {
                     var selectionElement = html.getElementsByClassName("value-selection")[0] as HTMLElement;
-                    tableWrapper.style.width = width + "px";
 
                     let distanceFromRight = window.outerWidth - html.getBoundingClientRect().left;
-
                     if (distanceFromRight < width) {
                         let diff = Math.abs(width - distanceFromRight);
                         selectionElement.style.left = (html.getBoundingClientRect().left - diff - 50) + "px";
@@ -269,6 +244,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.relationshipFieldIntersectCardinality =
                 intersectType.Object.Uid === this.assetTypeUid
                     ? intersectType.Subject.Cardinality : intersectType.Object.Cardinality;
+
+            this.condition.relationshipCardinality = this.relationshipFieldIntersectCardinality;
 
             options = [];
             options.push({ value: "Equals", label: " is " });
@@ -438,7 +415,15 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.updateFocus();
     }
 
+    interval;
     loadListLazy(event: LazyLoadEvent) {
+
+        if (this.interval) {
+            clearInterval(this.interval);
+        }
+
+        this.interval = setInterval(() => this.updateDynamicWidths(), 20);
+
         var params = { skip: event.first, take: event.rows, filter: event.globalFilter ?? "" };
         var type = this.getFieldType(this.condition);
         if (type.Type) {
@@ -506,7 +491,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
 
                 this.currentField.Values = [...this.currentField.Values];
-                this.setTableWidth();
 
                 this.isLookupValuesLoading = false;
                 this.setSelectionVirtualScrollHeight(res);
@@ -527,7 +511,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 });
 
                 this.isLookupValuesLoading = false;
-                this.setTableWidth();
                 this.setSelectionVirtualScrollHeight(res);
                 this.cdRef.markForCheck();
             });
@@ -576,7 +559,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.currentField.Values = this.currentField.Values.sort((a, b) => { return a.title > b.title ? 1 : 0; });
 
                 this.isLookupValuesLoading = false;
-                this.setTableWidth();
                 this.setSelectionVirtualScrollHeight(res);
 
                 this.cdRef.markForCheck();
@@ -612,7 +594,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
 
                 this.currentField.Values = [...this.currentField.Values];
-                this.setTableWidth();
                 this.isLookupValuesLoading = false;
                 this.setSelectionVirtualScrollHeight(res);
                 this.cdRef.markForCheck();
