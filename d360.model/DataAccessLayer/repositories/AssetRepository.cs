@@ -21,6 +21,7 @@ using d360.model.helpers;
 using d360.core.entities.Process;
 using AngleSharp.Text;
 using System.Drawing;
+using System.Threading;
 
 namespace d360.model.DataAccessLayer
 {
@@ -237,8 +238,13 @@ namespace d360.model.DataAccessLayer
         }
 
         //UseAsAdmin is used to override permissions from reading an access. It is used by Process Designer Export
-        public async Task<AssetsApiViewModel> GetAssets(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false)
+        public async Task<AssetsApiViewModel> GetAssets(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false, CancellationToken? cancellationToken = null)
         {
+            if (cancellationToken == null)
+            {
+                cancellationToken = CancellationToken.None;
+            }
+
             var assetTypeID = 0;
             Guid? parentUid = null;
             bool parentUidPopulated = false;
@@ -1148,14 +1154,25 @@ namespace d360.model.DataAccessLayer
 
             if (includeTotal)
             {
-                model.total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSql, dbArgs, ApiTimeout);
+                model.total = await CompanyContext.Database.Connection.QueryFirstOrDefaultAsync<int>(
+                        new CommandDefinition(countSql,
+                        cancellationToken: cancellationToken.Value,
+                        parameters: dbArgs,
+                        commandTimeout: ApiTimeout
+                    ));
+
             }
             else
             {
                 model.total = null;
             }
 
-            var results = await CompanyContext.QueryAsync(sql, dbArgs, ApiTimeout);
+            var results = await CompanyContext.Database.Connection.QueryAsync(
+                  new CommandDefinition(sql,
+                  cancellationToken: cancellationToken.Value,
+                  parameters: dbArgs,
+                  commandTimeout: ApiTimeout
+              ));
 
             //Loop results once for if any applicable conversions
             if (includeRelationships || includePermissionDetails || includeSegments || (includeOwnershipLookup && ownershipFieldTypes.Any()))
@@ -3118,7 +3135,7 @@ where	O.RowNum = 1";
             {
                 var deletes = new AssetTypeDeletes();
                 results = CompanyContext.RemoveAssetTypes(execution, assetTypes, ApiTimeout, 0); // single endpoint should not retry otherwise timeout will cause 10x attempts to delete.
-                // Close execution record.
+                                                                                                 // Close execution record.
                 execution.Processed = results.Count;
                 execution.Error = results.Count(i => !i.Success);
                 execution.CompletedOn = DateTime.UtcNow;
