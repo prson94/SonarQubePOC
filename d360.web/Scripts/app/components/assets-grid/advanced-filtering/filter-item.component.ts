@@ -270,6 +270,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 intersectType.Object.Uid === this.assetTypeUid
                     ? intersectType.Subject.Cardinality : intersectType.Object.Cardinality;
 
+            this.condition.relationshipCardinality = this.relationshipFieldIntersectCardinality;
+
             options = [];
             options.push({ value: "Equals", label: " is " });
             options.push({ value: "NotEquals", label: " is not " });

@@ -30,6 +30,7 @@ export class AdvancedFilterFieldCondition {
 
     connectingOperator: string = "or";
     isRelationship?: boolean = false;
+    relationshipCardinality?: string = "";
 
     isDefaultFilter?: boolean = false;
 
@@ -77,7 +78,7 @@ export class AdvancedFilterFieldCondition {
                 }
                 break;
             case "Equals":
-                if (this.isRelationship || this.field === SystemFields.OwnedByFieldCode) {
+                if ((this.isRelationship && this.relationshipCardinality !== "One") || this.field === SystemFields.OwnedByFieldCode) {
                     str += " contains ";
                 }
                 else {
@@ -85,7 +86,7 @@ export class AdvancedFilterFieldCondition {
                 }
                 break;
             case "NotEquals":
-                if (this.isRelationship || this.field === SystemFields.OwnedByFieldCode) {
+                if ((this.isRelationship && this.relationshipCardinality !== "One") || this.field === SystemFields.OwnedByFieldCode) {
                     str += " does not contain ";
                 }
                 else {
@@ -476,7 +477,7 @@ export class AdvancedFilterFieldConditionCollection {
             if ((cond.fieldType === "Lookup" || cond.fieldType === "Tag" || cond.field === SystemFields.OwnedByFieldCode) && cond.value) {
                 let subConditions: AdvancedFilterFieldCondition[] = [];
                 valuesArr = cond.value as SelectItem[];
-                valuesArr.forEach((r) => {
+                valuesArr.filter((v) => v.value !== "").forEach((r) => {
                     if (cond.field === SystemFields.OwnedByFieldCode) {
                         if ((r.value as string).length === 36) {
                             subConditions.push(cond.getCopyWithNewValue(r.value));
