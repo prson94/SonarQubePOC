@@ -11,7 +11,10 @@
             splitStatements="true"
             stripComments="false">
       <![CDATA[
-      insert into [dbo].[Setting]([ID],[FieldName],[Name],[Description],[DefaultValue]) values(80,'ShowCommentsTab','Show Comments Tab','When set to false the Comments tab will be hidden in the UI','true')
+      IF (NOT EXISTS(SELECT 1 FROM [dbo].[Setting] WHERE [ID] = 80))
+		BEGIN
+      insert into [dbo].[Setting]([ID],[FieldName],[Name],[Description],[DefaultValue],[SettingType]) values(80,'ShowCommentsTab','Show Comments Tab','When set to false the Comments tab will be hidden in the UI','true',1)
+    END
 ]]>
     </sql>
     <rollback>
