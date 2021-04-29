@@ -35,6 +35,7 @@ using System.Configuration;
 using SpreadsheetLight;
 using d360.model.helpers;
 using System.Data;
+using System.Threading;
 
 namespace d360.web.Controllers.V2
 {
@@ -228,7 +229,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_includeCreatedModifiedBy", "Include the CreatedByUid, and ModifiedByUid fields in the response. The default value is false meaning these values are not returned.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_includeOwnershipLookup", "Include the OwnershipLookup fields in the response. The default value is false meaning these values are not returned.", DataType = "boolean", ParameterType = "query", Required = false),
         ]
-        public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid)
+        public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid, CancellationToken cancellationToken)
         {
             var prefix = "Assets.GetAssetsAsync => ";
 
@@ -319,7 +320,7 @@ namespace d360.web.Controllers.V2
                             queryParams = paramList;
                         }
                         queryParams = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson");
-                        var results = await AssetRepository.GetAssets(assetType, queryParams);
+                        var results = await AssetRepository.GetAssets(assetType, queryParams, cancellationToken: cancellationToken);
 
                         SLDocument document = GetCustomExportSheet(assetType, template, fieldsForCustomExport, results);
 
@@ -366,7 +367,7 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    var results = await AssetRepository.GetAssets(assetType, queryParams);
+                    var results = await AssetRepository.GetAssets(assetType, queryParams, cancellationToken: cancellationToken);
                     response = Request.CreateResponse(HttpStatusCode.OK, results);
                 }
 
