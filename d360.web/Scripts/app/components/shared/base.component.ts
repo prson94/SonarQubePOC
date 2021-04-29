@@ -245,6 +245,7 @@ export class BaseComponent {
         hasRuleResult?: boolean,
         hasGovernanceRoleSet?: boolean,
         hasProcessDiagram?: boolean,
+        ShowChangeLogTab?: boolean,
         ShowCommentsTab?: boolean
     ) {
         if (this.secondaryNavService && this.objectType) {
@@ -302,7 +303,7 @@ export class BaseComponent {
                 }
             }
 
-            if (hasAudit || hasAudit === undefined) {
+            if ((hasAudit || hasAudit === undefined) && ShowChangeLogTab) {
                 this.auditSidebar = new SecondaryNavItem(
                     'Change Log',
                     'Change Log',
@@ -906,7 +907,7 @@ export class BaseComponent {
                 areaIcon = 'fa-tag';
             this.secondaryNavService.setCurrentArea(areaName, areaIcon, mainTabTitle);
 
-            this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild, this.objectType == 'Rule', r.Items.HasGovernanceRoleUidSet, r.Items.HasProcessDiagram, r.Items.ShowCommentsTab);
+            this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild, this.objectType == 'Rule', r.Items.HasGovernanceRoleUidSet, r.Items.HasProcessDiagram, r.Items.ShowChangeLogTab, r.Items.ShowCommentsTab);
             var isType = this.IsType(r.Object);
             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, r.ObjectTypeId, this.objectType, this.objectID, isType, r.Items.HasWorkflow, this.uid));
             this.secondaryNavService.showHeader(true);

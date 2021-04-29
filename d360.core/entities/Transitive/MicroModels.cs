@@ -453,7 +453,8 @@ namespace d360.core.entities
         public bool HasChild { get; set; }
         public bool HasRuleResult { get; set; }
         public bool HasGovernanceRoleUidSet { get; set; }
-        public bool HasProcessDiagram { get; set; }         
+        public bool HasProcessDiagram { get; set; }
+        public bool ShowChangeLogTab { get; set; }        
         public bool ShowCommentsTab { get; set; }
     }
 

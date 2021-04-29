@@ -276,7 +276,7 @@ export class BrowserService extends BaseObservableService {
         );
     }
 
-    public getImpactHop(ancestry: FilterAncestryMode, hierarchyKey: string, predicateUid: string, direction: AssetBrowserApiHopDirection, includeNonLeaf: boolean, assets: AssetBrowserApiHopAssetRequestModel[], preloadedIntersects: number[]): Observable<AssetBrowserResponseModel> {
+    public getImpactHop(ancestry: FilterAncestryMode, hierarchyKey: string, predicateUid: string, direction: AssetBrowserApiHopDirection, includeNonLeaf: boolean, assets: AssetBrowserApiHopAssetRequestModel[], preloadedIntersects: number[], includeDescendantAssets: boolean): Observable<AssetBrowserResponseModel> {
         const url = `api/v2/browser/impact/hop`;
 
         return this.http.post(url, {
@@ -286,7 +286,8 @@ export class BrowserService extends BaseObservableService {
             preloadedIntersects: preloadedIntersects,
             predicateUid: predicateUid,
             direction: direction,
-            includeNonLeaf: includeNonLeaf
+            includeNonLeaf: includeNonLeaf,
+            includeDescendantAssets: includeDescendantAssets
         }).pipe(
             map((response: AssetBrowserResponseModel) => {
                 this.processResponse(response);

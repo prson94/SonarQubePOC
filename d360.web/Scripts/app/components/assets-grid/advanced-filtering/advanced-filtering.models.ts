@@ -99,10 +99,20 @@ export class AdvancedFilterFieldCondition {
                 str += " ends with ";
                 break;
             case "Populated":
-                str += " is populated ";
+                if (this.isRelationship) {
+                    str += " relationships exists ";
+                }
+                else {
+                    str += " is populated ";
+                }
                 break;
             case "NotPopulated":
-                str += " is not populated ";
+                if (this.isRelationship) {
+                    str += " relationships do not exist ";
+                }
+                else {
+                    str += " is not populated ";
+                }
                 break;
             case "Before":
                 str += " is before ";
@@ -180,8 +190,14 @@ export class AdvancedFilterFieldCondition {
             case "EndsWith":
                 return `${fieldName} : *${this.getTypedValue()}`;
             case "Populated":
+                if (this.isRelationship) {
+                    return `${fieldName} exists`;
+                }
                 return `${fieldName} : populated`;
             case "NotPopulated":
+                if (this.isRelationship) {
+                    return `${fieldName} does not exist`;
+                }
                 return `${fieldName} : not populated`;
             case "Before":
             case "LessThan":
@@ -461,7 +477,14 @@ export class AdvancedFilterFieldConditionCollection {
                 let subConditions: AdvancedFilterFieldCondition[] = [];
                 valuesArr = cond.value as SelectItem[];
                 valuesArr.forEach((r) => {
-                    subConditions.push(cond.getCopyWithNewValue(r.value));
+                    if (cond.field === SystemFields.OwnedByFieldCode) {
+                        if ((r.value as string).length === 36) {
+                            subConditions.push(cond.getCopyWithNewValue(r.value));
+                        }
+                    }
+                    else {
+                        subConditions.push(cond.getCopyWithNewValue(r.value));
+                    }
                 });
 
                 let subQueries: string[] = [];
