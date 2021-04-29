@@ -18,22 +18,15 @@ export enum Permission {
     DeleteAsset = 4,
     EditAsset = 8,
 
-    ModifyAsset = Permission.AddAsset | Permission.EditAsset,
-
     ReadResponsibilities = 32,
     AddResponsibilities = 64,
     DeleteResponsibilities = 128,
     EditResponsibilities = 256,
 
-    ModifyResponsibilities = Permission.AddResponsibilities | Permission.EditResponsibilities,
-
-
     ReadRelationships = 1024,
     AddRelationships = 2048,
     DeleteRelationships = 4096,
     EditRelationships = 8192,
-
-    ModifyRelationships = Permission.AddRelationships | Permission.EditRelationships
 }
 
 export class ResponsibilityType {
@@ -79,9 +72,11 @@ export class ResponsibilityTypeRelationPermission {
 
     static hasPermission(permissions: ResponsibilityTypeRelationPermission[], p: Permission): boolean {
 
-        let index = permissions.findIndex(i => i.Value == p);
+        let index = permissions.findIndex((i) => i.Value === p);
 
-        if (index >= 0 && index < permissions.length) return true;
+        if (index >= 0 && index < permissions.length) {
+            return true;
+        }
 
         return false;
     }

@@ -235,6 +235,9 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'OwnershipLookup' then try_cast(JSON_VALUE(FTL.Definition, '$.ExpandGroupMembership') as bit) else null end as 'Type.ComputedOwnershipLookup.Definition.ExpandGroupMembership',
 		        case when FT.Type = 'OwnershipLookup' then FT.IsDisplayable else null end as 'Type.ComputedOwnershipLookup.IsDisplayable',
 		        case when FT.Type = 'OwnershipLookup' then FT.ShowIfEmpty else null end as 'Type.ComputedOwnershipLookup.ShowIfEmpty',
+		        case when FT.Type = 'OwnershipLookup' then FT.IsListable else null end as 'Type.ComputedOwnershipLookup.IsListable',
+		        case when FT.Type = 'OwnershipLookup' then FT.ColumnWidth else null end as 'Type.ComputedOwnershipLookup.ColumnWidth',
+		        case when FT.Type = 'OwnershipLookup' then FT.SortOrder else null end as 'Type.ComputedOwnershipLookup.SortOrder',
 
 		        case when FT.Type = 'FieldFromRelationship' then FT.ColumnOrder else null end as 'Type.ComputedRelationshipField.ColumnOrder',
 		        case when FT.Type = 'FieldFromRelationship' then FT.ColumnWidth else null end as 'Type.ComputedRelationshipField.ColumnWidth',
@@ -701,11 +704,12 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                     }
                     newFieldType.IsDisplayable = f.Type.ComputedOwnershipLookup.IsDisplayable;
                     newFieldType.IsEditable = false;
-                    newFieldType.IsListable = false;
+                    newFieldType.IsListable = f.Type.ComputedOwnershipLookup.IsListable;
                     newFieldType.IsPartOfKey = false;
                     newFieldType.IsPrimaryFilter = false;
                     newFieldType.ShowIfEmpty = f.Type.ComputedOwnershipLookup.ShowIfEmpty;
-                    newFieldType.SortOrder = 99;
+                    newFieldType.SortOrder = f.Type.ComputedOwnershipLookup.SortOrder;
+                    newFieldType.ColumnWidth = f.Type.ComputedOwnershipLookup.ColumnWidth;
 
                     newFieldType.FieldTypeLookup = new FieldTypeLookup
                     {

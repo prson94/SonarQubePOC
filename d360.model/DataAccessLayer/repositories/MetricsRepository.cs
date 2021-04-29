@@ -1164,6 +1164,16 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                         metricAssetVersion.MatchConditionsOnly = model.MatchConditionsOnly;
                         metricAssetVersion.Threshold = model.Threshold;
                         metricAssetVersion.Weight = model.Weight;
+                        
+                        if (metricAsset.IsGroup && model.Allocation.ScoreType == ScoreType.Governance && definitionToSave.Governance != null) 
+                        {
+                            // Be sure to set the definition for group, no extraneous bad data.
+                            definitionToSave.Governance.External = null;
+                            definitionToSave.Governance.Field = null;
+                            definitionToSave.Governance.Owner = null;
+                            definitionToSave.Governance.Predicate = null;
+                            definitionToSave.Governance.Relation = null;
+                        }
                         metricAssetVersion.Definition = definitionToSave.AsJson();
 
                         setVersionUpdateFrequency();

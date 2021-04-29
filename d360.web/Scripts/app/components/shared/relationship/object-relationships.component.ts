@@ -142,7 +142,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
                 && this.selected.AllowEditFromRelationshipEditor;
         }
         else {
-            this.hasAdd = this.hasRelationships &&  this.hasModifyRelationshipsPermissions() && !this.readOnly;
+            this.hasAdd = this.hasRelationships && this.hasAddRelationshipsPermissions() && !this.readOnly;
         }
         this.hasFilterMode = this.hasRelationships;
     }

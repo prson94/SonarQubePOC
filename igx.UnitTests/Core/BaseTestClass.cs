@@ -25,6 +25,7 @@ using d360.core.entities.Metric;
 using d360.core;
 using System.Dynamic;
 using Newtonsoft.Json.Linq;
+using System.Threading;
 
 namespace igx.UnitTests
 {
@@ -219,7 +220,7 @@ namespace igx.UnitTests
             mockRepo.Setup(x => x.GetFieldTypes(It.IsAny<Guid>()))
                 .Returns(() => JsonConvert.DeserializeObject<dynamic>(DataConstants.FieldTypesJsonFormat));
 
-            mockRepo.Setup(x => x.GetAssets(It.IsAny<AssetType>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<bool>()))
+            mockRepo.Setup(x => x.GetAssets(It.IsAny<AssetType>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(new AssetsApiViewModel()));
 
             mockRepo.Setup(x => x.GetAssetTypeByUID(It.IsAny<Guid>()))

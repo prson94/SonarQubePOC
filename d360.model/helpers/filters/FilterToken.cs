@@ -281,19 +281,37 @@ namespace d360.model.helpers
             if (@operator == "ne")
             {
                 stringBuilder.Append($@"(
-				 exists (SELECT top 1 *
+				  exists (
+                    SELECT top 1 *
                     FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
                     WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{this.parameterIdx}
-				              AND S.Uid = A.Uid))");
+				              AND S.Uid = A.Uid
+                )
+                or exists (
+                    SELECT top 1 *
+                    FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
+                    WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{this.parameterIdx}
+				              AND O.Uid = A.Uid
+                )
+                )");
             }
 
             if (@operator == "eq")
             {
                 stringBuilder.Append($@"(
-				 not exists (SELECT top 1 *
+				 not exists (
+                    SELECT top 1 *
                     FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
                     WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{this.parameterIdx}
-				              AND S.Uid = A.Uid))");
+				              AND S.Uid = A.Uid
+                )
+                and not exists (
+                    SELECT top 1 *
+                    FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
+                    WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{this.parameterIdx}
+				              AND O.Uid = A.Uid
+                )
+                )");
             }
 
             return stringBuilder.ToString();
@@ -478,6 +496,18 @@ namespace d360.model.helpers
                                 value = date.ToString("yyyy-MM-dd");
                             }
                         }
+
+                        if (@operator == "le" && ft.ToLower(CultureInfo.InvariantCulture) == "datetime"
+                            && (filter.ApiName == "CreatedOn" || filter.ApiName == "UpdatedOn"))
+                        {
+                            //CreatedOn and UpdatedOn system fields are DateTime, but UI filtering is treating them as
+                            //date fields. In case of "Less or Equal" we need to update date to take into account equal dates
+                            date = date.AddHours(23);
+                            date = date.AddMinutes(59);
+                            date = date.AddSeconds(59);
+                            date = date.AddMilliseconds(999);
+                            value = date;
+                        }
                     }
 
                     break;
@@ -501,20 +531,47 @@ namespace d360.model.helpers
 
         private void LoadLookupSql()
         {
-            if (fieldType.Type == "Lookup")
+            bool isFieldFromRel = CompanyContext.FieldTypes.FirstOrDefault(x => x.ID == fieldType.ID)?.Type == "FieldFromRelationship";
+
+            string type = fieldType.Type;
+            int fieldTypeId = fieldType.ID;
+            int fieldTypeIdForLookupValue = fieldType.ID;
+            string lookupObjectType = fieldType.LookupObjectType;
+            int lookupObjectId = fieldType.LookupObjectID.HasValue ? fieldType.LookupObjectID.Value : 0;
+            string defaultValue = fieldType.DefaultValue;
+            bool allowAllValue = fieldType.AllowAllValue;
+            string valueQueryPart = "Value";
+
+            //handle field from relationship list values
+            if (isFieldFromRel)
+            {
+                var lookupFieldType = CompanyContext.FieldTypes.FirstOrDefault(x => x.ID == fieldType.LookupObjectFieldTypeID);
+                fieldTypeIdForLookupValue = lookupFieldType.ID;
+                lookupObjectType = lookupFieldType.LookupObjectType;
+                lookupObjectId = lookupFieldType.LookupObjectID.HasValue ? lookupFieldType.LookupObjectID.Value : 0;
+                defaultValue = lookupFieldType.DefaultValue;
+                allowAllValue = lookupFieldType.AllowAllValue;
+                valueQueryPart = "FormattedValue";
+            }
+
+            if (type == "Lookup")
             {
                 if (@operator == "ct")
                 {
-                    stringBuilder.Append($"F{fieldType.ID}.FormattedValue like @filter_{parameterIdx}");
+                    stringBuilder.Append($"F{fieldTypeId}.FormattedValue like @filter_{parameterIdx}");
                 }
                 else
                 {
 
-                    int lookupValue = CompanyContext.GetFieldLookupValue(fieldType.LookupObjectType, fieldType.LookupObjectID.Value, fieldType.ID, value.ToString());
+                    int lookupValue = CompanyContext.GetFieldLookupValue(lookupObjectType, lookupObjectId, fieldTypeIdForLookupValue, value.ToString());
                     if (lookupValue <= 0)
                         throw new Exception($"Invalid lookup value '{value}' for field '{field}'");
 
-                    value = lookupValue.ToString();
+                    if (!isFieldFromRel)
+                    {
+                        value = lookupValue.ToString();
+                    }
+
 
                     string condition = "in";
                     if (@operator == "ne")
@@ -523,26 +580,26 @@ namespace d360.model.helpers
                     }
                     var basicSqlExpression = string.Empty;
 
-                    if (!string.IsNullOrEmpty(fieldType.DefaultValue))
+                    if (!string.IsNullOrEmpty(defaultValue))
                     {
-                        basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(coalesce(F{fieldType.ID}.Value,@defLookupValue{parameterIdx}),','))";
-                        sqlParamsRef.Add($"@defLookupValue{parameterIdx}", fieldType.DefaultValue);
+                        basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(coalesce(F{fieldTypeId}.{valueQueryPart},@defLookupValue{parameterIdx}),','))";
+                        sqlParamsRef.Add($"@defLookupValue{parameterIdx}", defaultValue);
                     }
                     else
                     {
-                        basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(F{fieldType.ID}.Value,','))";
+                        basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(F{fieldTypeId}.{valueQueryPart},','))";
                     }
 
-                    if (fieldType.AllowAllValue)
+                    if (allowAllValue)
                     {
-                        basicSqlExpression = $"(F{fieldType.ID}.Value = '0' or {basicSqlExpression})";
+                        basicSqlExpression = $"(F{fieldTypeId}.{valueQueryPart} = '0' or {basicSqlExpression})";
                     }
                     stringBuilder.Append(basicSqlExpression);
 
                 }
             }
 
-            if (fieldType.Type == "Relationship")
+            if (type == "Relationship")
             {
                 string condition = "exists";
                 if (@operator == "ne")
@@ -551,8 +608,8 @@ namespace d360.model.helpers
                 }
 
                 var whereStatement = $@"{condition}
-                                    (select id from intersectdetail where intersecttypeid = {fieldType.LookupObjectID} and subjectuid = a.uid and subjecttypeid = T.ObjectId and subjecttype = T.Object and objectname {(@operator == "ct" ? "like" : "=")} @filter_{parameterIdx}
-                                    union select id from IntersectDetail where intersecttypeid = {fieldType.LookupObjectID} and objectuid = a.uid and objecttypeid = T.ObjectId and objecttype = T.Object and subjectname {(@operator == "ct" ? "like" : "=")} @filter_{parameterIdx})";
+                                    (select id from intersectdetail where intersecttypeid = {lookupObjectId} and subjectuid = a.uid and subjecttypeid = T.ObjectId and subjecttype = T.Object and objectname {(@operator == "ct" ? "like" : "=")} @filter_{parameterIdx}
+                                    union select id from IntersectDetail where intersecttypeid = {lookupObjectId} and objectuid = a.uid and objecttypeid = T.ObjectId and objecttype = T.Object and subjectname {(@operator == "ct" ? "like" : "=")} @filter_{parameterIdx})";
 
                 stringBuilder.Append(whereStatement);
             }
@@ -591,7 +648,7 @@ namespace d360.model.helpers
                 case "datetime":
                     return true;
                 case "assettypeclass":
-                    return new [] { "eq", "ne" }.Contains(operand);
+                    return new[] { "eq", "ne" }.Contains(operand);
                 default:
                     return new[] { "eq", "ne", "ct", "nct" }.Contains(operand);
             }

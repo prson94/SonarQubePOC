@@ -124,24 +124,36 @@ export class BaseComponent {
         return ResponsibilityTypeRelationPermission.hasPermission(this.permissions, permission);
     }
 
+    hasAddResponsibilitiesPermissions(object: string) {
+        return this.hasPermission(Permission.AddResponsibilities);
+    }
+
     hasModifyResponsibilitiesPermissions(object: string) {
-        return this.hasPermission(Permission.ModifyResponsibilities);
+        return this.hasPermission(Permission.EditResponsibilities);
     }
 
     hasDeleteResponsibilitiesPermissions(object: string) {
         return this.hasPermission(Permission.DeleteResponsibilities);
     }
 
+    hasAddAssetPermissions() {
+        return this.hasPermission(Permission.AddAsset);
+    }
+
     hasModifyAssetPermissions() {
-        return this.hasPermission(Permission.ModifyAsset);
+        return this.hasPermission(Permission.EditAsset);
     }
 
     hasDeleteAssetPermissions() {
         return this.hasPermission(Permission.DeleteAsset);
     }
 
+    hasAddRelationshipsPermissions() {
+        return this.hasPermission(Permission.AddRelationships);
+    }
+
     hasModifyRelationshipsPermissions() {
-        return this.hasPermission(Permission.ModifyRelationships);
+        return this.hasPermission(Permission.EditRelationships);
     }
 
     hasDeleteRelationshipsPermissions() {
@@ -232,7 +244,8 @@ export class BaseComponent {
         hasChild?: boolean,
         hasRuleResult?: boolean,
         hasGovernanceRoleSet?: boolean,
-        hasProcessDiagram?: boolean
+        hasProcessDiagram?: boolean,
+        ShowChangeLogTab?: boolean
     ) {
         if (this.secondaryNavService && this.objectType) {
             this.clearSidebar();
@@ -289,7 +302,7 @@ export class BaseComponent {
                 }
             }
 
-            if (hasAudit || hasAudit === undefined) {
+            if ((hasAudit || hasAudit === undefined) && ShowChangeLogTab) {
                 this.auditSidebar = new SecondaryNavItem(
                     'Change Log',
                     'Change Log',
@@ -891,7 +904,7 @@ export class BaseComponent {
                 areaIcon = 'fa-tag';
             this.secondaryNavService.setCurrentArea(areaName, areaIcon, mainTabTitle);
 
-            this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild, this.objectType == 'Rule', r.Items.HasGovernanceRoleUidSet, r.Items.HasProcessDiagram);
+            this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild, this.objectType == 'Rule', r.Items.HasGovernanceRoleUidSet, r.Items.HasProcessDiagram, r.Items.ShowChangeLogTab);
             var isType = this.IsType(r.Object);
             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, r.ObjectTypeId, this.objectType, this.objectID, isType, r.Items.HasWorkflow, this.uid));
             this.secondaryNavService.showHeader(true);

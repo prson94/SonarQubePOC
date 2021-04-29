@@ -16,6 +16,7 @@ import { CoreModule } from "../../shared/core.module";
 import { MultiInputFieldModule } from "../../shared/controls/multi-input-field/multi-input-field.component";
 import { PopupMenuModule } from "../../shared/controls/popup-menu/popup-menu.component";
 import { OverlayPanelModule } from "primeng/overlaypanel";
+import { FocusTrapModule } from "primeng/focustrap";
 
 
 @NgModule({
@@ -36,7 +37,8 @@ import { OverlayPanelModule } from "primeng/overlaypanel";
         DirectivesModule,
         MultiInputFieldModule,
         PopupMenuModule,
-        OverlayPanelModule
+        OverlayPanelModule,
+        FocusTrapModule
     ],
     declarations: [AdvancedFilteringComponent, FilterItemComponent],
     exports: [AdvancedFilteringComponent]

@@ -40,16 +40,17 @@
     </div>
 
     <div class="value-selection" [hidden]="!isSelectingValue">
-        <div class="selectors">
-            <p-dropdown igDropdown
-                        igAutoFocus
-                        [options]="uiCurrentOperatorsList"
-                        [(ngModel)]="currentOperator"
-                        (onChange)="onOperatorSelected($event)"
-                        igSize="full"
-                        required
-                        appendTo="body">
-            </p-dropdown>
+        <div class="selectors" pFocusTrap>
+            <div class="operator-selector">
+                <p-dropdown igDropdown
+                            [options]="uiCurrentOperatorsList"
+                            [(ngModel)]="currentOperator"
+                            (onChange)="onOperatorSelected($event)"
+                            igSize="full"
+                            required
+                            appendTo="body">
+                </p-dropdown>
+            </div>
             <div class="value-selector">
                 <ng-container *ngIf="doesNeedValue">
                     <input *ngIf="currentInputType === 'text'" igInput igSize="full" type="text" [(ngModel)]="condition.value" required maxlength="{{maxNumberOfFilterCharacters}}" />
@@ -87,8 +88,8 @@
                                      [globalFilterFields]="['title']"
                                      dataKey="value"
                                      [scrollable]="true"
-                                     scrollHeight="250px"
-                                     [virtualRowHeight]="30"
+                                     [scrollHeight]="selectionScrollHeight"
+                                     [virtualRowHeight]="32"
                                      [rows]="20"
                                      [virtualScroll]="true"
                                      [lazy]="isLazyLoad()"
@@ -101,7 +102,7 @@
                                             <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
                                         </th>
                                         <th>
-                                            <input type="text" class="filter-item-table-filter" (input)="dataTable.filterGlobal($event.target.value, 'contains')" placeholder="Search list" />
+                                            <input type="text" class="filter-item-table-filter" (input)="filterTable($event)" placeholder="Search list" />
                                         </th>
                                     </tr>
                                 </ng-template>
@@ -115,10 +116,10 @@
                                     </ng-container>
                                     <ng-template #elseBlock>
                                         <tr [pSelectableRow]="item">
-                                            <td class="first-col" (click)="selectSingleItem($event,item,el);">
+                                            <td class="first-col">
                                                 <p-tableCheckbox [value]="item"></p-tableCheckbox>
                                             </td>
-                                            <td (click)="selectSingleItem($event,item,el);">
+                                            <td (click)="selectSingleItem($event,item);">
                                                 <span class="item-value" [innerHTML]="item.title"></span>
                                             </td>
                                         </tr>

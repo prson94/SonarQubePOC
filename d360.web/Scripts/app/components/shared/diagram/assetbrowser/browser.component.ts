@@ -531,7 +531,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     let direction = relation.direction;
 
                     let ancestryMode = (this.displayConfiguration.DiagramType == DiagramType.Impact) ? FilterAncestryMode.NoAncestor : this.displayConfiguration.AncestryMode;
-                    this.browserService.getImpactHop(ancestryMode, node.hierarchyKey, relation.predicateUid, direction, this.displayConfiguration.IncludeNonLeaf, assets, preloadedIntersects)
+                    this.browserService.getImpactHop(ancestryMode, node.hierarchyKey, relation.predicateUid, direction, this.displayConfiguration.IncludeNonLeaf, assets, preloadedIntersects, this.displayConfiguration.DisplayDescendantAssets)
                         .subscribe((response: AssetBrowserResponseModel) => {
 
                             // Save a copy of the original return models so we can re-parse of filters or ancestry view changes.
@@ -1737,7 +1737,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private helper_ShowDetail(assetUid: string) {
-        if (assetUid === this.emptyUid) {
+        if (assetUid === this.emptyUid || assetUid == null) {
             return;
         }
         this.panel_TabIndex = 0;
@@ -2239,7 +2239,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 go.Panel,
                 "Vertical",   // title above Placeholder
                 new go.Binding("desiredSize", "", function (obj: go.GraphObject, target: go.GraphObject) {
-                    target.part.findTopLevelPart().part.data["predicateWidth"] = 400;
+                    target.part.findTopLevelPart().part.data["predicateWidth"] = 265;
                 }).ofObject(),
                 new go.Binding("background", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount)),
                 new go.Binding("background", "", v => (v.isHighlighted) ?

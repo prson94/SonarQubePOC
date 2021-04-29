@@ -181,9 +181,10 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     private deleteArtifactType(uid: string) {
         let node = this.artifactsService.findArtifactTypeByUid(this.artifactTypes, uid);
         let data: any = node ? node.data : null;
-
+        this.isLoading = true;
         if (data) {
             this.assetTypeService.deleteSingleAssetType(data.uid).subscribe(result => {
+                this.isLoading = false;
                 result.title = 'Success!';
                 this.showMessageForResult(this.messagesService, result, 'Item successfully removed.');
                 this.isDeleting = false;

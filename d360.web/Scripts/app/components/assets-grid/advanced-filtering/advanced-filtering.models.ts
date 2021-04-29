@@ -77,7 +77,7 @@ export class AdvancedFilterFieldCondition {
                 }
                 break;
             case "Equals":
-                if (this.isRelationship) {
+                if (this.isRelationship || this.field === SystemFields.OwnedByFieldCode) {
                     str += " contains ";
                 }
                 else {
@@ -85,7 +85,7 @@ export class AdvancedFilterFieldCondition {
                 }
                 break;
             case "NotEquals":
-                if (this.isRelationship) {
+                if (this.isRelationship || this.field === SystemFields.OwnedByFieldCode) {
                     str += " does not contain ";
                 }
                 else {
@@ -99,10 +99,20 @@ export class AdvancedFilterFieldCondition {
                 str += " ends with ";
                 break;
             case "Populated":
-                str += " is populated ";
+                if (this.isRelationship) {
+                    str += " relationships exists ";
+                }
+                else {
+                    str += " is populated ";
+                }
                 break;
             case "NotPopulated":
-                str += " is not populated ";
+                if (this.isRelationship) {
+                    str += " relationships do not exist ";
+                }
+                else {
+                    str += " is not populated ";
+                }
                 break;
             case "Before":
                 str += " is before ";
@@ -141,7 +151,7 @@ export class AdvancedFilterFieldCondition {
         if (this.value) {
             str += this.getTypedValue();
         }
-        if (this.value2) {
+        if (this.value2 && this.operator.toString() === "Between") {
             str += " and " + this.getTypedValue2();
         }
         return str;
@@ -180,8 +190,14 @@ export class AdvancedFilterFieldCondition {
             case "EndsWith":
                 return `${fieldName} : *${this.getTypedValue()}`;
             case "Populated":
+                if (this.isRelationship) {
+                    return `${fieldName} exists`;
+                }
                 return `${fieldName} : populated`;
             case "NotPopulated":
+                if (this.isRelationship) {
+                    return `${fieldName} does not exist`;
+                }
                 return `${fieldName} : not populated`;
             case "Before":
             case "LessThan":
@@ -397,7 +413,8 @@ export class AdvancedFilterFieldCondition {
                 return `'${value.value}'`;
             }
         }
-        return `'${value}'`;
+        value = (value as string).replace(/'/g, "&apos;");
+        return `'${encodeURIComponent(value)}'`;
     }
     getValue2(): string {
         return this.getValue(this.value2);
@@ -427,7 +444,7 @@ export class AdvancedFilterFieldCondition {
 
     public getQueryString() {
         if (this.operator.toString() === "Between") {
-            return `(${this.field} gt ${this.getValue()} and ${this.field} lt ${this.getValue2()})`;
+            return `(${this.field} ge ${this.getValue()} and ${this.field} le ${this.getValue2()})`;
         }
         else {
             let operation: string = this.getOperatorString();
@@ -460,7 +477,14 @@ export class AdvancedFilterFieldConditionCollection {
                 let subConditions: AdvancedFilterFieldCondition[] = [];
                 valuesArr = cond.value as SelectItem[];
                 valuesArr.forEach((r) => {
-                    subConditions.push(cond.getCopyWithNewValue(r.value));
+                    if (cond.field === SystemFields.OwnedByFieldCode) {
+                        if ((r.value as string).length === 36) {
+                            subConditions.push(cond.getCopyWithNewValue(r.value));
+                        }
+                    }
+                    else {
+                        subConditions.push(cond.getCopyWithNewValue(r.value));
+                    }
                 });
 
                 let subQueries: string[] = [];
@@ -493,10 +517,10 @@ export class AdvancedFilterFieldConditionCollection {
                     }
                     else {
                         if (cond.operator.toString() === "Equals") {
-                            queries.push(`(${cond.field} ct '${(stringArr.join(' > '))}')`);
+                            queries.push(`(${cond.field} eq '${(stringArr.join(' > '))}')`);
                         }
                         if (cond.operator.toString() === "NotEquals") {
-                            queries.push(`(${cond.field} nct '${(stringArr.join(' > '))}')`);
+                            queries.push(`(${cond.field} ne '${(stringArr.join(' > '))}')`);
                         }
                     }
                 }
@@ -557,14 +581,14 @@ export class AdvancedFilterFieldConditionCollection {
             }
 
             if (minValue === null) {
-                return `(${cond.field} lt '${maxValue}')`;
+                return `(${cond.field} le '${maxValue}')`;
             }
 
             if (maxValue === null) {
                 return `(${cond.field} gt '${minValue}')`;
             }
 
-            return `(${cond.field} ge '${minValue}' and ${cond.field} lt '${maxValue}')`;
+            return `(${cond.field} gt '${minValue}' and ${cond.field} le '${maxValue}')`;
         }
         return "";
     }
@@ -631,35 +655,41 @@ export class SystemFields {
         var fields: FieldTypeAPIModelFieldCondition[] = [];
 
         relTypes.forEach((r) => {
-            let predicate: string = "";
-            let typeName: string = "";
-            let sideUid: string = "";
-            if (r.Object.Uid === assetType) {
-                predicate = r.Predicate.Inverse;
-                typeName = r.Subject.Name;
-                sideUid = r.Subject.Uid;
+            try {
+                let predicate: string = "";
+                let typeName: string = "";
+                let sideUid: string = "";
+                if (r.Object.Uid === assetType) {
+                    predicate = r.Predicate.Inverse;
+                    typeName = r.Subject.Name;
+                    sideUid = r.Subject.Uid;
+                }
+                else {
+                    predicate = r.Predicate.Name;
+                    typeName = r.Object.Name;
+                    sideUid = r.Object.Uid;
+                }
+
+                typeName = typeName.split("/").join("<i class='slim-fa fa fa-chevron-right'></i>");
+
+                var field = {
+                    Category: "Relationships",
+                    FriendlyName: `${predicate} ${typeName}`,
+                    Name: r.Uid + "|" + sideUid,
+                    Type: null,
+                    Operators: [],
+                    Values: [],
+                    IsRelationship: true
+                };
+                field["predicate"] = predicate;
+
+                fields.push(field);
             }
-            else {
-                predicate = r.Predicate.Name;
-                typeName = r.Object.Name;
-                sideUid = r.Object.Uid;
+            catch (ex) {
+                //GOV-14432 - catch error if there is something wrong with relationship type (missing prop)
+                //to avoid breaking all advanced filtering 
+                console.warn(ex, r);
             }
-
-            typeName = typeName.split("/").join("<i class='slim-fa fa fa-chevron-right'></i>");
-
-            var field = {
-                Category: "Relationships",
-                FriendlyName: `${predicate} ${typeName}`,
-                Name: r.Uid + "|" + sideUid,
-                Type: null,
-                Operators: [],
-                Values: [],
-                IsRelationship: true
-            };
-            field["predicate"] = predicate;
-
-            fields.push(field);
-
         });
         return fields.sort((a, b) => { return a.FriendlyName > b.FriendlyName ? 1 : -1; });
     }

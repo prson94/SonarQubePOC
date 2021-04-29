@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using d360.core;
 using d360.core.entities;
@@ -17,7 +18,7 @@ namespace d360.model.DataAccessLayer
         Asset GetAssetByUID(Guid assetUid);
         Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams, AssetTypeClass? Class, Guid? fusionTypeUid, Guid? assetTypeUid);
         List<AssetTypeClassInfo> GetAssetTypeList();
-        Task<AssetsApiViewModel> GetAssets(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false);
+        Task<AssetsApiViewModel> GetAssets(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false, CancellationToken? cancellationToken = null);
         Task<AssetPathResults> GetAssetPaths(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams);
         Task<AssetsByPathApiViewModel> GetAssetsByPath(AssetsByPathApiRequestModel model);
         dynamic GetFieldTypes(Guid assetTypeUid);
