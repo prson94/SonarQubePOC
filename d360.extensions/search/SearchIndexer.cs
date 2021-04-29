@@ -19,7 +19,7 @@ namespace d360.extensions.search
         private SqlConnection _context;
         private int _companyID;
         private ElasticSearchSource _source;
-        private List<string> _messages;
+        private readonly List<string> _messages;
 
         public SearchIndexer(SqlConnection context, int companyID, ElasticSearchSource source)
         {
@@ -881,7 +881,7 @@ namespace d360.extensions.search
     }
 
     [Serializable]
-    internal class SearchIndexException : Exception
+    public class SearchIndexException : Exception
     {
         public SearchIndexException()
         { }
@@ -941,7 +941,7 @@ namespace d360.extensions.search
     }
 
     [Serializable]
-    internal class PagedQueryException : Exception
+    public class PagedQueryException : Exception
     {
         public PagedQueryException()
         { }
