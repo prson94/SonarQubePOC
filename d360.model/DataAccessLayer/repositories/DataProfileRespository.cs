@@ -56,21 +56,31 @@ namespace d360.model.DataAccessLayer
                 bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includechildassets").Value, out includeChildAssets);
             }
 
-            DateTime startDate = DateTime.UtcNow;            
-
-            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_startdate"))
-            {
-                DateTime.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_startdate").Value, out startDate);
-            }
-
+            DateTime startDate = DateTime.UtcNow;
             DateTime endDate = DateTime.UtcNow;
 
-            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_enddate"))
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_startdate" || k.Key.ToLower() == "_enddate"))
             {
-                DateTime.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_enddate").Value, out endDate);
-            }                               
+                if (queryParams.ToList().Any(k => k.Key.ToLower() == "_startdate"))
+                {
+                    DateTime.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_startdate").Value, out startDate);
+                }
 
-            string dataProfileSQL = $@"select 
+                if (queryParams.ToList().Any(k => k.Key.ToLower() == "_enddate"))
+                {
+                    DateTime.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_enddate").Value, out endDate);
+                }
+            }
+            else
+            {
+                AssetDataProfile dataprofile = CompanyContext.AssetDataProfile.OrderByDescending(x => x.ProfileSetDate).FirstOrDefault(x => x.AssetId == asset.ID);
+                if(dataprofile != null)
+                {
+                    startDate = endDate = dataprofile.ProfileSetDate;
+                }                
+            }             
+            
+            string dataProfileSQL = $@"select
 	                            A.[Uid] as assetUid
 	                            ,ADP.[ProfileSetDate]
                                 ,ADP.[SampleCount]
