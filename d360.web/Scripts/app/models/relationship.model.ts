@@ -16,6 +16,10 @@ export class RelationshipType {
     Object: RelationshipTypeEdge;
 }
 
+export class RelationshipTypeUIModel extends RelationshipType {
+    Count: number;
+}
+
 export class RelationshipDetail {
     ID: number;
     LimitedChangesOnly: boolean;

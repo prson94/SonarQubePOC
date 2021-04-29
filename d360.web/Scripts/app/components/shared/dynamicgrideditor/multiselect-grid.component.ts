@@ -20,7 +20,7 @@ export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
-export class MultiSelectGridComponent extends BaseComponent implements OnInit, ControlValueAccessor {
+export class MultiSelectGridComponent extends BaseComponent implements ControlValueAccessor {
     @Input() field: EditorField;
     @Input() multiple: boolean = true;
 
@@ -34,23 +34,12 @@ export class MultiSelectGridComponent extends BaseComponent implements OnInit, C
 
     public onModelTouched: Function = () => { };
 
-    isLazyLoad: boolean = false;
     lazyLoadTotalCount: number = 0;
 
-    constructor(private uriBasedService: UriBasedService,
+    constructor(
         private assetService: AssetService,
         private ref: ChangeDetectorRef) {
         super();
-    }
-
-    ngOnInit() {
-        console.log(this.field);
-        if (this.field.IsAssetLazyLoad) {
-            this.isLazyLoad = true;
-        }
-        else {
-            this.load();
-        }
     }
 
     loadAssetsLazy($event: LazyLoadEvent) {
@@ -69,7 +58,6 @@ export class MultiSelectGridComponent extends BaseComponent implements OnInit, C
             params["_includeTotal"] = false;
         }
 
-        //$Related:3734351b-963d-4846-98ca-6b2c7e214352%20ne%20%27dc676a73-2b32-4d43-84e7-7c8289fed5fd%27
 
         this.isLoading = true;
         this.assetService.getAssets(this.field.TargetAssetTypeUid, params, true).subscribe((res) => {
@@ -100,16 +88,6 @@ export class MultiSelectGridComponent extends BaseComponent implements OnInit, C
         if (item.Value.indexOf('|') == -1) return item.Value;
 
         return item.Value.split('|')[1];
-    }
-
-    private load() {
-        this.isLoading = true;
-        this.uriBasedService.getItems(this.field.TypeaheadUri).
-            subscribe(result => {
-                this.items = result;
-                this.isLoading = false;
-                this.ref.markForCheck();
-            });
     }
 
     private handleItemSelection(event) {

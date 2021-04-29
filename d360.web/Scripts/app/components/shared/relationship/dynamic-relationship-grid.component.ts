@@ -112,6 +112,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
     getData(forceEditorOpen: boolean = false) {
         this.isDataLoading = true;
+
         this.relationshipsService.getObjectRelationships(
             this.objectType,
             this.objectID,
@@ -121,6 +122,8 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             false,
             !this.isSubject)
             .subscribe((result) => {
+                console.log(result);
+
                 this.relations = result;
                 if (this.relations.length > 0) {
                     this.selected = this.relations[0];
