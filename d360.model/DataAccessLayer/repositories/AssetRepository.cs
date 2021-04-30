@@ -621,7 +621,21 @@ namespace d360.model.DataAccessLayer
                               ,rd.[SecurityAssetUid]
                         from ResponsibilityDetail rd
                         inner join asset a on rd.assettypeid = a.assettypeid
-                        where rd.assetid = 0 and IsVisible = 1and rd.assettypeid = @assetTypeId;
+                        where rd.assetid = 0 and IsVisible = 1and rd.assettypeid = @assetTypeId
+                        union all
+                        select a.[ID] as AssetID
+                                ,rd.[ResponsibilityTypeName]
+                                ,rd.[ResourceName]
+                                ,rd.[SecurityAsset]
+                                ,rd.[SecurityAssetName]
+                                ,rd.[Context]
+                                ,rd.[ResourceId]
+                                ,rd.[ResourceUid]
+                                ,rd.[SecurityAssetId]
+                                ,rd.[SecurityAssetUid]
+                        from ResponsibilityDetail rd
+                        inner join asset a on rd.assetid = a.id
+                        where rd.AssetTypeID = 0 and IsVisible = 1 and a.AssetTypeID = @assetTypeId;
 
                     create index cix_OwnershipLookupAssetId on #OwnershipLookupAssets (AssetId);
                     ";
