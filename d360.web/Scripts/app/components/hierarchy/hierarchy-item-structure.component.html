@@ -26,11 +26,8 @@
                          [globalFilterFields]="filterColumns"
                          [loading]="isLoading"
                          [loadingIcon]="'fa fa-spinner fa-spin'"
-                         [lazy]="true"
-                         (onLazyLoad)="loadNodes($event)"
-                         (onNodeExpand)="onNodeExpand($event)"
+                         (onFilter)="expandNodes()"
                          dataKey="AssetUid">
-                <!--(onFilter)="expandNodes()"-->
                 <ng-template pTemplate="caption">
                     <div>
                         <input type="text" #inputBox pInputText placeholder="Search" (input)="treeTable.filterGlobal($event.target.value, 'contains')" style="width: 100%;margin-bottom:10px;">
@@ -66,20 +63,19 @@
                         <td>
                             <div class="RowTools">
                                 <a style="cursor:pointer;"
-                                   (click)="selected = rowNode.node; showAdd(item.Level)"
-                                   *ngIf="(assetType.MaximumDepth > item.Level) && hasAddAssetPermissions()"><i class="fa fa-plus"></i></a>
+                                   (click)="selected = rowNode.node; showAdd(item.Level)"><i class="fa fa-plus"></i></a>
                             </div>
                         </td>
                         <td>
                             <div class="RowTools"
-                                 *ngIf="item.P_CanEdit">
+                                 *ngIf="item.Permissions.ModifyAsset">
                                 <a style="cursor:pointer;"
                                    (click)="selected = rowNode.node; showEditor = true;"><i class="fa fa-pencil"></i></a>
                             </div>
                         </td>
                         <td>
                             <div class="RowTools"
-                                 *ngIf="item.P_CanDelete">
+                                 *ngIf="item.Permissions.DeleteAsset">
                                 <a *ngIf="!rowNode.node.children || rowNode.node.children?.length == 0"
                                    style="cursor:pointer;"
                                    (click)="selected = rowNode.node; showDelete=true;"><i class="fa fa-trash-o"></i></a>
@@ -93,23 +89,25 @@
                                           [totalRecords]="treeTable.totalRecords"></d3s-grid-paging-info>
                 </ng-template>
             </p-treeTable>
-            <d3s-dynamic-editor *ngIf="showEditor"
-                                [objectID]="selected ? selected?.ObjectID : gridObject?.ID"
-                                [objectType]="gridObject.Object"
-                                [title]="selected?.Name ? selected?.Name : gridObject?.Name + ' Item'"
-                                [selection]="selected"
-                                [rowID]="rowID"
-                                [objectTypeUid]="gridObject?.AssetTypeUID"
-                                (saveClick)="saveItem($event)"
-                                [isV2API]="true"
-                                (closeClick)="closeEditor()"></d3s-dynamic-editor>
+
+
             <d3s-asset-delete-editor *ngIf="showDelete"
-                                     [uid]="selected?.AssetUid"
-                                     [assetTypeUid]="gridObject?.AssetTypeUID"
-                                     [displayValue]="(deleteName ? deleteName : 'Artifact')"
-                                     (onCancel)="showDelete = false"
-                                     (onDeleted)="onDeleted()">
+                                     [uid]="selected?.data?.AssetUid"
+                                     [assetTypeUid]="assetTypeUid"
+                                     [displayValue]="(selected?.data?.Path ? selected?.data?.Path : objectName)"
+                                     (onCancel)="showDelete = false; filter(null);"
+                                     (onDeleted)="onDeleted();">
             </d3s-asset-delete-editor>
+
+            <d3s-asset-editor *ngIf="showEditor"
+                              [assetUid]="selected?.data?.AssetUid"
+                              [assetTypeUid]="assetTypeUid"
+                              [parentAssetUid]="selectedParentId"
+                              [useModelBinding]="true"
+                              [title]="selected?.data?.Path ? selected?.data?.Path : assetTypeTitle"
+                              [selection]="selected?.data"
+                              (saveClick)="save()"
+                              (closeClick)="closeEditor();"></d3s-asset-editor>
         </div>
 
     </div>

@@ -905,6 +905,7 @@
     <Content Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-editor-v2.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-field-value-v2.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-field-v2.component.html" />
+    <Content Include="Scripts\app\components\shared\dynamicgrideditor\asset-editor.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-field-value.component.html" />
     <Content Include="Scripts\app\components\shared\editor-header.component.html" />
     <Content Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.html" />
@@ -1073,6 +1074,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-grid-v2.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\multiselect-grid-v2.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\shared-dynamic-grid-editor-v2.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor\asset-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\object-detail-category.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\asset-score.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\definition\score-definition.component.ts" />

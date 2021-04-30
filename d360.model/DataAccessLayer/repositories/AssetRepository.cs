@@ -784,7 +784,12 @@ namespace d360.model.DataAccessLayer
                     }
                 }
 
-                if (!CompanyContext.TypeHasParent((SystemObjects)(Enum.Parse(typeof(SystemObjects), assetType.Object, true)), assetType.ObjectID))
+                var functionalPredicateType = PredicateType.InterTypeHierarchy;
+                if (assetType.Object == "PolicyType" || assetType.Object == "TaxonomyType")
+                {
+                    functionalPredicateType = PredicateType.IntraTypeHierarchy;
+                }
+                if (!CompanyContext.TypeHasParent((SystemObjects)(Enum.Parse(typeof(SystemObjects), assetType.Object, true)), assetType.ObjectID, functionalPredicateType))
                 {
                     includeParent = false;
                 }
