@@ -13,6 +13,8 @@ namespace d360.extensions.queue
     {
         public string EventServiceBusConnectionString { get { return CloudConfigurationManager.GetSetting("EventServiceBus"); } }
 
+
+
         public bool CreateMessage<T>(string queueName, T item)
         {
             return true;

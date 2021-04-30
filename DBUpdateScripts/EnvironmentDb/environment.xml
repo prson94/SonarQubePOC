@@ -257,6 +257,7 @@
 	<include file="scripts/Table.api.ExecutionAssetResult.xml"/>	
 	<include file="scripts/Table.api.ExecutionAssetDataProfile.xml"/>
 	<include file="scripts/Table.api.ExecutionAssetDataProfileSample.xml"/>	
+	<include file="scripts/Table.api.ExecutionDeleteAssetDataProfile.xml"/>	
 	<include file="scripts/Table.api.ExecutionDeleteAssetResult.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedAssetType.xml"/>
@@ -495,7 +496,8 @@
 	<include file="scripts/Procedure.workflow.changeItemState.xml"/>
 
 	<include file="scripts/Procedure.Deletions.xml"/>
-    
+    <include file="scripts/Procedure.dbo.SimpleAssetSearch.xml"/>
+
 	<!-- Data Changes -->
 	<include file="scripts/Data.Initial.xml"/>
 	<include file="scripts/Data.Corrections.xml"/>

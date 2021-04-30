@@ -11,7 +11,7 @@ import { AllocationService } from "../../../services/allocations.service";
 import { ScoreTypeAllocation } from "../../../models/metrics.model";
 import { RelationshipsService } from "../../../services/relationships.service";
 import { RelationshipType } from "../../../models/relationship.model";
-import { Field } from "../../../models/fields.model";
+import { Router } from "@angular/router";
 
 @Component({
     selector: "advanced-filtering",
@@ -101,9 +101,15 @@ export class AdvancedFilteringComponent implements OnChanges {
         private settingsService: CompanySettingsService,
         private allocationService: AllocationService,
         private relationshipService: RelationshipsService,
-        private datePipe: DatePipe) {
+        private datePipe: DatePipe,
+        private router: Router
+    ) {
         this.conditions = new AdvancedFilterFieldConditionCollection();
         this.conditions.filters = [];
+
+        this.router.routeReuseStrategy.shouldReuseRoute = function () {
+            return false;
+        };
     }
 
     customDoCheck() {

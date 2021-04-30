@@ -371,6 +371,19 @@ namespace d360.model.validators
                     }
                 }
 
+                if (field.Type.ComputedRelationshipLookup != null)
+                {
+                    if(field.Type.ComputedRelationshipLookup.Definition.Relations.Any(r => r.AssetTypeUid == model.AssetTypeUid))
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. Relation Lookup refers back to Asset Type the field is defined on.");
+                    }
+
+                    if (field.Type.ComputedRelationshipLookup.Definition.Relations.GroupBy(r => r.AssetTypeUid).Any(g => g.Count() > 1))
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. Relation Lookup contains a circular reference.");
+                    }
+                }
+
                 //Diagram asset type validators
                 if (assetTypeIdentifierInfoModel != null && assetTypeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
                 {
