@@ -923,21 +923,23 @@ namespace d360.web.Controllers.V2
                 }
             }
 
+            string sql = "";
+            object parameters;
             if (effectiveDate.HasValue)
             {
-                var model = Company.Query<dynamic>(@"
+                parameters = new { allocationUid = _allocationUid, assetUid = _assetUid, effectiveDate = effectiveDate.Value.ToUniversalTime().Date };
+                sql = @"
 	select	S.EffectiveDate as [EffectiveDate],
 			S.[EndDate] as [EndDate],
 			cast(S.Value * 100 as decimal(18,1)) as Score
 	from	metrics.Score S
-			inner join metrics.Allocation A on A.Uid = S.AllocationUid and A.Uid = @allocationUid and S.AssetUid = @assetUid and S.EffectiveDate = @effectiveDate",
-new { allocationUid = _allocationUid, assetUid = _assetUid, effectiveDate = effectiveDate.Value.ToUniversalTime().Date }, ApiTimeout);
+			inner join metrics.Allocation A on A.Uid = S.AllocationUid and A.Uid = @allocationUid and S.AssetUid = @assetUid and S.EffectiveDate = @effectiveDate";
 
-                return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model));
             }
             else 
             {
-                var model = Company.Query<dynamic>(@"
+                parameters = new { allocationUid = _allocationUid, assetUid = _assetUid };
+                sql = @"
 	declare @date date = getutcdate()
 
 	select	S.EffectiveDate as [EffectiveDate],
@@ -950,11 +952,12 @@ new { allocationUid = _allocationUid, assetUid = _assetUid, effectiveDate = effe
 			null as [EndDate],
 			cast(S.Value * 100 as decimal(18,1)) as Score
 	from	metrics.Score S
-			inner join metrics.Allocation A on A.Uid = S.AllocationUid and A.Uid = @allocationUid and S.AssetUid = @assetUid and S.EffectiveDate <= @date and S.EndDate is null",
-            new { allocationUid = _allocationUid, assetUid = _assetUid }, ApiTimeout);
-
-                return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model));
+			inner join metrics.Allocation A on A.Uid = S.AllocationUid and A.Uid = @allocationUid and S.AssetUid = @assetUid and S.EffectiveDate <= @date and S.EndDate is null";
             }
+
+            var model = Company.Query<dynamic>(sql, parameters, ApiTimeout);
+
+            return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model));
         }
 
 
