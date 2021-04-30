@@ -60,9 +60,13 @@ namespace igx.jobs.databasecleaner
                         using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
                         {
                             company.Open();
-
+                            var settings = CompanyConnectionUtils.GetCompanySettings(c.CompanyID);
+                            var dataProfileLifespan = settings.FirstOrDefault(s => s.SettingID == 81).Value;
                             //remove any old api execution records
                             await company.ExecuteAsync("[api].[DeleteExecutionRecords]", commandTimeout: 1800);
+
+                            //remove any old data profile records                            
+                            await company.ExecuteAsync("[DeleteAssetDataProfileRecords] @dataProfileLifespan", new { dataProfileLifespan = (int)(Convert.ChangeType(dataProfileLifespan, typeof(int))) }, commandTimeout: 1800);
 
                             //update database statistics
                             await company.ExecuteAsync("sp_updatestats", commandTimeout: 1400);

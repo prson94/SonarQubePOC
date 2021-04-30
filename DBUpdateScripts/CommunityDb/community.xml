@@ -85,4 +85,5 @@
   <include file="scripts/GOV-5317.xml"/>  <!-- Add WorkflowDigestEmailDays company setting -->
   <include file="scripts/GOV-14441.xml"/>  <!-- Add ShowChangeLogTab setting -->
   <include file="scripts/GOV-14442.xml"/>  <!-- Add ShowCommentsTab setting -->
+  <include file="scripts/GOV-14503.xml"/>  <!-- Add Data Profile lifespan setting-->
 </databaseChangeLog>
