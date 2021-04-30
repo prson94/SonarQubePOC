@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.metrics.ScoreItem-v5">
+  <changeSet author="Core" id="Table.metrics.ScoreItem-v6">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -27,11 +27,29 @@ BEGIN
 		[OtherConditions] [nvarchar](max) NOT NULL
 	)
 END
+
+IF NOT EXISTS (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'ScoreItem' and COLUMN_NAME = 'DisplayWeight')
+BEGIN
+	alter table metrics.ScoreItem add DisplayWeight decimal(8,6) null
+END
+
+IF NOT EXISTS (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'ScoreItem' and COLUMN_NAME = 'DisplayMaxWeight')
+BEGIN
+	alter table metrics.ScoreItem add DisplayMaxWeight decimal(8,6) null
+END
 		]]>
     </sql>
 	<rollback>
-		<![CDATA[	
+		<![CDATA[
+IF EXISTS (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'ScoreItem' and COLUMN_NAME = 'DisplayWeight')
+BEGIN
+	alter table metrics.ScoreItem drop column DisplayWeight
+END
 
+IF EXISTS (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'ScoreItem' and COLUMN_NAME = 'DisplayMaxWeight')
+BEGIN
+	alter table metrics.ScoreItem drop column DisplayMaxWeight
+END
 		]]>
 	</rollback>
   </changeSet>

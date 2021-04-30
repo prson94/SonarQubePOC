@@ -892,12 +892,13 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("history/{allocationUid}/{assetUid}/scores"),
+            SwaggerParameter("effectiveDate", "The date which you want to retrieve a score for. If not provided, the entire score history will be returned. If provided, the date must be today or earlier.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the score history given an asset and allocation.", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
-        public IHttpActionResult GetScoreHistoryByAllocationAndAsset(string allocationUid, string assetUid)
+        public IHttpActionResult GetScoreHistoryByAllocationAndAsset(string allocationUid, string assetUid, DateTime? effectiveDate = null)
         {
             Guid _allocationUid;
             Guid _assetUid;
@@ -914,7 +915,31 @@ namespace d360.web.Controllers.V2
                 return ResponseMessage(Request.CreateErrorResponse(assetStatus.StatusCode, assetStatus.Message));
             }
 
-            var model = Company.Query<dynamic>(@"
+            if (effectiveDate.HasValue)
+            {
+                if (effectiveDate.Value.ToUniversalTime().Date > DateTime.UtcNow.Date)
+                {
+                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "effectiveDate must not be greater than today's date (in UTC)."));
+                }
+            }
+
+            string sql = "";
+            object parameters;
+            if (effectiveDate.HasValue)
+            {
+                parameters = new { allocationUid = _allocationUid, assetUid = _assetUid, effectiveDate = effectiveDate.Value.ToUniversalTime().Date };
+                sql = @"
+	select	S.EffectiveDate as [EffectiveDate],
+			S.[EndDate] as [EndDate],
+			cast(S.Value * 100 as decimal(18,1)) as Score
+	from	metrics.Score S
+			inner join metrics.Allocation A on A.Uid = S.AllocationUid and A.Uid = @allocationUid and S.AssetUid = @assetUid and S.EffectiveDate = @effectiveDate";
+
+            }
+            else 
+            {
+                parameters = new { allocationUid = _allocationUid, assetUid = _assetUid };
+                sql = @"
 	declare @date date = getutcdate()
 
 	select	S.EffectiveDate as [EffectiveDate],
@@ -927,8 +952,10 @@ namespace d360.web.Controllers.V2
 			null as [EndDate],
 			cast(S.Value * 100 as decimal(18,1)) as Score
 	from	metrics.Score S
-			inner join metrics.Allocation A on A.Uid = S.AllocationUid and A.Uid = @allocationUid and S.AssetUid = @assetUid and S.EffectiveDate <= @date and S.EndDate is null",
-            new { allocationUid = _allocationUid, assetUid = _assetUid }, ApiTimeout);
+			inner join metrics.Allocation A on A.Uid = S.AllocationUid and A.Uid = @allocationUid and S.AssetUid = @assetUid and S.EffectiveDate <= @date and S.EndDate is null";
+            }
+
+            var model = Company.Query<dynamic>(sql, parameters, ApiTimeout);
 
             return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model));
         }

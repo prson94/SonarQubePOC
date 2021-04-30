@@ -1201,5 +1201,65 @@ from	metrics.AssetVersion V
 		inner join metrics.Allocation S on S.Uid = A.AllocationUid and S.ScoreType = 1
 	]]>
 		</sql>
-	</changeSet>	
+	</changeSet>
+
+	<changeSet author="Pappas" id="Data.Corrections.GOV-14374">
+			<sql dbms="mssql" splitStatements="false" stripComments="false">
+	<![CDATA[
+--Governance
+	-- Update root.
+	update	I
+	set		I.DisplayWeight = case 
+								when floor(I.DecimalValue) = FLOOR(I.AdjustedWeight) then cast(metrics.RoundScoreItem(I.DecimalValue, 3) as decimal(5,3))
+								else cast(metrics.RoundScoreItem(I.DecimalValue*I.AdjustedMaxWeight, 3) as decimal(5,3))
+						      end,
+			I.DisplayMaxWeight = cast(metrics.RoundScoreItem(I.AdjustedMaxWeight, 3) as decimal(5,3))
+	from	metrics.ScoreItem I
+			inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid --and I.DisplayWeight is null
+			inner join metrics.Asset A on A.Uid = V.AssetUid and A.ParentUid is null
+			inner join metrics.Allocation L on L.Uid = A.AllocationUid and L.ScoreType = 1
+			inner join metrics.ScoreItemLink J on J.ScoreItemUid = I.Uid;
+
+	-- Update children.
+	update	I
+	set		I.DisplayWeight = cast(metrics.RoundScoreItem(I.AdjustedWeight*[PI].AdjustedMaxWeight, 3) as decimal(5,3)),
+			I.DisplayMaxWeight = cast(metrics.RoundScoreItem(I.AdjustedMaxWeight*[PI].AdjustedMaxWeight, 3) as decimal(5,3))
+	from	metrics.ScoreItem I
+			inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid and I.DisplayWeight is null
+			inner join metrics.Asset A on A.Uid = V.AssetUid and A.ParentUid is not null
+			inner join metrics.Allocation L on L.Uid = A.AllocationUid and L.ScoreType = 1
+			inner join metrics.ScoreItemLink J on J.ScoreItemUid = I.Uid
+			inner join metrics.Asset PA on PA.Uid = A.ParentUid
+			inner join metrics.AssetVersion PV on PV.AssetUid = PA.Uid
+			inner join metrics.ScoreItemLink PJ on PJ.ScoreUid = J.ScoreUid
+			inner join metrics.ScoreItem [PI] on [PI].Uid = PJ.ScoreItemUid and [PI].AssetVersionUid = PV.Uid;
+
+-- Data Quality
+	-- Update root.
+	update	I
+	set		I.DisplayWeight = cast(metrics.RoundScoreItem(I.AdjustedWeight, 3) as decimal(5,3)),
+			I.DisplayMaxWeight = cast(metrics.RoundScoreItem(I.AdjustedMaxWeight, 3) as decimal(5,3))
+	from	metrics.ScoreItem I
+			inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid and I.DisplayWeight is null
+			inner join metrics.Asset A on A.Uid = V.AssetUid and A.ParentUid is null
+			inner join metrics.Allocation L on L.Uid = A.AllocationUid and L.ScoreType = 2
+			inner join metrics.ScoreItemLink J on J.ScoreItemUid = I.Uid		
+			;
+
+	-- Update children.
+	update	I
+	set		I.DisplayWeight = cast(metrics.RoundScoreItem(I.AdjustedWeight*[PI].AdjustedMaxWeight, 3) as decimal(5,3)),
+			I.DisplayMaxWeight = cast(metrics.RoundScoreItem(I.AdjustedMaxWeight*[PI].AdjustedMaxWeight, 3) as decimal(5,3))
+	from	metrics.ScoreItem I
+			inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid and I.DisplayWeight is null
+			inner join metrics.Asset A on A.Uid = V.AssetUid and A.ParentUid is not null
+			inner join metrics.Allocation L on L.Uid = A.AllocationUid and L.ScoreType = 2
+			inner join metrics.ScoreItemLink J on J.ScoreItemUid = I.Uid
+			inner join metrics.Asset PA on PA.Uid = A.ParentUid
+			inner join metrics.AssetVersion PV on PV.AssetUid = PA.Uid
+			inner join metrics.ScoreItemLink PJ on PJ.ScoreUid = J.ScoreUid
+			inner join metrics.ScoreItem [PI] on [PI].Uid = PJ.ScoreItemUid and [PI].AssetVersionUid = PV.Uid
+	]]>
+		</sql>
+	</changeSet>
 </databaseChangeLog>
