@@ -1,0 +1,46 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="bquinlivan" id="Procedure.dbo.DeleteAssetDataProfileRecords-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			CREATE or ALTER procedure [dbo].[DeleteAssetDataProfileRecords] 
+			@dataProfileLifespan int = 365
+	as
+	begin
+		BEGIN TRANSACTION;
+		SAVE TRANSACTION DeleteDataProfilingSavePoint;
+
+		BEGIN TRY
+			-- delete records from child tables
+			DELETE FROM AssetDataProfile where DATEDIFF(day, updatedon, getutcdate()) > @dataProfileLifespan
+
+			COMMIT TRANSACTION 
+		END TRY
+		BEGIN CATCH
+					IF @@TRANCOUNT > 0
+					BEGIN
+							ROLLBACK TRANSACTION DeleteDataProfilingSavePoint; -- rollback to SavePoint
+					END
+			END CATCH
+	end
+]]>
+    </sql>
+	<rollback>
+		<sql dbms="mssql"
+				endDelimiter="\nGO"
+				splitStatements="true"
+				stripComments="false">
+			<![CDATA[				
+		]]>
+		</sql>
+	</rollback>
+  </changeSet>
+</databaseChangeLog>
