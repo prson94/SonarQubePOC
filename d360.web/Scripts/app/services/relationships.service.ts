@@ -282,4 +282,21 @@ export class RelationshipsService extends BaseObservableService {
 
         return obs;
     }
+
+    getRelationships(intersectTypeUid: string, objectUid: string = null, subjectUid: string = null): Observable<RelationshipType[]> {
+        var url = 'api/v2/relationships?RelationshipTypeUid=' + intersectTypeUid;
+
+        if (objectUid) {
+            url += `&objectUid=${objectUid}`
+        }
+        if (subjectUid) {
+            url += `&subjectUid=${subjectUid}`
+        }
+
+        return this.http.get(url)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
+    }
 }

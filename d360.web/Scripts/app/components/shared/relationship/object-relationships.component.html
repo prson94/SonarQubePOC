@@ -24,9 +24,10 @@
     </div>
     <div class="col l9 s12">
         <d3s-dynamic-relationship-grid *ngIf="selected"
-                                       [intersectTypeUid]="selected.uid"
+                                       [assetUid]="assetUid"
+                                       [intersectTypeUid]="selected.Uid"
                                        [objectUid]="selected.Object.Uid"
-                                       subjectUid="selected.Subject.Uid"
+                                       [subjectUid]="selected.Subject.Uid"
                                        [simpleFilter]="showSimpleFilter"
                                        (onFilterChange)="onFilterChange($event)"
                                        [readOnly]="readOnly"

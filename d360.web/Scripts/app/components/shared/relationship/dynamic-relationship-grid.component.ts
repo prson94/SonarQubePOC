@@ -7,6 +7,7 @@ import { BaseComponent } from "../base.component";
 import { SiteUrlHelpers } from "../../../static/site-url-helpers";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { AssetService } from "../../../services/asset.service";
+import { LazyLoadEvent } from "primeng/api";
 
 
 @Component({
@@ -17,6 +18,7 @@ import { AssetService } from "../../../services/asset.service";
 
 export class DynamicRelationshipGridComponent extends BaseComponent implements OnChanges, OnDestroy {
     @Input() intersectTypeUid: string;
+    @Input() assetUid: string;
     @Input() objectUid: string;
     @Input() subjectUid: string;
     @Input() isSubject: boolean;
@@ -54,6 +56,8 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     isDataLoading: boolean = false;
     theDeleteCallback: Function;
 
+    totalRecords: number = 0;
+
     @ViewChild("dt", { static: false }) datatable;
 
     constructor(private router: Router,
@@ -75,16 +79,15 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             || changes["objectUid"]
             || changes["subjectUid"])
 
-            && (this.objectID != null
-                && this.objectType != null
-                && this.isSubject != null)) {
+            && (this.intersectTypeUid != null
+                && this.objectUid != null
+                && this.subjectUid != null)) {
             this.load();
         }
     }
 
     load() {
         this.getFieldsDefinition();
-        this.getData();
     }
 
     getFieldsDefinition() {
@@ -99,22 +102,29 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
                 this.readOnly = result.IsReadOnly;
                 this.readOnlyChange.emit(this.readOnly);
             });
+    }
 
-        //this.gridDefinitionService.getGridDefinition(this.intersectTypeID, "IntersectType", this.targetTypeID, this.targetType).subscribe(
-        //    (result) => {
-        //        this.isGridLoading = false;
-        //        this.columns = result.Columns;
-        //        this.fields = result.Fields;
-        //        this.showEditPencil = (result.FieldsCount > 0);
-        //        this.readOnly = result.IsReadOnly;
-        //        this.readOnlyChange.emit(this.readOnly);
-        //    }
-        //);
-        this.isGridLoading = false;
+    loadRelationshipLazy(event: LazyLoadEvent) {
+        let objectUid = null;
+        let subjectUid = null;
+
+        if (this.isSubject) {
+            subjectUid = this.assetUid;
+        }
+        else {
+            objectUid = this.assetUid;
+        }
+
+        this.relationshipsService.getRelationships(this.intersectTypeUid, objectUid, subjectUid).subscribe((res) => {
+            this.totalRecords = +res["total"];
+            this.relations = res["items"] as any[];
+        });
     }
 
     getData(forceEditorOpen: boolean = false) {
-        this.isDataLoading = true;
+
+
+
 
         //this.relationshipsService.getObjectRelationships(
         //    this.objectType,

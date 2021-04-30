@@ -1,6 +1,6 @@
 ﻿<d3s-loading [isLoading]="isGridLoading || isDataLoading"></d3s-loading>
 <div *ngIf="!isDataLoading && !isGridLoading">
-    <div *ngIf="!isDataLoading && !isGridLoading && relations.length > 0 && !shouldShowEditor() && !showDelete">
+    <div *ngIf="!shouldShowEditor() && !showDelete">
 
         <input type="text" [hidden]="!simpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
         <p-table #dt
@@ -14,6 +14,9 @@
                  [rowsPerPageOptions]="defaultPagingOptions"
                  [(selection)]="selected"
                  [scrollable]="true"
+                 [lazy]="true" 
+                 [totalRecords]="totalRecords"
+                 (onLazyLoad)="loadRelationshipLazy($event)"
                  scrollWidth="100%">
             <ng-template pTemplate="colgroup">
                 <colgroup>
@@ -61,7 +64,7 @@
                     </td>
                     <td *ngFor="let column of columns">                        
                             <d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" (click)="selectObject(item)" [align]="'right'">
-                                <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>
+                                <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item" [useApiName]="true"></d3s-dynamic-field-value>
                             </d3s-preview-tooltip>
                     </td>
                 </tr>

@@ -1,13 +1,15 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange, ViewChild, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { RelationshipsService } from '../../../services/relationships.service';
-import { ObjectRelationshipCount, RelationshipType, RelationshipTypeUIModel } from '../../../models/relationship.model';
+import { RelationshipTypeUIModel } from '../../../models/relationship.model';
 import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.component';
 import { ResponsibilityTypeRelationPermission } from '../../../models/responsibility-type.model';
+import { ObjectDetailService } from '../../../services/object-detail.service';
+import { AssetService } from '../../../services/asset.service';
 
 @Component({
     selector: 'd3s-object-relationships',
-    providers: [RelationshipsService],
+    providers: [RelationshipsService, ObjectDetailService, AssetService],
     templateUrl: './object-relationships.component.html'
 })
 
@@ -20,7 +22,8 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     isSubject: boolean = false;
 
-    @Input() assetTypeUid: string = '36226286-e3b5-48b9-bb8f-7b149c8a5d63';
+    @Input() assetTypeUid: string;
+    @Input() assetUid: string;
 
     relationshipItems: RelationshipTypeUIModel[] = [];
     selected: RelationshipTypeUIModel;
@@ -37,7 +40,10 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     @ViewChild(DynamicRelationshipGridComponent, { static: false }) private relGrid: DynamicRelationshipGridComponent;
 
-    constructor(protected relationshipsService: RelationshipsService, private changeDetectorRef: ChangeDetectorRef) {
+    constructor(protected relationshipsService: RelationshipsService,
+        private objectDetailService: ObjectDetailService,
+        private assetService: AssetService,
+        private changeDetectorRef: ChangeDetectorRef) {
         super();
     }
 
@@ -46,13 +52,19 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        this.load();
+        this.objectDetailService.getObject(this.objectID, this.objectType).subscribe((res) => {
+            this.assetService.getUIDetailsForAssetUID(res["Uid"]).subscribe((asset) => {
+                this.assetUid = res["Uid"];
+                this.assetTypeUid = asset["AssetTypeUid"];
+                this.load();
+            });
+        });
     }
 
     load(): void {
         this.isLoading = true;
 
-        if (this.objectType == null || this.objectID == null)
+        if (!this.assetTypeUid || !this.assetUid)
             return;
 
         this.relationshipsService.getRelationshipTypes(this.assetTypeUid).subscribe((res) => {
@@ -78,35 +90,6 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
         });
 
         this.permissions = this.objectPermissions;
-        return;
-
-
-        this.loadRelationshipItems();
-    }
-
-    loadRelationshipItems() {
-
-        //this.relationshipsService.getRelationshipCounts(this.objectType, this.objectID)
-        //    .subscribe(result => {
-        //        this.relationshipItems = result;
-        //        this.selected = null;
-        //        for (let relation of this.relationshipItems) {
-        //            if (relation.Count > 0) {
-        //                this.selected = relation;
-        //                break;
-        //            }
-        //        }
-
-        //        if (!this.selected)
-        //            this.selected = (this.relationshipItems && this.relationshipItems.length > 0) ? this.relationshipItems[0] : null;
-
-        //        this.hasRelationships = (this.relationshipItems && this.relationshipItems.length > 0);
-
-        //        this.isLoading = false;
-        //        this.updateCardinality();
-        //        this.changeDetectorRef.markForCheck();
-        //    }
-        //    );
     }
 
     export() {
