@@ -16,14 +16,12 @@ import { AssetService } from "../../../services/asset.service";
 })
 
 export class DynamicRelationshipGridComponent extends BaseComponent implements OnChanges, OnDestroy {
-    @Input() objectType: string;
-    @Input() objectID: number;
-    @Input() objectUid: number;
-    @Input() objectName: string;
-    @Input() targetType: string;
-    @Input() targetTypeID: number;
-    @Input() targetName: string;
-    @Input() intersectTypeID: number;
+    @Input() intersectTypeUid: string;
+    @Input() objectUid: string;
+    @Input() subjectUid: string;
+    @Input() isSubject: boolean;
+
+
     @Input() addRelationship: boolean;
     @Input() hasEdit: boolean = true;
     @Input() hasDelete: boolean = true;
@@ -38,7 +36,6 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     @Output() onFilterChange = new EventEmitter();
 
     @Input() simpleFilter: boolean;
-    @Input() isSubject: boolean;
 
     private fields: GridField[] = [];
 
@@ -74,17 +71,12 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if ((changes["objectID"]
-            || changes["objectType"]
-            || changes["intersectTypeID"]
-            || changes["targetTypeID"]
-            || changes["isSubject"])
+        if ((changes["intersectTypeUid"]
+            || changes["objectUid"]
+            || changes["subjectUid"])
 
             && (this.objectID != null
                 && this.objectType != null
-                && this.targetType != null
-                && this.targetTypeID != null
-                && this.intersectTypeID != null
                 && this.isSubject != null)) {
             this.load();
         }
@@ -97,53 +89,64 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
     getFieldsDefinition() {
         this.isGridLoading = true;
-        this.gridDefinitionService.getGridDefinition(this.intersectTypeID, "IntersectType", this.targetTypeID, this.targetType).subscribe(
-            (result) => {
+
+        this.gridDefinitionService.getGridDefinition(this.intersectTypeUid, "IntersectType")
+            .subscribe((result) => {
                 this.isGridLoading = false;
                 this.columns = result.Columns;
                 this.fields = result.Fields;
                 this.showEditPencil = (result.FieldsCount > 0);
                 this.readOnly = result.IsReadOnly;
                 this.readOnlyChange.emit(this.readOnly);
-            }
-        );
+            });
+
+        //this.gridDefinitionService.getGridDefinition(this.intersectTypeID, "IntersectType", this.targetTypeID, this.targetType).subscribe(
+        //    (result) => {
+        //        this.isGridLoading = false;
+        //        this.columns = result.Columns;
+        //        this.fields = result.Fields;
+        //        this.showEditPencil = (result.FieldsCount > 0);
+        //        this.readOnly = result.IsReadOnly;
+        //        this.readOnlyChange.emit(this.readOnly);
+        //    }
+        //);
         this.isGridLoading = false;
     }
 
     getData(forceEditorOpen: boolean = false) {
         this.isDataLoading = true;
 
-        this.relationshipsService.getObjectRelationships(
-            this.objectType,
-            this.objectID,
-            this.targetType,
-            this.targetTypeID,
-            this.intersectTypeID,
-            false,
-            !this.isSubject)
-            .subscribe((result) => {
-                console.log(result);
+        //this.relationshipsService.getObjectRelationships(
+        //    this.objectType,
+        //    this.objectID,
+        //    this.targetType,
+        //    this.targetTypeID,
+        //    this.intersectTypeID,
+        //    false,
+        //    !this.isSubject)
+        //    .subscribe((result) => {
+        //        console.log(result);
 
-                this.relations = result;
-                if (this.relations.length > 0) {
-                    this.selected = this.relations[0];
-                }
-                this.relationshipAdded.emit({ count: result.length });
-                if (this.shouldShowEditor() && !forceEditorOpen) {
-                    this.closeEditor();
-                }
-                this.isDataLoading = false;
+        //        this.relations = result;
+        //        if (this.relations.length > 0) {
+        //            this.selected = this.relations[0];
+        //        }
+        //        this.relationshipAdded.emit({ count: result.length });
+        //        if (this.shouldShowEditor() && !forceEditorOpen) {
+        //            this.closeEditor();
+        //        }
+        //        this.isDataLoading = false;
 
-                //Update name fields to contain full path for table filtering
-                if (this.columns.some((x) => x["apiName"] == "Name")) {
-                    var nameField = this.columns.filter((x) => x["apiName"] == "Name")[0];
+        //        //Update name fields to contain full path for table filtering
+        //        if (this.columns.some((x) => x["apiName"] == "Name")) {
+        //            var nameField = this.columns.filter((x) => x["apiName"] == "Name")[0];
 
-                    this.relations.forEach(rel => {
-                        rel[nameField.datafield] = rel.Name;
-                    });
-                }
-            },
-                () => { this.isDataLoading = false; });
+        //            this.relations.forEach(rel => {
+        //                rel[nameField.datafield] = rel.Name;
+        //            });
+        //        }
+        //    },
+        //        () => { this.isDataLoading = false; });
     }
 
     private shouldShowEditor(): boolean {
@@ -164,55 +167,55 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }
 
     saveRelationship(event) {
-        let model: any[] = [];
-        let fields: any = {};
-        for (var prop in event.item) {
-            if (prop != "IntersectTypeID" && prop != "Source" && prop != "SourceID" && prop != "Items" && prop != "ID" && prop != "Uid") {
-                fields[prop] = event.item[prop];
-            }
-        }
+        //let model: any[] = [];
+        //let fields: any = {};
+        //for (var prop in event.item) {
+        //    if (prop != "IntersectTypeID" && prop != "Source" && prop != "SourceID" && prop != "Items" && prop != "ID" && prop != "Uid") {
+        //        fields[prop] = event.item[prop];
+        //    }
+        //}
 
-        if (event.action == "new") {
-            const assets = event.item.Items.split(',');
-            assets.forEach(a => {
-                let newRel: any = {};
-                if (this.isSubject)
-                    newRel = { SubjectAssetUid: this.objectUid, ObjectAssetUid: a, Fields: fields };
-                else
-                    newRel = { ObjectAssetUid: this.objectUid, SubjectAssetUid: a, Fields: fields };
+        //if (event.action == "new") {
+        //    const assets = event.item.Items.split(',');
+        //    assets.forEach(a => {
+        //        let newRel: any = {};
+        //        if (this.isSubject)
+        //            newRel = { SubjectAssetUid: this.objectUid, ObjectAssetUid: a, Fields: fields };
+        //        else
+        //            newRel = { ObjectAssetUid: this.objectUid, SubjectAssetUid: a, Fields: fields };
 
-                model.push(newRel);
-            });
-        }
-        else {
-            let newRel: any = {};
-            if (this.isSubject)
-                newRel = { SubjectAssetUid: this.objectUid, ObjectAssetUid: this.selected.ObjectUid, Fields: fields };
-            else
-                newRel = { ObjectAssetUid: this.objectUid, SubjectAssetUid: this.selected.ObjectUid, Fields: fields };
+        //        model.push(newRel);
+        //    });
+        //}
+        //else {
+        //    let newRel: any = {};
+        //    if (this.isSubject)
+        //        newRel = { SubjectAssetUid: this.objectUid, ObjectAssetUid: this.selected.ObjectUid, Fields: fields };
+        //    else
+        //        newRel = { ObjectAssetUid: this.objectUid, SubjectAssetUid: this.selected.ObjectUid, Fields: fields };
 
-            model.push(newRel);
-        }
+        //    model.push(newRel);
+        //}
 
-        this.relationshipsService.saveRelationships(this.intersectTypeID, model)
-            .subscribe(res => {
+        //this.relationshipsService.saveRelationships(this.intersectTypeID, model)
+        //    .subscribe(res => {
 
-                if (event.action == "new") {
-                    this.showMessageForApiResults(this.messagesService, res, " Relationships succesfully added!");
-                }
-                else {
-                    this.showMessageForApiResults(this.messagesService, res, " Relationships succesfully updated!");
-                }
+        //        if (event.action == "new") {
+        //            this.showMessageForApiResults(this.messagesService, res, " Relationships succesfully added!");
+        //        }
+        //        else {
+        //            this.showMessageForApiResults(this.messagesService, res, " Relationships succesfully updated!");
+        //        }
 
-                if (!res.some(x => x.Success != true)) {
-                    this.closeEditor();
-                    this.getData();
+        //        if (!res.some(x => x.Success != true)) {
+        //            this.closeEditor();
+        //            this.getData();
 
-                }
-                else {
-                    this.getData(true);
-                }
-            });
+        //        }
+        //        else {
+        //            this.getData(true);
+        //        }
+        //    });
     }
 
     deleteItem(item) {
@@ -223,17 +226,17 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         deleteItem["uid"] = item;
         model.push(deleteItem);
 
-        this.relationshipsService.deleteRelationshipV2(this.intersectTypeID, model)
-            .subscribe(res => {
+        //this.relationshipsService.deleteRelationshipV2(this.intersectTypeID, model)
+        //    .subscribe(res => {
 
-                this.showMessageForApiResults(this.messagesService, res, " Relationship succesfully deleted!");
-                if (!res.some((x) => x.Success != true)) {
-                    this.relations = this.relations.filter((x) => x.Uid != item);
-                    this.relationshipRemoved.emit();
-                }
-                this.showDelete = false;
-                this.deleteOff.emit();
-            });
+        //        this.showMessageForApiResults(this.messagesService, res, " Relationship succesfully deleted!");
+        //        if (!res.some((x) => x.Success != true)) {
+        //            this.relations = this.relations.filter((x) => x.Uid != item);
+        //            this.relationshipRemoved.emit();
+        //        }
+        //        this.showDelete = false;
+        //        this.deleteOff.emit();
+        //    });
 
     }
 

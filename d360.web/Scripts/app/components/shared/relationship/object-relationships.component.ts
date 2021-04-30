@@ -18,6 +18,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     @Input() objectPermissions: ResponsibilityTypeRelationPermission[] = [];
     @Input() isModal: boolean = false;
 
+    isSubject: boolean = false;
 
     @Input() assetTypeUid: string = '36226286-e3b5-48b9-bb8f-7b149c8a5d63';
 
@@ -154,24 +155,27 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     }
 
     public relationClick(rel: any) {
-
         this.selected = rel;
         this.updateCardinality();
     }
     private updateCardinality() {
-        //if (this.selected != null) {
-        //    this.cardinalityShow = (this.selected.Cardinality == 2) || (this.selected.Count == 0 && this.selected.Cardinality != 2);
-        //    this.hasAdd = this.cardinalityShow
-        //        && this.hasRelationships
-        //        && this.selected
-        //        && this.hasModifyRelationshipsPermissions()
-        //        && !this.readOnly
-        //        && this.selected.AllowEditFromRelationshipEditor;
-        //}
-        //else {
-        //    this.hasAdd = this.hasRelationships && this.hasAddRelationshipsPermissions() && !this.readOnly;
-        //}
-        //this.hasFilterMode = this.hasRelationships;
+        if (this.selected != null) {
+            this.isSubject = this.selected.Subject.Uid == this.assetTypeUid;
+
+            var cardinality = this.isSubject ? this.selected.Object.Cardinality : this.selected.Subject.Cardinality;
+
+            this.cardinalityShow = (cardinality === "Many") || (this.selected.Count == 0 && cardinality !== "Many");
+            this.hasAdd = this.cardinalityShow
+                && this.hasRelationships
+                && this.selected
+                && this.hasModifyRelationshipsPermissions()
+                && !this.readOnly
+                && this.selected.AllowEditFromRelationshipEditor;
+        }
+        else {
+            this.hasAdd = this.hasRelationships && this.hasAddRelationshipsPermissions() && !this.readOnly;
+        }
+        this.hasFilterMode = this.hasRelationships;
     }
 
     getRelName(rel: RelationshipTypeUIModel) {
@@ -179,5 +183,85 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
         var correctSide = isObject ? rel.Subject : rel.Object;
         return `${correctSide.Name} [${(isObject ? rel.Predicate.Inverse : rel.Predicate.Name)}]`;
+    }
+
+    getIconClass(rel: RelationshipTypeUIModel) {
+        {
+            var isObject = rel.Object.Uid == this.assetTypeUid;
+            var type = isObject ? rel.Subject.Class : rel.Object.Class;
+
+            let cs: string = 'fa inactive-tool-icon ';
+
+            switch (type) {
+                case "Rule":
+                    cs += "fa-pie-chart";
+                    break;
+                case "Policy":
+                    cs += "fa-university";
+                    break;
+                case "FusionAttribute":
+                    cs += "fa-database";
+                    break;
+                case "Resource":
+                    cs += "fa-user";
+                    break;
+                case "ReferenceItemType":
+                case "Reference":
+                    cs += "fa-list";
+                    break;
+                case "Diagram":
+                    cs += "fa-share-alt";
+                    break;
+                case "BusinessAsset":
+                case "TechnicalAsset":
+                    cs += "fa-book";
+                    break;
+                default:
+                    cs += "fa-book";
+                    break;
+            }
+            return cs;
+        }
+    }
+
+    getIconTooltip(rel: RelationshipTypeUIModel) {
+        {
+            var isObject = rel.Object.Uid == this.assetTypeUid;
+            var type = isObject ? rel.Subject.Class : rel.Object.Class;
+
+            let tooltip: string = '';
+
+            switch (type) {
+                case "Rule":
+                    tooltip = "Rule";
+                    break;
+                case "Policy":
+                    tooltip = "Policy";
+                    break;
+                case "FusionAttribute":
+                    tooltip = "Fusion Attribute";
+                    break;
+                case "Resource":
+                    tooltip = "Resource";
+                    break;
+                case "ReferenceItemType":
+                case "Reference":
+                    tooltip = "Reference List";
+                    break;
+                case "Diagram":
+                    tooltip = "Diagram";
+                    break;
+                case "BusinessAsset":
+                    tooltip = "Business Asset";
+                    break;
+                case "TechnicalAsset":
+                    tooltip = "Technical Asset";
+                    break;
+                default:
+                    tooltip = "";
+                    break;
+            }
+            return tooltip;
+        }
     }
 }
