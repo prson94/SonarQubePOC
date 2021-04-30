@@ -1262,4 +1262,13 @@ from	metrics.AssetVersion V
 	]]>
 		</sql>
 	</changeSet>
+
+	<changeSet author="Pappas" id="Data.Corrections.GOV-14433">
+			<sql dbms="mssql" splitStatements="false" stripComments="false">
+	<![CDATA[
+	delete [metrics].Execution where CompletedOn is null and Processing = 0 and Failures < 5 and StartedOn < dateadd(hh, -6, getutcdate())
+	]]>
+		</sql>
+	</changeSet>
+
 </databaseChangeLog>
