@@ -100,15 +100,15 @@ export class AdvancedFilterFieldCondition {
                 str += " ends with ";
                 break;
             case "Populated":
-                if (this.isRelationship) {
-                    str += " relationships exists ";
+                if (this.isRelationship || this.fieldType === "Relationship") {
+                    str += " relationships exist ";
                 }
                 else {
                     str += " is populated ";
                 }
                 break;
             case "NotPopulated":
-                if (this.isRelationship) {
+                if (this.isRelationship || this.fieldType === "Relationship") {
                     str += " relationships do not exist ";
                 }
                 else {
@@ -191,12 +191,12 @@ export class AdvancedFilterFieldCondition {
             case "EndsWith":
                 return `${fieldName} : *${this.getTypedValue()}`;
             case "Populated":
-                if (this.isRelationship) {
+                if (this.isRelationship || this.fieldType === "Relationship") {
                     return `${fieldName} exists`;
                 }
                 return `${fieldName} : populated`;
             case "NotPopulated":
-                if (this.isRelationship) {
+                if (this.isRelationship || this.fieldType === "Relationship") {
                     return `${fieldName} does not exist`;
                 }
                 return `${fieldName} : not populated`;
@@ -474,6 +474,10 @@ export class AdvancedFilterFieldConditionCollection {
         let queries: string[] = [];
         let valuesArr: any[];
         this.filters.filter((x) => x.field && x.operator && x.markForDeletion !== true).forEach((cond) => {
+            let treatAsRelationship: boolean =
+                (cond.operator.toString() !== "Populated" && cond.operator.toString() !== "NotPopulated") &&
+                ((cond.fieldType == null && cond.field.indexOf("|") === 36) || cond.relationshipFieldName.indexOf("|") === 36);
+            
             if ((cond.fieldType === "Lookup" || cond.fieldType === "Tag" || cond.field === SystemFields.OwnedByFieldCode) && cond.value) {
                 let subConditions: AdvancedFilterFieldCondition[] = [];
                 valuesArr = cond.value as SelectItem[];
@@ -526,8 +530,9 @@ export class AdvancedFilterFieldConditionCollection {
                     }
                 }
             }
-            else if ((cond.fieldType == null && cond.field.indexOf("|") === 36) || cond.relationshipFieldName.indexOf("|") === 36) {
+            else if (treatAsRelationship) {
                 let subConditions: AdvancedFilterFieldCondition[] = [];
+                console.log(cond);
                 if (cond.value) {
                     valuesArr = cond.value as SelectItem[];
                     valuesArr.forEach((r) => {

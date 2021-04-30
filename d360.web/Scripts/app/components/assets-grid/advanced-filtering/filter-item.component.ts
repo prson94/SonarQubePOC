@@ -36,7 +36,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     isSelectingCurrentField: boolean = false;
     isSelectingValue: boolean = false;
-
+    hasSelectAllCheckbox: boolean = false;
 
     tableSelection: any;
 
@@ -75,6 +75,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
         private tagService: TagService,
         private assetService: AssetService
     ) {
+
+        setInterval(() => this.updateTopPosition(), 25);
     }
 
     ngOnChanges() {
@@ -190,7 +192,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
             var html = this.elRef.nativeElement as HTMLElement;
             var scrollWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0];
             if (scrollWrapper) {
-                var topPosition = html.getBoundingClientRect().bottom;
                 let width = 500;
 
                 var tableWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0] as HTMLElement;
@@ -203,11 +204,25 @@ export class FilterItemComponent implements OnInit, OnChanges {
                         let diff = Math.abs(width - distanceFromRight);
                         selectionElement.style.left = (html.getBoundingClientRect().left - diff - 50) + "px";
                     }
-                    selectionElement.style.top = topPosition + "px";
                 }
             }
 
             this.setSelectionVirtualScrollHeight(null);
+        }
+        catch (ex) {
+            console.warn(ex);
+        }
+    }
+
+    updateTopPosition() {
+        try {
+            var html = this.elRef.nativeElement as HTMLElement;
+            var topPosition = html.getBoundingClientRect().bottom;
+            var selectionElement = html.getElementsByClassName("value-selection")[0] as HTMLElement;
+
+            if (selectionElement) {
+                selectionElement.style.top = topPosition + "px";
+            }
         }
         catch (ex) {
             console.warn(ex);
@@ -350,6 +365,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
     onFieldSelected($event) {
         this.isSelectingCurrentField = false;
         this.relationshipFieldIntersectTypeUid = "";
+        this.hasSelectAllCheckbox = false;
 
 
         var type = this.getFieldType(this.condition);
@@ -385,6 +401,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.condition.fieldType = null;
                 this.uiCurrentOperatorsList = this.getOperators(this.condition);
                 this.uiFilterLabel = this.condition.getFilterLabel();
+                this.hasSelectAllCheckbox = true;
             }
             else if (this.currentField.IsRelationship) {
                 this.condition.friendlyFieldName = this.currentField.FriendlyName;
