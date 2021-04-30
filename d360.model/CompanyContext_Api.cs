@@ -10049,8 +10049,7 @@ SET DefinitionConverted = cd.[Definition];
             int itemNumber = 1;
             List<GroupResponseResult> results = new List<GroupResponseResult>();
             CurrentExecutionLocationModel currentLocation = null;
-            var currentUser = CurrentCompanyID;
-
+            
             var dups = groups.GroupBy(x => x.Name.Trim()).Where(x => x.Count() > 1).Select(x => new { x.Key, Items = x.ToList() }).ToList();
 
             Add(execution);
@@ -10252,7 +10251,7 @@ EG.GroupUid
                     G.IsActiveDirectoryGroup = S.IsActiveDirectoryGroup
                 when not matched then
 	                insert ([Uid], Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID,IsActiveDirectoryGroup,UpdatedOn,UpdatedBy)
-	                values (ISNULL(S.GroupUid, NEWID()), TRIM(S.Name),S.Description, S.PrimaryID, S.SecondaryID,S.IsActiveDirectoryGroup,GETDATE(),@currentUser)
+	                values (ISNULL(S.GroupUid, NEWID()), TRIM(S.Name),S.Description, S.PrimaryID, S.SecondaryID,S.IsActiveDirectoryGroup,GETDATE(),@CurrentResourceID)
 	            output TRIM(S.Name), S.ExecutionItemUid into #mergeResultTable;
 
 
@@ -10325,7 +10324,7 @@ EG.GroupUid
                 where EG.ExecutionID = @ExecutionID and EG.Success is null";
 
                                     Connection.Execute(insertSQL,
-                                            new { execution.ExecutionID, beginItemNumber, endItemNumber, currentUser }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID}, transaction: trans, commandTimeout: timeout);
 
                                     Connection.Execute(
                                                         $"update [api].[ExecutionGroup] set Success = 1, Message = 'Success' where	Success is null and ExecutionID = @ExecutionID;",
@@ -10563,8 +10562,6 @@ EG.GroupUid
             var metrics = new Dictionary<string, double>();
             var sw = Stopwatch.StartNew();
             var step = 0;
-
-            var currentUser = CurrentCompanyID;
 
             var dups = request.Where(i => i.ExecutionItemUid.HasValue && i.ExecutionItemUid.Value != Guid.Empty).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
 
