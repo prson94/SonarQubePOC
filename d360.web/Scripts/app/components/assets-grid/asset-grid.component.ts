@@ -564,6 +564,10 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     private newAdvancedFilters: Filters;
     private advancedFiltersChanged($event) {
         this.newAdvancedFilters = $event;
+        this.stateService.artifactTypeFilters.currentPageNumber = 0;
+        if (this.dt) {
+            this.dt.first = 0;
+        }
         this.getData();
     }
 
