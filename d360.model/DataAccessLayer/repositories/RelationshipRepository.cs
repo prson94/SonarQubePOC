@@ -117,6 +117,7 @@ namespace d360.model.DataAccessLayer
         {
             var dbArgs = new DynamicParameters();
             bool includeTotal = true;
+            bool includeAssetPath = false;
 
             var baseTableSql = @"from [Intersect] I 
 inner join IntersectType T on T.ID = I.IntersectTypeID 
@@ -230,6 +231,14 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     }
                 }
 
+                if (queryParamsList.Any(q => q.Key.ToLower() == "_includepath"))
+                {
+                    if (!bool.TryParse(queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "_includepath").Value, out includeAssetPath))
+                    {
+                        includeAssetPath = false;
+                    }
+                }
+
                 // Now deal with dynamic field filters
                 if (fieldTypes != null)
                 {
@@ -289,6 +298,12 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
             });
             predicateTypeSql += " end as 'Predicate.Type', ";
 
+            if (includeAssetPath)
+            {
+                fieldJoins.Add(" left join graph.AssetNodeDisplayPath ANDP_Object on ANDP_Object.Id = O.Id ");
+                fieldJoins.Add(" left join graph.AssetNodeDisplayPath ANDP_Subject on ANDP_Subject.Id = S.Id ");
+            }
+
             string fieldColumnsSql = "";
             if (fieldColumns.Count > 0)
                 fieldColumnsSql = string.Join(",\n", fieldColumns) + ",";
@@ -313,8 +328,10 @@ select	@pageSize as 'pageSize',
 				P.Inverse as 'Predicate.Inverse',
 				lower(S.Uid) as 'Subject.Uid',
 				ISNULL(lower(ST1.Uid),lower(ST2.Uid)) as 'Subject.AssetTypeUid',
+                {(includeAssetPath ? "ANDP_Object.DisplayPath as 'Subject.[Path]'," : "")}
 				lower(O.Uid) as 'Object.Uid',
 				ISNULL(lower(OT1.Uid),lower(OT2.Uid)) as 'Object.AssetTypeUid'
+                {(includeAssetPath ? ",ANDP_Object.DisplayPath as 'Object.[Path]'" : "")}
 		{baseTableSql}
         {string.Join("\n", fieldJoins)}
         {whereClause} 

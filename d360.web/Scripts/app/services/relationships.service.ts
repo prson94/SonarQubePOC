@@ -283,7 +283,11 @@ export class RelationshipsService extends BaseObservableService {
         return obs;
     }
 
-    getRelationships(intersectTypeUid: string, objectUid: string = null, subjectUid: string = null): Observable<RelationshipType[]> {
+    getRelationships(intersectTypeUid: string,
+        objectUid: string = null,
+        subjectUid: string = null,
+        includePaths: boolean = false
+    ): Observable<RelationshipType[]> {
         var url = 'api/v2/relationships?RelationshipTypeUid=' + intersectTypeUid;
 
         if (objectUid) {
@@ -291,6 +295,9 @@ export class RelationshipsService extends BaseObservableService {
         }
         if (subjectUid) {
             url += `&subjectUid=${subjectUid}`
+        }
+        if (includePaths) {
+            url += `&_includePath=true`
         }
 
         return this.http.get(url)

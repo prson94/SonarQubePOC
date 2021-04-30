@@ -425,6 +425,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageNum", "Allows for changing the current page of results you are requesting.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "Allows for changing the page size of results you are requesting. The maximum page size is 5000, the default is 250.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included and if leave out this parameter.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_includePath", "Includes Asset path values to both object and subject side.  The default is false meaning relationships will not return asset path.", DataType = "boolean", ParameterType = "query", Required = false),
        ]
         public async Task<HttpResponseMessage> GetRelationshipsAsync(State? State = null)
         {

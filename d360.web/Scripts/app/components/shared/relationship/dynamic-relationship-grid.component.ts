@@ -98,6 +98,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
                 this.isGridLoading = false;
                 this.columns = result.Columns;
                 this.fields = result.Fields;
+                console.log(this.fields);
                 this.showEditPencil = (result.FieldsCount > 0);
                 this.readOnly = result.IsReadOnly;
                 this.readOnlyChange.emit(this.readOnly);
@@ -115,7 +116,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             objectUid = this.assetUid;
         }
 
-        this.relationshipsService.getRelationships(this.intersectTypeUid, objectUid, subjectUid).subscribe((res) => {
+        this.relationshipsService.getRelationships(this.intersectTypeUid, objectUid, subjectUid, true).subscribe((res) => {
             this.totalRecords = +res["total"];
             this.relations = res["items"] as any[];
         });
