@@ -340,6 +340,7 @@ export class AdvancedFilteringComponent implements OnChanges {
                 newfilter.isDefaultFilter = filter.isDefaultFilter;
                 newfilter.value = filter.value;
                 newfilter.isPreloaded = true;
+                newfilter.isConfirmed = true;
                 if (newfilter.type && (newfilter.type.Type.Date || filter.type.Type.DateTime)) {
                     newfilter.value = new Date(filter.value);
                 }
