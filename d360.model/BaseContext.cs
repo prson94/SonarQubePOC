@@ -22,7 +22,8 @@ namespace d360.model
     {
         public AzureConfiguration()
         {
-            SetExecutionStrategy("System.Data.SqlClient", () => new SqlAzureExecutionStrategy(3, TimeSpan.FromSeconds(5)));
+            // The default retry limit is 5, which means that the total amount of time spent between retries is 26 seconds plus the random factor.
+            SetExecutionStrategy("System.Data.SqlClient", () => new SqlAzureExecutionStrategy());
         }
     }
 
@@ -92,12 +93,13 @@ namespace d360.model
 
         public BaseContext()
         {
-
+            SetDefaultEntityFrameworkCommandTimeout();
         }
 
         public BaseContext(string connectionString): base(connectionString)
         {
             CompanyConnectionString = connectionString;
+            SetDefaultEntityFrameworkCommandTimeout();
         }
 
         #region Generic Repository Methods
@@ -202,8 +204,7 @@ namespace d360.model
         }
 
         internal IQueryable<T> getWithIncludes<T>(params Expression<Func<T, object>>[] includes) where T : BaseObject
-        {
-            //ObjectQuery<T> itemWithIncludes = Set<T>() as ObjectQuery<T>;
+        {            
             var itemWithIncludes = Set<T>() as DbQuery<T>;
             if (includes.Length > 0)
             {
@@ -365,9 +366,13 @@ namespace d360.model
             return this.Set<T>();
         }
 
-        public void UpdateDatabaseTableStatistics()
+        private void SetDefaultEntityFrameworkCommandTimeout()
         {
-            ExecuteNonQueryCommand("sp_updatestats", null);
+            var adapter = (IObjectContextAdapter)this;
+            if (adapter != null)
+            {
+                adapter.ObjectContext.CommandTimeout = 2 * 60; // 2 minute ef command timeout value in seconds (default is 30 seconds)
+            }
         }
 
         #region For Deriving company and resource records based on incoming raw values
