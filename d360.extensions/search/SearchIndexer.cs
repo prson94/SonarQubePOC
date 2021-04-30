@@ -240,8 +240,9 @@ namespace d360.extensions.search
                     return $"quality/rule/{typeId}/{objectId}";
                 case "Taxonomy":
                     return $"model/{typeId}/id/{objectId}";
+                default:
+                    return "";
             }
-            return "";
         }
 
         private IEnumerable<IndexObjectModel> LoadModels(SqlConnection context, int companyID, AssetTypeClass? assetClass, Guid? AssetTypeUid, Guid? AssetUid, bool useTempTable = false, string batchTable = null)
