@@ -28,6 +28,8 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     relationshipItems: RelationshipTypeUIModel[] = [];
     selected: RelationshipTypeUIModel;
 
+    nonEditablePredicates: string[] = ["Inter-type Hierarchy", "Intra-type Hierarchy", "User Ownership", "Object Ownership"];
+
     readOnly: boolean = false;
     cardinalityShow: boolean = true;
     hasRelationships: boolean = false;
@@ -73,10 +75,11 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
             this.selected = null;
             for (let relation of this.relationshipItems) {
                 relation.Count = 0;
-                if (relation.Count > 0) {
+                if (relation.Count > 0 && !this.selected) {
                     this.selected = relation;
-                    break;
+
                 }
+                relation.AllowEditFromRelationshipEditor = this.nonEditablePredicates.indexOf(relation.Predicate.Type) === -1;
             }
 
             if (!this.selected)

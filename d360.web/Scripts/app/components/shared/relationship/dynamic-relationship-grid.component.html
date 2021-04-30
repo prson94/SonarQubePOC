@@ -1,5 +1,5 @@
-﻿<d3s-loading [isLoading]="isGridLoading || isDataLoading"></d3s-loading>
-<div *ngIf="!isDataLoading && !isGridLoading">
+﻿<d3s-loading [isLoading]="isGridLoading"></d3s-loading>
+<div *ngIf="!isGridLoading">
     <div *ngIf="!shouldShowEditor() && !showDelete">
 
         <input type="text" [hidden]="!simpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
@@ -16,6 +16,8 @@
                  [scrollable]="true"
                  [lazy]="true" 
                  [totalRecords]="totalRecords"
+                 [loading]="isDataLoading"
+                 [loadingIcon]="'fa fa-spinner fa-spin'"
                  (onLazyLoad)="loadRelationshipLazy($event)"
                  scrollWidth="100%">
             <ng-template pTemplate="colgroup">
@@ -53,12 +55,12 @@
                         </div>
                     </td>
                     <td>
-                        <div class="RowTools" *ngIf="hasEdit && !readOnly && item.CanEdit && showEditPencil">
+                        <div class="RowTools" *ngIf="hasEdit && !readOnly && showEditPencil">
                             <a style="cursor:pointer;" (click)="selected=item;showEditor=true;" title="Edit"><i class="fa fa-pencil"></i></a>
                         </div>
                     </td>
                     <td>
-                        <div class="RowTools" *ngIf="hasDelete && !readOnly && item.CanDelete">
+                        <div class="RowTools" *ngIf="hasDelete && !readOnly">
                             <a style="cursor:pointer;" (click)="selected=item;doDelete();" title="Remove"><i class="fa fa-trash-o"></i></a>
                         </div>
                     </td>
@@ -86,7 +88,7 @@
                         (saveClick)="saveRelationship($event)"
                         (closeClick)="closeEditor()"
                         [useV2ApiLink]="true"></d3s-dynamic-editor>
-    <div *ngIf="!isDataLoading && relations.length == 0 && !shouldShowEditor()">
+    <div *ngIf="relations.length == 0 && !shouldShowEditor()">
         <h5 class="center-align" style="font-weight:bold;">No relationships exist from this object to this object type.</h5>
     </div>
     <d3s-delete-form *ngIf="showDelete"

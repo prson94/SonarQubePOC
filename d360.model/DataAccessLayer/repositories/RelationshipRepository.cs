@@ -328,7 +328,7 @@ select	@pageSize as 'pageSize',
 				P.Inverse as 'Predicate.Inverse',
 				lower(S.Uid) as 'Subject.Uid',
 				ISNULL(lower(ST1.Uid),lower(ST2.Uid)) as 'Subject.AssetTypeUid',
-                {(includeAssetPath ? "ANDP_Object.DisplayPath as 'Subject.[Path]'," : "")}
+                {(includeAssetPath ? "ANDP_Subject.DisplayPath as 'Subject.[Path]'," : "")}
 				lower(O.Uid) as 'Object.Uid',
 				ISNULL(lower(OT1.Uid),lower(OT2.Uid)) as 'Object.AssetTypeUid'
                 {(includeAssetPath ? ",ANDP_Object.DisplayPath as 'Object.[Path]'" : "")}

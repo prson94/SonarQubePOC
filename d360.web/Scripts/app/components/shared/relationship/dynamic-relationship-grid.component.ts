@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild, OnDestroy } from "@angular/core";
+﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core";
 import { Router } from "@angular/router";
 import { GridColumn, GridField } from "../../../models/grid-definition.model";
 import { GridDefinitionService } from "../../../services/grid-definition.service";
@@ -25,8 +25,8 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
 
     @Input() addRelationship: boolean;
-    @Input() hasEdit: boolean = true;
-    @Input() hasDelete: boolean = true;
+    @Input() hasEdit: boolean = false;
+    @Input() hasDelete: boolean = false;
     @Input() readOnly: boolean = false;
 
     @Output() readOnlyChange = new EventEmitter();
@@ -64,7 +64,8 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         private gridDefinitionService: GridDefinitionService,
         protected relationshipsService: RelationshipsService,
         private messagesService: MessagesObservableService,
-        private assetService: AssetService
+        private assetService: AssetService,
+        private cdRef: ChangeDetectorRef
     ) {
         super();
         this.theDeleteCallback = this.deleteItem.bind(this);
@@ -98,66 +99,35 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
                 this.isGridLoading = false;
                 this.columns = result.Columns;
                 this.fields = result.Fields;
-                console.log(this.fields);
                 this.showEditPencil = (result.FieldsCount > 0);
                 this.readOnly = result.IsReadOnly;
                 this.readOnlyChange.emit(this.readOnly);
             });
     }
 
-    loadRelationshipLazy(event: LazyLoadEvent) {
-        let objectUid = null;
-        let subjectUid = null;
-
+    loadRelationshipLazy($event: LazyLoadEvent) {
+        this.isDataLoading = true;
+        var params = {};
         if (this.isSubject) {
-            subjectUid = this.assetUid;
+            params["subjectUid"] = this.assetUid;
         }
         else {
-            objectUid = this.assetUid;
+            params["objectUid"] = this.assetUid;
         }
 
-        this.relationshipsService.getRelationships(this.intersectTypeUid, objectUid, subjectUid, true).subscribe((res) => {
+        params["_includePath"] = true;
+        params["_pageSize"] = $event.rows;
+        params["_pageNum"] = ($event.first / $event.rows) + 1;
+
+        this.relationshipsService.getRelationships(this.intersectTypeUid, params).subscribe((res) => {
             this.totalRecords = +res["total"];
             this.relations = res["items"] as any[];
+            this.relations.forEach((rel) => {
+                rel["Name"] = this.isSubject ? rel.Object["[Path]"] : rel.Subject["[Path]"];
+            });
+            this.isDataLoading = false;
+            this.cdRef.markForCheck();
         });
-    }
-
-    getData(forceEditorOpen: boolean = false) {
-
-
-
-
-        //this.relationshipsService.getObjectRelationships(
-        //    this.objectType,
-        //    this.objectID,
-        //    this.targetType,
-        //    this.targetTypeID,
-        //    this.intersectTypeID,
-        //    false,
-        //    !this.isSubject)
-        //    .subscribe((result) => {
-        //        console.log(result);
-
-        //        this.relations = result;
-        //        if (this.relations.length > 0) {
-        //            this.selected = this.relations[0];
-        //        }
-        //        this.relationshipAdded.emit({ count: result.length });
-        //        if (this.shouldShowEditor() && !forceEditorOpen) {
-        //            this.closeEditor();
-        //        }
-        //        this.isDataLoading = false;
-
-        //        //Update name fields to contain full path for table filtering
-        //        if (this.columns.some((x) => x["apiName"] == "Name")) {
-        //            var nameField = this.columns.filter((x) => x["apiName"] == "Name")[0];
-
-        //            this.relations.forEach(rel => {
-        //                rel[nameField.datafield] = rel.Name;
-        //            });
-        //        }
-        //    },
-        //        () => { this.isDataLoading = false; });
     }
 
     private shouldShowEditor(): boolean {
