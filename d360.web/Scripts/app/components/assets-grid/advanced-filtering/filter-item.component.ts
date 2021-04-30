@@ -28,6 +28,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     @Output() onChange = new EventEmitter();
 
+    nonValueOperators: string[] = ["Populated", "NotPopulated", "IsTrue", "IsFalse"];
+
     lazyLoadSubscription: Subscription;
 
     currentField: FieldTypeAPIModelFieldCondition;
@@ -619,6 +621,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     confirmValue() {
         this.isSelectingValue = false;
+        this.condition.isConfirmed = true;
         this.condition.operator = this.currentOperator;
         this.updateOperatorData();
 
@@ -684,7 +687,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     hasRemoveButton() {
-        if (this.condition.isDefaultFilter || (!this.isEmpty(this.condition.value) && this.condition.operator)) {
+        if (this.condition.isDefaultFilter
+            || (!this.isEmpty(this.condition.value) && this.condition.operator)
+            || (this.condition.isConfirmed && this.isNonValueOperator())
+        ) {
             return true;
         }
 
@@ -692,15 +698,11 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     hasRemoveIcon() {
-        if (!this.condition.operator) {
+        if (!this.condition.operator || !this.condition.isConfirmed) {
             return false;
         }
 
-        if (this.condition.operator.toString() === "Populated"
-            || this.condition.operator.toString() === "NotPopulated"
-            || this.condition.operator.toString() === "IsTrue"
-            || this.condition.operator.toString() === "IsFalse"
-        ) {
+        if (this.isNonValueOperator()) {
             return true;
         }
 
@@ -1019,5 +1021,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
         //update reference
         this.condition.value = [...valueRef];
         this.updateAllAnyData();
+    }
+
+    isNonValueOperator(): boolean {
+        if (!this.condition.operator) {
+            return false;
+        }
+        return this.nonValueOperators.indexOf(this.condition.operator.toString()) !== -1;
     }
 }

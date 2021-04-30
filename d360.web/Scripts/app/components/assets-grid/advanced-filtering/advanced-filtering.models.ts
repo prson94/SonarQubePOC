@@ -35,6 +35,7 @@ export class AdvancedFilterFieldCondition {
     isDefaultFilter?: boolean = false;
 
     isPreloaded?: boolean = false;
+    isConfirmed?: boolean = false;
 
     relationshipFieldName?: string = "";
 
