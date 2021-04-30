@@ -180,7 +180,7 @@ namespace d360.extensions.search
             //and indexing by asset type is more performant.
             if (assetClass != AssetTypeClass.Fusion && assetClass != AssetTypeClass.FusionAttribute)
             {
-                int assetCount = _context.QueryFirstOrDefault<int>(@"SELECT COUNT(1) 
+                long assetCount = _context.QueryFirstOrDefault<int>(@"SELECT COUNT(1) 
                 FROM [dbo].[Asset] a
                 INNER JOIN [dbo].[AssetType] at ON a.assettypeid = at.id
                 WHERE at.[Class] = @assettypeclass", new { assettypeclass });
@@ -226,6 +226,22 @@ namespace d360.extensions.search
 
             IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, ObjectType);
             _source.AddToIndex(models);
+        }
+
+        private string GenerateUrl(string type, int typeId, int objectId)
+        {
+            switch(type)
+            {
+                case "Artifact":
+                    return $"artifact/{typeId}/{objectId}";
+                case "Policy":
+                    return $"policy/{typeId}/id/{objectId}";
+                case "Rule":
+                    return $"quality/rule/{typeId}/{objectId}";
+                case "Taxonomy":
+                    return $"model/{typeId}/id/{objectId}";
+            }
+            return "";
         }
 
         private IEnumerable<IndexObjectModel> LoadModels(SqlConnection context, int companyID, AssetTypeClass? assetClass, Guid? AssetTypeUid, Guid? AssetUid, bool useTempTable = false, string batchTable = null)
@@ -279,16 +295,17 @@ namespace d360.extensions.search
                     }
                     string whereCondition = string.Join(" and ", where.ToArray());
 
-                    sql = $@"SELECT
+                    sql = $@"SELECT AssetID, ItemUniqueID, Type, ID, TypeID, DisplayValue, TypeName, AssetTypeUid, Uid FROM (
+                        SELECT
                             A.ID as AssetID,
 	                        cast(A.ID as varchar) as ItemUniqueID,
+                            A.Object as Type,
 	                        A.ObjectID as ID,
 	                        att.ObjectID as TypeID,
 	                        adv.DisplayValue,
 	                        att.Name as TypeName,
                             att.uid as AssetTypeUid,
-	                        a.uid as Uid,
-                            dbo.GenerateAssetUrl(a.ID) as 'Url'
+	                        a.uid as Uid
                         from
 	                        [dbo].Asset a
 	                        inner join [dbo].assettype att on a.assettypeid = att.id
@@ -296,7 +313,7 @@ namespace d360.extensions.search
                             {joinBatchTable}
                         where
 	                          {whereCondition}
-                        ORDER BY A.ID";
+                        ) q ORDER BY q.ID";
                     mode = IndexMode.WithFields | IndexMode.WithTags | IndexMode.WithResponsibility;
                     shaper = (dynamic o) =>
                     {
@@ -308,7 +325,7 @@ namespace d360.extensions.search
                             AssetID = o.AssetID,
                             ItemUniqueID = o.ItemUniqueID,
                             AssetType = o.TypeName,
-                            RelativeUrl = o.Url,
+                            RelativeUrl = GenerateUrl(o.Type, o.TypeID, o.ID),
                             Uid = o.Uid,
                             AssetTypeUid = o.AssetTypeUid,
                             Fields = new Dictionary<string, string>() {
@@ -377,7 +394,6 @@ namespace d360.extensions.search
 	                        att.Name as TypeName,
                             att.uid as AssetTypeUid,
 	                        a.uid as Uid,
-                            dbo.GenerateAssetUrl(a.ID) as 'Url', a.[Object],
 	                        u.email as Email,
 	                        CASE
                             WHEN u.Email not like '%@data3sixty.com' and Email not like '%@infogix.com'
@@ -403,7 +419,7 @@ namespace d360.extensions.search
                             AssetID = o.AssetID,
                             ItemUniqueID = o.ItemUniqueID,
                             AssetType = o.TypeName,
-                            RelativeUrl = o.Url,
+                            RelativeUrl = $"resource/{o.ID}",
                             Uid = o.Uid,
                             AssetTypeUid = o.AssetTypeUid,
                             Fields = new Dictionary<string, string>() {
@@ -439,8 +455,7 @@ namespace d360.extensions.search
                             g.[Description],
 	                        att.Name as TypeName,
                             att.uid as AssetTypeUid,
-	                        a.uid as Uid,
-                            dbo.GenerateAssetUrl(a.ID) as 'Url'
+	                        a.uid as Uid
                         from
 	                        [dbo].Asset a
                             inner join [Group] g on g.ID = a.ObjectID and [Object] = 'Group'
@@ -460,7 +475,7 @@ namespace d360.extensions.search
                             AssetID = o.AssetID,
                             ItemUniqueID = o.ItemUniqueID,
                             AssetType = o.TypeName,
-                            RelativeUrl = o.Url,
+                            RelativeUrl = $"group/{o.ID}",
                             Uid = o.Uid,
                             AssetTypeUid = o.AssetTypeUid,
                             Fields = new Dictionary<string, string>() {
@@ -699,6 +714,12 @@ namespace d360.extensions.search
 
             if (mode.HasFlag(IndexMode.WithFields))
             {
+                if (!useTempTable)
+                {
+                    long assetCount = context.QueryFirstOrDefault<int>(@"SELECT COUNT(1) FROM [dbo].[Asset]");
+                    useTempTable = assetCount > (4 * _indexClassAsTypesLimit);
+                }
+
                 if (useTempTable)
                 {
                     FieldQuery = new TempTablePagedQuery<FieldSqlModel>(context, GetFieldQuery(parameters), parameters);
