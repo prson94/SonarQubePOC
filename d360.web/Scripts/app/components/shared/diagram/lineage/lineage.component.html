@@ -19,13 +19,7 @@
                 </li>
                 <li (click)="selectTab('code')" class="tab-item" [class.selected]="tab == 'code'" *ngIf="showNodeTabs">
                     <i class="fa fa-code-fork fa-2x"></i>
-                </li>
-                <li (click)="selectTab('user')" class="tab-item" [class.selected]="tab == 'user'" *ngIf="showNodeTabs">
-                    <i class="fa fa-user fa-2x"></i>
-                </li>
-                <li (click)="selectTab('database')" class="tab-item" [class.selected]="tab == 'database'" *ngIf="showNodeTabs">
-                    <i class="fa fa-database fa-2x"></i>
-                </li>
+                </li>                                
                 <li (click)="selectTab('exchange')" class="tab-item" [class.selected]="tab == 'exchange'" *ngIf="showLinkTabs">
                     <i class="fa fa-exchange fa-2x"></i>
                 </li>
@@ -36,13 +30,7 @@
                 </div>
                 <div *ngSwitchCase="'code'">
                     <d3s-lineage-source-rules *ngIf="target && targetId" [source]="source" [sourceId]="sourceId" [target]="target" [targetId]="targetId"></d3s-lineage-source-rules>
-                </div>
-                <div *ngSwitchCase="'user'">
-                    <d3s-lineage-responsibilities *ngIf="target && targetId" [objectId]="targetId" [objectType]="target"></d3s-lineage-responsibilities>
-                </div>
-                <div *ngSwitchCase="'database'">
-                    <d3s-lineage-technical *ngIf="target && targetId" [source]="source" [sourceId]="sourceId" [target]="target" [targetId]="targetId"></d3s-lineage-technical>
-                </div>
+                </div>                
                 <div *ngSwitchCase="'exchange'">
                     <d3s-lineage-mapping-rules *ngIf="targetId && sourceId" [source]="source" [sourceId]="sourceId" [target]="target" [targetId]="targetId"></d3s-lineage-mapping-rules>
                 </div>

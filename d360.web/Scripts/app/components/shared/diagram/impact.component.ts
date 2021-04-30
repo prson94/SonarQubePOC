@@ -729,10 +729,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
                 break;
             case 'user':
                 this.headerText = 'Responsibilities';
-                break;
-            case 'fusion':
-                this.headerText = 'Fusion Relationships';
-                break;
+                break;            
             case 'filter':
                 this.headerText = 'Filter';
                 break;

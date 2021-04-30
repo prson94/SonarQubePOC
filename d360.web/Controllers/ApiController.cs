@@ -912,8 +912,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     fields.Add(new GridField { name = "TypeID", type = "number" });
                     fields.Add(new GridField { name = "Type", type = "string" });
                     fields.Add(new GridField { name = "TypeName", type = "string" });
-                    fields.Add(new GridField { name = "Url", type = "string" });
-                    fields.Add(new GridField { name = "HasTechnicalRelationships", type = "bool" });
+                    fields.Add(new GridField { name = "Url", type = "string" });                    
                     break;
                 #endregion                
                 case SystemObjects.TaxonomyType:
@@ -4684,19 +4683,11 @@ select	I.[Uid],
 		case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end as TypeID,
 		AST.Name as TypeName,
         IA.uid as ObjectUid,
-		T.HasTechnicalRelationships,
         case when I.Subject = @type and I.SubjectID = @id then cast(1 as bit) else cast(0 as bit) end as IsSubject
         {assetColumns}
 from	[Intersect] I
         inner join IntersectType IT on IT.ID = I.IntersectTypeID
-		{assetJoin}
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as HasTechnicalRelationships
-					from	[Intersect]
-					where	Subject = 'Intersect' and SubjectID = I.ID) T
+		{assetJoin}		
 where	{whereSql}
         and I.IntersectTypeID = {intersectTypeID} ";
             }
@@ -4732,20 +4723,11 @@ select	I.[Uid],
 		IT.Object Type,
 		IT.ObjectID TypeID,
 		AST.Name as TypeName,
-		T.HasTechnicalRelationships,
         case when I.Subject = @type and I.SubjectID = @id then cast(1 as bit) else cast(0 as bit) end as IsSubject
         {assetColumns}
 from	[Intersect] I
 		inner join IntersectType IT on IT.ID = I.IntersectTypeID
-		{assetJoin}
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as HasTechnicalRelationships
-					from	[Intersect]
-					where	Subject = 'Intersect' and SubjectID = I.ID
-					) T
+		{assetJoin}		
 where	((I.Subject = @type  and I.SubjectID = @id) {(includeInverse ? " or (I.Object = @type  and I.ObjectID = @id) " : "")})        
         and I.IntersectTypeID = {intersectTypeID} ";
             }
@@ -4790,20 +4772,11 @@ select	I.[Uid],
 		IT.Subject as Type,
 		IT.SubjectID as TypeID,
 		AST.Name as TypeName,
-		T.HasTechnicalRelationships,
         case when I.Subject = @type and I.SubjectID = @id then cast(1 as bit) else cast(0 as bit) end as IsSubject
         {assetColumns}
 from    [Intersect] I 
         inner join IntersectType IT on IT.ID = I.IntersectTypeID 
-        {assetJoin} 
-        cross apply(
-                    select	case 
-                                when count(1) > 0 then cast(1 as bit)
-							    else cast(0 as bit)
-                            end as HasTechnicalRelationships
-                    from    [Intersect]
-                    where   Subject = 'Intersect' and SubjectID = I.ID
-                    ) T 
+        {assetJoin}         
 where   ( 
         (I.Object = @type and I.ObjectID = @id) 
         {(includeInverse ? " or (I.Subject = @type  and I.SubjectID = @id) " : "")}
