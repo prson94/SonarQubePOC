@@ -26,7 +26,7 @@ export class ObjectDetailComponent implements OnChanges {
     private isLoading = false;
     DetailFieldType = DetailFieldType;
 
-    readonly systemProperties: string = "System Properties";
+    readonly systemProperties: string = "System Fields";
     readonly noCategory: string = "None";
 
     private categories: Category[] = new Array<Category>();

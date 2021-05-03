@@ -173,7 +173,7 @@ namespace d360.core.enums
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Decimal, DataType.Number),
-            OperatorAllowedDataTypesAdvancedFilter(DataType.Decimal, DataType.Number),
+            OperatorAllowedDataTypesAdvancedFilter(DataType.Number),
             OperatorFieldTypeRequirements(false),
             SortOrder(1000)
         ]
@@ -197,7 +197,7 @@ namespace d360.core.enums
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Decimal, DataType.Number),
-            OperatorAllowedDataTypesAdvancedFilter(DataType.Decimal, DataType.Number),
+            OperatorAllowedDataTypesAdvancedFilter(DataType.Number),
             OperatorFieldTypeRequirements(false),
             SortOrder(1100)
         ]

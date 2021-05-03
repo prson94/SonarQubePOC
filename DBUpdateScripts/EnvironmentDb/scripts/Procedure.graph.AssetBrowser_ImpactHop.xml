@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_ImpactHop-v9">
-    <comment>GOV-13719</comment>
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_ImpactHop-v10">
+    <comment>GOV-14396</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -21,10 +21,20 @@ CREATE OR ALTER procedure [graph].[AssetBrowser_ImpactHop]
 	@direction char(1) = 'F', -- (F)orward, (B)ackward
 	@resourceId int,
 	@isAdmin bit,
-	@includeNonLeaf bit = 1
+	@includeNonLeaf bit = 1,
+	@includeDescendantAssets bit = 1
 as
 begin
 	set nocount on;
+
+    declare @offLimitImpactFunctionalTypes table (ID int)
+	declare @maxLineageDescendants int = 500
+
+	insert into @offLimitImpactFunctionalTypes (ID) values (15)
+	if @ancestry = 1
+	begin
+		insert into @offLimitImpactFunctionalTypes (ID) values (1),(3),(4)
+	end
 
 	drop table if exists #ids;
 	create table #ids ([Key] varchar(50), ID bigint);
@@ -136,7 +146,8 @@ begin
 								Uid uniqueidentifier, ID bigint, ParentID bigint, AssetTypeID int, [Key] varchar(50), [ParentKey] varchar(50),
 								UseAsTransformation bit default(0), IsSubjectInTransformation bit default(0), focal bit default(0), IsLeaf bit default(0),
 								HasAssetReadAccess bit default(1) not null,
-								Back varchar(25), BackAmount decimal(2,1), HierarchyKey varchar(50)
+								Back varchar(25), BackAmount decimal(2,1), HierarchyKey varchar(50),
+								HasTooManyChildren bit default(0)
 							  );
 	create clustered index cix_TempHierarchies on #hierarchies (HierarchyKey);
 	create nonclustered index ix_TempHierarchies_ID on #hierarchies (ID);
@@ -229,6 +240,98 @@ begin
 		set		H.[Key] = utility.GetHash(@salt + '|' + cast(H.ID as varchar)),
 				H.[ParentKey] = case when H.ParentID is null then null else utility.GetHash(@salt + '|' + cast(H.ParentID as varchar)) end
 		from	#hierarchies H;
+
+		-- GOV-13214 and GOV-14396- Get children that may not be involved in lineage --------------------------------------
+		if @includeDescendantAssets = 1
+		begin
+			declare @iterList TABLE(id int)
+			insert into @iterList select id from #hopAssets
+
+			declare @iterID int
+
+			drop table if exists #additionalLineage
+			create table #additionalLineage (Uid uniqueidentifier, ID bigint, ParentID bigint, AssetTypeID int, [Key] varchar(50), [ParentKey] varchar(50),focal int);
+
+			while(1 = 1)
+			begin
+				truncate table #additionalLineage
+
+				SET @iterID = NULL
+				SELECT TOP(1) @iterID = id FROM @iterList
+    
+				IF @iterID IS NULL
+					BREAK
+
+				;with h as (
+					select  L.[key] as Salt,
+					        C.Uid,
+							C.ID,
+							C.AssetTypeID,
+							I.Object,
+							I.ObjectID,
+							A.ID ParentID,
+							I.Subject as ParentObject,
+							I.SubjectID as ParentObjectID
+					from	Asset A
+							inner join #hopAssets L on L.ID = A.ID
+							inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
+							inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
+							where A.ID = @iterID
+					union all
+					select  h.Salt,
+							C.Uid,
+							C.ID,
+							C.AssetTypeID,
+							C.Object,
+							C.ObjectID,
+							A.ID as ParentID,
+							I.Subject as ParentObject,
+							I.SubjectID as ParentObjectID
+					from	h
+							inner join Asset A on h.Object = A.Object and h.ObjectID = A.ObjectID
+							inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
+							inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
+				)
+				insert into #additionalLineage ([Key], Uid, ID, ParentID, AssetTypeID, focal)
+				select top(@maxLineageDescendants+1)
+					 utility.GetHash(h.salt + '|A' + cast(h.uid as varchar(36))), 
+					 h.Uid, 
+					 h.ID, 
+					 h.ParentID, 
+					 h.AssetTypeID, 0 
+				 from h
+
+
+				 declare @cnt int = (select count(1) from #additionalLineage)
+
+				if (@cnt <= @maxLineageDescendants)
+				begin
+					insert into #hierarchies (uid,id, parentid, assettypeid, [key],parentkey)
+					select al.uid,al.id,al.parentid, al.assettypeid,al.[key],parent.[key] from #additionalLineage al
+						cross apply (select top 1 [key] from #hierarchies where id = al.parentid)parent([key])
+
+					insert into #hierarchies (uid,id, parentid, assettypeid, [key],parentkey)
+					select al.uid,al.id,al.parentid, al.assettypeid,al.[key],parent.[key]  from #additionalLineage al
+				     cross apply (select top 1 [key] from #additionalLineage where id = al.parentid)parent([key])
+				end
+
+				if (@cnt > @maxLineageDescendants)
+				begin
+					insert into #hierarchies (uid,id, parentid, assettypeid, [key],parentkey,hastoomanychildren)
+					select top 1 al.uid,al.id,al.parentid, al.assettypeid,al.[key],parent.[key], 1 from #additionalLineage al
+						cross apply (select top 1 [key] from #hierarchies where id = al.parentid)parent([key])
+
+					insert into #hierarchies (uid,id, parentid, assettypeid, [key],parentkey,hastoomanychildren)
+					select top 1 al.uid,al.id,al.parentid, al.assettypeid,al.[key],parent.[key], 1  from #additionalLineage al
+				     cross apply (select top 1 [key] from #additionalLineage where id = al.parentid)parent([key])
+				end
+
+
+				DELETE TOP(1) FROM @iterList
+			end
+
+		end
+		------------------------------------------------------------------------------------------------------
 	end
 
 	update	H
@@ -429,6 +532,8 @@ begin
 				group by t.[key], t.[uid], t.[direction]
 	end
 
+		-- Get flat node collection.
+	drop table if exists #flatNodeCollection
 	select		distinct
 				H.hierarchyKey,
 				H.focal,
@@ -447,11 +552,29 @@ begin
 				coalesce(H.useAsTransformation, 0) as useAsTransformation,
 				H.hasAssetReadAccess,
 				coalesce(H.isSubjectInTransformation, 0) as isSubjectInTransformation
+	into #flatNodeCollection
 	from		#hierarchies H
 				left join #counts C on C.ID = H.ID 
 				inner join AssetType T on T.ID = H.AssetTypeID
 				inner join AssetTypeStyle S on S.ID = T.ID
 	order by	H.hierarchyKey
+
+	---handle nodes with too many children
+	update S
+		set 
+			S.leaf = 0,
+			S.backAmount = 0,
+			S.back = '#d73961',
+			S.[text] = 'Assets with over '+ TRY_CAST(@maxLineageDescendants AS nvarchar(max)) + ' descendants can''t be shown in lineage',
+			S.AssetUid = CONVERT(UNIQUEIDENTIFIER, 0x00),
+			S.AssetTypeUid = CONVERT(UNIQUEIDENTIFIER, 0x00)
+	from #flatNodeCollection S 
+		inner join #hierarchies h on S.hierarchykey = h.hierarchyKey and S.assetuid = h.uid and h.HasTooManyChildren = 1
+	---end handling nodes with too many children
+
+
+
+	select * from #flatNodeCollection
 
 
 	select		@hierarchyKey as [from],										--iif(@direction = 'B', S.hierarchyKey, @hierarchyKey) as [from],
@@ -518,7 +641,7 @@ begin
 							graph.AssetNode T,
 							#hierarchies Hr
 					where	MATCH(S-(E)->T)
-							and E.PredicateType not in (15)
+							and E.PredicateType not in (select ID from @offLimitImpactFunctionalTypes)
 							and E.ID not in (select ID from @preloadedIntersects)
 							and E.ID not in (select IntersectID from #hops)
 							and Hr.hierarchyKey = H.hierarchyKey and Hr.ID = S.ID
@@ -536,7 +659,7 @@ begin
 							graph.AssetNode T,
 							#hierarchies Hr
 					where	MATCH(S-(E)->T)
-							and E.PredicateType not in (15)
+							and E.PredicateType not in (select ID from @offLimitImpactFunctionalTypes)
 							and E.ID not in (select ID from @preloadedIntersects)
 							and E.ID not in (select IntersectID from #hops)
 							and Hr.hierarchyKey = H.hierarchyKey and Hr.ID = T.ID
@@ -778,6 +901,11 @@ begin
 			cross apply dbo.UserAssetPermissions(@resourceId,H.AssetTypeID) P 
 	where	P.AssetID = H.ID and P.PermissionsBitMask & 1 = 0;
 
+	update	H
+	set		HasAssetReadAccess = 0
+	from	#hierarchies H
+			cross apply dbo.UserAssetPermissions(@resourceId,H.AssetTypeID) P 
+	where	P.AssetID = 0 and P.PermissionsBitMask & 1 = 0;
 
 	if @ancestry = 3
 	begin	-- This is impact

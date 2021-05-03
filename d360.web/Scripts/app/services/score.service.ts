@@ -64,6 +64,22 @@ export class ScoreService extends BaseObservableService {
             );
     }
 
+    getScoreHistoryByAllocationAndAsset(allocationUid: string, assetUid: string): Observable<ScorePoint[]> {
+        return this.http.get(`/api/v2/scoring/history/${allocationUid}/${assetUid}/scores`)
+            .pipe(
+                map((response) => <ScorePoint[]>response),
+                catchError((err) => this.handleError(err))
+            );
+    }
+
+    getScoreHistoryByAllocationAndAssetAndEffectiveDate(allocationUid: string, assetUid: string, effectiveDate: string): Observable<ScorePoint> {
+        return this.http.get(`/api/v2/scoring/history/${allocationUid}/${assetUid}/scores` + (effectiveDate == null ? "" : `?effectiveDate=${effectiveDate}`))
+            .pipe(
+                map((response) => <ScorePoint>response[0]),
+                catchError((err) => this.handleError(err))
+            );
+    }
+
     getAverageScore(assetUid: string): Observable<AverageScore> {
         return this.http.get(`queries/${assetUid}/AverageScoreByObjectType`)
             .pipe(

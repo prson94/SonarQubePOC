@@ -30,10 +30,12 @@ export class AdvancedFilterFieldCondition {
 
     connectingOperator: string = "or";
     isRelationship?: boolean = false;
+    relationshipCardinality?: string = "";
 
     isDefaultFilter?: boolean = false;
 
     isPreloaded?: boolean = false;
+    isConfirmed?: boolean = false;
 
     relationshipFieldName?: string = "";
 
@@ -77,7 +79,7 @@ export class AdvancedFilterFieldCondition {
                 }
                 break;
             case "Equals":
-                if (this.isRelationship || this.field === SystemFields.OwnedByFieldCode) {
+                if ((this.isRelationship && this.relationshipCardinality !== "One") || this.field === SystemFields.OwnedByFieldCode) {
                     str += " contains ";
                 }
                 else {
@@ -85,7 +87,7 @@ export class AdvancedFilterFieldCondition {
                 }
                 break;
             case "NotEquals":
-                if (this.isRelationship || this.field === SystemFields.OwnedByFieldCode) {
+                if ((this.isRelationship && this.relationshipCardinality !== "One") || this.field === SystemFields.OwnedByFieldCode) {
                     str += " does not contain ";
                 }
                 else {
@@ -99,10 +101,20 @@ export class AdvancedFilterFieldCondition {
                 str += " ends with ";
                 break;
             case "Populated":
-                str += " is populated ";
+                if (this.isRelationship || this.fieldType === "Relationship") {
+                    str += " relationships exist ";
+                }
+                else {
+                    str += " is populated ";
+                }
                 break;
             case "NotPopulated":
-                str += " is not populated ";
+                if (this.isRelationship || this.fieldType === "Relationship") {
+                    str += " relationships do not exist ";
+                }
+                else {
+                    str += " is not populated ";
+                }
                 break;
             case "Before":
                 str += " is before ";
@@ -180,8 +192,14 @@ export class AdvancedFilterFieldCondition {
             case "EndsWith":
                 return `${fieldName} : *${this.getTypedValue()}`;
             case "Populated":
+                if (this.isRelationship || this.fieldType === "Relationship") {
+                    return `${fieldName} exists`;
+                }
                 return `${fieldName} : populated`;
             case "NotPopulated":
+                if (this.isRelationship || this.fieldType === "Relationship") {
+                    return `${fieldName} does not exist`;
+                }
                 return `${fieldName} : not populated`;
             case "Before":
             case "LessThan":
@@ -288,28 +306,32 @@ export class AdvancedFilterFieldCondition {
                         }
                     }
 
-                    for (let i = 0; i < arr.length - 1; i++) {
-                        if (i !== arr.length - 2) {
-                            valueAsString += arr[i].title + ", ";
+                    if (arr.length <= 5) {
+                        for (let i = 0; i < arr.length - 1; i++) {
+                            if (i !== arr.length - 2) {
+                                valueAsString += arr[i].title + ", ";
+                            }
+                            else {
+                                if (this.operator.toString() === "Equals" || this.operator.toString() === "Contains") {
+                                    valueAsString += arr[i].title + " or " + arr[i + 1].title;
+                                }
+                                else {
+                                    valueAsString += arr[i].title + " nor " + arr[i + 1].title;
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        valueAsString = arr.map((v) => v.title).join(", ");
+                        var operator = this.operator.toString() === "Equals" || this.operator.toString() === "Contains" ? " or " : " nor ";
+
+                        valueAsString += operator;
+                        var leftover = arr.length - 5;
+                        if (leftover === 1) {
+                            valueAsString += " 1 other item";
                         }
                         else {
-                            if (this.operator.toString() === "Equals" || this.operator.toString() === "Contains") {
-                                valueAsString += arr[i].title + " or " + arr[i + 1].title;
-                            }
-                            else {
-                                valueAsString += arr[i].title + " nor " + arr[i + 1].title;
-                            }
-                        }
-
-                        if (arr.length > 6 && i === 4) {
-                            let leftover: number = arr.length - 4;
-                            if (this.operator.toString() === "Equals" || this.operator.toString() === "Contains") {
-                                valueAsString += ` or ${leftover} other items`;
-                            }
-                            else {
-                                valueAsString += ` nor ${leftover} other items`;
-                            }
-                            i = arr.length;
+                            valueAsString += ` ${leftover} other items`;
                         }
                     }
 
@@ -397,6 +419,7 @@ export class AdvancedFilterFieldCondition {
                 return `'${value.value}'`;
             }
         }
+        value = (value as string).replace(/'/g, "&apos;");
         return `'${encodeURIComponent(value)}'`;
     }
     getValue2(): string {
@@ -456,11 +479,22 @@ export class AdvancedFilterFieldConditionCollection {
         let queries: string[] = [];
         let valuesArr: any[];
         this.filters.filter((x) => x.field && x.operator && x.markForDeletion !== true).forEach((cond) => {
+            let treatAsRelationship: boolean =
+                (cond.operator.toString() !== "Populated" && cond.operator.toString() !== "NotPopulated" && cond.relationshipFieldName.indexOf("|") === 36)
+                || (cond.fieldType == null && cond.field.indexOf("|") === 36);
+
             if ((cond.fieldType === "Lookup" || cond.fieldType === "Tag" || cond.field === SystemFields.OwnedByFieldCode) && cond.value) {
                 let subConditions: AdvancedFilterFieldCondition[] = [];
                 valuesArr = cond.value as SelectItem[];
-                valuesArr.forEach((r) => {
-                    subConditions.push(cond.getCopyWithNewValue(r.value));
+                valuesArr.filter((v) => v.value !== "").forEach((r) => {
+                    if (cond.field === SystemFields.OwnedByFieldCode) {
+                        if ((r.value as string).length === 36) {
+                            subConditions.push(cond.getCopyWithNewValue(r.value));
+                        }
+                    }
+                    else {
+                        subConditions.push(cond.getCopyWithNewValue(r.value));
+                    }
                 });
 
                 let subQueries: string[] = [];
@@ -501,8 +535,9 @@ export class AdvancedFilterFieldConditionCollection {
                     }
                 }
             }
-            else if ((cond.fieldType == null && cond.field.indexOf("|") === 36) || cond.relationshipFieldName.indexOf("|") === 36) {
+            else if (treatAsRelationship) {
                 let subConditions: AdvancedFilterFieldCondition[] = [];
+                console.log(cond);
                 if (cond.value) {
                     valuesArr = cond.value as SelectItem[];
                     valuesArr.forEach((r) => {

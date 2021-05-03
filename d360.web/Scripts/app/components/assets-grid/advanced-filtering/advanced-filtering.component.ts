@@ -3,14 +3,15 @@ import * as _ from "lodash";
 import { OperatorModel } from "../../../models/operator.model";
 import { FieldsObservableService } from "../../../services/fieldsObservable.service";
 import { CompanySettingsService } from "../../../services/settings.service";
-import { FieldTypeHelper } from "../../../models/fieldtype-api.model";
-import { forkJoin } from "rxjs";
+import { FieldTypeAPIModelField, FieldTypeHelper } from "../../../models/fieldtype-api.model";
+import { forkJoin, Observable } from "rxjs";
 import { AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, FieldTypeAPIModelFieldCondition, Filters, SystemFields } from "./advanced-filtering.models";
 import { DatePipe } from "@angular/common";
 import { AllocationService } from "../../../services/allocations.service";
 import { ScoreTypeAllocation } from "../../../models/metrics.model";
 import { RelationshipsService } from "../../../services/relationships.service";
 import { RelationshipType } from "../../../models/relationship.model";
+import { Router } from "@angular/router";
 
 @Component({
     selector: "advanced-filtering",
@@ -100,9 +101,15 @@ export class AdvancedFilteringComponent implements OnChanges {
         private settingsService: CompanySettingsService,
         private allocationService: AllocationService,
         private relationshipService: RelationshipsService,
-        private datePipe: DatePipe) {
+        private datePipe: DatePipe,
+        private router: Router
+    ) {
         this.conditions = new AdvancedFilterFieldConditionCollection();
         this.conditions.filters = [];
+
+        this.router.routeReuseStrategy.shouldReuseRoute = function () {
+            return false;
+        };
     }
 
     customDoCheck() {
@@ -136,98 +143,152 @@ export class AdvancedFilteringComponent implements OnChanges {
             this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid)
         ).subscribe((response) => {
             this.operators = response[0];
-            let res = response[1];
+            let res = response[1] as FieldTypeAPIModelField[];
             this.allocations = response[2];
             this.relationshipTypes = response[3];
 
-            var tempFields: FieldTypeAPIModelFieldCondition[] = [];
-            res.forEach((f) => {
-                if (FieldTypeHelper.isFieldForOperatorAdvancedFilters(f.Type)) {
-                    var fModel = f as FieldTypeAPIModelFieldCondition;
-                    tempFields.push(fModel);
+            if (res.some((f) => f.Type.ComputedRelationshipField)) {
+                try {
+                    //load field types for Field from relationship
+                    this.loadFieldFromRelationshipData(res);
                 }
-            });
-
-            SystemFields.GetSystemFieldDefinition().forEach((f) => {
-                var fModel = f as FieldTypeAPIModelFieldCondition;
-                fModel.IsSystemField = true;
-                tempFields.push(fModel);
-            });
-
-            SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).forEach((f) => {
-                var fModel = f as FieldTypeAPIModelFieldCondition;
-                fModel.IsSystemField = true;
-                tempFields.push(fModel);
-            });
-
-            tempFields.forEach((f) => {
-                f.Operators = [];
-
-                this.operators.forEach((op) => {
-                    if (f.Type) {
-                        var fieldType = FieldTypeHelper.getFieldType(f.Type).toLowerCase();
-
-                        if (fieldType === "computedrelationshipfield") {
-                            fieldType = "fieldfromrelationship";
-                        }
-
-                        if (op.AllowedDataTypes.some((x) => x.Name.toLowerCase() === fieldType)) {
-                            f.Operators.push({ label: op.Name, value: op.ID });
-                        }
-
-                        if (FieldTypeHelper.getFieldType(f.Type) === "Boolean") {
-                            f.Values = [];
-                            f.Values.push({ value: "true", label: "True" });
-                            f.Values.push({ value: "false", label: "False" });
-                        }
-                        if (FieldTypeHelper.getFieldType(f.Type) === "Date"
-                            && f.Category === "System Fields") {
-                            this.updateOperatorsForDateTimeSystemField(f);
-                        }
-                    }
-                });
-            });
-
-            this.fields = tempFields;
-
-            this.cdRef.markForCheck();
-            var loadedFilters = this.loadFilters();
-
-            this.fields.forEach((field) => {
-                if (field.Type) {
-                    var key = Object.keys(field.Type)[0];
-                    var isDefaultFilter = false;
-                    if (Object.keys(field.Type).some((x) => x === key)) {
-                        isDefaultFilter = field.Type[key]["IsPrimaryFilter"];
-                    }
-
-                    if (isDefaultFilter === true && !loadedFilters.some((x) => x.field === field.Name)) {
-                        var defaultFilter = new AdvancedFilterFieldCondition(this.datePipe);
-                        defaultFilter.field = field.Name;
-                        defaultFilter.isDefaultFilter = true;
-                        this.conditions.filters.push(defaultFilter);
-                    }
+                catch (ex) {
+                    this.processLoadedData(res);
                 }
-            });
-
-            loadedFilters.forEach((f) => {
-                this.conditions.filters.push(f);
-            });
-
-            this.conditions.filters.push(new AdvancedFilterFieldCondition(this.datePipe));
-            this.visible = true;
-
-            this.onItemChange();
-
-            this.cdRef.markForCheck();
-            setInterval(() => {
-                this.customDoCheck();
-            }, 50);
+            }
+            else {
+                this.processLoadedData(res);
+            }
         });
 
 
     }
 
+
+    private loadFieldFromRelationshipData(res: FieldTypeAPIModelField[]) {
+        try {
+            let toLoad: any[] = [];
+            let obsArr: Observable<FieldTypeAPIModelField[]>[] = [];
+
+            res.filter((f) => f.Type.ComputedRelationshipField).forEach((f) => {
+                var intersectTypeUid = f.Type.ComputedRelationshipField.IntersectTypeUid;
+                var intersect = this.relationshipTypes.filter((f) => f.Uid === intersectTypeUid);
+                if (intersect) {
+                    var intersectType = intersect[0];
+                    var assetTypeUid = intersectType.Object.Uid === this.assetTypeUid ? intersectType.Subject.Uid : intersectType.Object.Uid;
+
+                    var fieldName = f.Type.ComputedRelationshipField.FieldTypeName;
+                    toLoad.push({ origField: f.Name, uid: assetTypeUid, field: fieldName, persistInFilters: f.Type.ComputedRelationshipField.IsPrimaryFilter });
+                    obsArr.push(this.fieldsService.getFieldsV2(assetTypeUid, "", "", fieldName));
+                }
+            });
+
+            forkJoin(obsArr).subscribe((results) => {
+                results.forEach((f) => {
+                    var refField = f[0];
+                    var idx = toLoad.findIndex((tl) => tl.uid === refField["AssetTypeUid"] && tl.field === refField.Name);
+                    var origField = res.findIndex((rf) => rf.Name === toLoad[parseInt(idx.toString())].origField);
+                    var prop = Object.keys(refField.Type)[0];
+                    refField.Type[prop]["IsPrimaryFilter"] = toLoad[idx].persistInFilters;
+
+                    res[parseInt(origField.toString())].Type = refField.Type;
+
+                });
+                this.processLoadedData(res);
+            });
+        }
+        catch (ex) {
+            console.warn(ex);
+            this.processLoadedData(res);
+
+        }
+    }
+
+    private processLoadedData(res: FieldTypeAPIModelField[]) {
+        var tempFields: FieldTypeAPIModelFieldCondition[] = [];
+        res.forEach((f) => {
+            if (FieldTypeHelper.isFieldForOperatorAdvancedFilters(f.Type)) {
+                var fModel = f as FieldTypeAPIModelFieldCondition;
+                tempFields.push(fModel);
+            }
+        });
+
+        SystemFields.GetSystemFieldDefinition().forEach((f) => {
+            var fModel = f as FieldTypeAPIModelFieldCondition;
+            fModel.IsSystemField = true;
+            tempFields.push(fModel);
+        });
+
+        SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).forEach((f) => {
+            var fModel = f as FieldTypeAPIModelFieldCondition;
+            fModel.IsSystemField = true;
+            tempFields.push(fModel);
+        });
+
+        tempFields.forEach((f) => {
+            f.Operators = [];
+
+            this.operators.forEach((op) => {
+                if (f.Type) {
+                    var fieldType = FieldTypeHelper.getFieldType(f.Type).toLowerCase();
+
+                    if (fieldType === "computedrelationshipfield") {
+                        fieldType = "fieldfromrelationship";
+                    }
+
+                    if (op.AllowedDataTypes.some((x) => x.Name.toLowerCase() === fieldType)) {
+                        f.Operators.push({ label: op.Name, value: op.ID });
+                    }
+
+                    if (FieldTypeHelper.getFieldType(f.Type) === "Boolean") {
+                        f.Values = [];
+                        f.Values.push({ value: "true", label: "True" });
+                        f.Values.push({ value: "false", label: "False" });
+                    }
+                    if (FieldTypeHelper.getFieldType(f.Type) === "Date"
+                        && f.Category === "System Fields") {
+                        this.updateOperatorsForDateTimeSystemField(f);
+                    }
+                }
+            });
+        });
+
+        this.fields = tempFields;
+
+        this.cdRef.markForCheck();
+        var loadedFilters = this.loadFilters();
+
+        this.fields.forEach((field) => {
+            if (field.Type) {
+                var key = Object.keys(field.Type)[0];
+                var isDefaultFilter = false;
+                if (Object.keys(field.Type).some((x) => x === key)) {
+                    isDefaultFilter = field.Type[key]["IsPrimaryFilter"];
+                }
+
+                if (isDefaultFilter === true && !loadedFilters.some((x) => x.field === field.Name)) {
+                    var defaultFilter = new AdvancedFilterFieldCondition(this.datePipe);
+                    defaultFilter.field = field.Name;
+                    defaultFilter.isDefaultFilter = true;
+                    this.conditions.filters.push(defaultFilter);
+                }
+            }
+        });
+
+        loadedFilters.forEach((f) => {
+            this.conditions.filters.push(f);
+        });
+
+        this.conditions.filters.push(new AdvancedFilterFieldCondition(this.datePipe));
+        this.visible = true;
+
+        this.onItemChange();
+
+        this.cdRef.markForCheck();
+        setInterval(() => {
+            this.customDoCheck();
+        }, 50);
+    }
 
     private updateOperatorsForDateTimeSystemField(f: FieldTypeAPIModelFieldCondition) {
         f.Operators = f.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
@@ -279,6 +340,7 @@ export class AdvancedFilteringComponent implements OnChanges {
                 newfilter.isDefaultFilter = filter.isDefaultFilter;
                 newfilter.value = filter.value;
                 newfilter.isPreloaded = true;
+                newfilter.isConfirmed = true;
                 if (newfilter.type && (newfilter.type.Type.Date || filter.type.Type.DateTime)) {
                     newfilter.value = new Date(filter.value);
                 }

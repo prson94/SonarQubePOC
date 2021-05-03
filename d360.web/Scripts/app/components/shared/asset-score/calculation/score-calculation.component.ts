@@ -55,27 +55,6 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
                 this.matchedCondition = null;
             }
         }
-
-        this.summedMeasures = this.getSum();
-    }
-
-
-    private getSum(): number {
-        if (this.measures && this.measures.length > 0) {
-            var res: number = 0;
-            this.measures.forEach((x) => {
-                let match = x.Conditions?.find((c) => c.Uid === x.ConditionUid);
-                let weight = 0;
-                if (match) {          
-                    // GOV-13832 Make sure the weight is defined on the condition, if it is not fall back to the weight on the measure.
-                    weight = (isNaN(+match.Weight) ? +x.Weight : +match.Weight);                    
-                } else {                    
-                    weight = +x.Weight;
-                }
-                res += +weight;
-            });            
-            return res;
-        }
     }
 
     public showRuleResults(isVisible: boolean) {

@@ -51,6 +51,8 @@ export class PointBreakdown {
     Weight: number;
     AdjustedWeight: number;
     AdjustedMaxWeight: number;
+    DisplayWeight: number;
+    DisplayMaxWeight: number;
     Value: boolean;
     DecimalValue: number;
     EffectiveDate: string;
@@ -67,10 +69,9 @@ export class PointBreakdown {
     _isSelected: boolean = false;
     _badgeStyle: string = 'default';
     _isCollapsed: boolean = false;
-    _adjustedGroupWeight: number = 0;
-    _adjustedWeight: number = 0;
-    _adjustedMaxWeight: number = 0;
-    _measureSumWeight: number = 0;
+    _groupDisplayMaxWeight: number = 0;
+    _groupDisplayWeight: number = 0;
+    _rawWeightSum: number = 0;
 }
 
 export class PointBreakDownConditionItem {

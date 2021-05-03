@@ -347,7 +347,7 @@ AS
   </changeSet>
 
 
-  <changeSet author="kmcnamee" id="Table.dbo.Field-Field_AfterDelete-v3.2">
+  <changeSet author="kmcnamee" id="Table.dbo.Field-Field_AfterDelete-v3.3">
     <comment>GOV-14347</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -381,6 +381,7 @@ BEGIN
 									'' as [Value]
 								from deleted d3 
 									left join fieldtype ft on d3.fieldtypeid = ft.id 
+								where d3.ObjectID = d.ObjectID
 								   for xml path('Field'), TYPE
 								)
 								for xml path('FieldInfo'), TYPE

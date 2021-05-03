@@ -15,7 +15,7 @@
 <div class="grid-actions-header {{(this.showEditor || this.showDelete || this.isEditing ? 'hidden' : '')}}">
     <div class="simple-search">
         <ig-search-field mode="Keypress" 
-                         [debounce]="2000"
+                         [debounce]="600"
                          (onSearch)="onSimpleSearch($event)"
                          [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter"
                          [infoTooltip]="simpleSearchTooltipHTML">
@@ -25,12 +25,11 @@
     <div class="grid-action-buttons">
         <button *ngIf="showAddButton && hasAddAssetPermissions()"
                 igButton
-                pTooltip="Add"
+                pTooltip="Add new asset"
                 tooltipPosition="top"
                 tooltipStyleClass="ig-tooltip"
                 class="ig-button-primary"
                 icon="fa-plus"
-                tooltip="Add new asset"
                 (click)="add()">
         </button>
 

@@ -67,7 +67,7 @@
                             </div>
                             <input required
                                    name="name"
-                                   maxlength="250"
+                                   maxlength="128"
                                    pInputText
                                    type="text"
                                    [(ngModel)]="model.FieldType.Name"
@@ -75,7 +75,7 @@
                                    (keyup)="syncApiNameWithName=false;updateApiName($event);"
                                    #apiName="ngModel"
                                    [ngStyle]="{'background':( actionName=='Edit' ? '#EFEFEF': '')}"
-                                   [disabled]="actionName=='Edit'"/>
+                                   [disabled]="actionName=='Edit'" />
                             <div [hidden]="apiName.valid || apiName.pristine">API name is required</div>
                         </div>
                         <div>
@@ -317,9 +317,8 @@
                            #validationPattern="ngModel"
                            [(ngModel)]="model.FieldType.Type[currentType].Validation.Pattern"
                            (change)="validatePattern(); model.FieldType.Type[currentType].Validation.MinimumValue=0;"
-                           style="width: 98%; display: block;" 
-                           class="{{(isValidationPatternValid() ? '' :'ng-dirty ng-invalid')}}"
-                           />
+                           style="width: 98%; display: block;"
+                           class="{{(isValidationPatternValid() ? '' :'ng-dirty ng-invalid')}}" />
                     <div [hidden]="isValidationPatternValid() || validationPattern.pristine">Validation pattern is not valid Regex expression!</div>
                 </div>
                 <div *ngIf="currentType == 'Text'"
@@ -362,7 +361,7 @@
                 <div class="col s3">
                     <div id='MaximumLengthTip'
                          class="FieldName">Maximum{{currentType == 'Text' ? "Length" : "Value"}}</div>
-                    <input  *ngIf="currentType == 'Text'; else maxNumberinput" name="maxLength"
+                    <input *ngIf="currentType == 'Text'; else maxNumberinput" name="maxLength"
                            type="number"
                            step="{{model.FieldType.Type[currentType].Increment ? model.FieldType.Type[currentType].Increment : 1}}"
                            min="{{currentType == 'Text' ? maxLengthLowerText : maxLengthLowerNumeric }}"
@@ -462,7 +461,7 @@
                                 ngDefaultControl
                                 [ngModelOptions]="{standalone: true}"></p-dropdown>
                     <ng-container *ngIf="currentType == 'Score'">
-                        <p-dropdown *ngIf="scoreTypeOptions?.length > 1" 
+                        <p-dropdown *ngIf="scoreTypeOptions?.length > 1"
                                     [options]="scoreTypeOptions"
                                     [(ngModel)]="model.FieldType.Type[currentType].ScoreType"
                                     [style]="{ 'width': '98%' }"
@@ -806,39 +805,43 @@
             <div class="row">
                 <div class="col l3 m3 s6"
                      style="margin: 10px 0 10px 0">
-                    <input name="expandGroupMembership"
-                           pCheckbox
-                           type="checkbox"
-                           [(ngModel)]="model.FieldType.Type[currentType].Definition.ExpandGroupMembership" />Expand Group Membership?
+                    <p-checkbox binary="true"
+                                name="expandGroupMembership"
+                                [(ngModel)]="model.FieldType.Type[currentType].Definition.ExpandGroupMembership"
+                                [ngModelOptions]="{standalone: true}"
+                                label="Expand Group Membership?"></p-checkbox>
                 </div>
                 <div class="col l3 m3 s6"
                      style="margin: 10px 0 10px 0">
-                    <input name="displayAssignmentSource"
-                           pCheckbox
-                           type="checkbox"
-                           [(ngModel)]="model.FieldType.Type[currentType].Definition.DisplayAssignmentSource" />Display Assignment
-                    Source?
+                    <p-checkbox binary="true"
+                                name="displayAssignmentSource"
+                                [(ngModel)]="model.FieldType.Type[currentType].Definition.DisplayAssignmentSource"
+                                [ngModelOptions]="{standalone: true}"
+                                label="Display Assignment Source?"></p-checkbox>
                 </div>
                 <div class="col l2 m2 s6"
                      style="margin: 10px 0 10px 0">
-                    <input name="hideFilter"
-                           pCheckbox
-                           type="checkbox"
-                           [(ngModel)]="model.FieldType.Type[currentType].HideFilter" />Hide Grid Filter?
+                    <p-checkbox binary="true"
+                                name="hideFilter"
+                                [(ngModel)]="model.FieldType.Type[currentType].HideFilter"
+                                [ngModelOptions]="{standalone: true}"
+                                label="Hide Grid Filter?"></p-checkbox>
                 </div>
                 <div class="col l2 m2 s6"
                      style="margin: 10px 0 10px 0">
-                    <input name="hideFooter"
-                           pCheckbox
-                           type="checkbox"
-                           [(ngModel)]="model.FieldType.Type[currentType].HideFooter" />Hide Grid Footer?
+                    <p-checkbox binary="true"
+                                name="hideFooter"
+                                [(ngModel)]="model.FieldType.Type[currentType].HideFooter"
+                                [ngModelOptions]="{standalone: true}"
+                                label="Hide Grid Footer?"></p-checkbox>
                 </div>
                 <div class="col l2 m2 s12"
                      style="margin: 10px 0 10px 0">
-                    <input name="hideHeader"
-                           pCheckbox
-                           type="checkbox"
-                           [(ngModel)]="model.FieldType.Type[currentType].HideHeader" />Hide Grid Column Headers?
+                    <p-checkbox binary="true"
+                                name="hideHeader"
+                                [(ngModel)]="model.FieldType.Type[currentType].HideHeader"
+                                [ngModelOptions]="{standalone: true}"
+                                label="Hide Grid Column Headers?"></p-checkbox>
                 </div>
             </div>
         </simple-accordion>
@@ -857,8 +860,7 @@
                 </div>
                 <div class="col l4 m4 s12" style="margin: 10px 0 10px 0">
                     <div class="FieldNameRequired">JSON Attribute Path</div>
-                    <p-autoComplete 
-                                    [ngModelOptions]="{standalone: true}"
+                    <p-autoComplete [ngModelOptions]="{standalone: true}"
                                     [(ngModel)]="model.FieldType.Type[currentType].JsonAttribute.Path"
                                     [suggestions]="TypeaheadJsonPropertyOptionsForJsonFieldResults"
                                     (completeMethod)="searchJsonForProperty($event)">

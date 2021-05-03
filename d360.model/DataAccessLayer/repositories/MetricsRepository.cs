@@ -1164,6 +1164,16 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                         metricAssetVersion.MatchConditionsOnly = model.MatchConditionsOnly;
                         metricAssetVersion.Threshold = model.Threshold;
                         metricAssetVersion.Weight = model.Weight;
+                        
+                        if (metricAsset.IsGroup && model.Allocation.ScoreType == ScoreType.Governance && definitionToSave.Governance != null) 
+                        {
+                            // Be sure to set the definition for group, no extraneous bad data.
+                            definitionToSave.Governance.External = null;
+                            definitionToSave.Governance.Field = null;
+                            definitionToSave.Governance.Owner = null;
+                            definitionToSave.Governance.Predicate = null;
+                            definitionToSave.Governance.Relation = null;
+                        }
                         metricAssetVersion.Definition = definitionToSave.AsJson();
 
                         setVersionUpdateFrequency();
@@ -1659,7 +1669,9 @@ from	(
 				V.[Weight],
 				iif(SI.AdjustedWeight > 1, 1, SI.AdjustedWeight) as AdjustedWeight,
 				iif(SI.AdjustedMaxWeight > 1, 1, SI.AdjustedMaxWeight) as AdjustedMaxWeight,
-				iif(Ma.IsGroup = 1, null, SI.Value) as Value,
+				coalesce(SI.DisplayWeight, SI.AdjustedWeight) as DisplayWeight,
+                coalesce(SI.DisplayMaxWeight, SI.AdjustedMaxWeight) as DisplayMaxWeight,
+                iif(Ma.IsGroup = 1, null, SI.Value) as Value,
                 iif(SI.DecimalValue > 1, 1, SI.DecimalValue) as DecimalValue,
 				cast(iif(SI.Evidence is not null and SI.Evidence <> '', 1, 0) as bit) as HasEvidence,
 				A.ScoreType,

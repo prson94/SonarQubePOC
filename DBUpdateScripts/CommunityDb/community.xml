@@ -83,4 +83,7 @@
   <include file="scripts/GOV-13928.xml"/>  <!-- Removing unused settings from setting and companySettings tables-->
   <include file="scripts/GOV-13875.xml"/>  <!-- Rename Community schema tables-->
   <include file="scripts/GOV-5317.xml"/>  <!-- Add WorkflowDigestEmailDays company setting -->
+  <include file="scripts/GOV-14441.xml"/>  <!-- Add ShowChangeLogTab setting -->
+  <include file="scripts/GOV-14442.xml"/>  <!-- Add ShowCommentsTab setting -->
+  <include file="scripts/GOV-14503.xml"/>  <!-- Add Data Profile lifespan setting-->
 </databaseChangeLog>

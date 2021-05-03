@@ -69,6 +69,12 @@ namespace d360.core.entities
         public decimal AdjustedMaxWeight { get; set; }
 
         [DataMember]
+        public decimal DisplayWeight { get; set; }
+
+        [DataMember]
+        public decimal DisplayMaxWeight { get; set; }
+
+        [DataMember]
         public bool? Value { get; set; }
 
         [DataMember]

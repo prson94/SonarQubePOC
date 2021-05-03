@@ -14,6 +14,7 @@ using System.Web.Http.Results;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net;
+using System.Threading;
 
 namespace igx.UnitTests
 {
@@ -60,7 +61,7 @@ namespace igx.UnitTests
 
             var testGuid = Guid.Parse(DataConstants.ValidGUID);
 
-            var actionResult = await assetsController.GetAssetsAsync(testGuid);
+            var actionResult = await assetsController.GetAssetsAsync(testGuid, CancellationToken.None);
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;

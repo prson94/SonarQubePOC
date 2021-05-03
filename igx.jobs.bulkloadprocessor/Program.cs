@@ -1209,6 +1209,33 @@ where R.Success = 1;
 
 update #ResponsibilityTypeOverride set Success = 0, Message = 'Bulk load responsibilities responsibility value '+ ResponsibilityName + ' is not a valid responsibility type it cannot be found in the responsibility type table.' where Success = 1 and ResponsibilityTypeID is null;
 
+--Validate responsibility for asset
+
+drop table if exists #ValidateRespAsset;
+
+select distinct att.id AssetTypeid,rtr.responsibilitytypeid
+into #ValidateRespAsset
+from #ResponsibilityTypeOverride rto
+inner join asset a on a.id = rto.AssetID
+inner join assettype att on a.assettypeid = att.id
+inner join responsibilitytyperelation rtr 
+on rtr.responsibilitytypeid = rto.ResponsibilityTypeID 
+and rtr.ObjectType = att.object and rtr.ObjectID = att.ObjectID;
+
+create nonclustered index idx_ValidateRespAsset on #ValidateRespAsset(AssetTypeid,responsibilitytypeid);
+
+update rto 
+set Success = 0, Message = 'Responsibility value '+ ResponsibilityName + ' is not a valid for asset ' + AssetUid + '.' 
+from #ResponsibilityTypeOverride rto
+where Success = 1 
+and not exists (select 1 
+                from asset a 
+			    inner join assettype att on a.assettypeid = att.id
+				inner join #ValidateRespAsset rtr 
+                on rtr.AssetTypeid = att.ID 
+                and rtr.responsibilitytypeid = rto.ResponsibilityTypeID
+				where a.id = rto.AssetID );
+
 
 
 --mark duplicate records among the batch except the first row of each group

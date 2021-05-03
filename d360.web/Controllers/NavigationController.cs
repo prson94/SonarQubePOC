@@ -846,7 +846,7 @@ namespace d360.web.Controllers
         public JsonNetResult GetSecondaryNavigationSettings(SecondaryNavigationPostModel model)
         {
             bool execProcedure = true;
-            SecondaryNavigationResponseModel responseModel = new SecondaryNavigationResponseModel() { Items = new SecondaryNavItems() };
+            SecondaryNavigationResponseModel responseModel = new SecondaryNavigationResponseModel() { Items = new SecondaryNavItems() };            
             //Static nav
             if (model.AssetUid == null)
             {

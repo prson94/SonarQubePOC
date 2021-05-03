@@ -204,6 +204,11 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
             };
         }
 
+        protected void deleteExecution(SqlConnection Db, ScoreExecution executionRecord)
+        {
+            Db.Execute(@"delete metrics.Execution where Uid = @Uid", executionRecord);
+        }
+
         protected void updateExecution(SqlConnection Db, ScoreExecution executionRecord)
         {
             Db.Execute(@"update metrics.Execution 
@@ -219,7 +224,7 @@ set     PercentComplete = @PercentComplete,
 where   Uid = @Uid", executionRecord);
         }
 
-        protected bool updateExecution(SqlConnection Db, ScoreExecution executionRecord, bool completed, Exception ex = null)
+        protected bool updateExecution(SqlConnection Db, ScoreExecution executionRecord, bool completed, Exception ex = null, bool shouldDeleteAfterCompletion = false)
         {
             bool closedExecution = false;
 
@@ -241,7 +246,14 @@ where   Uid = @Uid", executionRecord);
                         executionRecord.ErrorMessage += ex.GetFullExceptionData(false);
                     }
 
-                    updateExecution(Db, executionRecord);
+                    if (completed && shouldDeleteAfterCompletion)
+                    {
+                        deleteExecution(Db, executionRecord);
+                    }
+                    else
+                    {
+                        updateExecution(Db, executionRecord);
+                    }
                 }
             }
             catch

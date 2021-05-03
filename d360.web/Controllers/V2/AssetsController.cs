@@ -35,6 +35,7 @@ using System.Configuration;
 using SpreadsheetLight;
 using d360.model.helpers;
 using System.Data;
+using System.Threading;
 
 namespace d360.web.Controllers.V2
 {
@@ -226,8 +227,9 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_includeColor", "Allows you to disable returning the Color value for assets. The default value is true.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_exporttemplateuid", "The Uid of the template which will be used when exporting results.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_includeCreatedModifiedBy", "Include the CreatedByUid, and ModifiedByUid fields in the response. The default value is false meaning these values are not returned.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeOwnershipLookup", "Include the OwnershipLookup fields in the response. The default value is false meaning these values are not returned.", DataType = "boolean", ParameterType = "query", Required = false),
         ]
-        public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid)
+        public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid, CancellationToken cancellationToken)
         {
             var prefix = "Assets.GetAssetsAsync => ";
 
@@ -318,7 +320,7 @@ namespace d360.web.Controllers.V2
                             queryParams = paramList;
                         }
                         queryParams = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson");
-                        var results = await AssetRepository.GetAssets(assetType, queryParams);
+                        var results = await AssetRepository.GetAssets(assetType, queryParams, cancellationToken: cancellationToken);
 
                         SLDocument document = GetCustomExportSheet(assetType, template, fieldsForCustomExport, results);
 
@@ -339,8 +341,12 @@ namespace d360.web.Controllers.V2
                         bool isHierachyItem = false;
                         var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_ishierachyitem").Value;
                         bool.TryParse(value, out isHierachyItem);
-                        queryParams = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson");
+                        var paramList = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson").ToList();
 
+                        paramList.RemoveAll(x => x.Key.ToLower() == "_includeownershiplookup");
+                        paramList.Add(new KeyValuePair<string, string>("_includeownershiplookup", "true"));
+
+                        queryParams = paramList;
 
                         SLDocument results;
                         if (isHierachyItem)
@@ -361,7 +367,7 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    var results = await AssetRepository.GetAssets(assetType, queryParams);
+                    var results = await AssetRepository.GetAssets(assetType, queryParams, cancellationToken: cancellationToken);
                     response = Request.CreateResponse(HttpStatusCode.OK, results);
                 }
 
@@ -2960,6 +2966,61 @@ namespace d360.web.Controllers.V2
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Return all assets from asset type formatted for dropdown list item list and used for lazy load
+        /// </summary>
+        /// <param name="assetTypeUid"></param>
+        [
+            HttpGet,
+            ApiExplorerSettings(IgnoreApi = true),
+            MapToApiVersion("2.0"),
+            Route("lookupvalues/{assetTypeUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "true/false based on relationship exists on assettype.", typeof(bool)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+            ]
+        public async Task<HttpResponseMessage> GetAssetLookupValues(Guid assetTypeUid, int? skip = null, int? take = 0, string filter = null)
+        {
+            var prefix = "Assets.GetAssetLookupValues => ";
+            var errorMessage = "";
+
+            try
+            {
+
+                var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
+
+                if (assetType.Object == "ReferenceItemType" && assetType.ObjectID == 0)
+                {
+                    //handle reference lists
+                    IQueryable<AssetType> query = Company.AssetTypes.Where(x => x.Object == "ReferenceItemType" && x.ObjectID != 0);
+
+                    if (!string.IsNullOrEmpty(filter))
+                    {
+                        query = query.Where(x => x.Name.Contains(filter));
+                    }
+
+                    var refListResults = query.OrderBy(x => x.Name)
+                        .Skip(skip.Value)
+                        .Take(take.Value)
+                        .Select(x => new { value = x.uid, label = x.Name }).ToList();
+
+                    return Request.CreateResponse(HttpStatusCode.OK, refListResults);
+                }
+
+                filter = "%" + (filter ?? "") + "%";
+                var results = await Company.QueryAsync<dynamic>($@"exec [SimpleAssetSearch] @assetTypeId, @filter,@skip,@take", new { assetTypeId = assetType.ID, skip, take, filter });
+
+                return Request.CreateResponse(HttpStatusCode.OK, results);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
     }

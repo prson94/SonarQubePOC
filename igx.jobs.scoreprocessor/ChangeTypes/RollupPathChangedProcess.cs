@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using Dapper;
 using System;
+using d360.core.entities;
+using System.Linq;
 
 namespace igx.jobs.scoreprocessor.ChangeTypes
 {
@@ -19,7 +21,17 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
             using (var company = GetEnvironmentConnection())
             {
                 company.Open();
+
+                var executionRecord = company.Query<ScoreExecution>("select * from metrics.Execution where Uid = @uid", new { uid = Info.ExecutionUid }).SingleOrDefault();
+
+                if (executionRecord == null)
+                {
+                    throw new ArgumentNullException("executionRecord", "Execution record must exist.");
+                }
+
                 await company.ExecuteAsync("exec metrics.CalculateRollups", commandTimeout: 600);
+
+                updateExecution(company, executionRecord, true, shouldDeleteAfterCompletion: true);
             }
         }
     }

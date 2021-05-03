@@ -301,7 +301,7 @@ export class BaseComponent {
                 }
             }
 
-            if (hasAudit || hasAudit === undefined) {
+            if ((hasAudit || hasAudit === undefined) && CompanySettings.ShowChangeLogTab != 'false') {
                 this.auditSidebar = new SecondaryNavItem(
                     'Change Log',
                     'Change Log',
@@ -404,12 +404,14 @@ export class BaseComponent {
 
                 this.secondaryNavService.showItem(this.scoreSidebar);
 
-                this.commentsSidebar = new SecondaryNavItem(
-                    'Comments', 'Comments', ['fa-comments'],
-                    `/sidebar/comments/${this.uid}`, null, 33
-                );
+                if (CompanySettings.ShowCommentsTab != 'false') {
+                    this.commentsSidebar = new SecondaryNavItem(
+                        'Comments', 'Comments', ['fa-comments'],
+                        `/sidebar/comments/${this.uid}`, null, 33
+                    );
 
-                this.secondaryNavService.showItem(this.commentsSidebar);
+                    this.secondaryNavService.showItem(this.commentsSidebar);
+                }
 
                 if (CompanySettings.DisableIssueManagement != 'true') {
                     this.actionsSidebar = new SecondaryNavItem(
