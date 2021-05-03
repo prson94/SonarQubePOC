@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.metrics.ProcessAssetScores-v1.13">
+  <changeSet author="Pappas" id="Procedure.metrics.ProcessAssetScores-v1.14">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -139,7 +139,7 @@ begin
 						from	metrics.Score S
 								inner join metrics.ScoreItemLink L on L.ScoreUid = S.Uid
 								inner join metrics.ScoreItem I on I.Uid = L.ScoreItemUid
-								inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid
+								inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid and V.AssetUid = C.MeasureUid
 						where	S.AllocationUid = @allocationUid
 								and S.AssetUid = C.AssetUid 
 								and S.EffectiveDate <= C.EffectiveDate
@@ -575,8 +575,8 @@ begin
 			T.DecimalValue = S.DecimalValue,
 			T.OtherConditions = S.OtherConditions
 	when	not matched then
-	insert (UpdatedOn, [Value], AdjustedWeight, RunDate, [Uid], AssetVersionUid, Evidence, ConditionUid, AdjustedMaxWeight, DecimalValue, OtherConditions)
-	values (getutcdate(), S.[Value], S.AdjustedWeight, getutcdate(), S.ScoreItemUid, S.MeasureVersionUid, S.Evidence, S.ConditionUid, S.AdjustedMaxWeight, S.DecimalValue, S.OtherConditions);
+	insert (UpdatedOn, [Value], AdjustedWeight, RunDate, [Uid], AssetVersionUid, Evidence, ConditionUid, AdjustedMaxWeight, DecimalValue, OtherConditions, DisplayWeight, DisplayMaxWeight)
+	values (getutcdate(), S.[Value], S.AdjustedWeight, getutcdate(), S.ScoreItemUid, S.MeasureVersionUid, S.Evidence, S.ConditionUid, S.AdjustedMaxWeight, S.DecimalValue, S.OtherConditions, S.DisplayWeight, S.DisplayMaxWeight);
 
 	-- Clear out the score / score item links before re-merging.
 	delete	T
