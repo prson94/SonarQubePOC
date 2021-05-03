@@ -24,4 +24,4 @@ console.log("Browser Language: " + navigator.language);
 
 
 platformBrowserDynamic().bootstrapModule(AppModule)
-    .catch(err => console.log(err));
+    .catch((err) => console.log(err));
