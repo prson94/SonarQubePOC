@@ -35,10 +35,8 @@ import { LineageFusionComponent } from './lineage/lineage-fusion.component';
 import { LineageMappingRulesComponent } from './lineage/lineage-mapping-rules.component';
 import { LineageObjectDetailComponent } from './lineage/lineage-object-detail.component';
 import { LineageRelationshipsComponent } from './lineage/lineage-relationships.component';
-import { LineageResponsibilitiesComponent } from './lineage/lineage-responsibilities.component';
 import { LineageSourceRuleEditorComponent } from './lineage/lineage-source-rule-editor.component';
 import { LineageSourceRulesComponent } from './lineage/lineage-source-rules.component';
-import { LineageTechnicalRelationshipsComponent } from './lineage/lineage-technical-relationships.component';
 
 import { AssetBrowserAddPanelComponent } from './assetbrowser/panels/addpanel.component';
 import { AssetBrowserAlertPanelComponent } from './assetbrowser/panels/alertpanel.component';
@@ -164,10 +162,8 @@ import { SearchFieldModule } from '../controls/search-field/search-field.compone
         LineageMappingRulesComponent,
         LineageObjectDetailComponent,
         LineageRelationshipsComponent,
-        LineageResponsibilitiesComponent,
         LineageSourceRuleEditorComponent,
         LineageSourceRulesComponent,
-        LineageTechnicalRelationshipsComponent,
         ModelDiagramComponent,
         ProcessDiagramComponent,
         ProcessDiagramAssetEditorComponent,

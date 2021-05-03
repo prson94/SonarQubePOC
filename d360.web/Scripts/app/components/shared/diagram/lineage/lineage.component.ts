@@ -385,13 +385,7 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
                 break;
             case 'code':
                 this.headerText = 'Source Rules';
-                break;
-            case 'user':
-                this.headerText = 'Responsibilities';
-                break;
-            case 'database':
-                this.headerText = 'Fusion Relationships';
-                break;
+                break;                        
             case 'exchange':
                 this.headerText = 'Mapping Rules';
                 break;
