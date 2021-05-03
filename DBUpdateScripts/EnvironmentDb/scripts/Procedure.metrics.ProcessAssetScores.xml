@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.metrics.ProcessAssetScores-v1.14">
+  <changeSet author="Pappas" id="Procedure.metrics.ProcessAssetScores-v1.15">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -469,9 +469,8 @@ begin
 			cross apply (
 				select	sum(DecimalValue) as Total
 				from	#ScoreItems
-				where	--ScoreUid = T.Uid
-						--and 
-						ParentMeasureUid is null
+				where	ScoreUid = T.Uid
+						and ParentMeasureUid is null
 						and IsRemoved = 0
 			) Sv
 			cross apply (

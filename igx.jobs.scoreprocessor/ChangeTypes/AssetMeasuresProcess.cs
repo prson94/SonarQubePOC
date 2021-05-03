@@ -899,6 +899,7 @@ when not matched then
                                 allocationUid = items[0].AllocationUid,
                                 assets = items.Select(i => new { i.AssetUid, i.EffectiveDate }).Distinct().AsTableValuedParameter("dbo.AssetEffectiveDate", new List<string> { "AssetUid", "EffectiveDate" }),
                             }, 
+                            commandTimeout: 600,
                             transaction: trans
                         );
 
