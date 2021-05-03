@@ -1462,6 +1462,38 @@ namespace d360.web.Controllers.V2
 
             return ResponseMessage(result);
         }
+
+        /// <summary>
+        /// Retrieves a list of all relationship types and its counts for specific asset.
+        /// </summary>
+        /// <returns>A list of relationship counts per relationship type for an asset.</returns>
+        [
+            HttpGet,
+            Route("counts/{assetUid}"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of relationship counts per relationship type for an asset.", typeof(List<AssetTypeCountModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+        public async Task<HttpResponseMessage> GetRelationshipCounts()
+        {
+            var prefix = "Relationships.GetRelationshipCounts => ";
+            var errorMessage = "";
+
+            try
+            {
+                return Request.CreateResponse(HttpStatusCode.OK, new List<int>() { });
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
     }
 
 }

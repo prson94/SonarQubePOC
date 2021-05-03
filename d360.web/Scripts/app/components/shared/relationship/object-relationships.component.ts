@@ -6,6 +6,7 @@ import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.co
 import { ResponsibilityTypeRelationPermission } from '../../../models/responsibility-type.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { AssetService } from '../../../services/asset.service';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'd3s-object-relationships',
@@ -40,6 +41,8 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     public hasAdd: boolean;
     public hasFilterMode: boolean = true;
 
+    relationshipTypeSub: Subscription;
+
     @ViewChild(DynamicRelationshipGridComponent, { static: false }) private relGrid: DynamicRelationshipGridComponent;
 
     constructor(protected relationshipsService: RelationshipsService,
@@ -51,6 +54,9 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     ngOnDestroy(): void {
         this.relGrid.ngOnDestroy();
+        if (this.relationshipTypeSub) {
+            this.relationshipTypeSub.unsubscribe();
+        }
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -69,7 +75,11 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
         if (!this.assetTypeUid || !this.assetUid)
             return;
 
-        this.relationshipsService.getRelationshipTypes(this.assetTypeUid).subscribe((res) => {
+        if (this.relationshipTypeSub) {
+            this.relationshipTypeSub.unsubscribe();
+        }
+
+        this.relationshipTypeSub = this.relationshipsService.getRelationshipTypes(this.assetTypeUid).subscribe((res) => {
             this.relationshipItems = res as RelationshipTypeUIModel[];
 
             this.selected = null;
