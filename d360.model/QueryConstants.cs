@@ -1332,7 +1332,7 @@ order by IST.StartedOn desc, IST.CompletedOn desc
 	            v.Version, 
 	            v.UpdatedOn,
 	            r.FirstName + ' ' + r.LastName as UpdatedBy,  
-	            ta.Name as ObjectTypeName, 
+	            coalesce(ta.Name, it.Name,ITypeName.Name) as ObjectTypeName, 
 	            coalesce(isst.Object, ta.Object) as Object, 
 	            coalesce(isst.ObjectID, ta.ObjectID) as ObjectID, 
 	            dbo.GenerateAssetTypeUrl(ta.ID) as NgUrl, 
@@ -1359,13 +1359,16 @@ order by IST.StartedOn desc, IST.CompletedOn desc
 			left join Issue iss on i.Object ='Issue' and iss.ID = i.ObjectID
 			left join Asset issa on issa.Object = iss.Object and issa.ObjectID = iss.ObjectID
 			left join AssetType isst on isst.ID = issa.AssetTypeID
+			left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id) 
             left join workflow.versionstep vs on vs.versionid = v.id
             left join workflow.itemstep s on s.stepid = vs.id and s.CompletedOn is null
             left join workflow.itemassignment ia on ia.itemid = s.itemid
+			left  join [dbo].[intersect] inter on (i.[object]='Intersect' and inter.id=i.[objectId])
+            outer apply dbo.GetIntersectTypeNames(inter.IntersectTypeId) ITypeName
             where {0} t.State <> 3
             {1}
             group by t.id, t.name, v.Version, v.UpdatedOn, v.UpdatedBy,ta.Name, coalesce(isst.Object, ta.Object), 
-            coalesce(isst.ObjectID,ta.ObjectID), ta.ID, v.id, t.PublishedVersionID, r.FirstName, r.LastName
+            coalesce(isst.ObjectID,ta.ObjectID),it.Name,ITypeName.Name, ta.ID, v.id, t.PublishedVersionID, r.FirstName, r.LastName
 			)
             select 
 	            a.*,
