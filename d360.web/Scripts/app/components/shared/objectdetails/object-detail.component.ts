@@ -21,6 +21,7 @@ export class ObjectDetailComponent implements OnChanges {
     @Input() hasAddRelationshipsPermissions: boolean;
     @Input() hasModifyRelationshipsPermissions: boolean;
     @Input() hasDeleteRelationshipsPermissions: boolean;
+    @Input() useAccordion: boolean = false;
     private assetUID: string;
     private assetTypeUID: string;
     private isLoading = false;
