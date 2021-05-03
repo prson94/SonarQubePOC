@@ -748,7 +748,6 @@ namespace d360.model.DataAccessLayer
                     var tempArgs = new DynamicParameters();
                     List<string> tempJoins = new List<string>();
                     List<string> tempFieldColumns = new List<string>();
-                    getFieldSql(allFieldTypes, tempArgs, tempJoins, tempFieldColumns);
 
                     foreach (var ft in allFieldTypes.Where(x => x.LookupObjectFieldTypeID > 0))
                     {
@@ -758,6 +757,7 @@ namespace d360.model.DataAccessLayer
                             ft.Type = origFieldType.Type;
                         }
                     }
+                    getFieldSql(allFieldTypes, tempArgs, tempJoins, tempFieldColumns);
 
                     var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, includeParent);
                     filterExpressionParser.LoadFieldTypes(allFieldTypes, tempFieldColumns);

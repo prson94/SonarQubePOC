@@ -46,7 +46,7 @@
                         <button pTooltip="Diagram View" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton class="ig-button ig-button-icon-only {{(getProcessDiagramViewType() == 'diagram') ? 'ig-state-active' : ''}}" icon="fa-sitemap" (click)="processDiagramRef.changeViewType('diagram')"></button>&nbsp;
                         <button pTooltip="List View" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton class="ig-button ig-button-icon-only {{(getProcessDiagramViewType() == 'list') ? 'ig-state-active' : ''}}" icon="fa-list" (click)="processDiagramRef.changeViewType('list')"></button>
                         <div class="button-spacer"></div>
-                        <button pTooltip="Information Panel" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-info-circle" class="ig-button ig-button-icon-only {{(processDiagramRef && processDiagramRef.isInfoPanelOpened) ? 'ig-state-active' : ''}}" (click)="openProcessDiagramInfo()"></button>
+                        <button pTooltip="Information Panel" tooltipPosition="left" tooltipStyleClass="ig-tooltip" igButton icon="fa-info-circle" class="ig-button ig-button-icon-only {{(processDiagramRef && processDiagramRef.isInfoPanelOpened) ? 'ig-state-active' : ''}}" (click)="openProcessDiagramInfo()"></button>
                     </ng-container>
                     <div class="asset-browser-button-group">
                         <d3s-assetbrowser-panels (click)="panels_Click($event)"

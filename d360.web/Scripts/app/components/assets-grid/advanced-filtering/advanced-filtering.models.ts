@@ -306,28 +306,32 @@ export class AdvancedFilterFieldCondition {
                         }
                     }
 
-                    for (let i = 0; i < arr.length - 1; i++) {
-                        if (i !== arr.length - 2) {
-                            valueAsString += arr[i].title + ", ";
+                    if (arr.length <= 5) {
+                        for (let i = 0; i < arr.length - 1; i++) {
+                            if (i !== arr.length - 2) {
+                                valueAsString += arr[i].title + ", ";
+                            }
+                            else {
+                                if (this.operator.toString() === "Equals" || this.operator.toString() === "Contains") {
+                                    valueAsString += arr[i].title + " or " + arr[i + 1].title;
+                                }
+                                else {
+                                    valueAsString += arr[i].title + " nor " + arr[i + 1].title;
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        valueAsString = arr.map((v) => v.title).join(", ");
+                        var operator = this.operator.toString() === "Equals" || this.operator.toString() === "Contains" ? " or " : " nor ";
+
+                        valueAsString += operator;
+                        var leftover = arr.length - 5;
+                        if (leftover === 1) {
+                            valueAsString += " 1 other item";
                         }
                         else {
-                            if (this.operator.toString() === "Equals" || this.operator.toString() === "Contains") {
-                                valueAsString += arr[i].title + " or " + arr[i + 1].title;
-                            }
-                            else {
-                                valueAsString += arr[i].title + " nor " + arr[i + 1].title;
-                            }
-                        }
-
-                        if (arr.length > 6 && i === 4) {
-                            let leftover: number = arr.length - 4;
-                            if (this.operator.toString() === "Equals" || this.operator.toString() === "Contains") {
-                                valueAsString += ` or ${leftover} other items`;
-                            }
-                            else {
-                                valueAsString += ` nor ${leftover} other items`;
-                            }
-                            i = arr.length;
+                            valueAsString += ` ${leftover} other items`;
                         }
                     }
 
@@ -476,9 +480,9 @@ export class AdvancedFilterFieldConditionCollection {
         let valuesArr: any[];
         this.filters.filter((x) => x.field && x.operator && x.markForDeletion !== true).forEach((cond) => {
             let treatAsRelationship: boolean =
-                (cond.operator.toString() !== "Populated" && cond.operator.toString() !== "NotPopulated") &&
-                ((cond.fieldType == null && cond.field.indexOf("|") === 36) || cond.relationshipFieldName.indexOf("|") === 36);
-            
+                (cond.operator.toString() !== "Populated" && cond.operator.toString() !== "NotPopulated" && cond.relationshipFieldName.indexOf("|") === 36)
+                || (cond.fieldType == null && cond.field.indexOf("|") === 36);
+
             if ((cond.fieldType === "Lookup" || cond.fieldType === "Tag" || cond.field === SystemFields.OwnedByFieldCode) && cond.value) {
                 let subConditions: AdvancedFilterFieldCondition[] = [];
                 valuesArr = cond.value as SelectItem[];
