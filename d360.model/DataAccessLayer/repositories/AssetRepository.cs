@@ -621,7 +621,7 @@ namespace d360.model.DataAccessLayer
                               ,rd.[SecurityAssetUid]
                         from ResponsibilityDetail rd
                         inner join asset a on rd.assettypeid = a.assettypeid
-                        where rd.assetid = 0 and IsVisible = 1and rd.assettypeid = @assetTypeId
+                        where rd.assetid = 0 and IsVisible = 1 and rd.assettypeid = @assetTypeId
                         union all
                         select a.[ID] as AssetID
                                 ,rd.[ResponsibilityTypeName]
