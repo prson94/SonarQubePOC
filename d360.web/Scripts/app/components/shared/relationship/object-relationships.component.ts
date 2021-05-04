@@ -6,7 +6,7 @@ import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.co
 import { ResponsibilityTypeRelationPermission } from '../../../models/responsibility-type.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { AssetService } from '../../../services/asset.service';
-import { Subscription } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 
 @Component({
     selector: 'd3s-object-relationships',
@@ -41,7 +41,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     public hasAdd: boolean;
     public hasFilterMode: boolean = true;
 
-    relationshipTypeSub: Subscription;
+    loadDataSubs: Subscription;
 
     @ViewChild(DynamicRelationshipGridComponent, { static: false }) private relGrid: DynamicRelationshipGridComponent;
 
@@ -54,8 +54,8 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     ngOnDestroy(): void {
         this.relGrid.ngOnDestroy();
-        if (this.relationshipTypeSub) {
-            this.relationshipTypeSub.unsubscribe();
+        if (this.loadDataSubs) {
+            this.loadDataSubs.unsubscribe();
         }
     }
 
@@ -64,6 +64,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
             this.assetService.getUIDetailsForAssetUID(res["Uid"]).subscribe((asset) => {
                 this.assetUid = res["Uid"];
                 this.assetTypeUid = asset["AssetTypeUid"];
+                this.relationshipItems = [];
                 this.load();
             });
         });
@@ -75,19 +76,28 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
         if (!this.assetTypeUid || !this.assetUid)
             return;
 
-        if (this.relationshipTypeSub) {
-            this.relationshipTypeSub.unsubscribe();
+        if (this.loadDataSubs) {
+            this.loadDataSubs.unsubscribe();
         }
 
-        this.relationshipTypeSub = this.relationshipsService.getRelationshipTypes(this.assetTypeUid).subscribe((res) => {
-            this.relationshipItems = res as RelationshipTypeUIModel[];
+        var relationshipSub = this.relationshipsService.getRelationshipTypes(this.assetTypeUid);
+        var countsSub = this.relationshipsService.getRelationshipsCountsForAsset(this.assetUid);
+
+        this.loadDataSubs = forkJoin([relationshipSub, countsSub]).subscribe((res) => {
+            this.relationshipItems = res[0] as RelationshipTypeUIModel[];
+            var counts = res[1] as any[];
 
             this.selected = null;
             for (let relation of this.relationshipItems) {
-                relation.Count = 0;
+                var count = counts.filter((f) => f["IntersectTypeUid"] === relation.Uid);
+                if (count.length !== 0) {
+                    relation.Count = count[0]["count"];
+                }
+                else {
+                    relation.Count = 0;
+                }
                 if (relation.Count > 0 && !this.selected) {
                     this.selected = relation;
-
                 }
                 relation.AllowEditFromRelationshipEditor = this.nonEditablePredicates.indexOf(relation.Predicate.Type) === -1;
             }
@@ -99,7 +109,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
             this.isLoading = false;
             this.updateCardinality();
-            this.changeDetectorRef.markForCheck();
+            this.changeDetectorRef.detectChanges();
         });
 
         this.permissions = this.objectPermissions;

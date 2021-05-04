@@ -26,11 +26,9 @@ import { BaseComponent } from '../base.component';
 
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { AssetEditorModel, AssetTypeClass } from '../../../models/asset.model';
+import { AssetEditorModel } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
-import { JsonCoreResult } from '../../../models/jsonresult.model';
 import { Subject } from 'rxjs';
-import { Value } from '../../../models/settings.model';
 
 @Component({
     selector: 'd3s-dynamic-editor',
@@ -46,6 +44,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() directions: string;
     @Input() objectID: number = 0;
     @Input() objectTypeUid: string;
+    @Input() targetUid: string;
+
     @Input() assetUid: string;
     @Input() parentID: number;
     @Input() objectType: string;
@@ -189,7 +189,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
         this.isLoading = true;
         if (this.useTypeUidForDefinition) {
-            this.editorDefinitionService.getEditorDefinitionUid(this.objectTypeUid, this.objectType)
+            this.editorDefinitionService.getEditorDefinitionUid(this.objectTypeUid, this.objectType, this.targetUid)
                 .subscribe(result => {
                     this.handleEditor(result);
                 });

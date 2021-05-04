@@ -1,4 +1,4 @@
-﻿import { Input, Component, Output, EventEmitter, OnInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+﻿import { Input, Component, Output, EventEmitter, OnInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { UriBasedService } from '../../../services/uri-based.service';
 import { EditorField } from '../../../models/editor-field.model';
@@ -35,7 +35,6 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
     public onModelTouched: Function = () => { };
 
     lazyLoadTotalCount: number = 0;
-
     constructor(
         private assetService: AssetService,
         private ref: ChangeDetectorRef) {
@@ -51,6 +50,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         params["_order"] = "Name";
         params["_direction"] = "asc";
         params["_includeFields"] = "Name";
+        console.log(this.field);
         var filter = "$Related:" + this.field.IntersectTypeUid + " ne " + this.field.AssetUid;
         params["_filter"] = filter;
 

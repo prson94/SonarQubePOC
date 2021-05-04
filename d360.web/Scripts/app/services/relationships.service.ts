@@ -47,7 +47,7 @@ export class RelationshipsService extends BaseObservableService {
             );
     }
 
-    saveRelationships(intersectTypeUid: number, model: any[]): Observable<ApiResult[]> {
+    saveRelationships(intersectTypeUid: string, model: any[]): Observable<ApiResult[]> {
         if (model.length > this.MAX_SYNCHRONOUS_API_ITEM_COUNT) {
             var models: any[] = [];
             for (var i = 0; i < model.length; i += this.MAX_SYNCHRONOUS_API_ITEM_COUNT) {
@@ -289,6 +289,16 @@ export class RelationshipsService extends BaseObservableService {
         if (params) {
             url += "&" + Object.keys(params).map(key => key + '=' + params[key]).join('&');
         }
+
+        return this.http.get(url)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    getRelationshipsCountsForAsset(assetUid: string): Observable<RelationshipType[]> {
+        var url = 'api/v2/relationships/counts/' + assetUid;
 
         return this.http.get(url)
             .pipe(

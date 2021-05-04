@@ -1475,14 +1475,44 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
-        public async Task<HttpResponseMessage> GetRelationshipCounts()
+        public async Task<HttpResponseMessage> GetRelationshipCounts(Guid assetUid)
         {
             var prefix = "Relationships.GetRelationshipCounts => ";
             var errorMessage = "";
 
             try
             {
-                return Request.CreateResponse(HttpStatusCode.OK, new List<int>() { });
+                var asset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
+                if (asset == null || !Company.HasAssetPermission(asset.ID, Permission.ReadRelationships))
+                {
+                    return Request.CreateResponse(HttpStatusCode.OK, new List<string>());
+                }
+
+                var countsSql = @"select 
+                        distinct ae.IntersectTypeUid,
+                        count(*) as 'count'
+                        FROM 
+                        graph.AssetNode A1,
+                        graph.AssetEdge AE,
+                        graph.AssetNode A2
+                        WHERE MATCH(A1 - (AE) -> A2)
+                        AND a1.uid = @assetuid
+                        group by ae.intersecttypeuid
+                        union
+                        select
+                        distinct ae.IntersectTypeUid,
+                        count(*) as 'count'
+                        FROM 
+                        graph.AssetNode A1,
+                        graph.AssetEdge AE,
+                        graph.AssetNode A2
+                        WHERE MATCH(A1 <- (AE) - A2)
+                        AND a1.uid = @assetuid
+                        group by ae.intersecttypeuid";
+
+                var data = await Company.QueryAsync(countsSql, new { assetUid });
+
+                return Request.CreateResponse(HttpStatusCode.OK, data);
             }
             catch (Exception ex)
             {

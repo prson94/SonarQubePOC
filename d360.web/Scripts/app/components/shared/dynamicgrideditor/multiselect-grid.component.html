@@ -1,87 +1,46 @@
-﻿<ng-container *ngIf="!isLazyLoad">
-    adfasdf
-    <d3s-loading [isLoading]="isLoading"></d3s-loading>
-    <span *ngIf="!isLoading">
-        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-        <p-table #dt [value]="items" [selectionMode]="multiple ? 'multiple' : 'single'" [selection]="selectedItems" (selectionChange)="handleItemSelection($event);" [globalFilterFields]="['Text']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th style="width: 38px">
-                        <p-tableHeaderCheckbox *ngIf="multiple"></p-tableHeaderCheckbox>
-                    </th>
-                    <th>Asset Path</th>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
-                <tr [pSelectableRow]="item">
-                    <td class="front-elide">
-                        <div *ngIf="!field?.MultiSelect" class="relationTableRadioButton">
-                            <input type="radio" [attr.name]="name"
-                                   [checked]="rowIndex == selectedRelationRowIndex" (click)="handleItemSelection(item);" value="{{item.Value}}">
-                        </div>
-                        <p-tableCheckbox *ngIf="multiple" [value]="item"></p-tableCheckbox>
-                    </td>
-                    <td class="front-elide">
-                        <d3s-preview-tooltip [objectType]="getObjectTypeForTooltip(item)" [objectId]="getObjectIdForTooltip(item)">{{item.Text}}</d3s-preview-tooltip>
-                    </td>
-                </tr>
-            </ng-template>
-            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                <div *ngIf="selectedItems && selectedItems.length > 0" class="multiselect-grid-sel">
-                    Selected Items:
-                    <p *ngIf="selectedItems && selectedItems.length > 0"><span *ngFor="let item of selectedItems;let last = last">{{last?item.Text:item.Text +','}} </span></p>
+﻿<p-table #dt
+         [columns]="cols"
+         [value]="items"
+         [lazy]="true"
+         (onLazyLoad)="loadAssetsLazy($event)"
+         [paginator]="true"
+         [pageLinks]="3"
+         [totalRecords]="lazyLoadTotalCount"
+         [loading]="isLoading"
+         [selection]="selectedItems"
+         [selectionMode]="multiple ? 'multiple' : 'single'"
+         (selectionChange)="handleItemSelection($event);"
+         [globalFilterFields]="['Text']"
+         [rows]="defaultInitialItemsPerPage"
+         [rowsPerPageOptions]="defaultPagingOptions">
+    <ng-template pTemplate="header">
+        <tr>
+            <th style="width: 38px">
+                <p-tableHeaderCheckbox *ngIf="multiple"></p-tableHeaderCheckbox>
+            </th>
+            <th>Asset Path</th>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
+        <tr [pSelectableRow]="item">
+            <td class="front-elide">
+                <div *ngIf="!field?.MultiSelect" class="relationTableRadioButton">
+                    <input type="radio" [attr.name]="name"
+                           [checked]="rowIndex == selectedRelationRowIndex" (click)="handleItemSelection(item);" value="{{item.Value}}">
                 </div>
-            </ng-template>
-        </p-table>
-    </span>
-</ng-container>
+                <p-tableCheckbox *ngIf="multiple" [value]="item"></p-tableCheckbox>
+            </td>
+            <td class="front-elide">
+                <d3s-preview-tooltip [objectType]="getObjectTypeForTooltip(item)" [objectId]="getObjectIdForTooltip(item)">{{item.Text}}</d3s-preview-tooltip>
+            </td>
+        </tr>
+    </ng-template>
 
-<ng-container *ngIf="isLazyLoad">
-    <p-table #dt
-             [columns]="cols"
-             [value]="items"
-             [lazy]="true"
-             (onLazyLoad)="loadAssetsLazy($event)"
-             [paginator]="true"
-             [pageLinks]="3"
-             [totalRecords]="lazyLoadTotalCount"
-             [loading]="isLoading"
-             [selection]="selectedItems"
-             [selectionMode]="multiple ? 'multiple' : 'single'"
-             (selectionChange)="handleItemSelection($event);"
-             [globalFilterFields]="['Text']"
-             [rows]="defaultInitialItemsPerPage"
-             [rowsPerPageOptions]="defaultPagingOptions">
-        <ng-template pTemplate="header">
-            <tr>
-                <th style="width: 38px">
-                    <p-tableHeaderCheckbox *ngIf="multiple"></p-tableHeaderCheckbox>
-                </th>
-                <th>Asset Path</th>
-            </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
-            <tr [pSelectableRow]="item">
-                <td class="front-elide">
-                    <div *ngIf="!field?.MultiSelect" class="relationTableRadioButton">
-                        <input type="radio" [attr.name]="name"
-                               [checked]="rowIndex == selectedRelationRowIndex" (click)="handleItemSelection(item);" value="{{item.Value}}">
-                    </div>
-                    <p-tableCheckbox *ngIf="multiple" [value]="item"></p-tableCheckbox>
-                </td>
-                <td class="front-elide">
-                    <d3s-preview-tooltip [objectType]="getObjectTypeForTooltip(item)" [objectId]="getObjectIdForTooltip(item)">{{item.Text}}</d3s-preview-tooltip>
-                </td>
-            </tr>
-        </ng-template>
-
-        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-            <div *ngIf="selectedItems && selectedItems.length > 0" class="multiselect-grid-sel">
-                Selected Items:
-                <p *ngIf="selectedItems && selectedItems.length > 0"><span *ngFor="let item of selectedItems;let last = last">{{last?item.Text:item.Text +','}} </span></p>
-            </div>
-        </ng-template>
-    </p-table>
-</ng-container>
+    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+        <div *ngIf="selectedItems && selectedItems.length > 0" class="multiselect-grid-sel">
+            Selected Items:
+            <p *ngIf="selectedItems && selectedItems.length > 0"><span *ngFor="let item of selectedItems;let last = last">{{last?item.Text:item.Text +','}} </span></p>
+        </div>
+    </ng-template>
+</p-table>

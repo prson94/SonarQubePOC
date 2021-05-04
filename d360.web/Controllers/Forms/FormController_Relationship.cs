@@ -80,19 +80,14 @@ namespace d360.web.Controllers
 
         #region Field Generation
 
-        /// <param name="it">IntersectTypeID</param>
-        /// <param name="type">Object</param>
-        /// <param name="id">ObjectID</param>
-        [Route("Relationship_AddFields"), NonNullableParameters]
-        public JsonResult Relationship_AddFields(int it, SystemObjects type, int id)
+        private JsonResult Relationship_AddFields(IntersectType relationshipType, Asset targetAsset)
         {
-            if (!Company.HasAssetPermission(type, id, Permission.ModifyRelationships))
+            if (!Company.HasAssetPermission(targetAsset.ID, Permission.ModifyRelationships))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
 
-            var relationshipType = Company.GetById<IntersectType>(it, i => i.Predicate);
-            var obj = Company.GetObjectDetail(type.ToString(), id);
+            var obj = Company.GetObjectDetail(targetAsset.Object.ToString(), targetAsset.ObjectID);
 
             if (obj == null || relationshipType == null)
             {
@@ -113,9 +108,9 @@ namespace d360.web.Controllers
                 targetAssetTypeUid = relationshipType.SubjectUid.Value;
             }
 
-            list.Add(new EditableField { FieldName = "IntersectTypeID", FieldType = DataType.Hidden.ToString(), Value = it.ToString() });
-            list.Add(new EditableField { FieldName = "Source", FieldType = DataType.Hidden.ToString(), Value = type.ToString() });
-            list.Add(new EditableField { FieldName = "SourceID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+            list.Add(new EditableField { FieldName = "IntersectTypeID", FieldType = DataType.Hidden.ToString(), Value = relationshipType.ID.ToString() });
+            list.Add(new EditableField { FieldName = "Source", FieldType = DataType.Hidden.ToString(), Value = targetAsset.Object.ToString() });
+            list.Add(new EditableField { FieldName = "SourceID", FieldType = DataType.Hidden.ToString(), Value = targetAsset.ObjectID.ToString() });
 
             list.Add(new EditableField
             {
@@ -132,7 +127,7 @@ namespace d360.web.Controllers
                 IntersectTypeUid = relationshipType.uid
             });
 
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IntersectType, it).ToList(), 2);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IntersectType, relationshipType.ID).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }

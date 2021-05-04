@@ -28,6 +28,7 @@
                                        [intersectTypeUid]="selected.Uid"
                                        [objectUid]="selected.Object.Uid"
                                        [subjectUid]="selected.Subject.Uid"
+                                       [relationshipName]="getRelName(selected) + ' Relationship'"
                                        [simpleFilter]="showSimpleFilter"
                                        (onFilterChange)="onFilterChange($event)"
                                        [readOnly]="readOnly"
