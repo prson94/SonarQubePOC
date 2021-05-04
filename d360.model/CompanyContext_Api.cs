@@ -10907,7 +10907,23 @@ EG.GroupUid
                             api.ExecutionAssetDataProfile EDP
                             left Join
                             Asset A on EDP.AssetUid = A.Uid
-                        where	ExecutionID = @ExecutionID and A.Uid is null;",
+                        where	ExecutionID = @ExecutionID and A.Uid is null;
+
+                        Update EDP
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'Elements in '+ EDPS.SampleType +' cannot be Empty strings'
+                        from  
+                            api.ExecutionAssetDataProfile EDP 
+                            inner join 
+                            (
+                                select 
+                                    distinct ExecutionID, itemnumber, SampleType 
+                                from 
+                                    api.ExecutionAssetDataProfileSample 
+                                where ExecutionID = @ExecutionID and TRIM(Value)='' and LOWER(SampleType) in ('topk', 'bottomk') 
+                            ) EDPS on EDP.ExecutionID=EDPS.ExecutionID and EDP.ItemNumber=EDPS.ItemNumber 
+                        where 
+                            EDP.ExecutionID = @ExecutionID                             ",
                                     new { execution.ExecutionID }, commandTimeout: timeout);
 
                     AddMeasurement(metrics, "LogAssetDataProfileErrors", sw.ElapsedMilliseconds, ++step);
