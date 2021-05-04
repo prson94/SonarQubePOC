@@ -255,7 +255,7 @@ namespace d360.web.Controllers.V2
                     var typePermissions = Company.GetTypePermissions(typeIdentifierInfoModel.Object, typeIdentifierInfoModel.ObjectID);
                     if (typePermissions != null)
                     {
-                        hasPermissions = typePermissions.Any(i => i.ID == Permission.ModifyAsset);
+                        hasPermissions = typePermissions.Any(i => i.ID == Permission.EditAsset);
                     }
                 }
 
