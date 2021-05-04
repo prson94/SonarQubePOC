@@ -93,6 +93,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
             this.selectedReferenceListId = +params['referenceListId']; // (+) converts string 'id' to a number
             if (params['referenceListId']) {
+                
                 if (params['referenceListId'].toString().length == 36) {                    
                     this.selectedReferenceListUid = params['referenceListId'];
                     if (this.loadObjectDataSub) {
@@ -100,8 +101,8 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                     }
                     this.loadObjectDataSub = this.assetTypeService.getAssetTypeObjectAndID(params['referenceListId']).subscribe((res) => {
                         this.selectedReferenceListId = +res.ObjectID;
-                        this.load();
-                        if (this.selectedReferenceItemType && this.selectedReferenceItemType.ID != this.selectedReferenceListId) {
+                        this.load();                        
+                        if (this.selectedReferenceItemType && this.selectedReferenceItemType.ID != this.selectedReferenceListId) {                            
                             var referenceItemType: ReferenceItemType = new ReferenceItemType();
                             referenceItemType.ID = this.selectedReferenceListId;
                             referenceItemType.uid = this.selectedReferenceListUid;
@@ -110,7 +111,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                         this.replaceUrl = false;
                     })
                 }
-                else if (this.selectedReferenceListId != null && !isNaN(this.selectedReferenceListId)) {                   
+                else if (this.selectedReferenceListId != null && !isNaN(this.selectedReferenceListId)) {                    
                     this.load();
                     this.replaceUrl = true;
                 }
@@ -166,11 +167,14 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
             this.showDefault = false;
     }
 
-    changeType(e: any, replaceUrl: boolean) {
+    changeType(e: any, replaceUrl: boolean) {        
+        const requiresRedirect = this.selectedReferenceListId !== e.ID;
         this.selectedReferenceItemType = e;
         this.selectedReferenceListId = e.ID;
-        this.setSecondaryNavItems();       
-        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_REFERENCE_ROOT};referenceListId=${e.uid}`, { replaceUrl: replaceUrl });
+        this.setSecondaryNavItems();
+        if (requiresRedirect) {
+            this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_REFERENCE_ROOT};referenceListId=${e.uid}`, { replaceUrl: replaceUrl });
+        }
     }
 
     setSecondaryNavItems() {
