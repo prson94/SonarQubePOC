@@ -10249,7 +10249,7 @@ EG.GroupUid
 					G.PrimaryOwnerResourceID = PrimaryID,
 					G.SecondaryOwnerResourceID = SecondaryID,
                     G.UpdatedBy = @CurrentResourceID,
-                    G.UpdatedOn = GETDATE(),
+                    G.UpdatedOn = GETUTCDATE(),
                     G.IsActiveDirectoryGroup = S.IsActiveDirectoryGroup
                 when not matched then
 	                insert ([Uid], Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID,IsActiveDirectoryGroup,UpdatedOn,UpdatedBy)
