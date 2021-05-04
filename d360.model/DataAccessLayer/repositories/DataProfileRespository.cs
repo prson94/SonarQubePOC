@@ -111,20 +111,28 @@ namespace d360.model.DataAccessLayer
 	                            ,JSON_QUERY(cardinalityDetail.[value]) as cardinalityDetail
                                 ,ADP.[ShapeCardinality] as shapesCardinality
 	                            ,JSON_QUERY(shapesDetail.[value]) as shapesDetail
-                                ,JSON_QUERY((select CONCAT('[""', STRING_AGG(STRING_ESCAPE(cast([value] as nvarchar(36)), 'JSON'), '"",""'), '""]')
+                                ,JSON_QUERY(
+                                    REPLACE(
+                                        REPLACE((select CONCAT('[""', STRING_AGG(STRING_ESCAPE(cast([value] as nvarchar(36)), 'JSON'), '"",""'), '""]')
                                                         from AssetDataProfileSample
                                                         where
                                                             AssetDataProfileId = ADP.ID
                                                             and
                                                             lower(SampleType) = 'topk'
-                                                        )) as topk
-                                ,JSON_QUERY((select CONCAT('[""', STRING_AGG(STRING_ESCAPE(cast([value] as nvarchar(36)), 'JSON'), '"",""'), '""]')
+                                                )
+                                        , '"""",','')
+                                    ,'""""',''))  as topk
+                                ,JSON_QUERY(
+                                    REPLACE(
+                                        REPLACE((select CONCAT('[""', STRING_AGG(STRING_ESCAPE(cast([value] as nvarchar(36)), 'JSON'), '"",""'), '""]')
                                                         from AssetDataProfileSample
                                                         where
                                                             AssetDataProfileId = ADP.ID
                                                             and
                                                             lower(SampleType) = 'bottomk'
-                                                        )) as bottomk
+                                                        )
+                                        , '"""",','')
+                                    ,'""""','')) as bottomk
                             from 
 	                            Asset A
 	                            Inner Join 
@@ -223,9 +231,12 @@ namespace d360.model.DataAccessLayer
                         for Json Path";                
 
             var jsonStrings = await CompanyContext.QueryAsync<string>(sql, dbArgs, ApiTimeout);
-            var json = string.Join("", jsonStrings);
+            var json = string.Join("", jsonStrings);            
 
             results.items = JsonConvert.DeserializeObject<List<DataProfileModel>>(string.IsNullOrEmpty(json) ? "[]" : json);
+
+            results.items.Where(x => x.topK.Count == 0).ToList().ForEach(x=>x.topK=null);
+            results.items.Where(x => x.bottomK.Count == 0).ToList().ForEach(x => x.bottomK = null);
 
             if (includeTotal)
             {
