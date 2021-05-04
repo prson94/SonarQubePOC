@@ -19,12 +19,14 @@ namespace d360.extensions.search
         private SqlConnection _context;
         private int _companyID;
         private ElasticSearchSource _source;
+        private readonly List<string> _messages;
 
         public SearchIndexer(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             _context = context;
             _companyID = companyID;
             _source = source;
+            _messages = new List<string>();
         }
 
         private static readonly List<string> allowedClassesAndObjectTypes = new List<string> {
@@ -178,7 +180,7 @@ namespace d360.extensions.search
             //and indexing by asset type is more performant.
             if (assetClass != AssetTypeClass.Fusion && assetClass != AssetTypeClass.FusionAttribute)
             {
-                int assetCount = _context.QueryFirstOrDefault<int>(@"SELECT COUNT(1) 
+                long assetCount = _context.QueryFirstOrDefault<int>(@"SELECT COUNT(1) 
                 FROM [dbo].[Asset] a
                 INNER JOIN [dbo].[AssetType] at ON a.assettypeid = at.id
                 WHERE at.[Class] = @assettypeclass", new { assettypeclass });
@@ -189,11 +191,29 @@ namespace d360.extensions.search
             if(processByAssetType)
             {
                 List<Guid> assetTypes = _context.Query<Guid>("SELECT at.uid FROM [dbo].[AssetType] at WHERE EXISTS (SELECT 1 FROM [dbo].[Asset] a WHERE a.assettypeid = at.id) AND at.class =  @assettypeclass", new { assettypeclass }).ToList();
-                assetTypes.ForEach(t => IndexAssetType(t, false));
+                assetTypes.ForEach(t => {
+                    try
+                    {
+                        IndexAssetType(t, false);
+                    } catch (PagedQueryException e)
+                    {
+                        _messages.Add($"Failed to index AssetType {t}: {e.Message}");
+                    } catch (Exception e)
+                    {
+                        _messages.Add($"Exception caught indexing AssetType {t}: {e.Message}");
+                    }
+                });
             } else
             {
                 IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, assetClass, null, null);
                 _source.AddToIndex(models);
+            }
+
+            if(_messages.Any())
+            {
+                string exceptionMessage = string.Join(Environment.NewLine, _messages);
+                _messages.Clear();
+                throw new SearchIndexException(exceptionMessage);
             }
         }
 
@@ -206,6 +226,23 @@ namespace d360.extensions.search
 
             IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, ObjectType);
             _source.AddToIndex(models);
+        }
+
+        private string GenerateUrl(string type, int typeId, int objectId)
+        {
+            switch(type)
+            {
+                case "Artifact":
+                    return $"artifact/{typeId}/{objectId}";
+                case "Policy":
+                    return $"policy/{typeId}/id/{objectId}";
+                case "Rule":
+                    return $"quality/rule/{typeId}/{objectId}";
+                case "Taxonomy":
+                    return $"model/{typeId}/id/{objectId}";
+                default:
+                    return "";
+            }
         }
 
         private IEnumerable<IndexObjectModel> LoadModels(SqlConnection context, int companyID, AssetTypeClass? assetClass, Guid? AssetTypeUid, Guid? AssetUid, bool useTempTable = false, string batchTable = null)
@@ -259,16 +296,17 @@ namespace d360.extensions.search
                     }
                     string whereCondition = string.Join(" and ", where.ToArray());
 
-                    sql = $@"SELECT
+                    sql = $@"SELECT AssetID, ItemUniqueID, Type, ID, TypeID, DisplayValue, TypeName, AssetTypeUid, Uid FROM (
+                        SELECT
                             A.ID as AssetID,
 	                        cast(A.ID as varchar) as ItemUniqueID,
+                            A.Object as Type,
 	                        A.ObjectID as ID,
 	                        att.ObjectID as TypeID,
 	                        adv.DisplayValue,
 	                        att.Name as TypeName,
                             att.uid as AssetTypeUid,
-	                        a.uid as Uid,
-                            dbo.GenerateAssetUrl(a.ID) as 'Url'
+	                        a.uid as Uid
                         from
 	                        [dbo].Asset a
 	                        inner join [dbo].assettype att on a.assettypeid = att.id
@@ -276,7 +314,7 @@ namespace d360.extensions.search
                             {joinBatchTable}
                         where
 	                          {whereCondition}
-                        ORDER BY A.ID";
+                        ) q ORDER BY q.ID";
                     mode = IndexMode.WithFields | IndexMode.WithTags | IndexMode.WithResponsibility;
                     shaper = (dynamic o) =>
                     {
@@ -288,7 +326,7 @@ namespace d360.extensions.search
                             AssetID = o.AssetID,
                             ItemUniqueID = o.ItemUniqueID,
                             AssetType = o.TypeName,
-                            RelativeUrl = o.Url,
+                            RelativeUrl = GenerateUrl(o.Type, o.TypeID, o.ID),
                             Uid = o.Uid,
                             AssetTypeUid = o.AssetTypeUid,
                             Fields = new Dictionary<string, string>() {
@@ -357,7 +395,6 @@ namespace d360.extensions.search
 	                        att.Name as TypeName,
                             att.uid as AssetTypeUid,
 	                        a.uid as Uid,
-                            dbo.GenerateAssetUrl(a.ID) as 'Url', a.[Object],
 	                        u.email as Email,
 	                        CASE
                             WHEN u.Email not like '%@data3sixty.com' and Email not like '%@infogix.com'
@@ -383,7 +420,7 @@ namespace d360.extensions.search
                             AssetID = o.AssetID,
                             ItemUniqueID = o.ItemUniqueID,
                             AssetType = o.TypeName,
-                            RelativeUrl = o.Url,
+                            RelativeUrl = $"resource/{o.ID}",
                             Uid = o.Uid,
                             AssetTypeUid = o.AssetTypeUid,
                             Fields = new Dictionary<string, string>() {
@@ -419,8 +456,7 @@ namespace d360.extensions.search
                             g.[Description],
 	                        att.Name as TypeName,
                             att.uid as AssetTypeUid,
-	                        a.uid as Uid,
-                            dbo.GenerateAssetUrl(a.ID) as 'Url'
+	                        a.uid as Uid
                         from
 	                        [dbo].Asset a
                             inner join [Group] g on g.ID = a.ObjectID and [Object] = 'Group'
@@ -440,7 +476,7 @@ namespace d360.extensions.search
                             AssetID = o.AssetID,
                             ItemUniqueID = o.ItemUniqueID,
                             AssetType = o.TypeName,
-                            RelativeUrl = o.Url,
+                            RelativeUrl = $"group/{o.ID}",
                             Uid = o.Uid,
                             AssetTypeUid = o.AssetTypeUid,
                             Fields = new Dictionary<string, string>() {
@@ -679,6 +715,12 @@ namespace d360.extensions.search
 
             if (mode.HasFlag(IndexMode.WithFields))
             {
+                if (!useTempTable)
+                {
+                    long assetCount = context.QueryFirstOrDefault<int>(@"SELECT COUNT(1) FROM [dbo].[Asset]");
+                    useTempTable = assetCount > (4 * _indexClassAsTypesLimit);
+                }
+
                 if (useTempTable)
                 {
                     FieldQuery = new TempTablePagedQuery<FieldSqlModel>(context, GetFieldQuery(parameters), parameters);
@@ -696,7 +738,7 @@ namespace d360.extensions.search
             {
                 ResponsibilityQuery = new PagedQuery<ResponsibilitySqlModel>(context, GetResponsibilityQuery(parameters), parameters);
             }
-            IEnumerable<IndexObjectModel> list = context.Query(sql, parameters, commandTimeout: _defaultQueryCommandTimeout, buffered: false).ToList().Select<dynamic, IndexObjectModel>(a => convertToDictionary(a));
+            IEnumerable<IndexObjectModel> list = context.Query(sql, parameters, commandTimeout: _defaultQueryCommandTimeout, buffered: false).Select<dynamic, IndexObjectModel>(a => convertToDictionary(a));
 
             foreach (var item in list)
             {
@@ -860,6 +902,19 @@ namespace d360.extensions.search
         }
     }
 
+    [Serializable]
+    public class SearchIndexException : Exception
+    {
+        public SearchIndexException()
+        { }
+        public SearchIndexException(string message)
+            : base(message)
+        { }
+        public SearchIndexException(string message, Exception innerException)
+            : base(message, innerException)
+        { }
+    }
+
     [Flags]
     internal enum IndexMode
     {
@@ -907,6 +962,19 @@ namespace d360.extensions.search
         List<T> GetByAssetID(long AssetID);
     }
 
+    [Serializable]
+    public class PagedQueryException : Exception
+    {
+        public PagedQueryException()
+        { }
+        public PagedQueryException(string message)
+            : base(message)
+        { }
+        public PagedQueryException(string message, Exception innerException)
+            : base(message, innerException)
+        { }
+    }
+
     internal abstract class BasePagedQuery<T> : IPagedQuery<T> where T : IPagedQuerySqlModel
     {
         protected readonly int PageSize = 50000;
@@ -951,28 +1019,34 @@ namespace d360.extensions.search
 
             _param.Add("PagerAssetID", AssetID);
             _param.Add("PageSize", PageSize);
-            _data = _connection.Query<T>(_query, _param, commandTimeout: _defaultQueryCommandTimeout).ToList();
-            if (_data.Count() < PageSize)
+            try
             {
-                //If we fetched less than PageSize, this is the last page of data
-                LastPage = true;
-                OnLastPage();
-            }
-            else
-            {
-                long MinAssetID = _data.Min(i => i.AssetID);
-                long MaxAssetID = _data.Max(i => i.AssetID);
-                if (MinAssetID == MaxAssetID)
+                _data = _connection.Query<T>(_query, _param, commandTimeout: _defaultQueryCommandTimeout).ToList();
+                if (_data.Count() < PageSize)
                 {
-                    //If min and max AssetID is the same, the whole "page" is the same asset and it can't be guaranteed that all records for one asset has been fetched
-                    throw new Exception("Search of " + typeof(T) + " got more than " + PageSize + " results for one AssetID");
+                    //If we fetched less than PageSize, this is the last page of data
+                    LastPage = true;
+                    OnLastPage();
                 }
                 else
                 {
-                    //The page may have an incomplete set of records for the highest Asset ID, so remove those from the data stored.
-                    _data.RemoveAll(i => i.AssetID == MaxAssetID);
-                    CurrentHighID = _data.Max(i => i.AssetID);
+                    long MinAssetID = _data.Min(i => i.AssetID);
+                    long MaxAssetID = _data.Max(i => i.AssetID);
+                    if (MinAssetID == MaxAssetID)
+                    {
+                        //If min and max AssetID is the same, the whole "page" is the same asset and it can't be guaranteed that all records for one asset has been fetched
+                        throw new PagedQueryException("Search of " + typeof(T) + " got more than " + PageSize + " results for one AssetID");
+                    }
+                    else
+                    {
+                        //The page may have an incomplete set of records for the highest Asset ID, so remove those from the data stored.
+                        _data.RemoveAll(i => i.AssetID == MaxAssetID);
+                        CurrentHighID = _data.Max(i => i.AssetID);
+                    }
                 }
+            } catch (Exception e)
+            {
+                throw new PagedQueryException($"Failed paged query for {AssetID}, {_query}. Error: {e.Message}");
             }
         }
         /// <summary>
@@ -1028,20 +1102,27 @@ namespace d360.extensions.search
             //Use <T> to specify columns to select, as SqlMapper can slow down a lot over *
             string alias = "pagedquery";
             string queryColumns = string.Join(", ", typeof(T).GetProperties().Select(p => $"{alias}.{p.Name}").ToArray());
-            _query = $"SELECT TOP (@PageSize) {queryColumns} FROM ##{_tableIdentifier} {alias} WHERE {alias}.AssetID >= @PagerAssetID ORDER BY {alias}.sortid option(recompile)";
+            _query = $"SELECT TOP (@PageSize) {queryColumns} FROM ##{_tableIdentifier} {alias} WHERE {alias}.AssetID >= @PagerAssetID ORDER BY {alias}.sortid";
 
-            _connection.Execute($@"
-                DROP TABLE IF EXISTS ##{_tableIdentifier};
+            try
+            {
+                //Double timeout for statement creating the temp table
+                _connection.Execute($@"
+                    DROP TABLE IF EXISTS ##{_tableIdentifier};
 
-                SELECT ROW_NUMBER() OVER (ORDER BY AssetID) AS sortid, {queryColumns}
-                INTO ##{_tableIdentifier}
-                FROM ({query}) {alias};
+                    SELECT ROW_NUMBER() OVER (ORDER BY AssetID) AS sortid, {queryColumns}
+                    INTO ##{_tableIdentifier}
+                    FROM ({query}) {alias};
 
-                CREATE UNIQUE INDEX UIX_{_tableIdentifier} ON ##{_tableIdentifier} (sortid); 
+                    CREATE UNIQUE INDEX UIX_{_tableIdentifier} ON ##{_tableIdentifier} (sortid); 
 
-                CREATE NONCLUSTERED INDEX IX_{_tableIdentifier}_AssetID ON ##{_tableIdentifier} (AssetID); 
-            ", _param, null, _defaultQueryCommandTimeout);
-
+                    CREATE NONCLUSTERED INDEX IX_{_tableIdentifier}_AssetID ON ##{_tableIdentifier} (AssetID); 
+                ", _param, null, _defaultQueryCommandTimeout * 2);
+            }
+            catch (Exception e)
+            {
+                throw new PagedQueryException($"TempTablePagedQuery failed to create temp table. Error: {e.Message}");
+            }
         }
         ~TempTablePagedQuery()
         {

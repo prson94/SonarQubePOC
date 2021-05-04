@@ -166,31 +166,42 @@ export class AdvancedFilteringComponent implements OnChanges {
 
 
     private loadFieldFromRelationshipData(res: FieldTypeAPIModelField[]) {
-        let toLoad: any[] = [];
-        let obsArr: Observable<FieldTypeAPIModelField[]>[] = [];
+        try {
+            let toLoad: any[] = [];
+            let obsArr: Observable<FieldTypeAPIModelField[]>[] = [];
 
-        res.filter((f) => f.Type.ComputedRelationshipField).forEach((f) => {
-            var intersectTypeUid = f.Type.ComputedRelationshipField.IntersectTypeUid;
-            var intersect = this.relationshipTypes.filter((f) => f.Uid === intersectTypeUid);
-            if (intersect) {
-                var intersectType = intersect[0];
-                var assetTypeUid = intersectType.Object.Uid === this.assetTypeUid ? intersectType.Subject.Uid : intersectType.Object.Uid;
+            res.filter((f) => f.Type.ComputedRelationshipField).forEach((f) => {
+                var intersectTypeUid = f.Type.ComputedRelationshipField.IntersectTypeUid;
+                var intersect = this.relationshipTypes.filter((f) => f.Uid === intersectTypeUid);
+                if (intersect) {
+                    var intersectType = intersect[0];
+                    var assetTypeUid = intersectType.Object.Uid === this.assetTypeUid ? intersectType.Subject.Uid : intersectType.Object.Uid;
 
-                var fieldName = f.Type.ComputedRelationshipField.FieldTypeName;
-                toLoad.push({ origField: f.Name, uid: assetTypeUid, field: fieldName });
-                obsArr.push(this.fieldsService.getFieldsV2(assetTypeUid, "", "", fieldName));
-            }
-        });
-
-        forkJoin(obsArr).subscribe((results) => {
-            results.forEach((f) => {
-                var refField = f[0];
-                var idx = toLoad.findIndex((tl) => tl.uid === refField["AssetTypeUid"] && tl.field === refField.Name);
-                var origField = res.findIndex((rf) => rf.Name === toLoad[parseInt(idx.toString())].origField);
-                res[parseInt(origField.toString())].Type = refField.Type;
+                    var fieldName = f.Type.ComputedRelationshipField.FieldTypeName;
+                    toLoad.push({ origField: f.Name, uid: assetTypeUid, field: fieldName, persistInFilters: f.Type.ComputedRelationshipField.IsPrimaryFilter });
+                    obsArr.push(this.fieldsService.getFieldsV2(assetTypeUid, "", "", fieldName));
+                }
             });
+
+            forkJoin(obsArr).subscribe((results) => {
+                results.forEach((f) => {
+                    var refField = f[0];
+                    var idx = toLoad.findIndex((tl) => tl.uid === refField["AssetTypeUid"] && tl.field === refField.Name);
+                    var origField = res.findIndex((rf) => rf.Name === toLoad[parseInt(idx.toString())].origField);
+                    var prop = Object.keys(refField.Type)[0];
+                    refField.Type[prop]["IsPrimaryFilter"] = toLoad[idx].persistInFilters;
+
+                    res[parseInt(origField.toString())].Type = refField.Type;
+
+                });
+                this.processLoadedData(res);
+            });
+        }
+        catch (ex) {
+            console.warn(ex);
             this.processLoadedData(res);
-        });
+
+        }
     }
 
     private processLoadedData(res: FieldTypeAPIModelField[]) {
@@ -329,6 +340,7 @@ export class AdvancedFilteringComponent implements OnChanges {
                 newfilter.isDefaultFilter = filter.isDefaultFilter;
                 newfilter.value = filter.value;
                 newfilter.isPreloaded = true;
+                newfilter.isConfirmed = true;
                 if (newfilter.type && (newfilter.type.Type.Date || filter.type.Type.DateTime)) {
                     newfilter.value = new Date(filter.value);
                 }

@@ -74,20 +74,6 @@ export class DiagramService extends BaseObservableService {
             );
     }
 
-    public getLineageTechnicalRelationships(
-        source: string,
-        sourceId: number,
-        target: string,
-        targetId: number
-    ): Observable<TechnicalRelation[]> {
-        return this
-            .http
-            .get(`relations/ChildRelationshipsBySourceAndTarget?s=${source}&sid=${sourceId}&t=${target}&tid=${targetId}`)
-            .pipe(
-                map(response => <TechnicalRelation[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
 
     public getLineageResponsibilities(assetId: number): Observable<Responsibility[]> {
         return this

@@ -4,9 +4,15 @@
     </div>
     <div *ngIf="!isLoading">
         <div *ngFor="let category of categories">
-            <simple-accordion *ngIf="category.loaded && category.hasData" [header]="category.name" [active]="category.active" (activeChange)="category.active = $event; saveState()">
+            <ng-container *ngIf="useAccordion; else noAccordion">
+                <simple-accordion *ngIf="category.loaded && category.hasData" [header]="category.name" [active]="category.active" (activeChange)="category.active = $event; saveState()">
+                    <object-detail-category [category]="category" [assetUID]="assetUID"></object-detail-category>
+                </simple-accordion>
+            </ng-container>
+            <ng-template #noAccordion>
+                <div style="line-height: 10px">&nbsp;</div>
                 <object-detail-category [category]="category" [assetUID]="assetUID"></object-detail-category>
-            </simple-accordion>        
+            </ng-template>
         </div>
         <div>
             <simple-accordion header="{{ nym.Name }} ({{ synonyms.itemCount }})"

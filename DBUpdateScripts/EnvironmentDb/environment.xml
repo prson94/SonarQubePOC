@@ -409,6 +409,7 @@
 	<include file="scripts/Function.graph.CheckCircularRelationshipCollision.xml"/>
 	<include file="scripts/Function.graph.Hop_GenerateSalt.xml"/>
 	<include file="scripts/Function.metrics.CalculateRollupPath.xml"/>
+	<include file="scripts/Function.metrics.RoundScoreItem.xml"/>				<!--Function used for score calculation, relying on RandomNumber view -->
 	<include file="scripts/Function.utility.FieldDetails.xml"/>
 	<include file="scripts/Function.utility.GenerateFormattedMultipleValue.xml"/>
 	<include file="scripts/Function.utility.GetAssetBusinessKey.xml"/>
@@ -428,8 +429,9 @@
 	<include file="scripts/Procedure.bulkload.UpdateFusionConfigurationColumn.xml"/>
 	<include file="scripts/Procedure.bulkload.UpdateIntersectTypeColumn.xml"/>
 	<include file="scripts/Procedure.bulkload.UpdateItemColumnByIntersectType.xml"/>
-	<include file="scripts/Procedure.dbo.AzureSQLMaintenance.xml"/>
+	<include file="scripts/Procedure.dbo.AzureSQLMaintenance.xml"/>	
 	<include file="scripts/Procedure.dbo.CheckDisplayValues.xml"/>
+	<include file="scripts/Procedure.dbo.DeleteAssetDataProfileRecords.xml"/>
 	<include file="scripts/Procedure.dbo.DeleteIntersect.xml"/>
 	<include file="scripts/Procedure.dbo.DeleteObject.xml"/>
 	<include file="scripts/Procedure.dbo.FollowObject.xml"/>

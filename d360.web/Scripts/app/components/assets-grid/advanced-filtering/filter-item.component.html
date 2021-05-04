@@ -99,7 +99,7 @@
                                 <ng-template pTemplate="header">
                                     <tr>
                                         <th class="first-col">
-                                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                                            <p-tableHeaderCheckbox *ngIf="hasSelectAllCheckbox"></p-tableHeaderCheckbox>
                                         </th>
                                         <th>
                                             <input type="text" class="filter-item-table-filter" (input)="filterTable($event)" placeholder="Search list" />

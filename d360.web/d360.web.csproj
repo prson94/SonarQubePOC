@@ -439,9 +439,6 @@
     <Compile Include="Controllers\NavigationController.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Controllers\RelationsController.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Controllers\ResourcesController.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -893,10 +890,8 @@
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-editor-preview.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-mapping-rules.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-relationships.component.html" />
-    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-responsibilities.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-source-rule-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-source-rules.component.html" />
-    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-technical-relationships.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\model-diagram.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\addpanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-step-http-response.component.html" />
@@ -1694,10 +1689,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-mapping-rules.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-object-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-relationships.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-responsibilities.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-source-rule-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-source-rules.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-technical-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\shared-diagram.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\menu\site-menu-category.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\menu\site-menu-mega-item.component.ts" />

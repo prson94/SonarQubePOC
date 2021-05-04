@@ -28,6 +28,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     @Output() onChange = new EventEmitter();
 
+    nonValueOperators: string[] = ["Populated", "NotPopulated", "IsTrue", "IsFalse"];
+
     lazyLoadSubscription: Subscription;
 
     currentField: FieldTypeAPIModelFieldCondition;
@@ -36,7 +38,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     isSelectingCurrentField: boolean = false;
     isSelectingValue: boolean = false;
-
+    hasSelectAllCheckbox: boolean = false;
 
     tableSelection: any;
 
@@ -75,6 +77,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
         private tagService: TagService,
         private assetService: AssetService
     ) {
+
+        setInterval(() => this.updateTopPosition(), 25);
     }
 
     ngOnChanges() {
@@ -178,29 +182,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.cdRef.markForCheck();
     }
 
-    interval: any = {};
-    setTableWidth() {
-        if (this.isSelectingValue) {
-            if (this.interval) {
-                clearInterval(this.interval);
-            }
-
-            var html = this.elRef.nativeElement as HTMLElement;
-            var scrollWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0];
-            var selectionElement = html.getElementsByClassName("value-selection")[0];
-
-            if (scrollWrapper) {
-                (scrollWrapper as HTMLElement).style.width = 250 + "px";
-            }
-
-            if (selectionElement) {
-                (selectionElement as HTMLElement).style.removeProperty("left");
-            }
-
-            this.interval = setInterval(() => this.updateDynamicWidths(), 20);
-        }
-    }
-
     removePositionStyling() {
         var html = this.elRef.nativeElement as HTMLElement;
         var selectionElement = html.getElementsByClassName("value-selection")[0] as HTMLElement;
@@ -213,26 +194,37 @@ export class FilterItemComponent implements OnInit, OnChanges {
             var html = this.elRef.nativeElement as HTMLElement;
             var scrollWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0];
             if (scrollWrapper) {
-                var topPosition = html.getBoundingClientRect().bottom;
                 let width = 500;
 
                 var tableWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0] as HTMLElement;
 
                 if (tableWrapper) {
                     var selectionElement = html.getElementsByClassName("value-selection")[0] as HTMLElement;
-                    tableWrapper.style.width = width + "px";
 
                     let distanceFromRight = window.outerWidth - html.getBoundingClientRect().left;
-
                     if (distanceFromRight < width) {
                         let diff = Math.abs(width - distanceFromRight);
                         selectionElement.style.left = (html.getBoundingClientRect().left - diff - 50) + "px";
                     }
-                    selectionElement.style.top = topPosition + "px";
                 }
             }
 
             this.setSelectionVirtualScrollHeight(null);
+        }
+        catch (ex) {
+            console.warn(ex);
+        }
+    }
+
+    updateTopPosition() {
+        try {
+            var html = this.elRef.nativeElement as HTMLElement;
+            var topPosition = html.getBoundingClientRect().bottom;
+            var selectionElement = html.getElementsByClassName("value-selection")[0] as HTMLElement;
+
+            if (selectionElement) {
+                selectionElement.style.top = topPosition + "px";
+            }
         }
         catch (ex) {
             console.warn(ex);
@@ -269,6 +261,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.relationshipFieldIntersectCardinality =
                 intersectType.Object.Uid === this.assetTypeUid
                     ? intersectType.Subject.Cardinality : intersectType.Object.Cardinality;
+
+            this.condition.relationshipCardinality = this.relationshipFieldIntersectCardinality;
 
             options = [];
             options.push({ value: "Equals", label: " is " });
@@ -373,6 +367,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
     onFieldSelected($event) {
         this.isSelectingCurrentField = false;
         this.relationshipFieldIntersectTypeUid = "";
+        this.hasSelectAllCheckbox = false;
 
 
         var type = this.getFieldType(this.condition);
@@ -408,6 +403,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.condition.fieldType = null;
                 this.uiCurrentOperatorsList = this.getOperators(this.condition);
                 this.uiFilterLabel = this.condition.getFilterLabel();
+                this.hasSelectAllCheckbox = true;
             }
             else if (this.currentField.IsRelationship) {
                 this.condition.friendlyFieldName = this.currentField.FriendlyName;
@@ -438,7 +434,15 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.updateFocus();
     }
 
+    interval;
     loadListLazy(event: LazyLoadEvent) {
+
+        if (this.interval) {
+            clearInterval(this.interval);
+        }
+
+        this.interval = setInterval(() => this.updateDynamicWidths(), 20);
+
         var params = { skip: event.first, take: event.rows, filter: event.globalFilter ?? "" };
         var type = this.getFieldType(this.condition);
         if (type.Type) {
@@ -506,7 +510,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
 
                 this.currentField.Values = [...this.currentField.Values];
-                this.setTableWidth();
 
                 this.isLookupValuesLoading = false;
                 this.setSelectionVirtualScrollHeight(res);
@@ -527,7 +530,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 });
 
                 this.isLookupValuesLoading = false;
-                this.setTableWidth();
                 this.setSelectionVirtualScrollHeight(res);
                 this.cdRef.markForCheck();
             });
@@ -576,7 +578,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.currentField.Values = this.currentField.Values.sort((a, b) => { return a.title > b.title ? 1 : 0; });
 
                 this.isLookupValuesLoading = false;
-                this.setTableWidth();
                 this.setSelectionVirtualScrollHeight(res);
 
                 this.cdRef.markForCheck();
@@ -612,7 +613,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
 
                 this.currentField.Values = [...this.currentField.Values];
-                this.setTableWidth();
                 this.isLookupValuesLoading = false;
                 this.setSelectionVirtualScrollHeight(res);
                 this.cdRef.markForCheck();
@@ -621,6 +621,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     confirmValue() {
         this.isSelectingValue = false;
+        this.condition.isConfirmed = true;
         this.condition.operator = this.currentOperator;
         this.updateOperatorData();
 
@@ -686,7 +687,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     hasRemoveButton() {
-        if (this.condition.isDefaultFilter || (!this.isEmpty(this.condition.value) && this.condition.operator)) {
+        if (this.condition.isDefaultFilter
+            || (!this.isEmpty(this.condition.value) && this.condition.operator)
+            || (this.condition.isConfirmed && this.isNonValueOperator())
+        ) {
             return true;
         }
 
@@ -694,15 +698,11 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     hasRemoveIcon() {
-        if (!this.condition.operator) {
+        if (!this.condition.operator || !this.condition.isConfirmed) {
             return false;
         }
 
-        if (this.condition.operator.toString() === "Populated"
-            || this.condition.operator.toString() === "NotPopulated"
-            || this.condition.operator.toString() === "IsTrue"
-            || this.condition.operator.toString() === "IsFalse"
-        ) {
+        if (this.isNonValueOperator()) {
             return true;
         }
 
@@ -1021,5 +1021,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
         //update reference
         this.condition.value = [...valueRef];
         this.updateAllAnyData();
+    }
+
+    isNonValueOperator(): boolean {
+        if (!this.condition.operator) {
+            return false;
+        }
+        return this.nonValueOperators.indexOf(this.condition.operator.toString()) !== -1;
     }
 }
