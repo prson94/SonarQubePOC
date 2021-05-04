@@ -101,8 +101,8 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                     }
                     this.loadObjectDataSub = this.assetTypeService.getAssetTypeObjectAndID(params['referenceListId']).subscribe((res) => {
                         this.selectedReferenceListId = +res.ObjectID;
-                        this.load();                        
-                        if (this.selectedReferenceItemType && this.selectedReferenceItemType.ID != this.selectedReferenceListId) {                            
+                        this.load();
+                        if (this.selectedReferenceItemType && this.selectedReferenceItemType.ID != this.selectedReferenceListId) {
                             var referenceItemType: ReferenceItemType = new ReferenceItemType();
                             referenceItemType.ID = this.selectedReferenceListId;
                             referenceItemType.uid = this.selectedReferenceListUid;
