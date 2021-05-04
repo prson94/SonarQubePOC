@@ -117,7 +117,15 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     export() {
         if (!this.selected) return;
-        //    this.relationshipsService.exportObjectRelationshipsToExcel(this.objectType, this.objectID, this.selected.Object, this.selected.ObjectID, this.selected.IntersectTypeID, this.queryString, false);
+        var params = {};
+        if (this.isSubject) {
+            params["subjectUid"] = this.assetUid;
+        }
+        else {
+            params["objectUid"] = this.assetUid;
+        }
+
+        this.relationshipsService.getRelationships(this.selected.Uid, params, true).subscribe();
     }
 
     addRelationship(event: any) {

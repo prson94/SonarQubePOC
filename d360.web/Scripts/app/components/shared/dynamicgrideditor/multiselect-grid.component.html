@@ -1,4 +1,7 @@
-﻿<p-table #dt
+﻿
+<input type="text" igInput igSize="full" pInputText (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+
+<p-table #dt
          [columns]="cols"
          [value]="items"
          [lazy]="true"

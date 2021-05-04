@@ -5,6 +5,7 @@ import * as _ from 'lodash';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 import { LazyLoadEvent } from 'primeng/api';
 import { AssetService } from '../../../services/asset.service';
+import { Subscription } from 'rxjs';
 
 export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
@@ -38,6 +39,9 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
     public onModelTouched: Function = () => { };
 
     lazyLoadTotalCount: number = 0;
+
+    searchAssetSub: Subscription;
+
     constructor(
         private assetService: AssetService,
         private ref: ChangeDetectorRef) {
@@ -53,6 +57,10 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         params["_direction"] = "asc";
         params["_includeFields"] = "Name";
 
+        if ($event.globalFilter) {
+            params["_simpleFilter"] = $event.globalFilter;
+        }
+
         let filters: string[] = [];
         filters.push(`($Related:${this.intersectTypeUid} ne ${this.assetUid})`);
 
@@ -65,10 +73,13 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
             params["_includeTotal"] = false;
         }
 
-
-
         this.isLoading = true;
-        this.assetService.getAssets(this.targetAssetTypeUid, params, true).subscribe((res) => {
+
+        if (this.searchAssetSub) {
+            this.searchAssetSub.unsubscribe();
+        }
+
+        this.searchAssetSub = this.assetService.getAssets(this.targetAssetTypeUid, params, true).subscribe((res) => {
             if (res.total) {
                 this.lazyLoadTotalCount = +res.total;
             }

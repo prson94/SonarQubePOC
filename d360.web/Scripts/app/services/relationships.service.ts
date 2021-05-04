@@ -283,18 +283,24 @@ export class RelationshipsService extends BaseObservableService {
         return obs;
     }
 
-    getRelationships(intersectTypeUid: string, params: any): Observable<RelationshipType[]> {
+    getRelationships(intersectTypeUid: string, params: any, isExport = false): Observable<RelationshipType[]> {
         var url = 'api/v2/relationships?RelationshipTypeUid=' + intersectTypeUid;
 
         if (params) {
             url += "&" + Object.keys(params).map(key => key + '=' + params[key]).join('&');
         }
 
-        return this.http.get(url)
-            .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err))
-            );
+        if (isExport === false) {
+            return this.http.get(url)
+                .pipe(
+                    map(response => <any>response),
+                    catchError(err => this.handleError(err))
+                );
+        }
+        else {
+            this.http.get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
+                .subscribe(data => this.downloadFile(data, 'relationship type items'));
+        }
     }
 
     getRelationshipsCountsForAsset(assetUid: string): Observable<RelationshipType[]> {

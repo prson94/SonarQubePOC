@@ -1,9 +1,8 @@
 ﻿<d3s-loading [isLoading]="isGridLoading"></d3s-loading>
 <div *ngIf="!isGridLoading">
     <div *ngIf="!shouldShowEditor() && !showDelete">
-        <!--[loading]="isDataLoading"
-    [loadingIcon]="'fa fa-spinner fa-spin'"-->
-        <input type="text" [hidden]="!simpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+
+        <input type="text" igInput igSize="full" [hidden]="!simpleFilter" pInputText (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
         <p-table #dt
                  [value]="relations"
                  selectionMode="single"
@@ -17,6 +16,8 @@
                  [scrollable]="true"
                  [lazy]="true"
                  [totalRecords]="totalRecords"
+                 [loading]="isDataLoading"
+                 [loadingIcon]="'fa fa-spinner fa-spin'"
                  (onLazyLoad)="loadRelationshipLazy($event)"
                  scrollWidth="100%">
             <ng-template pTemplate="colgroup">

@@ -42,6 +42,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     @Input() simpleFilter: boolean;
 
     private fields: GridField[] = [];
+    private currentParams: any;
 
     get globalFilterFields(): string[] {
         return this.columns.map((c) => c.datafield);
@@ -118,9 +119,15 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             params["objectUid"] = this.assetUid;
         }
 
+        if ($event.globalFilter) {
+            params["_simpleFilter"] = $event.globalFilter;
+        }
+
         params["_includePath"] = true;
         params["_pageSize"] = $event.rows;
         params["_pageNum"] = ($event.first / $event.rows) + 1;
+
+        this.currentParams = JSON.parse(JSON.stringify(params));
 
         this.relationshipsService.getRelationships(this.intersectTypeUid, params).subscribe((res) => {
             this.totalRecords = +res["total"];
