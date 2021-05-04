@@ -118,6 +118,9 @@ namespace d360.model.DataAccessLayer
             var dbArgs = new DynamicParameters();
             bool includeTotal = true;
             bool includeAssetPath = false;
+            string orderByClause = "order by I.IntersectTypeID";
+            Guid objectUid = Guid.Empty;
+            Guid relationshipTypeUid = Guid.Empty;
 
             var baseTableSql = @"from [Intersect] I 
 inner join IntersectType T on T.ID = I.IntersectTypeID 
@@ -147,7 +150,6 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
 
                 if (queryParamsList.Any(q => q.Key.ToLower() == "relationshiptypeuid"))
                 {
-                    Guid relationshipTypeUid;
                     var relationshipTypeUidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "relationshiptypeuid").Value;
                     if (Guid.TryParse(relationshipTypeUidString, out relationshipTypeUid))
                     {
@@ -198,7 +200,6 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 }
                 if (queryParamsList.Any(q => q.Key.ToLower() == "objectuid"))
                 {
-                    Guid objectUid;
                     var objectUidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "objectuid").Value;
                     if (Guid.TryParse(objectUidString, out objectUid))
                     {
@@ -236,6 +237,19 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     if (!bool.TryParse(queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "_includepath").Value, out includeAssetPath))
                     {
                         includeAssetPath = false;
+                    }
+
+                    if (includeAssetPath && objectUid != Guid.Empty && relationshipTypeUid != Guid.Empty)
+                    {
+                        bool isSubject = companyContext.IntersectTypes.Any(x => x.uid == relationshipTypeUid && x.ObjectUid == objectUid);
+                        if (isSubject)
+                        {
+                            orderByClause = "order by ANDP_Object.DisplayPath asc";
+                        }
+                        else
+                        {
+                            orderByClause = "order by ANDP_Subject.DisplayPath asc";
+                        }
                     }
                 }
 
@@ -335,7 +349,7 @@ select	@pageSize as 'pageSize',
 		{baseTableSql}
         {string.Join("\n", fieldJoins)}
         {whereClause} 
-        order by I.IntersectTypeID
+        {orderByClause}
 		offset ((@pageNum-1) * @pageSize) rows fetch next @pageSize rows only
 		for json path,INCLUDE_NULL_VALUES
 		) as 'items'

@@ -42,7 +42,6 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
     }
 
     loadAssetsLazy($event: LazyLoadEvent) {
-        console.log($event);
 
         var params = {};
         params["_pageSize"] = $event.rows;
@@ -50,7 +49,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         params["_order"] = "Name";
         params["_direction"] = "asc";
         params["_includeFields"] = "Name";
-        console.log(this.field);
+
         var filter = "$Related:" + this.field.IntersectTypeUid + " ne " + this.field.AssetUid;
         params["_filter"] = filter;
 
@@ -58,6 +57,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
             params["_includeTotal"] = false;
         }
 
+        console.log(this.field);
 
         this.isLoading = true;
         this.assetService.getAssets(this.field.TargetAssetTypeUid, params, true).subscribe((res) => {

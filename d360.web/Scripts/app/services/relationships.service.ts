@@ -103,7 +103,7 @@ export class RelationshipsService extends BaseObservableService {
         );
     }
 
-    deleteRelationshipV2(intersectTypeUid: number, model: any[]): Observable<ApiResult[]> {
+    deleteRelationshipV2(intersectTypeUid: string, model: any[]): Observable<ApiResult[]> {
         const httpHeaders = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: model
         };
