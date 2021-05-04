@@ -44,13 +44,7 @@ namespace d360.web.Controllers.V2
         /// Retrieves audit data for the given asset unique identifier.
         /// </summary>
         /// <remarks>
-        /// In addition to the below query parameters a field name for the asset type can be specified to filter by exact match. For example MyCustomField=someExactValue. TODO
-        /// *  If you use the object asset type Uid as the assetTypeUid value, only use of the subjectUid filter is supported.
-        /// *  If you use the subject asset type Uid as the assetTypeUid value, only use of the objectUid filter is supported.
-        /// *  If you use either the subjectUid or objectUid filter, the predicateUid must be included in the request. 
-        /// *  If you do not include the predicateUid, any values given in the subjectUid or objectUid field are ignored.
-        /// 
-        /// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
+        /// Results can be filted using the _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
         /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
         /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
         /// 
