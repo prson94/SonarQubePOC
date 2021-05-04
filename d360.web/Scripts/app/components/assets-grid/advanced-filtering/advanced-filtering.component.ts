@@ -323,7 +323,6 @@ export class AdvancedFilteringComponent implements OnChanges {
             (prefilters as any[]).forEach((f) => {
                 var filter = f as AdvancedFilterFieldCondition;
 
-
                 //do not load from storage if field got removed in meantime
                 if (this.fields && filter.field) {
                     if (!this.fields.some((f) => f.Name === filter.field)) {
