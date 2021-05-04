@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
+using d360.core.exceptions;
 
 namespace igx.jobs.scoreprocessor.ChangeTypes
 {
@@ -46,8 +47,23 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 
                             if (definition.DataQuality != null)
                             {
-                                var dqQueryDetail = Db.BuildDataQualityMeasureQueryModel(MetricDataQualityQueryType.ImpactedAssets_EffectiveDates_By_ProvidedUid, version.RollupPaths.First().Uid);
-                                list = Db.GetDataQualityAssetEffectiveDateResultModels(dqQueryDetail, measureChangedModel.MetricAssetUid, measureChangedModel.MetricAssetVersionUid, version.EffectiveDate);
+                                var rollupPath = version.RollupPaths.FirstOrDefault();
+                                if (rollupPath != null)
+                                {
+                                    var dqQueryDetail = Db.BuildDataQualityMeasureQueryModel(MetricDataQualityQueryType.ImpactedAssets_EffectiveDates_By_ProvidedUid, rollupPath.Uid);
+                                    try
+                                    {
+                                        list = Db.GetDataQualityAssetEffectiveDateResultModels(dqQueryDetail, measureChangedModel.MetricAssetUid, measureChangedModel.MetricAssetVersionUid, version.EffectiveDate);
+                                    }
+                                    catch
+                                    {
+                                        throw new InvalidScoreMeasure($"Measure with Version Uid {version.Uid} ({version.Name}) references a non-existent / invalid rollup path.");
+                                    }
+                                }
+                                else
+                                {
+                                    throw new InvalidScoreMeasure($"Measure with Version Uid {version.Uid} ({version.Name}) references a non-existent / invalid rollup path.");
+                                }
                             }
                             else if (definition.Governance != null)
                             {

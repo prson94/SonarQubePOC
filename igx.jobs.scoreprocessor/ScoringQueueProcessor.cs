@@ -79,6 +79,15 @@ namespace igx.jobs.scoreprocessor
                     await process.Run();
                 }
             }
+            catch (InvalidScoreMeasure ex)
+            {
+                var props = new Dictionary<string, string>() {
+                        { "ExecutionUid", scoreInfo.ExecutionUid.ToString() },
+                        { "ChangeType", scoreInfo.ChangeType.ToString() }
+                    };
+
+                CoreFunction.AITrackException(functionName, ex, scoreInfo.CompanyID, props);
+            }
             catch (ScoresCurrentlyProcessingException)
             {
                 var queue = new AzureQueueSource();
