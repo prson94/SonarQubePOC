@@ -45,6 +45,7 @@ export class EditorField {
     AssetUid: string;
     TargetAssetTypeUid: string;
     IntersectTypeUid: string;
+    ObjectCardinality: string;
 }
 
 export class EditorCategory {

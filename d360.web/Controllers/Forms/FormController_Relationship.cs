@@ -96,15 +96,18 @@ namespace d360.web.Controllers
 
 
             var targetCardinality = Cardinality.Many;
+            var objectCardinality = Cardinality.Many;
             Guid targetAssetTypeUid;
             if (relationshipType.Subject == obj.Type && relationshipType.SubjectID == obj.TypeID)
             {
                 targetCardinality = relationshipType.ObjectCardinality;
+                objectCardinality = relationshipType.SubjectCardinality;
                 targetAssetTypeUid = relationshipType.ObjectUid.Value;
             }
             else
             {
                 targetCardinality = relationshipType.SubjectCardinality;
+                objectCardinality = relationshipType.ObjectCardinality;
                 targetAssetTypeUid = relationshipType.SubjectUid.Value;
             }
 
@@ -124,7 +127,8 @@ namespace d360.web.Controllers
                 IsAssetLazyLoad = true,
                 AssetUid = obj.UID.Value,
                 TargetAssetTypeUid = targetAssetTypeUid,
-                IntersectTypeUid = relationshipType.uid
+                IntersectTypeUid = relationshipType.uid,
+                ObjectCardinality = objectCardinality
             });
 
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IntersectType, relationshipType.ID).ToList(), 2);

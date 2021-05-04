@@ -120,10 +120,12 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
         //    this.relationshipsService.exportObjectRelationshipsToExcel(this.objectType, this.objectID, this.selected.Object, this.selected.ObjectID, this.selected.IntersectTypeID, this.queryString, false);
     }
 
-    addRelationship(event) {
-        console.log(event);
-        if (!this.selected) return;
-        this.selected.Count = event.count;
+    addRelationship(event: any) {
+        var uid = event.uid;
+        var item = this.relationshipItems.filter((r) => r.Uid === uid)[0];
+
+        var count = (event.data as any[]).length;
+        item.Count = item.Count += count;
         this.updateCardinality();
     }
 

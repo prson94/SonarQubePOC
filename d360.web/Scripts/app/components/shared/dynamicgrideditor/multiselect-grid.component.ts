@@ -1,7 +1,6 @@
 ﻿import { Input, Component, Output, EventEmitter, OnInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { UriBasedService } from '../../../services/uri-based.service';
-import { EditorField } from '../../../models/editor-field.model';
 import * as _ from 'lodash';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 import { LazyLoadEvent } from 'primeng/api';
@@ -21,8 +20,12 @@ export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
 })
 
 export class MultiSelectGridComponent extends BaseComponent implements ControlValueAccessor {
-    @Input() field: EditorField;
     @Input() multiple: boolean = true;
+    @Input() intersectTypeUid: string;
+    @Input() assetUid: string;
+    @Input() targetAssetTypeUid: string;
+    @Input() objectCardinality: string;
+
 
     value: any; //stores the values array bound back to the ngform.
 
@@ -50,17 +53,22 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         params["_direction"] = "asc";
         params["_includeFields"] = "Name";
 
-        var filter = "$Related:" + this.field.IntersectTypeUid + " ne " + this.field.AssetUid;
-        params["_filter"] = filter;
+        let filters: string[] = [];
+        filters.push(`($Related:${this.intersectTypeUid} ne ${this.assetUid})`);
+
+        if (this.objectCardinality.toString() === "1") {
+            filters.push(`($Related:${this.intersectTypeUid} eq null)`);
+        }
+        params["_filter"] = `(${(filters.join(" and "))})`;
 
         if (this.lazyLoadTotalCount) {
             params["_includeTotal"] = false;
         }
 
-        console.log(this.field);
+
 
         this.isLoading = true;
-        this.assetService.getAssets(this.field.TargetAssetTypeUid, params, true).subscribe((res) => {
+        this.assetService.getAssets(this.targetAssetTypeUid, params, true).subscribe((res) => {
             if (res.total) {
                 this.lazyLoadTotalCount = +res.total;
             }

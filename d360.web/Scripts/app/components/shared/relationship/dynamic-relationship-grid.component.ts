@@ -184,7 +184,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
                 if (event.action == "new") {
                     this.showMessageForApiResults(this.messagesService, res, " Relationships succesfully added!");
-                    this.addRelationshipChange.emit(model);
+                    this.relationshipAdded.emit({ uid: this.intersectTypeUid, data: model });
                 }
                 else {
                     this.showMessageForApiResults(this.messagesService, res, " Relationships succesfully updated!");

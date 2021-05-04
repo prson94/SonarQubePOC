@@ -188,6 +188,11 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         }
 
         this.isLoading = true;
+
+        if (this.objectType === "IntersectType" && this.action === "Edit") {
+            this.useTypeUidForDefinition = false;
+        }
+
         if (this.useTypeUidForDefinition) {
             this.editorDefinitionService.getEditorDefinitionUid(this.objectTypeUid, this.objectType, this.targetUid)
                 .subscribe(result => {

@@ -256,6 +256,9 @@ namespace d360.web.Models
 
         [DataMember]
         public Guid TargetAssetTypeUid { get; set; }
+
+        [DataMember]
+        public Cardinality ObjectCardinality { get; set; }
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]
