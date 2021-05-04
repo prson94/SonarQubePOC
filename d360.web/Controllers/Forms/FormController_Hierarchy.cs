@@ -251,7 +251,9 @@ namespace d360.web.Controllers
                 var level = parseIntField(form, "Level");
 
                 if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.AddAsset))
+                {
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                }
 
                 if (!form.HasKeys()) throw new NoFormDataException("policy type level");
 
