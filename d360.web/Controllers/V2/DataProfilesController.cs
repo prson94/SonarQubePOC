@@ -339,7 +339,17 @@ namespace d360.web.Controllers.V2
                 if (!recordExists && !IsInsert)
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Record does not exist for AssetUid {model.assetUid} and ProfileSetDate {model.profileSetDate.Date:yyyy-MM-dd}");
-                }                
+                }
+                
+                if(model.topK !=null && model.topK.Any(x=> x.Trim() == string.Empty))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Elements in topK cannot be Empty strings");
+                }
+
+                if (model.bottomK != null && model.bottomK.Any(x => x.Trim() == string.Empty))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Elements in bottomK cannot be Empty strings");
+                }
 
                 bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
                 if (!isValid)
