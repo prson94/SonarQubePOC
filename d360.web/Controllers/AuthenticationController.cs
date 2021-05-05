@@ -37,6 +37,7 @@ namespace d360.web.Controllers
     public class AuthenticationController : BaseController
     {        
         const string APP_ID = "https://data3sixty.com/ui";
+        const string SessionIndexCookieName = "SessionIndex";
 
         #region DI
 
@@ -605,6 +606,17 @@ namespace d360.web.Controllers
 
                         Response.AppendCookie(cookie);
 
+                        if (!string.IsNullOrEmpty(samlAssertion.ID))
+                        {
+                            var samlCookie = new HttpCookie(SessionIndexCookieName, samlAssertion.ID)
+                            {
+                                HttpOnly = true,
+                                Secure = FormsAuthentication.RequireSSL
+                            };
+
+                            Response.AppendCookie(samlCookie);
+                        }
+
 
                         // Get the originally requested resource URL from the relay state, if any.
                         string redirectURL = "/#";
@@ -726,12 +738,19 @@ namespace d360.web.Controllers
                     if (!string.IsNullOrEmpty(sloEndpoint))
                     {
                         var resource = Community.GetById<Resource>(Community.CurrentResourceID);
-
+                                                
                         var lr = new LogoutRequest
                         {
                             NameID = new NameID(resource.Username, APP_ID, APP_ID, "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress", APP_ID),
-                            Issuer = new Issuer(APP_ID)
+                            Issuer = new Issuer(APP_ID)                            
                         };
+
+                        //check for Sso SessionID if present stick in logout.                                                
+                        if (Request.Cookies[SessionIndexCookieName] != null)
+                        {
+                            lr.SessionIndexes = new List<SessionIndex> { new SessionIndex(Request.Cookies[SessionIndexCookieName].Value) };                            
+                        }
+
                         var lrXml = lr.ToXml();
 
                         // Send the logout response over HTTP redirect.                        
