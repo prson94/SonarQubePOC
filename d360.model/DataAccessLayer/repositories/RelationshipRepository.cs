@@ -12,6 +12,7 @@ using d360.core.enums;
 using d360.core.queue;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
+using d360.model.helpers;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -338,6 +339,34 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     }
 
                     whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $"({string.Join(" or ", simpleFilters)})";
+                }
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))
+            {
+                var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
+                if (!string.IsNullOrEmpty(value))
+                {
+                    filteringByFields = true;
+
+                    var tempArgs = new DynamicParameters();
+                    List<string> tempJoins = new List<string>();
+                    List<string> tempFieldColumns = new List<string>();
+
+                    getFieldSql(fieldTypes, tempArgs, tempJoins, tempFieldColumns);
+
+                    var filterExpressionParser = new FilterExpressionParser(companyContext, FilterExpressionParseType.CustomFields);
+                    filterExpressionParser.LoadFieldTypes(fieldTypes, tempFieldColumns);
+                    Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                    List<int> filteredFields = new List<int>();
+                    var fieldsQuery = "(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")";
+
+                    whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + fieldsQuery;
+
+                    foreach (var item in sqlParams)
+                    {
+                        dbArgs.Add(item.Key, item.Value);
+                    }
                 }
             }
 
