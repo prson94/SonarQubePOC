@@ -355,7 +355,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
 
                     getFieldSql(fieldTypes, tempArgs, tempJoins, tempFieldColumns);
 
-                    var filterExpressionParser = new FilterExpressionParser(companyContext, FilterExpressionParseType.CustomFields);
+                    var filterExpressionParser = new FilterExpressionParser(companyContext, FilterExpressionParseType.RelationshipCustomFields);
                     filterExpressionParser.LoadFieldTypes(fieldTypes, tempFieldColumns);
                     Dictionary<string, object> sqlParams = new Dictionary<string, object>();
                     List<int> filteredFields = new List<int>();
