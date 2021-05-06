@@ -24,6 +24,7 @@ import { Router } from "@angular/router";
 export class AdvancedFilteringComponent implements OnChanges {
     @Input() assetTypeUid: string = "";
     @Output() onChange = new EventEmitter();
+    @Output() onLoad = new EventEmitter();
 
     allocations: ScoreTypeAllocation[] = [];
     relationshipTypes: RelationshipType[] = [];
@@ -159,7 +160,11 @@ export class AdvancedFilteringComponent implements OnChanges {
             else {
                 this.processLoadedData(res);
             }
-        });
+
+
+            this.onLoad.emit();
+        }
+        );
 
 
     }
