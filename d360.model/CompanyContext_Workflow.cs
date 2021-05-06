@@ -2824,9 +2824,10 @@ namespace d360.model
 
                         if (fieldRecord != null)
                         {
-                            var type = FieldTypes.Where(x => x.ID == fieldRecord.FieldTypeID).FirstOrDefault().Type;
-                            if (type != null)
+                            var fieldType = FieldTypes.Where(x => x.ID == fieldRecord.FieldTypeID).FirstOrDefault();
+                            if (fieldType != null)
                             {
+                                var type = fieldType.Type;
                                 if (type == "Date")
                                 {
                                     DateTime dt = DateTime.ParseExact(fieldRecord.FormattedValue, "MM/dd/yyyy HH:mm:ss", null);
