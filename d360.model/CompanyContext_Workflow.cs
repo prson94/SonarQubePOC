@@ -2825,17 +2825,22 @@ namespace d360.model
                         if (fieldRecord != null)
                         {
                             var type = FieldTypes.Where(x => x.ID == fieldRecord.FieldTypeID).FirstOrDefault().Type;
-                            if (type == "Date")
+                            if (type != null)
                             {
-                                DateTime dt = DateTime.ParseExact(fieldRecord.FormattedValue, "MM/dd/yyyy HH:mm:ss", null);
-                                string formattedDate = dt.ToString("dd MMM yyyy");
-                                fieldValue = formattedDate;
-                            }
-                            else if (type == "DateTime")
-                            {
-                                DateTime dt = Convert.ToDateTime(fieldRecord.FormattedValue);
-                                string formattedDate = dt.ToString("dd MMM yyyyTHH:mm:ss");
-                                fieldValue = formattedDate;
+                                if (type == "Date")
+                                {
+                                    DateTime dt = DateTime.ParseExact(fieldRecord.FormattedValue, "MM/dd/yyyy HH:mm:ss", null);
+                                    string formattedDate = dt.ToString("dd MMM yyyy");
+                                    fieldValue = formattedDate;
+                                }
+                                else if (type == "DateTime")
+                                {
+                                    DateTime dt = Convert.ToDateTime(fieldRecord.FormattedValue);
+                                    string formattedDate = dt.ToString("dd MMM yyyyTHH:mm:ss");
+                                    fieldValue = formattedDate;
+                                }
+                                else
+                                    fieldValue = fieldRecord.FormattedValue;
                             }
                             else
                                 fieldValue = fieldRecord.FormattedValue;
