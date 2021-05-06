@@ -120,7 +120,7 @@ namespace d360.web.Controllers
 
                 if (!string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue)
                 {
-                    if (ft.AllowMultipleValues)
+                    if (ft.AllowMultipleValues || !ft.AllowMultipleValues)
                     {
                         ro.Values = new List<ReadOnlyFieldValue>();
                         ro.Value = "values";
@@ -297,13 +297,30 @@ namespace d360.web.Controllers
             }
             else if (ft.Type == DataType.Score.ToString())
             {
-                var assetScore = (await Company.QueryFirstOrDefaultAsync<string>("select FormattedValue from dbo.GetAssetScoreById(@id, @scoreType)"
-                    , new { id = details.AssetID, ft.ScoreType }).ConfigureAwait(false)) + "";
+                var assetScore = (await Company.QueryFirstOrDefaultAsync<dynamic>(@"
+select	case when S.Value is null then 
+			' ' 
+		else 
+			cast(cast((round(S.[Value] * 100, 1)) as float) as nvarchar) + '%'
+		end as [Value],
+		case when cast((round(S.[Value] * 100, 1)) as float) < L.LowerThreshold then
+			'poor'
+		when cast((round(S.[Value] * 100, 1)) as float) between L.LowerThreshold and L.UpperThreshold then
+			'average'
+		when cast((round(S.[Value] * 100, 1)) as float) > L.UpperThreshold then
+			'good'
+		else
+			'none'
+		end as Threshold		
+from	metrics.Score S
+		inner join Asset A on A.uid = S.AssetUid and A.id = @id and S.EndDate is null
+		inner join metrics.Allocation L on L.uid = S.AllocationUid and L.ScoreType = @scoreType and L.OverrideName is null"
+                    , new { id = details.AssetID, ft.ScoreType }).ConfigureAwait(false));
 
                 var ro = new ReadOnlyField
                 {
                     Name = ft.FriendlyName,
-                    Value = assetScore,
+                    Value = JsonConvert.SerializeObject(new { name = assetScore.Value, Threshold = assetScore.Threshold }),
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     ShowIfEmpty = ft.ShowIfEmpty,

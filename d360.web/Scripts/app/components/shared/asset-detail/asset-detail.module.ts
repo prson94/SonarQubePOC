@@ -8,6 +8,8 @@ import { PipesModule } from "../../../pipes/pipes.module";
 import { CoreModule } from "../core.module";
 import { TooltipModule } from "primeng/tooltip";
 import { NgxJsonViewModule } from "ng-json-view";
+import { IgColorPickerModule } from "../controls/color-picker/color-picker.module";
+import { TagViewModule } from "../tags/d3s-tag-view.module";
 
 @NgModule({
     imports: [
@@ -17,6 +19,8 @@ import { NgxJsonViewModule } from "ng-json-view";
         PipesModule,
         TooltipModule,
         NgxJsonViewModule,
+        IgColorPickerModule,
+        TagViewModule,
     ],
     declarations: [
         AssetDetailFieldComponent,

@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 
 export class AssetDetailFieldComponent {
     @Input() field: DetailField;
+    @Input() assetUid: string;
 
     readonly emptyValue: string = "---";
     readonly dateFormat: string = "d MMM yyyy";
@@ -25,6 +26,10 @@ export class AssetDetailFieldComponent {
         if ((this.field.DataType == 'date' || this.field.DataType == 'datetime') && isNaN(Date.parse(this.field.Value)))
             this.field.Value = null;
     }
+
+    navigate(url: string) {
+        this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
+    }    
 
     get shouldShowEmptyValue(): boolean {
         if (this.field == null) {
@@ -61,6 +66,22 @@ export class AssetDetailFieldComponent {
             && this.field.Value.endsWith('Z'))
             return true;
         return false;
+    }
+
+    get isArrayValue(): boolean {
+        return this.field != null
+            && this.field.Values
+            && this.field.Values.length > 0;
+    }
+
+    get valueCount(): number {
+        if (this.isArrayValue) {
+            return this.field.Values.length;
+        } else if (this.field == null) {
+            return 0;
+        } else {
+            return 1;
+        }
     }
 
     //#region Formatted field values

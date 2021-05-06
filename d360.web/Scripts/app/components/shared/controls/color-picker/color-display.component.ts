@@ -9,7 +9,12 @@ import * as _ from 'lodash';
                     <span *ngFor="let item of colorsObject">
                         <span class="ig-colorfield-item grid" style="display: inline-flex !important;">
                             <span class="ig-colorfield-swatch" [ngClass]="{'empty': (item.color == 'transparent' || item.color == null)}" [ngStyle]="{'background-color': item.color}"></span>
-                            <span class="ig-colorfield-item-label">{{item.name}}</span>
+                            <span *ngIf="!url" class="ig-colorfield-item-label">
+                                {{item.name}}
+                            </span>
+                            <a *ngIf="url" class="ig-colorfield-item-label" [href]="url">
+                                {{item.name}}
+                            </a>
                         </span>
                         <br/>
                     </span>
@@ -20,6 +25,8 @@ import * as _ from 'lodash';
 export class ColorDisplayComponent implements OnInit {
 
     @Input() colorsJSON: string;
+    @Input() url: string;
+
     public colorsObject: any;
 
     constructor() {
