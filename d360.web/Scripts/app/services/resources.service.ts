@@ -22,8 +22,13 @@ export class ResourcesService extends BaseObservableService {
             );
     }
 
-    getResources(): Observable<Resource[]> {
-        return this.http.get('/api/resources/1')
+    getResources(includeInactive: boolean = true): Observable<Resource[]> {
+    
+        let url = '/api/resources/1';
+        if (includeInactive === false) {
+            url += '?includeInactive=false';
+        }
+        return this.http.get(url)
             .pipe(
                 map((response) => <Resource[]>response),
                 catchError((err) => this.handleError(err))

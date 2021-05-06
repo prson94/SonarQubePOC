@@ -2456,7 +2456,7 @@ from        (
         #region Resources
 
         [HttpGet, Route("resources/{typeID:int}")]
-        public HttpResponseMessage GetResourcesByType(int typeID, string filter = "")
+        public HttpResponseMessage GetResourcesByType(int typeID, string filter = "", bool includeInactive = true)
         {
             var settings = Community.GetCompanySettings();
             //check that current user is an admin or the company settings allow users to be listed
@@ -2467,6 +2467,16 @@ from        (
             var columns = "";
             var filterSql = "";
             getDynamicFieldJoinStatements(typeID, "Resource", out joins, out columns, false, false);
+
+            var dbArgs = new DynamicParameters();
+            dbArgs.Add("deleteStatus", CompanyResourceState.Deleted);
+            dbArgs.Add("inactiveStatus", CompanyResourceState.Inactive);
+
+            var statusCondition = $"State <> @deleteStatus";
+            if (includeInactive == false)
+            {
+                statusCondition = $"State not in (@deleteStatus, @inactiveStatus)";
+            }
 
             var querySql = $@"
 select  A.FirstName,
@@ -2488,12 +2498,11 @@ from    (
                 IsAdministrator,
                 ResourceID as ID
         from	reporting.Global_Resource
-                where State <> @excludeStatus
+                where {statusCondition} 
         ) A 
         {joins}";
 
-            var dbArgs = new DynamicParameters();
-            dbArgs.Add("excludeStatus", CompanyResourceState.Deleted);
+
 
             if (HideData3SixtyUsers())
             {
