@@ -18,7 +18,7 @@ export class SocialService extends BaseObservableService  {
             .get(`api/v2/comments?assetUid=${assetUid}&_pageNum=${page ? page : 0}&_pageSize=${count ? count : 10}`)
             .pipe(
                 map((res) => <CommentDetails>res),
-                catchError((err) => err instanceof HttpErrorResponse && err.status == 404 ? this.handleError(err, false, this.router) : this.handleError(err))                
+                catchError((err) => err instanceof HttpErrorResponse && err.status === 404 ? this.handleError(err, false, this.router) : this.handleError(err))                
             );
     }
 
