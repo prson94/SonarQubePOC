@@ -738,7 +738,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
 
             if (!hasPersmission)
             {
-                hasPersmission = companyContext.HasAssetPermission(assetId, Permission.ModifyAsset);
+                hasPersmission = companyContext.HasAssetPermission(assetId, Permission.EditAsset);
             }
             return hasPersmission;
         }

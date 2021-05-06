@@ -4886,8 +4886,8 @@ from	api.ExecutionAsset T
                     #endregion
 
                     // Validate permissions
-                    LogAssetPermissionErrors(execution.ExecutionID, at, Permission.ModifyAsset, "ExecutionAsset");
-                    LogAssetPermissionErrors(execution.ExecutionID, at, Permission.ModifyAsset, isInsert, "ExecutionAsset");
+                    LogAssetPermissionErrors(execution.ExecutionID, at, isInsert ? Permission.AddAsset : Permission.EditAsset, "ExecutionAsset");
+                    LogAssetPermissionErrors(execution.ExecutionID, at, isInsert ? Permission.AddAsset : Permission.EditAsset, isInsert, "ExecutionAsset");
                     AddMeasurement(metrics, "LogAssetPermissionErrors -  Permission.ModifyAsset- ExecutionAsset", sw.ElapsedMilliseconds, ++step);
                     sw.Restart();
 
@@ -10248,6 +10248,8 @@ EG.GroupUid
 					G.Description = S.Description,
 					G.PrimaryOwnerResourceID = PrimaryID,
 					G.SecondaryOwnerResourceID = SecondaryID,
+                    G.UpdatedBy = @CurrentResourceID,
+                    G.UpdatedOn = GETUTCDATE(),
                     G.IsActiveDirectoryGroup = S.IsActiveDirectoryGroup
                 when not matched then
 	                insert ([Uid], Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID,IsActiveDirectoryGroup,UpdatedOn,UpdatedBy)
@@ -10907,7 +10909,23 @@ EG.GroupUid
                             api.ExecutionAssetDataProfile EDP
                             left Join
                             Asset A on EDP.AssetUid = A.Uid
-                        where	ExecutionID = @ExecutionID and A.Uid is null;",
+                        where	ExecutionID = @ExecutionID and A.Uid is null;
+
+                        Update EDP
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'Elements in '+ EDPS.SampleType +' cannot be Empty strings'
+                        from  
+                            api.ExecutionAssetDataProfile EDP 
+                            inner join 
+                            (
+                                select 
+                                    distinct ExecutionID, itemnumber, SampleType 
+                                from 
+                                    api.ExecutionAssetDataProfileSample 
+                                where ExecutionID = @ExecutionID and TRIM(Value)='' and LOWER(SampleType) in ('topk', 'bottomk') 
+                            ) EDPS on EDP.ExecutionID=EDPS.ExecutionID and EDP.ItemNumber=EDPS.ItemNumber 
+                        where 
+                            EDP.ExecutionID = @ExecutionID                             ",
                                     new { execution.ExecutionID }, commandTimeout: timeout);
 
                     AddMeasurement(metrics, "LogAssetDataProfileErrors", sw.ElapsedMilliseconds, ++step);

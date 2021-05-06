@@ -69,6 +69,7 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
             && !(path.filter(x => x.tagName == 'D3S-TAG-USAGE').length > 0)
             && !(path.filter(x => x.tagName == 'D3S-ASSET-TYPE-MODAL-EDITOR').length > 0)
             && !(path.filter(x => x.tagName == 'P-DROPDOWNITEM').length > 0)
+            && !(path.filter((x) => x.tagName === 'GOVERNANCE-MEASURE-EDITOR').length > 0)
         ) {
             event.preventDefault();
         }

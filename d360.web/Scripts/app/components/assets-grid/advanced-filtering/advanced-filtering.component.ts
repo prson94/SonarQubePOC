@@ -187,12 +187,13 @@ export class AdvancedFilteringComponent implements OnChanges {
                 results.forEach((f) => {
                     var refField = f[0];
                     var idx = toLoad.findIndex((tl) => tl.uid === refField["AssetTypeUid"] && tl.field === refField.Name);
-                    var origField = res.findIndex((rf) => rf.Name === toLoad[parseInt(idx.toString())].origField);
-                    var prop = Object.keys(refField.Type)[0];
-                    refField.Type[prop]["IsPrimaryFilter"] = toLoad[idx].persistInFilters;
+                    if (idx !== -1) {
+                        var origField = res.findIndex((rf) => rf.Name === toLoad[parseInt(idx.toString())].origField);
+                        var prop = Object.keys(refField.Type)[0];
+                        refField.Type[prop]["IsPrimaryFilter"] = toLoad[idx].persistInFilters;
 
-                    res[parseInt(origField.toString())].Type = refField.Type;
-
+                        res[parseInt(origField.toString())].Type = refField.Type;
+                    }
                 });
                 this.processLoadedData(res);
             });
@@ -265,7 +266,6 @@ export class AdvancedFilteringComponent implements OnChanges {
                 if (Object.keys(field.Type).some((x) => x === key)) {
                     isDefaultFilter = field.Type[key]["IsPrimaryFilter"];
                 }
-
                 if (isDefaultFilter === true && !loadedFilters.some((x) => x.field === field.Name)) {
                     var defaultFilter = new AdvancedFilterFieldCondition(this.datePipe);
                     defaultFilter.field = field.Name;
@@ -323,6 +323,14 @@ export class AdvancedFilteringComponent implements OnChanges {
             prefilters = JSON.parse(storageFilters);
             (prefilters as any[]).forEach((f) => {
                 var filter = f as AdvancedFilterFieldCondition;
+
+                //do not load from storage if field got removed in meantime
+                if (this.fields && filter.field) {
+                    if (!this.fields.some((f) => f.Name === filter.field)) {
+                        return false;
+                    }
+                }
+
                 if (!filter.operator) {
                     return false;
                 }

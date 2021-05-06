@@ -1297,7 +1297,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.groupTemplateMap.add("FocalPortGroup", this.template_FocalRootNode());
         this.diagram.groupTemplateMap.add("PortGroup", this.template_RootNode());
         this.diagram.groupTemplateMap.add("Group", this.template_AncestorNode());
-        this.diagram.groupTemplateMap.add("AncestorNodeOnlyText", this.template_AncestorNodeOnlyText());
+        this.diagram.groupTemplateMap.add("AncestorGroupNodeOnlyText", this.template_AncestorGroupNodeOnlyText());
+        this.diagram.nodeTemplateMap.add("AncestorLeafNodeOnlyText", this.template_AncestorLeafNodeOnlyText());
 
         this.diagram.nodeTemplateMap.add("MoreData", this.template_RevealNode());
         this.diagram.groupTemplateMap.add("HiddenDisabledNode", this.template_HiddenDisabledNode());
@@ -1666,7 +1667,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         //#region Asset Types
 
         this.filter_AvailableOptions.FilterAssetTypes = [];
-        this.filter_AvailableOptions.AssetTypeOptions.forEach(at => { 
+        this.filter_AvailableOptions.AssetTypeOptions.forEach(at => {
             let inLoadedAssetTypes: boolean = loadedTypes.AssetTypes.findIndex(ix => { return ix == at.AssetTypeId }) > -1;
             if (inLoadedAssetTypes) {
                 this.filter_AvailableOptions.FilterAssetTypes.push({
@@ -1749,7 +1750,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let diagramAsset = new AssetBrowserDiagramAsset();
         this.assetService.getAsset(assetUid)
             .subscribe((asset) => {
-                diagramAsset.Url = "/asset/" + assetUid; 
+                diagramAsset.Url = "/asset/" + assetUid;
                 diagramAsset.Path = asset.Path;
 
                 forkJoin(
@@ -1757,40 +1758,40 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.assetService.getUIDetailsForAssetUID(assetUid),
                     this.responsibilityService.getResponsibilityDetail(assetUid)
                 )
-                .subscribe(([fields, ui, responsibilities]) => {
+                    .subscribe(([fields, ui, responsibilities]) => {
 
-                    fields.forEach((fieldType) => {
-                        let typeName = Object.keys(fieldType.Type)[0];
-                        let type = fieldType.Type[typeName];
+                        fields.forEach((fieldType) => {
+                            let typeName = Object.keys(fieldType.Type)[0];
+                            let type = fieldType.Type[typeName];
 
-                        if (type != null && this.ignoredPanelFieldTypes.indexOf(typeName) == -1) {
-                            if (type.IsDisplayable === true && (type.ShowIfEmpty === true || (type.ShowIfEmpty === false && asset[fieldType.Name] != null))) {
-                                diagramAsset.Fields.push(
-                                    {
-                                        Name: fieldType.FriendlyName,
-                                        Type: typeName,
-                                        Value: asset[fieldType.Name] == null ? "" : asset[fieldType.Name].toString()
-                                    });
+                            if (type != null && this.ignoredPanelFieldTypes.indexOf(typeName) == -1) {
+                                if (type.IsDisplayable === true && (type.ShowIfEmpty === true || (type.ShowIfEmpty === false && asset[fieldType.Name] != null))) {
+                                    diagramAsset.Fields.push(
+                                        {
+                                            Name: fieldType.FriendlyName,
+                                            Type: typeName,
+                                            Value: asset[fieldType.Name] == null ? "" : asset[fieldType.Name].toString()
+                                        });
+                                }
                             }
-                        }
-                    });
-
-                    responsibilities.forEach((responsibility) => {
-                        diagramAsset.Owners.push({
-                            ResourceName: responsibility.Resource,
-                            ResponsibilityTypeName: responsibility.Responsibility,
-                            ResponsibilityTypeUid: responsibility.ResponsibilityUid,
-                            ResourceUid: responsibility.ResourceUid
                         });
-                    });
 
-                    diagramAsset.TypeName = ui.TypeName;
-                    diagramAsset.DisplayValue = ui.DisplayValue;
-                    diagramAsset.Loaded = true;
-                    this.selectedDiagramAsset = diagramAsset;
-                    this.panel_Loading = false;
-                    this.cdRef.markForCheck();
-                });
+                        responsibilities.forEach((responsibility) => {
+                            diagramAsset.Owners.push({
+                                ResourceName: responsibility.Resource,
+                                ResponsibilityTypeName: responsibility.Responsibility,
+                                ResponsibilityTypeUid: responsibility.ResponsibilityUid,
+                                ResourceUid: responsibility.ResourceUid
+                            });
+                        });
+
+                        diagramAsset.TypeName = ui.TypeName;
+                        diagramAsset.DisplayValue = ui.DisplayValue;
+                        diagramAsset.Loaded = true;
+                        this.selectedDiagramAsset = diagramAsset;
+                        this.panel_Loading = false;
+                        this.cdRef.markForCheck();
+                    });
             });
     }
 
@@ -2206,7 +2207,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
     }
 
-    private template_AncestorNodeOnlyText(): go.Group {
+    private template_AncestorGroupNodeOnlyText(): go.Group {
         var self = this;
         return this.g(
             go.Group,
@@ -2229,6 +2230,47 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         }
                     )
             },
+            this.g(
+                go.Shape,
+                "Rectangle",
+                { fill: null, strokeWidth: 2, stretch: go.GraphObject.Horizontal },
+                new go.Binding("stroke", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount))
+            ),
+            this.g(
+                go.Panel,
+                "Vertical",   // title above Placeholder
+                new go.Binding("desiredSize", "", function (obj: go.GraphObject, target: go.GraphObject) {
+                    target.part.findTopLevelPart().part.data["predicateWidth"] = 265;
+                }).ofObject(),
+                new go.Binding("background", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount)),
+                new go.Binding("background", "", v => (v.isHighlighted) ?
+                    go.Brush.mix(this.selectionPathHighlightColor, this.selectionPathHighlightColor, v.backAmount) :
+                    go.Brush.mix(v.data.back, this.lightenBoxColor, v.data.backAmount)
+                ).ofObject(),
+                this.g(
+                    go.TextBlock,
+                    {
+                        margin: 5,
+                        editable: false,
+                        font: this.fontLabel,
+                        textAlign: "center",
+                        overflow: go.TextBlock.OverflowClip,
+                        width: 240
+                    },
+                    new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
+                    new go.Binding("text", "text").makeTwoWay()
+                ),// end of Title containing Panel
+            ),  // end Horizontal Panel
+            // end Vertical Panel
+        );
+    }
+
+
+    private template_AncestorLeafNodeOnlyText(): go.Node {
+        var self = this;
+        return this.g(
+            go.Node,
+            "Auto",
             this.g(
                 go.Shape,
                 "Rectangle",
@@ -2315,7 +2357,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private template_ContextMenu(): go.Adornment {
         return this.g(
             "ContextMenu",
-            { areaBackground: "#ffffff", background: "#ffffff" },            
+            { areaBackground: "#ffffff", background: "#ffffff" },
             this.g(
                 "ContextMenuButton",
                 this.g(go.TextBlock, { text: "Open", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
@@ -2343,7 +2385,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 },
                 new go.Binding("visible", "", (o) => (
                     !(o.part.data.template && o.part.data.template == 'Owner') &&
-                    o.part.data.assetUid != this.assetUid && 
+                    o.part.data.assetUid != this.assetUid &&
                     (o.part.data.assetUid !== this.emptyUid && o.part.data.hasAssetReadAccess)
                 )).ofObject()
             ),

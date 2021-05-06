@@ -721,7 +721,7 @@ order by Name";
                 }); ;
             }
 
-            var canEdit = Company.HasAssetPermission(asset.ID, Permission.ModifyAsset);
+            var canEdit = Company.HasAssetPermission(asset.ID, Permission.EditAsset);
 
             if (anyDiagramRelationTypes)
             {
