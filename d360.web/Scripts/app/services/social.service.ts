@@ -1,23 +1,24 @@
 ﻿import { Injectable } from "@angular/core";
 import { CommentApiPutModel, Emoji, CommentApiPostModel, CommentDetail, CommentDetails, CommentVoteDetail } from "../models/social.model";
 import { Count } from "../models/counts.model";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { HttpClient, HttpErrorResponse, HttpHeaders } from "@angular/common/http";
 import { catchError, map } from "rxjs/operators";
 import { Observable } from "rxjs";
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from "./messages-observable.service";
+import { Router } from "@angular/router";
 
 @Injectable()
 export class SocialService extends BaseObservableService  {
 
-    constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
+    constructor(private http: HttpClient, messagesService: MessagesObservableService, private router: Router) { super(messagesService); }
 
     getComments(assetUid: string, daysToLookBack: number, page?: number, count?: number, typeFilter?: number): Observable<CommentDetails> {        
         return this.http
             .get(`api/v2/comments?assetUid=${assetUid}&_pageNum=${page ? page : 0}&_pageSize=${count ? count : 10}`)
             .pipe(
                 map((res) => <CommentDetails>res),
-                catchError((err) => this.handleError(err))
+                catchError((err) => err instanceof HttpErrorResponse && err.status == 404 ? this.handleError(err, false, this.router) : this.handleError(err))                
             );
     }
 
