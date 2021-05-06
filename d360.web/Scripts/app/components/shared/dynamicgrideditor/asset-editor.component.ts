@@ -53,7 +53,6 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
     @Input() showActions: boolean = true;
 
-    @Input() useModelBinding: boolean = false;
     @Input() dataModel: any = null;
 
     @Output() modelChanged = new EventEmitter();
@@ -228,11 +227,9 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             }
 
             this.form = this.toFormGroup(this.fields);
-            if (this.useModelBinding) {
-                this.form.valueChanges.subscribe(x => {
-                    this.onSubmit();
-                })
-            }
+            //this.form.valueChanges.subscribe(x => {
+            //    this.onSubmit();
+            //})
         }
 
         this.ref.markForCheck();
@@ -444,13 +441,15 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         //takes the form and convert any array values to , separated string values
         for (var p in this.form.value) {
             if (this.form.value.hasOwnProperty(p)) {
-                if (Array.isArray(this.form.value[p])) {
-                    values[p] = this.form.value[p].join();
-                } else {
-                    if (this.form.value[p] === undefined && this.fields.filter(x => x.FieldName == p && x.FieldType == 'Boolean').length > 0)
-                        values[p] = null;
-                    else
-                        values[p] = this.form.value[p];
+                if (p !== "Uid" && p !== "ParentUid") {
+                    if (Array.isArray(this.form.value[p])) {
+                        values[p] = this.form.value[p].join();
+                    } else {
+                        if (this.form.value[p] === undefined && this.fields.filter(x => x.FieldName == p && x.FieldType == 'Boolean').length > 0)
+                            values[p] = null;
+                        else
+                            values[p] = this.form.value[p];
+                    }
                 }
             }
         }
@@ -474,12 +473,6 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 values[key] = null;
         });
 
-        //when using model binding onSubmit() is called on every change, but just emit form values, do not call save api (used on Process Designer)
-        if (this.useModelBinding) {
-            this.modelChanged.emit({ values: values, fields: this.fields });
-            return;
-        }
-
         let editorModel: AssetEditorModel = new AssetEditorModel();
         editorModel.Fields = values;
         if (this.assetUid) {
@@ -490,7 +483,12 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         }
         
         this.assetService.saveAsset(this.assetTypeUid, editorModel).subscribe((res) => {
-            this.saveClick.emit({ item: res, action: this.assetUid ? "update" : "new", values: values });
+            if (res.Success) {
+                this.saveClick.emit({ item: res, action: this.assetUid ? "update" : "new", values: values });
+            }
+            else {
+                this.showMessageForApiResult(this.messagesService, res);
+            }
         });
     }
 

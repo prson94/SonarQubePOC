@@ -90,7 +90,6 @@
                 </ng-template>
             </p-treeTable>
 
-
             <d3s-asset-delete-editor *ngIf="showDelete"
                                      [uid]="selected?.data?.AssetUid"
                                      [assetTypeUid]="assetTypeUid"
@@ -103,7 +102,6 @@
                               [assetUid]="selected?.data?.AssetUid"
                               [assetTypeUid]="assetTypeUid"
                               [parentAssetUid]="selectedParentId"
-                              [useModelBinding]="true"
                               [title]="selected?.data?.Path ? selected?.data?.Path : assetTypeTitle"
                               [selection]="selected?.data"
                               (saveClick)="save()"

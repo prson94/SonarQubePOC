@@ -14,8 +14,7 @@
             <div class="form-instructions" *ngIf="hasDirections">
                 {{directions}}
             </div>
-            <form (ngSubmit)="onSubmit()"
-                    [formGroup]="form">
+            <form [formGroup]="form">
                 <ng-template ngFor
                                 let-category
                                 [ngForOf]="categories">
@@ -59,12 +58,12 @@
                 <div *ngIf="hasIconFields && fore.Value == back.Value"
                         class="col s12 errorMessage">* Foreground and background color cannot be the same</div>
                 <div class="col s12">&nbsp;</div>
-                <div *ngIf="showActions && !useModelBinding" class="col s12">
+                <div *ngIf="showActions" class="col s12">
                     <button pButton
-                            type="submit"
+                            type="button"
                             [disabled]="!form.valid || (hasIconFields && fore.Value == back.Value)"
                             style="width: '150px';"
-                            label="Save"></button>
+                            label="Save" (click)="onSubmit()"></button>
                     <button pButton
                             type="button"
                             (click)="closeClick.emit();"
