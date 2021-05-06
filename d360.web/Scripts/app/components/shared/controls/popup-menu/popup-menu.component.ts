@@ -334,7 +334,15 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
             else {
                 this.openToLeftSide = false;
             }
-            if (topPosition != this.positionTop || box.left != this.positionLeft) {
+
+            topPosition = Math.floor(topPosition);
+            leftPosition = Math.floor(leftPosition);
+
+            var hasLocationChanged = Math.abs(topPosition - this.positionTop) > 3
+                || Math.abs(leftPosition - this.positionLeft) > 3;
+            var isUnset = !this.positionLeft && !this.positionTop;
+
+            if (isUnset || hasLocationChanged) {
                 setTimeout(() => {
                     this.positionTop = topPosition;
                     this.positionLeft = leftPosition;

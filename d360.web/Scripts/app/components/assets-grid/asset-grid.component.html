@@ -1,5 +1,5 @@
-<d3s-loading [isLoading]="isEditing"></d3s-loading>
-<header class="grid-header" *ngIf="!showEditor && !showDelete && !isEditing && !hasNoListableColumns">
+<d3s-loading [isLoading]="isEditing || !isDefinitionLoaded"></d3s-loading>
+<header class="grid-header" *ngIf="!showEditor && !showDelete && !isEditing && !hasNoListableColumns && isDefinitionLoaded">
     <div *ngIf="showArtifactDetails && gridObject && gridObject.Description"
          [innerHtml]="gridObject.Description | safeHtml"
          class="tile-description"></div>
@@ -12,7 +12,7 @@
     </span>
 </header>
 
-<div class="grid-actions-header {{(this.showEditor || this.showDelete || this.isEditing ? 'hidden' : '')}}">
+<div class="grid-actions-header {{(this.showEditor || this.showDelete || this.isEditing || !isDefinitionLoaded ? 'hidden' : '')}}">
     <div class="simple-search">
         <ig-search-field mode="Keypress" 
                          [debounce]="600"
@@ -21,7 +21,7 @@
                          [infoTooltip]="simpleSearchTooltipHTML">
         </ig-search-field>
     </div>
-    <advanced-filtering [assetTypeUid]="gridObject.AssetTypeUID" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+    <advanced-filtering [assetTypeUid]="gridObject.AssetTypeUID" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
     <div class="grid-action-buttons">
         <button *ngIf="showAddButton && hasAddAssetPermissions()"
                 igButton

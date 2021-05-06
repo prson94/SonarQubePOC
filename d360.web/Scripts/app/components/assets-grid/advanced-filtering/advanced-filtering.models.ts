@@ -537,7 +537,6 @@ export class AdvancedFilterFieldConditionCollection {
             }
             else if (treatAsRelationship) {
                 let subConditions: AdvancedFilterFieldCondition[] = [];
-                console.log(cond);
                 if (cond.value) {
                     valuesArr = cond.value as SelectItem[];
                     valuesArr.forEach((r) => {

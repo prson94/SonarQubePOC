@@ -146,6 +146,15 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         return this.stateService.artifactTypeFilters.showSimpleFilter;
     }
 
+    onFiltersLoaded() {
+        this.showAssetListPage();
+    }
+
+    showAssetListPage() {
+        this.isDefinitionLoaded = true;
+        this.changeDetectorRef.markForCheck();
+    }
+
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['gridObject'] && this.gridObject != null) {
             this.load();
@@ -224,8 +233,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                     this.hasNoListableColumns = false;
                 }
 
-                this.isDefinitionLoaded = true;
-                this.getData();
+                setTimeout(() => this.showAssetListPage(), 3000);
                 this.changeDetectorRef.markForCheck();
             }
         );
