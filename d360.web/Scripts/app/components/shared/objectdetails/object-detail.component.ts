@@ -29,6 +29,7 @@ export class ObjectDetailComponent implements OnChanges {
 
     readonly systemProperties: string = "System Fields";
     readonly noCategory: string = "None";
+    readonly defaultCategory: string = "General";
 
     private categories: Category[] = new Array<Category>();
     private systemPropertiesCategory: Category = new Category(this.systemProperties);
@@ -61,9 +62,20 @@ export class ObjectDetailComponent implements OnChanges {
                     this.categories = [];
                     for (var i = 0; i < this.rows.length; i++) {
                         if (this.rows[i].Category == null || this.rows[i].Category === "" || this.rows[i].Category === this.noCategory) {
-                            this.rows[i].Category = "General";
+                            this.rows[i].Category = this.defaultCategory;
                         }
                     }
+
+                    this.rows = this.rows.sort((a, b) => {
+                        if (a.Category === this.defaultCategory || b.Category === this.systemProperties) {
+                            return -1;
+                        }
+                        if (b.Category === this.defaultCategory || a.Category === this.systemProperties) {
+                            return 1;
+                        }
+
+                        return 0;
+                    });
 
                     this.populateSystemProperties(this.rows);
 
@@ -90,6 +102,8 @@ export class ObjectDetailComponent implements OnChanges {
                             }
                         }
                     }
+
+
                     this.rows = displayRows;
                     this.loadCategory();
                     this.loadState();
