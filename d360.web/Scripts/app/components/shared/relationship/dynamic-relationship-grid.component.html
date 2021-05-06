@@ -65,13 +65,13 @@
                         </div>
                     </td>
                     <td *ngFor="let column of columns">
-                        <d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" (click)="selectObject(item)" [align]="'right'">
+                        <d3s-preview-tooltip [uid]="getAssetUid(item)" (click)="selectObject(item)" [align]="'right'">
                             <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item" [useApiName]="true"></d3s-dynamic-field-value>
                         </d3s-preview-tooltip>
                     </td>
                 </tr>
             </ng-template>
-            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+            <ng-template pTemplate="summary">
                 <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
             </ng-template>
         </p-table>
@@ -85,6 +85,7 @@
                         [directions]="'You will only be able to relate to assets that you have Modify Relationships permission to.'"
                         [selection]="addRelationship ? null : selected"
                         [rowID]="'ID'"
+                        [isSaveDisabled]="isSaveDisabled"
                         (saveClick)="saveRelationship($event)"
                         (closeClick)="closeEditor()"
                         [useV2ApiLink]="true"></d3s-dynamic-editor>

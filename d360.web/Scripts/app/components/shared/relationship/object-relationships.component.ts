@@ -85,9 +85,18 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
         this.loadDataSubs = forkJoin([relationshipSub, countsSub]).subscribe((res) => {
             this.relationshipItems = res[0] as RelationshipTypeUIModel[];
+
+
+
             var counts = res[1] as any[];
 
             this.selected = null;
+            for (let relation of this.relationshipItems) {
+                relation.TypeName = this.getRelName(relation).toUpperCase();
+            }
+
+            this.relationshipItems = this.relationshipItems.sort((a, b) => { return a.TypeName > b.TypeName ? 1 : -1 });
+
             for (let relation of this.relationshipItems) {
                 var count = counts.filter((f) => f["IntersectTypeUid"] === relation.Uid);
                 if (count.length !== 0) {
@@ -101,6 +110,8 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
                 }
                 relation.AllowEditFromRelationshipEditor = this.nonEditablePredicates.indexOf(relation.Predicate.Type) === -1;
             }
+
+
 
             if (!this.selected)
                 this.selected = (this.relationshipItems && this.relationshipItems.length > 0) ? this.relationshipItems[0] : null;
@@ -172,6 +183,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     }
 
     public relationClick(rel: any) {
+        this.showAddRelationship = false;
         this.selected = rel;
         this.updateCardinality();
     }

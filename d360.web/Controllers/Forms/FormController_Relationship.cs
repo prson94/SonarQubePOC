@@ -82,7 +82,7 @@ namespace d360.web.Controllers
 
         private JsonResult Relationship_AddFields(IntersectType relationshipType, Asset targetAsset)
         {
-            if (!Company.HasAssetPermission(type, id, Permission.AddRelationships))
+            if (!Company.HasAssetPermission(targetAsset.Object, targetAsset.ObjectID, Permission.AddRelationships))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -98,17 +98,20 @@ namespace d360.web.Controllers
             var targetCardinality = Cardinality.Many;
             var objectCardinality = Cardinality.Many;
             Guid targetAssetTypeUid;
+            var subjectUid = Company.AssetTypes.FirstOrDefault(x => x.Object == relationshipType.Subject && x.ObjectID == relationshipType.SubjectID).uid;
+            var objectUid = Company.AssetTypes.FirstOrDefault(x => x.Object == relationshipType.Object && x.ObjectID == relationshipType.ObjectID).uid;
+
             if (relationshipType.Subject == obj.Type && relationshipType.SubjectID == obj.TypeID)
             {
                 targetCardinality = relationshipType.ObjectCardinality;
                 objectCardinality = relationshipType.SubjectCardinality;
-                targetAssetTypeUid = relationshipType.ObjectUid.Value;
+                targetAssetTypeUid = objectUid;
             }
             else
             {
                 targetCardinality = relationshipType.SubjectCardinality;
                 objectCardinality = relationshipType.ObjectCardinality;
-                targetAssetTypeUid = relationshipType.SubjectUid.Value;
+                targetAssetTypeUid = subjectUid;
             }
 
             list.Add(new EditableField { FieldName = "IntersectTypeID", FieldType = DataType.Hidden.ToString(), Value = relationshipType.ID.ToString() });

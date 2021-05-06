@@ -57,11 +57,13 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         params["_direction"] = "asc";
         params["_includeFields"] = "Name";
 
+        let filters: string[] = [];
         if ($event.globalFilter) {
-            params["_simpleFilter"] = $event.globalFilter;
+            var value = ($event.globalFilter as string).replace(/'/g, "&apos;");
+            value = `${encodeURIComponent(value)}`;
+            filters.push(`[Path] ct '${value}'`);
         }
 
-        let filters: string[] = [];
         filters.push(`($Related:${this.intersectTypeUid} ne ${this.assetUid})`);
 
         if (this.objectCardinality.toString() === "1") {
@@ -83,7 +85,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
             if (res.total) {
                 this.lazyLoadTotalCount = +res.total;
             }
-            this.items = [];
+            this.items = [...[]];
             (res.items as any[]).forEach((item) => {
                 var path = item["Path"] as string;
                 path = (path as string).replace(/].\[/g, " > ").replace("[", "").replace("]", "");

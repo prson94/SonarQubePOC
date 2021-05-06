@@ -70,6 +70,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() useModelBinding: boolean = false;
     @Input() dataModel: any = null;
 
+    @Input() isSaveDisabled: boolean = false;
+
     @Output() modelChanged = new EventEmitter();
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();

@@ -16,7 +16,7 @@
                      style="word-wrap: break-word;">
                     <i class="{{getIconClass(rel)}}"
                        [pTooltip]="getIconTooltip(rel)"></i>
-                    {{getRelName(rel)}}
+                    {{rel.TypeName}}
                 </div>
                 <div class="col s2 count center" [ngClass]="{'empty-count': rel.Count == 0, 'count': rel.Count != 0}">{{rel.Count}}</div>
             </div>
@@ -28,7 +28,7 @@
                                        [intersectTypeUid]="selected.Uid"
                                        [objectUid]="selected.Object.Uid"
                                        [subjectUid]="selected.Subject.Uid"
-                                       [relationshipName]="getRelName(selected) + ' Relationship'"
+                                       [relationshipName]="selected.TypeName + ' Relationship'"
                                        [simpleFilter]="showSimpleFilter"
                                        (onFilterChange)="onFilterChange($event)"
                                        [readOnly]="readOnly"

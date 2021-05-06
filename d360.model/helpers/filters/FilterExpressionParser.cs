@@ -37,6 +37,7 @@ namespace d360.model.helpers
             this.registerTokensAsFields = registerTokensAsFields;
             allowedDefaultFields.Add(new DefaultFilter("Code", "A.Code", SqlFieldType.Text));
             allowedDefaultFields.Add(new DefaultFilter("Color", "JSON_VALUE((select top 1 * from dbo.GetAssetColorJsonByColor(A.Color)), '$.Name')", SqlFieldType.Text));
+            allowedDefaultFields.Add(new DefaultFilter("[Path]", "KP.KeyPath", SqlFieldType.Text));
 
             if (includeParent)
             {

@@ -8,6 +8,10 @@ import { SiteUrlHelpers } from "../../../static/site-url-helpers";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { AssetService } from "../../../services/asset.service";
 import { LazyLoadEvent } from "primeng/api";
+import { filter } from "core-js/fn/dict";
+import { Subscription } from "rxjs";
+import { debounceTime } from "rxjs/operators";
+import { RelationshipTypeUIModel } from "../../../models/relationship.model";
 
 
 @Component({
@@ -41,8 +45,12 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
     @Input() simpleFilter: boolean;
 
+    isSaveDisabled: boolean = false;
+
     private fields: GridField[] = [];
     private currentParams: any;
+
+    relationshipLoadSub: Subscription;
 
     get globalFilterFields(): string[] {
         return this.columns.map((c) => c.datafield);
@@ -110,7 +118,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }
 
     loadRelationshipLazy($event: LazyLoadEvent) {
-        this.isDataLoading = true;
+
         var params = {};
         if (this.isSubject) {
             params["subjectUid"] = this.assetUid;
@@ -123,23 +131,79 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             params["_simpleFilter"] = $event.globalFilter;
         }
 
+
+        if ($event.filters) {
+            let filters: string[] = [];
+            var keys = Object.keys($event.filters);
+            keys.forEach((key) => {
+                var col = this.columns.filter((f) => f.datafield === key);
+                if (col.length > 0) {
+                    var fieldApiName = col[0]["apiName"];
+                    if (!fieldApiName && col[0].text === "Asset Path") {
+                        if (this.isSubject) {
+                            fieldApiName = "Object.[Path]";
+                        }
+                        else {
+                            fieldApiName = "Subject.[Path]";
+                        }
+                    }
+
+                    var value = $event.filters[key].value;
+
+                    let operator = "ct";
+
+                    switch (col[0]["filtertype"]) {
+                        case "number":
+                            operator = "eq";
+                            break;
+                        default:
+                            value = (value as string).replace(/'/g, "&apos;");
+                            value = `'${encodeURIComponent(value)}'`;
+                            operator = "ct";
+                            break;
+                    }
+                    filters.push(`(${fieldApiName} ${operator} ${value})`);
+                }
+            })
+            if (filters.length > 0) {
+                params["_filter"] = `(${filters.join(" and ")})`;
+            }
+        }
+
         params["_includePath"] = true;
         params["_pageSize"] = $event.rows;
         params["_pageNum"] = ($event.first / $event.rows) + 1;
 
         this.currentParams = JSON.parse(JSON.stringify(params));
 
-        this.relationshipsService.getRelationships(this.intersectTypeUid, params).subscribe((res) => {
-            this.totalRecords = +res["total"];
-            if (this.totalRecords > 0) {
-                this.relations = res["items"] as any[];
-                this.relations.forEach((rel) => {
-                    rel["Name"] = this.isSubject ? rel.Object["[Path]"] : rel.Subject["[Path]"];
-                });
-            }
-            this.isDataLoading = false;
-            this.cdRef.markForCheck();
-        });
+        if (this.relationshipLoadSub) {
+            this.relationshipLoadSub.unsubscribe();
+        }
+
+        this.isDataLoading = true;
+
+        this.relationshipLoadSub = this.relationshipsService
+            .getRelationships(this.intersectTypeUid, params)
+            .pipe(debounceTime(200))
+            .subscribe((res) => {
+                this.totalRecords = +res["total"];
+                this.relations = [...[]];
+                if (this.totalRecords > 0) {
+                    this.relations = res["items"] as any[];
+                    this.relations.forEach((rel) => {
+                        rel["Name"] = this.isSubject ? rel.Object["[Path]"] : rel.Subject["[Path]"];
+                    });
+                }
+                this.isDataLoading = false;
+                this.cdRef.markForCheck();
+            },
+                (err) => {
+                    this.totalRecords = 0;
+                    this.relations = [];
+                    this.isDataLoading = false;
+                    this.cdRef.markForCheck();
+                }
+            );
     }
 
     private shouldShowEditor(): boolean {
@@ -160,6 +224,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }
 
     saveRelationship(event) {
+        this.isSaveDisabled = true;
         let model: any[] = [];
         let fields: any = {};
         for (var prop in event.item) {
@@ -200,6 +265,9 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
                 if (!res.some(x => x.Success != true)) {
                     this.closeEditor();
                 }
+
+                this.isSaveDisabled = false;
+                this.cdRef.markForCheck();
             });
     }
 
@@ -260,5 +328,9 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         }
         qstring += "&filterscount=" + count;
         this.onFilterChange.emit(qstring);
+    }
+
+    getAssetUid(item: RelationshipTypeUIModel) {
+        return this.isSubject ? item.Object.Uid : item.Subject.Uid;
     }
 }

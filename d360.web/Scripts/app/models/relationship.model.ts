@@ -18,6 +18,7 @@ export class RelationshipType {
 
 export class RelationshipTypeUIModel extends RelationshipType {
     Count: number;
+    TypeName: string;
     AllowEditFromRelationshipEditor: boolean = true;
 }
 

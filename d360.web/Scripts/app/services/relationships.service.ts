@@ -294,7 +294,16 @@ export class RelationshipsService extends BaseObservableService {
             return this.http.get(url)
                 .pipe(
                     map(response => <any>response),
-                    catchError(err => this.handleError(err))
+                    catchError((err) => {
+                        if (!this.isErrorFromFilterExpression(err)) {
+                            return this.handleError(err);
+                        }
+                        else {
+                            throw err;
+                        }
+
+                    }
+                    )
                 );
         }
         else {
