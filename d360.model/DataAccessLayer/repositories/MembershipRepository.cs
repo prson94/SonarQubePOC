@@ -695,7 +695,7 @@ namespace d360.model.DataAccessLayer
                         from    api.ExecutionUser U
                         inner join #UserFields F on F.ItemNumber = U.ItemNumber and F.ExecutionID = @executionID
                         inner join FieldType FT on FT.ID = F.FieldTypeID and FT.Type = 'Lookup'
-                        where U.ExecutionID = @executionID and F.LookupValue is null
+                        where U.ExecutionID = @executionID and F.LookupValue is null and F.FieldValue is not null
                         ", new { executionID }, transaction: trans);
 
                         await CompanyContext.Connection.ExecuteAsync(@"
