@@ -847,7 +847,7 @@ namespace d360.model.DataAccessLayer
 					 end as 'ReadAsset',
 					 Case 
 					   when permission.mask is null then @isAdmin
-					   when permission.mask is not null and permission.mask & 2 = 2 then 1
+					   when permission.mask is not null and permission.mask & 8 = 8 then 1
 					 else 0
 					 end as 'ModifyAsset', 
 					 case 
