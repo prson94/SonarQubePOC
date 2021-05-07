@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, OnChanges, Output, EventEmitter, HostListener } from "@angular/core";
+﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, OnChanges, Output, EventEmitter, HostListener, AfterViewChecked } from "@angular/core";
 import { LazyLoadEvent, SelectItem, SelectItemGroup } from "primeng/api";
 import * as _ from "lodash";
 import { FieldTypeAPIModelFieldCondition } from "../../../models/field-condition-grid.models";
@@ -77,8 +77,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
         private tagService: TagService,
         private assetService: AssetService
     ) {
-
-        setInterval(() => this.updateTopPosition(), 25);
+        setInterval(() => {
+            this.updateTopPosition();
+            this.setSelectionVirtualScrollHeight();
+        }, 25);
     }
 
     ngOnChanges() {
@@ -115,30 +117,26 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     filterTable($event: any) {
         this.dataTable.filterGlobal($event.target.value, "contains");
-        setTimeout(() => this.setSelectionVirtualScrollHeight(null), 50);
     }
 
-    setSelectionVirtualScrollHeight(res: any) {
+    setSelectionVirtualScrollHeight() {
         try {
             let count: number = 0;
+            let res = [];
 
-            if (res == null) {
-                if (this.isLazyLoad() === true || !this.dataTable) {
-                    return;
-                }
-                else {
-                    var filter = this.dataTable?.filters?.global["value"] as string;
-                    var filtered = this.dataTable.value.filter((x) => (x["title"] as string).toLowerCase().indexOf(filter.toLowerCase()) !== -1);
-                    res = new Array(filtered.length);
-                }
+            if (!this.dataTable || !this.dataTable.value) {
+                return;
             }
 
+            var filter = this.dataTable?.filters?.global ? (this.dataTable?.filters?.global["value"] as string) : "";
+            if (!filter || !this.dataTable.filteredValue) {
+                res = new Array(this.dataTable.value.length);
+            }
+            else {
+                res = new Array(this.dataTable.filteredValue.length);
+            }
             if (res.length) {
                 count = res.length;
-            }
-
-            if (res?.items) {
-                count = res.items.length;
             }
 
             if (this.condition && this.condition.field && this.condition.field === SystemFields.OwnedByFieldCode) {
@@ -147,15 +145,15 @@ export class FilterItemComponent implements OnInit, OnChanges {
             }
 
             let calculatedHeight: number = 0;
-            let maxHeight: number = 340;
+            let maxHeight: number = 320;
             let minHeight: number = 50;
             let margins: number = 180;
             let bottomPos: number = (this.elRef.nativeElement as HTMLElement).getBoundingClientRect().bottom;
 
             if (count < 10) {
-                calculatedHeight = count * 34;
-                if (calculatedHeight < 34) {
-                    calculatedHeight = 34;
+                calculatedHeight = count * 32;
+                if (calculatedHeight < 32) {
+                    calculatedHeight = 32;
                 }
 
             }
@@ -177,7 +175,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.selectionScrollHeight = calculatedHeight + "px";
         }
         catch (ex) {
-            this.selectionScrollHeight = "340px";
+            console.log(ex);
+            this.selectionScrollHeight = "320px";
         }
         this.cdRef.markForCheck();
     }
@@ -209,7 +208,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 }
             }
 
-            this.setSelectionVirtualScrollHeight(null);
         }
         catch (ex) {
             console.warn(ex);
@@ -343,7 +341,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.isSelectingValue = true;
         }
         this.updateFocus();
-        setTimeout(() => this.setSelectionVirtualScrollHeight(null), 50);
     }
 
     updateFocus() {
@@ -512,7 +509,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.currentField.Values = [...this.currentField.Values];
 
                 this.isLookupValuesLoading = false;
-                this.setSelectionVirtualScrollHeight(res);
 
                 this.cdRef.markForCheck();
             });
@@ -530,7 +526,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 });
 
                 this.isLookupValuesLoading = false;
-                this.setSelectionVirtualScrollHeight(res);
                 this.cdRef.markForCheck();
             });
 
@@ -578,7 +573,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.currentField.Values = this.currentField.Values.sort((a, b) => { return a.title > b.title ? 1 : 0; });
 
                 this.isLookupValuesLoading = false;
-                this.setSelectionVirtualScrollHeight(res);
 
                 this.cdRef.markForCheck();
             });
@@ -614,7 +608,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
                 this.currentField.Values = [...this.currentField.Values];
                 this.isLookupValuesLoading = false;
-                this.setSelectionVirtualScrollHeight(res);
                 this.cdRef.markForCheck();
             });
     }
