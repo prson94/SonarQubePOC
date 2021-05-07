@@ -175,7 +175,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.selectionScrollHeight = calculatedHeight + "px";
         }
         catch (ex) {
-            console.log(ex);
+            console.warn(ex);
             this.selectionScrollHeight = "320px";
         }
         this.cdRef.markForCheck();
