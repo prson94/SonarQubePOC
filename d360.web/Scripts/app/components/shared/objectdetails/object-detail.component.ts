@@ -83,8 +83,12 @@ export class ObjectDetailComponent implements OnChanges {
                     this.rows = this.rows.filter(r => !r.Category || r.Category.toUpperCase() != this.systemProperties.toUpperCase());
 
                     this.rows.forEach(r => {
-                        if (r.Category && r.Category.toUpperCase() != this.noCategory.toUpperCase() && this.categories.find(c => c.name == r.Category) == null)
-                            this.categories.push(new Category(r.Category));
+                        if (r.Category && r.Category.toUpperCase() !== this.noCategory.toUpperCase() && this.categories.find((c) => c.name === r.Category) == null) {
+                            let category = new Category(r.Category);
+                            category.active = true;
+                            this.categories.push(category);
+                        }
+
 
                         this.populateRow(r)
                     });
