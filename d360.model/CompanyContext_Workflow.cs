@@ -22,6 +22,7 @@ using System.Net.Http;
 using System.IO;
 using System.Xml.Serialization;
 using d360.core.entities.Metric;
+using System.Globalization;
 
 namespace d360.model
 {
@@ -2827,18 +2828,27 @@ namespace d360.model
                             var fieldType = FieldTypes.Where(x => x.ID == fieldRecord.FieldTypeID).FirstOrDefault();
                             if (fieldType != null)
                             {
+                                DateTime dateValue;
                                 var type = fieldType.Type;
                                 if (type == "Date")
                                 {
-                                    DateTime dt = DateTime.ParseExact(fieldRecord.FormattedValue, "MM/dd/yyyy HH:mm:ss", null);
-                                    string formattedDate = dt.ToString("dd MMM yyyy");
-                                    fieldValue = formattedDate;
+                                    if(DateTime.TryParseExact(fieldRecord.FormattedValue, "MM/dd/yyyy HH:mm:ss", null, DateTimeStyles.None, out dateValue))
+                                    {
+                                        string formattedDate = dateValue.ToString("dd MMM yyyy");
+                                        fieldValue = formattedDate;
+                                    }
+                                    else
+                                        fieldValue = fieldRecord.FormattedValue;
                                 }
                                 else if (type == "DateTime")
                                 {
-                                    DateTime dt = Convert.ToDateTime(fieldRecord.FormattedValue);
-                                    string formattedDate = dt.ToString("dd MMM yyyyTHH:mm:ss");
-                                    fieldValue = formattedDate;
+                                    if (DateTime.TryParse(fieldRecord.FormattedValue, out dateValue))
+                                    {
+                                        string formattedDate = dateValue.ToString("dd MMM yyyyTHH:mm:ss");
+                                        fieldValue = formattedDate;
+                                    }
+                                    else
+                                        fieldValue = fieldRecord.FormattedValue;
                                 }
                                 else
                                     fieldValue = fieldRecord.FormattedValue;
