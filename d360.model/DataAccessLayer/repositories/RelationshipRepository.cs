@@ -119,7 +119,10 @@ namespace d360.model.DataAccessLayer
             var dbArgs = new DynamicParameters();
             bool includeTotal = true;
             bool includeAssetPath = false;
-            string orderByClause = "order by I.IntersectTypeID";
+
+            string _orderBy = "I.IntersectTypeID";
+            string _orderDirection = "asc";
+
             Guid objectUid = Guid.Empty;
             Guid relationshipTypeUid = Guid.Empty;
             bool isSubject = false;
@@ -240,19 +243,6 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     {
                         includeAssetPath = false;
                     }
-
-                    if (includeAssetPath && objectUid != Guid.Empty && relationshipTypeUid != Guid.Empty)
-                    {
-                        isSubject = companyContext.IntersectTypes.Any(x => x.uid == relationshipTypeUid && x.ObjectUid == objectUid);
-                        if (isSubject)
-                        {
-                            orderByClause = "order by ANDP_Object.DisplayPath asc";
-                        }
-                        else
-                        {
-                            orderByClause = "order by ANDP_Subject.DisplayPath asc";
-                        }
-                    }
                 }
 
                 // Now deal with dynamic field filters
@@ -370,6 +360,30 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 }
             }
 
+            if (queryParams.Any(x => x.Key.ToLower() == "_direction"))
+            {
+                _orderDirection = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_direction").Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
+            }
+
+            if (queryParams.Any(x => x.Key.ToLower() == "_order"))
+            {
+                var orderValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
+                var joinColumn = fieldColumns.FirstOrDefault(x => x.ToLower().Contains($"[{orderValue}]"));
+                if (!string.IsNullOrEmpty(joinColumn))
+                {
+                    _orderBy = joinColumn.Substring(0, joinColumn.IndexOf(" as ["));
+                }
+                else if (orderValue == "object.[path]")
+                {
+                    _orderBy = "ANDP_Object.DisplayPath";
+                }
+                else if (orderValue == "subject.[path]")
+                {
+                    _orderBy = "ANDP_Subject.DisplayPath";
+                }
+            }
+
+
             if (pageNumber < 0)
             {
                 pageNumber = 1;
@@ -407,6 +421,8 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 fieldColumnsSql = string.Join(",\n", fieldColumns) + ",";
 
             var countFullSql = $@"select	@total = count(1) {countSql} {(filteringByFields ? string.Join("\n", fieldJoins) : "")} {whereClause}";
+
+            string orderByClause = $"order by {_orderBy} {_orderDirection}";
 
             var sql = $@"
 declare @total int

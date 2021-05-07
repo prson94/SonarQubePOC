@@ -122,13 +122,32 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         var params = {};
         if (this.isSubject) {
             params["subjectUid"] = this.assetUid;
+            params["_order"] = "object.[path]";
         }
         else {
             params["objectUid"] = this.assetUid;
+            params["_order"] = "subject.[path]";
         }
 
         if ($event.globalFilter) {
             params["_simpleFilter"] = $event.globalFilter;
+        }
+
+        if ($event.sortField) {
+            params["_direction"] = "asc";
+            var field = this.columns.filter((f) => f.datafield === $event.sortField);
+            if (field && field.length > 0) {
+                if (field[0]["apiName"]) {
+                    params["_order"] = field[0]["apiName"];
+
+                } else if (field[0].datafield === "Name") {
+                    params["_order"] = this.isSubject ? "object.[path]" : "subject.[path]";
+                }
+            }
+
+            if ($event.sortOrder === -1) {
+                params["_direction"] = "desc";
+            }
         }
 
 
