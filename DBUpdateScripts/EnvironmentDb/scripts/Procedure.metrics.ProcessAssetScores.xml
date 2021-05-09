@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.metrics.ProcessAssetScores-v1.17">
+  <changeSet author="Pappas" id="Procedure.metrics.ProcessAssetScores-v1.18">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -492,30 +492,6 @@ begin
 	from	#ScoreItems T
 			inner join #Scores S on S.AssetUid = T.AssetUid and S.EffectiveDate = T.EffectiveDate;
 
-	-- Update the score value by summing up the root measures' decimal values.
-	update	T
-	set		T.Value = Sv.Total,
-			T.ActiveMeasureCount = Sm.[Count]
-	from	#Scores T
-			cross apply (
-				select	sum(DecimalValue) as Total
-				from	#ScoreItems
-				where	ScoreUid = T.Uid
-						and ParentMeasureUid is null
-						and IsRemoved = 0
-			) Sv
-			cross apply (
-				select	count(1) as [Count]
-				from	#ScoreItems
-				where	ScoreUid = T.Uid
-						and ParentMeasureUid is null
-						and IsRemoved = 0
-			) Sm
-
-	-- Deal with cases where the score is to close to 100% or 0% that it is effectively that value.
-	update #Scores set Value = 1 where Value >= 0.999;
-	update #Scores set Value = 0 where Value <= 0.001;
-
 	-- Now figure out the Uids to re-use, the actions to perform, etc.
 	update	#ScoreItems 
 	set		ScoreItemUid = case	
@@ -528,6 +504,18 @@ begin
 				else coalesce(PriorScoreItemUid, newid())
 			end;
 	------------------------------------------------------------------
+
+	-- Update the active measure count.
+	update	T
+	set		T.ActiveMeasureCount = Sm.[Count]
+	from	#Scores T
+			cross apply (
+				select	count(1) as [Count]
+				from	#ScoreItems
+				where	ScoreUid = T.Uid
+						and ParentMeasureUid is null
+						and IsRemoved = 0
+			) Sm
 
 	-- End-date scores where the ActiveMeasureCount is 0.
 	delete	T
@@ -568,6 +556,23 @@ begin
 		from	#ScoreItems C
 				inner join #ScoreItems P on P.MeasureUid = C.ParentMeasureUid and P.AssetUid = C.AssetUid-- and P.EffectiveDate = C.EffectiveDate
 	end
+
+	-- Update the score value by summing up the root measures' decimal values.
+	update	T
+	set		T.Value = Sv.Total
+	from	#Scores T
+			cross apply (
+				select	sum(DisplayWeight) as Total
+				from	#ScoreItems
+				where	ScoreUid = T.Uid
+						and ParentMeasureUid is null
+						and IsRemoved = 0
+			) Sv
+
+	-- Deal with cases where the score is to close to 100% or 0% that it is effectively that value.
+	update #Scores set Value = 1 where Value >= 0.999;
+	update #Scores set Value = 0 where Value <= 0.001;
+
 	/*
 	select * from #Scores
 	select * from #ScoreItems
