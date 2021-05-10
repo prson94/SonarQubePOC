@@ -38,6 +38,7 @@ import { ResourceResponsibilityGridComponent } from './resource-responsibility-g
 import { UserListComponent } from './user/user-list.component';
 import { ResourceMultiSelectGridComponent } from './resource-multiselect-grid.component';
 import { SiteModalModule } from './modal/gov-modal.module';
+import { AssetDetailModule } from './asset-detail/asset-detail.module';
 
 @NgModule({
     declarations: [                           
@@ -91,6 +92,7 @@ import { SiteModalModule } from './modal/gov-modal.module';
         SimpleAccordionModule,        
         TilesModule,
         SiteModalModule,
+        AssetDetailModule,
     ],
     providers: [
         {

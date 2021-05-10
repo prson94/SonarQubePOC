@@ -4,9 +4,9 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router } from '@angular/router';
 
 @Component({
-    selector: 'igx-asset-detail-field',
+    selector: 'ig-asset-detail-field',
     templateUrl: './asset-detail-field.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.Default
 })
 
 export class AssetDetailFieldComponent {
@@ -16,6 +16,9 @@ export class AssetDetailFieldComponent {
     readonly emptyValue: string = "---";
     readonly dateFormat: string = "d MMM yyyy";
     readonly dateTimeFormat: string = "d MMM yyyy h:mm:ss";
+    DetailFieldType = DetailFieldType;
+
+    jsonValue: any = null;
 
 
     constructor(private router: Router,
@@ -111,14 +114,16 @@ export class AssetDetailFieldComponent {
     }
 
     get json(): any {
+        if (this.jsonValue != null) {
+            return this.jsonValue;
+        }
         try {
-            return JSON.parse(this.field.Value);
+            this.jsonValue = JSON.parse(this.field.Value);
+            return this.jsonValue;
         } catch (err) {
             return "Error";
         }
     }
-
-
 
     //#endregion
 }

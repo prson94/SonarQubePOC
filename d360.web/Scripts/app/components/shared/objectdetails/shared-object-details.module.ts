@@ -25,7 +25,7 @@ import { FormsModule } from '@angular/forms';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { SharedDeleteFormModule } from '../delete.form';
 import { ObjectDetailCategoryComponent } from './object-detail-category.component';
-import { AssetDetailModule } from '../asset-detail/asset-detail.module';
+import { PropertyGroupModule } from '../controls/property-group/property-group.component';
 
 @NgModule({
     imports: [
@@ -49,7 +49,7 @@ import { AssetDetailModule } from '../asset-detail/asset-detail.module';
         FormsModule,
         AutoCompleteModule,
         SharedDeleteFormModule,
-        AssetDetailModule,
+        PropertyGroupModule,
     ],
     declarations: [
         DynamicLookupGridComponent,
@@ -60,7 +60,8 @@ import { AssetDetailModule } from '../asset-detail/asset-detail.module';
     ],
     exports: [
         ObjectDetailComponent,
-        ObjectDetailFieldComponent
+        ObjectDetailFieldComponent,
+        SynonymsTile,
     ],
     providers: [{
         provide: HTTP_INTERCEPTORS,

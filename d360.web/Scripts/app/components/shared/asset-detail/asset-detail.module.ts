@@ -10,6 +10,14 @@ import { TooltipModule } from "primeng/tooltip";
 import { NgxJsonViewModule } from "ng-json-view";
 import { IgColorPickerModule } from "../controls/color-picker/color-picker.module";
 import { TagViewModule } from "../tags/d3s-tag-view.module";
+import { AssetDetailCategoryComponent } from "./asset-detail-category.component";
+import { AssetDetailComponent } from "./asset-detail.component";
+import { AssetLookupGridComponent } from "./asset-lookup-grid.component";
+import { SharedObjectDetailsModule } from "../objectdetails/shared-object-details.module";
+import { PropertyGroupModule } from "../controls/property-group/property-group.component";
+import { TilesModule } from "../tiles/tiles.module";
+import { TableModule } from "primeng/table";
+import { SharedGridPagingInfoModule } from "../grid-paging-info.component";
 
 @NgModule({
     imports: [
@@ -20,13 +28,24 @@ import { TagViewModule } from "../tags/d3s-tag-view.module";
         TooltipModule,
         NgxJsonViewModule,
         IgColorPickerModule,
+        PropertyGroupModule,
         TagViewModule,
+        SharedObjectDetailsModule,
+        TilesModule,
+        TableModule,
+        SharedGridPagingInfoModule,
     ],
     declarations: [
         AssetDetailFieldComponent,
+        AssetDetailCategoryComponent,
+        AssetDetailComponent,
+        AssetLookupGridComponent,
     ],
     exports: [
         AssetDetailFieldComponent,
+        AssetDetailCategoryComponent,
+        AssetDetailComponent,
+        AssetLookupGridComponent,
     ],
     providers: [{
         provide: HTTP_INTERCEPTORS,
