@@ -87,8 +87,8 @@ namespace d360.model.DataAccessLayer
                                 ,ADP.[NullCount]
                                 ,ADP.[BlankCount]
                                 ,ADP.[MeanValue] as mean
-                                ,ADP.[MinimumValue] as max
-                                ,ADP.[MaximumValue] as min
+                                ,ADP.[MinimumValue] as min
+                                ,ADP.[MaximumValue] as max
                                 ,ADP.[MinimumLength] as minLength
                                 ,ADP.[MaximumLength] as maxLength
                                 ,ADP.[StandardDeviation]
