@@ -66,17 +66,6 @@ export class ObjectDetailComponent implements OnChanges {
                         }
                     }
 
-                    this.rows = this.rows.sort((a, b) => {
-                        if (a.Category === this.defaultCategory || b.Category === this.systemProperties) {
-                            return -1;
-                        }
-                        if (b.Category === this.defaultCategory || a.Category === this.systemProperties) {
-                            return 1;
-                        }
-
-                        return 0;
-                    });
-
                     this.populateSystemProperties(this.rows);
 
                     //remove system property rows.
@@ -107,6 +96,17 @@ export class ObjectDetailComponent implements OnChanges {
                         }
                     }
 
+
+                    this.categories = this.categories.sort((a, b) => {
+                        if (a.name === this.defaultCategory || b.name === this.systemProperties) {
+                            return -1;
+                        }
+                        if (b.name === this.defaultCategory || a.name === this.systemProperties) {
+                            return 1;
+                        }
+
+                        return 0;
+                    });
 
                     this.rows = displayRows;
                     this.loadCategory();
