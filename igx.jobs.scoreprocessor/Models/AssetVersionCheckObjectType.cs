@@ -17,7 +17,7 @@ namespace igx.jobs.scoreprocessor.Models
         public bool ShouldContinueAnalysis(Guid versionUid)
         {
             var shouldContinue = true;
-            var item = this.SingleOrDefault(i => i.AssetVersionUid == versionUid);
+            var item = this.FirstOrDefault(i => i.AssetVersionUid == versionUid);
             if (item != null)
             {
                 shouldContinue = item.Valid;
