@@ -98,7 +98,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         this.assetService.getArtifactType(this.artifactTypeId).subscribe(i => {
             this.subjectUid = i.uid;
 
-            this.assetService.getAssets(i.uid, this.getParams(false)).pipe(
+            this.assetService.getAssets(i.uid, this.getParams()).pipe(
                 debounceTime(500)).subscribe(res => {
                     this.totalRecords = res.total;
                     this.artifacts = res;
@@ -113,9 +113,10 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         });
     }
 
-    getParams(IsChild: boolean) {
+    getParams() {
         let sortOrderText = this.sortOrder == SortOrder.None ? "" : (this.sortOrder == SortOrder.Descending ? "desc" : "asc");
         var params = { _pagesize: this.numberOfRows, _pagenum: this.currentPage, _subjectUid: this.subjectUid, _filter: "ParentUid eq '" + this.parentUid + "'", _order: this.sortField, _direction: sortOrderText, _simpleFilter: this.filter, _includeParent: true, useGraphForParent: this.useGraph, useTypeLevelDefaultSorts: true, _listColorsAsJSON: true };
+
         if (params._order == '') {
             delete params['_order'];
         }
@@ -123,10 +124,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
             delete params['useTypeLevelDefaultSorts'];
         }
 
-        if (IsChild)
-        {
-            params['_ischildtab'] = true;
-        }
+        params['_ischildtab'] = true;
 
         return params;
     }
@@ -186,7 +184,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         this.assetService
             .downloadAssetsExcel(
                 this.subjectUid,
-                this.getParams(true),
+                this.getParams(),
                 'Filtered ' + FileName + ' list',
                 () => { this.isLoading = false; }
             );
