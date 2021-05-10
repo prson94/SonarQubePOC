@@ -1322,6 +1322,151 @@ namespace d360.model.DataAccessLayer
             };
         }
 
+        public async Task<SLDocument> GetAssetsChildExcel(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
+            var results = await GetAssets(assetType, queryParams);
+
+            var fields = new List<FieldType>();
+
+            bool includeAssetUrl = true;
+            bool includeParent = false;
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includeparent"))
+            {
+                var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includeparent").Value;
+                bool.TryParse(value, out includeParent);
+            }
+
+
+            var hierarchy = CompanyContext.IntersectTypes
+                .FirstOrDefault(x => x.Object == assetType.Object && x.ObjectID == assetType.ObjectID && x.Predicate.Type == PredicateType.InterTypeHierarchy);
+
+            if (hierarchy == null)
+            {
+                includeParent = false;
+            }
+
+            var typesToAvoid = new List<string>() {
+                DataType.ComplexRelationLookup.ToString(),
+                DataType.DataTableSelect.ToString()
+            };
+
+            //add default fields
+            if (assetType.Class == AssetTypeClass.Reference)
+            {
+                fields.Add(new FieldType { Type = "string", Name = "Code", FriendlyName = "Code" });
+                fields.Add(new FieldType { Type = "string", Name = "Color", FriendlyName = "Color" });
+                includeAssetUrl = false;
+            }
+
+            string ParentAssetTypeUidHeading = "Parent";
+
+            if (includeParent)
+            {
+                var columnName = "Parent";
+                var parent = CompanyContext.AssetTypes.FirstOrDefault(x => x.Object == hierarchy.Subject && x.ObjectID == hierarchy.SubjectID);
+                if (parent != null)
+                {
+                    columnName = "Parent " + parent.Name + " Name";
+                    ParentAssetTypeUidHeading = parent.Name + " UID";
+                }
+
+                fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = columnName });
+            }
+
+            fields.Add(new FieldType { Type = "string", Name = "Name", FriendlyName = assetType.Name + " Name" });
+
+            fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID && f.Name.ToLower() != "name").OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
+
+            fields.Add(new FieldType { Type = "string", Name = "ParentAssetUid", FriendlyName = ParentAssetTypeUidHeading });
+            fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = assetType.Name + " UID" });
+
+            var rowData = results.items.ToList();
+
+            var document = new SLDocument();
+            const string assetSheetName = "Assets";
+            const string apiSheetName = "Api Info";
+
+
+            #region Populate Excel Document
+
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, assetSheetName);
+
+            document.AddWorksheet(apiSheetName);
+            document.SelectWorksheet(apiSheetName);
+
+            document.SetCellValue(1, 1, "pageSize");
+            document.SetCellValue(1, 2, results.pageSize);
+            document.SetCellValue(2, 1, "pageNum");
+            document.SetCellValue(2, 2, results.pageNum);
+            if (results.total.HasValue)
+            {
+                document.SetCellValue(3, 1, "total");
+                document.SetCellValue(3, 2, (int)results.total);
+            }
+
+
+            document.SelectWorksheet(assetSheetName);
+
+            int index = 1;
+
+            foreach (var field in fields)
+            {
+                if (typesToAvoid.Contains(field.Type))
+                    continue;
+                document.SetCellValue(1, index++, (string)field.FriendlyName);
+            }
+            if (includeAssetUrl)
+                document.SetCellValue(1, index++, "URL");
+
+
+            if (rowData == null || rowData.Count == 0)
+            {
+                return document;
+            }
+
+
+            int rowNumber = 1;
+            foreach (var row in rowData)
+            {
+                index = 1;
+                rowNumber++;
+                var rowValues = (row as IDictionary<string, object>);
+
+                foreach (var field in fields)
+                {
+                    if (typesToAvoid.Contains(field.Type))
+                        continue;
+
+                    if (rowValues.ContainsKey(field.Name))
+                    {
+
+                        if (field.Name == "Color")
+                        {
+                            string val = extractColorNameFromJSON((string)rowValues[field.Name]);
+                            setCellValueFromField(document, rowNumber, index, field, val);
+                        }
+                        else
+                        {
+                            var val = rowValues[field.Name];
+                            setCellValueFromField(document, rowNumber, index, field, val);
+                        }
+
+                    }
+                    index++;
+                }
+
+                if (includeAssetUrl)
+                    document.SetCellValue(rowNumber, index, $"asset/{rowValues["AssetUid"]}");
+            }
+
+
+            SetExcelColumnWidths(document, fields);
+            #endregion
+
+            return document;
+        }
+
         public async Task<SLDocument> GetAssetsExcel(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);

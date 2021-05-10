@@ -25,11 +25,12 @@ import { ObjectStatisticsService } from '../../../services/object-statistics.ser
 export class ArtifactItemChildGridComponent extends BaseComponent implements OnChanges {
     @Input() artifactTypeId: number;
     @Input() parentId: number;
-    @Input() parentUid: number;
+    @Input() parentUid: string;
     @Input() showFilter: boolean;
     @Input() assetTypeUid: string;
     @Input() objectTypeUid: string;
     @Input() displayName: string;
+    @Input() assettypename: string;
 
     columns: GridColumn[] = [];
     fields: GridField[] = [];
@@ -46,6 +47,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     filter: string;
     statistics: ObjectStatistics;
     isLoading: boolean = false;
+    subjectUid: string;
 
     get globalFilterFields(): string[] {
         return this.columns.map(c => c.datafield);
@@ -94,16 +96,9 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     getData() {
         this.isLoading = true;
         this.assetService.getArtifactType(this.artifactTypeId).subscribe(i => {
-            let sortOrderText = this.sortOrder == SortOrder.None ? "" : (this.sortOrder == SortOrder.Descending ? "desc" : "asc");
-            var params = { _pagesize: this.numberOfRows, _pagenum: this.currentPage, _subjectUid: i.uid, _filter: "ParentUid eq '" + this.parentUid + "'", _order: this.sortField, _direction: sortOrderText, _simpleFilter: this.filter, _includeParent: true, useGraphForParent: this.useGraph, useTypeLevelDefaultSorts: true, _listColorsAsJSON: true };
-            if (params._order == '') {
-                delete params['_order'];
-            }
-            else {
-                delete params['useTypeLevelDefaultSorts'];
-            }
+            this.subjectUid = i.uid;
 
-            this.assetService.getAssets(i.uid, params).pipe(
+            this.assetService.getAssets(i.uid, this.getParams(false)).pipe(
                 debounceTime(500)).subscribe(res => {
                     this.totalRecords = res.total;
                     this.artifacts = res;
@@ -116,6 +111,22 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
                     this.ref.markForCheck();
                 });
         });
+    }
+
+    getParams(IsChild: boolean) {
+        let sortOrderText = this.sortOrder == SortOrder.None ? "" : (this.sortOrder == SortOrder.Descending ? "desc" : "asc");
+        var params = { _pagesize: this.numberOfRows, _pagenum: this.currentPage, _subjectUid: this.subjectUid, _filter: "ParentUid eq '" + this.parentUid + "'", _order: this.sortField, _direction: sortOrderText, _simpleFilter: this.filter, _includeParent: true, useGraphForParent: this.useGraph, useTypeLevelDefaultSorts: true, _listColorsAsJSON: true };
+        if (params._order == '') {
+            delete params['_order'];
+        }
+        else {
+            delete params['useTypeLevelDefaultSorts'];
+        }
+
+        if (IsChild)
+            params['_ischildtab'] = true;
+
+        return params;
     }
 
     getFieldsDefinition() {
@@ -162,5 +173,20 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
             .router
             .navigateByUrl(
                 `asset/${artifact.AssetUid}`);
+    }
+
+    canExportRecords() {
+        return this.totalRecords <= this.maxExportRows;
+    }
+    export() {
+        var FileName = this.assettypename.charAt(0).toUpperCase() + this.assettypename.substring(1).toLowerCase();
+        this.isLoading = true;
+        this.assetService
+            .downloadAssetsExcel(
+                this.subjectUid,
+                this.getParams(true),
+                'Filtered ' + FileName + ' list',
+                () => { this.isLoading = false; }
+            );
     }
 }
