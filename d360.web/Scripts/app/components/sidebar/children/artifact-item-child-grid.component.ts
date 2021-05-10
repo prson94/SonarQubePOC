@@ -124,7 +124,9 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         }
 
         if (IsChild)
+        {
             params['_ischildtab'] = true;
+        }
 
         return params;
     }
