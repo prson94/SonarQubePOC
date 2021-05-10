@@ -47,7 +47,16 @@ export class RulesService extends BaseObservableService {
         return this.putDynamic(this.http, 'ruletype', ruleType);
     }
 
-    getResultsByRule(uid: string, pageNumber?: number, pageSize?: number, sortField?: string, sortOrder?: SortOrder, isExport: boolean = false, ruleId?: number): Observable<RuleResultPagedResults> {
+    getResultsByRule(uid: string,
+        pageNumber?: number,
+        pageSize?: number,
+        sortField?: string,
+        sortOrder?: SortOrder,
+        isExport: boolean = false,
+        ruleId?: number,
+        simpleFilter: string = "",
+        advancedFilter: string = ""
+    ): Observable<RuleResultPagedResults> {
         let sortOrderText = sortOrder == SortOrder.None ? "desc" : (sortOrder == SortOrder.Descending ? "desc" : "asc");
         let uri = `api/v2/metrics/quality/results?_owningAssetUid=${uid}`
 
@@ -59,7 +68,12 @@ export class RulesService extends BaseObservableService {
                 uri += "&_direction=" + sortOrderText
             }
         }
-
+        if (simpleFilter) {
+            uri += "&_simpleFilter=" + simpleFilter;
+        }
+        if (advancedFilter) {
+            uri += "&_filter=" + advancedFilter;
+        }
 
         if (isExport) {
             // get Friendly name export

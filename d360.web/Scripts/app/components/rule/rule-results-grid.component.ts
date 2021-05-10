@@ -1,25 +1,29 @@
-﻿import { Input, Component, SimpleChange, ViewChild } from '@angular/core';
+﻿import { Input, Component, SimpleChange, ViewChild, OnDestroy } from '@angular/core';
 import { RulesService } from '../../services/rules.service';
 import { BaseComponent } from '../shared/base.component';
 import { LazyLoadEvent } from 'primeng/api';
 import { Table } from 'primeng/table';
 import { RuleResultPagedResults } from '../../models/rule.model';
 import { SortOrder } from '../../models/enums.model';
-import { GridColumn, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression  } from '../../models/grid-definition.model';
+import { GridColumn, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression } from '../../models/grid-definition.model';
 import { RuleColumnFilterComponent } from './rule-column-filter.component'
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
+import { Filters } from '../assets-grid/advanced-filtering/advanced-filtering.models';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
     selector: 'd3s-rule-results-grid',
     templateUrl: './rule-results-grid.component.html',
     providers: [RulesService],
+    styleUrls: ['rule-results-grid.component.less']
 })
 
-export class RuleResultsGridComponent extends BaseComponent {
+export class RuleResultsGridComponent extends BaseComponent implements OnDestroy {
 
     @Input() ruleId: number;
     @Input() ruleUid: string;
-    @Input() showTitle: boolean = true;    
+    @Input() showTitle: boolean = true;
 
     simpleTextFilter: string;
     showSimpleFilter: boolean = false;
@@ -31,7 +35,12 @@ export class RuleResultsGridComponent extends BaseComponent {
     columns: GridColumn[] = [];
     filtercolumns: GridFilterColumn[] = [];
 
-    @ViewChild(RuleColumnFilterComponent, {static:false}) private filtersComponent: RuleColumnFilterComponent;
+    @ViewChild(RuleColumnFilterComponent, { static: false }) private filtersComponent: RuleColumnFilterComponent;
+
+    simpleSearchTooltipHTML: string = `<p>Type to provide a search term. Matches will be found where the value of any column starts with the term or terms provided.</p><p>You can also use wildcards for more control over how the term is matched.
+*account* : Match on values which contain 'account'
+*account : Match on values which end with 'account'</p><p>All matches are case insensitive.</p>`;
+
 
     currentPageNumber: number = 0;
     sortField: string = "";
@@ -43,14 +52,31 @@ export class RuleResultsGridComponent extends BaseComponent {
     simpleSearchID: number = 0;
     searchDelayMilliSeconds: number = 300;
     isLoading: boolean = false;
+    isDebugMode = false;
 
-    constructor(private ruleService: RulesService) {
+    getRuleResultsSub: Subscription;
+
+    constructor(private ruleService: RulesService,
+        private route: ActivatedRoute
+    ) {
         super();
-    }    
+
+        this.route.queryParams.subscribe((params) => {
+            if (params["debug"]) {
+                this.isDebugMode = true;
+            }
+        });
+    }
 
     public filterGridData(filterData) {
         this.currentPageNumber = 0;
-        this.getData();        
+        this.getData();
+    }
+
+    ngOnDestroy() {
+        if (this.getRuleResultsSub) {
+            this.getRuleResultsSub.unsubscribe();
+        }
     }
 
     getData() {
@@ -58,8 +84,8 @@ export class RuleResultsGridComponent extends BaseComponent {
         if (!this.ruleId) {
             console.log("ERROR - NO RULE ID");
             return;
-        }        
-        
+        }
+
         //remove any invalid filters
         if (this.filters && this.filters.length > 0) {
             for (var i = this.filters.length - 1; i >= 0; i--) {
@@ -70,18 +96,23 @@ export class RuleResultsGridComponent extends BaseComponent {
         }
 
         this.isLoading = true;
-        this.ruleService.getResultsByRule(this.ruleUid, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder)
+        if (this.getRuleResultsSub) {
+            this.getRuleResultsSub.unsubscribe();
+        }
+        this.getRuleResultsSub = this.ruleService
+            .getResultsByRule(this.ruleUid, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, false, null, this.simpleTextFilter, this.newAdvancedFilters.filter)
+            .pipe(debounceTime(300))
             .subscribe(res => {
                 this.results = res;
                 if (this.results != null) {
                     this.totalRecords = this.results.total;
-                    this.items = this.results.items;  
+                    this.items = this.results.items;
                     this.isLoading = false;
-                }                
+                }
             },
-            err => {
-                this.isLoading = false;
-            });       
+                err => {
+                    this.isLoading = false;
+                });
     }
 
     loadRuleResultsLazy(event: LazyLoadEvent) {
@@ -98,25 +129,8 @@ export class RuleResultsGridComponent extends BaseComponent {
         this.getData();
     }
 
-    checkSimpleSearchEnter(event, dt: Table) {
-        if (event.keyCode == 13) this.doSimpleSearch(dt);
-        else {
-            if (this.simpleSearchID > 0) {
-                window.clearTimeout(this.simpleSearchID);
-                this.simpleSearchID = 0;
-            }
-
-            this.simpleSearchID = window.setTimeout(() => this.doSimpleSearch(dt), this.searchDelayMilliSeconds);
-        }
-    }
-
-    doSimpleSearch(dt: Table) {
-        if (dt) dt.reset();
-        this.getData();
-    }
-
     doExport() {
-        this.ruleService.getResultsByRule(this.ruleUid, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, true, this.ruleId);        
+        this.ruleService.getResultsByRule(this.ruleUid, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, true, this.ruleId);
     }
 
     formatPath(s: string) {
@@ -126,5 +140,15 @@ export class RuleResultsGridComponent extends BaseComponent {
     resetFilters() {
         this.simpleTextFilter = '';
         this.filtersComponent.resetFilters();
+    }
+
+    onFiltersLoaded() {
+        console.log("filters loaded");
+    }
+
+    private newAdvancedFilters: Filters;
+    private advancedFiltersChanged($event) {
+        this.newAdvancedFilters = $event;
+        this.getData();
     }
 }

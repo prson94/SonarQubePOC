@@ -946,6 +946,7 @@ namespace d360.web.Controllers.V2
             int _pageNum = 1;
             bool includeDuplicate = false;
             string _filter = null;
+            string _simpleFilter = null;
 
             #region Model Validation
             if (queryParams.Any(q => q.Key == "_owningAssetUid"))
@@ -1068,6 +1069,15 @@ namespace d360.web.Controllers.V2
                 }
             }
 
+            if (queryParams.Any(q => q.Key.ToLower() == "_simplefilter"))
+            {
+                _simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value;
+                if (string.IsNullOrEmpty(_simpleFilter))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"_simpleFilter is not valid.");
+                }
+            }
+
             string isValid = isPageSizeAndNumValid(queryParams);
 
             if (!string.IsNullOrEmpty(isValid))
@@ -1091,7 +1101,7 @@ namespace d360.web.Controllers.V2
             {
                 DataQualityGetResultModel dataQualityResult = new DataQualityGetResultModel();
 
-                dataQualityResult = await Task.FromResult(MetricsRepository.GetDataQualityResults(_owningAssetUid, _evaluatedAssetUid, _pageSize, _pageNum, _order, _direction, _effectiveDateStart, _effectiveDateEnd, includeDuplicate, _filter)).ConfigureAwait(false);
+                dataQualityResult = await Task.FromResult(MetricsRepository.GetDataQualityResults(_owningAssetUid, _evaluatedAssetUid, _pageSize, _pageNum, _order, _direction, _effectiveDateStart, _effectiveDateEnd, includeDuplicate, _filter, _simpleFilter)).ConfigureAwait(false);
 
                 if (Request.Headers.Accept.ToString().Equals("application/octet-stream", StringComparison.InvariantCultureIgnoreCase) || Request.Headers.Accept.ToString().Equals("application/vnd.ms-excel", StringComparison.InvariantCultureIgnoreCase))
                 {
