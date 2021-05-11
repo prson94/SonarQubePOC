@@ -669,12 +669,19 @@ namespace d360.web.Controllers
             return showAllUsersAPIKey;
         }
 
-        internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldType> fields, int startRow = 10)
+        internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldType> fields, int startRow = 10, bool useDefaultCategory = true)
         {
             var row = startRow;
+            const string defaultCategoryName = "General";
 
             fields.ForEach(f =>
             {
+                var categoryName = f.Category;
+                if (useDefaultCategory && string.IsNullOrWhiteSpace(categoryName))
+                {
+                    categoryName = defaultCategoryName;
+                }
+
                 if (f.IsEditable && f.Type != "Tag")
                 {
                     #region Is Editable
@@ -708,7 +715,7 @@ namespace d360.web.Controllers
                             FieldType = f.Type.ToString(),
                             FieldDescription = f.FormDescription,
                             Validations = checkAndAddValidation(f.Type.ToString(), f.FriendlyName, f.IsRequired, f.Pattern, f.MinimumLength, f.MaximumLength, patternMessage, f.Increment, f.Precision),
-                            Category = f.Category,
+                            Category = categoryName,
                             FieldTypeID = f.ID
                         };
 
@@ -912,12 +919,19 @@ namespace d360.web.Controllers
             return list;
         }
 
-        internal List<EditableField> loadDynamicFields(string @object, int objectID, List<EditableField> list, List<FieldType> fieldTypes, List<FieldWithRelation> fields, int startRow = 10, bool decode = false)
+        internal List<EditableField> loadDynamicFields(string @object, int objectID, List<EditableField> list, List<FieldType> fieldTypes, List<FieldWithRelation> fields, int startRow = 10, bool decode = false, bool useDefaultCategory = true)
         {
             var row = startRow;
+            const string defaultCategoryName = "General";
 
             fieldTypes.ForEach(ft =>
             {
+                var categoryName = ft.Category;
+                if (useDefaultCategory && string.IsNullOrWhiteSpace(categoryName))
+                {
+                    categoryName = defaultCategoryName;
+                }
+
                 if (ft.IsEditable && ft.Type != "Tag")
                 {
                     #region Is Editable
@@ -953,7 +967,7 @@ namespace d360.web.Controllers
                             FieldType = ft.Type.ToString(),
                             FieldDescription = ft.FormDescription,
                             Validations = checkAndAddValidation(ft.Type.ToString(), ft.FriendlyName, ft.IsRequired, ft.Pattern, ft.MinimumLength, ft.MaximumLength, patternMessage, ft.Increment, ft.Precision),
-                            Category = ft.Category,
+                            Category = categoryName,
                             FieldTypeID = ft.ID
                         };
 
