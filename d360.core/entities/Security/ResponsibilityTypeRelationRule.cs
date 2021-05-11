@@ -1,7 +1,9 @@
 ﻿using d360.core.entities.Contracts;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -99,10 +101,20 @@ namespace d360.core.entities
         public int TargetObjectID { get; set; }
     }
 
+    [JsonConverter(typeof(StringEnumConverter), true)]
+    public enum ResponsibilityMatchType
+    {
+        [Name("and"), EnumMember(Value = "and"), ReadOnly(false), Description("")]
+        And = 1,
+        [Name("or"), EnumMember(Value = "or"), ReadOnly(false), Description("")]
+        Or = 2
+    }
+
     public class ResponsibilityRuleDefinitionThen
     {
         public string Object { get; set; }
         public int ObjectID { get; set; }
         public List<ResponsibilityRuleDefinitionWhen> Conditions { get; set; }
+        public ResponsibilityMatchType MatchType { get; set; } = ResponsibilityMatchType.And;
     }
 }
