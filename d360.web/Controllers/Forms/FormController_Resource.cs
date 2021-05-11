@@ -72,7 +72,9 @@ namespace d360.web.Controllers
                     list,
                     Company.GetFieldTypesByObject(SystemObjects.ResourceType, 1).ToList(),
                     Company.GetFieldRelationsByObject(SystemObjects.Resource, id).ToList(),
-                    4
+                    4,
+                    false,
+                    false
                 )
             );
 
@@ -96,7 +98,9 @@ namespace d360.web.Controllers
                     list,
                     Company.GetFieldTypesByObject(SystemObjects.ResourceType, 1).ToList(),
                     Company.GetFieldRelationsByObject(SystemObjects.Resource, id).ToList(),
-                    2
+                    2,
+                    false,
+                    false
                 )
             );
 

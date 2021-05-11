@@ -813,6 +813,74 @@ where A.FusionTypeID = @id", columns, joins);
         }
 
         /// <summary>
+        /// Gets whether the agent should upload its log data.
+        /// </summary>
+        /// <returns>Http Status Code: 202 (Accepted), 204 (No Content)</returns>
+        [Route("log"), HttpGet]
+        public HttpResponseMessage GetAgentLogRequestStatus()
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to see if the agent log should be uploaded.");
+
+            var company = Community.GetById<Company>(Community.CurrentCompanyID);
+            var synch = false;
+            if (company != null)
+            {
+                synch = company.SynchAgentLog;
+            }
+            if (synch)
+            {
+                company.SynchAgentLog = false;
+                Community.Update<Company>(company);
+                return Request.CreateResponse(HttpStatusCode.Accepted);
+            }
+            else
+            {
+                return Request.CreateResponse(HttpStatusCode.NoContent);
+            }
+        }
+
+        /// <summary>
+        /// Takes a given agent log and saves it to long-term storage for analysis.
+        /// </summary>
+        /// <returns>An HTTP status code and message.</returns>
+        [HttpPost, Route("log")]
+        public async Task<HttpResponseMessage> PostAgentLogAsync()
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to upload this agent log.");
+
+            var prefix = "Fusion.PostAgentLogAsync => ";
+
+            if (!Request.Content.IsMimeMultipartContent())
+            {
+                Trace.TraceWarning("{0}{1}", prefix, "Payload must be multipart content.");
+                return Request.CreateErrorResponse(HttpStatusCode.UnsupportedMediaType, "Payload must be multipart content.");
+            }
+
+            try
+            {
+                var streamProvider = new MultipartMemoryStreamProvider();
+                await Request.Content.ReadAsMultipartAsync(streamProvider);
+
+                string json = await streamProvider.Contents.Single().ReadAsStringAsync();
+
+                var date = DateTime.UtcNow;
+
+                await Storage.CreateFile("agent-log", $"{Company.CurrentCompanyID}/{date.ToString("yyyy-MM-dd_hh.mm.ss")}.json", json);
+                
+                Trace.TraceInformation("{0}{1}", prefix, "Saved raw json data to storage container.");
+
+                json = null;
+
+                return Request.CreateResponse<string>(HttpStatusCode.OK, "Saved agent log");
+            }
+            catch (Exception ex)
+            {
+                SendException(ex, new Dictionary<string, string>());
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(), ex);
+            }
+        }
         /// Takes a given set of fusion data for a particular fusion configuration.
         /// </summary>
         /// <param name="typeID">The ID of the fusion type.</param>
