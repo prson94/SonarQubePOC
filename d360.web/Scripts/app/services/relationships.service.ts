@@ -237,7 +237,7 @@ export class RelationshipsService extends BaseObservableService {
             .http
             .get(`api/${object}/${objectId}/relations`)
             .pipe(
-                map(response => <RelationItem[]>response),
+                map((response) => <RelationItem[]>response),
                 catchError(err => this.handleError(err))
             );
     }

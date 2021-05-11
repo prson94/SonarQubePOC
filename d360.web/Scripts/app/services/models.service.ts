@@ -23,7 +23,7 @@ export class ModelsService extends BaseObservableService {
             .http
             .get(`diagrams/${id}/InformationCatalogDiagramData`)
             .pipe(
-                map(response => <HierarchyDiagramModel[]>response),
+                map((response) => <HierarchyDiagramModel[]>response),
                 catchError(err => this.handleError(err))
             );
     }
