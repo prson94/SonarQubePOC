@@ -36,6 +36,9 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
             padding: 0;
             margin: 0;
         }
+        ul.dayofweek-days li p-checkbox {
+            height: 21px;
+        }
     `],
     providers: [
         {
