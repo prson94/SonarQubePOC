@@ -409,6 +409,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     public pad(s): string { return (s < 10) ? '0' + s : s; }
 
     onSubmit() {
+        this.isLoading = true;
         this.savingInProgress = true;
 
         let values: any = {};
@@ -489,6 +490,8 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             else {
                 this.showMessageForApiResult(this.messagesService, res);
             }
+            this.isLoading = false;
+            this.savingInProgress = false;
         });
     }
 
