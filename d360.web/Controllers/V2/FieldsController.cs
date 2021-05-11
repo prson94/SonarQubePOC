@@ -2027,8 +2027,8 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     var classInfos = AssetTypeClass.BusinessAsset.GetAsList();
                     if (!string.IsNullOrEmpty(filter))
                     {
-                        classInfos = classInfos.Where(x => x.Name.ToLower(CultureInfo.InvariantCulture).Contains(filter.ToString().ToLower(CultureInfo.InvariantCulture).Trim('\''))
-                        || x.Value.ToLower(CultureInfo.InvariantCulture).Contains(filter.ToString().ToLower(CultureInfo.InvariantCulture).Trim('\''))).ToList();
+                        classInfos = classInfos.Where(x => x.Name.ToLower(CultureInfo.InvariantCulture).Contains(filter.ToLower(CultureInfo.InvariantCulture).Trim('\''))
+                        || x.Value.ToLower(CultureInfo.InvariantCulture).Contains(filter.ToLower(CultureInfo.InvariantCulture).Trim('\''))).ToList();
                     }
 
                     if (skip.HasValue && take.HasValue)

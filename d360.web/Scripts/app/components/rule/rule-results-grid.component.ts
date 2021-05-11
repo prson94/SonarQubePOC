@@ -111,7 +111,7 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
                         var date = new Date(item.RunDate as string);
                         date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
                         item.RunDate = date;
-                    })
+                    });
                     this.isLoading = false;
                 }
             },

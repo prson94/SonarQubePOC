@@ -313,7 +313,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
         if (this.isRuleResults) {
             if (ft.Name !== "EvaluatedAssetClass") {
-                ft.Operators = ft.Operators.filter(x => x.value !== "Populated" && x.value !== "NotPopulated");
+                ft.Operators = ft.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
             }
         }
 

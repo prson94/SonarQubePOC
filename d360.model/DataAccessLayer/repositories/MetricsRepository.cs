@@ -2228,7 +2228,7 @@ for json path";
 
             if (!string.IsNullOrEmpty(_simpleFilter))
             {
-                var allFields = new string[] {
+                var allFields = new [] {
                 "EffectiveDate",
                  "FailCount",
                  "PassCount",
@@ -2244,8 +2244,8 @@ for json path";
                 var simpleQuery = string.Join(" or ", allFields.Select(x => $"({x} like @simpleFilter)").ToList());
 
                 var classes = AssetTypeClass.BusinessAsset.GetAsList();
-                var match = classes.Where(x => x.Name.ToLower(CultureInfo.InvariantCulture).Contains(_simpleFilter.ToString().ToLower(CultureInfo.InvariantCulture).Trim('\''))
-                || x.Value.ToLower(CultureInfo.InvariantCulture).Contains(_simpleFilter.ToString().ToLower(CultureInfo.InvariantCulture).Trim('\''))).ToList();
+                var match = classes.Where(x => x.Name.ToLower(CultureInfo.InvariantCulture).Contains(_simpleFilter.ToLower(CultureInfo.InvariantCulture).Trim('\''))
+                || x.Value.ToLower(CultureInfo.InvariantCulture).Contains(_simpleFilter.ToLower(CultureInfo.InvariantCulture).Trim('\''))).ToList();
 
                 if (match.Count > 0)
                 {
