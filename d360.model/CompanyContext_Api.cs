@@ -10902,6 +10902,11 @@ EG.GroupUid
 		                        [Message] = coalesce([Message] + '; ', '') + 'You must provide a valid Uid.'
                         where	ExecutionID = @ExecutionID and ([AssetUid] is null or [AssetUid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER));
 
+                        update	api.ExecutionAssetDataProfile
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'You must provide a ProfileSetDate.'
+                        where	ExecutionID = @ExecutionID and [ProfileSetDate] is null;
+
                         update	EDP
                         set		Success = 0,
 		                        [Message] = coalesce([Message] + '; ', '') + 'Asset not found based on Uid provided'
@@ -10910,6 +10915,28 @@ EG.GroupUid
                             left Join
                             Asset A on EDP.AssetUid = A.Uid
                         where	ExecutionID = @ExecutionID and A.Uid is null;
+
+                        update	EDP
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'Record does not exist with AssetUid '+ convert(nvarchar(36), EDP.AssetUid) +' and profileSetDate '+ convert(varchar, EDP.ProfileSetDate, 23)
+                        from
+                            api.ExecutionAssetDataProfile EDP
+                            inner join 
+                            Asset A on EDP.AssetUid = A.Uid
+                            left join 
+                            AssetDataProfile ADP on A.ID = ADP.AssetId and EDP.ProfileSetDate = ADP.ProfileSetDate
+                        where	ExecutionID = @ExecutionID and ADP.AssetId is null and @isInsert = 0;
+                        
+                        update	EDP
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'Record already exists with AssetUid '+ convert(nvarchar(36), EDP.AssetUid) +' and profileSetDate '+ convert(varchar, EDP.ProfileSetDate, 23)
+                        from
+                            api.ExecutionAssetDataProfile EDP
+                            inner join 
+                            Asset A on EDP.AssetUid = A.Uid
+                            inner join 
+                            AssetDataProfile ADP on A.ID = ADP.AssetId and EDP.ProfileSetDate = ADP.ProfileSetDate
+                        where	ExecutionID = @ExecutionID and @isInsert = 1;
 
                         Update EDP
                         set		Success = 0,
@@ -10926,7 +10953,7 @@ EG.GroupUid
                             ) EDPS on EDP.ExecutionID=EDPS.ExecutionID and EDP.ItemNumber=EDPS.ItemNumber 
                         where 
                             EDP.ExecutionID = @ExecutionID                             ",
-                                    new { execution.ExecutionID }, commandTimeout: timeout);
+                                    new { execution.ExecutionID, isInsert }, commandTimeout: timeout);
 
                     AddMeasurement(metrics, "LogAssetDataProfileErrors", sw.ElapsedMilliseconds, ++step);
                     sw.Restart();

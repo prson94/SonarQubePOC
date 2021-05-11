@@ -398,6 +398,18 @@ namespace igx.jobs.apiexecutionprocessor
 
                                 #endregion
                                 break;
+                            case ApiExecutionAction.PostDataProfile:
+                                var postDataProfile = await storage.DeserializeJsonObjectFromBlobAsync<List<DataProfileUpsertModel>>(Info.StorageFolder, Info.RequestFileName);
+
+                                log.WriteLine($"POST Asset Data Profile (DB Start): Total raw Data Profile Records: {postDataProfile.Count}");
+                                var postDataProfileResult = company.UpsertDataProfiles(postDataProfile, dbExecutionItem, true, dbExecutionTimeout);
+                                dbExecutionItem.Processed = postDataProfileResult.Count(i => i.Success);
+                                dbExecutionItem.Error = postDataProfileResult.Count(i => !i.Success);
+                                log.WriteLine($"POST Asset Data Profile (DB Complete): Total Processed: {dbExecutionItem.Processed}.");
+                                log.WriteLine($"POST Asset Data Profile (DB Complete): Total Error: {dbExecutionItem.Error}.");
+
+                                await SaveResultsJsonToAzure(postDataProfileResult, log, "Asset Data Profile", HttpMethod.Post);
+                                break;
                         }
                     }
                     dbExecutionItem.CompletedOn = DateTime.UtcNow;

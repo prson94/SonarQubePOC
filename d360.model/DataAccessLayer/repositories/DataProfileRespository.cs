@@ -9,6 +9,8 @@ using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using d360.core.exceptions;
 using Newtonsoft.Json;
+using d360.core.queue;
+using d360.extensions;
 
 namespace d360.model.DataAccessLayer
 {
@@ -16,12 +18,16 @@ namespace d360.model.DataAccessLayer
     {
         internal ICompanyContext CompanyContext;
         internal ICommunityContext Community;
+        internal IStorageProvider StorageProvider;
+        internal IQueueSource QueueSource;
 
-        public DataProfileRepository(ICompanyContext companyContext, ICommunityContext community)
+        public DataProfileRepository(ICompanyContext companyContext, ICommunityContext community, IStorageProvider storageProvider, IQueueSource queueSource)
             : base(companyContext)
         {
             this.CompanyContext = companyContext;
             this.Community = community;
+            this.StorageProvider = storageProvider;
+            this.QueueSource = queueSource;
         }
 
         public async Task<AssetDataProfilesApiViewModel> GetDataProfiles(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -310,6 +316,47 @@ namespace d360.model.DataAccessLayer
             }
 
             return results;
-        }          
+        }
+
+        public async Task<ApiExecutionInfo> PostBatchDataProfiles(List<DataProfileUpsertModel> models, ApiExecution execution)
+        {
+            var executionInfo = new ApiExecutionInfo
+            {
+                CompanyID = CompanyContext.CurrentCompanyID,
+                CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+                ExecutionID = Guid.NewGuid(),
+                ResourceID = execution.ResourceID,
+                Action = ApiExecutionAction.PostDataProfile,
+            };
+
+            return await CreateApiBatchJob(executionInfo, execution, models);
+        }
+
+        /// <summary>
+        /// Common code for creating batch calls.
+        /// </summary>
+        /// <param name="executionInfo"></param>
+        /// <param name="execution"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        protected async Task<ApiExecutionInfo> CreateApiBatchJob(ApiExecutionInfo executionInfo, ApiExecution execution, object data)
+        {
+            // Save to storage container.
+            await StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(data));
+
+            // Save to the database.
+            execution.ExecutionID = executionInfo.ExecutionID;
+            CompanyContext.Add(execution);
+
+            // Save to queue.
+            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            {
+                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
+            }
+
+            return executionInfo;
+        }
+
+
     }
 }
