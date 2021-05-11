@@ -247,7 +247,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             this.fields.forEach(f => {
 
                 if (f.Category == null) {
-                    currentCategory = this.defaultCategory;
+                    currentCategory =  "";
                 }
                 else {
                     currentCategory = f.Category;
@@ -293,10 +293,16 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             });
 
             this.categories = this.categories.sort((a, b) => {
-                if (a.name === this.defaultCategory) {
+                if (b.name === this.defaultCategory && !a.name) {
                     return -1;
                 }
-                if (b.name === this.defaultCategory) {
+                else if (a.name === this.defaultCategory && !b.name) {
+                    return 1;
+                }
+                else if (!a.name || a.name === this.defaultCategory) {
+                    return -1;
+                }
+                else if (!b.name|| b.name === this.defaultCategory) {
                     return 1;
                 }
                 return 0;
