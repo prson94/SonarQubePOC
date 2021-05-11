@@ -754,7 +754,7 @@ from    #changes C
         private string GetThenResultsSql(ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction transaction, bool includeName = true, string assetIDColumn = "")
         {            
             StringBuilder thenSql = new StringBuilder();
-
+            
             int tCount = 1;
             string whenSuffix = "";
             string obj = "";
@@ -791,7 +791,7 @@ from    #changes C
                         {
                             var thenFieldType = Connection.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { rc.FieldTypeID }, transaction: transaction).SingleOrDefault();
                             //thenSql.Append($"cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = '{obj}' and F.ObjectID = O.{uniqueIdField} ");
-                            whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"exists(select 1 from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = '{obj}' and F.ObjectID = O.{uniqueIdField} ";
+                            whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"exists(select 1 from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = '{obj}' and F.ObjectID = O.{uniqueIdField} ";
                             if (thenFieldType != null)
                             {
                                 whenSuffix += ((thenFieldType.AllowMultipleValues) ?
@@ -809,17 +809,19 @@ from    #changes C
                             {
                                 if (rc.FieldTypeName == "Name")
                                 {
-                                    whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"O.{uniqueIdField} = {rc.Value}";
+                                    whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"O.{uniqueIdField} = {rc.Value}";
                                 }
                                 else
                                 {
-                                    whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"O.{rc.FieldTypeName} = '{rc.Value}'";
+                                    whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"O.{rc.FieldTypeName} = '{rc.Value}'";
                                 }
                             }
                         }
 
                         tCount++;
                     });
+
+                    if (!string.IsNullOrEmpty(whenSuffix)) whenSuffix += " ) ";
                 }
 
                 if (obj == "Resource")
