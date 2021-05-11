@@ -5,44 +5,36 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Table.dbo.FusionQueryAttributeType-v3">
-    <comment>GOV-9617</comment>
+  <changeSet author="Puneet Gupta" id="Table.dbo.FusionQueryAttributeType-Drop-v4">
+    <comment>GOV-11728</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionQueryAttributeType')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionQueryAttributeType_backup')
 BEGIN
-	IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionQueryAttributeType_backup')
-	BEGIN
-		SELECT *
-		INTO [dbo].[FusionQueryAttributeType_backup]
-		FROM [dbo].[FusionQueryAttributeType]
-	END
-	
-	DELETE FROM [dbo].[FusionQueryAttributeType]
-
-	IF EXISTS (select * from sys.foreign_keys where name = 'FK_FusionQueryAttributeType_Fusion')
-	BEGIN	
-		ALTER TABLE [dbo].[FusionQueryAttributeType] DROP CONSTRAINT [FK_FusionQueryAttributeType_Fusion]
-	END
-	
-	IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionQueryAttribute')
-	BEGIN
-			IF EXISTS (select * from sys.foreign_keys where name = 'FK_FusionQueryAttribute_FusionQueryAttributeType')
-			BEGIN	
-				ALTER TABLE [dbo].[FusionQueryAttribute] DROP CONSTRAINT [FK_FusionQueryAttribute_FusionQueryAttributeType]
-			END
-	END
-
-	DROP TABLE IF EXISTS [dbo].[FusionQueryAttributeType]
+	DROP TABLE [dbo].[FusionQueryAttributeType_backup]
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionQueryAttributeType_backup')
+BEGIN
+	CREATE TABLE [dbo].[FusionQueryAttributeType_backup](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[FusionID] [int] NOT NULL,
+		[Name] [nvarchar](250) NOT NULL,
+		[Query] [nvarchar](max) NOT NULL,
+		[CreatedOn] [datetime] NULL,
+		[CreatedBy] [int] NULL,
+		[UpdatedOn] [datetime] NULL,
+		[UpdatedBy] [int] NULL,
+		[DisplayFormat] [nvarchar](250) CONSTRAINT [DF_FusionQueryAttributeType_DisplayFormat] DEFAULT ('{ID}') NOT NULL,
+		CONSTRAINT [PK_FusionQueryAttributeType] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
 		]]>
 	</rollback>
   </changeSet>
