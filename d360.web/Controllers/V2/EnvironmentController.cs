@@ -844,7 +844,7 @@ namespace d360.web.Controllers.V2
 			                    outer apply (Select * from UserAssetPermissions(GR.ResourceID,AT.AssetTypeID)) permission 
 			                    where 1 = Case 
 		                                                       when permission.PermissionsBitMask is null then gr.IsAdministrator
-		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pm = @pm then 1
+		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pm > 0 then 1
 		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pd = @pd then 1 END
 
                     )   
@@ -853,7 +853,8 @@ namespace d360.web.Controllers.V2
                     and gr.State = 1
                     and gr.IsAdministrator = 0
                 ";
-              
+
+                //Using ModifyAsset permission which is AddAsset | EditAsset - if PermissionsBitMask and'ed with this is greater than 0, the user has one or both
                 var contibutorCount = await Company.QueryFirstOrDefaultAsync<int>(contributorSql, new { pm = (int)Permission.ModifyAsset, pd = (int)Permission.DeleteAsset }).ConfigureAwait(false);
                 var model = new { assets = new { count = allAssets }, users = new { total = allusers, contributors = (contibutorCount + allAdminUsers), administrators = allAdminUsers } };
 

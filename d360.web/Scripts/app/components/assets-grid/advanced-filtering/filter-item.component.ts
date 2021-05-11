@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, OnChanges, Output, EventEmitter, HostListener } from "@angular/core";
+﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, OnChanges, Output, EventEmitter, HostListener, AfterViewChecked } from "@angular/core";
 import { LazyLoadEvent, SelectItem, SelectItemGroup } from "primeng/api";
 import * as _ from "lodash";
 import { FieldTypeAPIModelFieldCondition } from "../../../models/field-condition-grid.models";
@@ -28,6 +28,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     @Output() onChange = new EventEmitter();
 
+    nonValueOperators: string[] = ["Populated", "NotPopulated", "IsTrue", "IsFalse"];
+
     lazyLoadSubscription: Subscription;
 
     currentField: FieldTypeAPIModelFieldCondition;
@@ -36,7 +38,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     isSelectingCurrentField: boolean = false;
     isSelectingValue: boolean = false;
-
+    hasSelectAllCheckbox: boolean = false;
 
     tableSelection: any;
 
@@ -75,6 +77,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
         private tagService: TagService,
         private assetService: AssetService
     ) {
+        setInterval(() => {
+            this.updateTopPosition();
+            this.setSelectionVirtualScrollHeight();
+        }, 25);
     }
 
     ngOnChanges() {
@@ -111,30 +117,26 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     filterTable($event: any) {
         this.dataTable.filterGlobal($event.target.value, "contains");
-        setTimeout(() => this.setSelectionVirtualScrollHeight(null), 50);
     }
 
-    setSelectionVirtualScrollHeight(res: any) {
+    setSelectionVirtualScrollHeight() {
         try {
             let count: number = 0;
+            let res = [];
 
-            if (res == null) {
-                if (this.isLazyLoad() === true || !this.dataTable) {
-                    return;
-                }
-                else {
-                    var filter = this.dataTable?.filters?.global["value"] as string;
-                    var filtered = this.dataTable.value.filter((x) => (x["title"] as string).toLowerCase().indexOf(filter.toLowerCase()) !== -1);
-                    res = new Array(filtered.length);
-                }
+            if (!this.dataTable || !this.dataTable.value) {
+                return;
             }
 
+            var filter = this.dataTable?.filters?.global ? (this.dataTable?.filters?.global["value"] as string) : "";
+            if (!filter || !this.dataTable.filteredValue) {
+                res = new Array(this.dataTable.value.length);
+            }
+            else {
+                res = new Array(this.dataTable.filteredValue.length);
+            }
             if (res.length) {
                 count = res.length;
-            }
-
-            if (res?.items) {
-                count = res.items.length;
             }
 
             if (this.condition && this.condition.field && this.condition.field === SystemFields.OwnedByFieldCode) {
@@ -143,15 +145,15 @@ export class FilterItemComponent implements OnInit, OnChanges {
             }
 
             let calculatedHeight: number = 0;
-            let maxHeight: number = 340;
+            let maxHeight: number = 320;
             let minHeight: number = 50;
             let margins: number = 180;
             let bottomPos: number = (this.elRef.nativeElement as HTMLElement).getBoundingClientRect().bottom;
 
             if (count < 10) {
-                calculatedHeight = count * 34;
-                if (calculatedHeight < 34) {
-                    calculatedHeight = 34;
+                calculatedHeight = count * 32;
+                if (calculatedHeight < 32) {
+                    calculatedHeight = 32;
                 }
 
             }
@@ -173,32 +175,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.selectionScrollHeight = calculatedHeight + "px";
         }
         catch (ex) {
-            this.selectionScrollHeight = "340px";
+            console.warn(ex);
+            this.selectionScrollHeight = "320px";
         }
         this.cdRef.markForCheck();
-    }
-
-    interval: any = {};
-    setTableWidth() {
-        if (this.isSelectingValue) {
-            if (this.interval) {
-                clearInterval(this.interval);
-            }
-
-            var html = this.elRef.nativeElement as HTMLElement;
-            var scrollWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0];
-            var selectionElement = html.getElementsByClassName("value-selection")[0];
-
-            if (scrollWrapper) {
-                (scrollWrapper as HTMLElement).style.width = 250 + "px";
-            }
-
-            if (selectionElement) {
-                (selectionElement as HTMLElement).style.removeProperty("left");
-            }
-
-            this.interval = setInterval(() => this.updateDynamicWidths(), 20);
-        }
     }
 
     removePositionStyling() {
@@ -213,26 +193,36 @@ export class FilterItemComponent implements OnInit, OnChanges {
             var html = this.elRef.nativeElement as HTMLElement;
             var scrollWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0];
             if (scrollWrapper) {
-                var topPosition = html.getBoundingClientRect().bottom;
                 let width = 500;
 
                 var tableWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0] as HTMLElement;
 
                 if (tableWrapper) {
                     var selectionElement = html.getElementsByClassName("value-selection")[0] as HTMLElement;
-                    tableWrapper.style.width = width + "px";
 
                     let distanceFromRight = window.outerWidth - html.getBoundingClientRect().left;
-
                     if (distanceFromRight < width) {
                         let diff = Math.abs(width - distanceFromRight);
                         selectionElement.style.left = (html.getBoundingClientRect().left - diff - 50) + "px";
                     }
-                    selectionElement.style.top = topPosition + "px";
                 }
             }
 
-            this.setSelectionVirtualScrollHeight(null);
+        }
+        catch (ex) {
+            console.warn(ex);
+        }
+    }
+
+    updateTopPosition() {
+        try {
+            var html = this.elRef.nativeElement as HTMLElement;
+            var topPosition = html.getBoundingClientRect().bottom;
+            var selectionElement = html.getElementsByClassName("value-selection")[0] as HTMLElement;
+
+            if (selectionElement) {
+                selectionElement.style.top = topPosition + "px";
+            }
         }
         catch (ex) {
             console.warn(ex);
@@ -269,6 +259,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.relationshipFieldIntersectCardinality =
                 intersectType.Object.Uid === this.assetTypeUid
                     ? intersectType.Subject.Cardinality : intersectType.Object.Cardinality;
+
+            this.condition.relationshipCardinality = this.relationshipFieldIntersectCardinality;
 
             options = [];
             options.push({ value: "Equals", label: " is " });
@@ -349,7 +341,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.isSelectingValue = true;
         }
         this.updateFocus();
-        setTimeout(() => this.setSelectionVirtualScrollHeight(null), 50);
     }
 
     updateFocus() {
@@ -373,6 +364,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
     onFieldSelected($event) {
         this.isSelectingCurrentField = false;
         this.relationshipFieldIntersectTypeUid = "";
+        this.hasSelectAllCheckbox = false;
 
 
         var type = this.getFieldType(this.condition);
@@ -408,6 +400,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.condition.fieldType = null;
                 this.uiCurrentOperatorsList = this.getOperators(this.condition);
                 this.uiFilterLabel = this.condition.getFilterLabel();
+                this.hasSelectAllCheckbox = true;
             }
             else if (this.currentField.IsRelationship) {
                 this.condition.friendlyFieldName = this.currentField.FriendlyName;
@@ -438,7 +431,15 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.updateFocus();
     }
 
+    interval;
     loadListLazy(event: LazyLoadEvent) {
+
+        if (this.interval) {
+            clearInterval(this.interval);
+        }
+
+        this.interval = setInterval(() => this.updateDynamicWidths(), 20);
+
         var params = { skip: event.first, take: event.rows, filter: event.globalFilter ?? "" };
         var type = this.getFieldType(this.condition);
         if (type.Type) {
@@ -506,10 +507,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
 
                 this.currentField.Values = [...this.currentField.Values];
-                this.setTableWidth();
 
                 this.isLookupValuesLoading = false;
-                this.setSelectionVirtualScrollHeight(res);
 
                 this.cdRef.markForCheck();
             });
@@ -527,8 +526,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 });
 
                 this.isLookupValuesLoading = false;
-                this.setTableWidth();
-                this.setSelectionVirtualScrollHeight(res);
                 this.cdRef.markForCheck();
             });
 
@@ -576,8 +573,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.currentField.Values = this.currentField.Values.sort((a, b) => { return a.title > b.title ? 1 : 0; });
 
                 this.isLookupValuesLoading = false;
-                this.setTableWidth();
-                this.setSelectionVirtualScrollHeight(res);
 
                 this.cdRef.markForCheck();
             });
@@ -612,15 +607,14 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
 
                 this.currentField.Values = [...this.currentField.Values];
-                this.setTableWidth();
                 this.isLookupValuesLoading = false;
-                this.setSelectionVirtualScrollHeight(res);
                 this.cdRef.markForCheck();
             });
     }
 
     confirmValue() {
         this.isSelectingValue = false;
+        this.condition.isConfirmed = true;
         this.condition.operator = this.currentOperator;
         this.updateOperatorData();
 
@@ -686,7 +680,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     hasRemoveButton() {
-        if (this.condition.isDefaultFilter || (!this.isEmpty(this.condition.value) && this.condition.operator)) {
+        if (this.condition.isDefaultFilter
+            || (!this.isEmpty(this.condition.value) && this.condition.operator)
+            || (this.condition.isConfirmed && this.isNonValueOperator())
+        ) {
             return true;
         }
 
@@ -694,15 +691,11 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     hasRemoveIcon() {
-        if (!this.condition.operator) {
+        if (!this.condition.operator || !this.condition.isConfirmed) {
             return false;
         }
 
-        if (this.condition.operator.toString() === "Populated"
-            || this.condition.operator.toString() === "NotPopulated"
-            || this.condition.operator.toString() === "IsTrue"
-            || this.condition.operator.toString() === "IsFalse"
-        ) {
+        if (this.isNonValueOperator()) {
             return true;
         }
 
@@ -1021,5 +1014,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
         //update reference
         this.condition.value = [...valueRef];
         this.updateAllAnyData();
+    }
+
+    isNonValueOperator(): boolean {
+        if (!this.condition.operator) {
+            return false;
+        }
+        return this.nonValueOperators.indexOf(this.condition.operator.toString()) !== -1;
     }
 }

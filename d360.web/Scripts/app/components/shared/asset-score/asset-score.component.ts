@@ -122,7 +122,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                         var selectedDate = new Date(this.scoreDate);
                         if (effDate < selectedDate) {
                             this.selectedMetric = metric;
-                            this.selectedMetric.AdjustedWeight = this.selectedPoint._adjustedMaxWeight;
+                            this.selectedMetric.AdjustedWeight = this.selectedPoint.DisplayMaxWeight;
                         }
                         else {
                             var isMetricSet: boolean = false;
@@ -134,7 +134,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                                             this.selectedMetric = item;
                                             this.selectedMetric['Uid'] = this.selectedMetric['MeasureUid'];
                                             this.selectedMetric['State'] = 3;
-                                            this.selectedMetric.AdjustedWeight = this.selectedPoint._adjustedMaxWeight;
+                                            this.selectedMetric.AdjustedWeight = this.selectedPoint.DisplayMaxWeight;
                                             isMetricSet = true;
                                             this.cdRef.markForCheck();
                                         }
@@ -244,13 +244,16 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
         this.loadPoints();
     }
 
-    private calculateBadgeStyle(alloc: ScoreTypeAllocation, actualRatio: number) {
+    private calculateBadgeStyle(alloc: ScoreTypeAllocation, actualRatio: number, isDecimal: boolean = true) {
         let style = 'positive';
 
-        if (actualRatio > (alloc.lowerThreshold / 100) && actualRatio <= (alloc.upperThreshold / 100)) {
+        let lowerThreshold: number = (isDecimal ? (alloc.lowerThreshold / 100) : alloc.lowerThreshold); 
+        let upperThreshold: number = (isDecimal ? (alloc.upperThreshold / 100) : alloc.upperThreshold); 
+
+        if (actualRatio > lowerThreshold && actualRatio <= upperThreshold) {
             style = 'warning';
         }
-        else if (actualRatio <= (alloc.lowerThreshold / 100)) {
+        else if (actualRatio <= lowerThreshold) {
             style = 'negative';
         }
 
@@ -267,11 +270,22 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
             if (this.scoreDate.indexOf('0Z') == -1) {
                 this.scoreDate += 'T00:00:00.000Z';
             }
+
+            let selectedAllocation = this.allocationData.find(o => { return <any>ScoreType[o.scoreType] == this.selectedScoreType });
+            this.allocationUid = selectedAllocation.uid;
+
+            this.scoreService.getScoreHistoryByAllocationAndAssetAndEffectiveDate(this.allocationUid, this.uid, this.scoreDate)
+                .subscribe(res => {
+                    this.totalScore = (res ? res.Score : 0 );
+
+                    if (this.totalScore >= 100) {
+                        this.totalScore = 100;
+                    }
+                    this.totalScoreBadgeStyle = this.calculateBadgeStyle(selectedAllocation, this.totalScore, false);
+                });
+
             this.scoreService.getPointBreakdown(this.uid, this.selectedScoreType, this.scoreDate)
                 .subscribe(res => {
-
-                    let selectedAllocation = this.allocationData.find(o => { return <any>ScoreType[o.scoreType] == this.selectedScoreType });
-                    this.allocationUid = selectedAllocation.uid;
 
                     this.pointBreakdown = res;
                     this.isDQAndNoItems();
@@ -280,38 +294,34 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                         this.scoreDate = new Date().toDateString();
                     }
 
-                    // Set data for UI
-                    this.totalScore = 0;
-
+                    // Get sum of root measures.
+                    let rootRawWeightSum: number = 0;
                     this.pointBreakdown.forEach(pb => {
-                        //set adjusted weights
-                        pb._adjustedGroupWeight = null;
-
-                        if (pb.Measures) {
-
-                            pb._measureSumWeight = pb.AdjustedWeight;
-
-                            pb.Measures.forEach(m => {
-                                m._measureSumWeight = pb.AdjustedWeight;
-                                m._adjustedGroupWeight = pb.AdjustedMaxWeight;
-                                m._adjustedWeight = this.round(m.AdjustedWeight * pb.AdjustedMaxWeight);
-                                m._adjustedMaxWeight = this.round(m.AdjustedMaxWeight * pb.AdjustedMaxWeight);
-                                m._badgeStyle = this.calculateBadgeStyle(selectedAllocation, m.AdjustedWeight / m.AdjustedMaxWeight);
-                            });
+                        let match = pb.Conditions?.find((c) => c.Uid === pb.ConditionUid);
+                        let weight = 0;
+                        if (match) {
+                            // GOV-13832 Make sure the weight is defined on the condition, if it is not fall back to the weight on the measure.
+                            weight = (isNaN(+match.Weight) ? +pb.Weight : +match.Weight);
+                        } else {
+                            weight = +pb.Weight;
                         }
-
-                        pb._badgeStyle = this.calculateBadgeStyle(selectedAllocation, pb.AdjustedWeight / pb.AdjustedMaxWeight);
-                        pb._adjustedMaxWeight = this.round(pb.AdjustedMaxWeight);
-                        pb._adjustedWeight = this.round(pb.AdjustedWeight);
-
-                        this.totalScore += pb._adjustedWeight;
+                        rootRawWeightSum += +weight;
                     });
 
-                    if (this.totalScore >= 0.999) {
-                        this.totalScore = 1;
-                    }
+                    this.pointBreakdown.forEach(pb => {
+                        pb._groupDisplayMaxWeight = null;
+                        pb._badgeStyle = this.calculateBadgeStyle(selectedAllocation, pb.DisplayWeight / pb.DisplayMaxWeight);
+                        pb._rawWeightSum = rootRawWeightSum;
 
-                    this.totalScoreBadgeStyle = this.calculateBadgeStyle(selectedAllocation, this.totalScore);
+                        if (pb.Measures) {
+                            pb.Measures.forEach(m => {
+                                m._rawWeightSum = pb.DisplayWeight;
+                                m._groupDisplayWeight = pb.DisplayWeight;
+                                m._groupDisplayMaxWeight = pb.DisplayMaxWeight;
+                                m._badgeStyle = this.calculateBadgeStyle(selectedAllocation, m.DisplayWeight / m.DisplayMaxWeight);
+                            });
+                        }
+                    });
 
                     var preselected: PointBreakdown;
                     if (this.selectedMeasureUid && this.pointBreakdown) {
@@ -457,21 +467,30 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
         }
     }
 
-    getAsPrecentage(val: number) {
+    getAsPrecentage(val: number, isDecimal: boolean = true) {
         if (val == 0)
             return '0%';
         if (!val)
             return;
-        if (val >= 1)
-            return '100%'
-        let s = val + '0000';
-        s = s.replace('0.', '');
-        if (s.length > 6)
-            s = (s.substr(0, 2)) + '.' + s[2] + "%";
-        else
-            s = (s.substr(0, 2)) + "%";
-        if (s.startsWith('0'))
-            s = s.substr(1, s.length);
+
+        let s: string = "";
+
+        if (isDecimal) {
+            if (val >= 1)
+                return '100%'
+            s = val + '0000';
+            s = s.replace('0.', '');
+            if (s.length > 6)
+                s = (s.substr(0, 2)) + '.' + s[2] + "%";
+            else
+                s = (s.substr(0, 2)) + "%";
+            if (s.startsWith('0'))
+                s = s.substr(1, s.length);
+        }
+        else {
+            s = val + "%";
+        }
+
         return s;
     }
 
@@ -537,16 +556,16 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
     getTooltipForScoreBadge(item: PointBreakdown) {
         if (item.IsGroup)
-            return "Measure Score = sum of sub-measures " + this.getAsPrecentage(item._adjustedWeight);;
+            return "Measure Score = sum of sub-measures " + this.getAsPrecentage(item.DisplayWeight);;
 
-        return "Measure Score = " + this.getAsPrecentage(item._adjustedWeight);
+        return "Measure Score = " + this.getAsPrecentage(item.DisplayWeight);
     }
 
     getTooltipForWeightBadge(item: PointBreakdown) {
         if (item.IsGroup)
-            return "Maximum possible score = adjusted measure weight = " + this.getAsPrecentage(item._adjustedMaxWeight);
+            return "Maximum possible score = adjusted measure weight = " + this.getAsPrecentage(item.DisplayMaxWeight);
 
-        return "Maximum possible score for measure = measure weight = " + this.getAsPrecentage(item._adjustedMaxWeight);
+        return "Maximum possible score for measure = measure weight = " + this.getAsPrecentage(item.DisplayMaxWeight);
     }
 
 }

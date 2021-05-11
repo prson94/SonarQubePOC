@@ -13,14 +13,14 @@ class OwnershipResource {
     template: `<span *ngIf="listLength===0">- - -</span>
                 <ul *ngIf="listLength > 0" class="ownershiplist">
                     <li *ngFor="let owner of list; let i = index" [ngClass]="{'nobullet': listLength === 1, 'noshow': ((i >= moreLimit) && !showMore)}">
-                        <span><a [href]="owner.ResourceItemUrl" [innerHtml]="owner.ResourceName"></a> ({{owner.ResponsibilityTypes}})</span>
+                        <span><a [href]="owner.ResourceItemUrl" [innerHtml]="owner.ResourceName" (click)="$event.stopPropagation()"></a> ({{owner.ResponsibilityTypes}})</span>
                     </li>
                 </ul>
                 <a *ngIf="listLength > moreLimit" [innerHtml]="moreText()" (click)="toggleMore($event)"></a>`,
     styles: [`
         li.nobullet {
             list-style-type: none;
-            margin-left: -10px;
+            margin-left: -12px;
         }
         li.noshow {
             display: none;
@@ -31,7 +31,7 @@ class OwnershipResource {
             padding-left: 16px;
         }
         ul.ownershiplist li span {
-            margin-left: -6px;
+            margin-left: -4px;
         }
     `],
 })

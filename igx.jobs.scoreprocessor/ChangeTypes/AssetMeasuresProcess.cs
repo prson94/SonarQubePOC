@@ -375,9 +375,12 @@ where   Uid <> @uid
 	    and FT.Type not in ('JSON','Path','Relationship','FieldFromRelationship','ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship','Tag','Score')
     and A.Uid in (select Uid from @assets);", new { assets = thisSet.Select(i => new { Uid = i.AssetUid }).Distinct().AsTableValuedParameter("dbo.UidTable", new List<string> { "Uid" }) }).ToList();
 
-                    thisSet.ForEach(assetEffectiveDate =>
+                    object setLock = new Object();
+                    thisSet.AsParallel().ForAll(assetEffectiveDate =>
                     {
-                        scoreCount++;
+                        lock (setLock) { 
+                            scoreCount++;
+                        }
 
                         // The local lists below keep track of score items and links to add for a specific score (asset / effective date / allocation combination).
                         var assetScoreItems = new List<StagingScoreItem>();
@@ -397,7 +400,8 @@ where   Uid <> @uid
 
                         var assetFields = setFields.Where(f => f.Assetuid == assetEffectiveDate.AssetUid).ToList();
 
-                        results.ForEach(r =>
+                        object resultsLock = new Object();
+                        results.AsParallel().ForAll(r =>
                         {
                             var conditionValidator = CheckMeasureConditions(assetFields, fieldTypes, r.Measure, true);
                         
@@ -454,7 +458,10 @@ where   Uid <> @uid
                                                     if (dqQueryDetail == null)
                                                     {
                                                         dqQueryDetail = Db.BuildDataQualityMeasureQueryModel(MetricDataQualityQueryType.MeasureResults_For_Calculation, r.Measure.RollupPath.AssetVersionRollupPathUid);
-                                                        dqMeasureQueryLibrary.Add(dqQueryDetail); // Add to library for future reference.
+                                                        lock (resultsLock)
+                                                        { 
+                                                            dqMeasureQueryLibrary.Add(dqQueryDetail); // Add to library for future reference.
+                                                        }
                                                     }
 
                                                     try
@@ -717,11 +724,18 @@ where   Uid <> @uid
                                 scoreItem.IsRemoved = true;
                             }
 
-                            assetScoreItems.Add(scoreItem);
+                            lock (resultsLock)
+                            {
+                                assetScoreItems.Add(scoreItem);
+                            }
+                            
                         });
 
                         //Add to main list.
-                        scoreItems.AddRange(assetScoreItems);
+                        lock (setLock)
+                        {
+                            scoreItems.AddRange(assetScoreItems);
+                        }
                     });
 
                     // Now add scores in this set via a transaction.
@@ -899,6 +913,7 @@ when not matched then
                                 allocationUid = items[0].AllocationUid,
                                 assets = items.Select(i => new { i.AssetUid, i.EffectiveDate }).Distinct().AsTableValuedParameter("dbo.AssetEffectiveDate", new List<string> { "AssetUid", "EffectiveDate" }),
                             }, 
+                            commandTimeout: 600,
                             transaction: trans
                         );
 

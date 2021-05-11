@@ -518,7 +518,7 @@ namespace igx.IntegrationTests.ApiTests
         {
             //Input data with different intersects (object/subject)
             var data = JsonConvert.DeserializeObject<JArray>(RelationshipUITestData.JsonInputMedium);
-            List<string> requiredFields = new List<string> { "Uid", "ID", "IntersectTypeID", "Object", "ObjectID", "ObjectUid", "Name", "Type", "TypeID", "TypeName", "HasTechnicalRelationships" };
+            List<string> requiredFields = new List<string> { "Uid", "ID", "IntersectTypeID", "Object", "ObjectID", "ObjectUid", "Name", "Type", "TypeID", "TypeName" };
             List<string> failedRequests = new List<string>();
             foreach (var item in data)
             {

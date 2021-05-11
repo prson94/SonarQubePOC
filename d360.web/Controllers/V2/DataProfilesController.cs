@@ -151,8 +151,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PostDataProfiles(List<DataProfileUpsertModel> models)
         {
-            var prefix = "DataProfiles.PostDataProfiles => ";
-            var execution = getApiExecution(models.Count);
+            var prefix = "DataProfiles.PostDataProfiles => ";            
 
             if (!Company.CurrentResourceIsAdmin)
             {
@@ -161,16 +160,18 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                var validationResult = ValidateDataProfileUpsertRequest(models, true);
+                if (validationResult.StatusCode != HttpStatusCode.OK)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
+                }
+
                 if (models.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} Data Profile records in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items.")).ConfigureAwait(false);
                 }
 
-                var validationResult =  ValidateDataProfileUpsertRequest(models, true);
-                if(validationResult.StatusCode != HttpStatusCode.OK)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
-                }
+                var execution = getApiExecution(models.Count);
 
                 var results =  DataProfiles.UpsertDataProfiles(models, execution, true);
 
@@ -203,9 +204,8 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> PutDataProfiles(List<DataProfileUpsertModel> models)
-        {
+        {            
             var prefix = "DataProfiles.PutDataProfiles => ";
-            var execution = getApiExecution(models.Count);
 
             if (!Company.CurrentResourceIsAdmin)
             {
@@ -214,16 +214,18 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                if (models.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} Data Profile records in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items.")).ConfigureAwait(false);
-                }
-
                 var validationResult = ValidateDataProfileUpsertRequest(models, false);
                 if (validationResult.StatusCode != HttpStatusCode.OK)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
                 }
+
+                if (models.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} Data Profile records in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items.")).ConfigureAwait(false);
+                }                               
+
+                var execution = getApiExecution(models.Count);
 
                 var results = DataProfiles.UpsertDataProfiles(models, execution, false);
 
@@ -305,6 +307,11 @@ namespace d360.web.Controllers.V2
 
         public WorkHttpStatus ValidateDataProfileUpsertRequest(List<DataProfileUpsertModel> models, bool IsInsert)
         {
+            if (models == null || models.Count == 0)
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "You have not provided a valid JSON structure for this request.");
+            }
+
             //Key Field Validation
             if (models.Any(dp => dp.profileSetDate == null || dp.assetUid == null))
             {
@@ -339,7 +346,17 @@ namespace d360.web.Controllers.V2
                 if (!recordExists && !IsInsert)
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Record does not exist for AssetUid {model.assetUid} and ProfileSetDate {model.profileSetDate.Date:yyyy-MM-dd}");
-                }                
+                }
+                
+                if(model.topK !=null && model.topK.Any(x=> x.Trim() == string.Empty))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Elements in topK cannot be Empty strings");
+                }
+
+                if (model.bottomK != null && model.bottomK.Any(x => x.Trim() == string.Empty))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Elements in bottomK cannot be Empty strings");
+                }
 
                 bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
                 if (!isValid)

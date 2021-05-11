@@ -137,7 +137,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
             this.hasAdd = this.cardinalityShow
                 && this.hasRelationships
                 && this.selected
-                && this.hasModifyRelationshipsPermissions()
+                && this.hasAddRelationshipsPermissions()
                 && !this.readOnly
                 && this.selected.AllowEditFromRelationshipEditor;
         }

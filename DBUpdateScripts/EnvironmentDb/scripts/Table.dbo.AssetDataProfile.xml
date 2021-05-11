@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfile-v7">
+  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfile-v8">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -47,7 +47,7 @@ BEGIN
 		[UpdatedBy] INT NOT NULL,
 		[UpdatedOn] DATETIME NOT NULL,
 		CONSTRAINT [PK_AssetDataProfile_ID] PRIMARY KEY NONCLUSTERED ([ID]),
-		CONSTRAINT [FK_AssetDataProfile_Asset] FOREIGN KEY (AssetID) REFERENCES Asset(ID)
+		CONSTRAINT [FK_AssetDataProfile_Asset] FOREIGN KEY (AssetID) REFERENCES Asset(ID) ON DELETE CASCADE
 	)
 	
 	CREATE CLUSTERED INDEX IX_AssetDataProfile_AssetID_ProfileSetDate ON dbo.AssetDataProfile ([AssetID], [ProfileSetDate]);
@@ -63,93 +63,63 @@ BEGIN
 	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_StructureSignature ON dbo.AssetDataProfile ([AssetID], [StructureSignature]);
 END
 
-IF EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-         AND name = 'OutlierDetail'
+IF NOT EXISTS (
+	SELECT
+		*
+	FROM
+		sys.foreign_keys FK
+		INNER JOIN
+		sys.all_objects AO on FK.parent_object_id = AO.object_id     
+	where 
+		FK.[NAME] = 'FK_AssetDataProfile_Asset' 
+		and 
+		delete_referential_action_desc = 'CASCADE'
 )
 BEGIN
-    ALTER TABLE [dbo].[AssetDataProfile] DROP COLUMN [OutlierDetail]
-END
+	IF EXISTS (
+		SELECT
+			*
+		FROM
+			sys.foreign_keys FK
+			INNER JOIN
+			sys.all_objects AO on FK.parent_object_id = AO.object_id     
+		where 
+			FK.[NAME] = 'FK_AssetDataProfile_Asset' 
+	)
+	BEGIN
+		ALTER TABLE AssetDataProfile
+		DROP CONSTRAINT FK_AssetDataProfile_Asset;
+	END
+	
 
-IF EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-         AND name = 'DistinctValues'
-)
-BEGIN
-    ALTER TABLE [dbo].[AssetDataProfile] DROP COLUMN [DistinctValues]
+	ALTER TABLE AssetDataProfile
+	ADD CONSTRAINT [FK_AssetDataProfile_Asset] FOREIGN KEY (AssetDataProfileID) REFERENCES AssetDataProfile(ID) ON DELETE CASCADE
 END
-
-IF EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-         AND name = 'JavaType'
-)
-BEGIN
-    ALTER TABLE [dbo].[AssetDataProfile] DROP COLUMN [JavaType]
-END
-
-IF EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-         AND name = 'PrimaryKey'
-)
-BEGIN
-    ALTER TABLE [dbo].[AssetDataProfile] DROP COLUMN [PrimaryKey]
-END
-
-IF EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-         AND name = 'NewType'
-)
-BEGIN
-    ALTER TABLE [dbo].[AssetDataProfile] DROP COLUMN [NewType]
-END
-
-IF EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-         AND name = 'CurrentType'
-)
-BEGIN
-    EXEC sp_rename 'dbo.AssetDataProfile.CurrentType', 'Type', 'COLUMN';
-END
-
-IF EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-         AND name = 'Validation'
-)
-BEGIN
-    EXEC sp_rename 'dbo.AssetDataProfile.Validation', 'RegExp', 'COLUMN';
-END
-
-IF EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-         AND name = 'TotalCount'
-)
-BEGIN
-    EXEC sp_rename 'dbo.AssetDataProfile.TotalCount', 'SampleCount', 'COLUMN';
-END
-
-ALTER table dbo.AssetDataProfile
-ALTER COLUMN [RegExp] NVARCHAR(MAX); 
 		]]>
     </sql>
 	<rollback>
-		<![CDATA[	
+	
+		<![CDATA[			
+		
+			IF EXISTS (
+				SELECT
+					*
+				FROM
+					sys.foreign_keys FK
+					INNER JOIN
+					sys.all_objects AO on FK.parent_object_id = AO.object_id     
+				where 
+					FK.[NAME] = 'FK_AssetDataProfile_Asset' 
+					and 
+					delete_referential_action_desc = 'CASCADE'
+			)
+			BEGIN
+				ALTER TABLE AssetDataProfile
+				DROP CONSTRAINT FK_AssetDataProfile_Asset;
 
+				ALTER TABLE AssetDataProfile
+				ADD CONSTRAINT [FK_AssetDataProfile_Asset] FOREIGN KEY (AssetDataProfileID) REFERENCES AssetDataProfile(ID)
+			END
 		]]>
 	</rollback>
   </changeSet>

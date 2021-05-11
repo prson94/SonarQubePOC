@@ -13,10 +13,7 @@
                 </li>
                 <li (click)="selectTab('user')" class="tab-item" [class.selected]="tab == 'user'">
                     <i class="fa fa-user fa-2x"></i>
-                </li>
-                <li (click)="selectTab('fusion')" class="tab-item" [class.selected]="tab == 'fusion'">
-                    <i class="fa fa-database fa-2x"></i>
-                </li>
+                </li>                
             </ul>
             <div *ngIf="selectedObject && selectedObjectID && isWindowVisible" [ngSwitch]="tab"  style="background-color: #fff; padding: 10px; overflow-y:scroll; max-height: 300px">
                 <div *ngSwitchCase="'info'">
@@ -25,13 +22,7 @@
                     </div>
                     <d3s-lineage-object-detail *ngIf="!showDetail && selectedObject && selectedObjectID" [objectType]="selectedObject" [objectId]="selectedObjectID"></d3s-lineage-object-detail>
                     <object-detail *ngIf="showDetail && selectedObject && selectedObjectID" [objectType]="selectedObject" [objectID]="selectedObjectID"></object-detail>
-                </div>
-                <div *ngSwitchCase="'user'">
-                    <d3s-lineage-responsibilities *ngIf="selectedAssetID" [assetId]="selectedAssetID"></d3s-lineage-responsibilities>
-                </div>
-                <div *ngSwitchCase="'fusion'">
-                    <d3s-lineage-technical *ngIf="selectedObject && selectedObjectID" [source]="objectType" [sourceId]="objectID" [target]="selectedObject" [targetId]="selectedObjectID"></d3s-lineage-technical>
-                </div>
+                </div>                
             </div>
         </d3s-overlay-window>
         <d3s-overlay-window width="500" maxHeight="400" padding="0" [(visible)]="isFilterVisible" headerText="Filter" overflowScroll="false">

@@ -1089,7 +1089,7 @@ namespace d360.web.Controllers
                 if (model.AssetUid != null)
                 {
                     var permissions = Company.GetPermissions(responseModel.AssetId, responseModel.AssetTypeId);
-                    if (permissions.Any(x => x.ID == Permission.ReadAsset) || permissions.Count == 0)
+                    if (permissions.Any(x => x.ID == Permission.ReadResponsibilities) || permissions.Count == 0)
                     {
                         responseModel.Items.HasOwnership = true;
                     }
@@ -1103,7 +1103,7 @@ namespace d360.web.Controllers
                 if (model.AssetId == null && model.AssetTypeUid != null)
                 {
                     var permissions = Company.GetTypePermissions(responseModel.ObjectType, responseModel.ObjectTypeId);
-                    if (permissions.Any(x => x.ID == Permission.ReadAsset) || permissions.Count == 0)
+                    if (permissions.Any(x => x.ID == Permission.ReadResponsibilities) || permissions.Count == 0)
                     {
                         responseModel.Items.HasOwnership = true;
                     }
@@ -1121,11 +1121,6 @@ namespace d360.web.Controllers
                         responseModel.Items.HasRelationship = false;
                     }
                 }
-            }
-            if (responseModel != null)
-            {
-                var showChangeLogTab = Community.GetCompanySettings().Single(x => x.Key == "ShowChangeLogTab");
-                responseModel.Items.ShowChangeLogTab = Convert.ToBoolean(showChangeLogTab.Value);
             }
             return new JsonNetResult
             {

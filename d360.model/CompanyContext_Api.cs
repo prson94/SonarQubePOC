@@ -4886,8 +4886,8 @@ from	api.ExecutionAsset T
                     #endregion
 
                     // Validate permissions
-                    LogAssetPermissionErrors(execution.ExecutionID, at, Permission.ModifyAsset, "ExecutionAsset");
-                    LogAssetPermissionErrors(execution.ExecutionID, at, Permission.ModifyAsset, isInsert, "ExecutionAsset");
+                    LogAssetPermissionErrors(execution.ExecutionID, at, isInsert ? Permission.AddAsset : Permission.EditAsset, "ExecutionAsset");
+                    LogAssetPermissionErrors(execution.ExecutionID, at, isInsert ? Permission.AddAsset : Permission.EditAsset, isInsert, "ExecutionAsset");
                     AddMeasurement(metrics, "LogAssetPermissionErrors -  Permission.ModifyAsset- ExecutionAsset", sw.ElapsedMilliseconds, ++step);
                     sw.Restart();
 
@@ -10049,8 +10049,7 @@ SET DefinitionConverted = cd.[Definition];
             int itemNumber = 1;
             List<GroupResponseResult> results = new List<GroupResponseResult>();
             CurrentExecutionLocationModel currentLocation = null;
-            var currentUser = CurrentCompanyID;
-
+            
             var dups = groups.GroupBy(x => x.Name.Trim()).Where(x => x.Count() > 1).Select(x => new { x.Key, Items = x.ToList() }).ToList();
 
             Add(execution);
@@ -10249,10 +10248,12 @@ EG.GroupUid
 					G.Description = S.Description,
 					G.PrimaryOwnerResourceID = PrimaryID,
 					G.SecondaryOwnerResourceID = SecondaryID,
+                    G.UpdatedBy = @CurrentResourceID,
+                    G.UpdatedOn = GETUTCDATE(),
                     G.IsActiveDirectoryGroup = S.IsActiveDirectoryGroup
                 when not matched then
 	                insert ([Uid], Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID,IsActiveDirectoryGroup,UpdatedOn,UpdatedBy)
-	                values (ISNULL(S.GroupUid, NEWID()), TRIM(S.Name),S.Description, S.PrimaryID, S.SecondaryID,S.IsActiveDirectoryGroup,GETDATE(),@currentUser)
+	                values (ISNULL(S.GroupUid, NEWID()), TRIM(S.Name),S.Description, S.PrimaryID, S.SecondaryID,S.IsActiveDirectoryGroup,GETDATE(),@CurrentResourceID)
 	            output TRIM(S.Name), S.ExecutionItemUid into #mergeResultTable;
 
 
@@ -10325,7 +10326,7 @@ EG.GroupUid
                 where EG.ExecutionID = @ExecutionID and EG.Success is null";
 
                                     Connection.Execute(insertSQL,
-                                            new { execution.ExecutionID, beginItemNumber, endItemNumber, currentUser }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID}, transaction: trans, commandTimeout: timeout);
 
                                     Connection.Execute(
                                                         $"update [api].[ExecutionGroup] set Success = 1, Message = 'Success' where	Success is null and ExecutionID = @ExecutionID;",
@@ -10563,8 +10564,6 @@ EG.GroupUid
             var metrics = new Dictionary<string, double>();
             var sw = Stopwatch.StartNew();
             var step = 0;
-
-            var currentUser = CurrentCompanyID;
 
             var dups = request.Where(i => i.ExecutionItemUid.HasValue && i.ExecutionItemUid.Value != Guid.Empty).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
 
@@ -10910,7 +10909,23 @@ EG.GroupUid
                             api.ExecutionAssetDataProfile EDP
                             left Join
                             Asset A on EDP.AssetUid = A.Uid
-                        where	ExecutionID = @ExecutionID and A.Uid is null;",
+                        where	ExecutionID = @ExecutionID and A.Uid is null;
+
+                        Update EDP
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'Elements in '+ EDPS.SampleType +' cannot be Empty strings'
+                        from  
+                            api.ExecutionAssetDataProfile EDP 
+                            inner join 
+                            (
+                                select 
+                                    distinct ExecutionID, itemnumber, SampleType 
+                                from 
+                                    api.ExecutionAssetDataProfileSample 
+                                where ExecutionID = @ExecutionID and TRIM(Value)='' and LOWER(SampleType) in ('topk', 'bottomk') 
+                            ) EDPS on EDP.ExecutionID=EDPS.ExecutionID and EDP.ItemNumber=EDPS.ItemNumber 
+                        where 
+                            EDP.ExecutionID = @ExecutionID                             ",
                                     new { execution.ExecutionID }, commandTimeout: timeout);
 
                     AddMeasurement(metrics, "LogAssetDataProfileErrors", sw.ElapsedMilliseconds, ++step);

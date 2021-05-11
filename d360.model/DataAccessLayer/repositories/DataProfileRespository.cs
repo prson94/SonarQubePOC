@@ -56,31 +56,41 @@ namespace d360.model.DataAccessLayer
                 bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includechildassets").Value, out includeChildAssets);
             }
 
-            DateTime startDate = DateTime.UtcNow;            
-
-            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_startdate"))
-            {
-                DateTime.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_startdate").Value, out startDate);
-            }
-
+            DateTime startDate = DateTime.UtcNow;
             DateTime endDate = DateTime.UtcNow;
 
-            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_enddate"))
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_startdate" || k.Key.ToLower() == "_enddate"))
             {
-                DateTime.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_enddate").Value, out endDate);
-            }                               
+                if (queryParams.ToList().Any(k => k.Key.ToLower() == "_startdate"))
+                {
+                    DateTime.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_startdate").Value, out startDate);
+                }
 
-            string dataProfileSQL = $@"select 
+                if (queryParams.ToList().Any(k => k.Key.ToLower() == "_enddate"))
+                {
+                    DateTime.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_enddate").Value, out endDate);
+                }
+            }
+            else
+            {
+                AssetDataProfile dataprofile = CompanyContext.AssetDataProfile.OrderByDescending(x => x.ProfileSetDate).FirstOrDefault(x => x.AssetId == asset.ID);
+                if(dataprofile != null)
+                {
+                    startDate = endDate = dataprofile.ProfileSetDate;
+                }                
+            }             
+            
+            string dataProfileSQL = $@"select
 	                            A.[Uid] as assetUid
 	                            ,ADP.[ProfileSetDate]
                                 ,ADP.[SampleCount]
                                 ,ADP.[NullCount]
                                 ,ADP.[BlankCount]
-                                ,ADP.[MeanValue]
-                                ,ADP.[MinimumValue] as maxValue
-                                ,ADP.[MaximumValue] as minValue
-                                ,ADP.[MinimumLength]
-                                ,ADP.[MaximumLength]
+                                ,ADP.[MeanValue] as mean
+                                ,ADP.[MinimumValue] as min
+                                ,ADP.[MaximumValue] as max
+                                ,ADP.[MinimumLength] as minLength
+                                ,ADP.[MaximumLength] as maxLength
                                 ,ADP.[StandardDeviation]
                                 ,ADP.[Multiline]
                                 ,ADP.[RegExp]
@@ -101,20 +111,28 @@ namespace d360.model.DataAccessLayer
 	                            ,JSON_QUERY(cardinalityDetail.[value]) as cardinalityDetail
                                 ,ADP.[ShapeCardinality] as shapesCardinality
 	                            ,JSON_QUERY(shapesDetail.[value]) as shapesDetail
-                                ,JSON_QUERY((select CONCAT('[""', STRING_AGG(STRING_ESCAPE(cast([value] as nvarchar(36)), 'JSON'), '"",""'), '""]')
+                                ,JSON_QUERY(
+                                    REPLACE(
+                                        REPLACE((select CONCAT('[""', STRING_AGG(STRING_ESCAPE(cast([value] as nvarchar(36)), 'JSON'), '"",""'), '""]')
                                                         from AssetDataProfileSample
                                                         where
                                                             AssetDataProfileId = ADP.ID
                                                             and
                                                             lower(SampleType) = 'topk'
-                                                        )) as topk
-                                ,JSON_QUERY((select CONCAT('[""', STRING_AGG(STRING_ESCAPE(cast([value] as nvarchar(36)), 'JSON'), '"",""'), '""]')
+                                                )
+                                        , '"""",','')
+                                    ,'""""',''))  as topk
+                                ,JSON_QUERY(
+                                    REPLACE(
+                                        REPLACE((select CONCAT('[""', STRING_AGG(STRING_ESCAPE(cast([value] as nvarchar(36)), 'JSON'), '"",""'), '""]')
                                                         from AssetDataProfileSample
                                                         where
                                                             AssetDataProfileId = ADP.ID
                                                             and
                                                             lower(SampleType) = 'bottomk'
-                                                        )) as bottomk
+                                                        )
+                                        , '"""",','')
+                                    ,'""""','')) as bottomk
                             from 
 	                            Asset A
 	                            Inner Join 
@@ -213,9 +231,12 @@ namespace d360.model.DataAccessLayer
                         for Json Path";                
 
             var jsonStrings = await CompanyContext.QueryAsync<string>(sql, dbArgs, ApiTimeout);
-            var json = string.Join("", jsonStrings);
+            var json = string.Join("", jsonStrings);            
 
             results.items = JsonConvert.DeserializeObject<List<DataProfileModel>>(string.IsNullOrEmpty(json) ? "[]" : json);
+
+            results.items.Where(x => x.topK.Count == 0).ToList().ForEach(x=>x.topK=null);
+            results.items.Where(x => x.bottomK.Count == 0).ToList().ForEach(x => x.bottomK = null);
 
             if (includeTotal)
             {

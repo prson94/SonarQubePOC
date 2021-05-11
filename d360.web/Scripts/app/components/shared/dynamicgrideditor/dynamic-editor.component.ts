@@ -83,6 +83,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     private consolidateToTag: any;
     private isInError: boolean = false;
     private isInErrorMessage: string = "";
+    readonly defaultCategory: string = "General";
 
     form: FormGroup;
 
@@ -246,7 +247,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             this.fields.forEach(f => {
 
                 if (f.Category == null) {
-                    currentCategory = "";
+                    currentCategory =  "";
                 }
                 else {
                     currentCategory = f.Category;
@@ -289,6 +290,22 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     n.Fields.push(f);
                     curCategory.rows.push(n);
                 }
+            });
+
+            this.categories = this.categories.sort((a, b) => {
+                if (b.name === this.defaultCategory && !a.name) {
+                    return -1;
+                }
+                else if (a.name === this.defaultCategory && !b.name) {
+                    return 1;
+                }
+                else if (!a.name || a.name === this.defaultCategory) {
+                    return -1;
+                }
+                else if (!b.name|| b.name === this.defaultCategory) {
+                    return 1;
+                }
+                return 0;
             });
 
 

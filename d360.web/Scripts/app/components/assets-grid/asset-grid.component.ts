@@ -102,7 +102,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         return this.columns.map(c => c.datafield);
     }
 
-    simpleSearchTooltipHTML: string = `<p>Type to provide a search term. Matches will be found where the value of any column starts with the termo or terms provided.</p><p>You can also use wildcards for more control over how the term is matched.
+    simpleSearchTooltipHTML: string = `<p>Type to provide a search term. Matches will be found where the value of any column starts with the term or terms provided.</p><p>You can also use wildcards for more control over how the term is matched.
 *account* : Match on values which contain 'account'
 *account : Match on values which end with 'account'</p><p>All matches are case insensitive.</p>`;
 
@@ -144,6 +144,15 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
     get showGridSimpleFilter(): boolean {
         return this.stateService.artifactTypeFilters.showSimpleFilter;
+    }
+
+    onFiltersLoaded() {
+        this.showAssetListPage();
+    }
+
+    showAssetListPage() {
+        this.isDefinitionLoaded = true;
+        this.changeDetectorRef.markForCheck();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -224,8 +233,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                     this.hasNoListableColumns = false;
                 }
 
-                this.isDefinitionLoaded = true;
-                this.getData();
+                setTimeout(() => this.showAssetListPage(), 3000);
                 this.changeDetectorRef.markForCheck();
             }
         );
@@ -564,6 +572,10 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     private newAdvancedFilters: Filters;
     private advancedFiltersChanged($event) {
         this.newAdvancedFilters = $event;
+        this.stateService.artifactTypeFilters.currentPageNumber = 0;
+        if (this.dt) {
+            this.dt.first = 0;
+        }
         this.getData();
     }
 

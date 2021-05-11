@@ -85,8 +85,8 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
         let arr: ScorePoint[] = [];
         try {
             let measureAdjustmentRatio = 1;
-            if (this.selectedPoint && this.selectedPoint._adjustedGroupWeight) {
-                measureAdjustmentRatio = this.selectedPoint._adjustedGroupWeight;
+            if (this.selectedPoint && this.selectedPoint._groupDisplayMaxWeight) {
+                measureAdjustmentRatio = this.selectedPoint._groupDisplayMaxWeight;
             }
             this.allLoadedPoints.forEach((dataSet) => {
                 if (dataSet['key'] == key) {

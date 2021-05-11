@@ -1020,7 +1020,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Responsibility with UID '{responsibilityUid}' does not exist.")).ConfigureAwait(false);
                 }
 
-                if (!Company.HasAssetPermission(asset.ID, Permission.ModifyResponsibilities))
+                if (!Company.HasAssetPermission(asset.ID, Permission.AddResponsibilities))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
                 }

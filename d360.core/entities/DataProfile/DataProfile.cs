@@ -27,9 +27,9 @@ namespace d360.core.entities
         [DataMember]
         public Decimal? MeanValue { get; set; }
         [DataMember]
-        public int MinimumLength { get; set; }
+        public int? MinimumLength { get; set; }
         [DataMember]
-        public int MaximumLength { get; set; }
+        public int? MaximumLength { get; set; }
         [DataMember]
         public Decimal? StandardDeviation { get; set; }
         [DataMember]

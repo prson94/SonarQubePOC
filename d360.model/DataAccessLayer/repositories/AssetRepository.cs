@@ -673,7 +673,21 @@ namespace d360.model.DataAccessLayer
                               ,rd.[SecurityAssetUid]
                         from ResponsibilityDetail rd
                         inner join asset a on rd.assettypeid = a.assettypeid
-                        where rd.assetid = 0 and IsVisible = 1and rd.assettypeid = @assetTypeId;
+                        where rd.assetid = 0 and IsVisible = 1 and rd.assettypeid = @assetTypeId
+                        union all
+                        select a.[ID] as AssetID
+                                ,rd.[ResponsibilityTypeName]
+                                ,rd.[ResourceName]
+                                ,rd.[SecurityAsset]
+                                ,rd.[SecurityAssetName]
+                                ,rd.[Context]
+                                ,rd.[ResourceId]
+                                ,rd.[ResourceUid]
+                                ,rd.[SecurityAssetId]
+                                ,rd.[SecurityAssetUid]
+                        from ResponsibilityDetail rd
+                        inner join asset a on rd.assetid = a.id
+                        where rd.AssetTypeID = 0 and IsVisible = 1 and a.AssetTypeID = @assetTypeId;
 
                     create index cix_OwnershipLookupAssetId on #OwnershipLookupAssets (AssetId);
                     ";
@@ -805,7 +819,6 @@ namespace d360.model.DataAccessLayer
                     var tempArgs = new DynamicParameters();
                     List<string> tempJoins = new List<string>();
                     List<string> tempFieldColumns = new List<string>();
-                    getFieldSql(allFieldTypes, tempArgs, tempJoins, tempFieldColumns);
 
                     foreach (var ft in allFieldTypes.Where(x => x.LookupObjectFieldTypeID > 0))
                     {
@@ -815,6 +828,7 @@ namespace d360.model.DataAccessLayer
                             ft.Type = origFieldType.Type;
                         }
                     }
+                    getFieldSql(allFieldTypes, tempArgs, tempJoins, tempFieldColumns);
 
                     var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, includeParent);
                     filterExpressionParser.LoadFieldTypes(allFieldTypes, tempFieldColumns);
@@ -890,7 +904,7 @@ namespace d360.model.DataAccessLayer
 					 end as 'ReadAsset',
 					 Case 
 					   when permission.mask is null then @isAdmin
-					   when permission.mask is not null and permission.mask & 2 = 2 then 1
+					   when permission.mask is not null and permission.mask & 8 = 8 then 1
 					 else 0
 					 end as 'ModifyAsset', 
 					 case 

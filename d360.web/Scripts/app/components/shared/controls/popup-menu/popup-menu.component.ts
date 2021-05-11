@@ -16,6 +16,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     @Input() tabIndex: number = -1;
     @Input() items: PopupMenuItem[];
     @Input() location: PopupMenuLocation;
+    @Input() allowAllUnchecked: boolean = true;
 
     @Output() onSelect = new EventEmitter();
 
@@ -333,7 +334,15 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
             else {
                 this.openToLeftSide = false;
             }
-            if (topPosition != this.positionTop || box.left != this.positionLeft) {
+
+            topPosition = Math.floor(topPosition);
+            leftPosition = Math.floor(leftPosition);
+
+            var hasLocationChanged = Math.abs(topPosition - this.positionTop) > 3
+                || Math.abs(leftPosition - this.positionLeft) > 3;
+            var isUnset = !this.positionLeft && !this.positionTop;
+
+            if (isUnset || hasLocationChanged) {
                 setTimeout(() => {
                     this.positionTop = topPosition;
                     this.positionLeft = leftPosition;
@@ -370,6 +379,16 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
             this.reset();
         }
         else {
+            if (this.allowAllUnchecked === false) {
+                var checkBoxes = this.items.filter((x) => x.hasCheckbox === true && x.isChecked === true);
+                if (checkBoxes.length === 1) {
+                    //if only selected checkbox is current checkbox do not allow its unchecking
+                    if (checkBoxes[0] === item) {
+                        return;
+                    }
+                }
+            }
+
             item.isChecked = !item.isChecked;
             this.onSelect.emit({ value: item.title, isChecked: item.isChecked, event: $event });
         }

@@ -10,7 +10,7 @@
     <button *ngIf="diagramType != 3"  type="button" pTooltip="Refresh Diagram" tooltipPosition="top" tooltipStyleClass="ig-tooltip" aria-label="Refresh Diagram" class="dark icon mr8" (click)="execute(7)"><i class="fa fa-refresh"></i></button>
     <button *ngIf="diagramType != 3"  type="button" pTooltip="Download as PNG" tooltipPosition="top" tooltipStyleClass="ig-tooltip" aria-label="Download as PNG" (click)="execute(3)" [class]="'icon mr8' + (enableDownload ? '' : ' disabled')" [disabled]="!enableDownload"><i class="fa fa-download"></i></button>
     <div *ngIf="diagramType != 3"  class="button-spacer"></div>
-    <button type="button" pTooltip="{{isFullScreen ? 'Shrink View':'Expand View'}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip" [attr.aria-label]="isFullScreen ? 'Shrink View':'Expand View'" class="dark icon mr8" (click)="execute(6)">
+    <button type="button" pTooltip="{{isFullScreen ? 'Shrink View':'Expand View'}}" tooltipPosition="left" tooltipStyleClass="ig-tooltip" [attr.aria-label]="isFullScreen ? 'Shrink View':'Expand View'" class="dark icon mr8" (click)="execute(6)">
         <i class="fa" [ngClass]="{'fa-compress' : isFullScreen, 'fa-expand' : !isFullScreen}"></i>
     </button>
 </div>

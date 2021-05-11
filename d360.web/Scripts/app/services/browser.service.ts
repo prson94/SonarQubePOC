@@ -55,12 +55,6 @@ export class BrowserService extends BaseObservableService {
             if (n.group !== "") {
                 if (!n.leaf) {
                     templateName = "Group";
-
-                    if (n.assetUid === '00000000-0000-0000-0000-000000000000' && n.assetTypeUid === "00000000-0000-0000-0000-000000000000") {
-                        templateName = "AncestorNodeOnlyText";
-                        n.relations = [];
-                        n.owners = [];
-                    }
                 }
             }
             else {
@@ -76,6 +70,34 @@ export class BrowserService extends BaseObservableService {
             n.class = AssetTypeClass[n.class] as any;
             n.icon = this.getIconUnicode(n.icon, n.class);
             n.isGroup = !n.leaf;
+
+            if (n.group !== "") {
+                if (!n.leaf) {
+                    templateName = "Group";
+
+                    if (n.assetUid === '00000000-0000-0000-0000-000000000000' && n.assetTypeUid === "00000000-0000-0000-0000-000000000000") {
+                        templateName = "AncestorGroupNodeOnlyText";
+
+                        n.relations = [];
+                        n.owners = [];
+
+                        var parent = response.nodes.filter((x) => x.key === n.group)[0];
+                        var children = response.nodes.filter((x) => x.group === n.key);
+                        if (children.length > 0) {
+                            //convert this node from group to leaf and update its children parent relationship
+                            children.forEach((c) => {
+                                c.group = parent.key;
+                            });
+                            templateName = "AncestorLeafNodeOnlyText";
+                            n.isGroup = false;
+                            n.leaf = true;
+                        }
+
+                        n.template = templateName;
+                        n.nonHiddenTemplate = templateName;
+                    }
+                }
+            }
         });
 
         //#region Load root data from hierarchy array

@@ -46,7 +46,6 @@ namespace d360.model
         int SaveOrUpdate<T>(T entity) where T : BaseIntObject;
         IDbSet<T> Set<T>() where T : class;
         IQueryable<T> Table<T>() where T : class;
-        bool Update<T>(T item) where T : BaseObject;
-        void UpdateDatabaseTableStatistics();
+        bool Update<T>(T item) where T : BaseObject;        
     }
 }

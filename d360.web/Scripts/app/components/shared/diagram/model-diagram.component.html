@@ -36,11 +36,7 @@
                             <d3s-lineage-object-detail *ngIf="selectedNode != null"
                                                        [objectId]="(selectedNode.key == 0) ? id : selectedNode.key"
                                                        [objectType]="(selectedNode.key == 0) ? 'TaxonomyType' : 'Taxonomy'"></d3s-lineage-object-detail>
-                        </div>
-                        <div *ngSwitchCase="'user'">
-                            <d3s-lineage-responsibilities *ngIf="selectedNode != null"
-                                                          [assetId]="selectedNode.assetId"></d3s-lineage-responsibilities>
-                        </div>
+                        </div>                        
                         <div *ngSwitchCase="'relations'">
                             <d3s-lineage-relations *ngIf="selectedNode != null" [objectId]="selectedNode.key"
                                                    objectType="Taxonomy"></d3s-lineage-relations>

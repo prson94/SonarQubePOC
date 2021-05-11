@@ -912,8 +912,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     fields.Add(new GridField { name = "TypeID", type = "number" });
                     fields.Add(new GridField { name = "Type", type = "string" });
                     fields.Add(new GridField { name = "TypeName", type = "string" });
-                    fields.Add(new GridField { name = "Url", type = "string" });
-                    fields.Add(new GridField { name = "HasTechnicalRelationships", type = "bool" });
+                    fields.Add(new GridField { name = "Url", type = "string" });                    
                     break;
                 #endregion                
                 case SystemObjects.TaxonomyType:
@@ -2321,7 +2320,7 @@ from    ResponsibilityTypeRelationRule R
             getDynamicFieldJoinStatements(id, "Policy", out joins, out columns, false, false, true, false, "A.ObjectID");
 
             var permissionSql = $@"case when exists (
-                                        select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & {(int)Permission.ModifyAsset} = {(int)Permission.ModifyAsset} and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
+                                        select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & {(int)Permission.EditAsset} = {(int)Permission.EditAsset} and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
 						                ) 
 						                    then 1
 						                    else 0
@@ -2457,7 +2456,7 @@ from        (
         #region Resources
 
         [HttpGet, Route("resources/{typeID:int}")]
-        public HttpResponseMessage GetResourcesByType(int typeID, string filter = "")
+        public HttpResponseMessage GetResourcesByType(int typeID, string filter = "", bool includeInactive = true)
         {
             var settings = Community.GetCompanySettings();
             //check that current user is an admin or the company settings allow users to be listed
@@ -2468,6 +2467,16 @@ from        (
             var columns = "";
             var filterSql = "";
             getDynamicFieldJoinStatements(typeID, "Resource", out joins, out columns, false, false);
+
+            var dbArgs = new DynamicParameters();
+            dbArgs.Add("deleteStatus", CompanyResourceState.Deleted);
+            dbArgs.Add("inactiveStatus", CompanyResourceState.Inactive);
+
+            var statusCondition = $"State <> @deleteStatus";
+            if (includeInactive == false)
+            {
+                statusCondition = $"State not in (@deleteStatus, @inactiveStatus)";
+            }
 
             var querySql = $@"
 select  A.FirstName,
@@ -2489,12 +2498,11 @@ from    (
                 IsAdministrator,
                 ResourceID as ID
         from	reporting.Global_Resource
-                where State <> @excludeStatus
+                where {statusCondition} 
         ) A 
         {joins}";
 
-            var dbArgs = new DynamicParameters();
-            dbArgs.Add("excludeStatus", CompanyResourceState.Deleted);
+
 
             if (HideData3SixtyUsers())
             {
@@ -4623,7 +4631,7 @@ where v.id = {0}", id)).FirstOrDefault();
 , case when PD.AssetID is not null then cast(1 as bit) else cast(0 as bit) end as CanDelete ";
 
             var permissionJoins = $@"
-outer apply (select top 1 * from UserAssetPermissions(@userId,@targetAssetTypeId) where PermissionsBitMask & {(int)Permission.ModifyRelationships} = {(int)Permission.ModifyRelationships} and AssetTypeID = @targetAssetTypeId and (AssetID = IA.ID or AssetID = 0)) PE 
+outer apply (select top 1 * from UserAssetPermissions(@userId,@targetAssetTypeId) where PermissionsBitMask & {(int)Permission.EditRelationships} = {(int)Permission.EditRelationships} and AssetTypeID = @targetAssetTypeId and (AssetID = IA.ID or AssetID = 0)) PE 
 outer apply (select top 1 * from UserAssetPermissions(@userId,@targetAssetTypeId) where PermissionsBitMask & {(int)Permission.DeleteRelationships} = {(int)Permission.DeleteRelationships} and AssetTypeID = @targetAssetTypeId and (AssetID = IA.ID or AssetID = 0)) PD ";
 
             if (isTargetSubjectSame)
@@ -4684,19 +4692,11 @@ select	I.[Uid],
 		case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end as TypeID,
 		AST.Name as TypeName,
         IA.uid as ObjectUid,
-		T.HasTechnicalRelationships,
         case when I.Subject = @type and I.SubjectID = @id then cast(1 as bit) else cast(0 as bit) end as IsSubject
         {assetColumns}
 from	[Intersect] I
         inner join IntersectType IT on IT.ID = I.IntersectTypeID
-		{assetJoin}
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as HasTechnicalRelationships
-					from	[Intersect]
-					where	Subject = 'Intersect' and SubjectID = I.ID) T
+		{assetJoin}		
 where	{whereSql}
         and I.IntersectTypeID = {intersectTypeID} ";
             }
@@ -4732,20 +4732,11 @@ select	I.[Uid],
 		IT.Object Type,
 		IT.ObjectID TypeID,
 		AST.Name as TypeName,
-		T.HasTechnicalRelationships,
         case when I.Subject = @type and I.SubjectID = @id then cast(1 as bit) else cast(0 as bit) end as IsSubject
         {assetColumns}
 from	[Intersect] I
 		inner join IntersectType IT on IT.ID = I.IntersectTypeID
-		{assetJoin}
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as HasTechnicalRelationships
-					from	[Intersect]
-					where	Subject = 'Intersect' and SubjectID = I.ID
-					) T
+		{assetJoin}		
 where	((I.Subject = @type  and I.SubjectID = @id) {(includeInverse ? " or (I.Object = @type  and I.ObjectID = @id) " : "")})        
         and I.IntersectTypeID = {intersectTypeID} ";
             }
@@ -4790,20 +4781,11 @@ select	I.[Uid],
 		IT.Subject as Type,
 		IT.SubjectID as TypeID,
 		AST.Name as TypeName,
-		T.HasTechnicalRelationships,
         case when I.Subject = @type and I.SubjectID = @id then cast(1 as bit) else cast(0 as bit) end as IsSubject
         {assetColumns}
 from    [Intersect] I 
         inner join IntersectType IT on IT.ID = I.IntersectTypeID 
-        {assetJoin} 
-        cross apply(
-                    select	case 
-                                when count(1) > 0 then cast(1 as bit)
-							    else cast(0 as bit)
-                            end as HasTechnicalRelationships
-                    from    [Intersect]
-                    where   Subject = 'Intersect' and SubjectID = I.ID
-                    ) T 
+        {assetJoin}         
 where   ( 
         (I.Object = @type and I.ObjectID = @id) 
         {(includeInverse ? " or (I.Subject = @type  and I.SubjectID = @id) " : "")}

@@ -1150,7 +1150,7 @@ namespace d360.web.Controllers
         [HttpPost, AjaxValidateAntiForgeryToken, Route("UpdateLineage")]
         public JsonNetResult UpdateLineage(LineageEditorModel model)
         {
-            if (!Company.HasAssetPermission(model.Focal, model.FocalID, Permission.ModifyAsset))
+            if (!Company.HasAssetPermission(model.Focal, model.FocalID, Permission.AddAsset) || !Company.HasAssetPermission(model.Focal, model.FocalID, Permission.EditAsset))
             {
                 return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
             }
@@ -1245,7 +1245,7 @@ namespace d360.web.Controllers
         [HttpPost, AjaxValidateAntiForgeryToken, Route("UpdateTechnicalLineage")]
         public JsonNetResult UpdateTechnicalLineage(LineageEditorTechnicalModel model)
         {
-            if (!Company.HasAssetPermission(model.Focal, model.FocalID, Permission.ModifyAsset))
+            if (!Company.HasAssetPermission(model.Focal, model.FocalID, Permission.AddAsset) || !Company.HasAssetPermission(model.Focal, model.FocalID, Permission.EditAsset))
             {
                 return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
             }
@@ -1412,7 +1412,7 @@ namespace d360.web.Controllers
         {
             try
             {
-                if (!Company.HasAssetPermission(type, id, Permission.ModifyRelationships))
+                if (!Company.HasAssetPermission(type, id, Permission.AddRelationships) || !Company.HasAssetPermission(type, id, Permission.EditRelationships))
                 {
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
                 }
@@ -2106,7 +2106,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         {
             var list = new List<EditableField>();
 
-            if (!Company.HasAssetPermission(SystemObjects.Map, 0, Permission.ModifyAsset))
+            if (!Company.HasAssetPermission(SystemObjects.Map, 0, Permission.AddAsset ) || !Company.HasAssetPermission(SystemObjects.Map, 0, Permission.EditAsset))
             {
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
             }
@@ -2131,7 +2131,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             var list = new List<EditableField>();
             var a = Company.GetById<core.entities.Map>(id);
 
-            if (!Company.HasAssetPermission(SystemObjects.Map, a.ID, Permission.ModifyAsset))
+            if (!Company.HasAssetPermission(SystemObjects.Map, a.ID, Permission.EditAsset))
             {
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
             }
@@ -2169,7 +2169,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                     UpdatedOn = DateTime.UtcNow
                 };
 
-                if (!Company.HasAssetTypePermission(SystemObjects.MapType, map.MapTypeID, Permission.ModifyAsset))
+                if (!Company.HasAssetTypePermission(SystemObjects.MapType, map.MapTypeID, Permission.AddAsset) || !Company.HasAssetTypePermission(SystemObjects.MapType, map.MapTypeID, Permission.EditAsset))
                 {
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
                 }
@@ -2202,7 +2202,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<Map>(id);
 
-                if (!Company.HasAssetPermission(SystemObjects.Map, model.ID, Permission.ModifyAsset))
+                if (!Company.HasAssetPermission(SystemObjects.Map, model.ID, Permission.AddAsset) || !Company.HasAssetPermission(SystemObjects.Map, model.ID, Permission.EditAsset))
                 {
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
                 }
@@ -2269,7 +2269,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         [Route("ReferenceItem_AddFields"), NonNullableParameters]
         public JsonResult ReferenceItem_AddFields(int id)
         {
-            if (!Company.HasAssetTypePermission(SystemObjects.ReferenceItemType, id, Permission.ModifyAsset))
+            if (!Company.HasAssetTypePermission(SystemObjects.ReferenceItemType, id, Permission.AddAsset))
             {
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
             }
@@ -2291,7 +2291,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             }
 
                         
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, id).ToList(), row);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, id).ToList(), row, false);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -2303,7 +2303,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             var list = new List<EditableField>();            
             var a = Company.Assets.FirstOrDefault(x => x.ObjectID == id && x.Object == "ReferenceItem");
 
-            if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, a.ObjectID, Permission.ModifyAsset))
+            if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, a.ObjectID, Permission.EditAsset))
             {
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
             }
@@ -2336,7 +2336,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 });
             }
 
-            list = loadDynamicFields(SystemObjects.ReferenceItem.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, a.AssetType.ObjectID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), row);
+            list = loadDynamicFields(SystemObjects.ReferenceItem.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, a.AssetType.ObjectID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), row, false, false);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -2887,7 +2887,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         {
             try
             {
-                if (!Company.HasAssetPermission(model.Object, model.ObjectID, Permission.ModifyRelationships))
+                if (!Company.HasAssetPermission(model.Object, model.ObjectID, Permission.AddRelationships) || !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.EditRelationships))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 // delete any existing allocations
@@ -2951,7 +2951,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                     UpdatedOn = DateTime.UtcNow
                 };
 
-                if (!Company.HasAssetPermission(model.Object, model.ObjectID, Permission.ModifyAsset))
+                if (!Company.HasAssetPermission(model.Object, model.ObjectID, Permission.AddAsset) || !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.EditAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Add(model);
