@@ -86,7 +86,7 @@ where   A.Type = 'TaxonomyType' and A.TypeID = @id AND A.[State] = 1 order by A.
             {
                 editRightsColumnStatement = " cast(IIF(S_E.[Count] = 0, 0, 1) as bit) as P_CanEdit, cast(IIF(S_D.[Count] = 0, 0, 1) as bit) as P_CanDelete, ";
                 editRightsJoinStatement = $@"
-cross apply (select count(1) as [Count] from ResponsibilityDetail where ResourceID = @r and ( (AssetID = A.ID) or (AssetTypeID = A.AssetTypeID and AssetID = 0) ) and PermissionsBitMask & {(int)Permission.ModifyAsset} = {(int)Permission.ModifyAsset}) as S_E 
+cross apply (select count(1) as [Count] from ResponsibilityDetail where ResourceID = @r and ( (AssetID = A.ID) or (AssetTypeID = A.AssetTypeID and AssetID = 0) ) and PermissionsBitMask & {(int)Permission.EditAsset} = {(int)Permission.EditAsset}) as S_E 
 cross apply (select count(1) as [Count] from ResponsibilityDetail where ResourceID = @r and ( (AssetID = A.ID) or (AssetTypeID = A.AssetTypeID and AssetID = 0) ) and PermissionsBitMask & {(int)Permission.DeleteAsset} = {(int)Permission.DeleteAsset}) as S_D ";
             }
 

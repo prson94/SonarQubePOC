@@ -86,11 +86,11 @@ namespace d360.model.DataAccessLayer
                                 ,ADP.[SampleCount]
                                 ,ADP.[NullCount]
                                 ,ADP.[BlankCount]
-                                ,ADP.[MeanValue]
-                                ,ADP.[MinimumValue] as maxValue
-                                ,ADP.[MaximumValue] as minValue
-                                ,ADP.[MinimumLength]
-                                ,ADP.[MaximumLength]
+                                ,ADP.[MeanValue] as mean
+                                ,ADP.[MinimumValue] as min
+                                ,ADP.[MaximumValue] as max
+                                ,ADP.[MinimumLength] as minLength
+                                ,ADP.[MaximumLength] as maxLength
                                 ,ADP.[StandardDeviation]
                                 ,ADP.[Multiline]
                                 ,ADP.[RegExp]

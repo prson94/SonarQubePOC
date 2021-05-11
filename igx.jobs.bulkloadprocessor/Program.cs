@@ -40,6 +40,7 @@ namespace igx.jobs.bulkloadprocessor
     public class BulkLoadProcessor
     {
         const string functionName = "BulkLoad_Process";
+        const int SqlBulkBatchSize = 5000;
 
         public async static Task Run([QueueTrigger("%BulkLoadQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
         {
@@ -158,7 +159,7 @@ namespace igx.jobs.bulkloadprocessor
                         {
                             using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, trans))
                             {
-                                bulkCopy.BatchSize = loadItems.Count;
+                                bulkCopy.BatchSize = SqlBulkBatchSize;
                                 bulkCopy.DestinationTableName = "dbo.LoadItem";
                                 bulkCopy.BulkCopyTimeout = 3600;
 
@@ -194,7 +195,7 @@ namespace igx.jobs.bulkloadprocessor
                         {
                             using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, trans))
                             {
-                                bulkCopy.BatchSize = loadItemColumns.Count;
+                                bulkCopy.BatchSize = SqlBulkBatchSize;
                                 bulkCopy.DestinationTableName = "dbo.LoadItemColumn";
                                 bulkCopy.BulkCopyTimeout = 3600;
 
@@ -281,7 +282,7 @@ namespace igx.jobs.bulkloadprocessor
                             using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, trans))
                             {
 
-                                bulkCopy.BatchSize = tempLookupColumns.Count;
+                                bulkCopy.BatchSize = SqlBulkBatchSize;
                                 bulkCopy.DestinationTableName = "#tempLookupColumns";
                                 bulkCopy.BulkCopyTimeout = 3600;
 
@@ -716,7 +717,7 @@ CREATE NONCLUSTERED INDEX IX_TempUsers_LoadID_RowIndex_Email ON #Users ( LoadID 
 
                     var usersBulkCopy = new SqlBulkCopy(community, SqlBulkCopyOptions.Default, trans)
                     {
-                        BatchSize = tbl.Rows.Count,
+                        BatchSize = SqlBulkBatchSize,
                         DestinationTableName = "#Users",
                         BulkCopyTimeout = 3600
                     };
@@ -939,7 +940,7 @@ CREATE NONCLUSTERED INDEX IX_TempUsers_ResourceID ON #Users ( ResourceID ASC );
 
                     var usersBulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans)
                     {
-                        BatchSize = tbl.Rows.Count,
+                        BatchSize = SqlBulkBatchSize,
                         DestinationTableName = "#Users",
                         BulkCopyTimeout = 3600
                     };

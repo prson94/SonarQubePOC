@@ -29,6 +29,7 @@ export class ObjectDetailComponent implements OnChanges {
 
     readonly systemProperties: string = "System Fields";
     readonly noCategory: string = "None";
+    readonly defaultCategory: string = "General";
 
     private categories: Category[] = new Array<Category>();
     private systemPropertiesCategory: Category = new Category(this.systemProperties);
@@ -61,7 +62,7 @@ export class ObjectDetailComponent implements OnChanges {
                     this.categories = [];
                     for (var i = 0; i < this.rows.length; i++) {
                         if (this.rows[i].Category == null || this.rows[i].Category === "" || this.rows[i].Category === this.noCategory) {
-                            this.rows[i].Category = "General";
+                            this.rows[i].Category = this.defaultCategory;
                         }
                     }
 
@@ -71,8 +72,12 @@ export class ObjectDetailComponent implements OnChanges {
                     this.rows = this.rows.filter(r => !r.Category || r.Category.toUpperCase() != this.systemProperties.toUpperCase());
 
                     this.rows.forEach(r => {
-                        if (r.Category && r.Category.toUpperCase() != this.noCategory.toUpperCase() && this.categories.find(c => c.name == r.Category) == null)
-                            this.categories.push(new Category(r.Category));
+                        if (r.Category && r.Category.toUpperCase() !== this.noCategory.toUpperCase() && this.categories.find((c) => c.name === r.Category) == null) {
+                            let category = new Category(r.Category);
+                            category.active = true;
+                            this.categories.push(category);
+                        }
+
 
                         this.populateRow(r)
                     });
@@ -90,6 +95,19 @@ export class ObjectDetailComponent implements OnChanges {
                             }
                         }
                     }
+
+
+                    this.categories = this.categories.sort((a, b) => {
+                        if (a.name === this.defaultCategory || b.name === this.systemProperties) {
+                            return -1;
+                        }
+                        if (b.name === this.defaultCategory || a.name === this.systemProperties) {
+                            return 1;
+                        }
+
+                        return 0;
+                    });
+
                     this.rows = displayRows;
                     this.loadCategory();
                     this.loadState();

@@ -96,7 +96,7 @@
                             </span>
                         </td>                        
                         <td *ngIf="item.previousValue;else emptyValue">
-                            <span [ngSwitch]="item.fieldType">
+                            <span [ngSwitch]="(item.fieldType?item.fieldType:'').toLowerCase()">
                                 <div *ngSwitchCase="'date'" [innerHtml]="item.previousValue | date: 'shortDate'"></div>
                                 <div *ngSwitchCase="'datetime'" [innerHtml]="item.previousValue | date: 'medium'"></div>
                                 <div *ngSwitchDefault [innerHtml]="item.previousValue"></div>

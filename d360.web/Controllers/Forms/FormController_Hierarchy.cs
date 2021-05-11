@@ -28,7 +28,7 @@ namespace d360.web.Controllers
             if (hierarchyType != SystemObjects.PolicyType && hierarchyType != SystemObjects.TaxonomyType)
                 throw new Exception("Unsupported hierarchy asset type specified to Hierarchy_AddFields.  Supported types are taxonomytype and policytype.");
 
-            if (!Company.HasAssetTypePermission(hierarchyType, t, Permission.ModifyAsset))
+            if (!Company.HasAssetTypePermission(hierarchyType, t, Permission.AddAsset))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -48,7 +48,7 @@ namespace d360.web.Controllers
             if (hierarchy != SystemObjects.Policy && hierarchy != SystemObjects.Taxonomy)
                 throw new Exception("Unsupported hierarchy type specified to Hierarchy_EditFields.  Supported types are taxonomy and policy.");
 
-            if (!Company.HasAssetPermission(hierarchy, id, Permission.ModifyAsset))
+            if (!Company.HasAssetPermission(hierarchy, id, Permission.EditAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -132,7 +132,7 @@ namespace d360.web.Controllers
                 var level = parseIntField(form, "Level");
                 var assetType = Company.Filter<AssetType>(x => x.ObjectID == id && x.Object == "TaxonomyType").SingleOrDefault();
                 if (assetType == null) throw new NotFoundException("asset type");
-                if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.ModifyAsset))
+                if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.AddAsset))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (!form.HasKeys()) throw new NoFormDataException("taxonomy type level");
@@ -211,8 +211,10 @@ namespace d360.web.Controllers
                 var model = Company.Filter<AssetTypeLevel>(i => i.AssetTypeID == assetType.ID && i.Level == level).SingleOrDefault();
                 if (model == null) throw new NotFoundException("taxonomy type level");
 
-                if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.ModifyAsset))
+                if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.EditAsset))
+                {
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+                }
 
                 model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
@@ -248,8 +250,10 @@ namespace d360.web.Controllers
                 var id = parseIntField(form, "ID");
                 var level = parseIntField(form, "Level");
 
-                if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.ModifyAsset))
+                if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.AddAsset))
+                {
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                }
 
                 if (!form.HasKeys()) throw new NoFormDataException("policy type level");
 
@@ -299,8 +303,11 @@ namespace d360.web.Controllers
                 var id = parseIntField(form, "ID");
                 var level = parseIntField(form, "Level");
 
-                if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.ModifyAsset))
+                if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.AddAsset)
+                    || !Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.EditAsset))
+                {
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+                }
 
                 var assetType = Company.Filter<AssetType>(x => x.ObjectID == id && x.Object == "PolicyType").SingleOrDefault();
 
@@ -339,8 +346,10 @@ namespace d360.web.Controllers
                 if (model == null) throw new NotFoundException("policy type level");
 
 
-                if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.ModifyAsset))
+                if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.EditAsset))
+                {
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+                }
 
                 model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");

@@ -4886,8 +4886,8 @@ from	api.ExecutionAsset T
                     #endregion
 
                     // Validate permissions
-                    LogAssetPermissionErrors(execution.ExecutionID, at, Permission.ModifyAsset, "ExecutionAsset");
-                    LogAssetPermissionErrors(execution.ExecutionID, at, Permission.ModifyAsset, isInsert, "ExecutionAsset");
+                    LogAssetPermissionErrors(execution.ExecutionID, at, isInsert ? Permission.AddAsset : Permission.EditAsset, "ExecutionAsset");
+                    LogAssetPermissionErrors(execution.ExecutionID, at, isInsert ? Permission.AddAsset : Permission.EditAsset, isInsert, "ExecutionAsset");
                     AddMeasurement(metrics, "LogAssetPermissionErrors -  Permission.ModifyAsset- ExecutionAsset", sw.ElapsedMilliseconds, ++step);
                     sw.Restart();
 
@@ -10248,6 +10248,8 @@ EG.GroupUid
 					G.Description = S.Description,
 					G.PrimaryOwnerResourceID = PrimaryID,
 					G.SecondaryOwnerResourceID = SecondaryID,
+                    G.UpdatedBy = @CurrentResourceID,
+                    G.UpdatedOn = GETUTCDATE(),
                     G.IsActiveDirectoryGroup = S.IsActiveDirectoryGroup
                 when not matched then
 	                insert ([Uid], Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID,IsActiveDirectoryGroup,UpdatedOn,UpdatedBy)

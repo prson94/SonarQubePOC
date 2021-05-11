@@ -1754,7 +1754,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         [Route("ReferenceItem_AddFields"), NonNullableParameters]
         public JsonResult ReferenceItem_AddFields(int id)
         {
-            if (!Company.HasAssetTypePermission(SystemObjects.ReferenceItemType, id, Permission.ModifyAsset))
+            if (!Company.HasAssetTypePermission(SystemObjects.ReferenceItemType, id, Permission.AddAsset))
             {
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
             }
@@ -1788,7 +1788,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             var list = new List<EditableField>();            
             var a = Company.Assets.FirstOrDefault(x => x.ObjectID == id && x.Object == "ReferenceItem");
 
-            if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, a.ObjectID, Permission.ModifyAsset))
+            if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, a.ObjectID, Permission.EditAsset))
             {
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
             }
@@ -2372,7 +2372,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         {
             try
             {
-                if (!Company.HasAssetPermission(model.Object, model.ObjectID, Permission.ModifyRelationships))
+                if (!Company.HasAssetPermission(model.Object, model.ObjectID, Permission.AddRelationships) || !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.EditRelationships))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 // delete any existing allocations
@@ -2436,7 +2436,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                     UpdatedOn = DateTime.UtcNow
                 };
 
-                if (!Company.HasAssetPermission(model.Object, model.ObjectID, Permission.ModifyAsset))
+                if (!Company.HasAssetPermission(model.Object, model.ObjectID, Permission.AddAsset) || !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.EditAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Add(model);

@@ -86,7 +86,7 @@ namespace d360.web.Controllers
         [Route("Relationship_AddFields"), NonNullableParameters]
         public JsonResult Relationship_AddFields(int it, SystemObjects type, int id)
         {
-            if (!Company.HasAssetPermission(type, id, Permission.ModifyRelationships))
+            if (!Company.HasAssetPermission(type, id, Permission.AddRelationships))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -126,7 +126,7 @@ namespace d360.web.Controllers
                 TypeaheadUri = $"/form/Relationship_DataTable?intersectTypeId={it}&type={type}&objectId={id}"
             });
 
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IntersectType, it).ToList(), 2);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IntersectType, it).ToList(), 2, false);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -139,13 +139,13 @@ namespace d360.web.Controllers
             var relationship = Company.GetById<Intersect>(id, i => i.IntersectType);
             if (relationship == null) return jsonException("Relationship not found.", HttpStatusCode.NotFound);
 
-            if (!Company.HasAssetPermission(relationship.Subject, relationship.SubjectID, Permission.ModifyRelationships) &&
-                !Company.HasAssetPermission(relationship.Object, relationship.ObjectID, Permission.ModifyRelationships))
+            if (!Company.HasAssetPermission(relationship.Subject, relationship.SubjectID, Permission.EditRelationships) &&
+                !Company.HasAssetPermission(relationship.Object, relationship.ObjectID, Permission.EditRelationships))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list = loadDynamicFields(SystemObjects.Intersect.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.IntersectType, relationship.IntersectTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Intersect, relationship.ID).ToList(), 1);
+            list = loadDynamicFields(SystemObjects.Intersect.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.IntersectType, relationship.IntersectTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Intersect, relationship.ID).ToList(), 1, false, false);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -167,7 +167,7 @@ namespace d360.web.Controllers
                 var relationshipType = Company.GetById<IntersectType>(typeID, p => p.Predicate);
                 var sourceObject = Company.GetObjectDetail(source, sourceID);
 
-                if (!Company.HasAssetPermission(source, sourceID, Permission.ModifyRelationships))
+                if (!Company.HasAssetPermission(source, sourceID, Permission.AddRelationships))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (relationshipType == null) throw new NotFoundException("relationship");
@@ -259,8 +259,8 @@ namespace d360.web.Controllers
                 if (!predicateTypeInfo.AllowEditFromRelationshipEditor)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
-                if (!Company.HasAssetPermission(intersect.Subject, intersect.SubjectID, Permission.ModifyRelationships) &&
-                    !Company.HasAssetPermission(intersect.Object, intersect.ObjectID, Permission.ModifyRelationships))
+                if (!Company.HasAssetPermission(intersect.Subject, intersect.SubjectID, Permission.EditRelationships) &&
+                    !Company.HasAssetPermission(intersect.Object, intersect.ObjectID, Permission.EditRelationships))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 Company.Update(intersect);

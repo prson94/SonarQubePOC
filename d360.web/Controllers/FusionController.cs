@@ -300,7 +300,7 @@ where   A.FusionID = @f
 
             // Check to see if any field types for this fusion attribute type is set to editable, and that current user has permissions to edit anything in the first place.
             var editable = Company.Any<FieldType>(i => i.Object == "FusionAttributeType" && i.ObjectID == fusionAttributeTypeID && i.IsEditable) ? 1 : 0;
-            var hasEditRights = Company.HasAssetPermission(SystemObjects.Fusion, fusionID, core.enums.Permission.ModifyAsset);
+            var hasEditRights = Company.HasAssetPermission(SystemObjects.Fusion, fusionID, core.enums.Permission.EditAsset);
             if (!hasEditRights) editable = 0;
 
             var dbArgs = new Dapper.DynamicParameters();

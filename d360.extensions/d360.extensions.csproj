@@ -31,7 +31,6 @@
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="5.4.0.0" />
     <PackageReference Include="Microsoft.IdentityModel.Logging" Version="5.4.0.0" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="5.4.0.0" />
-    <PackageReference Include="Microsoft.PowerBI.Api" Version="3.23.0" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.21" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime.Azure" Version="3.3.18" />
     <PackageReference Include="MoreLinq" Version="3.3.2.0" />
@@ -54,7 +53,7 @@
     <PackageReference Include="System.Security.Cryptography.Encoding" Version="4.3.0" />
     <PackageReference Include="System.Security.Cryptography.Primitives" Version="4.3.0" />
     <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
-    <PackageReference Include="System.Text.Encodings.Web" Version="5.0.0" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="5.0.1" />
     <PackageReference Include="System.Text.Json" Version="4.6.0" />
     <PackageReference Include="System.Threading.Tasks.Dataflow" Version="5.0.0" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />

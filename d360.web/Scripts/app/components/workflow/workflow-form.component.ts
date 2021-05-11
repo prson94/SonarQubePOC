@@ -247,7 +247,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private loadResources() {
-        this.resourcesService.getResources().subscribe(result => {
+        this.resourcesService.getResources(false).subscribe(result => {
             this.resources = result;
         });
     }

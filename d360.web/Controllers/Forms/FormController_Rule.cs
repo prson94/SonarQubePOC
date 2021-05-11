@@ -24,7 +24,7 @@ namespace d360.web.Controllers
         [Route("Rule_AddFields")]
         public JsonResult Rule_AddFields(int typeID)
         {
-            if (!Company.HasAssetTypePermission(SystemObjects.RuleType, typeID, Permission.ModifyAsset))
+            if (!Company.HasAssetTypePermission(SystemObjects.RuleType, typeID, Permission.AddAsset))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -41,7 +41,7 @@ namespace d360.web.Controllers
         [Route("Rule_EditFields"), NonNullableParameters]
         public JsonResult Rule_EditFields(int id)
         {
-            if (!Company.HasAssetPermission(SystemObjects.Rule, id, Permission.ModifyAsset))
+            if (!Company.HasAssetPermission(SystemObjects.Rule, id, Permission.EditAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var model = Company.GetById<Rule>(id);
@@ -95,7 +95,7 @@ namespace d360.web.Controllers
         [Route("RuleType_EditFields"), NonNullableParameters]
         public JsonResult RuleType_EditFields(int id)
         {
-            if (!Company.HasAssetPermission(SystemObjects.RuleType, id, Permission.ModifyAsset))
+            if (!Company.HasAssetPermission(SystemObjects.RuleType, id, Permission.EditAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -220,7 +220,7 @@ namespace d360.web.Controllers
                 var model = Company.GetById<RuleType>(id);
                 if (model == null) throw new NotFoundException("rule type");
 
-                if (!Company.HasAssetTypePermission(SystemObjects.RuleType, id, Permission.ModifyAsset))
+                if (!Company.HasAssetTypePermission(SystemObjects.RuleType, id, Permission.EditAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 model.Name = parseTextField(form, "Name");

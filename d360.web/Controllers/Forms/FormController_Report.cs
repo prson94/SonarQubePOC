@@ -1,8 +1,8 @@
 ﻿using d360.core.entities;
 using d360.core.exceptions;
-using d360.extensions.powerbi;
 using d360.model;
 using d360.web.Filters;
+using d360.web.Extensions;
 using Resources;
 using System;
 using System.Collections.Generic;
@@ -395,7 +395,7 @@ namespace d360.web.Controllers
             return groupId;
         }
 
-        private async Task<Microsoft.PowerBI.Api.Models.Import> uploadPowerBIReport(HttpPostedFileBase file, string name, string datasetId = "")
+        private async Task<Microsoft.PowerBI.Api.V2.Models.Import> uploadPowerBIReport(HttpPostedFileBase file, string name, string datasetId = "")
         {
             var companySettings = Community.GetCompanySettings();
             var groupId = string.Empty;

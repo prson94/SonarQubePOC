@@ -5,7 +5,7 @@
         </div>
         <div class="filters-list-menu">
             <button igButton class="menu" icon="fa-ellipsis-v" tooltip="More..." (click)="menu.toggle($event)"></button>
-            <ig-popup-menu [items]="filterMenu" #menu [tabIndex]="20"></ig-popup-menu>
+            <ig-popup-menu [items]="filterMenu" #menu [tabIndex]="20" [allowAllUnchecked]="false"></ig-popup-menu>
         </div>
     </div>
 </div>

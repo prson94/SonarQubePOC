@@ -513,7 +513,7 @@ order by u.CommentTypeName";
             if (assetUidPresent)
             {
                 var asset = CompanyContext.Filter<Asset>(o => o.uid == assetUid).FirstOrDefault();
-                if (asset == null)
+                if (asset == null || !CompanyContext.HasAssetPermission(asset.Object, asset.ObjectID, Permission.ReadAsset))
                 {
                     throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Asset with provided Uid does not exist.");
                 }

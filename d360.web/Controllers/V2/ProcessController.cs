@@ -288,7 +288,7 @@ namespace d360.web.Controllers.V2
 
 
 
-                if (!Company.HasAssetPermission(targetAsset.ID, core.enums.Permission.ModifyAsset))
+                if (!Company.HasAssetPermission(targetAsset.ID, core.enums.Permission.EditAsset))
                 {
                     var err = new List<ValidationError>
                     {

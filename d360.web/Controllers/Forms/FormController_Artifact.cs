@@ -60,7 +60,7 @@ namespace d360.web.Controllers
         [Route("Artifact_AddFields"), NonNullableParameters]
         public JsonResult Artifact_AddFields(int at, int p)
         {
-            if (!Company.HasAssetTypePermission(SystemObjects.ArtifactType, at, Permission.ModifyAsset))
+            if (!Company.HasAssetTypePermission(SystemObjects.ArtifactType, at, Permission.AddAsset))
             {
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
             }
@@ -90,7 +90,7 @@ namespace d360.web.Controllers
         [Route("Artifact_EditFields"), NonNullableParameters]
         public JsonResult Artifact_EditFields(int id)
         {
-            if (!Company.HasAssetPermission(SystemObjects.Artifact, id, Permission.ModifyAsset))
+            if (!Company.HasAssetPermission(SystemObjects.Artifact, id, Permission.EditAsset))
             {
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
             }

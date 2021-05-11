@@ -461,14 +461,14 @@ namespace igx.jobs.apiexecutionprocessor
             return await company.Database.Connection.QueryFirstOrDefaultAsync<bool>("select api.ShouldAllowNewBatchCall( @executionID)", new { executionID }, commandTimeout:300);
         }
 
-        private void Company_AssetsPartiallyProcessed(object sender, AssetsPartiallyProcessedEventArgs e)
+        private async void Company_AssetsPartiallyProcessed(object sender, AssetsPartiallyProcessedEventArgs e)
         {
-            storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(e.Results));
+            await storage.SerializeJsonObjectToBlobAsync(Info.StorageFolder, Info.ResponseFileName, e.Results);
         }
 
-        private void Company_RelationshipsPartiallyProcessed(object sender, RelationshipsPartiallyProcessedEventArgs e)
+        private async void Company_RelationshipsPartiallyProcessed(object sender, RelationshipsPartiallyProcessedEventArgs e)
         {
-            storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(e.Results));
+            await storage.SerializeJsonObjectToBlobAsync(Info.StorageFolder, Info.ResponseFileName, e.Results);
         }
     }
 }
