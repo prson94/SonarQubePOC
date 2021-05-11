@@ -778,7 +778,6 @@
     <Content Include="Scripts\app\components\fusion\fusion-configurations.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-history.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-item.component.html" />
-    <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.input-group.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.multi-input-field.component.html" />
@@ -1839,7 +1838,6 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-agent-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-execution-errors.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-execution-results.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-manual-load.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-process-errors.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group-list.component.ts" />

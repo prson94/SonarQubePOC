@@ -32,7 +32,6 @@ import { FusionExecutionHistoryComponent } from './fusion-execution-history.comp
 import { FusionExecutionResultsComponent } from './fusion-execution-results.component';
 import { FusionItemComponent } from './fusion-item.component';
 import { FusionListComponent } from './fusion-list.component';
-import { FusionManualLoadComponent } from './fusion-manual-load.component';
 import { FusionProcessErrorsComponent } from './fusion-process-errors.component';
 import { FusionStatisticsComponent } from './fusion-statistics.component';
 import { FusionStructureTreeComponent } from './fusion-structure-tree.component';
@@ -114,7 +113,6 @@ import { CodemirrorModule } from 'ng2-codemirror';
         FusionHistoryComponent,
         FusionItemComponent,
         FusionListComponent,
-        FusionManualLoadComponent,
         FusionProcessErrorsComponent,
         FusionStatisticsComponent,
         FusionStructureTreeComponent,
