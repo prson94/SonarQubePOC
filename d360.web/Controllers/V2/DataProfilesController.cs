@@ -340,7 +340,7 @@ namespace d360.web.Controllers.V2
                                 Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{executionInfo.ExecutionID}"
                             });
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(result));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(result)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

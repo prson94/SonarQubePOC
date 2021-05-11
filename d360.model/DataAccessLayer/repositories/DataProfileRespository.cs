@@ -329,7 +329,7 @@ namespace d360.model.DataAccessLayer
                 Action = ApiExecutionAction.PostDataProfile,
             };
 
-            return await CreateApiBatchJob(executionInfo, execution, models);
+            return await CreateApiBatchJob(executionInfo, execution, models).ConfigureAwait(false);
         }
 
         /// <summary>

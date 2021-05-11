@@ -408,7 +408,7 @@ namespace igx.jobs.apiexecutionprocessor
                                 log.WriteLine($"POST Asset Data Profile (DB Complete): Total Processed: {dbExecutionItem.Processed}.");
                                 log.WriteLine($"POST Asset Data Profile (DB Complete): Total Error: {dbExecutionItem.Error}.");
 
-                                await SaveResultsJsonToAzure(postDataProfileResult, log, "Asset Data Profile", HttpMethod.Post);
+                                await SaveResultsJsonToAzure(postDataProfileResult, log, "Asset Data Profile", HttpMethod.Post).ConfigureAwait(false);
                                 break;
                         }
                     }
