@@ -6,6 +6,7 @@ using d360.model;
 using d360.model.DataAccessLayer;
 using d360.model.helpers;
 using d360.model.helpers.filters;
+using d360.web.caching;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
@@ -15,6 +16,7 @@ using Newtonsoft.Json;
 using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -28,6 +30,8 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using static d360.core.entities.Resource;
+using static d360.web.UserIDCheckMiddleware;
+
 namespace d360.web.Controllers.V2
 {
     [
@@ -110,9 +114,9 @@ namespace d360.web.Controllers.V2
                                                     @" left join dbo.OrganizationResource org on org.ResourceID = GR.ResourceID 
                                                     left join dbo.asset ao on ao.Object like 'Organization' and ao.ObjectID = org.OrganizationID "
                                     : "")}");
-               
+
                 var whereBuilder = new StringBuilder();
-               
+
 
                 var selectBuilder = new StringBuilder();
                 selectBuilder.Append($@"select
@@ -283,12 +287,12 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", "Invalid order by passed in the request")).ConfigureAwait(false);
                 }
 
-                if (!new []{ "asc", "desc" }.Contains(_direction.ToLowerInvariant()))
+                if (!new[] { "asc", "desc" }.Contains(_direction.ToLowerInvariant()))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", "Invalid order passed in the request")).ConfigureAwait(false);
                 }
 
-                orderBySQL = $"order by {_order} {_direction}";                
+                orderBySQL = $"order by {_order} {_direction}";
 
                 long.TryParse(_pageSize, out pageSize);
                 long.TryParse(_pageNum, out pageNum);
@@ -297,7 +301,7 @@ namespace d360.web.Controllers.V2
 
                 string offsetSql = $" {orderBySQL} offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
                 selectBuilder.Append(" from [reporting].[Global_Resource] gr ");
-                
+
                 finalSql = $"{selectBuilder} {joinBulder} {whereBuilder} {offsetSql}";
                 countSql = $"{countBuilder} {joinBulder } {whereBuilder}";
 
@@ -567,7 +571,7 @@ namespace d360.web.Controllers.V2
                                       inner join[dbo].[Group] g on g.ID = rg.GroupID
                                       inner join[dbo].[Asset] AB on AB.uid = '{groupUid}' {joinBuilder} where g.ID = AB.ObjectID {whereBuilder} {offsetSql}";
 
-            
+
             var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs, ApiTimeout);
             var count = await Company.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
             model.items = results;
@@ -1234,14 +1238,14 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             }
 
 
-            if(groups.Any(x=>string.IsNullOrEmpty(x.Name)))
+            if (groups.Any(x => string.IsNullOrEmpty(x.Name)))
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Name is missing in one or more of the groups in the payload. Name must be provided."));
             }
-            
-            foreach(var g in groups.FindAll(x=>x.Uid.HasValue && x.Uid!= Guid.Empty))
+
+            foreach (var g in groups.FindAll(x => x.Uid.HasValue && x.Uid != Guid.Empty))
             {
-                if(Company.Assets.Any(a=>a.uid == g.Uid))
+                if (Company.Assets.Any(a => a.uid == g.Uid))
                 {
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "One or more of the Uids specified already exists."));
                 }
@@ -1294,7 +1298,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
             if (string.IsNullOrEmpty(isValid) && queryParams.Any(q => q.Key == "_order"))
             {
-                var allowedValues = new [] { "name", "acceptedbyusername", "acceptedon", "administratoremail" };
+                var allowedValues = new[] { "name", "acceptedbyusername", "acceptedon", "administratoremail" };
                 var order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value.ToLower();
                 if (!allowedValues.Contains(order))
                 {
@@ -1304,7 +1308,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
             if (string.IsNullOrEmpty(isValid) && queryParams.Any(q => q.Key == "_direction"))
             {
-                var allowedValues = new [] { "asc", "desc" };
+                var allowedValues = new[] { "asc", "desc" };
                 var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction");
 
                 if (!allowedValues.Contains(directionFilter.Value.Trim().ToLower()))
@@ -1528,7 +1532,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         [
             HttpPut,
             Route("users/me/watches"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),            
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid request model parameters provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
@@ -1539,7 +1543,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             string type = "";
             string name = "";
             string parentName = "";
-            bool includeChildren = false;            
+            bool includeChildren = false;
 
             if (model.assetTypeUid == null && model.assetUid == null)
             {
@@ -1553,7 +1557,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
             if (model.assetTypeUid != null)
             {
-                if((model.assetTypeUid.Value == Guid.Empty) || !Company.Any<AssetType>(x => x.uid == model.assetTypeUid))
+                if ((model.assetTypeUid.Value == Guid.Empty) || !Company.Any<AssetType>(x => x.uid == model.assetTypeUid))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid assetTypeUid provided")).ConfigureAwait(false);
                 }
@@ -1564,13 +1568,13 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     type = assetType.Object;
                     name = assetType.Name;
                     includeChildren = true;
-                }                
+                }
             }
-           
+
             if (model.assetUid != null)
             {
-                
-                if((model.assetUid.Value == Guid.Empty) || !Company.Any<Asset>(x => x.uid == model.assetUid.Value))
+
+                if ((model.assetUid.Value == Guid.Empty) || !Company.Any<Asset>(x => x.uid == model.assetUid.Value))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid assetUid provided")).ConfigureAwait(false);
                 }
@@ -1581,17 +1585,17 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     type = asset.Object;
                     name = asset.DisplayValue;
                     parentName = asset.TypeName;
-                }               
+                }
             }
 
             var followDetail = Company.Filter<FollowDetail>(i => i.ObjectID == id && i.ObjectType == type && i.ResourceID == Company.CurrentResourceID).FirstOrDefault();
 
-            if(model.watches && followDetail != null)
+            if (model.watches && followDetail != null)
             {
 
                 if (followDetail.HardFollow)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", string.Format("You are already watching {0}.", (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'"))).ConfigureAwait(false); 
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", string.Format("You are already watching {0}.", (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'"))).ConfigureAwait(false);
                 }
                 else
                 {
@@ -1599,22 +1603,22 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You are currently watching '{name}' via it's parent, '{parentName}'.")).ConfigureAwait(false);
                     }
-                }                
+                }
             }
 
-            if(!model.watches)
+            if (!model.watches)
             {
-                if(followDetail == null)
+                if (followDetail == null)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", string.Format("You are not currently watching {0}.", (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'"))).ConfigureAwait(false);
                 }
-                if(followDetail != null && !followDetail.HardFollow)
+                if (followDetail != null && !followDetail.HardFollow)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You are currently watching this item's parent, '{parentName}'.  You can not unwatch this item individually."));
                 }
             }
 
-            bool success = Company.UpdateFollowStatus((SystemObjects)Enum.Parse(typeof(SystemObjects), type), id, null, includeChildren);            
+            bool success = Company.UpdateFollowStatus((SystemObjects)Enum.Parse(typeof(SystemObjects), type), id, null, includeChildren);
 
             return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, "Success", string.Format("You are {0} watching {1}.", (success) ? "now" : "no longer", (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'"))).ConfigureAwait(false);
         }
@@ -1686,14 +1690,14 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         /// <param name="assetUid">Uid of the asset</param>
         [
             HttpGet,
-            Route("users/me/watches/{assetTypeUid:Guid}/{assetUid:Guid}"),            
+            Route("users/me/watches/{assetTypeUid:Guid}/{assetUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "true/false based on whether the user is watching the given asset.", typeof(bool)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid parameters provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetWatchStatusOfAsset(Guid assetTypeUid, Guid? assetUid)
-        {            
+        {
             return await Task.FromResult(GetWatchStatusForUser(assetTypeUid, assetUid)).ConfigureAwait(false);
         }
 
@@ -1745,13 +1749,96 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 }
 
             }
-            
-            if(!response)
+
+            if (!response)
             {
                 response = Company.Any<Follow>(F => F.ObjectID == assetType.ObjectID && F.ObjectType == assetType.Object && F.ResourceID == Company.CurrentResourceID);
             }
 
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
+        }
+
+        /// <summary>
+        /// Generates a new API key / secret for the current user
+        /// </summary>
+        /// <param name="model">Request model containing the current API key and API secret</param>
+        [
+            HttpPost,
+            Route("users/me/apikey"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid request model parameters provided.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> UpdateApiKey(ApiKeyDetailModel model)
+        {
+            try
+            {
+
+                var resource = Community.GetById<Resource>(_company.CurrentResourceID);
+
+
+                if (model is null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Model cannot be empty")).ConfigureAwait(false);
+                }
+
+
+                if (string.IsNullOrEmpty(model?.apikey))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "apikey is required field")).ConfigureAwait(false);
+                }
+
+                if (string.IsNullOrEmpty(model?.apiSecret))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "apiSecret is required field")).ConfigureAwait(false);
+                }
+
+                if (resource.APIPublicKey != model.apikey || resource.APIPrivateKey != model.apiSecret)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid apiKey or apiSecret for currentUser")).ConfigureAwait(false);
+                }
+
+                if (resource is null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid user information", "Invalid user information")).ConfigureAwait(false);
+                }
+
+                var newKeys = Community.Query<ApiKeyDetailModel>(@"
+                    declare @apikey nvarchar(25) = ''
+                    declare @apisecret nvarchar(50) = ''
+
+                    select @apiKey =  [dbo].[GenerateAPIKeyWrapper](25),
+                    @apisecret = [dbo].[GenerateAPIKeyWrapper](50)
+
+                    update dbo.[Resource]
+                    set APIPublicKey = @apikey,
+                    APIPrivateKey = @apisecret
+                    where ID = @CurrentResourceID
+
+                    select @apiKey as apiKey, @apisecret as apiSecret", new { Company.CurrentResourceID }).FirstOrDefault();
+
+                var cache = new MemoryCachingProvider();
+                var users = cache.GetItem<ConcurrentBag<usercompany>>("Users");
+
+                if (users != null)
+                {
+                    var cachedUser = users.FirstOrDefault(uc => uc.ResourceID == Company.CurrentResourceID);
+                    cachedUser.APIPublicKey = newKeys.apikey;
+                    cachedUser.APIPrivateKey = newKeys.apiSecret;
+                }
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, newKeys));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string> {
+                    { "Endpoint Method", "UpdateApiKey" }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+            }
         }
     }
 }
