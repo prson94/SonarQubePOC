@@ -2210,7 +2210,7 @@ for json path";
             if (evaluatedAssetUid.HasValue)
             {
                 whereCteEvaluatedBySql = " and AE.Uid = @evaluatedAssetUid";
-                whereSql = (string.IsNullOrEmpty(whereSql) ? "where" : "and") + " EvaluatedAssetUid = @evaluatedAssetUid";
+                whereSql += (string.IsNullOrEmpty(whereSql) ? "where" : "and") + " EvaluatedAssetUid = @evaluatedAssetUid";
             }
 
             if (!string.IsNullOrEmpty(_filter))
@@ -2223,7 +2223,7 @@ for json path";
                 {
                     parameters.Add(item.Key, item.Value);
                 }
-                whereSql = (string.IsNullOrEmpty(whereSql) ? " where " : " and ") + query;
+                whereSql += (string.IsNullOrEmpty(whereSql) ? " where " : " and ") + query;
             }
 
             if (!string.IsNullOrEmpty(_simpleFilter))
@@ -2253,7 +2253,7 @@ for json path";
                     simpleQuery += query;
                 }
 
-                whereSql = (string.IsNullOrEmpty(whereSql) ? " where " : " and ") + $"({simpleQuery})";
+                whereSql += (string.IsNullOrEmpty(whereSql) ? " where " : " and ") + $"({simpleQuery})";
             }
 
             if (!string.IsNullOrWhiteSpace(sort))

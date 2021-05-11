@@ -25,7 +25,7 @@
                     [(ngModel)]="condition.field"
                     (onChange)="onFieldSelected($event)"
                     igSize="medium"
-                    panelStyleClass="ig-dropdown-grouped"
+                    [panelStyleClass]="getFieldsDropdownClass()"
                     appendTo="body">
             <ng-template let-group pTemplate="group">
                 <div class="group-item">

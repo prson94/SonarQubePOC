@@ -21,6 +21,7 @@ import { AssetService } from "../../../services/asset.service";
 })
 export class FilterItemComponent implements OnInit, OnChanges {
     @Input() assetTypeUid: string = "";
+    @Input() loadIdentifier: string = "";
     @Input() condition: AdvancedFilterFieldCondition;
     @Input() fields: FieldTypeAPIModelFieldCondition[] = null;
     @Input() operators: OperatorModel[] = [];
@@ -94,25 +95,35 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
     ngOnInit() {
         this.allFieldsDropdown = [];
-        let assetFieldGroup: SelectItemGroup = { value: "asset-field", label: "Asset Fields", items: [] };
-        let systemFieldsGroup: SelectItemGroup = { value: "system-field", label: "System Fields", items: [] };
-        let relationshipGroup: SelectItemGroup = { value: "rel-field", label: "Relationships", items: [] };
-        this.allFieldsDropdown.push(assetFieldGroup);
-        this.allFieldsDropdown.push(systemFieldsGroup);
-        this.allFieldsDropdown.push(relationshipGroup);
 
-        this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
-            assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
-        });
+        if (this.isAssetType) {
+            let assetFieldGroup: SelectItemGroup = { value: "asset-field", label: "Asset Fields", items: [] };
+            let systemFieldsGroup: SelectItemGroup = { value: "system-field", label: "System Fields", items: [] };
+            let relationshipGroup: SelectItemGroup = { value: "rel-field", label: "Relationships", items: [] };
+            this.allFieldsDropdown.push(assetFieldGroup);
+            this.allFieldsDropdown.push(systemFieldsGroup);
+            this.allFieldsDropdown.push(relationshipGroup);
 
-        SystemFields.GetSystemFieldDefinition().forEach((f) => {
-            systemFieldsGroup.items.push({ value: f.Name, label: f.FriendlyName });
-        });
+            this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
+                assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
+            });
 
-        SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).forEach((f) => {
-            relationshipGroup.items.push({ value: f.Name, label: f.FriendlyName });
-        });
+            SystemFields.GetSystemFieldDefinition().forEach((f) => {
+                systemFieldsGroup.items.push({ value: f.Name, label: f.FriendlyName });
+            });
 
+            SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).forEach((f) => {
+                relationshipGroup.items.push({ value: f.Name, label: f.FriendlyName });
+            });
+        }
+
+        if (this.isRuleResults) {
+            let assetFieldGroup: SelectItemGroup = { value: "rule-results-field", label: "Asset Fields", items: [] };
+            this.allFieldsDropdown.push(assetFieldGroup);
+            this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
+                assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
+            });
+        }
     }
 
     filterTable($event: any) {
@@ -298,6 +309,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
         if (ft.Type.Lookup && ft.Type.Lookup.List.AllowMultipleValues) {
             ft.Operators[0].label = "contains";
             ft.Operators[1].label = "does not contain";
+        }
+
+        if (this.isRuleResults) {
+            if (ft.Name !== "EvaluatedAssetClass") {
+                ft.Operators = ft.Operators.filter(x => x.value !== "Populated" && x.value !== "NotPopulated");
+            }
         }
 
         return ft ? ft.Operators : [];
@@ -491,8 +508,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.lazyLoadSubscription.unsubscribe();
         }
         this.isLookupValuesLoading = true;
+        var fieldTypeUid = this.currentField.AssetTypeUid;
+        if (!fieldTypeUid) {
+            fieldTypeUid = "00000000-0000-0000-0000-000000000000";
+        }
 
-        this.lazyLoadSubscription = this.fieldsService.getLookupValues(this.currentField.AssetTypeUid, this.currentField.Name.trim(), params)
+        this.lazyLoadSubscription = this.fieldsService.getLookupValues(fieldTypeUid, this.currentField.Name.trim(), params)
             .subscribe((res) => {
                 if (!this.currentField.Values || this.currentField.Values.length === 0) {
                     this.currentField.Values = Array.from({ length: res.count });
@@ -1021,5 +1042,22 @@ export class FilterItemComponent implements OnInit, OnChanges {
             return false;
         }
         return this.nonValueOperators.indexOf(this.condition.operator.toString()) !== -1;
+    }
+
+    get isAssetType() {
+        return this.loadIdentifier.length === 36 && !this.loadIdentifier.startsWith("RuleResults");
+    }
+
+    get isRuleResults() {
+        return this.loadIdentifier.startsWith("RuleResults");
+    }
+
+    getFieldsDropdownClass(): string {
+        if (this.isRuleResults) {
+            return "ig-dropdown-hide-groups";
+        }
+        else {
+            return "ig-dropdown-grouped";
+        }
     }
 }

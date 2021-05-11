@@ -100,13 +100,18 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
             this.getRuleResultsSub.unsubscribe();
         }
         this.getRuleResultsSub = this.ruleService
-            .getResultsByRule(this.ruleUid, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, false, null, this.simpleTextFilter, this.newAdvancedFilters.filter)
+            .getResultsByRule(this.ruleUid, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, false, null, this.simpleTextFilter, this.newAdvancedFilters?.filter)
             .pipe(debounceTime(300))
             .subscribe(res => {
                 this.results = res;
                 if (this.results != null) {
                     this.totalRecords = this.results.total;
                     this.items = this.results.items;
+                    this.items.forEach((item) => {
+                        var date = new Date(item.RunDate as string);
+                        date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+                        item.RunDate = date;
+                    })
                     this.isLoading = false;
                 }
             },
@@ -130,7 +135,7 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
     }
 
     doExport() {
-        this.ruleService.getResultsByRule(this.ruleUid, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, true, this.ruleId);
+        this.ruleService.getResultsByRule(this.ruleUid, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, true, this.ruleId, this.simpleTextFilter, this.newAdvancedFilters?.filter);
     }
 
     formatPath(s: string) {
@@ -143,7 +148,7 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
     }
 
     onFiltersLoaded() {
-        console.log("filters loaded");
+        this.getData();
     }
 
     private newAdvancedFilters: Filters;
