@@ -70,9 +70,10 @@ export class AssetTypeService extends BaseObservableService {
 
         var qString = '';
         if (params) {
-            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
-            if (qString)
+            qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
+            if (qString) {
                 qString = '?' + qString;
+            }
         }
 
         return this

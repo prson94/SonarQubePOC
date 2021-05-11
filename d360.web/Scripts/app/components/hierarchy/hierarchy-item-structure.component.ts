@@ -198,7 +198,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     }
 
     private buildTreeNodeArray(hierarchies: any[], levelNumber: number, Parent?: string): TreeNode[] {
-        let rootNodes = hierarchies.filter(x => (Parent != undefined ? x.ParentAssetUid == Parent : !x.ParentAssetUid));
+        let rootNodes = hierarchies.filter((x) => (Parent != undefined ? x.ParentAssetUid == Parent : !x.ParentAssetUid));
 
         if (rootNodes.length == 0) return null;
 
@@ -235,7 +235,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     public onDeleted() {
         this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was removed        
         this.deleteSelectedTreeNode(this.selected.data.AssetUid);
-        this.hierarchy = this.hierarchy.filter(x => x.AssetUid != this.selected.data.AssetUid);
+        this.hierarchy = this.hierarchy.filter((x) => x.AssetUid != this.selected.data.AssetUid);
         this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1);
 
         this.selected = null;
@@ -374,7 +374,6 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     private expandNodes() {        
         if (this.treeTable.filters["global"]) { // only expand if global filter populated.
             this.totalRecordsFiltered = 0;
-            console.log(this.treeTable.filteredNodes);
             this.totalRecordsFiltered = this.treeTable.filteredNodes ? this.treeTable.filteredNodes.length : 0;
             this.expandChildNodes(this.treeTable.filteredNodes, this.treeTable.globalFilterFields, this.treeTable.filters["global"].value);
         }
