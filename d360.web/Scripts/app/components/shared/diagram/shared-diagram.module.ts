@@ -26,18 +26,6 @@ import { TreeModule } from 'primeng/tree';
 import { ScoreBadgeModule } from '../small-widgets/score-badge/score-badge.module';
 import { AccordionModule } from 'primeng/accordion';
 
-import { ImpactComponent } from './impact.component';
-import { LineageComponent } from './lineage/lineage.component';
-import { LineageBusinessEditorComponent } from './lineage/lineage-business-editor.component';
-import { LineageTechnicalEditorComponent } from './lineage/lineage-technical-editor.component';
-import { LineageEditorPreviewComponent } from './lineage/lineage-editor-preview.component';
-import { LineageFusionComponent } from './lineage/lineage-fusion.component';
-import { LineageMappingRulesComponent } from './lineage/lineage-mapping-rules.component';
-import { LineageObjectDetailComponent } from './lineage/lineage-object-detail.component';
-import { LineageRelationshipsComponent } from './lineage/lineage-relationships.component';
-import { LineageSourceRuleEditorComponent } from './lineage/lineage-source-rule-editor.component';
-import { LineageSourceRulesComponent } from './lineage/lineage-source-rules.component';
-
 import { AssetBrowserAddPanelComponent } from './assetbrowser/panels/addpanel.component';
 import { AssetBrowserAlertPanelComponent } from './assetbrowser/panels/alertpanel.component';
 import { AssetBrowserFilterPanelComponent } from './assetbrowser/panels/filterpanel.component';
@@ -65,7 +53,8 @@ import { SharedFormMessageModule } from '../form-message.part'
 import { SharedObjectDetailsModule } from '../objectdetails/shared-object-details.module';
 import { NgxJsonViewModule } from 'ng-json-view';
 import { IconService } from '../../../services/icon.service';
-
+import { LineageObjectDetailComponent } from './lineage/lineage-object-detail.component';
+import { LineageRelationshipsComponent } from './lineage/lineage-relationships.component';
 import { TagViewModule } from '../tags/d3s-tag-view.module';
 import { AssetTypeModalEditorModule } from '../assetmodaleditor/asset-type-modal-editor.module';
 import { SiteModalModule } from '../modal/gov-modal.module';
@@ -152,18 +141,8 @@ import { SearchFieldModule } from '../controls/search-field/search-field.compone
         AssetBrowserZoomComponent,
         
         AssetBrowserComponent,
-
-        ImpactComponent,        
-        LineageComponent,
-        LineageBusinessEditorComponent,
-        LineageTechnicalEditorComponent,
-        LineageEditorPreviewComponent,
-        LineageFusionComponent,
-        LineageMappingRulesComponent,
         LineageObjectDetailComponent,
         LineageRelationshipsComponent,
-        LineageSourceRuleEditorComponent,
-        LineageSourceRulesComponent,
         ModelDiagramComponent,
         ProcessDiagramComponent,
         ProcessDiagramAssetEditorComponent,
@@ -171,9 +150,7 @@ import { SearchFieldModule } from '../controls/search-field/search-field.compone
         ProcessDiagramListViewComponent
     ],
     exports: [
-        AssetBrowserComponent,
-        LineageComponent,
-        ImpactComponent,  
+        AssetBrowserComponent, 
         ModelDiagramComponent,  
     ],
     providers: [

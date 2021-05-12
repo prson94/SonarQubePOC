@@ -3,7 +3,7 @@ import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs";
 import {catchError, map} from "rxjs/operators";
 
-import { Model, ModelHierarchy } from '../models/model.model';
+import { HierarchyDiagramModel, Model, ModelHierarchy } from '../models/model.model';
 import { JsonResult } from '../models/jsonresult.model';
 
 import { MessagesObservableService } from './messages-observable.service';
@@ -16,6 +16,16 @@ export class ModelsService extends BaseObservableService {
         messagesService: MessagesObservableService
     ) { 
         super(messagesService); 
+    }
+
+    public getCatalogDiagram(id: number): Observable<HierarchyDiagramModel[]> {
+        return this
+            .http
+            .get(`diagrams/${id}/InformationCatalogDiagramData`)
+            .pipe(
+                map((response) => <HierarchyDiagramModel[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     getModels(): Observable<Model[]> {

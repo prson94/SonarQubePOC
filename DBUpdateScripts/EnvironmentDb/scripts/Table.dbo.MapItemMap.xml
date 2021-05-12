@@ -5,31 +5,15 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.MapItemMap-v1">
+  <changeSet author="Core" id="Table.dbo.MapItemMap-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapItemMap')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapItemMap')
 BEGIN
-	CREATE TABLE [dbo].[MapItemMap](
-		[MapID] [int] NOT NULL,
-		[MapItemID] [int] NOT NULL,
-		CONSTRAINT [PK_MapItemMap] PRIMARY KEY CLUSTERED ( [MapID] ASC, [MapItemID] ASC )
-	)
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MapItemMap_Map')
-BEGIN
-	ALTER TABLE [dbo].[MapItemMap] WITH CHECK ADD CONSTRAINT [FK_MapItemMap_Map] FOREIGN KEY([MapID]) REFERENCES [dbo].[Map] ([ID]) ON DELETE CASCADE
-	ALTER TABLE [dbo].[MapItemMap] CHECK CONSTRAINT [FK_MapItemMap_Map]
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MapItemMap_MapItem')
-BEGIN
-	ALTER TABLE [dbo].[MapItemMap] WITH CHECK ADD CONSTRAINT [FK_MapItemMap_MapItem] FOREIGN KEY([MapItemID]) REFERENCES [dbo].[MapItem] ([ID])
-	ALTER TABLE [dbo].[MapItemMap] CHECK CONSTRAINT [FK_MapItemMap_MapItem]
+	EXEC sp_rename 'dbo.MapItemMap', 'MapItemMap_backup'
 END
 		]]>
     </sql>
