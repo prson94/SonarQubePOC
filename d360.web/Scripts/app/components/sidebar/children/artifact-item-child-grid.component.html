@@ -1,3 +1,6 @@
+<header>
+    <d3s-tile-actions [hasExport]="true" [isExportDisabled]="!canExportRecords()" (exportClick)="export()" [exportDisabledMessage]="'Export not available for over ' + maxExportRows + ' rows'"></d3s-tile-actions>
+</header>
 <span>
     <input type="text"
            [hidden]="!showSimpleFilter"
@@ -26,7 +29,7 @@
                     [pSortableColumn]="column.sortable ? column.datafield : null">
                     {{column.text}}
                     <d3s-sortIcon *ngIf="column.sortable"
-                                  [field]="column.datafield"></d3s-sortIcon> 
+                                  [field]="column.datafield"></d3s-sortIcon>
                 </th>
             </tr>
         </ng-template>
