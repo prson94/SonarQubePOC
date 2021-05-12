@@ -1463,11 +1463,11 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
                 var apikeydetail = new ApiKeyDetailModel
                 {
-                    apikey = resource.APIPublicKey, //publickey
+                    apiKey = resource.APIPublicKey, //publickey
                     apiSecret = resource.APIPrivateKey //privatekey
                 };
 
-                if (apikeydetail.apikey == null || apikeydetail.apiSecret == null)
+                if (apikeydetail.apiKey == null || apikeydetail.apiSecret == null)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid user information", "Invalid user information")).ConfigureAwait(false);
                 }
@@ -1784,7 +1784,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 }
 
 
-                if (string.IsNullOrEmpty(model?.apikey))
+                if (string.IsNullOrEmpty(model?.apiKey))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "apikey is required field")).ConfigureAwait(false);
                 }
@@ -1794,7 +1794,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "apiSecret is required field")).ConfigureAwait(false);
                 }
 
-                if (resource.APIPublicKey != model.apikey || resource.APIPrivateKey != model.apiSecret)
+                if (resource.APIPublicKey != model.apiKey || resource.APIPrivateKey != model.apiSecret)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid apiKey or apiSecret for currentUser")).ConfigureAwait(false);
                 }
@@ -1824,7 +1824,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 if (users != null)
                 {
                     var cachedUser = users.FirstOrDefault(uc => uc.ResourceID == Company.CurrentResourceID);
-                    cachedUser.APIPublicKey = newKeys.apikey;
+                    cachedUser.APIPublicKey = newKeys.apiKey;
                     cachedUser.APIPrivateKey = newKeys.apiSecret;
                 }
 

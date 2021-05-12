@@ -28,6 +28,7 @@ import { HeaderMiniMenuComponent } from './header-mini-menu-component';
 import { TypeaheadSearchModule } from '../search/typeahead-search.component';
 import { SiteModalModule } from '../modal/gov-modal.module';
 import { CoreModule } from "../../shared/core.module";
+import { ResourceApiKeyModule } from '../../resource/api-key/resource-api.module';
 
 
 @NgModule({
@@ -49,6 +50,7 @@ import { CoreModule } from "../../shared/core.module";
         TreeModule, 
         DialogModule,
         SiteModalModule,
+        ResourceApiKeyModule
     ],
     declarations: [
         HeaderActionsComponent,
@@ -62,7 +64,7 @@ import { CoreModule } from "../../shared/core.module";
         HeaderShoppingCartComponent,
         HeaderHomePageComponent,
         HeaderProfileComponent,
-        HeaderMiniMenuComponent,
+        HeaderMiniMenuComponent
     ],
     exports: [
         HeaderComponent
