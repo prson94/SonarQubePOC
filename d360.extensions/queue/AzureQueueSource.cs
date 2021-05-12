@@ -23,8 +23,8 @@ namespace d360.extensions.queue
 
         //keep service bus clients and senders static and reusable where possible
         //these clients are thread safe and designed to be used with DI or singleton patterns
-        private static ServiceBusClient ServiceBusClient = null;
-        private static ConcurrentDictionary<string, ServiceBusSender> ServiceBusSenders = null;
+        private static ServiceBusClient ServiceBusClient;
+        private static ConcurrentDictionary<string, ServiceBusSender> ServiceBusSenders;
 
         private CloudQueueClient cloudClient {
             get
