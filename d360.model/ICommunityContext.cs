@@ -4,7 +4,6 @@ using System.Data.Entity;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using d360.core.entities;
-using d360.core.entities.Plugins;
 using d360.core.enums;
 
 namespace d360.model
@@ -21,11 +20,7 @@ namespace d360.model
         CompanySsoModel CurrentCompanySsoModel { get; set; }
         DbSet<DatabaseServer> DatabaseServers { get; set; }
         DbSet<DomainCertificate> DomainCertificates { get; set; }
-        DbSet<DomainSetting> DomainSettings { get; set; }        
-        DbSet<FusionAttributeTypeField> FusionAttributeTypeFields { get; set; }
-        DbSet<core.entities.Plugins.FusionAttributeType> FusionAttributeTypes { get; set; }
-        DbSet<FusionIntersectType> FusionIntersectTypes { get; set; }
-        DbSet<core.entities.Plugins.FusionType> FusionTypes { get; set; }
+        DbSet<DomainSetting> DomainSettings { get; set; }                
         DbSet<GenericCommand> GenericCommands { get; set; }
         DbSet<HelpResource> HelpResources { get; set; }        
         DbSet<Resource> Resources { get; set; }

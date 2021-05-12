@@ -341,6 +341,11 @@ namespace d360.web.Controllers.V2
                         bool isHierachyItem = false;
                         var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_ishierachyitem").Value;
                         bool.TryParse(value, out isHierachyItem);
+
+                        bool isChildItem = false;
+                        var valueChild = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_ischildtab").Value;
+                        bool.TryParse(valueChild, out isChildItem);
+
                         var paramList = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson").ToList();
 
                         paramList.RemoveAll(x => x.Key.ToLower() == "_includeownershiplookup");
@@ -355,7 +360,7 @@ namespace d360.web.Controllers.V2
                         }
                         else
                         {
-                            results = await AssetRepository.GetAssetsExcel(assetTypeUid, queryParams);
+                            results = await AssetRepository.GetAssetsExcel(assetTypeUid, queryParams, isChildItem);
                         }
 
                         var stream = new MemoryStream();

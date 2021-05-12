@@ -746,10 +746,15 @@ from    #changes C
             return whenSql;
         }
 
+        private string ThenSqlConnector(ResponsibilityRuleDefinitionThen then)
+        {
+            return then.MatchType == ResponsibilityMatchType.And ? "and" : "or";
+        }
+
         private string GetThenResultsSql(ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction transaction, bool includeName = true, string assetIDColumn = "")
         {            
             StringBuilder thenSql = new StringBuilder();
-
+            
             int tCount = 1;
             string whenSuffix = "";
             string obj = "";
@@ -784,17 +789,17 @@ from    #changes C
                     {
                         if (rc.FieldTypeID > 0)
                         {
-                            var thenFieldType = Connection.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { rc.FieldTypeID }, transaction: transaction).SingleOrDefault();
-                            thenSql.Append($"cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = '{obj}' and F.ObjectID = O.{uniqueIdField} ");
+                            var thenFieldType = Connection.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { rc.FieldTypeID }, transaction: transaction).SingleOrDefault();                            
+                            whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"exists(select 1 from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = '{obj}' and F.ObjectID = O.{uniqueIdField} ";
                             if (thenFieldType != null)
                             {
-                                thenSql.Append((thenFieldType.AllowMultipleValues) ?
-                                    $"where FT.ID = {rc.FieldTypeID} and '{rc.Value}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) FV{tCount}" :
-                                    $"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{rc.Value}' ) FV{tCount}");
+                                whenSuffix += ((thenFieldType.AllowMultipleValues) ?
+                                    $"where FT.ID = {rc.FieldTypeID} and '{rc.Value}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) " :
+                                    $"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{rc.Value}' )  ");
                             }
                             else
                             {
-                                thenSql.Append($"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{rc.Value}' ) FV{tCount}");
+                                whenSuffix += ($"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{rc.Value}' )  ");                                
                             }
                         }
                         else
@@ -803,17 +808,22 @@ from    #changes C
                             {
                                 if (rc.FieldTypeName == "Name")
                                 {
-                                    whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : " and ") + $"O.{uniqueIdField} = {rc.Value}";
+                                    whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"O.{uniqueIdField} = {rc.Value}";
                                 }
                                 else
                                 {
-                                    whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : " and ") + $"O.{rc.FieldTypeName} = '{rc.Value}'";
+                                    whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"O.{rc.FieldTypeName} = '{rc.Value}'";
                                 }
                             }
                         }
 
                         tCount++;
                     });
+
+                    if (!string.IsNullOrEmpty(whenSuffix))
+                    {
+                        whenSuffix += " ) ";
+                    }
                 }
 
                 if (obj == "Resource")

@@ -28,7 +28,8 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
                         </div>
                         <div class="col l9 s12" *ngIf="parentUid">
                             <d3s-artifact-item-child-grid [parentUid]="parentUid" [displayName]="displayName"
-                                                          [artifactTypeId]="selected?.TypeID"></d3s-artifact-item-child-grid>
+                                                          [artifactTypeId]="selected?.TypeID"
+                                                          [assettypename]="selected?.Name"></d3s-artifact-item-child-grid>
                         </div>
                     </div>
                 </div>

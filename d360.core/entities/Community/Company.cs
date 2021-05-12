@@ -17,9 +17,6 @@ namespace d360.core.entities
         public int DatabaseServerID { get; set; }
 
         [DataMember]
-        public bool SynchAgentLog { get; set; }
-
-        [DataMember]
         public int ClientID { get; set; }
 
         [DataMember]

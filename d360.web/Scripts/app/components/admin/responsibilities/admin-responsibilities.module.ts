@@ -31,8 +31,10 @@ import { CheckboxModule } from "primeng/checkbox";
 import { DropdownModule } from "primeng/dropdown";
 import { EditorModule } from "primeng/editor";
 import { MultiSelectModule } from "primeng/multiselect";
+import { RadioButtonModule } from 'primeng/radiobutton';
 import { TooltipModule } from "primeng/tooltip";
 import { TableModule } from "primeng/table";
+
 import { DirectivesModule } from "../../../directives/directives.module";
 
 @NgModule({
@@ -50,6 +52,7 @@ import { DirectivesModule } from "../../../directives/directives.module";
         EditorModule,
         InputTextModule,
         MultiSelectModule,
+        RadioButtonModule,
         SharedModule,
         TooltipModule,
         TableModule,

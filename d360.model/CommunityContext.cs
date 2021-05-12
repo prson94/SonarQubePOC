@@ -57,12 +57,7 @@ namespace d360.model
         public DbSet<CompanyHelpResource> CompanyHelpResources { get; set; }
         public DbSet<Resource> Resources { get; set; }
         public DbSet<Setting> Settings { get; set; }
-                        
-        public DbSet<d360.core.entities.Plugins.FusionAttributeType> FusionAttributeTypes { get; set; }
-        public DbSet<d360.core.entities.Plugins.FusionAttributeTypeField> FusionAttributeTypeFields { get; set; }
-        public DbSet<d360.core.entities.Plugins.FusionIntersectType> FusionIntersectTypes { get; set; }
-        public DbSet<d360.core.entities.Plugins.FusionType> FusionTypes { get; set; }
-
+        
         #endregion
 
         #region Generic methods

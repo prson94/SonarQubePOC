@@ -15,7 +15,8 @@ namespace d360.core.queue
         PostAssetTypes,
         PutAssetTypes,
         PostCrossReferences,
-        PostDataQualityResults
+        PostDataQualityResults,
+        PostDataProfile
     }
     public class ApiExecutionInfo: IServiceBusMessageType
     {
