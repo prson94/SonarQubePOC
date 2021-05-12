@@ -11,6 +11,7 @@ using Microsoft.Azure.Storage.Auth;
 using Microsoft.Azure.Storage.RetryPolicies;
 using System.Text;
 using Azure.Messaging.ServiceBus;
+using System.Collections.Concurrent;
 
 namespace d360.extensions.queue
 {
@@ -19,6 +20,11 @@ namespace d360.extensions.queue
         public string QueueStorageName { get { return CloudConfigurationManager.GetSetting("QueueStorageName"); } }
         public string QueueStorageKey { get { return CloudConfigurationManager.GetSetting("QueueStorageKey"); } }
         public string EventServiceBusConnectionString { get { return CloudConfigurationManager.GetSetting("EventServiceBus"); } }
+
+        //keep service bus clients and senders static and reusable where possible
+        //these clients are thread safe and designed to be used with DI or singleton patterns
+        private static ServiceBusClient ServiceBusClient;
+        private static ConcurrentDictionary<string, ServiceBusSender> ServiceBusSenders;
 
         private CloudQueueClient cloudClient {
             get
@@ -245,9 +251,22 @@ namespace d360.extensions.queue
 
         private ServiceBusSender CreateServiceBusSender(string topicName)
         {
-            var client = new ServiceBusClient(EventServiceBusConnectionString);
-            var sender = client.CreateSender(topicName);
-            return sender;
+            if (ServiceBusClient == null)
+            {
+                ServiceBusClient = new ServiceBusClient(EventServiceBusConnectionString);
+            }
+
+            if (ServiceBusSenders == null)
+            {
+                ServiceBusSenders = new ConcurrentDictionary<string, ServiceBusSender>();
+            }
+
+            if (!ServiceBusSenders.ContainsKey(topicName))
+            {
+                ServiceBusSenders.TryAdd(topicName, ServiceBusClient.CreateSender(topicName));
+            }
+
+            return ServiceBusSenders[topicName];
         }
 
         public async Task CreateTopicMessagesAsync(List<EventInfo> events)
