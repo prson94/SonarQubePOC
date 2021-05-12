@@ -49,8 +49,7 @@ namespace d360.model.DataAccessLayer
         Task<List<extensions.PathComponent>> GetAssetPath(Guid assetUid);
         Task<Dictionary<Guid, List<extensions.PathComponent>>> GetAssetPathComponents(IEnumerable<Guid> assetUids);
         Task<dynamic> GetAssetTypeDetails(AssetType type);
-        Task<SLDocument> GetAssetsExcel(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams);
-        Task<SLDocument> GetAssetsChildExcel(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams);
+        Task<SLDocument> GetAssetsExcel(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams, bool isChildItem = false);
         Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses);
         Task<AssetsCountModel> GetAssetsCounts();
         Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid);

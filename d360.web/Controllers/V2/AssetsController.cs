@@ -358,13 +358,9 @@ namespace d360.web.Controllers.V2
                         {
                             results = await AssetRepository.GetHierarchyExcel(assetTypeUid, queryParams, true);
                         }
-                        else if (isChildItem)
-                        {
-                            results = await AssetRepository.GetAssetsChildExcel(assetTypeUid, queryParams);
-                        }
                         else
                         {
-                            results = await AssetRepository.GetAssetsExcel(assetTypeUid, queryParams);
+                            results = await AssetRepository.GetAssetsExcel(assetTypeUid, queryParams, isChildItem);
                         }
 
                         var stream = new MemoryStream();
