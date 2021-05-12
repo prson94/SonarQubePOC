@@ -64,7 +64,6 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     @Input() modalTitle: string = '';
     @Input() isModalVisible: boolean = false;
     @Input() useNonLegacyData: boolean = false;
-    private savingInProgress: boolean = false;
     private isInError: boolean = false;
     private isInErrorMessage: string = "";
 
@@ -112,7 +111,6 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         }
         if (changes['isModalVisible']) {
             if (!changes['isModalVisible'].isFirstChange() && (changes['isModalVisible'].previousValue != changes['isModalVisible'].currentValue)) { // visibility has changed            
-                this.savingInProgress = false;
                 this.load();
             }
         }
@@ -140,6 +138,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         this.isLoading = true;
         this.editorDefinitionService.getEditorDefinitionNonLegacy(this.assetTypeUid, this.assetUid)
             .subscribe((result) => {
+                this.isLoading = false;
                 this.handleEditor(result);
             });
     }
@@ -154,17 +153,17 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             });
         }
 
+        this.isLoading = false;
+
         if ((result as any).type && (result as any).type == "error") {
             this.isInErrorMessage = (result as any).message;
             this.isInError = true;
-            this.isLoading = false;
         }
         else {
             this.isInErrorMessage = '';
             this.isInError = false;
             let currentCategory = null;
 
-            this.isLoading = false;
             this.categories = [];
 
             result = _.orderBy(result, [field => field.Row ? field.Row : 0], ['asc']);
@@ -410,7 +409,6 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
     onSubmit() {
         this.isLoading = true;
-        this.savingInProgress = true;
 
         let values: any = {};
 
@@ -484,14 +482,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         }
         
         this.assetService.saveAsset(this.assetTypeUid, editorModel).subscribe((res) => {
+            this.isLoading = false;
             if (res.Success) {
                 this.saveClick.emit({ item: res, action: this.assetUid ? "update" : "new", values: values });
             }
             else {
                 this.showMessageForApiResult(this.messagesService, res);
             }
-            this.isLoading = false;
-            this.savingInProgress = false;
         });
     }
 

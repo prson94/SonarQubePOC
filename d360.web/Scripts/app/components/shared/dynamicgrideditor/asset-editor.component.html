@@ -141,7 +141,7 @@
                     Close
                 </button>
                 <span class="grow"></span>
-                <button class="right button primary {{savingInProgress ? 'loading' : ''}}"
+                <button class="right button primary {{isLoading ? 'loading' : ''}}"
                         type="submit"
                         [disabled]="!form.valid || (hasIconFields && fore.Value == back.Value)">
                     Save

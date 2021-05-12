@@ -531,6 +531,8 @@ export class BaseComponent {
                 uid = this['selectedReferenceListUid'];
             } else if (this['assetType'] && this['assetType']['AssetTypeUID']) { //HierarchyItemStructureComponent
                 uid = this['assetType']['AssetTypeUID'];
+            } else if (this['assetType'] && this['assetType']['uid']) { //HierarchyItemStructureComponent
+                uid = this['assetType']['uid'];
             } else if (this['selected']) {
                 if (this['selected']['Uid']) { //AdminIssueTypesComponent, AdminRelationshipsComponent
                     uid = this['selected']['Uid'];

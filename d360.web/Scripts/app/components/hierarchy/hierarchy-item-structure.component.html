@@ -12,20 +12,19 @@
             <div *ngIf="!showDelete && !showEditor && assetType && assetType.Description && assetType.Description.length >0"
                  [innerHtml]="assetType.Description"
                  class="item-description"></div>
+            <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <p-treeTable #treeTable
                          [pageLinks]="3"
                          [paginator]="true"
                          [rows]="rowsPerPage"
                          [rowsPerPageOptions]="defaultPagingOptions"
-                         *ngIf="!showDelete && !showEditor"
+                         *ngIf="!isLoading && !showDelete && !showEditor"
                          [value]="treeNodeArray"
                          selectionMode="single"
                          [(selection)]="selected"
                          styleClass="breadcrumbTree treetable"
                          [style]="{'line-height':'25px'}"
                          [globalFilterFields]="filterColumns"
-                         [loading]="isLoading"
-                         [loadingIcon]="'fa fa-spinner fa-spin'"
                          (onFilter)="expandNodes()"
                          dataKey="AssetUid">
                 <ng-template pTemplate="caption">
@@ -51,10 +50,11 @@
                              let-rowNode
                              let-item="rowData">
                     <tr [ttSelectableRow]="rowNode">
-                        <td class="no-text-overflow">
+                        <!--<td class="no-text-overflow">
                             <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
-                        </td>
-                        <td class="no-text-overflow" *ngFor="let column of columns">
+                        </td>-->
+                        <td class="no-text-overflow" *ngFor="let column of columns; let i = index">
+                            <p-treeTableToggler [rowNode]="rowNode" *ngIf="i === 0"></p-treeTableToggler>
                             <d3s-dynamic-field-value [column]="column"
                                                      [fields]="fields"
                                                      [useApiName]="true"
@@ -63,6 +63,7 @@
                         <td>
                             <div class="RowTools">
                                 <a style="cursor:pointer;"
+                                   *ngIf="displayChildAdd(item?.Level)"
                                    (click)="selected = rowNode.node; showAdd(item.Level)"><i class="fa fa-plus"></i></a>
                             </div>
                         </td>

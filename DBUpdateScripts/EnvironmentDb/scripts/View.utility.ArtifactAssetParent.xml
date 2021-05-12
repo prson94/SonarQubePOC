@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="View.utility.ArtifactAssetParent-v1">
+  <changeSet author="Core" id="View.utility.ArtifactAssetParent-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -20,12 +20,21 @@
 				graph.AssetEdge E,
 				graph.AssetNode T				
 		where	MATCH(S-(E)->T)
-				and E.PredicateType = 3
+				and E.PredicateType in (3,4)
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+	create or alter view [utility].[ArtifactAssetParent]
+	WITH SCHEMABINDING  
+	AS  
+		select	T.ID as AssetID,		    
+				S.ID as ParentAssetID					
+		from	graph.AssetNode S,
+				graph.AssetEdge E,
+				graph.AssetNode T				
+		where	MATCH(S-(E)->T)
+				and E.PredicateType = 3
 		]]>
 	</rollback>
   </changeSet>

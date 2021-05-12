@@ -46,6 +46,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     showDiagram: boolean = false;
 
     levels: AssetTypeLevelApiModel[] = [];
+    maxLevelAllowed: number = 1;
     hierarchy: any[] = [];
     
     rowID: string = 'AssetUid';
@@ -132,9 +133,11 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             this.assetTypeService.getAssetTypes(uriParams).subscribe((result) => {
                 this.assetType = result[0];
                 this.assetTypeUid = result[0].uid;
-                this.levels = result[0].Levels;
-                this.load();
+                this.uid = this.assetTypeUid;
 
+                this.levels = result[0].Levels;
+                this.maxLevelAllowed = result[0].HierarchyMaximumDepth;
+                this.load();
                 this.loadNodes();
             });
         });
@@ -198,9 +201,9 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     }
 
     private buildTreeNodeArray(hierarchies: any[], levelNumber: number, Parent?: string): TreeNode[] {
-        let rootNodes = hierarchies.filter((x) => (Parent != undefined ? x.ParentAssetUid == Parent : !x.ParentAssetUid));
+        let rootNodes = hierarchies.filter((x) => (Parent !== undefined ? x.ParentAssetUid === Parent : !x.ParentAssetUid));
 
-        if (rootNodes.length == 0) return null;
+        if (rootNodes.length === 0) return null;
 
         let res: TreeNode[] = [];
 
@@ -240,6 +243,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
         this.selected = null;
         this.showDelete = false;
+        this.isLoading = false;
     }
 
     private deleteSelectedTreeNode(id: number): TreeNode {
@@ -291,6 +295,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         this.loadNodes();
         this.headerActionsService.emitFavoritesChange();
         this.showEditor = false;
+        this.isLoading = false;
     }
 
     private closeEditor() {
@@ -321,6 +326,10 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         this.selectedParentId = level == 0 ? undefined : this.selected ? this.selected.data.AssetUid : undefined;
         this.selectedLevel = level;
         this.selected = null;
+    }
+
+    private displayChildAdd(level: number) {
+        return (level < this.maxLevelAllowed);
     }
 
     setTreeNodeStyles(node) {
@@ -411,20 +420,21 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     }
 
     loadNodes() {
-        this.isLoading = true;
-
         if (this.assetTypeUid) {
+            this.isLoading = true;
+
             let uriParams: any = {
                 _pageSize: 50000,
                 _includeParent: "true",
                 _pageNum: 1,
                 _loadPermissionDetails: "true"
             };
+
             this.assetService.getAssets(this.assetTypeUid, uriParams).subscribe((result) => {
                 this.totalRecords += result.total;
                 this.buildScoreAllocationThresholds();
                 this.hierarchy = result.items;
-                this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1);
+                this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1, undefined);
                 this.isLoading = false;
             });
         }
