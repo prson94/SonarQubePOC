@@ -721,6 +721,9 @@ namespace d360.core.entities
         public Guid? AssigneeTypeUid { get; set; }
         [DataMember]
         public List<RuleThen> Conditions { get; set; } = new List<RuleThen>();
+
+        [DataMember]
+        public ResponsibilityMatchType MatchType { get; set; } = ResponsibilityMatchType.And;
     }
 
     [DataContract]

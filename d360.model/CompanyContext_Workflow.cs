@@ -2832,7 +2832,22 @@ namespace d360.model
                                 var type = fieldType.Type;
                                 if (type == "Date")
                                 {
-                                    if(DateTime.TryParseExact(fieldRecord.FormattedValue, "MM/dd/yyyy HH:mm:ss", null, DateTimeStyles.None, out dateValue))
+                                    if (DateTime.TryParseExact(fieldRecord.FormattedValue, "M/d/yyyy h:mm:ss tt", CultureInfo.CurrentCulture, DateTimeStyles.None, out dateValue))
+                                    {
+                                        string formattedDate = dateValue.ToString("dd MMM yyyy");
+                                        fieldValue = formattedDate;
+                                    }
+                                    else if (DateTime.TryParseExact(fieldRecord.FormattedValue, "MM/dd/yyyy HH:mm:ss", null, DateTimeStyles.None, out dateValue))
+                                    {
+                                        string formattedDate = dateValue.ToString("dd MMM yyyy");
+                                        fieldValue = formattedDate;
+                                    }
+                                    else if (DateTime.TryParseExact(fieldRecord.FormattedValue, "M/d/yyyy", null, DateTimeStyles.None, out dateValue))
+                                    {
+                                        string formattedDate = dateValue.ToString("dd MMM yyyy");
+                                        fieldValue = formattedDate;
+                                    }
+                                    else if (DateTime.TryParseExact(fieldRecord.FormattedValue, "MM/dd/yyyy", null, DateTimeStyles.None, out dateValue))
                                     {
                                         string formattedDate = dateValue.ToString("dd MMM yyyy");
                                         fieldValue = formattedDate;

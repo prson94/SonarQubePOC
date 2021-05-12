@@ -223,6 +223,10 @@
                     </p-table>
                 </div>
             </div>
+            <div class="row">
+                <p-radioButton igRadioButton name="thenMatchType" [(ngModel)]="model.StructuredDefinition.Then.MatchType" value="and" label="Match all"></p-radioButton>&nbsp;
+                <p-radioButton igRadioButton name="thenMatchType" [(ngModel)]="model.StructuredDefinition.Then.MatchType" value="or" label="Match any"></p-radioButton>
+            </div>
         </simple-accordion>
 
         <div class="row" *ngIf="errorMessage != ''">
