@@ -9629,6 +9629,7 @@ ItemNumber int,
 ExecutionId uniqueidentifier, 
 AssetTypeUid uniqueidentifier,
 AssigneeTypeUid uniqueidentifier, 
+MatchType nvarchar(20),
 RelIntersectTypeUid uniqueidentifier, 
 RelAssetUid uniqueidentifier,
 FieldApiName nvarchar(250),
@@ -9643,6 +9644,7 @@ ItemNumber,
 ExecutionId,
 AssetTypeUid,
 ThenData.AssigneeTypeUid,
+ThenData.MatchType,
 ThenCond.*,
 case 
 when ThenCond.IntersectTypeUid is not null then cast(thencond.intersecttypeuid as uniqueidentifier)
@@ -9652,6 +9654,7 @@ from api.executionresponsibilityrule
 cross apply OPENJSON (Definition, N'$.Then')
 WITH (
 AssigneeTypeUid uniqueidentifier N'$.AssigneeTypeUid',
+MatchType nvarchar(20) N'$.MatchType',
 Conditions nvarchar(max) N'$.Conditions' as Json
 ) AS ThenData
 outer apply OPENJSON(ThenData.Conditions)
@@ -9670,6 +9673,7 @@ ItemNumber,
 ExecutionId,
 AssetTypeUid,
 null as AssigneeTypeUid,
+null as MatchType,
 WhenData.*,
 case 
 when WhenData.IntersectTypeUid is not null then cast(WhenData.value as uniqueidentifier)
@@ -9693,6 +9697,7 @@ select  d.itemnumber,
 	at.objectid,
 	d.valueasuid,
 	d.AssigneeTypeUid,
+    d.MatchType,
 	d.AssigneeUid,
 	d.RelAssetUid,
 	case 
@@ -9849,7 +9854,7 @@ ConditionsThen.json as [Then],
 ConditionsWhen.json as [When]
 from #parsedData pd
 cross apply (
-select top 1 Object,ObjectID, Conditions.json as Conditions
+select top 1 Object,ObjectID, MatchType, Conditions.json as Conditions
 from #parsedData
 	outer apply(select
 		CheckType,
@@ -9858,7 +9863,7 @@ from #parsedData
 		Value,
 		isnull(IntersectTypeID,0) as IntersectTypeID,
 		TargetObject,
-		TargetObjectId
+		TargetObjectId        
 		from #parsedData
 		where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object  and ((FieldTypeName is not null and FieldTypeID <> 0 or AssigneeUid is not null))
 		for json path, include_null_values
