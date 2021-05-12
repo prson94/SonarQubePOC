@@ -789,8 +789,7 @@ from    #changes C
                     {
                         if (rc.FieldTypeID > 0)
                         {
-                            var thenFieldType = Connection.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { rc.FieldTypeID }, transaction: transaction).SingleOrDefault();
-                            //thenSql.Append($"cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = '{obj}' and F.ObjectID = O.{uniqueIdField} ");
+                            var thenFieldType = Connection.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { rc.FieldTypeID }, transaction: transaction).SingleOrDefault();                            
                             whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"exists(select 1 from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = '{obj}' and F.ObjectID = O.{uniqueIdField} ";
                             if (thenFieldType != null)
                             {
@@ -821,7 +820,10 @@ from    #changes C
                         tCount++;
                     });
 
-                    if (!string.IsNullOrEmpty(whenSuffix)) whenSuffix += " ) ";
+                    if (!string.IsNullOrEmpty(whenSuffix))
+                    {
+                        whenSuffix += " ) ";
+                    }
                 }
 
                 if (obj == "Resource")
