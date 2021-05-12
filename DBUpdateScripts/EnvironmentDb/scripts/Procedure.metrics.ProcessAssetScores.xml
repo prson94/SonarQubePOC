@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.metrics.ProcessAssetScores-v1.18">
+  <changeSet author="Pappas" id="Procedure.metrics.ProcessAssetScores-v1.19">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -203,6 +203,7 @@ begin
 											inner join metrics.Asset A on A.Uid = V.AssetUid and A.IsGroup = 0 
 											left join  #ScoreItems E on E.AssetUid = S.AssetUid and E.MeasureUid = A.Uid
 									where	S.EffectiveDate <= St.EffectiveDate
+											and (V.EffectiveEndDate >= St.EffectiveDate or V.EffectiveEndDate is null)
 											and E.AssetUid is null
 									) Ims
 							where	Ims.RowNumber = 1
