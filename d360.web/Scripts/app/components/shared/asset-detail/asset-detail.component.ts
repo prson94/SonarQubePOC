@@ -82,7 +82,7 @@ export class AssetDetailComponent implements OnChanges {
                         this.populateRow(r);
                     });
 
-                    let displayRows = this.rows.filter((r) => (r.Category == null || r.Category.toUpperCase() == this.noCategory.toUpperCase()) && ((r.FirstColumnFields && r.FirstColumnFields.length > 0) || (r.SecondColumnFields && r.SecondColumnFields.length > 0)));
+                    let displayRows = this.rows.filter((r) => (r.Category == null || r.Category.toUpperCase() === this.noCategory.toUpperCase()) && ((r.FirstColumnFields && r.FirstColumnFields.length > 0) || (r.SecondColumnFields && r.SecondColumnFields.length > 0)));
                     if (this.categories.findIndex((x) => x.name.toUpperCase() === this.systemProperties.toUpperCase()) >= 0) {
                         this.categories.push(this.categories.splice(this.categories.findIndex((x) => x.name.toUpperCase() === this.systemProperties.toUpperCase()), 1)[0]);
                     }
