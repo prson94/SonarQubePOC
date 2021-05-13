@@ -314,7 +314,7 @@ namespace d360.model
 
         List<DataProfileUpsertResponse> UpsertDataProfiles(List<DataProfileUpsertModel> request, ApiExecution execution, bool isInsert, int timeout = 3600);
 
-        List<DataProfileDeleteResponse> DeleteDataProfiles(List<AssetDataProfileDeleteModel> models, ApiExecution execution);
+        List<DataProfileDeleteResponse> DeleteDataProfiles(List<AssetDataProfileDeleteModel> models, ApiExecution execution, int timeout = 3600);
 
         #region API Query Parameter Parsing
 
