@@ -1,5 +1,15 @@
 ﻿import { Predicate } from "./predicate.model";
 
+export class RelationItem {
+    ID: number;
+    IntersectTypeID: number;
+    Object: string;
+    ObjectID: number;
+    TypeName: string;
+    Name: string;
+    Url: string;
+}
+
 export class RelationshipTypeEdge {
     Uid: string;
     Name: string;

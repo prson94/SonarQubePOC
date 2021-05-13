@@ -5,31 +5,15 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.Map-v1">
+  <changeSet author="Core" id="Table.dbo.Map-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Map')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Map')
 BEGIN
-	CREATE TABLE [dbo].[Map](
-		[ID] [int] IDENTITY(1,1) NOT NULL,
-		[Transformation] [nvarchar](4000) NULL,
-		[CreatedBy] [int] CONSTRAINT [DF_Map_CreatedBy] DEFAULT (0) NOT NULL,
-		[CreatedOn] [datetime] CONSTRAINT [DF_Map_CreatedOn] DEFAULT (getutcdate()) NOT NULL,
-		[UpdatedBy] [int] CONSTRAINT [DF_Map_UpdatedBy] DEFAULT (0) NOT NULL,
-		[UpdatedOn] [datetime] CONSTRAINT [DF_Map_UpdatedOn] DEFAULT (getutcdate()) NOT NULL,
-		[MapTypeID] [int] CONSTRAINT [DF_Map_MapTypeID] DEFAULT (1) NOT NULL,
-		[Name] [nvarchar](2500) NULL,
-		CONSTRAINT [PK_Map] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
-	)
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_Map_MapType')
-BEGIN
-	ALTER TABLE [dbo].[Map] WITH CHECK ADD CONSTRAINT [FK_Map_MapType] FOREIGN KEY([MapTypeID]) REFERENCES [dbo].[MapType] ([ID])
-	ALTER TABLE [dbo].[Map] CHECK CONSTRAINT [FK_Map_MapType]
+	EXEC sp_rename 'dbo.Map', 'Map_backup'
 END
 		]]>
     </sql>

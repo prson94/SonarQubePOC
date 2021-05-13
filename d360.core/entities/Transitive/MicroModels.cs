@@ -9,33 +9,11 @@ using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
-    public class AllocationPossibilityComparer : IEqualityComparer<AllocationPossibility>
-    {
-        public bool Equals(AllocationPossibility x, AllocationPossibility y)
-        {
-            return (x.ObjectType == y.ObjectType && x.ObjectTypeID == y.ObjectTypeID);
-        }
-
-        public int GetHashCode(AllocationPossibility obj)
-        {
-            return obj.ObjectType.GetHashCode() ^ obj.ObjectTypeID.GetHashCode();
-        }
-    }
-
     public class BasicAsset
     {
         public int AssetID { get; set; }
         public int ObjectID { get; set; }
         public string ObjectName { get; set; }
-    }
-
-    public class ResponsibilityTypeRelationAllocationOption
-    {
-        public bool IsUsed { get; set; }
-        public int ID { get; set; }
-        public AssetTypeClass Class { get; set; }
-        public string ClassName { get { return Class.GetDisplayName(); } }
-        public string Path { get; set; }
     }
 
     public class AllocationPossibility
@@ -227,7 +205,6 @@ namespace d360.core.entities
         public List<SiteNav> Items { get; set; } = new List<SiteNav>();
     }
 
-
     #region ResponsibilityRule Models
 
     public class ObjectResult
@@ -243,24 +220,7 @@ namespace d360.core.entities
         public string Name { get; set; }
     }
 
-    public class EndTypeResult
-    {
-        public int RuleID { get; set; }
-
-        public int ResponsibilityTypeID { get; set; }
-
-        public string SecurityAsset { get; set; }
-
-        public int SecurityAssetID { get; set; }
-    }
-
-    public class EndResult : EndTypeResult
-    {
-        public long AssetID { get; set; }
-    }
-
     #endregion
-
 
     [DataContract(Namespace = NAMESPACE)]
     public class ObjectStatisticTileModel : BaseObject
@@ -329,44 +289,6 @@ namespace d360.core.entities
     }
 
     [DataContract(Namespace = NAMESPACE)]
-    public class ReportSchemaModel : BaseObject
-    {
-        [DataMember]
-        public string ID { get; set; }
-
-        [DataMember]
-        public string ParentID { get; set; }
-
-        [DataMember]
-        public string Name { get; set; }
-
-        [DataMember]
-        public string Schema { get; set; }
-
-        [DataMember]
-        public int Position { get; set; }
-
-        [DataMember]
-        public string Type { get; set; }
-
-        [DataMember]
-        public List<ReportSchemaModel> Items { get; set; }
-    }
-
-    public class BulkLoadMatchingModel
-    {
-        public int FieldTypeID { get; set; }
-        public int ColumnIndex { get; set; }
-        public List<BulkLoadMatchingFieldModel> Fields { get; set; }
-    }
-
-    public class BulkLoadMatchingFieldModel
-    {
-        public string Value { get; set; }
-        public int ObjectID { get; set; }
-    }
-
-    [DataContract(Namespace = NAMESPACE)]
     public class FusionStatisticTileModel : BaseObject
     {
         [DataMember]
@@ -381,14 +303,6 @@ namespace d360.core.entities
         [DataMember]
         public int FusionErrors { get; set; }
 
-    }
-
-    public class FusionAddItemModel
-    {
-        public int RuleID { get; set; }
-        public bool AllSelected { get; set; }
-        public string attributeIDs { get; set; }
-        public string ObjectType { get; set; }
     }
 
     public class RelationshipDirectionFieldInfo
@@ -409,7 +323,6 @@ namespace d360.core.entities
 
         public Guid Uid { get; set; }
     }
-
 
     public class SecondaryNavigationPostModel
     {

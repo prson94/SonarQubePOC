@@ -438,8 +438,6 @@
 	<include file="scripts/Procedure.dbo.GenerateAllAssetTypeDisplayValues.xml"/>
 	<include file="scripts/Procedure.dbo.GenerateAssetDisplayValue.xml"/>
 	<include file="scripts/Procedure.dbo.GenerateAssetTypeDisplayValues.xml"/>
-	<include file="scripts/Procedure.dbo.GetAllowedIntersectionTypes.xml"/>
-	<include file="scripts/Procedure.dbo.GetAllowedIntersectionTypesByIntersect.xml"/>
 	<include file="scripts/Procedure.dbo.GetAssetHierarchy.xml"/>
 	<include file="scripts/Procedure.dbo.GetAttributeAndIntersectHierarchyByObject.xml"/>
 	<include file="scripts/Procedure.dbo.GetAverageScoreByObjectType.xml"/>
@@ -450,7 +448,6 @@
 	<include file="scripts/Procedure.dbo.GetCommentDetailsByType.xml"/>
 	<include file="scripts/Procedure.dbo.GetComplexLookupByAsset.xml"/>
 	<include file="scripts/Procedure.dbo.GetDynamicAssets.xml"/>
-	<include file="scripts/Procedure.dbo.GetLineage.xml"/>
 	<include file="scripts/Procedure.dbo.GetObjectStatistics.xml"/>
 	<include file="scripts/Procedure.dbo.GetPageInformation.xml"/>
 	<include file="scripts/Procedure.dbo.GetReferenceItemValues.xml"/>
@@ -463,12 +460,7 @@
 	<include file="scripts/Procedure.dbo.SecondaryNavSettings.xml"/>
 	<include file="scripts/Procedure.dbo.UpdateDependentObjectTypeDisplayValues.xml"/>
 	<include file="scripts/Procedure.dbo.VoteComment.xml"/>
-	<include file="scripts/Procedure.fusion.GenerateEagleLineageData.xml"/>
-	<include file="scripts/Procedure.fusion.GenerateFoundationLineage.xml"/>
-	<include file="scripts/Procedure.fusion.GenerateMarkitMapLineage.xml"/>
-	<include file="scripts/Procedure.fusion.GenerateMarkitMapLineageData.xml"/>
 	<include file="scripts/Procedure.fusion.GetAttributesByFusion.xml"/>
-	<include file="scripts/Procedure.fusion.LoadMarkitMapLineageData.xml"/>
 	<include file="scripts/Procedure.fusion.ProcessFusionCacheInQueue.xml"/>
 	<include file="scripts/Procedure.fusion.UpdateFusionTextPaths.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_Initial.xml"/>

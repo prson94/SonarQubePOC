@@ -410,6 +410,18 @@ namespace igx.jobs.apiexecutionprocessor
 
                                 await SaveResultsJsonToAzure(postDataProfileResult, log, "Asset Data Profile", HttpMethod.Post).ConfigureAwait(false);
                                 break;
+                            case ApiExecutionAction.PutDataProfile:
+                                var putDataProfile = await storage.DeserializeJsonObjectFromBlobAsync<List<DataProfileUpsertModel>>(Info.StorageFolder, Info.RequestFileName);
+
+                                log.WriteLine($"PUT Asset Data Profile (DB Start): Total raw Data Profile Records: {putDataProfile.Count}");
+                                var putDataProfileResult = company.UpsertDataProfiles(putDataProfile, dbExecutionItem, false, dbExecutionTimeout);
+                                dbExecutionItem.Processed = putDataProfileResult.Count(i => i.Success);
+                                dbExecutionItem.Error = putDataProfileResult.Count(i => !i.Success);
+                                log.WriteLine($"PUT Asset Data Profile (DB Complete): Total Processed: {dbExecutionItem.Processed}.");
+                                log.WriteLine($"PUT Asset Data Profile (DB Complete): Total Error: {dbExecutionItem.Error}.");
+
+                                await SaveResultsJsonToAzure(putDataProfileResult, log, "Asset Data Profile", HttpMethod.Put).ConfigureAwait(false);
+                                break;
                             case ApiExecutionAction.DeleteDataProfile:
                                 var deleteDataProfile = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetDataProfileDeleteModel>>(Info.StorageFolder, Info.RequestFileName);
 
