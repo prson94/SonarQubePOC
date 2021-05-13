@@ -20,8 +20,21 @@
     </div>
     <div *ngIf="!showSimpleFilter || hideFilter" class="ig-lookup-grid-filter-placeholder">&nbsp;</div>
     <div class="ig-lookup-grid-button-container">
-        <button class="ig-lookup-grid-button" igButton icon="fa-download" (click)="export()"></button>
-        <button *ngIf="!hideFilter && !hideHeader" class="ig-lookup-grid-button" igButton icon="fa-filter" (click)="showSimpleFilter = !showSimpleFilter"></button>
+        <button igButton 
+                class="ig-lookup-grid-button" 
+                icon="fa-download" 
+                (click)="export()" 
+                pTooltip="Export to Excel" 
+                tooltipPosition="top" 
+                tooltipStyleClass="ig-tooltip"></button>
+        <button igButton 
+                *ngIf="!hideFilter && !hideHeader" 
+                class="ig-lookup-grid-button" 
+                icon="fa-filter" 
+                (click)="showSimpleFilter = !showSimpleFilter"
+                pTooltip="Filter Mode" 
+                tooltipPosition="left" 
+                tooltipStyleClass="ig-tooltip"></button>
     </div>
 </div>
 <div>
