@@ -2007,12 +2007,18 @@ namespace d360.web.Controllers
                         if (!string.IsNullOrEmpty(fieldDataType))
                         {
                             if (fieldDataType == "bit")
+                            {
                                 fieldColumns.Add($"coalesce(cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
+                            }
                             else
+                            {
                                 fieldColumns.Add($"coalesce(cast({tableAlias}.{valueColumn} as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
+                            }
                         }
                         else
+                        {
                             fieldColumns.Add($"coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) as [{columnName}]");
+                        }
 
                         dbArgs.Add($"@defaultValue{tableAlias}", defaultVal);
                     }
@@ -2021,9 +2027,13 @@ namespace d360.web.Controllers
                         if (!string.IsNullOrEmpty(fieldDataType))
                         {
                             if (fieldDataType == "bit")
+                            {
                                 fieldColumns.Add($"cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
+                            }
                             else
+                            {
                                 fieldColumns.Add($"cast({tableAlias}.{valueColumn} as {fieldDataType}) as [{columnName}]");
+                            }
                         }
                         else if (f.Type == "JsonElement")
                         {
@@ -2071,13 +2081,13 @@ namespace d360.web.Controllers
                 {
                     if (!f.LookupObjectID.HasValue)
                     {
-                        throw new Exception("Invalid Relationship field encountered no relationship type to lookup found in definition.");
+                        throw new ArgumentNullException("Invalid Relationship field encountered no relationship type to lookup found in definition.");
                     }
                     var intersectType = Company.GetById<IntersectType>(f.LookupObjectID.Value);
 
                     if (intersectType == null)
                     {
-                        throw new Exception("Invalid Relationship field encountered invalid or deleted relationship type encountered.");
+                        throw new ArgumentNullException("Invalid Relationship field encountered invalid or deleted relationship type encountered.");
                     }
 
                     fieldJoins.Add($@"

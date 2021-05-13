@@ -99,9 +99,9 @@ export class CommunityResponsibilityCountComponent extends BaseComponent impleme
     }
     getFieldsDefinition() {
         this.gridDefinitionService.getGridDefinition(1,"ResourceType").subscribe(
-            result => {
-                this.columns = result.Columns.filter(x => x.isCustomField === true);
-                this.fields = result.Fields.filter(x => x.isCustomField === true);
+            (result) => {
+                this.columns = result.Columns.filter((x) => x.isCustomField === true);
+                this.fields = result.Fields.filter((x) => x.isCustomField === true);
                 if (this.columns && this.columns.length > 1) {
                     this.columnWidth = 250;
                 }
