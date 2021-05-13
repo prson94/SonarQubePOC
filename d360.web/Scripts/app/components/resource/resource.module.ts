@@ -19,8 +19,6 @@ import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object
 import { SharedAssignmentsModule } from '../shared/assignments/shared-assignments.module'
 import { ApiKeyUsersGuard } from '../../guards/api-key-users.gurard';
 
-
-import { ResourceApiComponent } from './resource-api.component';
 import { ResourceComponent } from './resource.component';
 import { ResourceGroupsComponent} from './resource-groups.component';
 import { ResourceItemComponent } from './resource-item.component';
@@ -28,7 +26,6 @@ import { ResourceFollowingGridTile } from './resource-following-grid.tile';
 import { ResourceFollowingTile } from './resource-following.tile';
 import { ResourceListComponent } from './resource-list.component';
 import { ResourcePasswordComponent } from './resource-password.component';
-import { ResourceKeyComponent } from './resource-key.component';
 import { ResourceChangePwdComponent } from './resource-change-pwd.component';
 
 import { MultiSelectModule } from 'primeng/multiselect';
@@ -40,18 +37,18 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TreeTableModule } from 'primeng/treetable';
 import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
+import { ResourceApiKeyModule } from './api-key/resource-api.module';
+import { SiteModalModule } from '../shared/modal/gov-modal.module';
 
 @NgModule({
     declarations: [
         ResourceComponent,
         ResourceItemComponent,
-        ResourceApiComponent, 
         ResourceListComponent,
         ResourceGroupsComponent,    
         ResourceFollowingGridTile,
         ResourceFollowingTile,
         ResourcePasswordComponent,       
-        ResourceKeyComponent,
         ResourceChangePwdComponent,
     ],    
     imports: [
@@ -83,6 +80,8 @@ import { TableModule } from 'primeng/table';
         SharedDynamicGridEditorModule,
         SharedGridPagingInfoModule,
         SharedObjectDetailsModule,
+        ResourceApiKeyModule,
+        SiteModalModule
     ],
     exports: [
         ResourceFollowingTile,

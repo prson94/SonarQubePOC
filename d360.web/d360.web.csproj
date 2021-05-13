@@ -813,6 +813,7 @@
     <Content Include="Scripts\app\components\hierarchy\hierarchy-list.component.html" />
     <Content Include="Scripts\app\components\reference\reference-item-list.component.html" />
     <Content Include="Scripts\app\components\reference\reference-item-type-list.component.html" />
+    <None Include="Scripts\app\components\resource\api-key\resource-api.component.less" />
     <Content Include="Scripts\app\components\rule\rule-column-filter.component.html" />
     <Content Include="Scripts\app\components\rule\rule-list.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-list.component.html" />
@@ -1024,6 +1025,8 @@
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\resource\api-key\resource-api.module.ts" />
+    <Content Include="Scripts\app\components\resource\api-key\resource-api.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\search\asset-path-widget\asset-path-widget.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\asset-path-widget\asset-path-widget.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search-session.ts" />
@@ -1064,6 +1067,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-grid-v2.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\multiselect-grid-v2.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\shared-dynamic-grid-editor-v2.module.ts" />
+    <Content Include="Scripts\app\components\shared\header\header-profile.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\object-detail-category.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\asset-score.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\definition\score-definition.component.ts" />
@@ -1495,7 +1499,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-site-menu.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-change-pwd.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\resource\resource-key.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-password.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assettypeeditor\shared-asset-type-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\diagram-base.component.ts" />
@@ -1853,7 +1856,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\simple-accordion.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\resource\resource-api.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\resource\api-key\resource-api.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\user\user-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource.component.ts" />
