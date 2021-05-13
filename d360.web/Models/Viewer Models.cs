@@ -262,6 +262,7 @@ namespace d360.web.Models
             columnWidth = null;
             filtertype = FILTER_TYPE_STRING;
             filteritems = new List<string>();
+            isCustomField = false;
         }
 
         [DataMember]
@@ -323,6 +324,9 @@ namespace d360.web.Models
 
         [DataMember]
         public string fieldType { get; set; }
+
+        [DataMember]
+        public bool  isCustomField { get; set; }
     }
 
     [DataContract]
@@ -357,11 +361,18 @@ namespace d360.web.Models
 
     public class GridField
     {
+        public GridField()
+        {
+            isCustomField = false;
+        }
+
         public string name { get; set; }
 
         public string type { get; set; }
 
         public string apiName { get; set; }
+
+        public bool isCustomField { get; set; }
     }
 
     public class ListUidItem

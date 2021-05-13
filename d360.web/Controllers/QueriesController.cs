@@ -2,6 +2,7 @@
 using d360.model;
 using d360.web.Models.Attributes;
 using Dapper;
+using System.Collections.Generic;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -48,13 +49,33 @@ where ResourceID = @r and Type = @t and TypeID = @i and Type != ObjectType", new
         [Route("{id:int}/ResourcesByResponsibilityType")]
         public JsonNetResult GetResourcesByResponsibilityType(int id)
         {
-            var query = Company.Query<dynamic>(@"
+            DynamicParameters dbArgs = new DynamicParameters();
+            List<string> fieldColumns = new List<string>();
+            List<string> fieldJoins = new List<string>();
+            var fieldTypes = Company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1 && f.IsListable).OrderBy(f => f.ID).ToList();
+            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+            string fieldColumnsSql = "";
+            if (fieldColumns.Count > 0)
+            {
+                fieldColumnsSql = "," + string.Join(",\n", fieldColumns);
+            }
+
+            string fieldJoinsSql = "";
+            if (fieldJoins.Count > 0)
+            {
+                fieldJoinsSql = "\n outer apply(select object, objectid from Asset A1 where A1.Object = 'Resource' and A1.ObjectID = gr.ResourceID) A " + fieldJoinsSql;
+                fieldJoinsSql += string.Join("\n", fieldJoins);
+            }
+
+            var sql = $@"
+drop table if exists #respdata;
 
 select		OC.ResourceID,
 			R.FirstName,
 			R.LastName,
 			OC.ResponsibilityTypeID,
 			sum(OC.[Count] * OC.AssetCount) as OwnedItemCount
+into #respdata
 from		(
 			select		ResponsibilityTypeID,
 						ResourceID,
@@ -79,8 +100,19 @@ from		(
 group by	OC.ResourceID,
 			R.FirstName,
 			R.LastName,
-			OC.ResponsibilityTypeID
-order by	R.LastName, R.FirstName", new { id }).ToList();
+			OC.ResponsibilityTypeID;
+
+select gr.ResourceID,
+       gr.FirstName,
+	   gr.LastName,
+	   gr.ResponsibilityTypeID,
+	   gr.OwnedItemCount
+       {fieldColumnsSql}
+from #respdata gr
+{fieldJoinsSql}
+order by	gr.LastName, gr.FirstName;";
+
+            var query = Company.Query<dynamic>(sql, new { id }).ToList();
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
