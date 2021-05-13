@@ -1,46 +1,46 @@
 ﻿@import "../../../../../Content/styles/_Variables.less";
 
 .ig-lookup-grid-filter-container {
-    display: inline-flex;
+  display: inline-flex;
+  width: 100%;
+
+  .ig-lookup-grid-simple-filter-container {
     width: 100%;
+    flex-grow: 1;
 
-    .ig-lookup-grid-simple-filter-container {
-        width: 100%;
-        flex-grow: 1;
-
-        .ig-lookup-grid-simple-filter {
-            margin-bottom: 10px;
-            width: 100%;
-        }
-
-        .ig-lookup-grid-filter-search-icon {
-            position: relative;
-            float: right;
-            top: -37px;
-            right: 8px;
-            height: 0;
-            color: @ig-grey-t3;
-        }
+    .ig-lookup-grid-simple-filter {
+      margin-bottom: 10px;
+      width: 100%;
     }
 
-    .ig-lookup-grid-filter-placeholder {
-        flex-grow: 1;
-        display: inline-block;
+    .ig-lookup-grid-filter-search-icon {
+      position: relative;
+      float: right;
+      top: -37px;
+      right: 8px;
+      height: 0;
+      color: @ig-grey-t3;
     }
+  }
 
-    .ig-lookup-grid-button {
-        margin-left: 8px;
-    }
+  .ig-lookup-grid-filter-placeholder {
+    flex-grow: 1;
+    display: inline-block;
+  }
 
-    .ig-lookup-grid-button-container {
-        min-width: 90px;
-        margin-bottom: 10px;
-    }
+  .ig-lookup-grid-button {
+   margin-left: 8px;
+  }
+
+  .ig-lookup-grid-button-container {
+    min-width: 90px;
+    margin-bottom: 10px;
+  }
 }
 
 .ig-lookup-grid-container {
-    display: inline-flex;
-    width: 100%;
-    min-width: 500px;
-    overflow-x: auto;
+  display: inline-flex;
+  width: 100%;
+  min-width: 500px;
+  overflow-x: auto;
 }

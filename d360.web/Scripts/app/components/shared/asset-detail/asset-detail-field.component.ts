@@ -26,8 +26,9 @@ export class AssetDetailFieldComponent {
     { }
 
     ngOnInit() {
-        if ((this.field.DataType == 'date' || this.field.DataType == 'datetime') && isNaN(Date.parse(this.field.Value)))
+        if ((this.field.DataType === 'date' || this.field.DataType === 'datetime') && isNaN(Date.parse(this.field.Value))) {
             this.field.Value = null;
+        }
     }
 
     navigate(url: string) {
@@ -44,8 +45,9 @@ export class AssetDetailFieldComponent {
     }
 
     get fieldDataType(): string {
-        if (this.field == null || this.field.DataType == null)
+        if (this.field == null || this.field.DataType == null) {
             return null;
+        }
         switch (this.field.DataType.toLowerCase()) {
             case 'text':
             case 'string':
@@ -66,8 +68,9 @@ export class AssetDetailFieldComponent {
             && this.field.DataType
             && (this.field.DataType === "date" || this.field.DataType === "datetime")
             && this.field.Value
-            && this.field.Value.endsWith('Z'))
+            && this.field.Value.endsWith('Z')) {
             return true;
+        }
         return false;
     }
 
@@ -94,16 +97,18 @@ export class AssetDetailFieldComponent {
     }
 
     get linkUrl(): string {
-        if (this.field == null || this.field.Value.indexOf("|") === -1)
+        if (this.field == null || this.field.Value.indexOf("|") === -1) {
             return null;
+        }
         let index = this.field.Value.indexOf("|");
 
         return this.field.Value.substring(index + 1);
     }
 
     get linkName(): string {
-        if (this.field == null || this.field.Value.indexOf("|") === -1)
+        if (this.field == null || this.field.Value.indexOf("|") === -1) {
             return null;
+        }
         let index = this.field.Value.indexOf("|");
         if (index === 0) {
             return this.linkUrl;

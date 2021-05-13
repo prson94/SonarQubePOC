@@ -38,7 +38,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     private currentFilters: any;
 
     get globalFilterFields(): string[] {
-        return this.visibleColumns.map(c => c.datafield);
+        return this.visibleColumns.map((c) => c.datafield);
     }
 
     constructor(private router: Router,
@@ -60,7 +60,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         }
 
         this.isReferenceListFromRelationship = !!(this.data as any).isReferenceListFromRelationship;
-        this.isComplex = (this.data.Fields.find(f => f.name == 'Url') == null);
+        this.isComplex = (this.data.Fields.find((f) => f.name === 'Url') == null);
 
         if (this.isReferenceListFromRelationship) {
             this.lookupField = (this.data as any);  
@@ -74,15 +74,15 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         }
 
         //do this on init to avoid binding to function call
-        this.data.Columns.forEach(c => {
+        this.data.Columns.forEach((c) => {
             c.type = this.columnDataType(c);
-            if (c.type == 'number') {
-                this.data.Values.forEach(v => {
+            if (c.type === 'number') {
+                this.data.Values.forEach((v) => {
                     v[c.datafield] = this.formatAsNumber(v[c.datafield]);
                 });
             }
-            if (c.type == 'string' || c.type == 'preview' || c.type == 'lookup' || c.type == 'html') {
-                this.data.Values.forEach(v => {
+            if (c.type === 'string' || c.type === 'preview' || c.type === 'lookup' || c.type === 'html') {
+                this.data.Values.forEach((v) => {
                     if (v[c.datafield] === null) {
                         v[c.datafield] = ''; //prevent IE from displaying 'null'
                     }
@@ -90,14 +90,15 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
             }
         });
 
-        this.data.Columns.filter(c => c.type == 'hidden').forEach(c => {
-            let i = this.data.Columns.find(i => i.datafield == c.text);
+        this.data.Columns.filter((c) => c.type === 'hidden')
+            .forEach((c) => {
+            let i = this.data.Columns.find((i) => i.datafield === c.text);
             if (i) {
                 i.type = 'preview';
             }
         });
 
-        this.visibleColumns = this.data.Columns.filter(c => c.type != 'hidden');
+        this.visibleColumns = this.data.Columns.filter((c) => c.type !== 'hidden');
 
         this.isColumnsLoaded = true;
 
@@ -108,14 +109,17 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     }
 
     private columnDataType(column: GridFilterColumn): string {
-        var fields = this.data.Fields.filter(x => x.name == column.datafield);
+        var fields = this.data.Fields.filter((x) => x.name === column.datafield);
 
-        if (column.type == 'preview')
+        if (column.type === 'preview') {
             return 'preview';
-        if ((column.datafield == 'Name' || column.datafield == 'TextPath') && !this.isComplex)
+        }
+        if ((column.datafield === 'Name' || column.datafield === 'TextPath') && !this.isComplex) {
             return 'tooltip';
-        if (fields.length > 0)
+        }
+        if (fields.length > 0) {
             return fields[0].type;
+        }
         return 'string';
     }
 
@@ -150,7 +154,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         params['useUidUrls'] = 'false';
 
         if (event.sortOrder) {
-            if (event.sortOrder == 1) {
+            if (event.sortOrder === 1) {
                 params['_direction'] = 'ASC';
             }
             else {
@@ -163,10 +167,10 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
                 params['simpleFilter'] = event.filters.global.value;
             }
 
-            var keys = Object.keys(event.filters).filter(x => x != 'global');
+            var keys = Object.keys(event.filters).filter((x) => x !== 'global');
             var advFilters: string[] = [];
 
-            keys.forEach(key => {
+            keys.forEach((key) => {
                 var q = key + ' ct ' + `'${encodeURIComponent(event.filters[key].value)}'`;
                 advFilters.push(q);
             });
@@ -185,7 +189,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         this.currentFilters = params;
 
         this.loadSubscription = this.assetService.getAssetsComplexFieldValue(this.assetUid, this.field.FieldName, params)
-            .subscribe(result => {
+            .subscribe((result) => {
                 this.data = result;
                 this.loadInitialInfo();
                 this.isLoading = false;
@@ -198,14 +202,16 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
 
     getScoreFieldHTML(data: any, colName: string): string {
         var value = data[colName] as string;
-        if (!value) return '';
+        if (!value) {
+            return '';
+        }
 
         let cleanValue: number = parseFloat(value.replace("%", ""));
         let fieldTypeID: number = parseInt(colName.split("_")[1]);
         var className = "";
         if (this.data?.ScoringInfo) {
             className = "score-poor";
-            var allocInfo = this.data?.ScoringInfo?.filter(x => x["FieldTypeId"] == fieldTypeID);
+            var allocInfo = this.data?.ScoringInfo?.filter((x) => x["FieldTypeId"] === fieldTypeID);
             if (allocInfo.length > 0) {
                 var alloc = allocInfo[0];
                 if (cleanValue > parseFloat(alloc.LowerThreshold)) {
