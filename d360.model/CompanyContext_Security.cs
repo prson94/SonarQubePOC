@@ -248,7 +248,7 @@ order by RT.Name", new { id }).AsQueryable();
 
         private bool HasPermission(long assetId, int assetTypeId, Permission permission)
         {
-            bool isReadPermission = new List<Permission>() { Permission.ReadAsset, Permission.ReadRelationships, Permission.ReadResponsibilities }.Contains(permission);
+            bool isReadPermission = new List<Permission> { Permission.ReadAsset, Permission.ReadRelationships, Permission.ReadResponsibilities }.Contains(permission);
             
             if (isReadPermission)
             {
@@ -292,7 +292,7 @@ order by RT.Name", new { id }).AsQueryable();
         public bool HasAssetTypePermission(string type, int id, Permission permission)
         {
             bool hasPermission = CurrentResourceIsAdmin;
-            bool isReadPermission = new List<Permission>() { Permission.ReadAsset, Permission.ReadRelationships, Permission.ReadResponsibilities }.Contains(permission);
+            bool isReadPermission = new List<Permission> { Permission.ReadAsset, Permission.ReadRelationships, Permission.ReadResponsibilities }.Contains(permission);
 
 
             if (!hasPermission)
