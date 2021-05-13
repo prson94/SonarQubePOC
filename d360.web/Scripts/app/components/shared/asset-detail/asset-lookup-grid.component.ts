@@ -1,5 +1,5 @@
 ﻿import { Component, Input, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy } from "@angular/core";
-import { LookupGrid, GridFilterColumn } from "../../../models/grid-definition.model";
+import { LookupGrid, GridFilterColumn, LookupGridField } from "../../../models/grid-definition.model";
 import { Router } from "@angular/router";
 import { SiteUrlHelpers } from "../../../static/site-url-helpers";
 import { BaseComponent } from "../base.component";
@@ -7,9 +7,12 @@ import { DetailField } from "../../../models/object-detail.model";
 import { AssetService } from "../../../services/asset.service";
 import { Subscription } from "rxjs";
 
+declare var CurrentResourceID;
+
 @Component({
     selector: "ig-asset-lookup-grid",
     templateUrl: "./asset-lookup-grid.component.html",
+    styleUrls: ["asset-lookup-grid.component.less"],
     providers: [AssetService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -21,6 +24,10 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     @Input() hideHeader = false;
     @Input() hideFilter = true;
     @Input() assetUid: string = '';
+
+    isReferenceListFromRelationship = false;
+    showDescription = false;
+    lookupField: LookupGridField;
 
     isComplex = false;
     showSimpleFilter = true;
@@ -52,7 +59,19 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
             return;
         }
 
+        this.isReferenceListFromRelationship = !!(this.data as any).isReferenceListFromRelationship;
         this.isComplex = (this.data.Fields.find(f => f.name == 'Url') == null);
+
+        if (this.isReferenceListFromRelationship) {
+            this.lookupField = (this.data as any);  
+
+            let show = localStorage.getItem(`lookup_description_${CurrentResourceID}_${this.lookupField.fieldTypeId}`);
+            if (show == null) {
+                this.showDescription = this.lookupField.showDescription;
+            } else {
+                this.showDescription = show === "true" ? true : false;
+            }
+        }
 
         //do this on init to avoid binding to function call
         this.data.Columns.forEach(c => {
@@ -199,5 +218,10 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         }
 
         return `<div class="score-pill-small ${className}"></div><span>${value}</span>`;
+    }
+
+    toggleShowDescription() {
+        this.showDescription = !this.showDescription;
+        localStorage.setItem(`lookup_description_${CurrentResourceID}_${this.lookupField.fieldTypeId}`, this.showDescription.toString());
     }
 }

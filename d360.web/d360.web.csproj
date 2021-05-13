@@ -858,6 +858,7 @@
     <Content Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.component.less" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid.less" />
     <Content Include="Content\styles\infogix-ui\IgInputGroup.less" />
+    <Content Include="Scripts\app\components\shared\asset-detail\asset-lookup-grid.component.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />

@@ -769,6 +769,7 @@ namespace d360.web.Controllers.V2
                 List<dynamic> relationItems = null;
                 dynamic ownershipLookupSettings = null;
                 dynamic JsonElementSettings = null;
+                dynamic refListFromRelSettings = null;
 
                 if (ft != null)
                 {
@@ -831,6 +832,13 @@ namespace d360.web.Controllers.V2
                                 lookup.HideHeader
                             };
                         }
+                        else if (ft.Type == DataType.RefListRelationship.ToString())
+                        {
+                            refListFromRelSettings = new
+                            {
+                                definition.DisplayRefListDescription
+                            };
+                        }
                     }
                 }
 
@@ -841,6 +849,7 @@ namespace d360.web.Controllers.V2
                     FusionItems = fusionItems,
                     JsonElementSettings,
                     OwnershipLookupSettings = ownershipLookupSettings,
+                    RefListFromRelSettings = refListFromRelSettings,
                     RelationItems = relationItems
                 });
             }

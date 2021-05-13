@@ -1528,54 +1528,8 @@ where   h.ID <> @t order by h.[Level] desc;
             {
                 var lookup = await Company.QueryFirstOrDefaultAsync<FieldTypeLookup>("select FieldTypeID, HideHeader, HideFooter, LookupType, Definition, HideFilter from FieldTypeLookup where FieldTypeID = @id", new { id = ft.ID });
 
-                #region Reference List Lookup Info
-
-                DetailReadOnlyRowModel referenceListRowModel = null;
-
-                if (ft.LookupObjectType == SystemObjects.IntersectType.ToString() && ft.LookupObjectID.HasValue)
-                {
-                    var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == ft.LookupObjectID.Value && ((i.Subject == type && i.SubjectID == id) || (i.Object == type && i.ObjectID == id))).FirstOrDefault();
-                    if (intersect != null)
-                    {
-                        var referenceItemTypeID = (intersect.Subject == type && intersect.SubjectID == id) ? intersect.ObjectID : intersect.SubjectID;
-                        var referenceItemType = Company.AssetTypes.FirstOrDefault(x => x.Object == "ReferenceItemType" && x.ObjectID == referenceItemTypeID);
-
-                        referenceListRowModel = new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField {
-                                        Column = 1,
-                                        Name = $"{ft.FriendlyName} Name",
-                                        FieldDescription = ft.DisplayDescription,
-                                        FieldName = ft.Name,
-                                        Value = referenceItemType?.Name,
-                                        ShowIfEmpty = ft.ShowIfEmpty
-                                    }
-                                },
-                            SecondColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField {
-                                        Column = 2,
-                                        Name = $"{ft.FriendlyName} Description",
-                                        FieldDescription = ft.DisplayDescription,
-                                        FieldName = ft.Name,
-                                        Value = referenceItemType?.Description,
-                                        ShowIfEmpty = ft.ShowIfEmpty,
-                                        DataType = "Html"
-                                    }
-                                },
-                            Category = ft.Category
-                        };
-                    }
-                }
-
-                #endregion
-
                 if (await AnyComplexLookupGridValues(type, id, ft.ID))
                 {
-                    if (referenceListRowModel != null)
-                        list.Add(referenceListRowModel);
-
                     list.Add(new DetailReadOnlyRowModel
                     {
                         columns = 1,
@@ -1601,8 +1555,6 @@ where   h.ID <> @t order by h.[Level] desc;
                 }
                 else if (ft.ShowIfEmpty)
                 {
-                    if (referenceListRowModel != null)
-                        list.Add(referenceListRowModel);
 
                     var ro = new ReadOnlyField
                     {
@@ -2618,14 +2570,14 @@ from    (
         }
 
         [Route("{type}/{uid}/detail")]
-        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, Guid uid)
+        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, Guid uid, bool useSingleColumn = false)
         {
             int objectId = -1;
             switch (type)
             {
                 case SystemObjects.Tag:
                     objectId = Company.Tags.FirstOrDefault(x => x.uid == uid).ID;
-                    return await GetObjectDetailFields(type, objectId);
+                    return await GetObjectDetailFields(type, objectId, useSingleColumn);
                 default:
                     return null;
             }
@@ -2633,9 +2585,9 @@ from    (
 
 
         [Route("{type}/{id:int}/detail")]
-        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, int id)
+        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, int id, bool useSingleColumn = false)
         {
-            var model = new DetailReadOnlyModel() { columns = 2 };
+            var model = new DetailReadOnlyModel() { columns = useSingleColumn ? 1 : 2 };
 
             int row = 0;
             switch (type)
@@ -4230,6 +4182,19 @@ where v.id = {0}", id)).FirstOrDefault();
                     break;
                     #endregion
 
+            }
+
+            if (useSingleColumn)
+            {
+                model.rows.ForEach(r =>
+                {
+                    if (r.columns == 2)
+                    {
+                        r.FirstColumnFields.AddRange(r.SecondColumnFields);
+                        r.columns = 1;
+                        r.SecondColumnFields = new List<ReadOnlyField>();
+                    }
+                });
             }
 
             return model;

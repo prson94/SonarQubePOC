@@ -1628,6 +1628,18 @@ namespace d360.web.Controllers.V2
                             {
                                 result.Add("name", assetType.Name);
                                 result.Add("description", assetType.Description);
+
+                                if (returnForUI)
+                                {
+                                    var definition = JsonConvert.DeserializeObject<dynamic>(string.IsNullOrEmpty(fieldType.Definition) ? "{}" : fieldType.Definition);
+                                    var showDescription = definition == null ? true : definition?.DisplayRefListDescription?.Value ?? true;
+
+                                    result.Add("isReferenceListFromRelationship", true);
+                                    result.Add("objectId", referenceItemTypeID);
+                                    result.Add("fieldTypeId", fieldType.ID);
+                                    result.Add("showDescription", showDescription);
+                                    result.Add("url", $"/reference/{referenceItemTypeID}");
+                                }
                             }
                         }
                     }
