@@ -100,17 +100,17 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['assetTypeUid']) {
-            if (!changes['assetTypeUid'].isFirstChange() && (changes['assetTypeUid'].previousValue != changes['assetTypeUid'].currentValue)) { // asset type has changed            
+            if (!changes['assetTypeUid'].isFirstChange() && (changes['assetTypeUid'].previousValue !== changes['assetTypeUid'].currentValue)) { // asset type has changed            
                 this.load();
             }
         }
         if (changes['assetUid']) {
-            if (!changes['assetUid'].isFirstChange() && (changes['assetUid'].previousValue != changes['assetUid'].currentValue)) { // asset has changed            
+            if (!changes['assetUid'].isFirstChange() && (changes['assetUid'].previousValue !== changes['assetUid'].currentValue)) { // asset has changed            
                 this.load();
             }
         }
         if (changes['isModalVisible']) {
-            if (!changes['isModalVisible'].isFirstChange() && (changes['isModalVisible'].previousValue != changes['isModalVisible'].currentValue)) { // visibility has changed            
+            if (!changes['isModalVisible'].isFirstChange() && (changes['isModalVisible'].previousValue !== changes['isModalVisible'].currentValue)) { // visibility has changed            
                 this.load();
             }
         }
@@ -125,7 +125,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     private load() {
         this.isInErrorMessage = '';
         this.isInError = false;
-        if (this.selection != undefined) {
+        if (this.selection !== undefined) {
             this.editedItem = _.cloneDeep(this.selection);
         } else {
             this.editedItem = {};
@@ -146,8 +146,8 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     handleEditor(result: EditorField[]) {
 
         if (this.dataModel && !this.assetUid) {
-            result.forEach(res => {
-                if (res.Name == 'Name') {
+            result.forEach((res) => {
+                if (res.Name === 'Name') {
                     res.Value = this.dataModel['Name'];
                 }
             });
@@ -155,7 +155,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
         this.isLoading = false;
 
-        if ((result as any).type && (result as any).type == "error") {
+        if ((result as any).type && (result as any).type === "error") {
             this.isInErrorMessage = (result as any).message;
             this.isInError = true;
         }
@@ -166,10 +166,10 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
             this.categories = [];
 
-            result = _.orderBy(result, [field => field.Row ? field.Row : 0], ['asc']);
+            result = _.orderBy((result), [field => field.Row ? field.Row : 0], ['asc']);
             this.fields = result;
 
-            this.fields.forEach(f => {
+            this.fields.forEach((f) => {
 
                 if (f.Category == null) {
                     currentCategory = "";
@@ -179,11 +179,11 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 }
 
 
-                if (this.categories.findIndex((dc) => dc.name == currentCategory) == -1) {
+                if (this.categories.findIndex((dc) => dc.name === currentCategory) == -1) {
                     let category = new EditorCategory();
                     category.name = currentCategory;
                     category.rows = [];
-                    if (currentCategory == "") {
+                    if (currentCategory === "") {
                         this.categories.unshift(category);
                     }
                     else {
@@ -193,19 +193,19 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 }
 
 
-                if (f.FieldType && f.FieldType.toUpperCase() == 'BOOLEAN' && f.Value != null) {
+                if (f.FieldType && f.FieldType.toUpperCase() === 'BOOLEAN' && f.Value != null) {
                     if (f.Value) {
                         /* checkbox doesnt work binding to a string */
-                        f.Value = (f.Value.toUpperCase() == "TRUE" ? true : false);
+                        f.Value = (f.Value.toUpperCase() === "TRUE" ? true : false);
                     }
                     else {
                         f.Value = false;
                     }
                 }
 
-                let curCategory = this.categories.find((dc) => dc.name == currentCategory);
+                let curCategory = this.categories.find((dc) => dc.name === currentCategory);
 
-                let r = curCategory.rows.find((r) => r.Row == (f.Row || 0));
+                let r = curCategory.rows.find((r) => r.Row === (f.Row || 0));
                 if (r) {
                     r.Fields.push(f);
                 } else {
@@ -218,8 +218,8 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             });
 
 
-            this.fore = this.fields.find((f) => f.FieldType == 'Color' && f.FieldName == 'IconForeColor');
-            this.back = this.fields.find((f) => f.FieldType == 'Color' && f.FieldName == 'IconBackColor');
+            this.fore = this.fields.find((f) => f.FieldType === 'Color' && f.FieldName === 'IconForeColor');
+            this.back = this.fields.find((f) => f.FieldType === 'Color' && f.FieldName === 'IconBackColor');
 
             if (this.fore != null && this.back != null) {
                 this.hasIconFields = true;
@@ -242,7 +242,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
         editorField.forEach((field) => {
             //if its a link we need to add two fields a link and name            
-            if (field.FieldType == "Link") {
+            if (field.FieldType === "Link") {
                 let parts = (field.Value ? field.Value.split("|") : []);
                 let url = "";
                 let name = "";
@@ -259,7 +259,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 group[field.FieldName + '_Name'] = new FormControl(name || '');
                 group[field.FieldName + '_Url'] = new FormControl(url || '', this.getFieldValidators(field));
             }
-            else if (field.FieldType == "DateTime" || field.FieldType == "Date") {
+            else if (field.FieldType === "DateTime" || field.FieldType === "Date") {
                 if (field.Value != null) {
                     let date = new Date(field.Value);
                     field.Value = date;
@@ -271,11 +271,11 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 }, this.getFieldValidators(field));
             }
             else {
-                if (field.FieldType == "Relationship" && this.selection) {
+                if (field.FieldType === "Relationship" && this.selection) {
                     if (field.Value != null) {
                         field.Value = JSON.parse(field.Value);
                     }
-                } else if (field.FieldType == "Lookup" && !field.Value && this.selection) {
+                } else if (field.FieldType === "Lookup" && !field.Value && this.selection) {
                     let selected = field.Items.filter((x) => x.Selected);
 
                     field.Value = [];
@@ -284,24 +284,24 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                         field.Value.push(item.Value);
                     }
 
-                    if (field.Value.length == 0) {
+                    if (field.Value.length === 0) {
                         field.Value = null;
                     }
-                } else if (field.FieldType == "Lookup" && field.Value) {
+                } else if (field.FieldType === "Lookup" && field.Value) {
                     if (field.Value != null && field.MultiSelect && typeof field.Value === "string") {
                         field.Value = field.Value.split(',');
                     }
                 }
                 var setDisabled = field.ReadOnly;
-                if (field.FieldType == "Lookup" && !field.Value && field.DelayedLoadType == 'FieldFilter') {
+                if (field.FieldType === "Lookup" && !field.Value && field.DelayedLoadType == 'FieldFilter') {
                     setDisabled = true;
                 }
 
                 var fieldValue = field.Value;
-                if (field.FieldType != 'Boolean') {
+                if (field.FieldType !== 'Boolean') {
                     fieldValue = field.Value === null ? '' : field.Value;
                 }
-                else if (field.FieldType == 'Boolean' && field.Value == null) {
+                else if (field.FieldType === 'Boolean' && field.Value == null) {
                     fieldValue = undefined;
                 }
 
@@ -329,7 +329,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     if (vals.length === 2) {
                         maxLen = +vals[1];
 
-                        if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
+                        if (field.FieldType === 'Number' || field.FieldType === 'Decimal') {
                             validators.push(Validators.max(maxLen));
                         } else {
                             validators.push(Validators.maxLength(maxLen));
@@ -340,7 +340,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                             minLen = +minParts[1];
 
                             if (minLen > 1) {
-                                if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
+                                if (field.FieldType === 'Number' || field.FieldType === 'Decimal') {
                                     validators.push(Validators.min(minLen));
                                 } else {
                                     // only min length > 1
@@ -354,7 +354,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 } else if (validation.rule && validation.rule.startsWith('minLength=')) {
                     minLen = +validation.rule.split('=').pop();
 
-                    if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
+                    if (field.FieldType === 'Number' || field.FieldType === 'Decimal') {
                         validators.push(Validators.min(minLen));
                     } else {
                         validators.push(Validators.minLength(minLen));
@@ -362,7 +362,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 } else if (validation.rule && validation.rule.startsWith('maxLength=')) {
                     maxLen = +validation.rule.split('=').pop();
 
-                    if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
+                    if (field.FieldType === 'Number' || field.FieldType === 'Decimal') {
                         validators.push(Validators.max(maxLen));
                     } else {
                         validators.push(Validators.maxLength(maxLen));
@@ -379,7 +379,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             validators.push(Validators.required);
         }
 
-        if (field.FieldType == 'Number') {
+        if (field.FieldType === 'Number') {
             validators.push(FormHelpers.integerValidator);
 
             if (validators.indexOf(Validators.min) == -1) {
@@ -390,7 +390,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 validators.push(Validators.max(maxLen));
             }
         }
-        if (field.FieldType == 'Decimal') {
+        if (field.FieldType === 'Decimal') {
             validators.push(FormHelpers.numberValidator);
 
             if (validators.indexOf(Validators.min) == -1) {
@@ -415,10 +415,10 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         //adjust any dates to utc
         for (var p in this.form.value) {
             if (this.form.value.hasOwnProperty(p)) {
-                let field = this.fields.find((f) => f.FieldName == p);
+                let field = this.fields.find((f) => f.FieldName === p);
 
                 if (this.form.value[p] instanceof Date) {
-                    if (field != null && field.FieldType == 'Date') {
+                    if (field != null && field.FieldType === 'Date') {
                         let simpleDate = [this.pad(this.form.value[p].getMonth() + 1), this.pad(this.form.value[p].getDate()), this.pad(this.form.value[p].getFullYear())].join('/');
                         this.form.value[p] = simpleDate;
                     }

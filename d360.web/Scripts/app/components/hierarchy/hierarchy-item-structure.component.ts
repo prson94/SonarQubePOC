@@ -203,7 +203,9 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     private buildTreeNodeArray(hierarchies: any[], levelNumber: number, Parent?: string): TreeNode[] {
         let rootNodes = hierarchies.filter((x) => (Parent !== undefined ? x.ParentAssetUid === Parent : !x.ParentAssetUid));
 
-        if (rootNodes.length === 0) return null;
+        if (rootNodes.length === 0) {
+            return null;
+        }
 
         let res: TreeNode[] = [];
 
@@ -238,7 +240,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     public onDeleted() {
         this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was removed        
         this.deleteSelectedTreeNode(this.selected.data.AssetUid);
-        this.hierarchy = this.hierarchy.filter((x) => x.AssetUid != this.selected.data.AssetUid);
+        this.hierarchy = this.hierarchy.filter((x) => x.AssetUid !== this.selected.data.AssetUid);
         this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1);
 
         this.selected = null;
@@ -251,7 +253,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
         // add root nodes
         for (let i = 0; i < this.treeNodeArray.length; i++) {
-            if (this.treeNodeArray[i].data.AssetUid && this.treeNodeArray[i].data.AssetUid == id) {
+            if (this.treeNodeArray[i].data.AssetUid && this.treeNodeArray[i].data.AssetUid === id) {
                 this.treeNodeArray.splice(i, 1);
                 return
             }            
@@ -266,7 +268,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         let node = nodes[0];
 
         while (node) {
-            if (node.data.AssetUid && node.data.AssetUid == id) {
+            if (node.data.AssetUid && node.data.AssetUid === id) {
                 return node;
             }
 
@@ -323,7 +325,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     private showAdd(level: number) {
         this.showEditor = true;
-        this.selectedParentId = level == 0 ? undefined : this.selected ? this.selected.data.AssetUid : undefined;
+        this.selectedParentId = level === 0 ? undefined : this.selected ? this.selected.data.AssetUid : undefined;
         this.selectedLevel = level;
         this.selected = null;
     }
