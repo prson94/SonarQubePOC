@@ -94,7 +94,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
                     "Text": path,
                     "Value": item["AssetUid"]
                 });
-            })
+            });
             this.isLoading = false;
             this.ref.markForCheck();
         });

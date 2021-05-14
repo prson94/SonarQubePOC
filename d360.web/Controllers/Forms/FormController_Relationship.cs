@@ -83,7 +83,9 @@ namespace d360.web.Controllers
         private JsonResult Relationship_AddFields(IntersectType relationshipType, Asset targetAsset)
         {
             if (!Company.HasAssetPermission(targetAsset.Object, targetAsset.ObjectID, Permission.AddRelationships))
+            {
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+            }
 
             var list = new List<EditableField>();
 
@@ -94,9 +96,8 @@ namespace d360.web.Controllers
                 return jsonException("Invalid relationship type or source item.", HttpStatusCode.NotFound);
             }
 
-
-            var targetCardinality = Cardinality.Many;
-            var objectCardinality = Cardinality.Many;
+            Cardinality targetCardinality;
+            Cardinality objectCardinality;
             Guid targetAssetTypeUid;
             var subjectUid = Company.AssetTypes.FirstOrDefault(x => x.Object == relationshipType.Subject && x.ObjectID == relationshipType.SubjectID).uid;
             var objectUid = Company.AssetTypes.FirstOrDefault(x => x.Object == relationshipType.Object && x.ObjectID == relationshipType.ObjectID).uid;

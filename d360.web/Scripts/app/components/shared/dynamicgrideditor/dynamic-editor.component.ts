@@ -426,10 +426,10 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 if (validation.rule && validation.rule.startsWith('length=')) {
                     var vals = validation.rule.split(',');
 
-                    if (vals.length == 2) {
+                    if (vals.length === 2) {
                         maxLen = +vals[1];
 
-                        if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
+                        if (field.FieldType === 'Number' || field.FieldType === 'Decimal') {
                             validators.push(Validators.max(maxLen));
                         } else {
                             validators.push(Validators.maxLength(maxLen));
@@ -440,7 +440,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                             minLen = +minParts[1];
 
                             if (minLen > 1) {
-                                if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
+                                if (field.FieldType === 'Number' || field.FieldType === 'Decimal') {
                                     validators.push(Validators.min(minLen));
                                 } else {
                                     // only min length > 1
@@ -454,7 +454,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 } else if (validation.rule && validation.rule.startsWith('minLength=')) {
                     minLen = +validation.rule.split('=').pop();
 
-                    if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
+                    if (field.FieldType === 'Number' || field.FieldType === 'Decimal') {
                         validators.push(Validators.min(minLen));
                     } else {
                         validators.push(Validators.minLength(minLen));
@@ -462,7 +462,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 } else if (validation.rule && validation.rule.startsWith('maxLength=')) {
                     maxLen = +validation.rule.split('=').pop();
 
-                    if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
+                    if (field.FieldType === 'Number' || field.FieldType === 'Decimal') {
                         validators.push(Validators.max(maxLen));
                     } else {
                         validators.push(Validators.maxLength(maxLen));
@@ -479,7 +479,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             validators.push(Validators.required);
         }
 
-        if (field.FieldType == 'Number') {
+        if (field.FieldType === 'Number') {
             validators.push(FormHelpers.integerValidator);
 
             if (validators.indexOf(Validators.min) == -1) {
@@ -490,7 +490,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 validators.push(Validators.max(maxLen));
             }
         }
-        if (field.FieldType == 'Decimal') {
+        if (field.FieldType === 'Decimal') {
             validators.push(FormHelpers.numberValidator);
 
             if (validators.indexOf(Validators.min) == -1) {

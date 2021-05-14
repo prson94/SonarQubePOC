@@ -123,8 +123,8 @@ namespace d360.model.DataAccessLayer
             string _orderBy = "I.IntersectTypeID";
             string _orderDirection = "asc";
 
-            Guid objectUid = Guid.Empty;
-            Guid relationshipTypeUid = Guid.Empty;
+            Guid objectUid;
+            Guid relationshipTypeUid;
             bool isSubject = false;
 
             var baseTableSql = @"from [Intersect] I 
@@ -347,8 +347,8 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
 
                     var filterExpressionParser = new FilterExpressionParser(companyContext, FilterExpressionParseType.RelationshipCustomFields);
                     filterExpressionParser.LoadFieldTypes(fieldTypes, tempFieldColumns);
-                    Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                    List<int> filteredFields = new List<int>();
+                    Dictionary<string, object> sqlParams;
+                    List<int> filteredFields;
                     var fieldsQuery = "(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")";
 
                     whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + fieldsQuery;

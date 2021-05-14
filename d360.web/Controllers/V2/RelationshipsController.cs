@@ -1558,7 +1558,7 @@ namespace d360.web.Controllers.V2
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
+                SendException(ex, new Dictionary<string, string> {
                     { "Endpoint Method", prefix }
                 });
 

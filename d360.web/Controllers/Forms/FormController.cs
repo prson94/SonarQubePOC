@@ -368,7 +368,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        throw new Exception("No Issue Type found for given Guid");
+                        throw new ArgumentException("No Issue Type found for given Guid");
                     }
                 }
                 else if (objectType == SystemObjects.IssueTypeRelation.ToString())
@@ -380,7 +380,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        throw new Exception("No Issue Type found for given Guid");
+                        throw new ArgumentException("No Issue Type found for given Guid");
                     }
                 }
                 else if (objectType == SystemObjects.IntersectType.ToString())
@@ -395,7 +395,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        throw new Exception("Not valid Intersect Type Uid or Target Type Uid");
+                        throw new ArgumentException("Not valid Intersect Type Uid or Target Type Uid");
                     }
 
                 }
@@ -408,11 +408,11 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        throw new Exception("No Asset Type found for given Guid");
+                        throw new ArgumentException("No Asset Type found for given Guid");
                     }
                 }
             }
-            throw new Exception("Invalid Guid");
+            throw new ArgumentException("Invalid Guid");
 
         }
 
@@ -535,7 +535,7 @@ namespace d360.web.Controllers
                 case "INTERSECT":
                     return EditRelationship(form);
                 case "INTERSECTTYPE":
-                    return EditIntersectType(form);             
+                    return EditIntersectType(form);
                 case "NAMESPACE":
                     return EditNamespace(form);
                 case "ORGANIZATION":
@@ -1234,6 +1234,9 @@ order by Sort, title";
                 case "BL":   // Lineage
                     models = new List<OptionModel> { new OptionModel { title = "Default", value = "Lineage|-1" } };
                     break;
+                default:
+                    models = new List<OptionModel>();
+                    break;
             }
 
             if (!string.IsNullOrEmpty(sql))
@@ -1773,7 +1776,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentUid", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.uid) }).ToList() });
             }
 
-                        
+
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, id).ToList(), row, false);
 
             return Json(list, JsonRequestBehavior.AllowGet);

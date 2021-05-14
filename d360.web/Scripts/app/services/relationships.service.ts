@@ -20,7 +20,7 @@ export class RelationshipsService extends BaseObservableService {
         var url = 'api/v2/relationships/types?state=1';
 
         if (assetTypeUid) {
-            url += `&AssetTypeUid=${assetTypeUid}`
+            url += `&AssetTypeUid=${assetTypeUid}`;
         }
 
         return this.http.get(url)
@@ -300,13 +300,13 @@ export class RelationshipsService extends BaseObservableService {
         var url = 'api/v2/relationships?RelationshipTypeUid=' + intersectTypeUid;
 
         if (params) {
-            url += "&" + Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            url += "&" + Object.keys(params).map((key) => key + '=' + params[key]).join('&');
         }
 
         if (isExport === false) {
             return this.http.get(url)
                 .pipe(
-                    map(response => <any>response),
+                    map((response) => <any>response),
                     catchError((err) => {
                         if (!this.isErrorFromFilterExpression(err)) {
                             return this.handleError(err);
@@ -321,7 +321,7 @@ export class RelationshipsService extends BaseObservableService {
         }
         else {
             this.http.get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
-                .subscribe(data => this.downloadFile(data, 'relationship type items'));
+                .subscribe((data) => this.downloadFile(data, 'relationship type items'));
         }
     }
 

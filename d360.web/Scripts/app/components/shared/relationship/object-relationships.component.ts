@@ -74,8 +74,9 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     load(): void {
         this.isLoading = true;
 
-        if (!this.assetTypeUid || !this.assetUid)
+        if (!this.assetTypeUid || !this.assetUid) {
             return;
+        }
 
         if (this.loadDataSubs) {
             this.loadDataSubs.unsubscribe();
@@ -92,7 +93,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
             var origLength = allItems.length;
             for (let i = 0; i < origLength; i++) {
-                allItems[i].IsSubject = allItems[i].Subject.Uid == this.assetTypeUid;
+                allItems[i].IsSubject = allItems[i].Subject.Uid === this.assetTypeUid;
 
                 if (allItems[i].Subject.Uid === allItems[i].Object.Uid) {
                     var copy = _.cloneDeep(allItems[i]);
@@ -118,7 +119,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
                 relation.TypeName = this.getRelName(relation).toUpperCase();
             }
 
-            this.relationshipItems = this.relationshipItems.sort((a, b) => { return a.TypeName > b.TypeName ? 1 : -1 });
+            this.relationshipItems = this.relationshipItems.sort((a, b) => { return a.TypeName > b.TypeName ? 1 : -1; });
 
             for (let relation of this.relationshipItems) {
                 if (relation.Count > 0 && !this.selected) {
@@ -209,7 +210,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
             var cardinality = this.selected.IsSubject ? this.selected.Object.Cardinality : this.selected.Subject.Cardinality;
 
-            this.cardinalityShow = (cardinality === "Many") || (this.selected.Count == 0 && cardinality !== "Many");
+            this.cardinalityShow = (cardinality === "Many") || (this.selected.Count === 0 && cardinality !== "Many");
             this.hasAdd = this.cardinalityShow
                 && this.hasRelationships
                 && this.selected
@@ -230,7 +231,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     getIconClass(rel: RelationshipTypeUIModel) {
         {
-            var isObject = rel.Object.Uid == this.assetTypeUid;
+            var isObject = rel.Object.Uid === this.assetTypeUid;
             var type = isObject ? rel.Subject.Class : rel.Object.Class;
 
             let cs: string = 'fa inactive-tool-icon ';
