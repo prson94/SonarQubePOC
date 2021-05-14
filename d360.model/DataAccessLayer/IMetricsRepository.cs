@@ -23,7 +23,7 @@ namespace d360.model.DataAccessLayer
         Task<IEnumerable<MetricPathOptionViewModel>> GetMetricPathOptionsBy(int assetTypeId, ScoreType scoreType);
         List<MetricAssetViewModel> GetMetricStructureByAllocation(Guid allocationUid, List<State> states);
         (MetricScoreApiModel, string) GetMetricScore(AssetType at, IEnumerable<KeyValuePair<string, string>> queryParams);
-        DataQualityGetResultModel GetDataQualityResults(Guid owningAssetUid, Guid? v, int pageSize, int pageNum, string sort, string direction, DateTime? effectiveDateStart, DateTime? effectiveDateEnd, bool includeDuplicateFlag = false, string _filter = "");
+        DataQualityGetResultModel GetDataQualityResults(Guid owningAssetUid, Guid? v, int pageSize, int pageNum, string sort, string direction, DateTime? effectiveDateStart, DateTime? effectiveDateEnd, bool includeDuplicateFlag = false, string _filter = "", string _simpeFilter = "");
         List<DataQualityResponseModel> InsertDataQualityResult(List<DataQualityInsertModel> request, ApiExecution execution);
         List<DataQualityResponseModel> UpdateDataQualityResult(List<DataQualityUpdateModel> request, ApiExecution execution);
         List<DataQualityAssetResultModel> GetAssetResultDetailsByUid(Guid value);

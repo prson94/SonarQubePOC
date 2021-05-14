@@ -67,20 +67,21 @@ namespace d360.model.helpers
             if(parseType == FilterExpressionParseType.RuleResults)
             {
                 allowedDefaultFields.Clear();
-                allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetClass", "E.EvaluatedAssetTypeClass", SqlFieldType.AssetTypeClass));
-                allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetTypePath", "P.[Path]", SqlFieldType.Text));
-                allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetPath", "E.EvaluatedAssetPath", SqlFieldType.Text));
-                allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetDisplayPath", "E.EvaluatedAssetDisplayPath", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetClass", "EvaluatedAssetTypeClass", SqlFieldType.AssetTypeClass));
+                allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetTypePath", "EvaluatedAssetTypePath", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetPath", "EvaluatedAssetPath", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetDisplayPath", "EvaluatedAssetDisplayPath", SqlFieldType.Text));
                
-                allowedDefaultFields.Add(new DefaultFilter("EffectiveDate", "R.EffectiveDate", SqlFieldType.Date));
-                allowedDefaultFields.Add(new DefaultFilter("RunDate", "R.RunDate", SqlFieldType.Date));
+                allowedDefaultFields.Add(new DefaultFilter("EffectiveDate", "EffectiveDate", SqlFieldType.Date));
+                allowedDefaultFields.Add(new DefaultFilter("RunDate", "RunDate", SqlFieldType.DateTime));
 
-                allowedDefaultFields.Add(new DefaultFilter("PassCount", "R.PassCount", SqlFieldType.Number));
-                allowedDefaultFields.Add(new DefaultFilter("FailCount", "R.FailCount", SqlFieldType.Number));
-                allowedDefaultFields.Add(new DefaultFilter("TotalCount", "R.TotalCount", SqlFieldType.Number));
-                allowedDefaultFields.Add(new DefaultFilter("PassFraction", "R.PassFraction", SqlFieldType.Decimal));
+                allowedDefaultFields.Add(new DefaultFilter("PassCount", "PassCount", SqlFieldType.Number));
+                allowedDefaultFields.Add(new DefaultFilter("FailCount", "FailCount", SqlFieldType.Number));
+                allowedDefaultFields.Add(new DefaultFilter("TotalCount", "TotalCount", SqlFieldType.Number));
+                allowedDefaultFields.Add(new DefaultFilter("PassFraction", "PassFraction", SqlFieldType.Decimal));
 
-                allowedDefaultFields.Add(new DefaultFilter("Passed", "R.Passed", SqlFieldType.Boolean));
+                allowedDefaultFields.Add(new DefaultFilter("Passed", "Passed", SqlFieldType.Boolean));
+                allowedDefaultFields.Add(new DefaultFilter("Outdated", "isduplicate", SqlFieldType.Boolean));
             }
         }
 

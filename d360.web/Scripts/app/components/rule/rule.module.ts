@@ -41,6 +41,8 @@ import { TableModule } from 'primeng/table';
 import { CalendarModule } from 'primeng/calendar';
 import { AssetGridModule } from '../assets-grid/asset-grid.module';
 import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score.module';
+import { SearchFieldModule } from '../shared/controls/search-field/search-field.component';
+import { AdvancedFiltersModule } from '../assets-grid/advanced-filtering/advanced-filtering.module';
 
 @NgModule({
     imports: [
@@ -79,7 +81,9 @@ import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score
         SharedObjectDetailsModule,
         SharedAssetScoreModule,
         SharedAssetEditorsModule,
-        AssetGridModule
+        AssetGridModule,
+        SearchFieldModule,
+        AdvancedFiltersModule
     ],
     declarations: [
         RuleComponent,
