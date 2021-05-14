@@ -332,6 +332,34 @@ namespace d360.model.DataAccessLayer
             return await CreateApiBatchJob(executionInfo, execution, models).ConfigureAwait(false);
         }
 
+        public async Task<ApiExecutionInfo> PutBatchDataProfiles(List<DataProfileUpsertModel> models, ApiExecution execution)
+        {
+            var executionInfo = new ApiExecutionInfo
+            {
+                CompanyID = CompanyContext.CurrentCompanyID,
+                CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+                ExecutionID = Guid.NewGuid(),
+                ResourceID = execution.ResourceID,
+                Action = ApiExecutionAction.PutDataProfile,
+            };
+
+            return await CreateApiBatchJob(executionInfo, execution, models).ConfigureAwait(false);
+        }
+
+        public async Task<ApiExecutionInfo> DeleteBatchDataProfiles(List<AssetDataProfileDeleteModel> models, ApiExecution execution)
+        {
+            var executionInfo = new ApiExecutionInfo
+            {
+                CompanyID = CompanyContext.CurrentCompanyID,
+                CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+                ExecutionID = Guid.NewGuid(),
+                ResourceID = execution.ResourceID,
+                Action = ApiExecutionAction.DeleteDataProfile,
+            };
+
+            return await CreateApiBatchJob(executionInfo, execution, models).ConfigureAwait(false);
+        }
+
         /// <summary>
         /// Common code for creating batch calls.
         /// </summary>
@@ -356,7 +384,5 @@ namespace d360.model.DataAccessLayer
 
             return executionInfo;
         }
-
-
     }
 }

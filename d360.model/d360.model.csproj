@@ -131,7 +131,6 @@
     <Compile Include="CompanyContext.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="CompanyContext_MarkitLineage.cs" />
     <Compile Include="DataAccessLayer\ICommentRepository.cs" />
     <Compile Include="DataAccessLayer\IDataProfileRepository.cs" />
     <Compile Include="DataAccessLayer\IGraphFilterRepository.cs" />

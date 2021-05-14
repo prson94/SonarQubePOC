@@ -235,6 +235,19 @@ export class RelationshipsService extends BaseObservableService {
             );
     }
 
+    public getRelations(
+        object: string,
+        objectId: number
+    ): Observable<RelationItem[]> {
+        return this
+            .http
+            .get(`api/${object}/${objectId}/relations`)
+            .pipe(
+                map((response) => <RelationItem[]>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     exportObjectRelationshipsToExcel(objectType: string, objectId: number, targetType: string, targetTypeId: number, intersectTypeID: number, queryString: string, criticalOnly?: boolean) {
         criticalOnly = (criticalOnly == undefined ? false : criticalOnly);
 

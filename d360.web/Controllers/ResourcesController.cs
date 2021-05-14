@@ -775,26 +775,6 @@ Order by ColumnOrder,Name
             }
         }
 
-        [Route("MyApiCredentials")]
-        public JsonNetResult MyApiCredentials()
-        {
-            if (!Company.CurrentResourceIsAdmin && !this.ShowAllUsersAPIKey())
-                return jsonNetException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var resource = Community.GetById<Resource>(Community.CurrentResourceID);
-
-            return new JsonNetResult
-            {
-                Data = new
-                {
-                    PublicKey = resource.APIPublicKey,
-                    PrivateKey = resource.APIPrivateKey
-                },
-                Formatting = Newtonsoft.Json.Formatting.None
-
-            };
-        }
-
         private List<TooltipFieldLevelPathModel> GetFieldLevelPathFromAssetNodeSegment(Guid uid) {
             List<TooltipFieldLevelPathModel> levels = new List<TooltipFieldLevelPathModel>();
             string segments = Company.Query<string>($@"SELECT Segments FROM graph.AssetNode WHERE Uid = @assetUid", new { assetUid = uid }).FirstOrDefault();

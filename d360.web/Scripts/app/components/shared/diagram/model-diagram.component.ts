@@ -3,7 +3,6 @@ import * as _ from 'lodash';
 import { AfterViewInit, Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { HierarchyDiagramModel, Model } from '../../../models/model.model';
-import { DiagramService } from '../../../services/diagram.service';
 import { DiagramBaseComponent } from './diagram-base.component';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
@@ -18,7 +17,7 @@ declare var window: any;
 @Component({
     selector: 'd3s-model-diagram',
     templateUrl: './model-diagram.component.html',
-    providers: [DiagramService,ModelsService]
+    providers: [ModelsService]
 })
 
 export class ModelDiagramComponent extends DiagramBaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -41,7 +40,6 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
 
     constructor(
         private myElement: ElementRef,
-        private diagramService: DiagramService,
         secondaryNavService: SecondaryNavService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private modelsService: ModelsService,
@@ -84,7 +82,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
 
     private populateDiagram() {
         this.isLoading = true;
-        this.diagramService.getCatalogDiagram(this.id).subscribe(
+        this.modelsService.getCatalogDiagram(this.id).subscribe(
             data => {
                 let root = data.find(x => x.parent === null);
                 if (root) {

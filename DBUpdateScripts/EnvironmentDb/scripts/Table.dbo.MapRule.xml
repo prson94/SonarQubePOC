@@ -5,23 +5,15 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.MapRule-v1">
+  <changeSet author="Core" id="Table.dbo.MapRule-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapRule')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapRule')
 BEGIN
-	CREATE TABLE [dbo].[MapRule](
-		[ID] [int] IDENTITY(1,1) NOT NULL,
-		[Transformation] [nvarchar](4000) NULL,
-		[CreatedBy] [int] NOT NULL,
-		[CreatedOn] [datetime] NOT NULL,
-		[UpdatedBy] [int] NOT NULL,
-		[UpdatedOn] [datetime] NOT NULL,
-		CONSTRAINT [PK_MapRule] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
-	)
+	EXEC sp_rename 'dbo.MapRule', 'MapRule_backup'
 END
 		]]>
     </sql>

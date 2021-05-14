@@ -288,9 +288,6 @@ namespace d360.web.Controllers
                 case "ISSUETYPE":
                     res = IssueType_EditFields(oid);
                     break;
-                case "MAP":
-                    res = Map_EditFields(oid);
-                    break;
                 case "NAMESPACE":
                     res = CustomAPINamespace_EditFields(oid);
                     break;
@@ -455,9 +452,6 @@ namespace d360.web.Controllers
                 case "ISSUETYPERELATION":
                     res = IssueTypeRelation_AddFields(objectID.GetValueOrDefault());
                     break;
-                case "MAP":
-                    res = Map_AddFields();
-                    break;
                 case "NAMESPACE":
                     res = CustomAPINamespace_AddFields(parentID.GetValueOrDefault());
                     break;
@@ -541,9 +535,7 @@ namespace d360.web.Controllers
                 case "INTERSECT":
                     return EditRelationship(form);
                 case "INTERSECTTYPE":
-                    return EditIntersectType(form);
-                case "MAP":
-                    return EditMap(form);
+                    return EditIntersectType(form);             
                 case "NAMESPACE":
                     return EditNamespace(form);
                 case "ORGANIZATION":
@@ -595,8 +587,6 @@ namespace d360.web.Controllers
                     IntersectType intersectType = Company.GetById<IntersectType>(objectID);
                     form.Add("IntersectTypeUid", intersectType.uid.ToString());
                     return DeleteIntersectType(form);
-                case "LINEAGEMAPPING":
-                    return DeleteLineageMapping(form);
                 case "NAMESPACE":
                     return DeleteCustomAPINamespace(form);
                 case "ORGANIZATION":
@@ -653,8 +643,6 @@ namespace d360.web.Controllers
                     return AddRelationship(form);
                 case "INTERSECTTYPE":
                     return AddIntersectType(form);
-                case "MAP":
-                    return AddMap(form);
                 case "NAMESPACE":
                     return AddNamespace(form);
                 case "ORGANIZATION":
@@ -725,7 +713,6 @@ namespace d360.web.Controllers
             model.HideData3SixtyUsers = (settings.Any(i => i.SettingID == 9) ? bool.Parse(settings.Single(i => i.SettingID == 9).Value) : true);
             model.ShowAllUsersAPIKey = (settings.Any(i => i.SettingID == 57) ? bool.Parse(settings.Single(i => i.SettingID == 57).Value) : true);
             model.WorkflowCatchAllGroup = (settings.Any(i => i.SettingID == 58) ? Int32.Parse(settings.Single(i => i.SettingID == 58).Value) : 0);
-            model.WorkflowDigestEmailEnabled = (settings.Any(i => i.SettingID == 59) ? bool.Parse(settings.Single(i => i.SettingID == 59).Value) : false);
             model.WorkflowDigestEmailDays = (settings.Any(i => i.SettingID == 78) ? int.Parse(settings.Single(i => i.SettingID == 78).Value) : 0);
             model.MaxDropdownItems = (settings.Any(i => i.SettingID == 60) ? Int32.Parse(settings.Single(i => i.SettingID == 60).Value) : 10000);
             model.WriteActionDescription = (settings.Any(i => i.SettingID == 61) ? bool.Parse(settings.Single(i => i.SettingID == 61).Value) : true);
@@ -746,7 +733,7 @@ namespace d360.web.Controllers
             model.DefaultSearchTypes = (settings.Any(i => i.SettingID == 13) ? settings.Single(i => i.SettingID == 13).Value : "");
 
             model.FusionEnabled = (settings.Any(i => i.SettingID == 70) ? bool.Parse(settings.Single(i => i.SettingID == 70).Value) : true);
-            model.LineageVersion = (settings.Any(i => i.SettingID == 68) ? int.Parse(settings.Single(i => i.SettingID == 68).Value) : 1);
+            model.LineageVersion = (settings.Any(i => i.SettingID == 68) ? int.Parse(settings.Single(i => i.SettingID == 68).Value) : 3);
 
             IQueryable<SiteNav> siteNavs = Company.SiteNav.Where(s => s.ParentID == null && s.Name != "#Home").OrderBy(s => s.SortOrder);
             if (!model.FusionEnabled)
@@ -890,7 +877,6 @@ namespace d360.web.Controllers
                 updateCompanySetting(settings, 9, formModel.HideData3SixtyUsers.ToString().ToLower());
                 updateCompanySetting(settings, 57, formModel.ShowAllUsersAPIKey.ToString().ToLower());
                 updateCompanySetting(settings, 58, formModel.WorkflowCatchAllGroup.ToString());
-                updateCompanySetting(settings, 59, formModel.WorkflowDigestEmailEnabled.ToString().ToLower());
                 updateCompanySetting(settings, 78, Math.Abs(formModel.WorkflowDigestEmailDays).ToString());
                 updateCompanySetting(settings, 60, Math.Abs(formModel.MaxDropdownItems).ToString());
                 updateCompanySetting(settings, 61, formModel.WriteActionDescription.ToString().ToLower());
@@ -1139,345 +1125,6 @@ namespace d360.web.Controllers
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
-
-        #endregion
-
-        #region LEGACY Lineage (TO BE REMOVED WHEN NEW LINEAGE IS COMPLETE)
-
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("UpdateLineage")]
-        public JsonNetResult UpdateLineage(LineageEditorModel model)
-        {
-            if (!Company.HasAssetPermission(model.Focal, model.FocalID, Permission.AddAsset) || !Company.HasAssetPermission(model.Focal, model.FocalID, Permission.EditAsset))
-            {
-                return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-            }
-
-            model.Deletes?.ForEach(d =>
-            {
-                var mapItem = Company.GetById<MapItem>(d.ID);
-
-                try
-                {
-                    mapItem.Maps.ToList().ForEach(m =>
-                    {
-                        m.MapItems.Remove(mapItem);
-                    });
-                    Company.MapSequences.RemoveRange(mapItem.MapSequences);
-                    Company.MapItems.Remove(mapItem);
-
-                    Company.SaveChanges();
-
-                }
-                catch (Exception ex)
-                {
-                    //reset state on fail to avoid future errors in SaveChanges()
-                    if (mapItem != null)
-                    {
-                        Company.Entry(mapItem).State = System.Data.Entity.EntityState.Unchanged;
-                    }
-
-                    d.HasError = true;
-                    d.ErrorMessage = ex.GetFullExceptionData();
-                }
-            });
-
-            model.Adds?.ForEach(a =>
-            {
-                try
-                {
-                    var sourceIntersect = Company.IntersectDetails.Where(i =>
-                    i.IntersectTypeID == a.SourceIntersectTypeID &&
-                    i.SubjectID == a.SourceSubjectID &&
-                    i.ObjectID == a.SourceObjectID).SingleOrDefault();
-
-                    if (sourceIntersect == null)  //add source intersect if it doesn't exist
-                    {
-                        sourceIntersect = Company.AddIntersect(a.SourceIntersectTypeID, a.SourceSubject, a.SourceSubjectID, a.SourceObject, a.SourceObjectID);
-                    }
-
-
-                    var targetIntersect = Company.IntersectDetails.Where(i =>
-                    i.IntersectTypeID == a.TargetIntersectTypeID &&
-                    i.SubjectID == a.TargetSubjectID &&
-                    i.ObjectID == a.TargetObjectID).SingleOrDefault();
-
-                    if (targetIntersect == null)//add target intersect
-                    {
-                        targetIntersect = Company.AddIntersect(a.TargetIntersectTypeID, a.TargetSubject, a.TargetSubjectID, a.TargetObject, a.TargetObjectID);
-                    }
-
-                    //add map item
-                    var mapItem = Company.MapItems.Where(i => i.SourceIntersectID == sourceIntersect.ID && i.TargetIntersectID == targetIntersect.ID).SingleOrDefault();
-
-                    if (mapItem == null)
-                    {
-                        mapItem = Company.MapItems.Add(new MapItem
-                        {
-                            SourceIntersectID = sourceIntersect.ID,
-                            TargetIntersectID = targetIntersect.ID,
-                            CreatedBy = Company.CurrentResourceID,
-                            UpdatedBy = Company.CurrentResourceID
-                        });
-                    }
-
-                    Company.SaveChanges();
-                    a.SourceIntersectID = sourceIntersect.ID;
-                    a.TargetIntersectID = targetIntersect.ID;
-                    a.ID = mapItem.ID;
-                }
-                catch (Exception ex)
-                {
-                    a.HasError = true;
-                    a.ErrorMessage = ex.GetFullExceptionData();
-                }
-            });
-
-            return new JsonNetResult
-            {
-                Data = model,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("UpdateTechnicalLineage")]
-        public JsonNetResult UpdateTechnicalLineage(LineageEditorTechnicalModel model)
-        {
-            if (!Company.HasAssetPermission(model.Focal, model.FocalID, Permission.AddAsset) || !Company.HasAssetPermission(model.Focal, model.FocalID, Permission.EditAsset))
-            {
-                return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-            }
-
-            model.Deletes?.ForEach(d =>
-            {
-                var mapRuleItem = Company.GetById<MapRuleItem>(d.ID);
-
-                var mapRuleItemMapItem = Company.MapRuleItemMapItems.Where(m => m.MapRuleItemID == mapRuleItem.ID).FirstOrDefault();
-
-                try
-                {
-                    if (mapRuleItemMapItem != null)
-                    {
-                        Company.MapRuleItemMapItems.Remove(mapRuleItemMapItem);
-                    }
-
-                    mapRuleItem.MapRules.ToList().ForEach(m =>
-                    {
-                        m.MapRuleItems.Remove(mapRuleItem);
-                    });
-
-                    Company.MapRuleItems.Remove(mapRuleItem);
-
-                    Company.SaveChanges();
-                }
-                catch (Exception ex)
-                {
-                    d.HasError = true;
-                    d.ErrorMessage = ex.GetFullExceptionData();
-                }
-            });
-
-            model.Adds?.ForEach(a =>
-            {
-                try
-                {
-                    var mapRuleItem = new MapRuleItem();
-                    mapRuleItem.SourceFusionAttributeID = a.SourceFusionAttributeID;
-                    mapRuleItem.TargetFusionAttributeID = a.TargetFusionAttributeID;
-
-                    //add map rule item
-                    Company.MapRuleItems.Add(mapRuleItem);
-                    Company.SaveChanges();
-
-                    //add map rule item map item
-                    if (a.MapItemID > 0)
-                    {
-                        Company.MapRuleItemMapItems.Add(new MapRuleItemMapItem()
-                        {
-                            MapItemID = a.MapItemID,
-                            MapRuleItemID = mapRuleItem.ID
-
-                        });
-                        Company.SaveChanges();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    a.HasError = true;
-                    a.ErrorMessage = ex.GetFullExceptionData();
-                }
-            });
-
-            return new JsonNetResult
-            {
-                Data = model,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        #region MapSequence
-
-        public class MapItemsSequenceEditModel
-        {
-            public List<MapItemSequenceEditModel> Items { get; set; }
-        }
-
-        public class BaseObjectModel
-        {
-            public string Object { get; set; }
-            public int ObjectID { get; set; }
-        }
-
-
-        public class MapItemSequenceEditModel
-        {
-            public MapItemSequenceEditModel()
-            {
-                Contexts = new List<BaseObjectModel>();
-            }
-            public int ID { get; set; }
-            public int MapItemID { get; set; }
-            public string Description { get; set; }
-            public int Sequence { get; set; }
-            public List<BaseObjectModel> Contexts { get; set; }
-            public bool IsDeleting { get; set; } = false;
-        }
-
-        [HttpGet, Route("mapsequence/{type}/{id:int}/mapitems")]
-        public JsonNetResult GetMapItemsForMapSequenceManagement(string type, int id)
-        {
-            var availableItems = Company.Query<dynamic>(
-                QueryConstants.MapItemsForMapSequenceManagement,
-                new
-                {
-                    type = new Dapper.DbString { IsAnsi = true, Value = type },
-                    id
-                }
-            );
-
-            var availableIDs = availableItems.Select(i => (int)i.ID).ToList();
-
-            var referencedItems = Company.Filter<MapSequence>(i =>
-               availableIDs.Contains(i.MapItemID),
-                i => i.MapSequenceContexts,
-                i => i.MapItem
-            )
-            .OrderBy(i => i.Sequence)
-            .Select(i => new
-            {
-                i.ID,
-                i.MapItemID,
-                i.MapItem.TargetIntersectID,
-                i.Sequence,
-                i.Description,
-                Contexts = i.MapSequenceContexts.Select(c => new { c.Object, c.ObjectID }).ToList()
-            });
-
-
-            var contexts = Company.Query<dynamic>($@"		
-                select 
-			        D.DisplayValue as [Name],
-			        A.[Object] + '|' + cast(A.ObjectID as varchar) as ID,
-			        case 
-                        when A.[Object] = 'Artifact' and A.AssetTypeClass = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()}'
-                        when A.[Object] = 'Artifact' and A.AssetTypeClass = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()}'
-			            when A.[Object] = 'Taxonomy' then 'Model'
-			            else ''
-			        end as Category,
-			        A.TypeName as [Type],
-			        cast(0 as bit) as Checked
-		        from 
-			        AssetWithType A
-			        cross apply dbo.GetAssetDisplayValueById(A.ID) D
-		        where 
-			        A.[Object] = 'Artifact' or A.[Object] = 'Taxonomy'
-		        order by D.DisplayValue").ToList();
-
-            return new JsonNetResult
-            {
-                Data = new
-                {
-                    Available = availableItems,
-                    Referenced = referencedItems,
-                    Contexts = contexts
-                },
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("mapsequence/{type}/{id:int}/mapitems")]
-        public JsonResult SetMapItemsForMapSequenceManagement(SystemObjects type, int id, MapItemsSequenceEditModel model)
-        {
-            try
-            {
-                if (!Company.HasAssetPermission(type, id, Permission.AddRelationships) || !Company.HasAssetPermission(type, id, Permission.EditRelationships))
-                {
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-                }
-
-                model.Items.ForEach(m =>
-                {
-                    MapSequence mapSequence = null;
-                    if (m.ID > 0)
-                    {
-                        mapSequence = Company.GetById<MapSequence>(m.ID, i => i.MapSequenceContexts);
-                    }
-
-                    if (m.IsDeleting)
-                    {
-                        if (mapSequence == null)
-                        {
-                            return;
-                        }
-
-                        Company.MapSequences.Remove(mapSequence);
-                        Company.SaveChanges();
-                    }
-                    else
-                    {
-                        if (mapSequence == null)
-                        {
-                            mapSequence = new MapSequence { };
-                        }
-
-
-
-                        mapSequence.Description = m.Description;
-                        mapSequence.MapItemID = m.MapItemID;
-                        mapSequence.Sequence = m.Sequence;
-
-                        if (m.Contexts.Count > 0)
-                        {
-                            m.Contexts.ForEach(c =>
-                            {
-                                mapSequence.MapSequenceContexts.Add(
-                                    new MapSequenceContext
-                                    {
-                                        Object = c.Object,
-                                        ObjectID = c.ObjectID
-                                    }
-                                );
-                            });
-                        }
-
-                        Company.SaveOrUpdate<MapSequence>(mapSequence);
-                    }
-
-                });
-
-                return jsonSuccess("Source Conditions successfully created.", "0", "add", HttpStatusCode.Created, null);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
 
         #endregion
 
@@ -2095,170 +1742,6 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 bytes = Encoding.Default.GetBytes(fileString);
             }
             return File(bytes, "application/vnd.ms-excel", $"{load.DateCompleted.ToString()}.xlsx");
-        }
-
-        #endregion
-
-        #region Map
-
-        [Route("Map_AddFields"), NonNullableParameters]
-        public JsonResult Map_AddFields()
-        {
-            var list = new List<EditableField>();
-
-            if (!Company.HasAssetPermission(SystemObjects.Map, 0, Permission.AddAsset ) || !Company.HasAssetPermission(SystemObjects.Map, 0, Permission.EditAsset))
-            {
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-            }
-
-            var mapTypes = new List<SelectListItem>();
-
-            foreach (var item in Company.MapTypes)
-            {
-                mapTypes.Add(new SelectListItem { Text = item.Name, Value = item.ID.ToString() });
-            }
-
-            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = "" });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Transformation", Name = "Transformation", FieldType = DataType.Text.ToString(), Value = "" });
-            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "MapType", Name = "Type", FieldType = DataType.Lookup.ToString(), Items = mapTypes });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        [Route("Map_EditFields"), NonNullableParameters]
-        public JsonResult Map_EditFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<core.entities.Map>(id);
-
-            if (!Company.HasAssetPermission(SystemObjects.Map, a.ID, Permission.EditAsset))
-            {
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-            }
-
-            var mapTypes = new List<SelectListItem>();
-
-            foreach (var item in Company.MapTypes)
-            {
-                mapTypes.Add(new SelectListItem { Text = item.Name, Value = item.ID.ToString() });
-            }
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "MapType", Name = "Type", FieldType = DataType.Lookup.ToString(), Items = mapTypes, Value = a.MapTypeID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddMap")]
-        public JsonResult AddMap(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys())
-                {
-                    throw new NoFormDataException("Map");
-                }
-
-                var map = new Map
-                {
-                    MapTypeID = parseIntField(form, "MapType"),
-                    CreatedBy = Company.CurrentResourceID,
-                    CreatedOn = DateTime.UtcNow,
-                    UpdatedBy = Company.CurrentResourceID,
-                    UpdatedOn = DateTime.UtcNow
-                };
-
-                if (!Company.HasAssetTypePermission(SystemObjects.MapType, map.MapTypeID, Permission.AddAsset) || !Company.HasAssetTypePermission(SystemObjects.MapType, map.MapTypeID, Permission.EditAsset))
-                {
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-                }
-
-                Company.Add(map);
-
-                return jsonSuccess("Map successfully allocated.", map.ID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditMap")]
-        public JsonResult EditMap(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys())
-                {
-                    throw new NoFormDataException("Map");
-                }
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<Map>(id);
-
-                if (!Company.HasAssetPermission(SystemObjects.Map, model.ID, Permission.AddAsset) || !Company.HasAssetPermission(SystemObjects.Map, model.ID, Permission.EditAsset))
-                {
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-                }
-
-                model.MapTypeID = parseIntField(form, "MapType");
-                model.UpdatedBy = Company.CurrentResourceID;
-                model.UpdatedOn = DateTime.UtcNow;
-
-                Company.Update(model);
-
-                return jsonSuccess("Map successfully updated.", model.ID.ToString(), "update", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        [HttpDelete, Route("DeleteLineageMapping")]
-        public JsonResult DeleteLineageMapping(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys())
-                {
-                    throw new NoFormDataException("lineage mapping");
-                }
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<Map>(id);
-                if (model == null) throw new NotFoundException("mapping");
-
-                if (!Company.HasAssetPermission(SystemObjects.Map, id, Permission.DeleteAsset))
-                {
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-                }
-
-                Company.Delete(model);
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
         }
 
         #endregion
