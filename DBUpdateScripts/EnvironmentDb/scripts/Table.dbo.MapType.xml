@@ -5,25 +5,15 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.MapType-v1">
+  <changeSet author="Core" id="Table.dbo.MapType-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapType')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapType')
 BEGIN
-	CREATE TABLE [dbo].[MapType](
-		[ID] [int] IDENTITY(1,1) NOT NULL,
-		[MapClass] [int] CONSTRAINT [DF_MapType_MapClass] DEFAULT (1) NOT NULL,
-		[Name] [nvarchar](250) NOT NULL,
-		[Description] [nvarchar](max) NULL,
-		[CreatedOn] [datetime] CONSTRAINT [DF_MapType_CreatedOn] DEFAULT (getutcdate()) NULL,
-		[CreatedBy] [int] NULL,
-		[UpdatedOn] [datetime] CONSTRAINT [DF_MapType_UpdatedOn] DEFAULT (getutcdate()) NULL,
-		[UpdatedBy] [int] NULL,
-		CONSTRAINT [PK_MapType] PRIMARY KEY CLUSTERED ( [ID] ASC )
-	)
+	EXEC sp_rename 'dbo.MapType', 'MapType_backup'
 END
 		]]>
     </sql>

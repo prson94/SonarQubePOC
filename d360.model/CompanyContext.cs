@@ -216,32 +216,6 @@ namespace d360.model
 
         #endregion
 
-        #region Legacy Lineage
-
-        public DbSet<Map> Maps { get; set; }
-
-        public DbSet<MapGroup> MapGroups { get; set; }
-
-        public DbSet<MapGroupItem> MapGroupItems { get; set; }
-
-        public DbSet<MapType> MapTypes { get; set; }
-
-        public DbSet<MapTypeOrder> MapTypeOrders { get; set; }
-
-        public DbSet<MapItem> MapItems { get; set; }
-
-        public DbSet<MapRule> MapRules { get; set; }
-
-        public DbSet<MapRuleItem> MapRuleItems { get; set; }
-
-        public DbSet<MapRuleItemMapItem> MapRuleItemMapItems { get; set; }
-
-        public DbSet<MapSequence> MapSequences { get; set; }
-
-        public DbSet<MapSequenceContext> MapSequenceContexts { get; set; }
-
-        #endregion
-
         #region Repository Methods
 
 
@@ -361,17 +335,6 @@ where	T.[Class] in ({classList})").ToList();
             list = list.OrderBy(i => i.ClassName).ThenBy(i => i.Name).ToList();
 
             return list;
-        }
-
-        public async Task<IEnumerable<AllowedIntersectionType>> GetAllowedIntersectionTypes(string type, int id)
-        {
-            return await Database.Connection
-                .QueryAsync<AllowedIntersectionType>("GetAllowedIntersectionTypes @SourceType, @SourceTypeID",
-                new
-                {
-                    SourceType = new Dapper.DbString { Value = type, IsAnsi = true, IsFixedLength = true, Length = 50 },
-                    SourceTypeID = id
-                }).ConfigureAwait(false);
         }
 
         public string GetFormattedFieldLookupValue(int fieldTypeID, string fieldValue)
@@ -1637,15 +1600,6 @@ where	I.ID is null";
             modelBuilder.Entity<Question>().HasMany<QuestionTypeOption>(i => i.QuestionTypeOptions).WithMany(i => i.Questions).Map(i =>
             {
                 i.MapLeftKey("QuestionID").MapRightKey("QuestionTypeOptionID").ToTable("QuestionOption");
-            });
-            modelBuilder.Entity<MapRule>().HasMany<MapRuleItem>(i => i.MapRuleItems).WithMany(i => i.MapRules).Map(i =>
-            {
-                i.MapLeftKey("MapRuleID").MapRightKey("MapRuleItemID").ToTable("MapRuleItemMapRule");
-            });
-
-            modelBuilder.Entity<Map>().HasMany<MapItem>(i => i.MapItems).WithMany(i => i.Maps).Map(i =>
-            {
-                i.MapLeftKey("MapID").MapRightKey("MapItemID").ToTable("MapItemMap");
             });
 
             modelBuilder.Entity<Score>().HasMany<ScoreItem>(i => i.Items).WithMany(i => i.Scores).Map(i =>

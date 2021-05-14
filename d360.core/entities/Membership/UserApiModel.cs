@@ -150,7 +150,7 @@ namespace d360.core.entities.Membership
 
     public class ApiKeyDetailModel
     {
-        public string apikey { get; set; }
+        public string apiKey { get; set; }
         public string apiSecret { get; set; }
     }
 

@@ -1,15 +1,12 @@
 ﻿import {Component, Input, OnChanges, OnInit} from '@angular/core';
-
-import {RelationItem} from '../../../../models/lineage.model';
-
-import {DiagramService} from '../../../../services/diagram.service';
-
+import { RelationItem } from '../../../../models/relationship.model';
+import { RelationshipsService } from '../../../../services/relationships.service';
 import {BaseComponent} from '../../base.component';
 
 @Component({
     selector: 'd3s-lineage-relations',
     templateUrl: './lineage-relationships.component.html',
-    providers: [DiagramService]
+    providers: [RelationshipsService]
 })
 
 export class LineageRelationshipsComponent extends BaseComponent implements OnInit, OnChanges {
@@ -19,7 +16,7 @@ export class LineageRelationshipsComponent extends BaseComponent implements OnIn
 
     items: RelationItem[] = [];
 
-    constructor(private diagramService: DiagramService) {
+    constructor(private relationshipsService: RelationshipsService) {
         super();
     }
 
@@ -40,7 +37,7 @@ export class LineageRelationshipsComponent extends BaseComponent implements OnIn
 
         this.isLoading = true;
 
-        this.diagramService.getRelations(this.objectType, this.objectId).subscribe(
+        this.relationshipsService.getRelations(this.objectType, this.objectId).subscribe(
             data => {
                 this.items = data;
 

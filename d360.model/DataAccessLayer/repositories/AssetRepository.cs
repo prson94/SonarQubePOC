@@ -1378,7 +1378,7 @@ namespace d360.model.DataAccessLayer
             };
         }
 
-        public async Task<SLDocument> GetAssetsExcel(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        public async Task<SLDocument> GetAssetsExcel(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams, bool isChildItem = false)
         {
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             var results = await GetAssets(assetType, queryParams);
@@ -1412,24 +1412,41 @@ namespace d360.model.DataAccessLayer
                 includeAssetUrl = false;
             }
 
+            string ParentAssetTypeUidHeading = "Parent";
+
             if (includeParent)
             {
                 var columnName = "Parent";
-                if (assetType.Class == AssetTypeClass.Reference && hierarchy != null)
+                if ((assetType.Class == AssetTypeClass.Reference && hierarchy != null) || isChildItem)
                 {
                     var parent = CompanyContext.AssetTypes.FirstOrDefault(x => x.Object == hierarchy.Subject && x.ObjectID == hierarchy.SubjectID);
                     if (parent != null)
-                        columnName = parent.Name;
+                    {
+                       columnName = isChildItem ? "Parent " + parent.Name + " Name" : parent.Name;
+                       ParentAssetTypeUidHeading = parent.Name + " UID";
+                    }
+                        
                 }
 
                 fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = columnName });
             }
 
-            fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
+            if (!isChildItem)
+            { 
+                fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
 
-            fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
-            fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });
+                fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
+                fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });
+            }
+            else
+            {
+                fields.Add(new FieldType { Type = "string", Name = "Name", FriendlyName = assetType.Name + " Name" });
 
+                fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID && f.Name.ToLower() != "name").OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
+
+                fields.Add(new FieldType { Type = "string", Name = "ParentAssetUid", FriendlyName = ParentAssetTypeUidHeading });
+                fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = assetType.Name + " UID" });
+            }
             var rowData = results.items.ToList();
 
             var document = new SLDocument();

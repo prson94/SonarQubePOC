@@ -9629,6 +9629,7 @@ ItemNumber int,
 ExecutionId uniqueidentifier, 
 AssetTypeUid uniqueidentifier,
 AssigneeTypeUid uniqueidentifier, 
+MatchType nvarchar(20),
 RelIntersectTypeUid uniqueidentifier, 
 RelAssetUid uniqueidentifier,
 FieldApiName nvarchar(250),
@@ -9643,6 +9644,7 @@ ItemNumber,
 ExecutionId,
 AssetTypeUid,
 ThenData.AssigneeTypeUid,
+ThenData.MatchType,
 ThenCond.*,
 case 
 when ThenCond.IntersectTypeUid is not null then cast(thencond.intersecttypeuid as uniqueidentifier)
@@ -9652,6 +9654,7 @@ from api.executionresponsibilityrule
 cross apply OPENJSON (Definition, N'$.Then')
 WITH (
 AssigneeTypeUid uniqueidentifier N'$.AssigneeTypeUid',
+MatchType nvarchar(20) N'$.MatchType',
 Conditions nvarchar(max) N'$.Conditions' as Json
 ) AS ThenData
 outer apply OPENJSON(ThenData.Conditions)
@@ -9670,6 +9673,7 @@ ItemNumber,
 ExecutionId,
 AssetTypeUid,
 null as AssigneeTypeUid,
+null as MatchType,
 WhenData.*,
 case 
 when WhenData.IntersectTypeUid is not null then cast(WhenData.value as uniqueidentifier)
@@ -9693,6 +9697,7 @@ select  d.itemnumber,
 	at.objectid,
 	d.valueasuid,
 	d.AssigneeTypeUid,
+    d.MatchType,
 	d.AssigneeUid,
 	d.RelAssetUid,
 	case 
@@ -9849,7 +9854,7 @@ ConditionsThen.json as [Then],
 ConditionsWhen.json as [When]
 from #parsedData pd
 cross apply (
-select top 1 Object,ObjectID, Conditions.json as Conditions
+select top 1 Object,ObjectID, MatchType, Conditions.json as Conditions
 from #parsedData
 	outer apply(select
 		CheckType,
@@ -9858,7 +9863,7 @@ from #parsedData
 		Value,
 		isnull(IntersectTypeID,0) as IntersectTypeID,
 		TargetObject,
-		TargetObjectId
+		TargetObjectId        
 		from #parsedData
 		where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object  and ((FieldTypeName is not null and FieldTypeID <> 0 or AssigneeUid is not null))
 		for json path, include_null_values
@@ -10902,6 +10907,11 @@ EG.GroupUid
 		                        [Message] = coalesce([Message] + '; ', '') + 'You must provide a valid Uid.'
                         where	ExecutionID = @ExecutionID and ([AssetUid] is null or [AssetUid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER));
 
+                        update	api.ExecutionAssetDataProfile
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'You must provide a ProfileSetDate.'
+                        where	ExecutionID = @ExecutionID and [ProfileSetDate] is null;
+
                         update	EDP
                         set		Success = 0,
 		                        [Message] = coalesce([Message] + '; ', '') + 'Asset not found based on Uid provided'
@@ -10910,6 +10920,28 @@ EG.GroupUid
                             left Join
                             Asset A on EDP.AssetUid = A.Uid
                         where	ExecutionID = @ExecutionID and A.Uid is null;
+
+                        update	EDP
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'Record does not exist with AssetUid '+ convert(nvarchar(36), EDP.AssetUid) +' and profileSetDate '+ convert(varchar, EDP.ProfileSetDate, 23)
+                        from
+                            api.ExecutionAssetDataProfile EDP
+                            inner join 
+                            Asset A on EDP.AssetUid = A.Uid
+                            left join 
+                            AssetDataProfile ADP on A.ID = ADP.AssetId and EDP.ProfileSetDate = ADP.ProfileSetDate
+                        where	ExecutionID = @ExecutionID and ADP.AssetId is null and @isInsert = 0;
+                        
+                        update	EDP
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'Record already exists with AssetUid '+ convert(nvarchar(36), EDP.AssetUid) +' and profileSetDate '+ convert(varchar, EDP.ProfileSetDate, 23)
+                        from
+                            api.ExecutionAssetDataProfile EDP
+                            inner join 
+                            Asset A on EDP.AssetUid = A.Uid
+                            inner join 
+                            AssetDataProfile ADP on A.ID = ADP.AssetId and EDP.ProfileSetDate = ADP.ProfileSetDate
+                        where	ExecutionID = @ExecutionID and @isInsert = 1;
 
                         Update EDP
                         set		Success = 0,
@@ -10926,7 +10958,7 @@ EG.GroupUid
                             ) EDPS on EDP.ExecutionID=EDPS.ExecutionID and EDP.ItemNumber=EDPS.ItemNumber 
                         where 
                             EDP.ExecutionID = @ExecutionID                             ",
-                                    new { execution.ExecutionID }, commandTimeout: timeout);
+                                    new { execution.ExecutionID, isInsert }, commandTimeout: timeout);
 
                     AddMeasurement(metrics, "LogAssetDataProfileErrors", sw.ElapsedMilliseconds, ++step);
                     sw.Restart();
@@ -11161,7 +11193,7 @@ EG.GroupUid
                 
             return results;
         }
-        public List<DataProfileDeleteResponse> DeleteDataProfiles(List<AssetDataProfileDeleteModel> models, ApiExecution execution)
+        public List<DataProfileDeleteResponse> DeleteDataProfiles(List<AssetDataProfileDeleteModel> models, ApiExecution execution, int timeout = 3600)
         {
             var swBegin = Stopwatch.StartNew();
             TelemetryClient client = new TelemetryClient();
@@ -11224,6 +11256,7 @@ EG.GroupUid
                     foreach (var item in models)
                     {
                         var row = table.NewRow();
+                        List<string> errorMessages = new List<string>();
 
                         row["ExecutionID"] = execution.ExecutionID;
                         row["ItemNumber"] = itemNumber;
@@ -11238,7 +11271,24 @@ EG.GroupUid
                         row["AssetUid"] = item.AssetUid;
                         row["StartDate"] = item.StartDate.Date;
 
+                        if (item.StartDate == DateTime.MinValue)
+                        {
+                            errorMessages.Add("Startdate is a required field");                            
+                        }
+
                         row["EndDate"] = item.EndDate.Date;
+
+                        if (item.EndDate == DateTime.MinValue)
+                        {
+                            errorMessages.Add("EndDate is a required field");
+                        }
+
+                        if (errorMessages.Any())
+                        {
+                            row["Message"] = string.Join(";", errorMessages);
+                            row["Success"] = 0;
+                        }
+                                                
                         row["Cascade"] = item.Cascade;
 
                         table.Rows.Add(row);
@@ -11270,6 +11320,8 @@ EG.GroupUid
                                 bulkCopy.ColumnMappings.Add("StartDate", "StartDate");
                                 bulkCopy.ColumnMappings.Add("EndDate", "EndDate");
                                 bulkCopy.ColumnMappings.Add("Cascade", "Cascade");
+                                bulkCopy.ColumnMappings.Add("Message", "Message");
+                                bulkCopy.ColumnMappings.Add("Success", "Success");
 
                                 bulkCopy.WriteToServer(table);
                             }
@@ -11517,8 +11569,7 @@ EG.GroupUid
                 {
                     Connection.Close();
                 }
-
-                //return results;                
+         
             }            
 
             return results;

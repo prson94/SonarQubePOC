@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
-import { RelationshipType, RelationshipDetail, ObjectRelationship, RelatedItem, ObjectRelationshipCount, PossibleTechnicalRelationship, PredicateDropdown } from '../models/relationship.model';
+import { RelationshipType, RelationshipDetail, ObjectRelationship, RelatedItem, ObjectRelationshipCount, PossibleTechnicalRelationship, PredicateDropdown, RelationItem } from '../models/relationship.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
 import { Observable, forkJoin } from 'rxjs';
@@ -225,6 +225,19 @@ export class RelationshipsService extends BaseObservableService {
         return this.http.get(`/api/${objectType}/${objectId}/relationships/${targetType}/${targetTypeId}/${intersectTypeID}?includeInverse=${includeInverse}&sourceIsObject=${sourceIsObject}`)
             .pipe(
                 map(response => response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    public getRelations(
+        object: string,
+        objectId: number
+    ): Observable<RelationItem[]> {
+        return this
+            .http
+            .get(`api/${object}/${objectId}/relations`)
+            .pipe(
+                map((response) => <RelationItem[]>response),
                 catchError(err => this.handleError(err))
             );
     }
