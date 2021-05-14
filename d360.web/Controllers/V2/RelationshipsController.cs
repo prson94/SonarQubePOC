@@ -1524,29 +1524,34 @@ namespace d360.web.Controllers.V2
                     return Request.CreateResponse(HttpStatusCode.OK, new List<string>());
                 }
 
-                var countsSql = @"select 
-                        distinct ae.IntersectTypeUid,
-                        count(*) as 'count'
+                var countsSql = @"with cte as (select 
+                        ae.IntersectTypeUid,
+						1 as 'IsSubject',				
+						a1.uid as 'SubjectUid',
+						a2.uid as 'ObjectUid'
                         FROM 
                         graph.AssetNode A1,
                         graph.AssetEdge AE,
                         graph.AssetNode A2
                         WHERE MATCH(A1 - (AE) -> A2)
                         AND a1.uid = @assetuid
-                        group by ae.intersecttypeuid
                         union
                         select
-                        distinct ae.IntersectTypeUid,
-                        count(*) as 'count'
+                        ae.IntersectTypeUid,
+						0 as 'IsSubject',				
+						a1.uid as 'SubjectUid',
+						a2.uid as 'ObjectUid'
                         FROM 
                         graph.AssetNode A1,
                         graph.AssetEdge AE,
                         graph.AssetNode A2
                         WHERE MATCH(A1 <- (AE) - A2)
-                        AND a1.uid = @assetuid
-                        group by ae.intersecttypeuid";
+                        AND a1.uid = @assetuid)
+						select IntersectTypeUid, IsSubject, count(*) as 'Count'
+						from cte
+						group by IntersectTypeUid,IsSubject";
 
-                var data = await Company.QueryAsync(countsSql, new { assetUid });
+                var data = await Company.QueryAsync<RelationshipCountModel>(countsSql, new { assetUid });
 
                 return Request.CreateResponse(HttpStatusCode.OK, data);
             }

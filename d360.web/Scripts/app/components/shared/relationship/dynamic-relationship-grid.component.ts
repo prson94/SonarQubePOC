@@ -8,7 +8,6 @@ import { SiteUrlHelpers } from "../../../static/site-url-helpers";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { AssetService } from "../../../services/asset.service";
 import { LazyLoadEvent } from "primeng/api";
-import { filter } from "core-js/fn/dict";
 import { Subscription } from "rxjs";
 import { debounceTime } from "rxjs/operators";
 import { RelationshipTypeUIModel } from "../../../models/relationship.model";
@@ -17,7 +16,8 @@ import { RelationshipTypeUIModel } from "../../../models/relationship.model";
 @Component({
     selector: "d3s-dynamic-relationship-grid",
     providers: [GridDefinitionService, RelationshipsService, AssetService],
-    templateUrl: "./dynamic-relationship-grid.component.html"
+    templateUrl: "./dynamic-relationship-grid.component.html",
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class DynamicRelationshipGridComponent extends BaseComponent implements OnChanges, OnDestroy {
@@ -28,7 +28,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     @Input() isSubject: boolean;
 
     @Input() relationshipName: string = '';
-
+    @Input() count: number = 0;
 
     @Input() addRelationship: boolean;
     @Input() hasEdit: boolean = false;
@@ -64,7 +64,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     showDelete: boolean = false;
     showEditPencil: boolean = true;
     isGridLoading: boolean = false;
-    isDataLoading: boolean = false;
+    isDataLoading: boolean = true;
     theDeleteCallback: Function;
 
     totalRecords: number = 0;
@@ -83,13 +83,18 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }
 
     ngOnDestroy(): void {
+        if (this.relationshipLoadSub) {
+            this.relationshipLoadSub.unsubscribe();
+        }
         this.closeEditor();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if ((changes["intersectTypeUid"]
             || changes["objectUid"]
-            || changes["subjectUid"])
+            || changes["subjectUid"]
+            || changes["isSubject"]
+        )
 
             && (this.intersectTypeUid != null
                 && this.objectUid != null
@@ -114,6 +119,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
                 this.showEditPencil = (result.FieldsCount > 0);
                 this.readOnly = result.IsReadOnly;
                 this.readOnlyChange.emit(this.readOnly);
+                this.cdRef.markForCheck();
             });
     }
 
@@ -275,7 +281,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
                 if (event.action == "new") {
                     this.showMessageForApiResults(this.messagesService, res, " Relationships succesfully added!");
-                    this.relationshipAdded.emit({ uid: this.intersectTypeUid, data: model });
+                    this.relationshipAdded.emit({ uid: this.intersectTypeUid, isSubject: this.isSubject, data: model });
                 }
                 else {
                     this.showMessageForApiResults(this.messagesService, res, " Relationships succesfully updated!");
@@ -304,7 +310,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
                 this.showMessageForApiResults(this.messagesService, res, " Relationship succesfully deleted!");
                 if (!res.some((x) => x.Success != true)) {
                     this.relations = this.relations.filter((x) => x.Uid != item);
-                    this.relationshipRemoved.emit(this.intersectTypeUid);
+                    this.relationshipRemoved.emit({ uid: this.intersectTypeUid, isSubject: this.isSubject });
                 }
                 this.showDelete = false;
                 this.deleteOff.emit();

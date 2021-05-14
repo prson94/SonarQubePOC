@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
-import { RelationshipType, RelationshipDetail, ObjectRelationship, RelatedItem, ObjectRelationshipCount, PredicateDropdown } from '../models/relationship.model';
+import { RelationshipType, RelationshipDetail, ObjectRelationship, RelatedItem, ObjectRelationshipCount, PredicateDropdown, RelationshipCount } from '../models/relationship.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
 import { Observable, forkJoin } from 'rxjs';
@@ -312,7 +312,7 @@ export class RelationshipsService extends BaseObservableService {
         }
     }
 
-    getRelationshipsCountsForAsset(assetUid: string): Observable<RelationshipType[]> {
+    getRelationshipsCountsForAsset(assetUid: string): Observable<RelationshipCount[]> {
         var url = 'api/v2/relationships/counts/' + assetUid;
 
         return this.http.get(url)

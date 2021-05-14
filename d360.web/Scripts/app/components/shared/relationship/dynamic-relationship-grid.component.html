@@ -1,6 +1,6 @@
 ﻿<d3s-loading [isLoading]="isGridLoading"></d3s-loading>
 <div *ngIf="!isGridLoading">
-    <div *ngIf="!shouldShowEditor() && !showDelete">
+    <div *ngIf="!shouldShowEditor() && !showDelete && count > 0">
 
         <input type="text" igInput igSize="full" [hidden]="!simpleFilter" pInputText (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
         <p-table #dt
@@ -89,7 +89,7 @@
                         (saveClick)="saveRelationship($event)"
                         (closeClick)="closeEditor()"
                         [useV2ApiLink]="true"></d3s-dynamic-editor>
-    <div *ngIf="relations && relations.length == 0 && !shouldShowEditor()">
+    <div *ngIf="count === 0 && !shouldShowEditor()">
         <h5 class="center-align" style="font-weight:bold;">No relationships exist from this object to this object type.</h5>
     </div>
     <d3s-delete-form *ngIf="showDelete"

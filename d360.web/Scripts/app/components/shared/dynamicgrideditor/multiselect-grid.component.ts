@@ -69,7 +69,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         if (this.objectCardinality.toString() === "1") {
             filters.push(`($Related:${this.intersectTypeUid} eq null)`);
         }
-        params["_filter"] = `(${(filters.join(" and "))})`;
+        params["_filter"] = `(${(filters.join(" and "))}) and (uid ne '${this.assetUid}')`;
 
         if (this.lazyLoadTotalCount) {
             params["_includeTotal"] = false;

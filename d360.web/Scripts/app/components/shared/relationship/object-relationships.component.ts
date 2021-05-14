@@ -1,12 +1,13 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange, ViewChild, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { RelationshipsService } from '../../../services/relationships.service';
-import { RelationshipTypeUIModel } from '../../../models/relationship.model';
+import { RelationshipCount, RelationshipTypeUIModel } from '../../../models/relationship.model';
 import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.component';
 import { ResponsibilityTypeRelationPermission } from '../../../models/responsibility-type.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { AssetService } from '../../../services/asset.service';
 import { forkJoin, Subscription } from 'rxjs';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-object-relationships',
@@ -21,10 +22,10 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     @Input() objectPermissions: ResponsibilityTypeRelationPermission[] = [];
     @Input() isModal: boolean = false;
 
-    isSubject: boolean = false;
-
     @Input() assetTypeUid: string;
     @Input() assetUid: string;
+
+    @Input() count: number = 0;
 
     relationshipItems: RelationshipTypeUIModel[] = [];
     selected: RelationshipTypeUIModel;
@@ -84,13 +85,35 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
         var countsSub = this.relationshipsService.getRelationshipsCountsForAsset(this.assetUid);
 
         this.loadDataSubs = forkJoin([relationshipSub, countsSub]).subscribe((res) => {
-            this.relationshipItems = res[0] as RelationshipTypeUIModel[];
-
-
-
-            var counts = res[1] as any[];
+            var allItems = res[0] as RelationshipTypeUIModel[];
+            var counts = res[1] as RelationshipCount[];
 
             this.selected = null;
+
+            var origLength = allItems.length;
+            for (let i = 0; i < origLength; i++) {
+                allItems[i].IsSubject = allItems[i].Subject.Uid == this.assetTypeUid;
+
+                if (allItems[i].Subject.Uid === allItems[i].Object.Uid) {
+                    var copy = _.cloneDeep(allItems[i]);
+                    copy.IsSubject = !allItems[i].IsSubject;
+                    allItems.push(copy);
+                }
+            }
+
+            for (let relation of allItems) {
+                var count = counts.filter((f) => f.IntersectTypeUid === relation.Uid && f.IsSubject === relation.IsSubject);
+                if (count.length !== 0) {
+                    relation.Count = count[0].Count;
+                }
+                else {
+                    relation.Count = 0;
+                }
+
+                relation.AllowEditFromRelationshipEditor = this.nonEditablePredicates.indexOf(relation.Predicate.Type) === -1;
+                this.relationshipItems.push(relation);
+            }
+
             for (let relation of this.relationshipItems) {
                 relation.TypeName = this.getRelName(relation).toUpperCase();
             }
@@ -98,20 +121,10 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
             this.relationshipItems = this.relationshipItems.sort((a, b) => { return a.TypeName > b.TypeName ? 1 : -1 });
 
             for (let relation of this.relationshipItems) {
-                var count = counts.filter((f) => f["IntersectTypeUid"] === relation.Uid);
-                if (count.length !== 0) {
-                    relation.Count = count[0]["count"];
-                }
-                else {
-                    relation.Count = 0;
-                }
                 if (relation.Count > 0 && !this.selected) {
                     this.selected = relation;
                 }
-                relation.AllowEditFromRelationshipEditor = this.nonEditablePredicates.indexOf(relation.Predicate.Type) === -1;
             }
-
-
 
             if (!this.selected)
                 this.selected = (this.relationshipItems && this.relationshipItems.length > 0) ? this.relationshipItems[0] : null;
@@ -129,7 +142,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     export() {
         if (!this.selected) return;
         var params = {};
-        if (this.isSubject) {
+        if (this.selected.IsSubject) {
             params["subjectUid"] = this.assetUid;
         }
         else {
@@ -141,15 +154,19 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     addRelationship(event: any) {
         var uid = event.uid;
-        var item = this.relationshipItems.filter((r) => r.Uid === uid)[0];
+        var isSubject = event.isSubject;
+        var item = this.relationshipItems.filter((r) => r.Uid === uid && r.IsSubject === isSubject)[0];
 
         var count = (event.data as any[]).length;
         item.Count = item.Count += count;
         this.updateCardinality();
     }
 
-    removeRelationship(uid: string) {
-        var item = this.relationshipItems.filter((r) => r.Uid === uid)[0];
+    removeRelationship(event: any) {
+        var uid = event.uid;
+        var isSubject = event.isSubject;
+        var item = this.relationshipItems.filter((r) => r.Uid === uid && r.IsSubject === isSubject)[0];
+
         item.Count = item.Count - 1;
         this.updateCardinality();
     }
@@ -189,9 +206,8 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     }
     private updateCardinality() {
         if (this.selected != null) {
-            this.isSubject = this.selected.Subject.Uid == this.assetTypeUid;
 
-            var cardinality = this.isSubject ? this.selected.Object.Cardinality : this.selected.Subject.Cardinality;
+            var cardinality = this.selected.IsSubject ? this.selected.Object.Cardinality : this.selected.Subject.Cardinality;
 
             this.cardinalityShow = (cardinality === "Many") || (this.selected.Count == 0 && cardinality !== "Many");
             this.hasAdd = this.cardinalityShow
@@ -208,10 +224,8 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     }
 
     getRelName(rel: RelationshipTypeUIModel) {
-        var isObject = rel.Object.Uid == this.assetTypeUid;
-
-        var correctSide = isObject ? rel.Subject : rel.Object;
-        return `${correctSide.Name} [${(isObject ? rel.Predicate.Inverse : rel.Predicate.Name)}]`;
+        var correctSide = rel.IsSubject ? rel.Object : rel.Subject;
+        return `${correctSide.Name} [${(!rel.IsSubject ? rel.Predicate.Inverse : rel.Predicate.Name)}]`;
     }
 
     getIconClass(rel: RelationshipTypeUIModel) {

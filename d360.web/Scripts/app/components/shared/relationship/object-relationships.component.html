@@ -37,7 +37,8 @@
                                        (relationshipRemoved)="removeRelationship($event)"
                                        (deleteOn)="hideforDelete()"
                                        (deleteOff)="unhideforDelete()"
-                                       [isSubject]="isSubject"
+                                       [isSubject]="selected.IsSubject"
+                                       [count]="selected.Count"
                                        [hasEdit]="hasModifyRelationshipsPermissions() && selected?.AllowEditFromRelationshipEditor"
                                        [hasDelete]="hasDeleteRelationshipsPermissions() && selected?.AllowEditFromRelationshipEditor">
         </d3s-dynamic-relationship-grid>
