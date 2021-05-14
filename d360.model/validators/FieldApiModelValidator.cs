@@ -373,7 +373,7 @@ namespace d360.model.validators
 
                 if (field.Type.ComputedRelationshipLookup != null)
                 {
-                    if(field.Type.ComputedRelationshipLookup.Definition.Relations.Any(r => r.AssetTypeUid == model.AssetTypeUid))
+                    if (field.Type.ComputedRelationshipLookup.Definition.Relations.Any(r => r.AssetTypeUid == model.AssetTypeUid))
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. Relation Lookup refers back to Asset Type the field is defined on.");
                     }
@@ -381,6 +381,40 @@ namespace d360.model.validators
                     if (field.Type.ComputedRelationshipLookup.Definition.Relations.GroupBy(r => r.AssetTypeUid).Any(g => g.Count() > 1))
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. Relation Lookup contains a circular reference.");
+                    }
+                }
+
+                if (field.Type.Counter != null)
+                {
+                    if (field.Type.Counter.IsEditable == true)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. IsEditable cannot be true for this field type.");
+                    }
+
+                    if (field.Type.Counter.ShowIfEmpty == false)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. ShowIfEmpty cannot be false for this field type.");
+                    }
+
+                    if (field.Type.Counter.CounterPrefix?.Length > 10)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. Counter Prefix cannot be longer than 10 characters.");
+                    }
+
+                    if (!field.Type.Counter.CounterInitialIndex.HasValue || field.Type.Counter.CounterInitialIndex.Value <= 0)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. Counter Initial Value must be set and be a positive number.");
+                    }
+
+                    var allowedTypes = new List<string>() {
+                            SystemObjects.ArtifactType.ToString(),
+                            SystemObjects.PolicyType.ToString(),
+                            SystemObjects.RuleType.ToString(),
+                            SystemObjects.TaxonomyType.ToString()
+                        };
+                    if (assetTypeIdentifierInfoModel ==null || !allowedTypes.Contains(assetTypeIdentifierInfoModel.Object))
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"This asset type may not have a Counter field type!");
                     }
                 }
 

@@ -434,6 +434,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.enableAllowMultipleValues = false;
                 this.showDescription = false;
                 break;
+            case 'counter':
+                this.model.FieldType.Type.Counter.ShowIfEmpty = true;
+                break;
             default:
                 break;
         }
@@ -684,18 +687,17 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         return this.fieldsService.getLookupTokens(uid).pipe(map(
             r => {
                 this.model.LookupTokens = r;
-                if (this.model.LookupTokens && this.model.LookupTokens.length > 0)
-                {                
+                if (this.model.LookupTokens && this.model.LookupTokens.length > 0) {
                     if (
                         (this.model.FieldType.Type[this.currentType].Format.Display == null
-                        || this.model.FieldType.Type[this.currentType].Format.Display.length == 0)
+                            || this.model.FieldType.Type[this.currentType].Format.Display.length == 0)
                     ) {
                         this.model.FieldType.Type[this.currentType].Format.Display = this.model.LookupTokens[0].value;
                     }
 
                     if (
                         (this.model.FieldType.Type[this.currentType].Format.Edit == null
-                        || this.model.FieldType.Type[this.currentType].Format.Edit.length == 0)
+                            || this.model.FieldType.Type[this.currentType].Format.Edit.length == 0)
                     ) {
                         this.model.FieldType.Type[this.currentType].Format.Edit = this.model.LookupTokens[0].value;
                     }
@@ -1375,7 +1377,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'IsDisplayable':
                 return (['ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship'].indexOf(this.currentType) > -1);
             case 'IsEditable':
-                return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Tag', 'Score'].indexOf(this.currentType) > -1);
+                return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Tag', 'Score', 'Counter'].indexOf(this.currentType) > -1);
             case 'IsListable':
                 if (this.currentType === "OwnershipLookup") {
                     return ["PolicyType", "TaxonomyType"].indexOf(this.objectType) > -1;
@@ -1399,7 +1401,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'AllowMultipleValues':
                 return (['Lookup'].indexOf(this.currentType) == -1);
             case 'ShowIfEmpty':
-                return (['Path', 'Tag'].indexOf(this.currentType) > -1 || (this.currentType == 'Score' && !this.model.FieldType.Type['Score'].IsDisplayable));
+                return (['Path', 'Tag', 'Counter'].indexOf(this.currentType) > -1 || (this.currentType == 'Score' && !this.model.FieldType.Type['Score'].IsDisplayable));
             case 'SearchAddToResult':
                 return (['Path', 'Html', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'ComplexRelationLookup', 'RefListRelationship', 'Score', 'Tag'].indexOf(this.currentType) > -1);
             default:

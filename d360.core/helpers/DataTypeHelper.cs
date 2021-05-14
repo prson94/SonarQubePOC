@@ -129,6 +129,7 @@ namespace d360.core.helpers
             types.Add(DataType.Tag.ToString());
             types.Add(DataType.Score.ToString());
             types.Add(DataType.FieldFromRelationship.ToString());
+            types.Add(DataType.Counter.ToString());
 
             return types;
         }
