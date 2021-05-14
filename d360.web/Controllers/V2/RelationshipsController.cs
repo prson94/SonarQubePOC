@@ -100,6 +100,9 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Deletes a given set of predicates.
         /// </summary>
+        /// <remarks>
+        /// It is important to note that the status of each delete is returned in the http response body as it is possible for some predicates to be successfully removed while others may fail.
+        /// </remarks>
         /// <param name="predicates">The list of predicates for deletion.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
@@ -109,7 +112,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(List<PredicateDeleteResult>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to delete predicates of this type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to delete predicates due to lack of administrative permissions.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> DeletePredicates(PredicateDeletes predicates)
@@ -120,7 +123,7 @@ namespace d360.web.Controllers.V2
             {
                 if (!Company.CurrentResourceIsAdmin)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
                 }
 
                 if (predicates == null)
