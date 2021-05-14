@@ -34,8 +34,8 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     isColumnsLoaded = false;
 
     visibleColumns: GridFilterColumn[] = [];
-    private loadSubscription: Subscription;
-    private currentFilters: any;
+    loadSubscription: Subscription;
+    currentFilters: any;
 
     get globalFilterFields(): string[] {
         return this.visibleColumns.map((c) => c.datafield);

@@ -22,17 +22,17 @@ export class AssetDetailComponent implements OnChanges {
     @Input() hasModifyRelationshipsPermissions: boolean;
     @Input() hasDeleteRelationshipsPermissions: boolean;
     @Input() useAccordion: boolean = false;
-    private assetUID: string;
-    private assetTypeUID: string;
-    private isLoading = false;
+    assetUID: string;
+    assetTypeUID: string;
+    isLoading = false;
     DetailFieldType = DetailFieldType;
 
     readonly systemProperties: string = "System Fields";
     readonly noCategory: string = "None";
     readonly defaultCategory: string = "General";
 
-    private categories: Category[] = new Array<Category>();
-    private systemPropertiesCategory: Category = new Category(this.systemProperties);
+    categories: Category[] = new Array<Category>();
+    systemPropertiesCategory: Category = new Category(this.systemProperties);
 
     rows = new Array<DetailRow>();
     constructor(private objectDetailService: ObjectDetailService,

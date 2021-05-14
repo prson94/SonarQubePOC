@@ -5,8 +5,16 @@
     <div *ngFor="let row of category.rows">
         <div class="row" style="margin-bottom: 10px" attr.data-category="{{row.Category}}">
             <div *ngFor="let field of row.FirstColumnFields">
-                <label *ngIf="field.FieldDescription && field.FieldDescription != ''" class="ig-label" [pTooltip]="field.FieldDescription" tooltipPosition="top">{{field.Name}}</label>
-                <label *ngIf="!field.FieldDescription || field.FieldDescription == ''" class="ig-label" [pTooltip]="field.FieldDescription" tooltipPosition="top">{{field.Name}}</label>
+                <label *ngIf="field.FieldDescription && field.FieldDescription != ''" class="ig-label">
+                    <span [pTooltip]="field.FieldDescription" tooltipPosition="top">
+                        {{field.Name}}
+                    </span>
+                </label>
+                <label *ngIf="!field.FieldDescription || field.FieldDescription == ''" class="ig-label">
+                    <span>
+                        {{field.Name}}
+                    </span>
+                </label>
                 <ig-asset-detail-field [field]="field" [assetUid]="assetUID"></ig-asset-detail-field>
             </div>
         </div>
