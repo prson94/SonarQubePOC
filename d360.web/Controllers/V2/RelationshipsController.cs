@@ -101,7 +101,7 @@ namespace d360.web.Controllers.V2
         /// Deletes a given set of predicates.
         /// </summary>
         /// <remarks>
-        /// It is important to note that the status of each delete is returned in the http response body as it is possible for some predicates to be successfully removed while others may fail.
+        /// It is important to note that the status of each delete is returned in the success property in the JSON response as it is possible for some predicates to be successfully removed while others may fail.
         /// </remarks>
         /// <param name="predicates">The list of predicates for deletion.</param>
         /// <returns>An HTTP status code and message.</returns>
