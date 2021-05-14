@@ -400,6 +400,53 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Provides support for deleting a large set of Data Profile records.
+        /// </summary>
+        /// <param name="models">Data Profile Delete request collection.</param>
+        /// <returns>Results response containing the ExecutionID of the request.</returns>
+        [
+            HttpDelete,
+            Route("batch"),
+            SwaggerRequestExample(typeof(AssetInsert), typeof(AssetInsertsExample)),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> DeleteBulkDataProfilesAsync(List<AssetDataProfileDeleteModel> models)
+        {
+            var prefix = "DataProfiles.DeleteBulkDataProfilesAsync => ";
+
+            try
+            {
+                var execution = getApiExecution(models.Count);
+
+                ApiExecutionInfo executionInfo = await DataProfiles.DeleteBatchDataProfiles(models, execution);
+
+                var result = Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            new ApiExecutionRecievedResponse
+                            {
+                                ExecutionID = executionInfo.ExecutionID,
+                                Message = "Now processing request. Please check back with this ExecutionID for status.",
+                                Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{executionInfo.ExecutionID}"
+                            });
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(result)).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string> {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+            }
+        }
+
         public WorkHttpStatus ValidateDataProfileUpsertRequest(List<DataProfileUpsertModel> models, bool IsInsert)
         {
             if (models == null || models.Count == 0)

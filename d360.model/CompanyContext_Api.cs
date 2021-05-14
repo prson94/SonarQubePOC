@@ -11193,7 +11193,7 @@ EG.GroupUid
                 
             return results;
         }
-        public List<DataProfileDeleteResponse> DeleteDataProfiles(List<AssetDataProfileDeleteModel> models, ApiExecution execution)
+        public List<DataProfileDeleteResponse> DeleteDataProfiles(List<AssetDataProfileDeleteModel> models, ApiExecution execution, int timeout = 3600)
         {
             var swBegin = Stopwatch.StartNew();
             TelemetryClient client = new TelemetryClient();
@@ -11256,6 +11256,7 @@ EG.GroupUid
                     foreach (var item in models)
                     {
                         var row = table.NewRow();
+                        List<string> errorMessages = new List<string>();
 
                         row["ExecutionID"] = execution.ExecutionID;
                         row["ItemNumber"] = itemNumber;
@@ -11270,7 +11271,24 @@ EG.GroupUid
                         row["AssetUid"] = item.AssetUid;
                         row["StartDate"] = item.StartDate.Date;
 
+                        if (item.StartDate == DateTime.MinValue)
+                        {
+                            errorMessages.Add("Startdate is a required field");                            
+                        }
+
                         row["EndDate"] = item.EndDate.Date;
+
+                        if (item.EndDate == DateTime.MinValue)
+                        {
+                            errorMessages.Add("EndDate is a required field");
+                        }
+
+                        if (errorMessages.Any())
+                        {
+                            row["Message"] = string.Join(";", errorMessages);
+                            row["Success"] = 0;
+                        }
+                                                
                         row["Cascade"] = item.Cascade;
 
                         table.Rows.Add(row);
@@ -11302,6 +11320,8 @@ EG.GroupUid
                                 bulkCopy.ColumnMappings.Add("StartDate", "StartDate");
                                 bulkCopy.ColumnMappings.Add("EndDate", "EndDate");
                                 bulkCopy.ColumnMappings.Add("Cascade", "Cascade");
+                                bulkCopy.ColumnMappings.Add("Message", "Message");
+                                bulkCopy.ColumnMappings.Add("Success", "Success");
 
                                 bulkCopy.WriteToServer(table);
                             }
@@ -11549,8 +11569,7 @@ EG.GroupUid
                 {
                     Connection.Close();
                 }
-
-                //return results;                
+         
             }            
 
             return results;
