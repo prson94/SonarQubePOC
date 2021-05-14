@@ -5,12 +5,131 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="View.dbo.FieldLookupValue-v3">
+  <changeSet author="kmcnamee" id="View.dbo.FieldLookupValue-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter view [dbo].[FieldLookupValue]
+	as
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				A.Uid as AssetUid,
+				A.ObjectID as Value,			
+				A.DisplayValue as Text
+		FROM	FieldType T 			
+				INNER JOIN AssetDetail A on T.LookupObjectType = 'Artifact' AND T.LookupObjectID = A.TypeID	and A.[Object] = 'Artifact'		
+				INNER JOIN AssetType ATT on (A.AssetTypeID = ATT.ID)
+		WHERE	T.LookupObjectType is not null AND A.ID IS NOT NULL and not exists ( select 1 from intersecttype it inner join [predicate] p on it.predicateid = p.id and p.[type] = 3 and it.[subject] = 'ArtifactType' and it.[object] = 'ArtifactType' and it.objectid = A.TypeID)
+				and  coalesce(T.LookupEditFormat, T.LookupDisplayFormat) = ATT.DisplayFormat
+
+		UNION ALL
+
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				A.Uid as AssetUid,
+				A.ObjectID as Value,	
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, A.ObjectID) as Text		
+		FROM	FieldType T 
+				INNER JOIN AssetDetail A ON T.LookupObjectType = 'Artifact' AND T.LookupObjectID = A.TypeID and A.[Object]='Artifact'						
+				INNER JOIN AssetType ATT on (A.AssetTypeID = ATT.ID)
+		WHERE	T.LookupObjectType is not null AND  not exists ( select 1 from intersecttype it 
+						inner join [predicate] p on it.predicateid = p.id and p.[type] = 3 and it.[subject] = 'ArtifactType' and it.[object] = 'ArtifactType' and it.objectid = A.TypeID)
+				and  coalesce(T.LookupEditFormat, T.LookupDisplayFormat) <> ATT.DisplayFormat
+
+		UNION ALL
+		
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				A.Uid as AssetUid,
+				A.ObjectID as Value,
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, A.ObjectID) as Text		
+		FROM	FieldType T 
+				INNER JOIN AssetDetail A ON T.LookupObjectType = 'Artifact' AND T.LookupObjectID = A.TypeID and A.[Object]='Artifact'						
+		WHERE	T.LookupObjectType is not null AND A.ID IS NOT NULL and exists ( select 1 from intersecttype it inner join [predicate] p on it.predicateid = p.id and p.[type] = 3 and it.[subject] = 'ArtifactType' and it.[object] = 'ArtifactType' and it.objectid = A.TypeID)
+
+		UNION ALL
+
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				R.uid as AssetUid,
+				R.ResourceID as Value,	
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, R.ResourceID) as Text
+		FROM	FieldType T 
+				INNER JOIN reporting.Global_Resource R ON T.LookupObjectType = 'Resource'			
+		WHERE	T.LookupObjectType is not null and R.ResourceID IS NOT NULL and R.[State] = 1
+
+		UNION ALL
+
+		SELECT	T.ID as FieldTypeID,
+					T.LookupObjectType,
+					T.LookupObjectID,
+					A.Uid as AssetUid,
+					A.ObjectID as Value,			
+					A.DisplayValue as Text
+			FROM	FieldType T 			
+					INNER JOIN AssetDetail A on T.LookupObjectID = A.TypeID	and A.[Object] = 'ReferenceItem'		
+					INNER JOIN AssetType ATT on (A.AssetTypeID = ATT.ID)
+			WHERE	coalesce(T.LookupEditFormat, T.LookupDisplayFormat) = ATT.DisplayFormat
+					and T.LookupObjectType = 'ReferenceItem'
+
+		UNION ALL
+
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				A.Uid as AssetUid,
+				A.ObjectID as Value,	
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, A.ObjectID) as Text
+		FROM	FieldType T 
+				INNER JOIN AssetDetail A on T.LookupObjectID = A.TypeID	and A.[Object] = 'ReferenceItem' and  T.LookupObjectType = 'ReferenceItem'	
+					INNER JOIN AssetType ATT on (A.AssetTypeID = ATT.ID)
+		WHERE	coalesce(T.LookupEditFormat, T.LookupDisplayFormat) <> ATT.DisplayFormat
+
+		UNION ALL
+
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				A.Uid as AssetUid,
+				A.ObjectID as Value,	
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, A.ObjectID) as Text
+		FROM	FieldType T 
+				INNER JOIN AssetType A on A.Object = 'ReferenceItemType'	and T.LookupObjectType = 'ReferenceItemType'
+		WHERE	T.LookupObjectType is not null
+
+		UNION ALL
+
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				A.Uid as AssetUid,
+				A.ObjectID as Value,
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, A.ObjectID) as Text
+		FROM	FieldType T 			
+				INNER JOIN AssetDetail A ON T.LookupObjectType = 'Taxonomy' AND T.LookupObjectID = A.TypeID and A.[Object]='Taxonomy'								
+		WHERE	T.LookupObjectType is not null
+
+		UNION ALL
+
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				A.Uid as AssetUid,
+				A.ObjectID as Value,	
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, A.ObjectID) as Text
+		FROM	FieldType T 	
+				INNER JOIN AssetType A on A.Object = 'TaxonomyType'	and T.LookupObjectType = 'TaxonomyType'
+		WHERE	T.LookupObjectType is not null
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter view [dbo].[FieldLookupValue]
 	as
 		SELECT	T.ID as FieldTypeID,
@@ -121,116 +240,6 @@ create or alter view [dbo].[FieldLookupValue]
 				T.LookupObjectType,
 				T.LookupObjectID,
 				A.Uid as AssetUid,
-				A.ObjectID as Value,	
-				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, A.ObjectID) as Text
-		FROM	FieldType T 	
-				INNER JOIN AssetType A on A.Object = 'TaxonomyType'	and T.LookupObjectType = 'TaxonomyType'
-		WHERE	T.LookupObjectType is not null
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-	create or alter view [dbo].[FieldLookupValue]
-	as
-		SELECT	T.ID as FieldTypeID,
-				T.LookupObjectType,
-				T.LookupObjectID,
-				A.ObjectID as Value,			
-				A.DisplayValue as Text
-		FROM	FieldType T 			
-				INNER JOIN AssetDetail A on T.LookupObjectType = 'Artifact' AND T.LookupObjectID = A.TypeID	and A.[Object] = 'Artifact'		
-				INNER JOIN AssetType ATT on (A.AssetTypeID = ATT.ID)
-		WHERE	T.LookupObjectType is not null AND A.ID IS NOT NULL and not exists ( select 1 from intersecttype it inner join [predicate] p on it.predicateid = p.id and p.[type] = 3 and it.[subject] = 'ArtifactType' and it.[object] = 'ArtifactType' and it.objectid = A.TypeID)
-				and  coalesce(T.LookupEditFormat, T.LookupDisplayFormat) = ATT.DisplayFormat
-
-		UNION ALL
-
-		SELECT	T.ID as FieldTypeID,
-				T.LookupObjectType,
-				T.LookupObjectID,
-				A.ObjectID as Value,	
-				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, A.ObjectID) as Text		
-		FROM	FieldType T 
-				INNER JOIN AssetDetail A ON T.LookupObjectType = 'Artifact' AND T.LookupObjectID = A.TypeID and A.[Object]='Artifact'						
-				INNER JOIN AssetType ATT on (A.AssetTypeID = ATT.ID)
-		WHERE	T.LookupObjectType is not null AND  not exists ( select 1 from intersecttype it 
-						inner join [predicate] p on it.predicateid = p.id and p.[type] = 3 and it.[subject] = 'ArtifactType' and it.[object] = 'ArtifactType' and it.objectid = A.TypeID)
-				and  coalesce(T.LookupEditFormat, T.LookupDisplayFormat) <> ATT.DisplayFormat
-
-		UNION ALL
-		
-		SELECT	T.ID as FieldTypeID,
-				T.LookupObjectType,
-				T.LookupObjectID,
-				A.ObjectID as Value,
-				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, A.ObjectID) as Text		
-		FROM	FieldType T 
-				INNER JOIN AssetDetail A ON T.LookupObjectType = 'Artifact' AND T.LookupObjectID = A.TypeID and A.[Object]='Artifact'						
-		WHERE	T.LookupObjectType is not null AND A.ID IS NOT NULL and exists ( select 1 from intersecttype it inner join [predicate] p on it.predicateid = p.id and p.[type] = 3 and it.[subject] = 'ArtifactType' and it.[object] = 'ArtifactType' and it.objectid = A.TypeID)
-
-		UNION ALL
-
-		SELECT	T.ID as FieldTypeID,
-				T.LookupObjectType,
-				T.LookupObjectID,
-				R.ResourceID as Value,	
-				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, R.ResourceID) as Text
-		FROM	FieldType T 
-				INNER JOIN reporting.Global_Resource R ON T.LookupObjectType = 'Resource'			
-		WHERE	T.LookupObjectType is not null and R.ResourceID IS NOT NULL
-
-		UNION ALL
-
-		SELECT	T.ID as FieldTypeID,
-					T.LookupObjectType,
-					T.LookupObjectID,
-					A.ObjectID as Value,			
-					A.DisplayValue as Text
-			FROM	FieldType T 			
-					INNER JOIN AssetDetail A on T.LookupObjectID = A.TypeID	and A.[Object] = 'ReferenceItem'		
-					INNER JOIN AssetType ATT on (A.AssetTypeID = ATT.ID)
-			WHERE	coalesce(T.LookupEditFormat, T.LookupDisplayFormat) = ATT.DisplayFormat
-					and T.LookupObjectType = 'ReferenceItem'
-
-		UNION ALL
-
-		SELECT	T.ID as FieldTypeID,
-				T.LookupObjectType,
-				T.LookupObjectID,
-				A.ObjectID as Value,	
-				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, A.ObjectID) as Text
-		FROM	FieldType T 
-				INNER JOIN AssetDetail A on T.LookupObjectID = A.TypeID	and A.[Object] = 'ReferenceItem' and  T.LookupObjectType = 'ReferenceItem'	
-					INNER JOIN AssetType ATT on (A.AssetTypeID = ATT.ID)
-		WHERE	coalesce(T.LookupEditFormat, T.LookupDisplayFormat) <> ATT.DisplayFormat
-
-		UNION ALL
-
-		SELECT	T.ID as FieldTypeID,
-				T.LookupObjectType,
-				T.LookupObjectID,
-				A.ObjectID as Value,	
-				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, A.ObjectID) as Text
-		FROM	FieldType T 
-				INNER JOIN AssetType A on A.Object = 'ReferenceItemType'	and T.LookupObjectType = 'ReferenceItemType'
-		WHERE	T.LookupObjectType is not null
-
-		UNION ALL
-
-		SELECT	T.ID as FieldTypeID,
-				T.LookupObjectType,
-				T.LookupObjectID,
-				A.ObjectID as Value,
-				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, A.ObjectID) as Text
-		FROM	FieldType T 			
-				INNER JOIN AssetDetail A ON T.LookupObjectType = 'Taxonomy' AND T.LookupObjectID = A.TypeID and A.[Object]='Taxonomy'								
-		WHERE	T.LookupObjectType is not null
-
-		UNION ALL
-
-		SELECT	T.ID as FieldTypeID,
-				T.LookupObjectType,
-				T.LookupObjectID,
 				A.ObjectID as Value,	
 				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, A.ObjectID) as Text
 		FROM	FieldType T 	
