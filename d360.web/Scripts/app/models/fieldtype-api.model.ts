@@ -301,11 +301,16 @@ export class ComputedRelationshipReferenceList implements ICommonOptions {
     IsPrimaryFilter: boolean = false;
     ColumnOrder: number;
     Description: DisplayOnlyDescription = new DisplayOnlyDescription();
+    Definition: ComputedRelationshipReferenceListDefinition = new ComputedRelationshipReferenceListDefinition();
     IntersectTypeUid?: string;
     IsDisplayable: boolean = true;
     ShowIfEmpty: boolean = false;
     Validation: BooleanValidation = new BooleanValidation();
     Search: Search = new Search();
+}
+
+export class ComputedRelationshipReferenceListDefinition {
+    DisplayRefListDescription: boolean = true;
 }
 
 export class DateClass implements ICommonOptions {

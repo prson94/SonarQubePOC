@@ -165,6 +165,15 @@ export class LookupGrid extends DynamicGridDefinitionBase {
     ScoringInfo: any[];
 }
 
+export class LookupGridField {
+    objectId: number;
+    name: string;
+    description: string;
+    url: string;
+    fieldTypeId: number;
+    showDescription: boolean;
+}
+
 export class DynamicGridResultsInData extends DynamicGridDefinitionBase {
     Data: any[];
 }
