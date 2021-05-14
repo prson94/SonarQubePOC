@@ -151,8 +151,8 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
         this.getData();
     }
 
-    private newAdvancedFilters: Filters;
-    private advancedFiltersChanged($event) {
+    newAdvancedFilters: Filters;
+    advancedFiltersChanged($event) {
         this.newAdvancedFilters = $event;
         this.getData();
     }
