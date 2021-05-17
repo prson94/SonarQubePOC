@@ -1450,13 +1450,17 @@ namespace d360.web.Controllers.V2
 
             #endregion
 
-            List<DataQualityDeleteResponseModel> responseList = new List<DataQualityDeleteResponseModel>();
-
-
             var execution = getApiExecution(1);
-
-            responseList = await Task.FromResult(MetricsRepository.DeleteDataQualityResult(new List<DataQualityDeleteModel> { model }, execution));
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseList.FirstOrDefault()));
+            var responseList = await Task.FromResult(MetricsRepository.DeleteDataQualityResult(new List<DataQualityDeleteModel> { model }, execution));
+            var responseModel = responseList.FirstOrDefault();
+            if (responseModel != null)
+            {
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseModel));
+            }
+            else
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error removing rule results", ApiMessages.UnknownErrorInvestigatingMessage);
+            }
         }
 
         /// <summary>
