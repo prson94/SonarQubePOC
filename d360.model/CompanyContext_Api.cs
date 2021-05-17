@@ -782,6 +782,31 @@ where	ExecutionID = @executionID
             return res;
         }
 
+        public List<AssetFieldTypeUpdate> UpdateCounterFields(int assetTypeId, Guid executionID, SqlTransaction trans, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600)
+        {
+            Connection.Execute(
+                    $@"insert into FieldCounterValue (AssetId, AssetTypeId, FieldTypeId, [Value])
+                        select distinct ea.assetid, ft.assettypeid, ft.id, ef.FieldValue from api.ExecutionAsset ea
+                        inner join FieldType ft on ft.AssetTypeID = @assetTypeId and ft.Type = @dataType
+                        left join {ApiExecutionFieldTable} ef on ef.executionid = @executionid and ef.itemnumber = ea.itemnumber and ft.id = ef.fieldtypeid
+                        where ea.ExecutionID = @executionID and ea.Success is null and ea.ItemNumber between @beginItemNumber and @endItemNumber;"
+                    , new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID, assetTypeId, dataType = DataType.Counter.ToString() }, transaction: trans, commandTimeout: timeout);
+
+            if (sendWorkflowEvents)
+            {
+                return Connection.Query<AssetFieldTypeUpdate>($@"
+                        select ea.[object], ea.[objectid], ft.id from api.ExecutionAsset ea
+                        inner join FieldType ft on ft.AssetTypeID = @assetTypeId and ft.Type = @dataType
+                        where ea.ExecutionID = @executionID and ea.Success is null and ea.ItemNumber between @beginItemNumber and @endItemNumber",
+                    new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID, assetTypeId, dataType = DataType.Counter.ToString() }, transaction: trans, commandTimeout: timeout).ToList();
+            }
+            else
+            {
+                return new List<AssetFieldTypeUpdate>();
+            }
+        }
+
+
         public void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false, bool sendGraphEvents = true)
         {
 
@@ -1547,7 +1572,7 @@ where T.ExecutionId = @executionid;
                                     }
                                     break;
                                 case "JSON":
-                                    if (jsonElementsEnabled && (fieldValue.Length > 2500) )
+                                    if (jsonElementsEnabled && (fieldValue.Length > 2500))
                                     {
                                         success = false;
                                         errorMessages.Add($"{fieldName} exceeds the maximum length of 2500 characters");
@@ -1616,40 +1641,40 @@ where T.ExecutionId = @executionid;
                             }
                         }
 
-                        }
-                    }
-
-
-                    if (fieldTable != null)
-                    {
-                        var fieldRow = fieldTable.NewRow();
-
-                        fieldRow["ExecutionID"] = executionID;
-                        fieldRow["ItemNumber"] = itemNumber;
-                        fieldRow["FieldName"] = fieldName;
-                        if (k.Value == null)
-                            fieldRow["FieldValue"] = DBNull.Value;
-                        else
-                            fieldRow["FieldValue"] = fieldValue;
-                        if (fieldTypeId.HasValue)
-                            fieldRow["FieldTypeID"] = fieldTypeId.Value;
-
-                        fieldRows.Add(fieldRow);    // Added temporarily, but may be invalidated based on success flag.
                     }
                 }
 
-                if (errorMessages.Any())
+
+                if (fieldTable != null)
                 {
-                    errorMessage = string.Join(errorDelimiter, errorMessages);
-                    errorMessage += "."; //ending period
-                }
+                    var fieldRow = fieldTable.NewRow();
 
-                return fieldRows;
+                    fieldRow["ExecutionID"] = executionID;
+                    fieldRow["ItemNumber"] = itemNumber;
+                    fieldRow["FieldName"] = fieldName;
+                    if (k.Value == null)
+                        fieldRow["FieldValue"] = DBNull.Value;
+                    else
+                        fieldRow["FieldValue"] = fieldValue;
+                    if (fieldTypeId.HasValue)
+                        fieldRow["FieldTypeID"] = fieldTypeId.Value;
+
+                    fieldRows.Add(fieldRow);    // Added temporarily, but may be invalidated based on success flag.
+                }
             }
 
-            private void ValidateAssetAndParent(Guid executionID, int assetTypeID, int timeout = 3600)
+            if (errorMessages.Any())
             {
-                Connection.Execute(@"
+                errorMessage = string.Join(errorDelimiter, errorMessages);
+                errorMessage += "."; //ending period
+            }
+
+            return fieldRows;
+        }
+
+        private void ValidateAssetAndParent(Guid executionID, int assetTypeID, int timeout = 3600)
+        {
+            Connection.Execute(@"
     update  T
     set     T.AssetID = S.ID,
             T.Object = S.Object,
@@ -1664,12 +1689,12 @@ where T.ExecutionId = @executionid;
     from    api.ExecutionAsset T
             inner join Asset S on T.ExecutionID = @executionID and S.Uid = T.ParentUid and T.ParentUid is not null
             inner join AssetType ST on ST.ID = S.AssetTypeID and ST.Object = T.ParentObjectType and ST.ObjectID = T.ParentObjectTypeID;",
-                new { executionID, assetTypeID }, commandTimeout: timeout);
-            }
+            new { executionID, assetTypeID }, commandTimeout: timeout);
+        }
 
-            #endregion
+        #endregion
 
-            #endregion
+        #endregion
 
         public async Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
         {
@@ -1978,18 +2003,18 @@ where	T.ExecutionID = @ExecutionID
                             bool runCompleted = false;
                             int retryCount = 0;
 
-                                while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+                            while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+                            {
+                                var querySuffix = $"S.Success is null and S.ExecutionID = @ExecutionID and S.ItemNumber between @beginItemNumber and @endItemNumber";
+                                using (var trans = Connection.BeginTransaction())
                                 {
-                                    var querySuffix = $"S.Success is null and S.ExecutionID = @ExecutionID and S.ItemNumber between @beginItemNumber and @endItemNumber";
-                                    using (var trans = Connection.BeginTransaction())
+                                    try
                                     {
-                                        try
+                                        if (at.Object == "FusionType")
                                         {
-                                            if (at.Object == "FusionType")
-                                            {
-                                                var fusion = import.First();
-                                                sw.Restart();
-                                                var data = Connection.Query<dynamic>($@"
+                                            var fusion = import.First();
+                                            sw.Restart();
+                                            var data = Connection.Query<dynamic>($@"
                                                     drop table if exists #forDelete
 
                                                 create table #forDelete (ID int, Type varchar(50))
@@ -2060,7 +2085,7 @@ where	T.ExecutionID = @ExecutionID
                                                     insert into @result values(1,'Success')
                                                 end
                                                 select * from @result",
-                                                    new { execution.ExecutionID, isCascade = fusion.Cascade.HasValue ? fusion.Cascade.Value : false, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).FirstOrDefault();
+                                                new { execution.ExecutionID, isCascade = fusion.Cascade.HasValue ? fusion.Cascade.Value : false, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).FirstOrDefault();
 
                                             AddMeasurement(metrics, $"Fusion type delete assets >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
                                             sw.Restart();
@@ -3408,7 +3433,7 @@ where	T.ExecutionID = @ExecutionID
                         }
 
                         Connection.Close();
-                        
+
                         // Queue successfully deleted asset types for reindexing
                         results.Where(r => r.Success).ToList().ForEach(r =>
                             {
@@ -3417,7 +3442,7 @@ where	T.ExecutionID = @ExecutionID
                                     CompanyID = CurrentCompanyID,
                                     AssetTypeUid = r.uid
                                 });
-                        });
+                            });
                     }
                 }
             }
@@ -3426,7 +3451,7 @@ where	T.ExecutionID = @ExecutionID
 
             return results;
         }
-            
+
         private void RemoveAssetsGraphDataByChunk(ApiExecution execution, int timeout, int itemNumber, AssetTypeDeleteObject at, SqlTransaction trans)
         {
             Connection.Execute(@"
@@ -3582,7 +3607,7 @@ where	T.ExecutionID = @ExecutionID
 
                 delete	T
                 from	Asset T
-                        where T.Id in (select id from #deleteAssets);", 
+                        where T.Id in (select id from #deleteAssets);",
                         new { deleteCount = SqlBulkAssetDeleteSize, assetTypeUid = at.uid, at.AssetTypeId, at.Object, at.ObjectId, at.IntersectTypeId, executionUid = execution.ExecutionID, itemNumber, resource = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
         }
 
@@ -4001,8 +4026,8 @@ where   ExecutionID = @ExecutionID
                                         new { execution.ExecutionID }
                                         ).ToList();
 
-                SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel(), execution.ExecutionID);
-            }
+                    SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel(), execution.ExecutionID);
+                }
                 finally
                 {
                     if (Database.Connection.State == ConnectionState.Open)
@@ -4373,6 +4398,7 @@ where   ExecutionID = @ExecutionID
             var step = 0;
             bool hasDuplicateUids = false;
             bool enableJsonAttributes = false;
+            bool hasCounterField = false;
 
             try
             {
@@ -4505,6 +4531,7 @@ where   ExecutionID = @ExecutionID
                     requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue)).Select(f => f.Name).ToList();
                     hasLookupFieldTypes = fieldTypes.Any(f => f.Type == DataType.Lookup.ToString());
                     hasRelationshipFieldTypes = fieldTypes.Any(f => f.Type == DataType.Relationship.ToString());
+                    hasCounterField = fieldTypes.Any(x => x.Type == DataType.Counter.ToString());
                     AddMeasurement(metrics, "Get field types", sw.ElapsedMilliseconds, ++step);
                     sw.Restart();
 
@@ -5326,6 +5353,13 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                     AddMeasurement(metrics, $"MergeFields >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     sw.Restart();
 
+                                    if (hasCounterField)
+                                    {
+                                        UpdateCounterFields(at.ID, execution.ExecutionID, trans, beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
+                                        AddMeasurement(metrics, $"UpdateCounteFields >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+                                        sw.Restart();
+                                    }
+
                                     if (hasRelationshipFieldTypes)
                                     {
                                         ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
@@ -5645,7 +5679,7 @@ from	metrics.Allocation A
 
                             bool success;
                             string errorMessage;
-                            var fieldRows = ValidateFields("IntersectType", rt.ID, true, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, jsonElementsEnabled:false);
+                            var fieldRows = ValidateFields("IntersectType", rt.ID, true, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, jsonElementsEnabled: false);
 
                             if (success)
                             {
@@ -6816,8 +6850,8 @@ from    api.ExecutionRelationshipType T
 where   (S.UseAsTransformation = 1 and O.UseAsTransformation = 1) OR (S.UseAsTransformation = 0 and O.UseAsTransformation = 0); ";
                     }
 
-                // Always do this.
-                message = $"When using the {p.Name} functional type, your Subject must be an asset type of class {string.Join(" or ", p.SubjectAssetClassesSupported.Select(c => c.AsInfoModel().Name))}, and Object of class {string.Join(" or ", p.ObjectAssetClassesSupported.Select(c => c.AsInfoModel().Name))}.";
+                    // Always do this.
+                    message = $"When using the {p.Name} functional type, your Subject must be an asset type of class {string.Join(" or ", p.SubjectAssetClassesSupported.Select(c => c.AsInfoModel().Name))}, and Object of class {string.Join(" or ", p.ObjectAssetClassesSupported.Select(c => c.AsInfoModel().Name))}.";
                     predicateCheckSql += $@"
 update  T 
 set     T.Success = 0, T.Message = coalesce(T.Message+' ', '') + '{message}' 
@@ -9181,7 +9215,7 @@ order by RowNumber", transaction: trans).ToList();
                     var updateOnSuccess = $@"update DAR set DAR.Success = 1 from api.ExecutionDeleteAssetResult DAR inner join
 	                                            #ObjectDeleteAssetEdge DAE on DAE.ExecutionItemUid = DAR.ExecutionItemUid where {querySuffix}";
 
-                string ruleResultWhereClause = $@"from AssetResult AR, assetResultedge ARE, graph.AssetNode AN, API.[ExecutionDeleteAssetResult] DAR 
+                    string ruleResultWhereClause = $@"from AssetResult AR, assetResultedge ARE, graph.AssetNode AN, API.[ExecutionDeleteAssetResult] DAR 
 where 
 DAR.ExecutionID = @executionID 
 and DAR.Success is null 
@@ -9222,7 +9256,7 @@ and (DAR.EffectiveDateEnd is null or DAR.EffectiveDateEnd >= AR.EffectiveDate)
 and (DAR.RunDateStart is null or AR.RunDate >= DAR.RunDateStart) 
 and (DAR.RunDateEnd is null or AR.RunDate <= DAR.RunDateEnd) ";
 
-                string deleteAssetResultSQL = $@"
+                    string deleteAssetResultSQL = $@"
 create table #ObjectDeleteAssetEdge ([uid] uniqueidentifier, class int, ItemNumber int, ExecutionItemUid uniqueidentifier, [Operation] varchar(10));
 CREATE NONCLUSTERED INDEX IX_TempObjectMergeAssetEdge ON #ObjectDeleteAssetEdge ( ItemNumber ASC );
 
@@ -9252,13 +9286,13 @@ WHEN MATCHED THEN DELETE;
 
 {updateOnSuccess}";
 
-                // Find out which items we need to update scores for.
-                var ruleResultUids = Query<Guid>($@"select AR.Uid {ruleResultWhereClause}", new { execution.ExecutionID }).ToList();
-                List<AssetMeasureModel> assetMeasures = null;
-                if (ruleResultUids.Count > 0)
-                {
-                    assetMeasures = GetAssetMeasuresFromRuleResults(ruleResultUids);
-                }
+                    // Find out which items we need to update scores for.
+                    var ruleResultUids = Query<Guid>($@"select AR.Uid {ruleResultWhereClause}", new { execution.ExecutionID }).ToList();
+                    List<AssetMeasureModel> assetMeasures = null;
+                    if (ruleResultUids.Count > 0)
+                    {
+                        assetMeasures = GetAssetMeasuresFromRuleResults(ruleResultUids);
+                    }
 
                     for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
                     {
@@ -9306,17 +9340,17 @@ WHEN MATCHED THEN DELETE;
                                 )
                             );
 
-                    beginItemNumber += loopSize;
-                    endItemNumber += loopSize;
-                }
+                        beginItemNumber += loopSize;
+                        endItemNumber += loopSize;
+                    }
 
-                // Now that results are deleted, send the score events to re-process scores for impacted assets.
-                if (assetMeasures != null && assetMeasures.Count > 0)
-                {
-                    SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, assetMeasures, execution.ExecutionID);
+                    // Now that results are deleted, send the score events to re-process scores for impacted assets.
+                    if (assetMeasures != null && assetMeasures.Count > 0)
+                    {
+                        SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, assetMeasures, execution.ExecutionID);
+                    }
                 }
             }
-        }
 
             return results;
         }
@@ -10054,7 +10088,7 @@ SET DefinitionConverted = cd.[Definition];
             int itemNumber = 1;
             List<GroupResponseResult> results = new List<GroupResponseResult>();
             CurrentExecutionLocationModel currentLocation = null;
-            
+
             var dups = groups.GroupBy(x => x.Name.Trim()).Where(x => x.Count() > 1).Select(x => new { x.Key, Items = x.ToList() }).ToList();
 
             Add(execution);
@@ -10096,7 +10130,7 @@ SET DefinitionConverted = cd.[Definition];
                         {
                             row["GroupUid"] = item.Uid;
                         }
-                            
+
                         if (item.Name == null)
                             row["Name"] = "";
                         else
@@ -10331,7 +10365,7 @@ EG.GroupUid
                 where EG.ExecutionID = @ExecutionID and EG.Success is null";
 
                                     Connection.Execute(insertSQL,
-                                            new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID}, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 
                                     Connection.Execute(
                                                         $"update [api].[ExecutionGroup] set Success = 1, Message = 'Success' where	Success is null and ExecutionID = @ExecutionID;",
@@ -10377,7 +10411,8 @@ EG.GroupUid
             }
 
             //Convert GroupResponseResult to DatabaseBulkAssetResult to use in SendAssetGraphEvents
-            IEnumerable<IGraphAsset> graphResults = results.Where(r => r.uid.HasValue).Select(r => {
+            IEnumerable<IGraphAsset> graphResults = results.Where(r => r.uid.HasValue).Select(r =>
+            {
                 return new DatabaseBulkAssetResult
                 {
                     ExecutionItemUid = r.ExecutionItemUid,
@@ -10572,8 +10607,8 @@ EG.GroupUid
 
             var dups = request.Where(i => i.ExecutionItemUid.HasValue && i.ExecutionItemUid.Value != Guid.Empty).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
 
-            var dupRecords = request.GroupBy(i => new { i.assetUid, i.profileSetDate}).Where(i => i.Count() > 1).Select(i => new { keyFields = i.Key, Count = i.Count() }).ToList();
-            
+            var dupRecords = request.GroupBy(i => new { i.assetUid, i.profileSetDate }).Where(i => i.Count() > 1).Select(i => new { keyFields = i.Key, Count = i.Count() }).ToList();
+
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
             AddMeasurement(metrics, "Checks for duplicates in load", sw.ElapsedMilliseconds, ++step);
@@ -10589,8 +10624,8 @@ EG.GroupUid
                 else
                 {
                     execution.ErrorMessage = $"Duplicate Records: {string.Join(", ", dupRecords.Select(i => $"AssetUid: {i.keyFields.assetUid}, ProfileSetDate: {i.keyFields.profileSetDate}"))}. AssetUid and ProfileSetDate pairs are used as record identifiers and must be unique within a batch.";
-                }                
-                
+                }
+
                 results.AddRange(request.Select(i => new DataProfileUpsertResponse { ExecutionItemUid = execution.ExecutionID, Message = execution.ErrorMessage, Success = false }));
             }
             else
@@ -10674,7 +10709,7 @@ EG.GroupUid
                         else
                         {
                             row["ExecutionItemUid"] = DBNull.Value;
-                        }                        
+                        }
                         row["AssetUid"] = item.assetUid;
                         row["ProfileSetDate"] = item.profileSetDate.Date;
 
@@ -10766,7 +10801,7 @@ EG.GroupUid
                                 DataProfileSampleTable.Rows.Add(sampleRow);
                             }
                         }
-                            
+
 
                         if (item.topK != null)
                         {
@@ -10785,7 +10820,7 @@ EG.GroupUid
                                 DataProfileSampleTable.Rows.Add(sampleRow);
                             }
                         }
-                            
+
 
                         if (item.bottomK != null)
                         {
@@ -10804,18 +10839,18 @@ EG.GroupUid
                                 DataProfileSampleTable.Rows.Add(sampleRow);
                             }
                         }
-                                           
+
                         itemNumber++;
                     }
                     #endregion
                     #region Bulk Copy
-                    
+
                     if (Database.Connection.State != ConnectionState.Open)
                         Connection.Open();
 
                     using (var transaction = Connection.BeginTransaction())
                     {
-                        try 
+                        try
                         {
                             #region Bulk Copy Data Profile
                             using (var bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction)
@@ -10883,22 +10918,23 @@ EG.GroupUid
                                 bulkCopy.WriteToServer(DataProfileSampleTable);
                             }
                             #endregion
-                            
+
                             transaction.Commit();
 
                             AddMeasurement(metrics, "BulkCopy to api.Execution table", sw.ElapsedMilliseconds, ++step);
-                        } catch (Exception ex)
+                        }
+                        catch (Exception ex)
                         {
                             if (transaction != null)
                             {
                                 transaction.Rollback();
-                            }                       
-                        throw ex;
+                            }
+                            throw ex;
                         }
 
                     }
                     #endregion
-                    
+
                     #endregion
 
                     Connection.Execute($@"
@@ -11130,15 +11166,15 @@ EG.GroupUid
                                             {querySuffix}
                                             ", new { execution.ExecutionID, beginItemNumber, endItemNumber, isInsert, CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 
-                                #endregion                                
+                                    #endregion
 
-                                // Update success flag.
-                                Connection.Execute(
-                                    $@"update E 
+                                    // Update success flag.
+                                    Connection.Execute(
+                                        $@"update E 
                                             set Success = 1 
                                        From api.ExecutionAssetDataProfile E
                                        where {querySuffix};",
-                                    new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                     trans.Commit();
                                     runCompleted = true;
@@ -11190,7 +11226,7 @@ EG.GroupUid
             {
                 Connection.Close();
             }
-                
+
             return results;
         }
         public List<DataProfileDeleteResponse> DeleteDataProfiles(List<AssetDataProfileDeleteModel> models, ApiExecution execution, int timeout = 3600)
@@ -11209,7 +11245,7 @@ EG.GroupUid
             var sw = Stopwatch.StartNew();
             var step = 0;
 
-            var dups = models.Where(i => i.ExecutionItemUid.HasValue && i.ExecutionItemUid.Value != Guid.Empty).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();            
+            var dups = models.Where(i => i.ExecutionItemUid.HasValue && i.ExecutionItemUid.Value != Guid.Empty).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
 
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
@@ -11224,7 +11260,7 @@ EG.GroupUid
                 results.AddRange(models.Select(i => new DataProfileDeleteResponse { ExecutionItemUid = execution.ExecutionID, Message = execution.ErrorMessage, Success = false }));
             }
             else
-            {                
+            {
                 try
                 {
                     currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionDeleteAssetDataProfile");
@@ -11273,7 +11309,7 @@ EG.GroupUid
 
                         if (item.StartDate == DateTime.MinValue)
                         {
-                            errorMessages.Add("Startdate is a required field");                            
+                            errorMessages.Add("Startdate is a required field");
                         }
 
                         row["EndDate"] = item.EndDate.Date;
@@ -11288,7 +11324,7 @@ EG.GroupUid
                             row["Message"] = string.Join(";", errorMessages);
                             row["Success"] = 0;
                         }
-                                                
+
                         row["Cascade"] = item.Cascade;
 
                         table.Rows.Add(row);
@@ -11502,7 +11538,7 @@ EG.GroupUid
                         int retryCount = 0;
 
                         while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
-                        {                            
+                        {
                             using (var trans = Connection.BeginTransaction())
                             {
                                 #region Load valid items into table
@@ -11559,7 +11595,7 @@ EG.GroupUid
                         AddMeasurement(metrics, $"results.AddRange >> DataProfileUpsertResponse>> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
                     }
-                }                                
+                }
 
                 AddMeasurement(metrics, $"End of Method", swBegin.ElapsedMilliseconds, ++step);
 
@@ -11569,10 +11605,10 @@ EG.GroupUid
                 {
                     Connection.Close();
                 }
-         
-            }            
+
+            }
 
             return results;
-        }       
+        }
     }
 }
