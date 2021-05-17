@@ -66,8 +66,9 @@ export class OwnershipListComponent implements OnInit {
     }
 
     formatResponsibilityTypes(types: string) {
-        if (types.length > 0)
+        if (types.length > 0) {
             return `(${types})`;
+        }
         return types;
     }
 }

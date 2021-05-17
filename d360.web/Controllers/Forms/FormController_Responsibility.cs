@@ -517,9 +517,10 @@ order by case Object
                 ResponsibilityType responsibilityType = Company.Filter<ResponsibilityType>(i => i.ID == responsibilityTypeId).FirstOrDefault();
                 AssetType assetType = Company.Filter<AssetType>(i => i.Object == type && i.ObjectID == typeId).FirstOrDefault();
 
-                if(ResponsibilityRepository.IsResponsibilityTypeUsedInOwnershipLookup(responsibilityType, assetType, out string message))
+                string ownershipLookupMessage = ResponsibilityRepository.GetResponsibilityTypeUsedInOwnershipLookupMessage(responsibilityType, assetType);
+                if (ownershipLookupMessage != "")
                 {
-                    throw new GenericException(HttpStatusCode.BadRequest, "Error Occured!", message);
+                    throw new GenericException(HttpStatusCode.BadRequest, "Error Occured!", ownershipLookupMessage);
                 }
 
                 Company.RemoveResponsibilityTypeRelation(model);

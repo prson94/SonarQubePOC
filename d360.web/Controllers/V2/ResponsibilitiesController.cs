@@ -531,12 +531,13 @@ namespace d360.web.Controllers.V2
                         continue;
                     }
 
-                    if (ResponsibilityRepository.IsResponsibilityTypeUsedInOwnershipLookup(responsibility, assetType, out string message))
+                    string ownershipLookupMessage = ResponsibilityRepository.GetResponsibilityTypeUsedInOwnershipLookupMessage(responsibility, assetType);
+                    if (ownershipLookupMessage != "")
                     {
                         results.Add(new ResponsibilityTypeAllocationResponseModel()
                         {
                             AssetTypeUid = allocation.AssetTypeUid,
-                            Message = message,
+                            Message = ownershipLookupMessage,
                             Success = false
                         });
                         continue;

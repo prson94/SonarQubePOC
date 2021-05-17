@@ -190,7 +190,7 @@ export class Lookups {
     Field_Relationships: SelectItem[];
     Field_CardinalRelationships: SelectItem[];
     Field_CardinalReferenceRelationships: SelectItem[];
-    Field_ResponsibilityTypes: SelectItem[];
+    FieldResponsibilityTypes: SelectItem[];
     ComplexLookupRelations: any[] = [];
     FilteredLookups: any[] = [];
     Field_FieldFromRelRelationships: any[] = [];
