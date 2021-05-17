@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.metrics.ProcessAssetScores-v1.20">
+  <changeSet author="Pappas" id="Procedure.metrics.ProcessAssetScores-v1.21">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -473,7 +473,7 @@ begin
 			inner join (
 				select	T.Uid, DATEADD(dd, -1, S.EffectiveDate) as EndDate
 				from    metrics.Score T
-						inner join #Scores S on T.AllocationUid = @allocationUid and S.AssetUid = T.AssetUid and S.EffectiveDate > T.EffectiveDate and T.EndDate is null			
+						inner join #Scores S on T.AllocationUid = @allocationUid and S.AssetUid = T.AssetUid and S.EffectiveDate > T.EffectiveDate and T.EndDate is null and T.VersionValueHash <> S.VersionValueHash			
 			) V on V.Uid = T.Uid;
 
 	-- Determine if these scores are NOT most recent.
