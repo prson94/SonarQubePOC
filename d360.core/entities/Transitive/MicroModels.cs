@@ -367,6 +367,7 @@ namespace d360.core.entities
         public bool HasRuleResult { get; set; }
         public bool HasGovernanceRoleUidSet { get; set; }
         public bool HasProcessDiagram { get; set; }
+        public bool HasRequestCertificationWorkflow { get; set; }
     }
 
 }
