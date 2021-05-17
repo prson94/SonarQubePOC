@@ -293,6 +293,146 @@ namespace d360.web.Controllers.V2
 
         }
 
+        /// <summary>
+        /// GETs connector status record.
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("external"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your externalid was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "A list of connector status.", typeof(APIExecutionExternalAPIModelResult)),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by CreatedOn desc, then ExternalID if the dates are the same", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_startDate", "Start date to get data for limit result on createdon column.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_endDate", "End date to get data for limit result on createdon column.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("externalId", "Filter by external ID.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("component", "Filter by component.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("status", "Filter by component status. Allowed values are START, COMPLETE_SUCCESS, COMPLETE_FAILURE, INFORMATION", DataType = "string", ParameterType = "query", Required = false),
+
+        ]
+        public async Task<IHttpActionResult> GetConnectorStatus()
+        {
+
+            var queryParams = Request.GetQueryNameValuePairs();
+            DateTime? _startDate = null;
+            DateTime? _endDate = null;
+            Guid? externalId = null;
+            string status = null;
+            string component = null;
+
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
+            }
+
+            string isValid = isPageSizeAndNumValid(queryParams);
+
+            if (!string.IsNullOrEmpty(isValid))
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+            }
+
+
+            #region "Filter Condition"
+            if (queryParams.Any(x => x.Key == "status"))
+            {
+                status = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "status").Value;
+                if (!Enum.IsDefined(typeof(ExecutionExternalStatus), status))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid value for Status. Allowed values are: START, COMPLETE_SUCCESS, COMPLETE_FAILURE, INFORMATION", isValid));
+                }
+            }
+
+            if (queryParams.Any(q => q.Key == "_startDate"))
+            {
+                DateTime _tempstartDate;
+                if (!DateTime.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_startDate").Value, out _tempstartDate))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"Start date is not valid.");
+                }
+                _startDate = _tempstartDate;
+
+                if (_startDate == DateTime.MinValue)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"Start date is not valid.");
+                }
+            }
+
+            if (queryParams.Any(q => q.Key == "_endDate"))
+            {
+                DateTime _tempendDate;
+                if (!DateTime.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_endDate").Value, out _tempendDate))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"End date is not valid.");
+                }
+                _endDate = _tempendDate;
+
+                if (_endDate == DateTime.MaxValue)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"End date is not valid.");
+                }
+
+                if (_startDate != null && DateTime.Compare((DateTime)_endDate, (DateTime)_startDate) < 0)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"End date must be later than start date.");
+                }
+            }
+
+            if (queryParams.Any(q => q.Key == "externalId"))
+            {
+                Guid tempexternalId;
+                if (!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "externalId").Value, out tempexternalId))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid", $"externalId {queryParams.ToList().FirstOrDefault(q => q.Key == "externalId").Value} is not a valid Uid")).ConfigureAwait(false);
+                }
+
+                externalId = tempexternalId;
+
+                long results = Company.Query<int>(@"select count(1) 
+                                                   from [api].[ExecutionExternal] 
+                                                   where externalid = @externalId", new { externalId }).FirstOrDefault();
+
+
+                if (results <= 0)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Connetor status with externalId {externalId} could not be found.")).ConfigureAwait(false);
+                }
+            }
+
+            if (queryParams.Any(q => q.Key.ToLower() == "component"))
+            {
+                component = queryParams.FirstOrDefault(x => x.Key.ToLower() == "component").Value;
+                if (string.IsNullOrEmpty(component))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"component is not valid.");
+                }
+            }
+
+            #endregion
+
+
+            var executions = await AssetRepository.GetConnectorStatusItems(queryParams, _startDate, _endDate, externalId, component, status);
+            if (executions.StatusCode != HttpStatusCode.OK)
+            {
+                return await Task.FromResult(errorMessageResponse(executions.StatusCode, "Invalid request", executions.Message));
+            }
+            return await Task.FromResult<IHttpActionResult>(
+                    ResponseMessage(
+                        Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            executions
+                        )
+                    )
+                );
+        }
         #endregion
     }
 }
