@@ -401,7 +401,7 @@ where   Uid <> @uid
                         var assetFields = setFields.Where(f => f.Assetuid == assetEffectiveDate.AssetUid).ToList();
 
                         object resultsLock = new Object();
-                        results.AsParallel().ForAll(r =>
+                        results.AsParallel().ForAll(async r =>
                         {
                             var conditionValidator = CheckMeasureConditions(assetFields, fieldTypes, r.Measure, true);
                         
@@ -454,19 +454,23 @@ where   Uid <> @uid
                                                 }
                                                 else
                                                 {
+                                                    var iDb = GetCompanyContext();
+
                                                     var dqQueryDetail = dqMeasureQueryLibrary.FirstOrDefault(dq => dq.AssetVersionRollupPathUid == r.Measure.RollupPath.AssetVersionRollupPathUid);
                                                     if (dqQueryDetail == null)
                                                     {
-                                                        dqQueryDetail = Db.BuildDataQualityMeasureQueryModel(MetricDataQualityQueryType.MeasureResults_For_Calculation, r.Measure.RollupPath.AssetVersionRollupPathUid);
+                                                        dqQueryDetail = iDb.BuildDataQualityMeasureQueryModel(MetricDataQualityQueryType.MeasureResults_For_Calculation, r.Measure.RollupPath.AssetVersionRollupPathUid);
                                                         lock (resultsLock)
-                                                        { 
+                                                        {
                                                             dqMeasureQueryLibrary.Add(dqQueryDetail); // Add to library for future reference.
                                                         }
                                                     }
 
                                                     try
                                                     {
-                                                        var rollupPathResults = Db.GetDataQualityMeasureQueryResultModels(dqQueryDetail, r.Result.AssetUid, assetEffectiveDate.EffectiveDate);
+                                                        List<DataQualityMeasureQueryResultModel> rollupPathResults = null;
+                                                        
+                                                        rollupPathResults = iDb.GetDataQualityMeasureQueryResultModels(dqQueryDetail, r.Result.AssetUid, assetEffectiveDate.EffectiveDate);
 
                                                         if (rollupPathResults.Count > 0)
                                                         {
@@ -529,6 +533,8 @@ where   Uid <> @uid
                                                         scoreItem.Value = false;
                                                         scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = true, ErrorMessage = ex.GetFullExceptionData(false) });
                                                     }
+
+                                                    iDb = null;
                                                 }
                                             }
 
@@ -573,13 +579,13 @@ where   Uid <> @uid
 
                                                         string trueValue = (gDefinition.Owner.Operator == Operator.Populated) ? "1" : "0";
                                                         string falseValue = (gDefinition.Owner.Operator == Operator.Populated) ? "0" : "1";
-                                                        scoreItem.Value = company.Query<bool>(
-                                                            $"select cast(iif(count(1) > 0, {trueValue}, {falseValue}) as bit) " +
-                                                            "from ResponsibilityDetail R " +
-                                                            "inner join ResponsibilityType T on T.ID = R.ResponsibilityTypeID and T.Uid = @ResponsibilityTypeUid " +
-                                                            "where exists ( select 1 from Asset where Uid = @AssetUid and ( (ID = R.AssetID and R.AssetID <> 0) or (AssetTypeID = R.AssetTypeID and R.AssetID = 0) ) )",
-                                                            new { gDefinition.Owner.ResponsibilityTypeUid, r.Result.AssetUid }, commandTimeout: 90
-                                                            ).Single();
+
+                                                        scoreItem.Value = calculateAssetMeasureResultFromDb(
+                                                        $"select cast(iif(count(1) > 0, {trueValue}, {falseValue}) as bit) " +
+                                                        "from ResponsibilityDetail R " +
+                                                        "inner join ResponsibilityType T on T.ID = R.ResponsibilityTypeID and T.Uid = @ResponsibilityTypeUid " +
+                                                        "where exists ( select 1 from Asset where Uid = @AssetUid and ( (ID = R.AssetID and R.AssetID <> 0) or (AssetTypeID = R.AssetTypeID and R.AssetID = 0) ) )",
+                                                        new { gDefinition.Owner.ResponsibilityTypeUid, r.Result.AssetUid });
                                                     }
                                                     else
                                                     {
@@ -601,10 +607,10 @@ where   Uid <> @uid
                                                         switch (gDefinition.Predicate.Operator)
                                                         {
                                                             case Operator.Populated:
-                                                                scoreItem.Value = company.Query<bool>(predicateExistenceSql, new { gDefinition.Predicate.PredicateUid, r.Result.AssetUid }, commandTimeout: 90).Single();
+                                                                scoreItem.Value = calculateAssetMeasureResultFromDb(predicateExistenceSql, new { gDefinition.Predicate.PredicateUid, r.Result.AssetUid });
                                                                 break;
                                                             case Operator.NotPopulated:
-                                                                scoreItem.Value = !company.Query<bool>(predicateExistenceSql, new { gDefinition.Predicate.PredicateUid, r.Result.AssetUid }, commandTimeout: 90).Single();
+                                                                scoreItem.Value = !calculateAssetMeasureResultFromDb(predicateExistenceSql, new { gDefinition.Predicate.PredicateUid, r.Result.AssetUid });
                                                                 break;
                                                         }
                                                     }
@@ -695,7 +701,8 @@ where   Uid <> @uid
                                                         }
                                                         var relationSql = $"select cast({bitSql} as bit) from ({operatorSql}) a";
 
-                                                        scoreItem.Value = company.Query<bool>(relationSql, parameters, commandTimeout: 90).Single();
+                                                        scoreItem.Value = calculateAssetMeasureResultFromDb(relationSql, parameters);
+                                                        
                                                     }
                                                     else
                                                     {
@@ -944,6 +951,18 @@ when not matched then
                 company.Close();
             }
             return success;
+        }
+
+        bool calculateAssetMeasureResultFromDb(string sql, object parameters)
+        {
+            bool result = false;
+
+            using (var company = GetEnvironmentConnection())
+            {
+                result = company.Query<bool>(sql, parameters, commandTimeout: 90).Single();
+            }
+
+            return result;
         }
     }
 }
