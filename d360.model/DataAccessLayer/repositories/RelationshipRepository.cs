@@ -609,11 +609,8 @@ select	I.Id,
 		coalesce(P.[Type],0) as 'Predicate.Type',
 		coalesce(P.Name,'') as 'Predicate.Name',
 		coalesce(P.Inverse,'') as 'Predicate.Inverse',
-		coalesce(SI.Uid, S.Uid) as 'Subject.Uid',
-		case 
-			when I.Subject = 'IntersectType' then SI.SubjectName + ' ' + SI.PredicateName + ' ' + SI.ObjectName + ' relationship'
-			else coalesce(SFT.Name + ' / ','') + coalesce(SP.[Path], S.Name)
-		end as 'Subject.Name',
+		S.Uid as 'Subject.Uid',		
+		coalesce(SFT.Name + ' / ','') + coalesce(SP.[Path], S.Name) as 'Subject.Name',
 		coalesce(S.Class, 0) as 'Subject.Class',
 		I.SubjectCardinality as 'Subject.Cardinality',
 		O.Uid as 'Object.Uid',
@@ -623,13 +620,12 @@ select	I.Id,
 from	IntersectType I
 		left join [Predicate] P on P.ID = I.PredicateID
 
-		left join AssetType S on (S.uid = I.SubjectUid OR (S.Object = I.Subject and S.ObjectID = I.SubjectID))
+		left join AssetType S on (S.Object = I.Subject and S.ObjectID = I.SubjectID)
         left join FusionAttributeType SFAT on I.Subject = 'FusionAttributeType' and SFAT.ID = I.SubjectID 
         left join FusionType SFT on SFT.ID = SFAT.FusionTypeID 
         outer apply dbo.GetAssetTypeTextPathById(S.ID, '/') SP
-
-		left join IntersectTypeDetail SI on I.Subject = 'IntersectType' and SI.ID = I.SubjectID
-		left join AssetType O on (O.uid = I.ObjectUid OR (O.Object = I.Object and O.ObjectID = I.ObjectID))
+		
+		left join AssetType O on (O.Object = I.Object and O.ObjectID = I.ObjectID)
         left join FusionAttributeType OFAT on I.Object = 'FusionAttributeType' and OFAT.ID = I.ObjectID 
         left join FusionType OFT on OFT.ID = OFAT.FusionTypeID 
         outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
