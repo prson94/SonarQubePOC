@@ -320,7 +320,7 @@ from	metrics.Score S
                 var ro = new ReadOnlyField
                 {
                     Name = ft.FriendlyName,
-                    Value = JsonConvert.SerializeObject(new { name = assetScore.Value, Threshold = assetScore.Threshold }),
+                    Value = ((assetScore != null) ? JsonConvert.SerializeObject(new { name = assetScore.Value, Threshold = assetScore.Threshold }) : null),
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     ShowIfEmpty = ft.ShowIfEmpty,
