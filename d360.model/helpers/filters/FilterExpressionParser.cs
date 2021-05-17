@@ -37,6 +37,8 @@ namespace d360.model.helpers
             this.registerTokensAsFields = registerTokensAsFields;
             allowedDefaultFields.Add(new DefaultFilter("Code", "A.Code", SqlFieldType.Text));
             allowedDefaultFields.Add(new DefaultFilter("Color", "JSON_VALUE((select top 1 * from dbo.GetAssetColorJsonByColor(A.Color)), '$.Name')", SqlFieldType.Text));
+            allowedDefaultFields.Add(new DefaultFilter("[Path]", "KP.KeyPath", SqlFieldType.Text));
+            allowedDefaultFields.Add(new DefaultFilter("uid", "A.Uid", SqlFieldType.Text));
 
             if (includeParent)
             {
@@ -64,7 +66,7 @@ namespace d360.model.helpers
             }
 
             //Rule results do not have field type db records, so we need to add fields manually
-            if(parseType == FilterExpressionParseType.RuleResults)
+            if (parseType == FilterExpressionParseType.RuleResults)
             {
                 allowedDefaultFields.Clear();
                 allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetClass", "EvaluatedAssetTypeClass", SqlFieldType.AssetTypeClass));
@@ -82,6 +84,17 @@ namespace d360.model.helpers
 
                 allowedDefaultFields.Add(new DefaultFilter("Passed", "Passed", SqlFieldType.Boolean));
                 allowedDefaultFields.Add(new DefaultFilter("Outdated", "isduplicate", SqlFieldType.Boolean));
+            }
+
+            if (parseType == FilterExpressionParseType.RelationshipCustomFields)
+            {
+                allowedDefaultFields.Add(new DefaultFilter("State", @"(CASE I.State 
+                    WHEN 1 THEN 'Active'
+                    WHEN 2 THEN 'InActive'
+                    WHEN 3 THEN 'Deleted' END)", SqlFieldType.Text));
+
+                allowedDefaultFields.Add(new DefaultFilter("Object.[Path]", "ANDP_Object.DisplayPath", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("Subject.[Path]", "ANDP_Subject.DisplayPath", SqlFieldType.Text));
             }
         }
 
@@ -226,7 +239,7 @@ namespace d360.model.helpers
 
             foreach (var token in FilterTokens)
             {
-                if (parseType == FilterExpressionParseType.CustomFields || parseType == FilterExpressionParseType.RuleResults)
+                if (parseType == FilterExpressionParseType.CustomFields || parseType == FilterExpressionParseType.RuleResults || parseType == FilterExpressionParseType.RelationshipCustomFields)
                 {
                     ParseTokensForCustomFields(sqlParams, sb, token);
                 }
@@ -425,7 +438,8 @@ namespace d360.model.helpers
     {
         CustomFields,
         Relationships,
-        RuleResults
+        RuleResults,
+        RelationshipCustomFields
     }
 
     public enum SqlFieldType

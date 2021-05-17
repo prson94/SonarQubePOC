@@ -427,7 +427,12 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("ObjectUid", "Filter by an object asset's unique identifier.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "Allows for changing the current page of results you are requesting.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "Allows for changing the page size of results you are requesting. The maximum page size is 5000, the default is 250.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by Id.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included and if leave out this parameter.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_includePath", "Includes Asset path values to both object and subject side.  The default is false meaning relationships will not return asset path.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of a relationship. Filtering is done using 'Contains' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
        ]
         public async Task<HttpResponseMessage> GetRelationshipsAsync(State? State = null)
         {
@@ -439,11 +444,10 @@ namespace d360.web.Controllers.V2
                 #region Validation
                 var queryParams = Request.GetQueryNameValuePairs().ToList();
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
-
+                Guid RelationshipTypeUid = Guid.Empty;
 
                 if (queryParams.Any(x => x.Key.ToLower() == "relationshiptypeuid"))
                 {
-                    Guid RelationshipTypeUid = Guid.Empty;
                     var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "relationshiptypeuid").Value;
                     Guid.TryParse(value, out RelationshipTypeUid);
                     if (RelationshipTypeUid == null || RelationshipTypeUid == Guid.Empty)
@@ -510,6 +514,39 @@ namespace d360.web.Controllers.V2
                         {
                             return ReturnApiError(HttpStatusCode.NotFound, $"Object with Uid [{ObjectUid}] could not be found.");
                         }
+                    }
+                }
+
+                if (queryParams.Any(x => x.Key.ToLower() == "_direction"))
+                {
+                    var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_direction").Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
+
+                    if (RelationshipTypeUid == Guid.Empty)
+                    {
+                        return ReturnApiError(HttpStatusCode.BadRequest, $"_direction parameter is allowed only when RelationshipTypeUid is passed");
+                    }
+
+                    if (!new[] { "asc", "desc" }.Contains(value))
+                    {
+                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid _direction value in the request");
+                    }
+                }
+
+                if (queryParams.Any(x => x.Key.ToLower() == "_order"))
+                {
+                    if (RelationshipTypeUid == Guid.Empty)
+                    {
+                        return ReturnApiError(HttpStatusCode.BadRequest, $"_order parameter is allowed only when RelationshipTypeUid is passed");
+                    }
+                    var orderValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
+
+                    var fieldTypes = Company.Query<string>("select F.Name from FieldType F inner join IntersectType I on F.Object = 'IntersectType' and I.ID = F.ObjectID and I.[Uid] = @relationshipTypeUid", new { RelationshipTypeUid }, ApiTimeout).ToList().Select(x => x.ToLower(System.Globalization.CultureInfo.InvariantCulture)).ToList();
+                    fieldTypes.Add("object.[path]");
+                    fieldTypes.Add("subject.[path]");
+
+                    if (!fieldTypes.Contains(orderValue))
+                    {
+                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid _order value in the request");
                     }
                 }
 
@@ -1463,6 +1500,73 @@ namespace d360.web.Controllers.V2
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
 
             return ResponseMessage(result);
+        }
+
+        /// <summary>
+        /// Retrieves a list of all relationship types and its counts for specific asset.
+        /// </summary>
+        /// <returns>A list of relationship counts per relationship type for an asset.</returns>
+        [
+            HttpGet,
+            Route("counts/{assetUid}"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of relationship counts per relationship type for an asset.", typeof(List<AssetTypeCountModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+        public async Task<HttpResponseMessage> GetRelationshipCounts(Guid assetUid)
+        {
+            var prefix = "Relationships.GetRelationshipCounts => ";
+            var errorMessage = "";
+
+            try
+            {
+                var asset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
+                if (asset == null || !Company.HasAssetPermission(asset.ID, Permission.ReadRelationships))
+                {
+                    return Request.CreateResponse(HttpStatusCode.OK, new List<string>());
+                }
+
+                var countsSql = @"with cte as (select 
+                        ae.IntersectTypeUid,
+						1 as 'IsSubject',				
+						a1.uid as 'SubjectUid',
+						a2.uid as 'ObjectUid'
+                        FROM 
+                        graph.AssetNode A1,
+                        graph.AssetEdge AE,
+                        graph.AssetNode A2
+                        WHERE MATCH(A1 - (AE) -> A2)
+                        AND a1.uid = @assetuid
+                        union
+                        select
+                        ae.IntersectTypeUid,
+						0 as 'IsSubject',				
+						a1.uid as 'SubjectUid',
+						a2.uid as 'ObjectUid'
+                        FROM 
+                        graph.AssetNode A1,
+                        graph.AssetEdge AE,
+                        graph.AssetNode A2
+                        WHERE MATCH(A1 <- (AE) - A2)
+                        AND a1.uid = @assetuid)
+						select IntersectTypeUid, IsSubject, count(*) as 'Count'
+						from cte
+						group by IntersectTypeUid,IsSubject";
+
+                var data = await Company.QueryAsync<RelationshipCountModel>(countsSql, new { assetUid });
+
+                return Request.CreateResponse(HttpStatusCode.OK, data);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string> {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
         }
     }
 

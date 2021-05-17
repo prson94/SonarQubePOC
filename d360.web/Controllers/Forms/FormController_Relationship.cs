@@ -80,39 +80,44 @@ namespace d360.web.Controllers
 
         #region Field Generation
 
-        /// <param name="it">IntersectTypeID</param>
-        /// <param name="type">Object</param>
-        /// <param name="id">ObjectID</param>
-        [Route("Relationship_AddFields"), NonNullableParameters]
-        public JsonResult Relationship_AddFields(int it, SystemObjects type, int id)
+        private JsonResult Relationship_AddFields(IntersectType relationshipType, Asset targetAsset)
         {
-            if (!Company.HasAssetPermission(type, id, Permission.AddRelationships))
+            if (!Company.HasAssetPermission(targetAsset.Object, targetAsset.ObjectID, Permission.AddRelationships))
+            {
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+            }
 
             var list = new List<EditableField>();
 
-            var relationshipType = Company.GetById<IntersectType>(it, i => i.Predicate);
-            var obj = Company.GetObjectDetail(type.ToString(), id);
+            var obj = Company.GetObjectDetail(targetAsset.Object.ToString(), targetAsset.ObjectID);
 
             if (obj == null || relationshipType == null)
             {
                 return jsonException("Invalid relationship type or source item.", HttpStatusCode.NotFound);
             }
 
+            Cardinality targetCardinality;
+            Cardinality objectCardinality;
+            Guid targetAssetTypeUid;
+            var subjectUid = Company.AssetTypes.FirstOrDefault(x => x.Object == relationshipType.Subject && x.ObjectID == relationshipType.SubjectID).uid;
+            var objectUid = Company.AssetTypes.FirstOrDefault(x => x.Object == relationshipType.Object && x.ObjectID == relationshipType.ObjectID).uid;
 
-            var targetCardinality = Cardinality.Many;
             if (relationshipType.Subject == obj.Type && relationshipType.SubjectID == obj.TypeID)
             {
                 targetCardinality = relationshipType.ObjectCardinality;
+                objectCardinality = relationshipType.SubjectCardinality;
+                targetAssetTypeUid = objectUid;
             }
             else
             {
                 targetCardinality = relationshipType.SubjectCardinality;
+                objectCardinality = relationshipType.ObjectCardinality;
+                targetAssetTypeUid = subjectUid;
             }
 
-            list.Add(new EditableField { FieldName = "IntersectTypeID", FieldType = DataType.Hidden.ToString(), Value = it.ToString() });
-            list.Add(new EditableField { FieldName = "Source", FieldType = DataType.Hidden.ToString(), Value = type.ToString() });
-            list.Add(new EditableField { FieldName = "SourceID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+            list.Add(new EditableField { FieldName = "IntersectTypeID", FieldType = DataType.Hidden.ToString(), Value = relationshipType.ID.ToString() });
+            list.Add(new EditableField { FieldName = "Source", FieldType = DataType.Hidden.ToString(), Value = targetAsset.Object.ToString() });
+            list.Add(new EditableField { FieldName = "SourceID", FieldType = DataType.Hidden.ToString(), Value = targetAsset.ObjectID.ToString() });
 
             list.Add(new EditableField
             {
@@ -123,10 +128,14 @@ namespace d360.web.Controllers
                 Name = "What items are you relating?",
                 MultiSelect = (targetCardinality == Cardinality.Many),
                 FieldType = DataType.DataTableSelect.ToString(),
-                TypeaheadUri = $"/form/Relationship_DataTable?intersectTypeId={it}&type={type}&objectId={id}"
+                IsAssetLazyLoad = true,
+                AssetUid = obj.UID.Value,
+                TargetAssetTypeUid = targetAssetTypeUid,
+                IntersectTypeUid = relationshipType.uid,
+                ObjectCardinality = objectCardinality
             });
 
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IntersectType, it).ToList(), 2, false);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IntersectType, relationshipType.ID).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -601,7 +610,7 @@ order by r.Name";
             }
 
             #endregion
-            
+
             var items = Company.Query<dynamic>(sql, new { targetAssetTypeId = targetAssetType.ID, targetType, targetTypeID, source = type.ToString(), id = objectId, it = intersectTypeId, userId = Company.CurrentResourceID }).Select(i => new { Text = WebUtility.HtmlDecode(i.Name), Value = $"{i.uid}", ObjectType = i.Object }).ToList();
 
             return Json(items, JsonRequestBehavior.AllowGet);
@@ -610,7 +619,7 @@ order by r.Name";
         #endregion
 
         #endregion
-                
+
         #region IntersectType
 
         #region Json Feeds To Support Editing

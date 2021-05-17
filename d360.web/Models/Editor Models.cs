@@ -89,7 +89,7 @@ namespace d360.web.Models
             SetLogoToDefault = false;
         }
 
-        public bool DisableCommunityPosting { get; set; }     
+        public bool DisableCommunityPosting { get; set; }
         public bool DisableIssueManagement { get; set; }
         public string CompanyLogo { get; set; }
         public bool SetLogoToDefault { get; set; }
@@ -244,7 +244,20 @@ namespace d360.web.Models
         [DataMember]
         public bool UseColorControl { get; set; }
 
+        [DataMember]
+        public bool IsAssetLazyLoad { get; set; }
 
+        [DataMember]
+        public Guid AssetUid { get; set; }
+
+        [DataMember]
+        public Guid IntersectTypeUid { get; set; }
+
+        [DataMember]
+        public Guid TargetAssetTypeUid { get; set; }
+
+        [DataMember]
+        public Cardinality ObjectCardinality { get; set; }
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]

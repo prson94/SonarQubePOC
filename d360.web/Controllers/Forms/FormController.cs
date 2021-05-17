@@ -26,7 +26,7 @@ using Newtonsoft.Json;
 using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers
-{    
+{
     [RoutePrefix("form"), Authorize, AiHandleError, NonNullableParameters]
     public partial class FormController : BaseController
     {
@@ -37,7 +37,7 @@ namespace d360.web.Controllers
 
         public FormController(ICommunityContext community, ICompanyContext company, ISecurityContextProvider secProvider, IStorageProvider storage, IResponsibilityRepository responsibilityRepository)
             : base(community, company)
-        {            
+        {
             Storage = storage;
             ResponsibilityRepository = responsibilityRepository;
 #if DEBUG
@@ -58,7 +58,7 @@ namespace d360.web.Controllers
             if (style != null)
             {
                 b = style.IconBackColor;
-                f = style.IconForeColor;                
+                f = style.IconForeColor;
             }
 
             list.Add(new EditableField { Row = row, Column = 1, Required = true, FieldName = "IconBackColor", Name = "Background Color", FieldDescription = "The icon's background color", FieldType = DataType.Color.ToString(), Value = b });
@@ -133,7 +133,7 @@ namespace d360.web.Controllers
                 Company.Update(style);
             }
         }
-          
+
         #endregion
 
         #region Parse Methods
@@ -345,14 +345,14 @@ namespace d360.web.Controllers
                 default:
                     throw new Exception("Invalid or non implemented editor type");
             }
-            
+
 
             res.MaxJsonLength = int.MaxValue;
             return res;
         }
 
-        [HttpGet, Route("dynamiceditor/new/uid/{uid}/type/{objectType?}")]
-        public JsonResult DynamicEditorAddFieldsByUid(string uid, string objectType)
+        [HttpGet, Route("dynamiceditor/new/uid/{uid}/type/{objectType?}/target/{targetTypeUid?}")]
+        public JsonResult DynamicEditorAddFieldsByUid(string uid, string objectType, string targetTypeUid)
         {
             Guid guid = Guid.Empty;
 
@@ -368,9 +368,10 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        throw new Exception("No Issue Type found for given Guid");
+                        throw new ArgumentException("No Issue Type found for given Guid");
                     }
-                } else if (objectType == SystemObjects.IssueTypeRelation.ToString())
+                }
+                else if (objectType == SystemObjects.IssueTypeRelation.ToString())
                 {
                     var issueType = Company.IssueTypes.FirstOrDefault(x => x.uid == guid);
                     if (issueType != null)
@@ -379,9 +380,26 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        throw new Exception("No Issue Type found for given Guid");
+                        throw new ArgumentException("No Issue Type found for given Guid");
                     }
-                }else 
+                }
+                else if (objectType == SystemObjects.IntersectType.ToString())
+                {
+                    var intersectType = Company.IntersectTypes.FirstOrDefault(x => x.uid == guid);
+                    Guid targetGuid = Guid.Empty;
+                    Guid.TryParse(targetTypeUid, out targetGuid);
+                    var targetAsset = Company.Assets.FirstOrDefault(x => x.uid == targetGuid);
+                    if (intersectType != null && targetAsset != null)
+                    {
+                        return Relationship_AddFields(intersectType, targetAsset);
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Not valid Intersect Type Uid or Target Type Uid");
+                    }
+
+                }
+                else
                 {
                     var asset = Company.AssetTypes.FirstOrDefault(x => x.uid == guid);
                     if (asset != null)
@@ -390,11 +408,11 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        throw new Exception("No Asset Type found for given Guid");
+                        throw new ArgumentException("No Asset Type found for given Guid");
                     }
-                }               
+                }
             }
-            throw new Exception("Invalid Guid");
+            throw new ArgumentException("Invalid Guid");
 
         }
 
@@ -411,10 +429,10 @@ namespace d360.web.Controllers
                     res = Artifact_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                     break;
                 case "CONTRACT":
-                    res =  Contract_AddFields(objectID.HasValue ? objectID.Value : 0);
+                    res = Contract_AddFields(objectID.HasValue ? objectID.Value : 0);
                     break;
                 case "ENDPOINT":
-                    res =  CustomAPIServiceEndpoint_AddFields(parentID.GetValueOrDefault());
+                    res = CustomAPIServiceEndpoint_AddFields(parentID.GetValueOrDefault());
                     break;
                 case "EXPORTTEMPLATE":
                     res = ExportTemplate_AddFields();
@@ -456,31 +474,31 @@ namespace d360.web.Controllers
                     res = ReferenceItem_AddFields(objectID.GetValueOrDefault());
                     break;
                 case "RESOURCETYPE":
-                    res =  Resource_AddFields(objectID.GetValueOrDefault());
+                    res = Resource_AddFields(objectID.GetValueOrDefault());
                     break;
                 case "RULE":
-                    res =  Rule_AddFields(objectID.GetValueOrDefault());
+                    res = Rule_AddFields(objectID.GetValueOrDefault());
                     break;
                 case "RULETYPE":
                     res = RuleType_AddFields();
                     break;
                 case "SERVICE":
-                    res =  CustomAPIService_AddFields();
+                    res = CustomAPIService_AddFields();
                     break;
                 case "SURVEYTYPE":
-                    res =  SurveyType_AddFields();
+                    res = SurveyType_AddFields();
                     break;
                 case "TAG":
-                    res =  Tag_AddFields();
+                    res = Tag_AddFields();
                     break;
                 case "TASK":
-                    res =  Diagram_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                    res = Diagram_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                     break;
                 case "TAXONOMY":
                     res = Hierarchy_AddFields(SystemObjects.TaxonomyType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                     break;
                 case "VERSION":
-                    res  = CustomAPIServiceEndpointVersion_AddFields(parentID.GetValueOrDefault());
+                    res = CustomAPIServiceEndpointVersion_AddFields(parentID.GetValueOrDefault());
                     break;
                 case "URI":
                     res = CustomAPIVersionUri_AddFields(parentID.GetValueOrDefault());
@@ -491,26 +509,6 @@ namespace d360.web.Controllers
             }
             res.MaxJsonLength = int.MaxValue;
             return res;
-        }
-
-        [HttpGet, Route("dynamiceditorrel/new/{objectType}/{objectUID}/{targetType}/{targetID:int}")]
-        public JsonResult DynamicEditorAddRelationFields(string objectType, string objectUID, SystemObjects targetType, int targetID)
-        {
-            Guid guid = Guid.Parse(objectUID);
-            int objectId = Company.GetObjectId(guid, SystemObjects.IntersectType);
-            return DynamicEditorAddRelationFields(objectType, objectId, targetType, targetID);
-        }
-
-        [HttpGet, Route("dynamiceditorrel/new/{objectType}/{objectID:int}/{targetType}/{targetID:int}")]
-        public JsonResult DynamicEditorAddRelationFields(string objectType, int objectID, SystemObjects targetType, int targetID)
-        {
-            switch ((objectType ?? "").ToUpper())
-            {
-                case "INTERSECTTYPE":
-                    return Relationship_AddFields(objectID, targetType, targetID);
-                default:
-                    throw new Exception("Invalid or non implemented editor type");
-            }            
         }
 
         [HttpPut, Route("dynamicedit/edit/{objectType}"), ValidateInput(false)]
@@ -524,7 +522,7 @@ namespace d360.web.Controllers
                 form.Add(item.Key, item.Value.ToString());
             }
 
-            switch ((objectType ?? "" ).ToUpper())
+            switch ((objectType ?? "").ToUpper())
             {
                 case "APIFIELD":
                     return EditApiField(form);
@@ -537,7 +535,7 @@ namespace d360.web.Controllers
                 case "INTERSECT":
                     return EditRelationship(form);
                 case "INTERSECTTYPE":
-                    return EditIntersectType(form);             
+                    return EditIntersectType(form);
                 case "NAMESPACE":
                     return EditNamespace(form);
                 case "ORGANIZATION":
@@ -564,17 +562,17 @@ namespace d360.web.Controllers
                     return EditServiceEndpointVersionUri(form);
                 default:
                     throw new Exception("Invalid / unsupported edit type");
-            }            
+            }
         }
 
         [HttpDelete, Route("dynamicedit/delete/{objectType}/{objectID:int}"), ValidateInput(false)]
         public async Task<JsonResult> DynamicDelete(string objectType, int objectID)
-        {            
+        {
             FormCollection form = new FormCollection();
             form.Add("ID", objectID.ToString());
 
             switch ((objectType ?? "").ToUpper())
-            {                
+            {
                 case "APIFIELD":
                     return DeleteApiField(form);
                 case "CONTRACT":
@@ -598,17 +596,17 @@ namespace d360.web.Controllers
                 case "ORGANIZATIONINVITATION":
                     return DeleteOrganizationInvitation(objectID);
                 case "REPORT":
-                    return await DeleteReport(form);               
+                    return await DeleteReport(form);
                 case "RULETYPE":
-                    return DeleteRuleType(form);                
+                    return DeleteRuleType(form);
                 case "POLICYTYPELEVEL":
-                    return DeletePolicyTypeLevel(form);                
+                    return DeletePolicyTypeLevel(form);
                 case "SERVICE":
                     return DeleteCustomAPIService(form);
                 case "SURVEYTYPE":
                     return DeleteSurveyType(form);
                 case "SURVEYQUESTIONTYPE":
-                    return DeleteQuestionType(form);                                
+                    return DeleteQuestionType(form);
                 case "TAXONOMYTYPELEVEL":
                     return DeleteTaxonomyTypeLevel(form);
                 case "URI":
@@ -617,7 +615,7 @@ namespace d360.web.Controllers
                     return DeleteCustomAPIVersion(form);
                 default:
                     throw new Exception("Invalid / unsupported delete type");
-            }            
+            }
         }
 
         [HttpPost, AjaxValidateAntiForgeryToken, Route("dynamicedit/create/{objectType}"), ValidateInput(false)]
@@ -634,7 +632,7 @@ namespace d360.web.Controllers
             switch ((objectType ?? "").ToUpper())
             {
                 case "APIFIELD":
-                    return AddServiceEndpointVersionField(form);                
+                    return AddServiceEndpointVersionField(form);
                 case "CUSTOMSYNONYM":
                     return AddCustomSynonym(form);
                 case "ENDPOINT":
@@ -656,11 +654,11 @@ namespace d360.web.Controllers
                 case "POLICYTYPELEVEL":
                     return AddPolicyTypeLevel(form);
                 case "REPORT":
-                    return await AddReport(form);                
+                    return await AddReport(form);
                 case "RULETYPE":
                     return AddRuleType(form);
                 case "SERVICE":
-                    return AddService(form);                
+                    return AddService(form);
                 case "SURVEYTYPE":
                     return AddSurveyType(form);
                 case "TAXONOMYTYPELEVEL":
@@ -671,9 +669,9 @@ namespace d360.web.Controllers
                     return AddServiceEndpointVersionUri(form);
                 default:
                     throw new Exception("Invalid / unsupported create type");
-            }            
+            }
         }
-               
+
         #endregion
 
         #region Company Settings
@@ -699,7 +697,7 @@ namespace d360.web.Controllers
                 return true;
             else
                 return bool.Parse(setting.Value);
-             
+
         }
 
         [Route("CompanySettings")]
@@ -711,7 +709,7 @@ namespace d360.web.Controllers
             model.DisableIssueManagement = (settings.Any(i => i.SettingID == 17) ? bool.Parse(settings.Single(i => i.SettingID == 17).Value) : false);
             model.EnableShoppingCart = (settings.Any(i => i.SettingID == 20) ? bool.Parse(settings.Single(i => i.SettingID == 20).Value) : false);
             model.DefaultRoute = (settings.Any(i => i.SettingID == 22) ? settings.Single(i => i.SettingID == 22).Value : "");
-            model.EnableSearchExactMatch = (settings.Any(i => i.SettingID == 23) ? bool.Parse(settings.Single(i => i.SettingID == 23).Value) : false);           
+            model.EnableSearchExactMatch = (settings.Any(i => i.SettingID == 23) ? bool.Parse(settings.Single(i => i.SettingID == 23).Value) : false);
             model.HideData3SixtyUsers = (settings.Any(i => i.SettingID == 9) ? bool.Parse(settings.Single(i => i.SettingID == 9).Value) : true);
             model.ShowAllUsersAPIKey = (settings.Any(i => i.SettingID == 57) ? bool.Parse(settings.Single(i => i.SettingID == 57).Value) : true);
             model.WorkflowCatchAllGroup = (settings.Any(i => i.SettingID == 58) ? Int32.Parse(settings.Single(i => i.SettingID == 58).Value) : 0);
@@ -731,7 +729,7 @@ namespace d360.web.Controllers
                     model.IpRestrictions.AddRange(ips);
                 }
             }
-            
+
             model.DefaultSearchTypes = (settings.Any(i => i.SettingID == 13) ? settings.Single(i => i.SettingID == 13).Value : "");
 
             model.FusionEnabled = (settings.Any(i => i.SettingID == 70) ? bool.Parse(settings.Single(i => i.SettingID == 70).Value) : true);
@@ -833,7 +831,7 @@ namespace d360.web.Controllers
                     {
                         var logoMatch = MimeTypeExtensionsMap.RegEx.Match(formModel.CompanyLogo);
 
-                        var logoMime = logoMatch.Groups["mime"].Value;                        
+                        var logoMime = logoMatch.Groups["mime"].Value;
                         var logoData = logoMatch.Groups["data"].Value;
                         var logoExtension = MimeTypeExtensionsMap.GetExtension(logoMime);
                         var logoByteArray = Convert.FromBase64String(logoData);
@@ -871,7 +869,7 @@ namespace d360.web.Controllers
                 #endregion
 
                 #region Global Fields
-                                
+
                 updateCompanySetting(settings, 17, formModel.DisableIssueManagement.ToString().ToLower());
                 updateCompanySetting(settings, 20, formModel.EnableShoppingCart.ToString().ToLower());
                 updateCompanySetting(settings, 22, (formModel.DefaultRoute ?? "").Trim());
@@ -1152,7 +1150,8 @@ namespace d360.web.Controllers
             IEnumerable<OptionModel> models = null;
 
             var sql = "";
-            switch (act) {
+            switch (act)
+            {
                 case "O":   // Responsibility/Ownership
                     #region
                     sql = $@"
@@ -1234,6 +1233,9 @@ order by Sort, title";
                     break;
                 case "BL":   // Lineage
                     models = new List<OptionModel> { new OptionModel { title = "Default", value = "Lineage|-1" } };
+                    break;
+                default:
+                    models = new List<OptionModel>();
                     break;
             }
 
@@ -1387,7 +1389,7 @@ order by Sort, title";
 
                 var match = MimeTypeExtensionsMap.RegEx.Match(model.File);
 
-                var mime = match.Groups["mime"].Value;                
+                var mime = match.Groups["mime"].Value;
                 var data = match.Groups["data"].Value;
                 var extension = MimeTypeExtensionsMap.GetExtension(mime);
                 var byteArray = Convert.FromBase64String(data);
@@ -1483,7 +1485,7 @@ order by Sort, title";
                                     {
                                         returnValue = stats.EndRowIndex > stats.StartRowIndex; // If there is only header row, this fails.
 
-                                        for (var i = stats.StartRowIndex+1; i <= stats.EndRowIndex; i++)
+                                        for (var i = stats.StartRowIndex + 1; i <= stats.EndRowIndex; i++)
                                         {
                                             if (returnValue) // Continue checking ONLY if we are still set to TRUE.
                                             {
@@ -1524,8 +1526,9 @@ order by Sort, title";
                                 }
 
                                 var requiredLevels = levelFields
-                                    .Select(i => new LoadLevelStatus { 
-                                        Level = i.Level, 
+                                    .Select(i => new LoadLevelStatus
+                                    {
+                                        Level = i.Level,
                                         Required = false
                                     })
                                     .Distinct(new LoadLevelStatusComparer())
@@ -1540,7 +1543,7 @@ order by Sort, title";
                                     if (l.Level == 1)
                                     {
                                         // Level 1 is always required.
-                                        l.Required = true; 
+                                        l.Required = true;
                                     }
                                     else
                                     {
@@ -1588,10 +1591,10 @@ order by Sort, title";
                                         );
                                     }
                                 });
-                            
+
                                 if (invalidKeyFields.Count > 0)
                                 {
-                                    errorMessages.Add($"One or more values not populated for Key column{(invalidKeyFields.Count>1 ? "s" : "")} [{string.Join(", ", invalidKeyFields)}]");
+                                    errorMessages.Add($"One or more values not populated for Key column{(invalidKeyFields.Count > 1 ? "s" : "")} [{string.Join(", ", invalidKeyFields)}]");
                                 }
                                 if (invalidRequiredFields.Count > 0)
                                 {
@@ -1601,7 +1604,7 @@ order by Sort, title";
                             else
                             {
                                 errorMessages.Add("The number of columns in the spreadsheet exceeds the number of defined fields for this load type.");
-                            }                        
+                            }
                         }
                     }
                     else
@@ -1679,7 +1682,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
 
             var loadColumns = Company.Filter<LoadColumn>(i => i.LoadID == id).OrderBy(i => i.ColumnIndex).ToList();
-            var loadItems = Company.Query<dynamic>(itemSql, new { id}).ToList();
+            var loadItems = Company.Query<dynamic>(itemSql, new { id }).ToList();
             var loadItemColumns = Company.Query<dynamic>(itemColumnSql, new { id }).ToList();
 
             var document = new SLDocument();
@@ -1762,18 +1765,18 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             list.Add(new EditableField { FieldName = "ReferenceItemTypeID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
             list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Code", true, "", 1, 250, "Must be between 1 and 250 alphanumeric characters in length.") });
-            list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Color", Name = "Color", FieldType = DataType.Color.ToString()});
+            list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Color", Name = "Color", FieldType = DataType.Color.ToString() });
 
             //if the reference type has a parent we need to add parent field with the values from the parent
 
             var parentType = Company.GetParentType(id, SystemObjects.ReferenceItemType);
-            if(parentType != null)
+            if (parentType != null)
             {
                 var sql = "select DisplayValue, uid from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
                 list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentUid", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.uid) }).ToList() });
             }
 
-                        
+
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, id).ToList(), row, false);
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -1783,7 +1786,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         [Route("ReferenceItem_EditFields"), NonNullableParameters]
         public JsonResult ReferenceItem_EditFields(int id)
         {
-            var list = new List<EditableField>();            
+            var list = new List<EditableField>();
             var a = Company.Assets.FirstOrDefault(x => x.ObjectID == id && x.Object == "ReferenceItem");
 
             if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, a.ObjectID, Permission.EditAsset))
@@ -1806,16 +1809,17 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             {
                 var parent = Company.GetParentObject(id, SystemObjects.ReferenceItem);
                 var sql = "select DisplayValue, uid from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
-                list.Add(new EditableField { 
-                    Row = row++, 
-                    Column = 1, 
-                    FieldName = "ParentUid", 
-                    Name = parentType.Name, 
-                    FieldType = DataType.Lookup.ToString(), 
-                    Required = true, 
+                list.Add(new EditableField
+                {
+                    Row = row++,
+                    Column = 1,
+                    FieldName = "ParentUid",
+                    Name = parentType.Name,
+                    FieldType = DataType.Lookup.ToString(),
+                    Required = true,
                     MultiSelect = false,
                     Value = ((parent != null) ? (parent.uid.ToString() ?? "").ToLower() : ""),
-                    Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.uid), Selected = i.uid == (parent != null ? parent.uid : Guid.Empty)  }).ToList() 
+                    Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.uid), Selected = i.uid == (parent != null ? parent.uid : Guid.Empty) }).ToList()
                 });
             }
 
@@ -1823,7 +1827,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
-         
+
         #endregion
 
         #region ShoppingCart
@@ -2083,7 +2087,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 {
                     var imageMatch = MimeTypeExtensionsMap.RegEx.Match(shortcut.IconPayload);
 
-                    var imageMime = imageMatch.Groups["mime"].Value;                    
+                    var imageMime = imageMatch.Groups["mime"].Value;
                     var imageData = imageMatch.Groups["data"].Value;
                     var imageExtension = MimeTypeExtensionsMap.GetExtension(imageMime);
                     var imageByteArray = Convert.FromBase64String(imageData);
@@ -2101,14 +2105,14 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
                 var MaxDisplayShortcut = Company.Shortcuts.OrderByDescending(o => o.DisplayOrder).FirstOrDefault();
                 shortcut.DisplayOrder = (MaxDisplayShortcut != null) ? MaxDisplayShortcut.DisplayOrder + 1 : 0;
-                
+
                 shortcut.Url += "";
                 Company.Add(shortcut);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return jsonException(ex, HttpStatusCode.InternalServerError);
-            }          
+            }
 
             return jsonSuccess("Shortcut added successfully", shortcut.ID.ToString(), "add", HttpStatusCode.OK);
 
@@ -2153,12 +2157,12 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                         }
                         catch { }
                     }
-                        
+
 
 
                     var imageMatch = MimeTypeExtensionsMap.RegEx.Match(shortcut.IconPayload);
 
-                    var imageMime = imageMatch.Groups["mime"].Value;                    
+                    var imageMime = imageMatch.Groups["mime"].Value;
                     var imageData = imageMatch.Groups["data"].Value;
                     var imageExtension = MimeTypeExtensionsMap.GetExtension(imageMime);
                     var imageByteArray = Convert.FromBase64String(imageData);
@@ -2193,7 +2197,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 existing.LinkTarget = shortcut.LinkTarget;
 
                 Company.Update(existing);
-               
+
             }
             catch (Exception ex)
             {
@@ -2221,7 +2225,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             try
             {
                 if (!string.IsNullOrEmpty(existing.IconUrl))
-                {                    
+                {
                     try
                     {
                         await Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, new Uri(existing.FullURL).Segments.Last());
@@ -2236,7 +2240,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
                 Company.Delete(existing);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
@@ -2245,7 +2249,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         }
 
         [HttpPut, Route("shortcut/Move")]
-        public JsonNetResult MoveShortCut(int id,bool moveUp)
+        public JsonNetResult MoveShortCut(int id, bool moveUp)
         {
             var success = true;
             var message = "";
@@ -2262,15 +2266,15 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 Shortcut adjacentShortcut = null;
                 if (moveUp)
                 {
-                    adjacentShortcut = Company.Shortcuts.OrderByDescending(s => s.DisplayOrder).FirstOrDefault(s=> shortcut.DisplayOrder > s.DisplayOrder);
+                    adjacentShortcut = Company.Shortcuts.OrderByDescending(s => s.DisplayOrder).FirstOrDefault(s => shortcut.DisplayOrder > s.DisplayOrder);
                 }
                 else
                 {
                     adjacentShortcut = Company.Shortcuts.OrderBy(s => s.DisplayOrder).FirstOrDefault(s => shortcut.DisplayOrder < s.DisplayOrder);
                 }
-                
+
                 if (adjacentShortcut == null)
-                    throw new Exception($"Shortcut is already sorted to the "+(moveUp ? "top." : "bottom."));
+                    throw new Exception($"Shortcut is already sorted to the " + (moveUp ? "top." : "bottom."));
 
 
                 int newOrder = adjacentShortcut.DisplayOrder;
@@ -2350,8 +2354,8 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         public JsonNetResult SynonymsOptions(int predicateId, string type, int typeId, string obj, int objId, string query = "")
         {
             query = query.Replace("_", "[_]").Replace("%", "[%]");
-                        
-            var items = Company.Query<dynamic>(QueryConstants.SynonymOptions, new { predicateId,  type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 50 }, @object = new Dapper.DbString { IsAnsi = true, Value = obj.ToString(), IsFixedLength = true, Length = 50 }, objectId = objId, typeId, query }).ToList();
+
+            var items = Company.Query<dynamic>(QueryConstants.SynonymOptions, new { predicateId, type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 50 }, @object = new Dapper.DbString { IsAnsi = true, Value = obj.ToString(), IsFixedLength = true, Length = 50 }, objectId = objId, typeId, query }).ToList();
 
             return new JsonNetResult
             {
@@ -2365,7 +2369,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         #region Form Get/Post
 
 
-        [ HttpPost, AjaxValidateAntiForgeryToken, Route("AddNymAllocation")]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("AddNymAllocation")]
         public JsonResult AddNymAllocation(NymAllocationModel model)
         {
             try
@@ -2410,8 +2414,8 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-        
-        [ HttpPost, AjaxValidateAntiForgeryToken, Route("AddCustomSynonym")]
+
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("AddCustomSynonym")]
         public JsonResult AddCustomSynonym(FormCollection form)
         {
             try
@@ -2472,7 +2476,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 {
                     Company.Delete(detail);
                 }
-                
+
                 return jsonSuccess("Synonym successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
@@ -2519,13 +2523,16 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names });
 
             var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.BusinessAsset || f.Class == AssetTypeClass.TechnicalAsset || f.Class == AssetTypeClass.Rule).ToArray()
-                .Select(i => new SelectListItem {
+                .Select(i => new SelectListItem
+                {
                     Text = $"{i.Class.GetDisplayName()} : {assetPaths[i.uid]}",
-                    Value = i.uid.ToString(), Selected = template.AssetTypeID == i.ID }).OrderBy(x => x.Text).ToList();
-            
+                    Value = i.uid.ToString(),
+                    Selected = template.AssetTypeID == i.ID
+                }).OrderBy(x => x.Text).ToList();
+
             list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "AssetTypeUID", Name = "Asset Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
 
-            list.Add(new EditableField { Row = 5, Column = 1, Required = true, FieldName = "IncludeUrl", Name = "Include Asset Url", FieldDescription = "", FieldType = DataType.Boolean.ToString() , Value = template.IncludeUrl.ToString()});
+            list.Add(new EditableField { Row = 5, Column = 1, Required = true, FieldName = "IncludeUrl", Name = "Include Asset Url", FieldDescription = "", FieldType = DataType.Boolean.ToString(), Value = template.IncludeUrl.ToString() });
 
             list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "IncludeParent", Name = "Include Parent Name", FieldDescription = "", FieldType = DataType.Boolean.ToString(), Value = template.IncludeParent.ToString() });
 
@@ -2548,13 +2555,15 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldDescription = "", FieldType = DataType.Text.ToString() });
 
             var names = Enum.GetNames(typeof(ExportView)).Select(i => new SelectListItem { Text = i, Value = i }).ToList();
-            
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names});
+
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names });
 
             var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.BusinessAsset || f.Class == AssetTypeClass.TechnicalAsset || f.Class == AssetTypeClass.Rule).ToArray()
-                .Select(i => new SelectListItem {
+                .Select(i => new SelectListItem
+                {
                     Text = $"{i.Class.GetDisplayName()} : {assetPaths[i.uid]}",
-                    Value = i.uid.ToString() }).OrderBy(x=>x.Text).ToList();
+                    Value = i.uid.ToString()
+                }).OrderBy(x => x.Text).ToList();
             list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "AssetTypeUID", Name = "Asset Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
 
             list.Add(new EditableField { Row = 5, Column = 1, Required = true, FieldName = "IncludeUrl", Name = "Include Asset Url", FieldDescription = "", FieldType = DataType.Boolean.ToString() });
