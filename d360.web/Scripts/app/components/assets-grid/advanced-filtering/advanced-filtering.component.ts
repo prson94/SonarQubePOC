@@ -272,11 +272,11 @@ export class AdvancedFilteringComponent implements OnChanges {
                     isDefaultFilter = field.Type[key]["IsPrimaryFilter"];
                 }
                 if (isDefaultFilter === true) {
-                    var existingFilter = loadedFilters.filter((f) => f !== null).find((df) => df.isDefaultFilter === true && df.field == field.Name);
+                    var existingFilter = loadedFilters.filter((f) => f !== null).find((df) => df.isDefaultFilter === true && df.field === field.Name);
                     if (existingFilter) {
                         this.conditions.filters.push(existingFilter);
                         var idx = loadedFilters.indexOf(existingFilter);
-                        loadedFilters[idx] = null;
+                        loadedFilters[parseInt(idx.toString())] = null;
                     }
                     else {
                         var defaultFilter = new AdvancedFilterFieldCondition(this.datePipe);
