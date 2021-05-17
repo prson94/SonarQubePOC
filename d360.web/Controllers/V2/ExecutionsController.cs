@@ -347,7 +347,7 @@ namespace d360.web.Controllers.V2
                 status = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "status").Value;
                 if (!Enum.IsDefined(typeof(ExecutionExternalStatus), status))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid value for Status. Allowed values are: START, COMPLETE_SUCCESS, COMPLETE_FAILURE, INFORMATION", isValid));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid value for Status. Allowed values are: START, COMPLETE_SUCCESS, COMPLETE_FAILURE, INFORMATION", isValid)).ConfigureAwait(false);
                 }
             }
 
