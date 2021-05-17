@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.metrics.ProcessAssetScores-v1.19">
+  <changeSet author="Pappas" id="Procedure.metrics.ProcessAssetScores-v1.20">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -18,10 +18,10 @@ as
 begin
 	--Gov
 	--declare	
-	--	@allocationUid uniqueidentifier = 'C5CD6067-AB60-4C88-A4F1-5E6DE8A37FCE',
+	--	@allocationUid uniqueidentifier = '631713D7-0D8D-44A8-9A68-FECFB7F7682E',
 	--	@assets AssetEffectiveDate
-	--insert into @assets values ('29420ad7-e346-4274-b6f1-3e191502df9c', '2021-05-04')
-	--select * from metrics.StagingScoreItem where measureuid = '095032e8-6aa8-438c-9b1f-d108d34faeb0'
+	--insert into @assets values ('4acd41a4-dab7-4fef-89a5-6be4836d1ae0', '2021-05-13')
+	--select * from metrics.StagingScoreItem where assetuid = '4acd41a4-dab7-4fef-89a5-6be4836d1ae0'
 	
 	--DQ
 	--declare	
@@ -533,29 +533,29 @@ begin
 	if @scoreType = 1	--Governance
 	begin
 		update	#ScoreItems
-		set		DisplayWeight = cast(metrics.RoundScoreItem(DecimalValue, 3) as decimal(5,3)),
-				DisplayMaxWeight = cast(metrics.RoundScoreItem(AdjustedMaxWeight, 3) as decimal(5,3))
+		set		DisplayWeight = DecimalValue,
+				DisplayMaxWeight = AdjustedMaxWeight
 		where	ParentMeasureUid is null 
 
 		update	C
-		set		C.DisplayWeight = cast(metrics.RoundScoreItem(C.AdjustedWeight*P.AdjustedMaxWeight, 3) as decimal(5,3)),
-				C.DisplayMaxWeight = cast(metrics.RoundScoreItem(C.AdjustedMaxWeight*P.AdjustedMaxWeight, 3) as decimal(5,3))
+		set		C.DisplayWeight = cast((C.AdjustedWeight*P.AdjustedMaxWeight) as decimal(8,6)),
+				C.DisplayMaxWeight = cast((C.AdjustedMaxWeight*P.AdjustedMaxWeight) as decimal(8,6))
 		from	#ScoreItems C
-				inner join #ScoreItems P on P.MeasureUid = C.ParentMeasureUid and P.AssetUid = C.AssetUid-- and P.EffectiveDate = C.EffectiveDate
+				inner join #ScoreItems P on P.MeasureUid = C.ParentMeasureUid and P.AssetUid = C.AssetUid
 	end
 
 	if @scoreType = 2	-- Data Quality
 	begin
 		update	#ScoreItems
-		set		DisplayWeight = cast(metrics.RoundScoreItem(AdjustedWeight, 3) as decimal(5,3)),
-				DisplayMaxWeight = cast(metrics.RoundScoreItem(AdjustedMaxWeight, 3) as decimal(5,3))
+		set		DisplayWeight = AdjustedWeight,
+				DisplayMaxWeight = AdjustedMaxWeight
 		where	ParentMeasureUid is null 
 
 		update	C
-		set		C.DisplayWeight = cast(metrics.RoundScoreItem(C.AdjustedWeight*P.AdjustedMaxWeight, 3) as decimal(5,3)),
-				C.DisplayMaxWeight = cast(metrics.RoundScoreItem(C.AdjustedMaxWeight*P.AdjustedMaxWeight, 3) as decimal(5,3))
+		set		C.DisplayWeight = cast((C.AdjustedWeight*P.AdjustedMaxWeight) as decimal(8,6)), 
+				C.DisplayMaxWeight = cast((C.AdjustedMaxWeight*P.AdjustedMaxWeight) as decimal(8,6))
 		from	#ScoreItems C
-				inner join #ScoreItems P on P.MeasureUid = C.ParentMeasureUid and P.AssetUid = C.AssetUid-- and P.EffectiveDate = C.EffectiveDate
+				inner join #ScoreItems P on P.MeasureUid = C.ParentMeasureUid and P.AssetUid = C.AssetUid
 	end
 
 	-- Update the score value by summing up the root measures' decimal values.

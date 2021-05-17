@@ -83,7 +83,26 @@ namespace d360.web.Controllers
                 }
             }
 
-            if (!string.IsNullOrEmpty(formattedValue))
+            if (ft.Type == DataType.Link.ToString())
+            {
+                var ro = new ReadOnlyField
+                {
+                    Name = ft.FriendlyName,
+                    Value = value,
+                    FieldDescription = ft.DisplayDescription,
+                    FieldName = ft.Name,
+                    ShowIfEmpty = ft.ShowIfEmpty,
+                    DataType = ft.Type
+                };
+
+                list.Add(new DetailReadOnlyRowModel
+                {
+                    columns = 1,
+                    FirstColumnFields = new List<ReadOnlyField> { ro },
+                    Category = ft.Category
+                });
+            }
+            else if (!string.IsNullOrEmpty(formattedValue))
             {
                 var ro = new ReadOnlyField
                 {
@@ -101,7 +120,7 @@ namespace d360.web.Controllers
 
                 if (!string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue)
                 {
-                    if (ft.AllowMultipleValues)
+                    if (ft.AllowMultipleValues || !ft.AllowMultipleValues)
                     {
                         ro.Values = new List<ReadOnlyFieldValue>();
                         ro.Value = "values";
@@ -278,13 +297,30 @@ namespace d360.web.Controllers
             }
             else if (ft.Type == DataType.Score.ToString())
             {
-                var assetScore = (await Company.QueryFirstOrDefaultAsync<string>("select FormattedValue from dbo.GetAssetScoreById(@id, @scoreType)"
-                    , new { id = details.AssetID, ft.ScoreType }).ConfigureAwait(false)) + "";
+                var assetScore = (await Company.QueryFirstOrDefaultAsync<dynamic>(@"
+select	case when S.Value is null then 
+			' ' 
+		else 
+			cast(cast((round(S.[Value] * 100, 1)) as float) as nvarchar) + '%'
+		end as [Value],
+		case when cast((round(S.[Value] * 100, 1)) as float) < L.LowerThreshold then
+			'poor'
+		when cast((round(S.[Value] * 100, 1)) as float) between L.LowerThreshold and L.UpperThreshold then
+			'average'
+		when cast((round(S.[Value] * 100, 1)) as float) > L.UpperThreshold then
+			'good'
+		else
+			'none'
+		end as Threshold		
+from	metrics.Score S
+		inner join Asset A on A.uid = S.AssetUid and A.id = @id and S.EndDate is null
+		inner join metrics.Allocation L on L.uid = S.AllocationUid and L.ScoreType = @scoreType and L.OverrideName is null"
+                    , new { id = details.AssetID, ft.ScoreType }).ConfigureAwait(false));
 
                 var ro = new ReadOnlyField
                 {
                     Name = ft.FriendlyName,
-                    Value = assetScore,
+                    Value = JsonConvert.SerializeObject(new { name = assetScore.Value, Threshold = assetScore.Threshold }),
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     ShowIfEmpty = ft.ShowIfEmpty,
@@ -1492,54 +1528,8 @@ where   h.ID <> @t order by h.[Level] desc;
             {
                 var lookup = await Company.QueryFirstOrDefaultAsync<FieldTypeLookup>("select FieldTypeID, HideHeader, HideFooter, LookupType, Definition, HideFilter from FieldTypeLookup where FieldTypeID = @id", new { id = ft.ID });
 
-                #region Reference List Lookup Info
-
-                DetailReadOnlyRowModel referenceListRowModel = null;
-
-                if (ft.LookupObjectType == SystemObjects.IntersectType.ToString() && ft.LookupObjectID.HasValue)
-                {
-                    var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == ft.LookupObjectID.Value && ((i.Subject == type && i.SubjectID == id) || (i.Object == type && i.ObjectID == id))).FirstOrDefault();
-                    if (intersect != null)
-                    {
-                        var referenceItemTypeID = (intersect.Subject == type && intersect.SubjectID == id) ? intersect.ObjectID : intersect.SubjectID;
-                        var referenceItemType = Company.AssetTypes.FirstOrDefault(x => x.Object == "ReferenceItemType" && x.ObjectID == referenceItemTypeID);
-
-                        referenceListRowModel = new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField {
-                                        Column = 1,
-                                        Name = $"{ft.FriendlyName} Name",
-                                        FieldDescription = ft.DisplayDescription,
-                                        FieldName = ft.Name,
-                                        Value = referenceItemType?.Name,
-                                        ShowIfEmpty = ft.ShowIfEmpty
-                                    }
-                                },
-                            SecondColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField {
-                                        Column = 2,
-                                        Name = $"{ft.FriendlyName} Description",
-                                        FieldDescription = ft.DisplayDescription,
-                                        FieldName = ft.Name,
-                                        Value = referenceItemType?.Description,
-                                        ShowIfEmpty = ft.ShowIfEmpty,
-                                        DataType = "Html"
-                                    }
-                                },
-                            Category = ft.Category
-                        };
-                    }
-                }
-
-                #endregion
-
                 if (await AnyComplexLookupGridValues(type, id, ft.ID))
                 {
-                    if (referenceListRowModel != null)
-                        list.Add(referenceListRowModel);
-
                     list.Add(new DetailReadOnlyRowModel
                     {
                         columns = 1,
@@ -1565,8 +1555,6 @@ where   h.ID <> @t order by h.[Level] desc;
                 }
                 else if (ft.ShowIfEmpty)
                 {
-                    if (referenceListRowModel != null)
-                        list.Add(referenceListRowModel);
 
                     var ro = new ReadOnlyField
                     {
@@ -2582,14 +2570,14 @@ from    (
         }
 
         [Route("{type}/{uid}/detail")]
-        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, Guid uid)
+        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, Guid uid, bool useSingleColumn = false)
         {
             int objectId = -1;
             switch (type)
             {
                 case SystemObjects.Tag:
                     objectId = Company.Tags.FirstOrDefault(x => x.uid == uid).ID;
-                    return await GetObjectDetailFields(type, objectId);
+                    return await GetObjectDetailFields(type, objectId, useSingleColumn);
                 default:
                     return null;
             }
@@ -2597,9 +2585,9 @@ from    (
 
 
         [Route("{type}/{id:int}/detail")]
-        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, int id)
+        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, int id, bool useSingleColumn = false)
         {
-            var model = new DetailReadOnlyModel() { columns = 2 };
+            var model = new DetailReadOnlyModel() { columns = useSingleColumn ? 1 : 2 };
 
             int row = 0;
             switch (type)
@@ -4194,6 +4182,19 @@ where v.id = {0}", id)).FirstOrDefault();
                     break;
                     #endregion
 
+            }
+
+            if (useSingleColumn)
+            {
+                model.rows.ForEach(r =>
+                {
+                    if (r.columns == 2)
+                    {
+                        r.FirstColumnFields.AddRange(r.SecondColumnFields);
+                        r.columns = 1;
+                        r.SecondColumnFields = new List<ReadOnlyField>();
+                    }
+                });
             }
 
             return model;

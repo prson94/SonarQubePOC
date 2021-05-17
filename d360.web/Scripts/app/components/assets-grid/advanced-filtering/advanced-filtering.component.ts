@@ -3,8 +3,8 @@ import * as _ from "lodash";
 import { OperatorModel } from "../../../models/operator.model";
 import { FieldsObservableService } from "../../../services/fieldsObservable.service";
 import { CompanySettingsService } from "../../../services/settings.service";
-import { FieldTypeAPIModelField, FieldTypeHelper } from "../../../models/fieldtype-api.model";
-import { forkJoin, Observable } from "rxjs";
+import { FieldType, FieldTypeAPIModel, FieldTypeAPIModelField, FieldTypeHelper } from "../../../models/fieldtype-api.model";
+import { forkJoin, Observable, of } from "rxjs";
 import { AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, FieldTypeAPIModelFieldCondition, Filters, SystemFields } from "./advanced-filtering.models";
 import { DatePipe } from "@angular/common";
 import { AllocationService } from "../../../services/allocations.service";
@@ -22,10 +22,11 @@ import { Router } from "@angular/router";
     providers: [FieldsObservableService, CompanySettingsService, AllocationService, RelationshipsService]
 })
 export class AdvancedFilteringComponent implements OnChanges {
-    @Input() assetTypeUid: string = "";
+    @Input() loadIdentifier: string = "";
     @Output() onChange = new EventEmitter();
     @Output() onLoad = new EventEmitter();
 
+    assetTypeUid: string = "";
     allocations: ScoreTypeAllocation[] = [];
     relationshipTypes: RelationshipType[] = [];
 
@@ -136,12 +137,16 @@ export class AdvancedFilteringComponent implements OnChanges {
     }
 
     private initializeData() {
+        if (this.isAssetType) {
+            this.assetTypeUid = this.loadIdentifier;
+        }
+
         this.visible = false;
         forkJoin(
             this.settingsService.getOperators(true),
-            this.fieldsService.getFieldsV2(this.assetTypeUid, null, null),
-            this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid),
-            this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid)
+            this.getFieldsObs(),
+            this.getScoreAllocationObs(),
+            this.getRelationshipTypeObs()
         ).subscribe((response) => {
             this.operators = response[0];
             let res = response[1] as FieldTypeAPIModelField[];
@@ -308,7 +313,7 @@ export class AdvancedFilteringComponent implements OnChanges {
     }
 
     getLocalStorageKey() {
-        return this.assetTypeUid + "_advancedFilters";
+        return this.loadIdentifier + "_advancedFilters";
     }
 
     private saveFilters() {
@@ -369,7 +374,7 @@ export class AdvancedFilteringComponent implements OnChanges {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes && changes.assetTypeUid && changes.assetTypeUid.currentValue !== changes.assetTypeUid.previousValue) {
+        if (changes && changes.loadIdentifier && changes.loadIdentifier.currentValue !== changes.loadIdentifier.previousValue) {
             this.initializeData();
         }
         this.cdRef.detectChanges();
@@ -380,4 +385,79 @@ export class AdvancedFilteringComponent implements OnChanges {
 
         this.cdRef.markForCheck();
     }
+
+
+    get isAssetType() {
+        return this.loadIdentifier.length === 36 && !this.loadIdentifier.startsWith("RuleResults");
+    }
+
+    get isRuleResults() {
+        return this.loadIdentifier.startsWith("RuleResults");
+    }
+
+
+    getFieldsObs(): Observable<FieldTypeAPIModelField[]> {
+        if (this.isAssetType) {
+            return this.fieldsService.getFieldsV2(this.assetTypeUid, null, null);
+        }
+        else if (this.isRuleResults) {
+            var fields: FieldTypeAPIModelField[] = [];
+            fields.push({
+                Name: "EvaluatedAssetClass", FriendlyName: "Asset Class", Type: new FieldType("Lookup"), Category: ""
+            });
+            fields.push({
+                Name: "EvaluatedAssetTypePath", FriendlyName: "Asset Type", Type: new FieldType("Path"), Category: ""
+            });
+            fields.push({
+                Name: "EvaluatedAssetDisplayPath", FriendlyName: "Asset", Type: new FieldType("Path"), Category: ""
+            });
+            fields.push({
+                Name: "RunDate", FriendlyName: "Run Date", Type: new FieldType("DateTime"), Category: ""
+            });
+            fields.push({
+                Name: "EffectiveDate", FriendlyName: "Effective Date", Type: new FieldType("Date"), Category: ""
+            });
+            fields.push({
+                Name: "PassFraction", FriendlyName: "Pass Fraction", Type: new FieldType("Decimal"), Category: ""
+            });
+            fields.push({
+                Name: "PassCount", FriendlyName: "Rows Passed", Type: new FieldType("Number"), Category: ""
+            });
+            fields.push({
+                Name: "FailCount", FriendlyName: "Rows Failed", Type: new FieldType("Number"), Category: ""
+            });
+            fields.push({
+                Name: "TotalCount", FriendlyName: "Total Rows", Type: new FieldType("Number"), Category: ""
+            });
+            fields.push({
+                Name: "Passed", FriendlyName: "Passed", Type: new FieldType("Boolean"), Category: ""
+            });
+            fields.push({
+                Name: "Outdated", FriendlyName: "Outdated Rule Result", Type: new FieldType("Boolean"), Category: ""
+            });
+            var staticObs = of(fields);
+            return staticObs;
+        }
+    }
+
+    getScoreAllocationObs(): Observable<ScoreTypeAllocation[]> {
+        if (this.isAssetType) {
+            return this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid);
+        }
+        else if (this.isRuleResults) {
+            var staticObs = of([]);
+            return staticObs;
+        }
+    }
+
+    getRelationshipTypeObs(): Observable<RelationshipType[]> {
+        if (this.isAssetType) {
+            return this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid);
+        }
+        else if (this.isRuleResults) {
+            var staticObs = of([]);
+            return staticObs;
+        }
+    }
+
 }

@@ -266,8 +266,8 @@ where   Uid <> @uid
                     trans.Commit();
                 }
                 
-                Action<MetricAssetDefinitionGovernanceViewModel, Guid, bool?> assetVersionCheckObjectTypeAction = (MetricAssetDefinitionGovernanceViewModel governance, Guid metricAssetVersionUid, bool? overrideBoolValue) => {
-                    if (assetVersionCheckObjectTypes.OkToAddToList(metricAssetVersionUid))
+                Action<Object, MetricAssetDefinitionGovernanceViewModel, Guid, bool?> assetVersionCheckObjectTypeAction = (Object locker, MetricAssetDefinitionGovernanceViewModel governance, Guid metricAssetVersionUid, bool? overrideBoolValue) => {
+                    if (assetVersionCheckObjectTypes.OkToAddToList(locker, metricAssetVersionUid))
                     {
                         var check = MetricGovernanceCheckType.External;
 
@@ -421,7 +421,7 @@ where   Uid <> @uid
                                 scoreItem.OtherConditions = JsonConvert.SerializeObject(conditionValidator.ExtraneousConditions);
                                 scoreItem.IsRemoved = false;
 
-                                if (assetVersionCheckObjectTypes.ShouldContinueAnalysis(r.Measure.MetricAssetVersionUid))
+                                if (assetVersionCheckObjectTypes.ShouldContinueAnalysis(resultsLock, r.Measure.MetricAssetVersionUid))
                                 {
                                     string definitionJson = r.Measure.Definition;
                                     if (string.IsNullOrEmpty(definitionJson))
@@ -558,7 +558,7 @@ where   Uid <> @uid
                                                         bool allowMultipleValues = (assetFieldType != null) ? assetFieldType.AllowMultipleValues : false;
 
                                                         // Check the measure validity.
-                                                        assetVersionCheckObjectTypeAction(gDefinition, r.Measure.MetricAssetVersionUid, (assetFieldType != null));
+                                                        assetVersionCheckObjectTypeAction(resultsLock, gDefinition, r.Measure.MetricAssetVersionUid, (assetFieldType != null));
 
                                                         var assetFieldForFieldCheck = assetFields.FirstOrDefault(f => f.FieldTypeName == gDefinition.Field.FieldTypeName);
 
@@ -569,7 +569,7 @@ where   Uid <> @uid
                                                     if (gDefinition.Owner != null)
                                                     {
                                                         // Check the measure validity.
-                                                        assetVersionCheckObjectTypeAction(gDefinition, r.Measure.MetricAssetVersionUid, null);
+                                                        assetVersionCheckObjectTypeAction(resultsLock, gDefinition, r.Measure.MetricAssetVersionUid, null);
 
                                                         string trueValue = (gDefinition.Owner.Operator == Operator.Populated) ? "1" : "0";
                                                         string falseValue = (gDefinition.Owner.Operator == Operator.Populated) ? "0" : "1";
@@ -590,7 +590,7 @@ where   Uid <> @uid
                                                     if (gDefinition.Predicate != null)
                                                     {
                                                         // Check the measure validity.
-                                                        assetVersionCheckObjectTypeAction(gDefinition, r.Measure.MetricAssetVersionUid, null);
+                                                        assetVersionCheckObjectTypeAction(resultsLock, gDefinition, r.Measure.MetricAssetVersionUid, null);
 
                                                         var predicateExistenceSql = "select cast(iif(sum(bit1) > 0, 1, 0) as bit) from (" +
                                                             "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where PredicateUid = @PredicateUid and SubjectUid = @AssetUid  " +
@@ -617,7 +617,7 @@ where   Uid <> @uid
                                                     if (gDefinition.Relation != null)
                                                     {
                                                         // Check the measure validity.
-                                                        assetVersionCheckObjectTypeAction(gDefinition, r.Measure.MetricAssetVersionUid, null);
+                                                        assetVersionCheckObjectTypeAction(resultsLock, gDefinition, r.Measure.MetricAssetVersionUid, null);
 
                                                         var operatorSql = "";
                                                         var bitSql = "";
