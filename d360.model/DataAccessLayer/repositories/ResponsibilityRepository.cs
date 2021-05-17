@@ -720,6 +720,27 @@ where 1=1
             }
         }
 
+        public bool IsResponsibilityTypeUsedInOwnershipLookup(ResponsibilityType responsibility, AssetType assetType, out string errorMessage)
+        {
+            errorMessage = "";
+            List<string> usedByOwnershipFields = Company.Query<string>($@"SELECT ft.FriendlyName
+                    FROM [dbo].[AssetType] at
+                    INNER JOIN [dbo].[FieldType] ft on at.id = ft.AssetTypeID
+                    INNER JOIN [dbo].[fieldTypeLookup] ftl on ft.id = ftl.FieldTypeId
+                    WHERE ft.Type = '{DataType.OwnershipLookup}'
+                    AND at.id = @assetTypeId
+                    AND TRY_CAST(JSON_VALUE(FTL.Definition, '$.ResponsibilityType') AS int) = @responsibilityTypeId", new { responsibilityTypeId = responsibility.ID, assetTypeId = assetType.ID }).ToList();
+
+            if (usedByOwnershipFields.Any())
+            {
+                string fieldsMultiple = usedByOwnershipFields.Count() > 1 ? "s" : "";
+                string fields = "'" + string.Join("', '", usedByOwnershipFields.ToArray()) + "'";
+                errorMessage = $"This asset assignment is used in the field definition{fieldsMultiple} {fields}. Please update or delete this prior to deleting the asset assignment.";
+                return true;
+            }
+            return false;
+        }
+
         public ResponsibilityType GetResponsibilityTypeByUID(Guid uid)
         {
             return Company.ResponsibilityTypes.FirstOrDefault(x => x.UID == uid);

@@ -686,6 +686,16 @@ namespace d360.web.Controllers.V2
                     .Select(ft => new { title = $"{ft.FriendlyName} ({ft.Name})", value = ft.Name })
                     .ToList();
 
+                List<dynamic> Field_ResponsibilityTypes = null;
+                if (AssetTypeUid != null)
+                {
+                    Field_ResponsibilityTypes = Company.Query<dynamic>(@"SELECT rt.name AS title, rt.id AS value
+                    FROM ResponsibilityType rt
+                    INNER JOIN ResponsibilityTypeRelation rtr ON rtr.ResponsibilityTypeID = rt.ID
+                    INNER JOIN AssetType at ON rtr.ObjectType = at.Object AND rtr.ObjectID = at.ObjectID
+                    WHERE at.uid = @uid
+                    ORDER BY rt.name", new { uid = AssetTypeUid }).ToList();
+                }
                 #endregion
 
 
@@ -698,6 +708,7 @@ namespace d360.web.Controllers.V2
                     Field_CardinalRelationships,
                     Field_FieldFromRelRelationships,
                     Field_CardinalReferenceRelationships,
+                    Field_ResponsibilityTypes,
                     DataTypes = dataTypeOptions,
                     FilteredLookups = filteredLookups,
                     Patterns = patterns.Select(i => new { title = i.Key, value = i.Value }),
@@ -828,6 +839,7 @@ namespace d360.web.Controllers.V2
                             {
                                 definition.DisplayAssignmentSource,
                                 definition.ExpandGroupMembership,
+                                definition.ResponsibilityType,
                                 lookup.HideFilter,
                                 lookup.HideFooter,
                                 lookup.HideHeader

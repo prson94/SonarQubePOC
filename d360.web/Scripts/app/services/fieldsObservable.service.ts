@@ -228,6 +228,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
                         l.Field_FieldFromRelRelationships = this.ftItemToSelectItem(r.Field_FieldFromRelRelationships);
                         l.Field_JsonDataTypes = this.ftItemToSelectItem(r.Field_JsonDataTypes);
                         l.Field_JsonFields = this.ftItemToSelectItem(r.Field_JsonFields);
+                        l.Field_ResponsibilityTypes = this.ftItemToSelectItem(r.Field_ResponsibilityTypes);
                         l.Lookups = this.ftItemToSelectItem(r.Lookups);
                         l.Patterns = this.ftItemToSelectItem(r.Patterns);
                         l.ComplexLookupRelations = r.ComplexLookupRelations;
