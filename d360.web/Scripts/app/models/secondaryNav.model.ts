@@ -51,7 +51,7 @@ export class SecondaryNavCurrentObject {
         this.objectID = objectID;
         this.isType = isType;
         this.hasWorkFlow = hasWorkFlow == undefined ? false : hasWorkFlow;
-        this.hasRequestCertificationWorkflow = hasRequestCertificationWorkflow == undefined ? false : hasRequestCertificationWorkflow;
+        this.hasRequestCertificationWorkflow = !hasRequestCertificationWorkflow ? false : hasRequestCertificationWorkflow;
         this.Uid = Uid == undefined ? undefined : Uid;
     }
     objectType;
