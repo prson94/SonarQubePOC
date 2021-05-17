@@ -44,7 +44,7 @@ END
   </changeSet>
   
   
-  <changeSet author="TDuric" id="Table.dbo.FieldCounterValue_AfterInsert-v1">
+  <changeSet author="TDuric" id="Table.dbo.FieldCounterValue_AfterInsert-v1.2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -106,7 +106,7 @@ while exists (select 1 from #fieldTypeIds)
 	insert into #toInsert
 	select *
 	from inserted
-	where value is not null
+	where value is not null and fieldtypeid = @currentFieldTypeId
 
 	delete from #indexList where [SEQUENCE] in (select value from #toInsert)
 
@@ -116,14 +116,12 @@ while exists (select 1 from #fieldTypeIds)
 	[data] as (
 	select *, ROW_NUMBER() OVER (ORDER BY AssetId) as RowNumber
 	from inserted
-	where value is null
+	where value is null and fieldtypeid = @currentFieldTypeId
 	)
 	insert into #toInsert
 	select assetid, assettypeid, fieldtypeid, cte.SEQUENCE as Value 
 	from [data]
 	inner join index_cte cte on cte.RowNumber = [data].RowNumber
-
-	select * from #toInsert
 
 	insert into dbo.FieldCounterValue
 	select * from #toInsert
