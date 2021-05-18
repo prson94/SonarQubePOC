@@ -97,24 +97,32 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.allFieldsDropdown = [];
 
         if (this.isAssetType) {
-            let assetFieldGroup: SelectItemGroup = { value: "asset-field", label: "Asset Fields", items: [] };
-            let systemFieldsGroup: SelectItemGroup = { value: "system-field", label: "System Fields", items: [] };
-            let relationshipGroup: SelectItemGroup = { value: "rel-field", label: "Relationships", items: [] };
-            this.allFieldsDropdown.push(assetFieldGroup);
-            this.allFieldsDropdown.push(systemFieldsGroup);
-            this.allFieldsDropdown.push(relationshipGroup);
+            if (this.fields && this.fields.length > 0) {
+                let assetFieldGroup: SelectItemGroup = { value: "asset-field", label: "Asset Fields", items: [] };
+                this.allFieldsDropdown.push(assetFieldGroup);
 
-            this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
-                assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
-            });
+                this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
+                    assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
+                });
+            }
 
-            SystemFields.GetSystemFieldDefinition().forEach((f) => {
-                systemFieldsGroup.items.push({ value: f.Name, label: f.FriendlyName });
-            });
+            if (SystemFields.GetSystemFieldDefinition().length > 0) {
+                let systemFieldsGroup: SelectItemGroup = { value: "system-field", label: "System Fields", items: [] };
+                this.allFieldsDropdown.push(systemFieldsGroup);
 
-            SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).forEach((f) => {
-                relationshipGroup.items.push({ value: f.Name, label: f.FriendlyName });
-            });
+                SystemFields.GetSystemFieldDefinition().forEach((f) => {
+                    systemFieldsGroup.items.push({ value: f.Name, label: f.FriendlyName });
+                });
+            }
+
+            if (SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).length > 0) {
+                let relationshipGroup: SelectItemGroup = { value: "rel-field", label: "Relationships", items: [] };
+                this.allFieldsDropdown.push(relationshipGroup);
+
+                SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).forEach((f) => {
+                    relationshipGroup.items.push({ value: f.Name, label: f.FriendlyName });
+                });
+            }
         }
 
         if (this.isRuleResults) {

@@ -8,9 +8,9 @@
         <span class="text" [innerHTML]="uiFilterLabel"></span>
     </div>
     <i *ngIf="condition.field && hasRemoveIcon()"
-       class="remove-button fa fa-times-circle"
+       class="remove-button fa {{(condition.isDefaultFilter ? 'fa-undo' : 'fa-times-circle')}}"
        (click)="remove()"
-       pTooltip="Remove filter"
+       pTooltip="{{(condition.isDefaultFilter ? 'Reset filter' : 'Remove filter')}}"
        tooltipPosition="top"
        tooltipStyleClass="ig-tooltip">
     </i>
@@ -172,7 +172,7 @@
             <div class="buttons flex">
                 <button *ngIf="hasRemoveButton()"
                         igButton
-                        icon="fa-trash"
+                        icon="{{(condition.isDefaultFilter ? 'fa-undo' : 'fa-trash')}}"
                         style="margin-left:0px;"
                         pTooltip="{{(condition.isDefaultFilter ? 'Reset filter' : 'Remove filter')}}"
                         tooltipPosition="top"
