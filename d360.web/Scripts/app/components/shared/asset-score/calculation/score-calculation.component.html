@@ -6,7 +6,7 @@
             <div class="indented-line">= adjusted measure weight</div>
             <div class="indented-line">= (defined weight &#247; sum of weights) x 100% </div>
             <div class="indented-line">
-                = ({{getAsPrecentage(selected.Weight)}} &#247; {{getAsPrecentageNoMax(selected._rootRawWeightSum)}}) x 100%
+                = ({{getAsPrecentage(selected.Weight)}} &#247; {{getAsPrecentageNoMax(selected._rawWeightSum)}}) x 100%
             </div>
             <div class="indented-line">
                 = {{getAsPrecentage(selected.DisplayMaxWeight)}}
@@ -72,12 +72,12 @@
         <ng-container *ngIf="selected.DisplayMaxWeight !== selected.Weight">
             <div class="calculation-group">
                 <div class="title">Adjusted Weight</div>
-                <div class="indented-line">= condition group weight &#247; weights total &#215; 100% </div>
+                <div class="indented-line">= condition group weight <span *ngIf="selected.ParentUid">&#215;</span><span *ngIf="!selected.ParentUid">&#247;</span> weights total &#215; 100% </div>
                 <div *ngIf="!matchedCondition" class="indented-line">
-                    = {{getAsPrecentage(selected.Weight)}} &#247; {{getAsPrecentage(selected._rawWeightSum)}} &#215; 100%
+                    = {{getAsPrecentage(selected.Weight)}} <span *ngIf="selected.ParentUid">&#215;</span><span *ngIf="!selected.ParentUid">&#247;</span> {{getAsPrecentage(selected._rawWeightSum)}} &#215; 100%
                 </div>
                 <div *ngIf="matchedCondition" class="indented-line">
-                    = {{getAsPrecentage(matchedCondition.Weight !== undefined ? matchedCondition.Weight : selected.Weight)}} &#247; {{getAsPrecentage(selected._rawWeightSum)}} &#215; 100%
+                    = {{getAsPrecentage(matchedCondition.Weight !== undefined ? matchedCondition.Weight : selected.Weight)}} <span *ngIf="selected.ParentUid">&#215;</span><span *ngIf="!selected.ParentUid">&#247;</span> {{getAsPrecentage(selected._rawWeightSum)}} &#215; 100%
                 </div>
                 <div class="indented-line">
                     = {{getAsPrecentage(selected.DisplayMaxWeight)}}

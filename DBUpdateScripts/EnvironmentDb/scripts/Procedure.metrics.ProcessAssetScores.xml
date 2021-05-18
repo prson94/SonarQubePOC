@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.metrics.ProcessAssetScores-v1.21">
+  <changeSet author="Pappas" id="Procedure.metrics.ProcessAssetScores-v1.22">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -304,7 +304,7 @@ begin
 		begin try
 			update  T
 			set		T.EvidenceHash = coalesce((
-						select	string_agg(ResultUid, '|') as Results 
+						select	string_agg(cast(ResultUid as nvarchar(max)), '|') as Results 
 						from	(
 								select	top 100 percent 
 										R.value as ResultUid
@@ -329,7 +329,7 @@ begin
 		begin try
 			update  T
 			set		T.PriorEvidenceHash = coalesce((
-						select	string_agg(ResultUid, '|') as Results 
+						select	string_agg(cast(ResultUid as nvarchar(max)), '|') as Results 
 						from	(
 								select	top 100 percent 
 										R.value as ResultUid
@@ -431,15 +431,17 @@ begin
 	from	#Scores T
 			cross apply (
 					select	string_agg(
-								cast(MeasureVersionUid as nvarchar(50)) + '|' 
-								+ cast([Value] as nvarchar) + '|' 
-								+ cast(DecimalValue as nvarchar) + '|' 
-								+ cast(AdjustedWeight as nvarchar) + '|' 
-								+ cast(AdjustedMaxWeight as nvarchar) 
-								+ case EvidenceHash 
-									when '' then '' 
-									else '|' + cast(EvidenceHash as nvarchar) 
-								  end, ';') as VersionValueHash
+								cast( 
+									cast(MeasureVersionUid as nvarchar(50)) + '|' 
+									+ cast([Value] as nvarchar) + '|' 
+									+ cast(DecimalValue as nvarchar) + '|' 
+									+ cast(AdjustedWeight as nvarchar) + '|' 
+									+ cast(AdjustedMaxWeight as nvarchar) 
+									+ case EvidenceHash 
+										when '' then '' 
+										else '|' + cast(EvidenceHash as nvarchar) 
+									  end								
+								as nvarchar(max)), ';') as VersionValueHash
 					from	#ScoreItems
 					where	AssetUid = T.AssetUid
 							and EffectiveDate = T.EffectiveDate
