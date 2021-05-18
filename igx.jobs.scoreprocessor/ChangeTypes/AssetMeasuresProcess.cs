@@ -56,8 +56,7 @@ select	Al.AllocationUid,
                             from    metrics.AssetVersionConditionItemValue 
                             where   Uid = I.Uid
                             for json path
-                            ) as ValueItems
-                            --JSON_QUERY((SELECT CONCAT('[""',STRING_AGG([Value], '"",""'),'""]') FROM metrics.AssetVersionConditionItemValue where Uid = I.Uid)) as [Values]
+                            ) as ValueItems 
 					from	[metrics].[AssetVersionConditionItem] I
 					where	AssetVersionConditionUid = C.Uid
 					for json path
@@ -363,7 +362,7 @@ where   Uid <> @uid
 	    inner join FieldType FT ON FT.AssetTypeID = A.AssetTypeID 
 	    left join Field F ON F.FieldTypeID = FT.ID AND F.ObjectType = A.Object AND F.ObjectID = A.ObjectID
 	    outer apply (
-		    select	string_agg(lower(cast(LA.Uid as nvarchar(50))), ',') as LookupValues
+		    select	string_agg(lower(cast(LA.Uid as nvarchar(max))), ',') as LookupValues
 		    from	STRING_SPLIT(COALESCE(F.Value, FT.DefaultValue),',') MV
 				    inner join Asset LA on LA.ObjectID = MV.value
 				    inner join AssetType LAT on LAT.Object = FT.LookupObjectType+'Type' and LAT.ObjectID = FT.LookupObjectID and LAT.ID = LA.AssetTypeID
