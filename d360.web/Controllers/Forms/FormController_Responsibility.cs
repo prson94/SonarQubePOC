@@ -336,6 +336,8 @@ namespace d360.web.Controllers
                 existing.Name = model.Name;
                 existing.Description = model.Description;
 
+                int allPermissions = Permission.DeleteAsset.GetList().Sum(i => i.Value);
+
                 // First, do the ADDs.
                 foreach (var nr in model.ResponsibilityTypeRelations)
                 {
@@ -346,7 +348,7 @@ namespace d360.web.Controllers
                             ObjectType = nr.ObjectType,
                             ObjectID = nr.ObjectID,
                             ResponsibilityTypeID = existing.ID,
-                            PermissionsBitMask = 0,
+                            PermissionsBitMask = allPermissions,
                             CreatedBy = Company.CurrentResourceID,
                             CreatedOn = DateTime.UtcNow,
                             UpdatedBy = Company.CurrentResourceID,
