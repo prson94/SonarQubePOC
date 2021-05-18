@@ -34,7 +34,7 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <TypeScriptToolsVersion>4.0</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>4.1</TypeScriptToolsVersion>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -903,6 +903,7 @@
     <Content Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-editor-v2.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-field-value-v2.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-field-v2.component.html" />
+    <Content Include="Scripts\app\components\shared\dynamicgrideditor\asset-editor.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-field-value.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\multiselect-grid.component.html" />
     <Content Include="Scripts\app\components\shared\editor-header.component.html" />
@@ -1079,6 +1080,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-grid-v2.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\shared-dynamic-grid-editor-v2.module.ts" />
     <Content Include="Scripts\app\components\shared\header\header-profile.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor\asset-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\object-detail-category.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\asset-score.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\definition\score-definition.component.ts" />

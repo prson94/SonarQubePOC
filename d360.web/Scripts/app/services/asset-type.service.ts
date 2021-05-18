@@ -65,11 +65,20 @@ export class AssetTypeService extends BaseObservableService {
             );
     }
 
-    public getAssetTypes()
+    public getAssetTypes(params: any)
         : Observable<AssetTypeApiModel[] & ErrorResponse> {
+
+        var qString = '';
+        if (params) {
+            qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
+            if (qString) {
+                qString = '?' + qString;
+            }
+        }
+
         return this
             .http
-            .get('api/v2/assets/types')
+            .get(`api/v2/assets/types${qString}`)
             .pipe(
                 map(response => <AssetTypeApiModel[] & ErrorResponse>response),
                 catchError(err => this.handleError(err))

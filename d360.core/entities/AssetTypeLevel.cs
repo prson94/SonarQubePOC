@@ -34,4 +34,16 @@ namespace d360.core.entities
         #endregion
 
     }
+
+    public class AssetTypeLevelApiViewModel
+    {
+        [DataMember]
+        public int Level { get; set; }
+
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Description { get; set; }
+    }
 }

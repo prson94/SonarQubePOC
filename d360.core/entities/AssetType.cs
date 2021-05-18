@@ -151,5 +151,24 @@ namespace d360.core.entities
         public FlowObjectType? FlowObjectType { get; set; }
         [DataMember]
         public bool? CanEditParent { get; set; }
+
+        [IgnoreDataMember]
+        public string LevelsJson { get; set; }
+
+        [DataMember]
+        public List<AssetTypeLevelApiViewModel> Levels 
+        { 
+            get 
+            {
+                if (string.IsNullOrEmpty(LevelsJson))
+                {
+                    return null;
+                }
+                else
+                {
+                    return JsonConvert.DeserializeObject<List<AssetTypeLevelApiViewModel>>(LevelsJson);
+                }
+            }
+        }
     }
 }

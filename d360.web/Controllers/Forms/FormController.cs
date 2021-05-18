@@ -334,6 +334,7 @@ namespace d360.web.Controllers
                     res = Diagram_EditFields(oid);
                     break;
                 case "TAXONOMY":
+                case "TAXONOMYTYPE":
                     res = Hierarchy_EditFields(SystemObjects.Taxonomy, oid);
                     break;
                 case "VERSION":
