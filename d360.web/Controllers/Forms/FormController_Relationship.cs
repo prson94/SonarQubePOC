@@ -103,7 +103,7 @@ namespace d360.web.Controllers
 
             var list = new List<EditableField>();
 
-            var obj = Company.GetObjectDetail(targetObject.ToString(), targetObjectID);
+            var obj = Company.GetObjectDetail(targetObject, targetObjectID);
 
             if (obj == null || relationshipType == null)
             {
@@ -130,7 +130,7 @@ namespace d360.web.Controllers
             }
 
             list.Add(new EditableField { FieldName = "IntersectTypeID", FieldType = DataType.Hidden.ToString(), Value = relationshipType.ID.ToString() });
-            list.Add(new EditableField { FieldName = "Source", FieldType = DataType.Hidden.ToString(), Value = targetObject.ToString() });
+            list.Add(new EditableField { FieldName = "Source", FieldType = DataType.Hidden.ToString(), Value = targetObject });
             list.Add(new EditableField { FieldName = "SourceID", FieldType = DataType.Hidden.ToString(), Value = targetObjectID.ToString() });
 
             list.Add(new EditableField
