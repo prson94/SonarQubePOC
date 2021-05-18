@@ -80,16 +80,30 @@ namespace d360.web.Controllers
 
         #region Field Generation
 
-        private JsonResult Relationship_AddFields(IntersectType relationshipType, Asset targetAsset)
+        private JsonResult Relationship_AddFields(IntersectType relationshipType, Asset targetAsset, AssetType targetAssetType)
         {
-            if (!Company.HasAssetPermission(targetAsset.Object, targetAsset.ObjectID, Permission.AddRelationships))
+            int targetObjectID = 0;
+            string targetObject = "";
+
+            if (targetAsset != null)
+            {
+                targetObjectID = targetAsset.ObjectID;
+                targetObject = targetAsset.Object;
+            }
+            else
+            {
+                targetObjectID = targetAssetType.ObjectID;
+                targetObject = targetAssetType.Object;
+            }
+
+            if (!Company.HasAssetPermission(targetObject, targetObjectID, Permission.AddRelationships))
             {
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
             }
 
             var list = new List<EditableField>();
 
-            var obj = Company.GetObjectDetail(targetAsset.Object.ToString(), targetAsset.ObjectID);
+            var obj = Company.GetObjectDetail(targetObject.ToString(), targetObjectID);
 
             if (obj == null || relationshipType == null)
             {
@@ -116,8 +130,8 @@ namespace d360.web.Controllers
             }
 
             list.Add(new EditableField { FieldName = "IntersectTypeID", FieldType = DataType.Hidden.ToString(), Value = relationshipType.ID.ToString() });
-            list.Add(new EditableField { FieldName = "Source", FieldType = DataType.Hidden.ToString(), Value = targetAsset.Object.ToString() });
-            list.Add(new EditableField { FieldName = "SourceID", FieldType = DataType.Hidden.ToString(), Value = targetAsset.ObjectID.ToString() });
+            list.Add(new EditableField { FieldName = "Source", FieldType = DataType.Hidden.ToString(), Value = targetObject.ToString() });
+            list.Add(new EditableField { FieldName = "SourceID", FieldType = DataType.Hidden.ToString(), Value = targetObjectID.ToString() });
 
             list.Add(new EditableField
             {

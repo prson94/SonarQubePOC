@@ -136,7 +136,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         }
 
         if ($event.globalFilter) {
-            params["_simpleFilter"] = $event.globalFilter;
+            params["_simpleFilter"] = "*" + $event.globalFilter;
         }
 
         if ($event.sortField) {

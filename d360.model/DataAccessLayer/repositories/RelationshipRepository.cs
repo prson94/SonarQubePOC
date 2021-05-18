@@ -146,8 +146,8 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
             int pageNumber = 1;
             int pageSize = 250;
 
-            whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" S.ID not in ({companyContext.GetNoReadSqlStatement(Permission.ReadRelationships)}) and S.AssetTypeID not in ({companyContext.GetAssetTypeNoReadSqlStatement(Permission.ReadRelationships)})";
-            whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" O.ID not in ({companyContext.GetNoReadSqlStatement(Permission.ReadRelationships)}) and O.AssetTypeID not in ({companyContext.GetAssetTypeNoReadSqlStatement(Permission.ReadRelationships)})";
+            whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" ISNULL(S.ID,0) not in ({companyContext.GetNoReadSqlStatement(Permission.ReadRelationships)}) and S.AssetTypeID not in ({companyContext.GetAssetTypeNoReadSqlStatement(Permission.ReadRelationships)})";
+            whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" ISNULL(O.ID,0) not in ({companyContext.GetNoReadSqlStatement(Permission.ReadRelationships)}) and O.AssetTypeID not in ({companyContext.GetAssetTypeNoReadSqlStatement(Permission.ReadRelationships)})";
 
             if (queryParams != null)
             {
@@ -278,6 +278,25 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "'Intersect'", "i.Id");
             }
 
+            if (queryParams.Any(x => x.Key.ToLower() == "_order"))
+            {
+                var orderValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
+                var joinColumn = fieldColumns.FirstOrDefault(x => x.ToLower().Contains($"[{orderValue}]"));
+                if (!string.IsNullOrEmpty(joinColumn))
+                {
+                    _orderBy = joinColumn.Substring(0, joinColumn.IndexOf(" as ["));
+                }
+                else if (orderValue == "object.[path]")
+                {
+                    _orderBy = "ISNULL(ANDP_Object.DisplayPath,OT2.Name)";
+                    isSubject = true;
+                }
+                else if (orderValue == "subject.[path]")
+                {
+                    _orderBy = "ISNULL(ANDP_Subject.DisplayPath,ST2.Name)";
+                }
+            }
+
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
             {
                 var simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
@@ -319,11 +338,11 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     {
                         if (isSubject)
                         {
-                            simpleFilters.Add($"ANDP_Object.DisplayPath like @simpleFilter");
+                            simpleFilters.Add($"ISNULL(ANDP_Object.DisplayPath,OT2.Name) like @simpleFilter");
                         }
                         else
                         {
-                            simpleFilters.Add($"ANDP_Subject.DisplayPath like @simpleFilter");
+                            simpleFilters.Add($"ISNULL(ANDP_Subject.DisplayPath,ST2.Name) like @simpleFilter");
 
                         }
                     }
@@ -363,24 +382,6 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
             if (queryParams.Any(x => x.Key.ToLower() == "_direction"))
             {
                 _orderDirection = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_direction").Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
-            }
-
-            if (queryParams.Any(x => x.Key.ToLower() == "_order"))
-            {
-                var orderValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
-                var joinColumn = fieldColumns.FirstOrDefault(x => x.ToLower().Contains($"[{orderValue}]"));
-                if (!string.IsNullOrEmpty(joinColumn))
-                {
-                    _orderBy = joinColumn.Substring(0, joinColumn.IndexOf(" as ["));
-                }
-                else if (orderValue == "object.[path]")
-                {
-                    _orderBy = "ANDP_Object.DisplayPath";
-                }
-                else if (orderValue == "subject.[path]")
-                {
-                    _orderBy = "ANDP_Subject.DisplayPath";
-                }
             }
 
 
@@ -442,10 +443,10 @@ select	@pageSize as 'pageSize',
 				P.Inverse as 'Predicate.Inverse',
 				lower(S.Uid) as 'Subject.Uid',
 				ISNULL(lower(ST1.Uid),lower(ST2.Uid)) as 'Subject.AssetTypeUid',
-                {(includeAssetPath ? "ANDP_Subject.DisplayPath as 'Subject.[Path]'," : "")}
+                {(includeAssetPath ? "ISNULL(ANDP_Subject.DisplayPath,ST2.Name) as 'Subject.[Path]'," : "")}
 				lower(O.Uid) as 'Object.Uid',
 				ISNULL(lower(OT1.Uid),lower(OT2.Uid)) as 'Object.AssetTypeUid'
-                {(includeAssetPath ? ",ANDP_Object.DisplayPath as 'Object.[Path]'" : "")}
+                {(includeAssetPath ? ",ISNULL(ANDP_Object.DisplayPath,OT2.Name) as 'Object.[Path]'" : "")}
 		{baseTableSql}
         {string.Join("\n", fieldJoins)}
         {whereClause} 

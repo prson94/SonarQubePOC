@@ -1,10 +1,10 @@
 ﻿
 <input type="text" igInput igSize="full" pInputText (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
 
-<p-table #dt
+<p-table #dt *ngIf="relationshipType"
          [columns]="cols"
          [value]="items"
-         [lazy]="true"
+         [lazy]="isLazyLoad"
          (onLazyLoad)="loadAssetsLazy($event)"
          [paginator]="true"
          [pageLinks]="3"

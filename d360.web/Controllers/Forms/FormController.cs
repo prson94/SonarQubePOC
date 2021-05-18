@@ -389,9 +389,15 @@ namespace d360.web.Controllers
                     Guid targetGuid = Guid.Empty;
                     Guid.TryParse(targetTypeUid, out targetGuid);
                     var targetAsset = Company.Assets.FirstOrDefault(x => x.uid == targetGuid);
-                    if (intersectType != null && targetAsset != null)
+                    AssetType assetType = null;
+                    if (targetAsset == null)
                     {
-                        return Relationship_AddFields(intersectType, targetAsset);
+                        assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == targetGuid);
+                    }
+
+                    if (intersectType != null && (targetAsset != null || assetType != null))
+                    {
+                        return Relationship_AddFields(intersectType, targetAsset, assetType);
                     }
                     else
                     {

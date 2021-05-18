@@ -1138,8 +1138,12 @@ export class BaseComponent {
             return integerPart + res;
         }
 
-        let s = (val * 100).toFixed(2).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "")  + "%";
-        
+        let s = (val * 100).toFixed(2).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
+
         return s;
+    }
+
+    public isReferenceListType(value: string): boolean {
+        return value === "0000000a-0000-0000-0000-000000000009";
     }
 }

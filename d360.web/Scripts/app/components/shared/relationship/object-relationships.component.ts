@@ -62,9 +62,23 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         this.objectDetailService.getObject(this.objectID, this.objectType).subscribe((res) => {
-            this.assetService.getUIDetailsForAssetUID(res["Uid"]).subscribe((asset) => {
-                this.assetUid = res["Uid"];
-                this.assetTypeUid = asset["AssetTypeUid"];
+            let uid: string = '';
+            if (res["Uid"]) {
+                uid = res["Uid"];
+            }
+            else {
+                uid = res.UID;
+            }
+
+            this.assetService.getUIDetailsForAssetUID(uid).subscribe((asset) => {
+                if (asset === null) {
+                    this.assetUid = uid;
+                    this.assetTypeUid = uid;
+                }
+                else {
+                    this.assetUid = uid;
+                    this.assetTypeUid = asset["AssetTypeUid"];
+                }
                 this.relationshipItems = [];
                 this.load();
             });
