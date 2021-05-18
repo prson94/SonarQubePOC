@@ -31,8 +31,6 @@ namespace d360.core.validators
             if (isFusionEnabled)
             {
                 SupportedClasses.Add(AssetTypeClass.FusionAttribute);
-                SupportedClasses.Add(AssetTypeClass.FusionQuery);
-
                 ParentAssetTypeClass.Add(AssetTypeClass.FusionAttribute);
             }
 

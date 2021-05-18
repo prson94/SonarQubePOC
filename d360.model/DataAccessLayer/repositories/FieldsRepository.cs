@@ -652,8 +652,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                     var disallowedClasses = new List<AssetTypeClass>() {
                         AssetTypeClass.Organization, 
                         AssetTypeClass.Fusion, 
-                        AssetTypeClass.FusionAttribute, 
-                        AssetTypeClass.FusionQuery, 
+                        AssetTypeClass.FusionAttribute,                         
                         AssetTypeClass.User, 
                         AssetTypeClass.ReferenceItemType
                     };
