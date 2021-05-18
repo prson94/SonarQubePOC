@@ -1527,7 +1527,10 @@ namespace d360.web.Controllers.V2
                     return Request.CreateResponse(HttpStatusCode.OK, new List<string>());
                 }
 
-                var countsSql = @"with cte as (select 
+                var countsSql = @"drop table if exists #relationshipCountMap
+create table #relationshipCountMap(IntersectTypeUid uniqueidentifier, IsSubject bit,Count int)
+
+;with cte as (select 
                         ae.IntersectTypeUid,
 						1 as 'IsSubject',				
 						a1.uid as 'SubjectUid',
@@ -1550,9 +1553,30 @@ namespace d360.web.Controllers.V2
                         graph.AssetNode A2
                         WHERE MATCH(A1 <- (AE) - A2)
                         AND a1.uid = @assetuid)
+						insert into #relationshipCountMap
 						select IntersectTypeUid, IsSubject, count(*) as 'Count'
 						from cte
-						group by IntersectTypeUid,IsSubject";
+						group by IntersectTypeUid,IsSubject
+
+                        ;with cte as (select it.uid as 'IntersectTypeUid', 1 as 'IsSubject',count(*) as 'Count' 
+                        from Asset a
+                        inner join assettype at on at.id = a.assettypeid
+                        inner join intersecttype it on it.subject = at.object and it.subjectid = at.objectid and it.object = 'ReferenceItemType'
+                        inner join [Intersect] i on i.intersecttypeid = it.id and i.subject = a.object and i.subjectid = a.objectid
+                        where a.uid = @assetuid
+                        group by it.uid
+                        union 
+                        select it.uid as 'IntersectTypeUid', 0 as 'IsSubject',count(*) as 'Count' 
+                        from Asset a
+                        inner join assettype at on at.id = a.assettypeid
+                        inner join intersecttype it on it.object = at.object and it.objectid = at.objectid and it.subject = 'ReferenceItemType'
+                        inner join [Intersect] i on i.intersecttypeid = it.id and i.object = a.object and i.objectid = a.objectid
+                        where a.uid = @assetuid
+                        group by it.uid)
+                        insert into #relationshipCountMap
+                        select IntersectTypeUid, IsSubject,Count from cte
+
+                        select * from #relationshipCountMap";
 
                 var data = await Company.QueryAsync<RelationshipCountModel>(countsSql, new { assetUid });
 

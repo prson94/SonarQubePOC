@@ -296,7 +296,7 @@ export class RelationshipsService extends BaseObservableService {
         return obs;
     }
 
-    getRelationships(intersectTypeUid: string, params: any, isExport = false): Observable<RelationshipType[]> {
+    getRelationships(intersectTypeUid: string, params: any, isExport = false): Observable<any> {
         var url = 'api/v2/relationships?RelationshipTypeUid=' + intersectTypeUid;
 
         if (params) {
