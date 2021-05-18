@@ -495,6 +495,38 @@ from	api.ExecutionAsset E
             new { executionID }, commandTimeout: timeout);
         }
 
+        private void LogCounterFieldErrors(Guid executionId, int timeout = 3600)
+        {
+            Connection.Execute($@"
+;with DuplicateCounters as (
+select EF.FieldTypeID, FieldValue from api.ExecutionAsset EA
+inner join {ApiExecutionFieldTable} EF on EA.ItemNumber = EF.ItemNumber AND EF.ExecutionID = EA.ExecutionId
+inner join FieldType FT on FT.Id = EF.FieldTypeId and FT.[Type] = 'Counter'
+where EA.ExecutionID = @executionId and EA.Success is null
+group by fieldtypeid, fieldvalue
+having count(*) > 1
+)
+update EA
+set EA.Success = 0,
+    EA.[Message] = 'Counter field must have unique value within batch'
+from api.ExecutionAsset EA
+inner join {ApiExecutionFieldTable} EF on EA.ItemNumber = EF.ItemNumber AND EF.ExecutionID = EA.ExecutionId
+inner join DuplicateCounters DC on DC.FieldTypeID = EF.FieldTypeID AND DC.FieldValue = EF.FieldValue
+where EA.ExecutionID = @executionId and EA.Success is null;
+
+update EA
+set EA.Success = 0,
+    EA.[Message] = 'Asset with same ' + FT.Name + ' counter value already exists'
+from api.ExecutionAsset EA
+inner join api.ExecutionField EF on EA.ItemNumber = EF.ItemNumber AND EF.ExecutionID = EA.ExecutionId
+inner join FieldType FT on FT.Id = EF.FieldTypeId and FT.[Type] = 'Counter'
+inner join FieldCounterValue FCV on FCV.FieldTypeId = FT.ID AND FCV.Value = TRY_CAST(EF.FieldValue AS INT)
+where EA.ExecutionID = @executionId and EA.Success is null;
+",
+                new { executionId }, commandTimeout: timeout);
+
+        }
+
         private void LogFieldLookupErrors(Guid executionID, string obj, int objID, string errorPrefix, int timeout = 3600)
         {
             string targetTable = "api.ExecutionRelationship";
@@ -1578,6 +1610,14 @@ where T.ExecutionId = @executionid;
                                         errorMessages.Add($"{fieldName} exceeds the maximum length of 2500 characters");
                                     }
                                     validationFieldProperties.JsonFieldCount++;
+                                    break;
+                                case "Counter":
+                                    int counterValue = 0;
+                                    if (!int.TryParse(fieldValue, out counterValue) || counterValue <= 0)
+                                    {
+                                        success = false;
+                                        errorMessages.Add($"{fieldName} must be a valid whole number, greater than 0 and less than 2147483647.");
+                                    }
                                     break;
                                 default: // Html, Text
                                     if (!string.IsNullOrEmpty(fieldType.Pattern) && !string.IsNullOrEmpty(fieldValue))
@@ -4712,6 +4752,7 @@ where   ExecutionID = @ExecutionID
                         try
                         {
                             // if needed create temp tables for data
+                            useTempTableForFields = false;
                             CreateWorkareaTempTables(useTempTableForFields, transaction);
 
                             AddMeasurement(metrics, "Create work area temp tables", sw.ElapsedMilliseconds, ++step);
@@ -4837,6 +4878,13 @@ where   ExecutionID = @ExecutionID
                     {
                         LogRelationshipErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout, lookupFieldsPassedByValue);
                         AddMeasurement(metrics, "LogRelationshipErrors", sw.ElapsedMilliseconds, ++step);
+                        sw.Restart();
+                    }
+
+                    if (hasCounterField)
+                    {
+                        LogCounterFieldErrors(execution.ExecutionID, timeout);
+                        AddMeasurement(metrics, "LogCounterFieldErrors", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
                     }
 

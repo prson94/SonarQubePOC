@@ -401,9 +401,13 @@ namespace d360.model.validators
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. Counter Prefix cannot be longer than 10 characters.");
                     }
 
-                    if (!field.Type.Counter.CounterInitialIndex.HasValue || field.Type.Counter.CounterInitialIndex.Value <= 0)
+                    if (field.Type.Counter.CounterInitialIndex.HasValue && field.Type.Counter.CounterInitialIndex.Value <= 0)
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. Counter Initial Value must be set and be a positive number.");
+                    }
+                    else
+                    {
+                        field.Type.Counter.CounterInitialIndex = 1;
                     }
 
                     var allowedTypes = new List<string>() {
@@ -412,7 +416,7 @@ namespace d360.model.validators
                             SystemObjects.RuleType.ToString(),
                             SystemObjects.TaxonomyType.ToString()
                         };
-                    if (assetTypeIdentifierInfoModel ==null || !allowedTypes.Contains(assetTypeIdentifierInfoModel.Object))
+                    if (assetTypeIdentifierInfoModel == null || !allowedTypes.Contains(assetTypeIdentifierInfoModel.Object))
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"This asset type may not have a Counter field type!");
                     }
