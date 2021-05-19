@@ -46,6 +46,10 @@ export class AdvancedFilteringComponent implements OnChanges {
             title: "Clear Filters",
             callback: () => {
                 this.conditions.filters = [];
+                this.conditions.connector = " and ";
+                this.filterMenu[2].isChecked = true;
+                this.filterMenu[3].isChecked = false;
+
                 this.clearFiltersStorage();
                 this.fields.forEach((field) => {
                     if (field.Type) {
@@ -325,7 +329,26 @@ export class AdvancedFilteringComponent implements OnChanges {
     }
 
     private saveFilters() {
-        localStorage.setItem(this.getLocalStorageKey(), JSON.stringify(this.conditions.filters));
+        localStorage.setItem(this.getLocalStorageKey(), JSON.stringify(this.conditions));
+    }
+
+    private getStorageFilters(): AdvancedFilterFieldConditionCollection {
+        var data = localStorage.getItem(this.getLocalStorageKey());
+        if (data) {
+            const parsedFilters = JSON.parse(data);
+            let state: AdvancedFilterFieldConditionCollection;
+            if (Array.isArray(parsedFilters)) {
+                //backward compatibility -- case when only filters array was saved (not including all|any option)
+                state = new AdvancedFilterFieldConditionCollection();
+                state.connector = " and ";
+                state.filters = parsedFilters as AdvancedFilterFieldCondition[];
+            }
+            else {
+                state = parsedFilters as AdvancedFilterFieldConditionCollection;
+            }
+            return state;
+        }
+        return null;
     }
 
     private clearFiltersStorage() {
@@ -334,12 +357,21 @@ export class AdvancedFilteringComponent implements OnChanges {
 
     private loadFilters(): AdvancedFilterFieldCondition[] {
         try {
-            var prefilters: any[] = [];
             let loadedFilters: AdvancedFilterFieldCondition[] = [];
+            var savedState = this.getStorageFilters();
+            if (!savedState && !savedState.filters) {
+                return [];
+            }
 
-            var storageFilters = localStorage.getItem(this.getLocalStorageKey());
-            prefilters = JSON.parse(storageFilters);
-            (prefilters as any[]).forEach((f) => {
+            if (savedState.connector) {
+                this.conditions.connector = savedState.connector;
+                if (this.conditions.connector === " or ") {
+                    this.filterMenu[3].isChecked = true;
+                    this.filterMenu[2].isChecked = false;
+                }
+            }
+
+            savedState.filters.forEach((f) => {
                 var filter = f as AdvancedFilterFieldCondition;
 
                 //do not load from storage if field got removed in meantime
