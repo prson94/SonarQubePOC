@@ -325,7 +325,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     private showAdd(level: number) {
         this.showEditor = true;
-        this.selectedParentId = level === 0 ? undefined : this.selected ? this.selected.data.AssetUid : undefined;
+        this.selectedParentId = ( level === 0 ? undefined : (this.selected ? this.selected.data.AssetUid : undefined) );
         this.selectedLevel = level;
         this.selected = null;
     }
