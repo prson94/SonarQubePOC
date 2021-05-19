@@ -50,8 +50,8 @@ export class EditorDefinitionService extends BaseObservableService {
         );
     }
 
-    public getEditorDefinitionUid(guid: string, objectType?: string, targetAssetUid?: string): Observable<EditorField[]> {
-        var url = `form/dynamiceditor/new/uid/${guid}/type/${objectType}`;
+    public getEditorDefinitionUid(uid: string, objectType?: string, targetAssetUid?: string): Observable<EditorField[]> {
+        var url = `form/dynamiceditor/new/uid/${uid}/type/${objectType}`;
 
         if (targetAssetUid) {
             url += `/target/${targetAssetUid}`;
