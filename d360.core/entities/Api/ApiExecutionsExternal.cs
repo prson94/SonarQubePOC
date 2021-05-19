@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+using System.Net;
 
 namespace d360.core.entities
 {
@@ -45,5 +46,24 @@ namespace d360.core.entities
         public string Detail { get; set; }
         public string Component { get; set; }
         public DateTime? CreatedOn { get; set; }
+    }
+
+    public class APIExecutionExternalAPIModelResult : PagedApiBaseViewModel
+    {
+        [DataMember]
+        public IEnumerable<APIExecutionExternalAPIModel> items { get; set; }
+        [IgnoreDataMember]
+        public HttpStatusCode StatusCode { get; set; }
+        [IgnoreDataMember]
+        public string Message { get; set; }
+    }
+
+    public class APIExecutionExternalAPIModel
+    {
+        public string status { get; set; }
+        public Guid externalId { get; set; }
+        public string detail { get; set; }
+        public string component { get; set; }
+        public DateTime createdOn { get; set; }
     }
 }
