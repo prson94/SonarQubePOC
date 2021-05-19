@@ -236,7 +236,7 @@ namespace d360.model.helpers
 
             foreach (var token in FilterTokens)
             {
-                if (parseType == FilterExpressionParseType.CustomFields || parseType == FilterExpressionParseType.RuleResults || parseType == FilterExpressionParseType.CommunityResposibilityResource)
+                if (parseType == FilterExpressionParseType.CustomFields || parseType == FilterExpressionParseType.RuleResults || parseType == FilterExpressionParseType.RelationshipCustomFields || parseType == FilterExpressionParseType.CommunityResposibilityResource)
                 {
                     ParseTokensForCustomFields(sqlParams, sb, token);
                 }
@@ -436,6 +436,7 @@ namespace d360.model.helpers
         CustomFields,
         Relationships,
         RuleResults,
+        RelationshipCustomFields,
         CommunityResposibilityResource
     }
 

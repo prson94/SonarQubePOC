@@ -400,7 +400,6 @@ namespace d360.web.Controllers.V2
                 {
                     selectBuilder.Append(" inner join #temprsdata OC on OC.ResourceID = gr.ResourceID ");
                 }
-
                 finalSql = $"{selectBuilder} {joinBulder} {whereBuilder} {offsetSql}";
                 countSql = $"{countBuilder} {joinBulder } {whereBuilder}";
 
