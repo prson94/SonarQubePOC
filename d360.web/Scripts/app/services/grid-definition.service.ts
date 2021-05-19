@@ -31,7 +31,7 @@ export class GridDefinitionService extends BaseObservableService {
         }
 
         if (params) {
-            var qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            var qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
             url += addparameterchar + qString;
         }
 
