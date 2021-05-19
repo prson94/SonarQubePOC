@@ -132,7 +132,7 @@ namespace d360.web.Controllers.V2
                 Guid? fusionTypeGuid = Guid.Empty;
                 if (!string.IsNullOrEmpty(FusionTypeUID))
                 {
-                    if (Class == null || (Class == AssetTypeClass.FusionQuery || Class == AssetTypeClass.FusionAttribute))
+                    if (Class == null || Class == AssetTypeClass.FusionAttribute)
                     {
                         fusionTypeGuid = Guid.Parse(FusionTypeUID);
                     }
