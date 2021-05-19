@@ -50,8 +50,8 @@ export class EditorDefinitionService extends BaseObservableService {
         );
     }
 
-    public getEditorDefinitionUid(giud: string, objectType?: string, targetAssetUid?: string): Observable<EditorField[]> {
-        var url = `form/dynamiceditor/new/uid/${giud}/type/${objectType}`;
+    public getEditorDefinitionUid(guid: string, objectType?: string, targetAssetUid?: string): Observable<EditorField[]> {
+        var url = `form/dynamiceditor/new/uid/${guid}/type/${objectType}`;
 
         if (targetAssetUid) {
             url += `/target/${targetAssetUid}`;
@@ -66,11 +66,9 @@ export class EditorDefinitionService extends BaseObservableService {
     }
 
     public getEditorDefinitionNonLegacy(assetTypeUid: string, assetUid: string): Observable<EditorField[]> {
-
         if (!assetUid) {
             return this.getEditorDefinitionUid(assetTypeUid);
         }
-
         return this.http
             .get(`form/dynamiceditor/byUid/${assetTypeUid}/${assetUid}`)
             .pipe(

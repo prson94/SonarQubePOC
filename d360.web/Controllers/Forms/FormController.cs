@@ -352,7 +352,11 @@ namespace d360.web.Controllers
             return res;
         }
 
-        [HttpGet, Route("dynamiceditor/new/uid/{uid}/type/{objectType?}/target/{targetTypeUid?}")]
+        [
+            HttpGet,
+            Route("dynamiceditor/new/uid/{uid}/type/{objectType?}"),
+            Route("dynamiceditor/new/uid/{uid}/type/{objectType?}/target/{targetTypeUid?}")
+        ]
         public JsonResult DynamicEditorAddFieldsByUid(string uid, string objectType, string targetTypeUid)
         {
             Guid guid = Guid.Empty;
