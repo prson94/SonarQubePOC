@@ -1,5 +1,5 @@
-﻿<div class="asset-browser-button-group">
-    <p-dropdown [disabled]="disabled" [options]="items" (onChange)="diagramTypeChange($event)" [ngModel]="current" [style]="{'width':'70%'}">
+﻿<div class="asset-browser-button-group width-medium">
+    <p-dropdown igDropdown igSize="medium" [required]="true" [disabled]="disabled" [options]="items" (onChange)="diagramTypeChange($event)" [ngModel]="current">
         <ng-template let-item pTemplate="selectedItem">
             <span>{{item.label}}</span>
         </ng-template>
