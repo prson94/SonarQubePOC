@@ -438,9 +438,6 @@ export class AdvancedFilteringComponent implements OnChanges {
                 Name: "TotalCount", FriendlyName: "Total Rows", Type: new FieldType("Number"), Category: ""
             });
             fields.push({
-                Name: "Passed", FriendlyName: "Passed", Type: new FieldType("Boolean"), Category: ""
-            });
-            fields.push({
                 Name: "Outdated", FriendlyName: "Outdated Rule Result", Type: new FieldType("Boolean"), Category: ""
             });
             var staticObs = of(fields);

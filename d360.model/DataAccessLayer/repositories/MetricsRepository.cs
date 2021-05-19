@@ -2232,7 +2232,6 @@ for json path";
                 "EffectiveDate",
                  "FailCount",
                  "PassCount",
-                 "Passed",
                  "PassFraction",
                  "RunDate",
                  "TotalCount",
