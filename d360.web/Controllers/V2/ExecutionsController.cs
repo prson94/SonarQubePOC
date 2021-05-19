@@ -414,6 +414,11 @@ namespace d360.web.Controllers.V2
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"component is not valid.");
                 }
+                else if (component.Length > 250)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"Component cannot exceed 250 characters.");
+                }
+
             }
 
             #endregion
