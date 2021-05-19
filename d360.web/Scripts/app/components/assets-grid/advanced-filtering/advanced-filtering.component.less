@@ -67,10 +67,19 @@
 
     &.loading {
       height: 32px;
-      background: #eff2f6;
-      color: black;
-      padding: 5px 6px;
+      color: @ig-grey;
       pointer-events: none;
+
+      .spinner {
+        margin-top: 6px;
+        margin-left: 10px;
+      }
+
+      .loader-text {
+        position: absolute;
+        top: 5px;
+        left: 36px;
+      }
     }
 
     .filters-list-menu {
