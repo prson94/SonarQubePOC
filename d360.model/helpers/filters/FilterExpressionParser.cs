@@ -82,7 +82,6 @@ namespace d360.model.helpers
                 allowedDefaultFields.Add(new DefaultFilter("TotalCount", "TotalCount", SqlFieldType.Number));
                 allowedDefaultFields.Add(new DefaultFilter("PassFraction", "PassFraction", SqlFieldType.Decimal));
 
-                allowedDefaultFields.Add(new DefaultFilter("Passed", "Passed", SqlFieldType.Boolean));
                 allowedDefaultFields.Add(new DefaultFilter("Outdated", "isduplicate", SqlFieldType.Boolean));
             }
 
