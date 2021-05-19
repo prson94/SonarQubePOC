@@ -322,11 +322,17 @@ namespace d360.core.validators
                 foreach (var owner in owners)
                 {
                     if (!Guid.TryParse(owner, out Guid ownerguid))
+                    {
                         return false;
+                    }
                     if (ownerguid == Guid.Empty)
+                    {
                         return false;
+                    }
                     if (!CompanyContext.Assets.Any(a => a.uid == ownerguid && (a.Object == SystemObjects.Group.ToString() || a.Object == SystemObjects.Resource.ToString() || a.Object == SystemObjects.Organization.ToString())))
+                    {
                         return false;
+                    }
                 }
             }
 
