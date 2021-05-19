@@ -25,6 +25,7 @@ using d360.model.DataAccessLayer;
 using Resources;
 using System.Web.Http.Description;
 using d360.core.helpers;
+using System.Globalization;
 
 namespace d360.web.Controllers.V2
 {
@@ -769,6 +770,7 @@ namespace d360.web.Controllers.V2
                 List<dynamic> relationItems = null;
                 dynamic ownershipLookupSettings = null;
                 dynamic JsonElementSettings = null;
+                dynamic refListFromRelSettings = null;
 
                 if (ft != null)
                 {
@@ -831,6 +833,13 @@ namespace d360.web.Controllers.V2
                                 lookup.HideHeader
                             };
                         }
+                        else if (ft.Type == DataType.RefListRelationship.ToString())
+                        {
+                            refListFromRelSettings = new
+                            {
+                                definition.DisplayRefListDescription
+                            };
+                        }
                     }
                 }
 
@@ -841,6 +850,7 @@ namespace d360.web.Controllers.V2
                     FusionItems = fusionItems,
                     JsonElementSettings,
                     OwnershipLookupSettings = ownershipLookupSettings,
+                    RefListFromRelSettings = refListFromRelSettings,
                     RelationItems = relationItems
                 });
             }
@@ -2021,6 +2031,23 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
             var prefix = "Fields.GetFilterVales => ";
             try
             {
+                if (assetTypeUid == Guid.Empty && fieldName == "EvaluatedAssetClass")
+                {
+                    var classInfos = AssetTypeClass.BusinessAsset.GetAsList();
+                    if (!string.IsNullOrEmpty(filter))
+                    {
+                        classInfos = classInfos.Where(x => x.Name.ToLower(CultureInfo.InvariantCulture).Contains(filter.ToLower(CultureInfo.InvariantCulture).Trim('\''))
+                        || x.Value.ToLower(CultureInfo.InvariantCulture).Contains(filter.ToLower(CultureInfo.InvariantCulture).Trim('\''))).ToList();
+                    }
+
+                    if (skip.HasValue && take.HasValue)
+                    {
+                        classInfos = classInfos.Skip(skip.Value).Take(take.Value).ToList();
+                    }
+
+                    return Request.CreateResponse(HttpStatusCode.OK, new { items = classInfos.Select(x => x.Name).ToList() });
+                }
+
                 string pagingQuery = "";
                 string whereQuery = "";
                 if (skip != null && take != null)

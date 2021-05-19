@@ -476,20 +476,10 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
         let s: string = "";
 
         if (isDecimal) {
-            if (val >= 1)
-                return '100%'
-            s = val + '0000';
-            s = s.replace('0.', '');
-            if (s.length > 6)
-                s = (s.substr(0, 2)) + '.' + s[2] + "%";
-            else
-                s = (s.substr(0, 2)) + "%";
-            if (s.startsWith('0'))
-                s = s.substr(1, s.length);
+            val *= 100;
         }
-        else {
-            s = val + "%";
-        }
+
+        s = (Number(Math.round(Number(`${val}e1`)) + "e-1")) + "%";
 
         return s;
     }

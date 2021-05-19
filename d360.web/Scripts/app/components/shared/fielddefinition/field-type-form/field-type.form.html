@@ -795,6 +795,14 @@
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl></p-dropdown>
                 </div>
+                <div class="col s12"
+                     style="margin: 0 0 10px 0">
+                    <p-checkbox binary="true"
+                                name="showRefListFromRelDescription"
+                                [(ngModel)]="model.FieldType.Type[currentType].DisplayRefListDescription"
+                                [ngModelOptions]="{standalone: true}"
+                                label="Show Reference List Description"></p-checkbox>
+                </div>
             </div>
         </simple-accordion>
 

@@ -22,9 +22,8 @@ export class Resource {
 }
 
 export class ResourceAPICredentials {
-    PublicKey: string;
-    PrivateKey: string;
-    Token: string;
+    apiKey: string;
+    apiSecret: string;
 }
 
 export class CountObject {

@@ -454,6 +454,13 @@ namespace d360.core.entities
         public bool Success { get; set; }
     }
 
+    public class RelationshipCountModel
+    {
+        public Guid IntersectTypeUid { get; set; }
+        public int Count { get; set; }
+        public bool IsSubject { get; set; }
+    }
+
     [DataContract]
     public class DatabaseBulkRelationshipResult : IWorkflowEnabledAsset, IGraphAsset
     {
@@ -721,6 +728,9 @@ namespace d360.core.entities
         public Guid? AssigneeTypeUid { get; set; }
         [DataMember]
         public List<RuleThen> Conditions { get; set; } = new List<RuleThen>();
+
+        [DataMember]
+        public ResponsibilityMatchType MatchType { get; set; } = ResponsibilityMatchType.And;
     }
 
     [DataContract]

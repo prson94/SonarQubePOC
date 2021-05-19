@@ -5,27 +5,15 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.MapSequenceContext-v1">
+  <changeSet author="Core" id="Table.dbo.MapSequenceContext-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapSequenceContext')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapSequenceContext')
 BEGIN
-	CREATE TABLE [dbo].[MapSequenceContext](
-		[MapSequenceID] [int] NOT NULL,
-		[Object] [varchar](50) NOT NULL,
-		[ObjectID] [int] NOT NULL,
-		CONSTRAINT [PK_MapSequenceContext] PRIMARY KEY NONCLUSTERED ( [MapSequenceID] ASC, [Object] ASC, [ObjectID] ASC )
-	)
-
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MapSequenceContext_MapSequence')
-BEGIN
-	ALTER TABLE [dbo].[MapSequenceContext] WITH CHECK ADD CONSTRAINT [FK_MapSequenceContext_MapSequence] FOREIGN KEY([MapSequenceID]) REFERENCES [dbo].[MapSequence] ([ID]) ON DELETE CASCADE
-	ALTER TABLE [dbo].[MapSequenceContext] CHECK CONSTRAINT [FK_MapSequenceContext_MapSequence]
+	EXEC sp_rename 'dbo.MapSequenceContext', 'MapSequenceContext_backup'
 END
 		]]>
     </sql>

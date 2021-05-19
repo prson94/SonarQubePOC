@@ -265,7 +265,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.objectSub = this.secondaryNavService.currentObject$.subscribe(res => {
             this.currentObject = res;
             if (this.currentObject && !this.currentObject.isType) {
-                this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasWorkFlow);
+                this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasRequestCertificationWorkflow);
             } else {
                 this.showStatus = false;
                 this.statistics = null;
@@ -301,7 +301,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
         this.statsSub = this.secondaryNavService.refreshStats$.subscribe(res => {
             if (this.currentObject && !this.currentObject.isType) {
-                this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasWorkFlow);
+                this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasRequestCertificationWorkflow);
             }
         })
 
@@ -318,7 +318,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.emitChanges();
     }
 
-    private loadItemStats(objectID: number, objectName: string, objectType: string, objectTypeID: number, hasWorkFlow: boolean) {
+    private loadItemStats(objectID: number, objectName: string, objectType: string, objectTypeID: number, HasRequestCertificationWorkflow: boolean) {
         this.objectStatisticsService.getObjectStatus(objectID, objectName).subscribe(
             result => {
                 this.status = result;
@@ -343,7 +343,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                             isDraft = true;
                     });
 
-                    this.showCertify = statusHeading && isDraft && hasWorkFlow;
+                    this.showCertify = statusHeading && isDraft && HasRequestCertificationWorkflow;
 
                     this.showStatus = true;
                     this.ref.markForCheck();
@@ -496,7 +496,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 .subscribe(result => {
                     window.setTimeout(
                         x => {
-                            this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasWorkFlow);
+                            this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasRequestCertificationWorkflow);
                         }, 6000);
                 });
     }
@@ -508,7 +508,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
     closeSurveyPopup() {
         this.showSurveyPopup = false;
-        this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasWorkFlow);
+        this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasRequestCertificationWorkflow);
     }
     handleComplete(event) {
         this.closeSurveyPopup();

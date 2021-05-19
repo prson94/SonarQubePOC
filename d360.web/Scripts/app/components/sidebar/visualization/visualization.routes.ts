@@ -1,15 +1,10 @@
 ﻿import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { ImpactComponent } from './impact.component';
-import { LineageComponent } from './lineage.component';
 import { DiagramComponent } from './diagram.component';
 import { BrowserComponent } from './browser.component';
 import { DeactivateGuard } from '../../../guards/deactivate.guard';
 
 const routes: Routes = [
-    { path: 'impact/:objectType/:objectId', component: ImpactComponent },
-    { path: 'lineage/:objectType/:objectId', component: LineageComponent },
-    { path: 'lineage/:objectType/:objectId/:showUsageOnly', component: LineageComponent },
     { path: 'browser/:assetUid', component: BrowserComponent, canDeactivate: [DeactivateGuard] },
     { path: 'browser/:assetUid/:diagramType', component: BrowserComponent, canDeactivate:[DeactivateGuard] },
     { path: 'browser/:assetUid/:diagramType/:focusKey', component: BrowserComponent, canDeactivate:[DeactivateGuard] },

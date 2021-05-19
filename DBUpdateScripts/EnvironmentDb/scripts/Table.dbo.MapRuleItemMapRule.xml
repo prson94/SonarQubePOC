@@ -5,31 +5,15 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.MapRuleItemMapRule-v1">
+  <changeSet author="Core" id="Table.dbo.MapRuleItemMapRule-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapRuleItemMapRule')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapRuleItemMapRule')
 BEGIN
-	CREATE TABLE [dbo].[MapRuleItemMapRule](
-		[MapRuleID] [int] NOT NULL,
-		[MapRuleItemID] [int] NOT NULL,
-		CONSTRAINT [PK_MapRuleItemMapRule] PRIMARY KEY CLUSTERED ( [MapRuleID] ASC, [MapRuleItemID] ASC )
-	)
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MapRuleItemMap_MapRule')
-BEGIN
-	ALTER TABLE [dbo].[MapRuleItemMapRule] WITH CHECK ADD CONSTRAINT [FK_MapRuleItemMap_MapRule] FOREIGN KEY([MapRuleID]) REFERENCES [dbo].[MapRule] ([ID]) ON DELETE CASCADE
-	ALTER TABLE [dbo].[MapRuleItemMapRule] CHECK CONSTRAINT [FK_MapRuleItemMap_MapRule]
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MapRuleItemMap_MapRuleItem')
-BEGIN
-	ALTER TABLE [dbo].[MapRuleItemMapRule] WITH CHECK ADD CONSTRAINT [FK_MapRuleItemMap_MapRuleItem] FOREIGN KEY([MapRuleItemID]) REFERENCES [dbo].[MapRuleItem] ([ID])
-	ALTER TABLE [dbo].[MapRuleItemMapRule] CHECK CONSTRAINT [FK_MapRuleItemMap_MapRuleItem]
+	EXEC sp_rename 'dbo.MapRuleItemMapRule', 'MapRuleItemMapRule_backup'
 END
 		]]>
     </sql>

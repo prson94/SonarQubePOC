@@ -34,7 +34,7 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <TypeScriptToolsVersion>4.0</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>4.1</TypeScriptToolsVersion>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -44,11 +44,11 @@
     </Use64BitIISExpress>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AngleSharp, Version=0.14.0.0, Culture=neutral, PublicKeyToken=e83494dcdc6d31ea, processorArchitecture=MSIL">
-      <HintPath>..\packages\AngleSharp.0.14.0\lib\net461\AngleSharp.dll</HintPath>
+    <Reference Include="AngleSharp, Version=0.15.0.0, Culture=neutral, PublicKeyToken=e83494dcdc6d31ea, processorArchitecture=MSIL">
+      <HintPath>..\packages\AngleSharp.0.15.0\lib\net472\AngleSharp.dll</HintPath>
     </Reference>
-    <Reference Include="AngleSharp.Css, Version=0.14.2.0, Culture=neutral, PublicKeyToken=e83494dcdc6d31ea, processorArchitecture=MSIL">
-      <HintPath>..\packages\AngleSharp.Css.0.14.2\lib\net472\AngleSharp.Css.dll</HintPath>
+    <Reference Include="AngleSharp.Css, Version=0.15.0.0, Culture=neutral, PublicKeyToken=e83494dcdc6d31ea, processorArchitecture=MSIL">
+      <HintPath>..\packages\AngleSharp.Css.0.15.0\lib\net472\AngleSharp.Css.dll</HintPath>
     </Reference>
     <Reference Include="Autofac, Version=6.1.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\packages\Autofac.6.1.0\lib\netstandard2.0\Autofac.dll</HintPath>
@@ -89,7 +89,7 @@
       <HintPath>..\packages\HtmlAgilityPack.1.11.24\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
     <Reference Include="HtmlSanitizer, Version=5.0.0.0, Culture=neutral, PublicKeyToken=61c49a1a9e79cc28, processorArchitecture=MSIL">
-      <HintPath>..\packages\HtmlSanitizer.5.0.310\lib\net46\HtmlSanitizer.dll</HintPath>
+      <HintPath>..\packages\HtmlSanitizer.5.0.404\lib\net46\HtmlSanitizer.dll</HintPath>
     </Reference>
     <Reference Include="IdentityModel, Version=3.7.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\IdentityModel.3.7.1\lib\net452\IdentityModel.dll</HintPath>
@@ -243,8 +243,8 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Runtime.Caching" />
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.6.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.7.1\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Extensions, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.Extensions.4.3.1\lib\net462\System.Runtime.Extensions.dll</HintPath>
@@ -269,8 +269,8 @@
     <Reference Include="System.Spatial, Version=5.8.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Spatial.5.8.4\lib\net40\System.Spatial.dll</HintPath>
     </Reference>
-    <Reference Include="System.Text.Encoding.CodePages, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Text.Encoding.CodePages.4.7.1\lib\net461\System.Text.Encoding.CodePages.dll</HintPath>
+    <Reference Include="System.Text.Encoding.CodePages, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encoding.CodePages.5.0.0\lib\net461\System.Text.Encoding.CodePages.dll</HintPath>
     </Reference>
     <Reference Include="System.Text.Encodings.Web, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Text.Encodings.Web.4.7.1\lib\net461\System.Text.Encodings.Web.dll</HintPath>
@@ -813,6 +813,7 @@
     <Content Include="Scripts\app\components\hierarchy\hierarchy-list.component.html" />
     <Content Include="Scripts\app\components\reference\reference-item-list.component.html" />
     <Content Include="Scripts\app\components\reference\reference-item-type-list.component.html" />
+    <None Include="Scripts\app\components\resource\api-key\resource-api.component.less" />
     <Content Include="Scripts\app\components\rule\rule-column-filter.component.html" />
     <Content Include="Scripts\app\components\rule\rule-list.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-list.component.html" />
@@ -825,6 +826,10 @@
     <Content Include="Scripts\app\components\search\search-result-item.component.html" />
     <Content Include="Scripts\app\components\search\search-results-component.html" />
     <Content Include="Scripts\app\components\search\search.component.html" />
+    <Content Include="Scripts\app\components\shared\asset-detail\asset-detail-category.component.html" />
+    <Content Include="Scripts\app\components\shared\asset-detail\asset-detail-field.component.html" />
+    <Content Include="Scripts\app\components\shared\asset-detail\asset-detail.component.html" />
+    <Content Include="Scripts\app\components\shared\asset-detail\asset-lookup-grid.component.html" />
     <Content Include="Scripts\app\components\shared\asset-score\calculation\measure-rule-results.component.html" />
     <Content Include="Scripts\app\components\shared\asset-score\definition\measure-conditions-details.component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
@@ -854,6 +859,8 @@
     <Content Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.component.less" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid.less" />
     <Content Include="Content\styles\infogix-ui\IgInputGroup.less" />
+    <Content Include="Scripts\app\components\shared\asset-detail\asset-lookup-grid.component.less" />
+    <None Include="Scripts\app\components\rule\rule-results-grid.component.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
@@ -883,15 +890,11 @@
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\infopanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\filterpanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-relationships.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-list-view.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-label-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-asset-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram.component.html" />
-    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-editor-preview.component.html" />
-    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-mapping-rules.component.html" />
-    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-relationships.component.html" />
-    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-source-rule-editor.component.html" />
-    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-source-rules.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\model-diagram.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\addpanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-step-http-response.component.html" />
@@ -900,7 +903,9 @@
     <Content Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-editor-v2.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-field-value-v2.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-field-v2.component.html" />
+    <Content Include="Scripts\app\components\shared\dynamicgrideditor\asset-editor.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-field-value.component.html" />
+    <Content Include="Scripts\app\components\shared\dynamicgrideditor\multiselect-grid.component.html" />
     <Content Include="Scripts\app\components\shared\editor-header.component.html" />
     <Content Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.html" />
     <Content Include="Scripts\app\components\shared\menu\site-menu.component.html" />
@@ -955,8 +960,6 @@
     <Content Include="Scripts\app\components\admin\settings\admin-site-menu.component.html" />
     <Content Include="Scripts\app\components\admin\workflow\admin-workflow-editor.component.html" />
     <Content Include="Scripts\app\components\admin\workflow\admin-workflow.component.html" />
-    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-business-editor.component.html" />
-    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-technical-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-condition-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-diagram.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-form-history.component.html" />
@@ -1030,14 +1033,21 @@
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\resource\api-key\resource-api.module.ts" />
+    <Content Include="Scripts\app\components\resource\api-key\resource-api.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\search\asset-path-widget\asset-path-widget.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\asset-path-widget\asset-path-widget.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search-session.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-detail\asset-detail-category.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-detail\asset-detail-field.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-detail\asset-detail.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-detail\asset-lookup-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\calculation\measure-rule-results.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\calculation\score-calculation.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\definition\measure-conditions-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\definition\score-definition.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\history\score-history.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-detail\asset-detail.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\browser-warning\browser-warning.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\badge\badge.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\badge\badge.module.ts" />
@@ -1053,6 +1063,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\search-field\search-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\tools\overview.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-object-detail.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-list-view.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-step-http-response.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-step-http.component.ts" />
@@ -1066,8 +1078,9 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-field-value-v2.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-field-v2.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-grid-v2.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\multiselect-grid-v2.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\shared-dynamic-grid-editor-v2.module.ts" />
+    <Content Include="Scripts\app\components\shared\header\header-profile.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor\asset-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\object-detail-category.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\asset-score.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\definition\score-definition.component.ts" />
@@ -1248,8 +1261,6 @@
     <Content Include="Scripts\app\components\admin\groups\group.form.html" />
     <Content Include="Scripts\app\components\admin\responsibilities\responsibility-type.form.html" />
     <Content Include="Scripts\app\components\resource\resource-item.component.html" />
-    <Content Include="Scripts\app\components\shared\diagram\impact.component.html" />
-    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage.component.html" />
     <Content Include="Scripts\app\components\admin\fusion\fusion-attributes.tile.html" />
     <Content Include="Scripts\app\components\shared\group-members.component.html" />
     <Content Include="node-test.html" />
@@ -1501,7 +1512,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-site-menu.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-change-pwd.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\resource\resource-key.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-password.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assettypeeditor\shared-asset-type-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\diagram-base.component.ts" />
@@ -1644,9 +1654,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-template-tool.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-transition-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\editor-header.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-editor-preview.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-business-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-technical-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationship-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\relationships\admin-relationships.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.ts" />
@@ -1684,12 +1691,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\shared-field-definition.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\grid-paging-info.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-fusion.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-mapping-rules.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-object-detail.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-relationships.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-source-rule-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-source-rules.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\shared-diagram.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\menu\site-menu-category.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\menu\site-menu-mega-item.component.ts" />
@@ -1719,9 +1720,7 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\score\score.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\score\score.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\diagram.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\impact.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\browser.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\lineage.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\visualization.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\visualization.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\workflowmonitor\monitor-workflow.component.ts" />
@@ -1779,7 +1778,6 @@
     <TypeScriptCompile Include="Scripts\app\models\fieldtype-api.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\header.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\icon-properties.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\impact.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\lineage.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\metrics.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\organization.model.ts" />
@@ -1810,7 +1808,6 @@
     <TypeScriptCompile Include="Scripts\app\services\cascade.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\cookie.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\custom-api.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\diagram.service.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference-item-type-list.component.ts" />
@@ -1872,7 +1869,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\simple-accordion.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\resource\resource-api.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\resource\api-key\resource-api.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\user\user-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource.component.ts" />
@@ -1891,7 +1888,6 @@
     <TypeScriptCompile Include="Scripts\app\components\search\search.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\base.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\dynamic-lookup-grid.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\impact.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\loading.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\messages-bar.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-followers.component.ts" />
@@ -1905,7 +1901,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\dynamic-relationship-grid.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shared.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\social\social-tag-input.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip.component.ts" />

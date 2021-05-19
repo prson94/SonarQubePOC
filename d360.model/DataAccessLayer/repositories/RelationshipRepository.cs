@@ -12,6 +12,7 @@ using d360.core.enums;
 using d360.core.queue;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
+using d360.model.helpers;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -117,6 +118,14 @@ namespace d360.model.DataAccessLayer
         {
             var dbArgs = new DynamicParameters();
             bool includeTotal = true;
+            bool includeAssetPath = false;
+
+            string _orderBy = "I.IntersectTypeID";
+            string _orderDirection = "asc";
+
+            Guid objectUid;
+            Guid relationshipTypeUid;
+            bool isSubject = false;
 
             var baseTableSql = @"from [Intersect] I 
 inner join IntersectType T on T.ID = I.IntersectTypeID 
@@ -137,8 +146,8 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
             int pageNumber = 1;
             int pageSize = 250;
 
-            whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" S.ID not in ({companyContext.GetNoReadSqlStatement(Permission.ReadRelationships)}) and S.AssetTypeID not in ({companyContext.GetAssetTypeNoReadSqlStatement(Permission.ReadRelationships)})";
-            whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" O.ID not in ({companyContext.GetNoReadSqlStatement(Permission.ReadRelationships)}) and O.AssetTypeID not in ({companyContext.GetAssetTypeNoReadSqlStatement(Permission.ReadRelationships)})";
+            whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" ISNULL(S.ID,0) not in ({companyContext.GetNoReadSqlStatement(Permission.ReadRelationships)}) and S.AssetTypeID not in ({companyContext.GetAssetTypeNoReadSqlStatement(Permission.ReadRelationships)})";
+            whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" ISNULL(O.ID,0) not in ({companyContext.GetNoReadSqlStatement(Permission.ReadRelationships)}) and O.AssetTypeID not in ({companyContext.GetAssetTypeNoReadSqlStatement(Permission.ReadRelationships)})";
 
             if (queryParams != null)
             {
@@ -146,7 +155,6 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
 
                 if (queryParamsList.Any(q => q.Key.ToLower() == "relationshiptypeuid"))
                 {
-                    Guid relationshipTypeUid;
                     var relationshipTypeUidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "relationshiptypeuid").Value;
                     if (Guid.TryParse(relationshipTypeUidString, out relationshipTypeUid))
                     {
@@ -197,7 +205,6 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 }
                 if (queryParamsList.Any(q => q.Key.ToLower() == "objectuid"))
                 {
-                    Guid objectUid;
                     var objectUidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "objectuid").Value;
                     if (Guid.TryParse(objectUidString, out objectUid))
                     {
@@ -227,6 +234,14 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     if (!bool.TryParse(queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value, out includeTotal))
                     {
                         includeTotal = true;
+                    }
+                }
+
+                if (queryParamsList.Any(q => q.Key.ToLower() == "_includepath"))
+                {
+                    if (!bool.TryParse(queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "_includepath").Value, out includeAssetPath))
+                    {
+                        includeAssetPath = false;
                     }
                 }
 
@@ -263,6 +278,113 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "'Intersect'", "i.Id");
             }
 
+            if (queryParams.Any(x => x.Key.ToLower() == "_order"))
+            {
+                var orderValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
+                var joinColumn = fieldColumns.FirstOrDefault(x => x.ToLower().Contains($"[{orderValue}]"));
+                if (!string.IsNullOrEmpty(joinColumn))
+                {
+                    _orderBy = joinColumn.Substring(0, joinColumn.IndexOf(" as ["));
+                }
+                else if (orderValue == "object.[path]")
+                {
+                    _orderBy = "ISNULL(ANDP_Object.DisplayPath,OT2.Name)";
+                    isSubject = true;
+                }
+                else if (orderValue == "subject.[path]")
+                {
+                    _orderBy = "ISNULL(ANDP_Subject.DisplayPath,ST2.Name)";
+                }
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
+            {
+                var simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
+                if (!string.IsNullOrEmpty(simpleFilter))
+                {
+                    filteringByFields = true;
+                    simpleFilter = companyContext.GetEscapedFilterString(simpleFilter);
+
+                    dbArgs.Add("@simpleFilter", simpleFilter);
+
+                    List<string> simpleFilters = new List<string>();
+                    //There may be multiple OwnershipLookup fields, but they all look to the same table for filtering, so that will be dealt with below
+                    foreach (var ft in fieldTypes.Where(x => x.IsListable == true && x.Type != DataType.OwnershipLookup.ToString()))
+                    {
+                        if (ft.Type == DataType.Tag.ToString())
+                        {
+                            string simpleFilterTagSql = @"exists (select top 1 AT.TagId from AssetTag AT
+						                                inner join Tag T on AT.TagId = T.Id
+						                                where AT.AssetID = A.ID and T.Value like @simpleFilter)";
+
+                            simpleFilters.Add(simpleFilterTagSql);
+                        }
+                        else if (ft.Type == DataType.Lookup.ToString() && ft.AllowAllValue)
+                        {
+                            string ftformatted = companyContext.LookupFieldHasColorItem(ft) ? $@"JSON_VALUE(F{ft.ID}.FormattedValue, '$[0].name')" : $@"F{ft.ID}.FormattedValue";
+                            simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else {ftformatted} end as value) like @simpleFilter");
+                        }
+                        else if (ft.Type == DataType.Lookup.ToString() && companyContext.LookupFieldHasColorItem(ft))
+                        {
+                            simpleFilters.Add($"JSON_VALUE(F{ft.ID}.FormattedValue, '$[0].name') like @simpleFilter");
+                        }
+                        else
+                        {
+                            simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
+                        }
+                    }
+
+                    if (includeAssetPath)
+                    {
+                        if (isSubject)
+                        {
+                            simpleFilters.Add($"ISNULL(ANDP_Object.DisplayPath,OT2.Name) like @simpleFilter");
+                        }
+                        else
+                        {
+                            simpleFilters.Add($"ISNULL(ANDP_Subject.DisplayPath,ST2.Name) like @simpleFilter");
+
+                        }
+                    }
+
+                    whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $"({string.Join(" or ", simpleFilters)})";
+                }
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))
+            {
+                var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
+                if (!string.IsNullOrEmpty(value))
+                {
+                    filteringByFields = true;
+
+                    var tempArgs = new DynamicParameters();
+                    List<string> tempJoins = new List<string>();
+                    List<string> tempFieldColumns = new List<string>();
+
+                    getFieldSql(fieldTypes, tempArgs, tempJoins, tempFieldColumns);
+
+                    var filterExpressionParser = new FilterExpressionParser(companyContext, FilterExpressionParseType.RelationshipCustomFields);
+                    filterExpressionParser.LoadFieldTypes(fieldTypes, tempFieldColumns);
+                    Dictionary<string, object> sqlParams;
+                    List<int> filteredFields;
+                    var fieldsQuery = "(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")";
+
+                    whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + fieldsQuery;
+
+                    foreach (var item in sqlParams)
+                    {
+                        dbArgs.Add(item.Key, item.Value);
+                    }
+                }
+            }
+
+            if (queryParams.Any(x => x.Key.ToLower() == "_direction"))
+            {
+                _orderDirection = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_direction").Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
+            }
+
+
             if (pageNumber < 0)
             {
                 pageNumber = 1;
@@ -289,11 +411,19 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
             });
             predicateTypeSql += " end as 'Predicate.Type', ";
 
+            if (includeAssetPath)
+            {
+                fieldJoins.Add(" left join graph.AssetNodeDisplayPath ANDP_Object on ANDP_Object.Id = O.Id ");
+                fieldJoins.Add(" left join graph.AssetNodeDisplayPath ANDP_Subject on ANDP_Subject.Id = S.Id ");
+            }
+
             string fieldColumnsSql = "";
             if (fieldColumns.Count > 0)
                 fieldColumnsSql = string.Join(",\n", fieldColumns) + ",";
 
             var countFullSql = $@"select	@total = count(1) {countSql} {(filteringByFields ? string.Join("\n", fieldJoins) : "")} {whereClause}";
+
+            string orderByClause = $"order by {_orderBy} {_orderDirection}";
 
             var sql = $@"
 declare @total int
@@ -313,12 +443,14 @@ select	@pageSize as 'pageSize',
 				P.Inverse as 'Predicate.Inverse',
 				lower(S.Uid) as 'Subject.Uid',
 				ISNULL(lower(ST1.Uid),lower(ST2.Uid)) as 'Subject.AssetTypeUid',
+                {(includeAssetPath ? "ISNULL(ANDP_Subject.DisplayPath,ST2.Name) as 'Subject.[Path]'," : "")}
 				lower(O.Uid) as 'Object.Uid',
 				ISNULL(lower(OT1.Uid),lower(OT2.Uid)) as 'Object.AssetTypeUid'
+                {(includeAssetPath ? ",ISNULL(ANDP_Object.DisplayPath,OT2.Name) as 'Object.[Path]'" : "")}
 		{baseTableSql}
         {string.Join("\n", fieldJoins)}
         {whereClause} 
-        order by I.IntersectTypeID
+        {orderByClause}
 		offset ((@pageNum-1) * @pageSize) rows fetch next @pageSize rows only
 		for json path,INCLUDE_NULL_VALUES
 		) as 'items'
@@ -346,16 +478,16 @@ left join graph.AssetNodeKeyPath OKP on OKP.ID = O.ID
 ";
             var whereClause = " WHERE I.[Uid] = @uid ";
             dbArgs.Add("@uid", uid);
-            
+
             List<FieldType> fieldTypes = null;
-          
+
             fieldTypes = companyContext.Query<FieldType>(
                 $@"select F.* from FieldType F 
 					inner join IntersectType IT on F.Object = 'IntersectType' and IT.ID = F.ObjectID 
 					inner join [intersect] I on I.IntersectTypeID = IT.ID
                     WHERE I.uid = @uid"
                 , new { uid }, ApiTimeout).ToList();
-            
+
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
 
@@ -478,11 +610,8 @@ select	I.Id,
 		coalesce(P.[Type],0) as 'Predicate.Type',
 		coalesce(P.Name,'') as 'Predicate.Name',
 		coalesce(P.Inverse,'') as 'Predicate.Inverse',
-		coalesce(SI.Uid, S.Uid) as 'Subject.Uid',
-		case 
-			when I.Subject = 'IntersectType' then SI.SubjectName + ' ' + SI.PredicateName + ' ' + SI.ObjectName + ' relationship'
-			else coalesce(SFT.Name + ' / ','') + coalesce(SP.[Path], S.Name)
-		end as 'Subject.Name',
+		S.Uid as 'Subject.Uid',		
+		coalesce(SFT.Name + ' / ','') + coalesce(SP.[Path], S.Name) as 'Subject.Name',
 		coalesce(S.Class, 0) as 'Subject.Class',
 		I.SubjectCardinality as 'Subject.Cardinality',
 		O.Uid as 'Object.Uid',
@@ -492,13 +621,12 @@ select	I.Id,
 from	IntersectType I
 		left join [Predicate] P on P.ID = I.PredicateID
 
-		left join AssetType S on (S.uid = I.SubjectUid OR (S.Object = I.Subject and S.ObjectID = I.SubjectID))
+		left join AssetType S on (S.Object = I.Subject and S.ObjectID = I.SubjectID)
         left join FusionAttributeType SFAT on I.Subject = 'FusionAttributeType' and SFAT.ID = I.SubjectID 
         left join FusionType SFT on SFT.ID = SFAT.FusionTypeID 
         outer apply dbo.GetAssetTypeTextPathById(S.ID, '/') SP
-
-		left join IntersectTypeDetail SI on I.Subject = 'IntersectType' and SI.ID = I.SubjectID
-		left join AssetType O on (O.uid = I.ObjectUid OR (O.Object = I.Object and O.ObjectID = I.ObjectID))
+		
+		left join AssetType O on (O.Object = I.Object and O.ObjectID = I.ObjectID)
         left join FusionAttributeType OFAT on I.Object = 'FusionAttributeType' and OFAT.ID = I.ObjectID 
         left join FusionType OFT on OFT.ID = OFAT.FusionTypeID 
         outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
@@ -528,7 +656,7 @@ from	IntersectType I
 
             await Storage.CreateFolder(executionInfo.StorageFolder);
             await Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(relationships));
-                        
+
             execution.ExecutionID = executionInfo.ExecutionID;
             companyContext.Add(execution);
 
@@ -627,7 +755,7 @@ from	IntersectType I
 
             await Storage.CreateFolder(executionInfo.StorageFolder);
             await Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(relationships));
-                        
+
             execution.ExecutionID = executionInfo.ExecutionID;
             companyContext.Add(execution);
 
@@ -802,7 +930,7 @@ from	IntersectType I
                     }
                 }
             }
-            
+
             var apiInfo = results.Children().ToList();
 
             var document = new SLDocument();
@@ -863,16 +991,16 @@ from	IntersectType I
 
                 if (customColumns.Count() > 0)
                 {
-                    index = fields.Count()+1;
+                    index = fields.Count() + 1;
                     foreach (var cus in customColumns)
                     {
                         var name = cus.Name;
-                        var friendlyName =  cus.FriendlyName;
+                        var friendlyName = cus.FriendlyName;
                         var exists = fields.Where(x => x.Object.ToLower() == name.ToLower()).FirstOrDefault();
-                        if(exists == null)
+                        if (exists == null)
                         {
                             var cusField = new FieldType { Type = "string", Object = name, Name = "", FriendlyName = friendlyName };
-                            fields.Insert(2,cusField);
+                            fields.Insert(2, cusField);
                         }
                     }
                 }

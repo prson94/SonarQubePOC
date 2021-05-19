@@ -9,7 +9,7 @@ import { JsonResult } from '../models/jsonresult.model';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from "./baseObservable.service";
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
-import { FieldTypeAPIModel, FieldTypeAPIModelField } from '../models/fieldtype-api.model';
+import { FieldType, FieldTypeAPIModel, FieldTypeAPIModelField } from '../models/fieldtype-api.model';
 
 @Injectable()
 export class FieldsObservableService extends BaseObservableService implements IFieldsService {
@@ -53,6 +53,17 @@ export class FieldsObservableService extends BaseObservableService implements IF
                 map(response => <FieldTypeAPIModelField[]>response.items),
                 catchError(err => this.handleError(err))
             );
+    }
+
+    getRuleResultFields(): FieldTypeAPIModelField[] {
+        let arr: FieldTypeAPIModelField[] = [];
+        arr.push({
+            Category: "",
+            FriendlyName: "Friendly name",
+            Name: "Some name",
+            Type: new FieldType("Boolean")
+        });
+        return arr;
     }
 
     putFieldsV2(

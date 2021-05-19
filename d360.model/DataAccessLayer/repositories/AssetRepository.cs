@@ -114,7 +114,7 @@ namespace d360.model.DataAccessLayer
                 condition = string.Format(" and A.[Class] = @class1 AND (ATQFusionType.uid = @fusionTypeUid or ATTFusionType.uid = @fusionTypeUid)");
 
             }
-
+            var levelsSql = "";
             List<string> whereStatements = new List<string>();
             if (queryParams != null)
             {
@@ -122,70 +122,121 @@ namespace d360.model.DataAccessLayer
                 {
                     bool useAsTransformation;
                     var useAsTransformationString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "useastransformation").Value;
-                    if (Boolean.TryParse(useAsTransformationString, out useAsTransformation))
+                    if (bool.TryParse(useAsTransformationString, out useAsTransformation))
                     {
 
                         condition += " and A.UseAsTransformation=@useAsTransformation ";
                         dbArgs.Add("useAsTransformation", useAsTransformation);
                     }
                     else
+                    {
                         throw new ArgumentException("Invalid value for parameter [useastransformation]", useAsTransformationString);
+                    }
                 }
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "hierarchical"))
                 {
                     bool hierarchical;
                     var hierarchicalString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "hierarchical").Value;
-                    if (Boolean.TryParse(hierarchicalString, out hierarchical))
+                    if (bool.TryParse(hierarchicalString, out hierarchical))
                     {
 
                         condition += " and A.Hierarchical=@hierarchical ";
                         dbArgs.Add("hierarchical", hierarchical);
                     }
                     else
+                    {
                         throw new ArgumentException("Invalid value for parameter [hierarchical]", hierarchicalString);
+                    }
                 }
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "autodisplaydescription"))
                 {
                     bool autoDisplayDescription;
                     var autoDisplayDescriptionString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "autodisplaydescription").Value;
-                    if (Boolean.TryParse(autoDisplayDescriptionString, out autoDisplayDescription))
+                    if (bool.TryParse(autoDisplayDescriptionString, out autoDisplayDescription))
                     {
 
                         condition += " and A.AutoDisplayDescription=@autodisplaydescription ";
                         dbArgs.Add("autoDisplayDescription", autoDisplayDescription);
                     }
                     else
+                    {
                         throw new ArgumentException("Invalid value for parameter [autoDisplayDescription]", autoDisplayDescriptionString);
+                    }
                 }
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "canownfusion"))
                 {
                     bool canOwnFusion;
                     var canOwnFusionString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "canownfusion").Value;
-                    if (Boolean.TryParse(canOwnFusionString, out canOwnFusion))
+                    if (bool.TryParse(canOwnFusionString, out canOwnFusion))
                     {
 
                         condition += " and A.CanOwnFusion=@canownfusion ";
                         dbArgs.Add("canownfusion", canOwnFusion);
                     }
                     else
+                    {
                         throw new ArgumentException("Invalid value for parameter [canOwnFusion]", canOwnFusionString);
+                    }
                 }
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "autodisplayparent"))
                 {
                     bool autoDisplayParent;
                     var autoDisplayParentString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "autodisplayparent").Value;
-                    if (Boolean.TryParse(autoDisplayParentString, out autoDisplayParent))
+                    if (bool.TryParse(autoDisplayParentString, out autoDisplayParent))
                     {
 
                         condition += " and A.AutoDisplayParent=@autoDisplayParent ";
                         dbArgs.Add("autoDisplayParent", autoDisplayParent);
                     }
                     else
+                    {
                         throw new ArgumentException("Invalid value for parameter [autoDisplayParent]", autoDisplayParentString);
+                    }
+                }
+
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "obj") && queryParams.ToList().Any(q => q.Key.ToLower() == "objid"))
+                {
+                    var obj = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "obj").Value;
+                    var objId = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "objid").Value;
+                    SystemObjects ot;
+                    if (Enum.TryParse(obj, out ot))
+                    {
+                        condition += " and A.Object=@obj ";
+                        dbArgs.Add("obj", obj);
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Invalid value for parameter [obj]", obj);
+                    }
+                    int otid;
+                    if (int.TryParse(objId, out otid))
+                    {
+                        condition += " and A.ObjectID=@objId ";
+                        dbArgs.Add("objId", otid);
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Invalid value for parameter [objId]", objId);
+                    }
+                }
+
+
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "includelevels"))
+                {
+                    bool includeLevels;
+                    var includeLevelsString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includelevels").Value;
+                    if (bool.TryParse(includeLevelsString, out includeLevels))
+                    {
+                        levelsSql = @",(select Level, Name, Description from AssetTypeLevel where AssetTypeID = A.ID order by Level for json path) as LevelsJson";
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Invalid value for parameter [includeLevels]", includeLevelsString);
+                    }
                 }
 
             }
@@ -218,6 +269,7 @@ namespace d360.model.DataAccessLayer
                                     ,A.AutoDisplayParent
                                     ,A.FlowObjectType
                                     ,A.CanEditParent
+                                    {levelsSql} 
                                     ,P.[Path]
                                     ,AT.IconBackColor as BackColor
                                     ,AT.Icon as Icon
@@ -746,7 +798,12 @@ namespace d360.model.DataAccessLayer
                     }
                 }
 
-                if (!CompanyContext.TypeHasParent((SystemObjects)(Enum.Parse(typeof(SystemObjects), assetType.Object, true)), assetType.ObjectID))
+                var functionalPredicateType = PredicateType.InterTypeHierarchy;
+                if (assetType.Object == "PolicyType" || assetType.Object == "TaxonomyType")
+                {
+                    functionalPredicateType = PredicateType.IntraTypeHierarchy;
+                }
+                if (!CompanyContext.TypeHasParent((SystemObjects)(Enum.Parse(typeof(SystemObjects), assetType.Object, true)), assetType.ObjectID, functionalPredicateType))
                 {
                     includeParent = false;
                 }
@@ -1038,7 +1095,6 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
-
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_parentuid"))
             {
                 parentUidPopulated = true;
@@ -1322,7 +1378,7 @@ namespace d360.model.DataAccessLayer
             };
         }
 
-        public async Task<SLDocument> GetAssetsExcel(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        public async Task<SLDocument> GetAssetsExcel(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams, bool isChildItem = false)
         {
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             var results = await GetAssets(assetType, queryParams);
@@ -1356,24 +1412,41 @@ namespace d360.model.DataAccessLayer
                 includeAssetUrl = false;
             }
 
+            string ParentAssetTypeUidHeading = "Parent";
+
             if (includeParent)
             {
                 var columnName = "Parent";
-                if (assetType.Class == AssetTypeClass.Reference && hierarchy != null)
+                if ((assetType.Class == AssetTypeClass.Reference && hierarchy != null) || isChildItem)
                 {
                     var parent = CompanyContext.AssetTypes.FirstOrDefault(x => x.Object == hierarchy.Subject && x.ObjectID == hierarchy.SubjectID);
                     if (parent != null)
-                        columnName = parent.Name;
+                    {
+                       columnName = isChildItem ? "Parent " + parent.Name + " Name" : parent.Name;
+                       ParentAssetTypeUidHeading = parent.Name + " UID";
+                    }
+                        
                 }
 
                 fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = columnName });
             }
 
-            fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
+            if (!isChildItem)
+            { 
+                fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
 
-            fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
-            fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });
+                fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
+                fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });
+            }
+            else
+            {
+                fields.Add(new FieldType { Type = "string", Name = "Name", FriendlyName = assetType.Name + " Name" });
 
+                fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID && f.Name.ToLower() != "name").OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
+
+                fields.Add(new FieldType { Type = "string", Name = "ParentAssetUid", FriendlyName = ParentAssetTypeUidHeading });
+                fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = assetType.Name + " UID" });
+            }
             var rowData = results.items.ToList();
 
             var document = new SLDocument();

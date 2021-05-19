@@ -43,7 +43,12 @@ export class FieldTypeEditorModel {
     LookupTokens: SelectItem[] = [];
     OwnershipLookupSettings: OwnershipLookupSettings;
     JsonElementSettings: JsonElementSettings;
+    RefListFromRelSettings: RefListFromRelSettings;
     IsPrimaryFilter: boolean;
+}
+
+export class RefListFromRelSettings {
+    DisplayRefListDescription: boolean;
 }
 
 export class JsonElementSettings {

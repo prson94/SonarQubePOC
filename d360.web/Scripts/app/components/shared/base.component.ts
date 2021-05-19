@@ -250,16 +250,10 @@ export class BaseComponent {
             this.clearSidebar();
             var isCommonAsset: boolean = this.objectType == 'Artifact' || this.objectType == 'Policy' || this.objectType == 'Taxonomy' || this.objectType == 'Rule';
 
-            let lineageVersion: number = 1;
-
-            if (CompanySettings != null && CompanySettings.LineageVersion != null) {
-                lineageVersion = +CompanySettings.LineageVersion;
-            }
-
             let showLineage = hasLineage && CompanySettings.ShowLineageSidebar != 'false';
             let showImpact = hasImpact && CompanySettings.ShowImpactSidebar != 'false';
 
-            if (lineageVersion === 3 && (showLineage || showImpact || hasProcessDiagram)) {
+            if (showLineage || showImpact || hasProcessDiagram) {
                 let isVisualizationDisabled = this.objectType.toLowerCase() == 'fusionattribute';
                 if (!isVisualizationDisabled) {
                     this.lineageSidebar = new SecondaryNavItem(
@@ -274,30 +268,6 @@ export class BaseComponent {
                     this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Process`);
 
                     this.secondaryNavService.showItem(this.lineageSidebar);
-                }
-            }
-            else {
-                if (showLineage) {
-                    const isLineageShowUsageOnly = this.lineageShowUsageOnly ? '/1' : '';
-                    const urlLineage = this.objectContextUrl() + isLineageShowUsageOnly;
-
-                    this.lineageSidebar = new SecondaryNavItem(
-                        'Lineage',
-                        'lineage',
-                        ['fa-random'],
-                        `/sidebar/visualization/lineage${urlLineage}`, null, 15
-                    );
-                    this.secondaryNavService.showItem(this.lineageSidebar);
-                }
-
-                if (showImpact) {
-                    this.impactSidebar = new SecondaryNavItem(
-                        'Impact',
-                        'impact',
-                        ['fa-exchange'],
-                        `/sidebar/visualization/impact${this.objectContextUrl()}`, null, 10
-                    );
-                    this.secondaryNavService.showItem(this.impactSidebar);
                 }
             }
 
@@ -466,16 +436,6 @@ export class BaseComponent {
         }
     }
 
-    assetContextUrl(): string {
-        const url = '';
-
-        if (!this.assetID) {
-            return url;
-        }
-
-        return `/item/${this.assetID}`;
-    }
-
     assetTypeContextUrl(): string {
         const url = '';
 
@@ -531,6 +491,8 @@ export class BaseComponent {
                 uid = this['selectedReferenceListUid'];
             } else if (this['assetType'] && this['assetType']['AssetTypeUID']) { //HierarchyItemStructureComponent
                 uid = this['assetType']['AssetTypeUID'];
+            } else if (this['assetType'] && this['assetType']['uid']) { //HierarchyItemStructureComponent
+                uid = this['assetType']['uid'];
             } else if (this['selected']) {
                 if (this['selected']['Uid']) { //AdminIssueTypesComponent, AdminRelationshipsComponent
                     uid = this['selected']['Uid'];
@@ -737,32 +699,6 @@ export class BaseComponent {
         }
     }
 
-    doesNodeContainsValue(node: TreeNode, q: string): boolean {
-        let hasValue: boolean = false;
-        var nodeProps = Object.getOwnPropertyNames(node.data);
-
-        var tempChildren = node.children;
-        node.children = [];
-        if (tempChildren) {
-            tempChildren.forEach((n) => {
-                if (this.doesNodeContainsValue(n, q)) {
-                    node.children.push(n);
-                }
-            });
-        }
-        if (node.children && node.children.length > 0) return true;
-
-        nodeProps.forEach((prop) => {
-            if (prop.toLowerCase().indexOf("name") != -1 || prop.toLowerCase().indexOf("value") != -1 || prop.toLowerCase().indexOf("field") != -1) {
-                if (node.data[prop] && node.data[prop].toString().toLowerCase().indexOf(q.toLowerCase()) != -1) hasValue = true;
-            }
-        });
-
-        return hasValue;
-    }
-
-
-
     buildSecondaryNavigationForAssetID(assetId: number, object: string, buildBreadcrumbOverride: Function = null) {
         this.buildSecondaryNavigation(null, null, object, assetId, null, buildBreadcrumbOverride);
     }
@@ -907,7 +843,7 @@ export class BaseComponent {
 
             this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild, this.objectType == 'Rule', r.Items.HasGovernanceRoleUidSet, r.Items.HasProcessDiagram);
             var isType = this.IsType(r.Object);
-            this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, r.ObjectTypeId, this.objectType, this.objectID, isType, r.Items.HasWorkflow, this.uid));
+            this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, r.ObjectTypeId, this.objectType, this.objectID, isType, r.Items.HasWorkflow, this.uid, r.Items.HasRequestCertificationWorkflow));
             this.secondaryNavService.showHeader(true);
 
             this.activateComponent();
@@ -1140,7 +1076,6 @@ export class BaseComponent {
             });
     }
 
-
     private setRuleBreadcrumbs(data) {
         this.breadcrumbsService
             .getAreaName('RuleType', data.ObjectTypeId)
@@ -1205,8 +1140,12 @@ export class BaseComponent {
             return integerPart + res;
         }
 
-        let s = (val * 100).toFixed(2).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "")  + "%";
-        
+        let s = (val * 100).toFixed(2).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
+
         return s;
+    }
+
+    public isReferenceListType(value: string): boolean {
+        return value === "0000000a-0000-0000-0000-000000000009";
     }
 }

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.GetObjectStatistics-v3.1">
+  <changeSet author="MDonato" id="Procedure.dbo.GetObjectStatistics-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -33,10 +33,9 @@ BEGIN
 	insert into @table
 		select	NULL, count(1), 'Comments', '', max(CreatedOn),null
 		from	Comment C
-				inner join CommentRelation R	on R.CommentID = C.ID and C.ParentID is null
-												and R.AssetID = @assetId
-                                                and C.ParentID is null
-												and C.IsDeleted = 0
+		where	C.ParentID is null 
+				and C.IsDeleted = 0 
+				and (C.AssetID = @assetId or exists (select 1 from CommentRelation R where R.CommentID = C.ID and R.AssetID = @assetId))
 
 	insert into @table 
 		select	NULL, cast(Value * 100 as int), 'Score', '', coalesce(S.RunDate, S.EffectiveDate), null
@@ -83,10 +82,11 @@ AS
 BEGIN
 	declare @table table (Name nvarchar(250), Value varchar(250), [Group] varchar(25), Url varchar(250), MostRecent datetime, TypeID int)
 	
-	declare @assetUid uniqueidentifier,
+	declare @assetId bigint,
+			@assetUid uniqueidentifier,
 			@dt datetime = getutcdate();
 
-	select @assetUid = [Uid] from dbo.Asset where Object = @type and ObjectID = @id;
+	select @assetId = ID, @assetUid = [Uid] from dbo.Asset where Object = @type and ObjectID = @id;
 
 	insert into @table
 		select NULL, count(1), 'Followers', '', max(datecreated),null
@@ -95,10 +95,10 @@ BEGIN
 		where	F.ObjectType = @type and F.ObjectID = @id
 	
 	insert into @table
-		select	NULL, count(1), 'Comments', '', max(datecreated),null
+		select	NULL, count(1), 'Comments', '', max(CreatedOn),null
 		from	Comment C
 				inner join CommentRelation R	on R.CommentID = C.ID and C.ParentID is null
-												and R.ObjectType = @type and R.ObjectID = @id
+												and R.AssetID = @assetId
                                                 and C.ParentID is null
 												and C.IsDeleted = 0
 

@@ -1203,17 +1203,17 @@ from	metrics.AssetVersion V
 		</sql>
 	</changeSet>
 
-	<changeSet author="Pappas" id="Data.Corrections.GOV-14374">
+	<changeSet author="Pappas" id="Data.Corrections.GOV-14374.2">
 			<sql dbms="mssql" splitStatements="false" stripComments="false">
 	<![CDATA[
 --Governance
 	-- Update root.
 	update	I
 	set		I.DisplayWeight = case 
-								when floor(I.DecimalValue) = FLOOR(I.AdjustedWeight) then cast(metrics.RoundScoreItem(I.DecimalValue, 3) as decimal(5,3))
-								else cast(metrics.RoundScoreItem(I.DecimalValue*I.AdjustedMaxWeight, 3) as decimal(5,3))
+								when floor(I.DecimalValue) = FLOOR(I.AdjustedWeight) then cast(I.DecimalValue as decimal(8,6))
+								else cast((I.DecimalValue*I.AdjustedMaxWeight) as decimal(8,6))
 						      end,
-			I.DisplayMaxWeight = cast(metrics.RoundScoreItem(I.AdjustedMaxWeight, 3) as decimal(5,3))
+			I.DisplayMaxWeight = cast(I.AdjustedMaxWeight as decimal(8,6))
 	from	metrics.ScoreItem I
 			inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid --and I.DisplayWeight is null
 			inner join metrics.Asset A on A.Uid = V.AssetUid and A.ParentUid is null
@@ -1222,8 +1222,8 @@ from	metrics.AssetVersion V
 
 	-- Update children.
 	update	I
-	set		I.DisplayWeight = cast(metrics.RoundScoreItem(I.AdjustedWeight*[PI].AdjustedMaxWeight, 3) as decimal(5,3)),
-			I.DisplayMaxWeight = cast(metrics.RoundScoreItem(I.AdjustedMaxWeight*[PI].AdjustedMaxWeight, 3) as decimal(5,3))
+	set		I.DisplayWeight = cast((I.AdjustedWeight*[PI].AdjustedMaxWeight) as decimal(8,6)),
+			I.DisplayMaxWeight = cast((I.AdjustedMaxWeight*[PI].AdjustedMaxWeight) as decimal(8,6))
 	from	metrics.ScoreItem I
 			inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid and I.DisplayWeight is null
 			inner join metrics.Asset A on A.Uid = V.AssetUid and A.ParentUid is not null
@@ -1237,8 +1237,8 @@ from	metrics.AssetVersion V
 -- Data Quality
 	-- Update root.
 	update	I
-	set		I.DisplayWeight = cast(metrics.RoundScoreItem(I.AdjustedWeight, 3) as decimal(5,3)),
-			I.DisplayMaxWeight = cast(metrics.RoundScoreItem(I.AdjustedMaxWeight, 3) as decimal(5,3))
+	set		I.DisplayWeight = cast(I.AdjustedWeight as decimal(8,6)),
+			I.DisplayMaxWeight = cast(I.AdjustedMaxWeight as decimal(8,6))
 	from	metrics.ScoreItem I
 			inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid and I.DisplayWeight is null
 			inner join metrics.Asset A on A.Uid = V.AssetUid and A.ParentUid is null
@@ -1248,8 +1248,8 @@ from	metrics.AssetVersion V
 
 	-- Update children.
 	update	I
-	set		I.DisplayWeight = cast(metrics.RoundScoreItem(I.AdjustedWeight*[PI].AdjustedMaxWeight, 3) as decimal(5,3)),
-			I.DisplayMaxWeight = cast(metrics.RoundScoreItem(I.AdjustedMaxWeight*[PI].AdjustedMaxWeight, 3) as decimal(5,3))
+	set		I.DisplayWeight = cast((I.AdjustedWeight*[PI].AdjustedMaxWeight) as decimal(8,6)),
+			I.DisplayMaxWeight = cast((I.AdjustedMaxWeight*[PI].AdjustedMaxWeight) as decimal(8,6))
 	from	metrics.ScoreItem I
 			inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid and I.DisplayWeight is null
 			inner join metrics.Asset A on A.Uid = V.AssetUid and A.ParentUid is not null

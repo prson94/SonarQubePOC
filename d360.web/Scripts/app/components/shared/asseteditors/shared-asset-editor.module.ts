@@ -16,7 +16,6 @@ import { EditorModule } from 'primeng/editor';
 import { CoreModule } from '../core.module';
 import { TilesModule } from '../tiles/tiles.module';
 import { SharedDeleteFormModule } from '../delete.form';
-
 import { AssetDeleteEditorComponent } from './asset-delete-editor.component';
 
 @NgModule({

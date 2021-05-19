@@ -56,8 +56,7 @@ select	Al.AllocationUid,
                             from    metrics.AssetVersionConditionItemValue 
                             where   Uid = I.Uid
                             for json path
-                            ) as ValueItems
-                            --JSON_QUERY((SELECT CONCAT('[""',STRING_AGG([Value], '"",""'),'""]') FROM metrics.AssetVersionConditionItemValue where Uid = I.Uid)) as [Values]
+                            ) as ValueItems 
 					from	[metrics].[AssetVersionConditionItem] I
 					where	AssetVersionConditionUid = C.Uid
 					for json path
@@ -266,8 +265,8 @@ where   Uid <> @uid
                     trans.Commit();
                 }
                 
-                Action<MetricAssetDefinitionGovernanceViewModel, Guid, bool?> assetVersionCheckObjectTypeAction = (MetricAssetDefinitionGovernanceViewModel governance, Guid metricAssetVersionUid, bool? overrideBoolValue) => {
-                    if (assetVersionCheckObjectTypes.OkToAddToList(metricAssetVersionUid))
+                Action<Object, MetricAssetDefinitionGovernanceViewModel, Guid, bool?> assetVersionCheckObjectTypeAction = (Object locker, MetricAssetDefinitionGovernanceViewModel governance, Guid metricAssetVersionUid, bool? overrideBoolValue) => {
+                    if (assetVersionCheckObjectTypes.OkToAddToList(locker, metricAssetVersionUid))
                     {
                         var check = MetricGovernanceCheckType.External;
 
@@ -363,7 +362,7 @@ where   Uid <> @uid
 	    inner join FieldType FT ON FT.AssetTypeID = A.AssetTypeID 
 	    left join Field F ON F.FieldTypeID = FT.ID AND F.ObjectType = A.Object AND F.ObjectID = A.ObjectID
 	    outer apply (
-		    select	string_agg(lower(cast(LA.Uid as nvarchar(50))), ',') as LookupValues
+		    select	string_agg(lower(cast(LA.Uid as nvarchar(max))), ',') as LookupValues
 		    from	STRING_SPLIT(COALESCE(F.Value, FT.DefaultValue),',') MV
 				    inner join Asset LA on LA.ObjectID = MV.value
 				    inner join AssetType LAT on LAT.Object = FT.LookupObjectType+'Type' and LAT.ObjectID = FT.LookupObjectID and LAT.ID = LA.AssetTypeID
@@ -401,7 +400,7 @@ where   Uid <> @uid
                         var assetFields = setFields.Where(f => f.Assetuid == assetEffectiveDate.AssetUid).ToList();
 
                         object resultsLock = new Object();
-                        results.AsParallel().ForAll(r =>
+                        results.AsParallel().ForAll(async r =>
                         {
                             var conditionValidator = CheckMeasureConditions(assetFields, fieldTypes, r.Measure, true);
                         
@@ -421,7 +420,7 @@ where   Uid <> @uid
                                 scoreItem.OtherConditions = JsonConvert.SerializeObject(conditionValidator.ExtraneousConditions);
                                 scoreItem.IsRemoved = false;
 
-                                if (assetVersionCheckObjectTypes.ShouldContinueAnalysis(r.Measure.MetricAssetVersionUid))
+                                if (assetVersionCheckObjectTypes.ShouldContinueAnalysis(resultsLock, r.Measure.MetricAssetVersionUid))
                                 {
                                     string definitionJson = r.Measure.Definition;
                                     if (string.IsNullOrEmpty(definitionJson))
@@ -454,19 +453,23 @@ where   Uid <> @uid
                                                 }
                                                 else
                                                 {
+                                                    var iDb = GetCompanyContext();
+
                                                     var dqQueryDetail = dqMeasureQueryLibrary.FirstOrDefault(dq => dq.AssetVersionRollupPathUid == r.Measure.RollupPath.AssetVersionRollupPathUid);
                                                     if (dqQueryDetail == null)
                                                     {
-                                                        dqQueryDetail = Db.BuildDataQualityMeasureQueryModel(MetricDataQualityQueryType.MeasureResults_For_Calculation, r.Measure.RollupPath.AssetVersionRollupPathUid);
+                                                        dqQueryDetail = iDb.BuildDataQualityMeasureQueryModel(MetricDataQualityQueryType.MeasureResults_For_Calculation, r.Measure.RollupPath.AssetVersionRollupPathUid);
                                                         lock (resultsLock)
-                                                        { 
+                                                        {
                                                             dqMeasureQueryLibrary.Add(dqQueryDetail); // Add to library for future reference.
                                                         }
                                                     }
 
                                                     try
                                                     {
-                                                        var rollupPathResults = Db.GetDataQualityMeasureQueryResultModels(dqQueryDetail, r.Result.AssetUid, assetEffectiveDate.EffectiveDate);
+                                                        List<DataQualityMeasureQueryResultModel> rollupPathResults = null;
+                                                        
+                                                        rollupPathResults = iDb.GetDataQualityMeasureQueryResultModels(dqQueryDetail, r.Result.AssetUid, assetEffectiveDate.EffectiveDate);
 
                                                         if (rollupPathResults.Count > 0)
                                                         {
@@ -529,6 +532,8 @@ where   Uid <> @uid
                                                         scoreItem.Value = false;
                                                         scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = true, ErrorMessage = ex.GetFullExceptionData(false) });
                                                     }
+
+                                                    iDb = null;
                                                 }
                                             }
 
@@ -558,7 +563,7 @@ where   Uid <> @uid
                                                         bool allowMultipleValues = (assetFieldType != null) ? assetFieldType.AllowMultipleValues : false;
 
                                                         // Check the measure validity.
-                                                        assetVersionCheckObjectTypeAction(gDefinition, r.Measure.MetricAssetVersionUid, (assetFieldType != null));
+                                                        assetVersionCheckObjectTypeAction(resultsLock, gDefinition, r.Measure.MetricAssetVersionUid, (assetFieldType != null));
 
                                                         var assetFieldForFieldCheck = assetFields.FirstOrDefault(f => f.FieldTypeName == gDefinition.Field.FieldTypeName);
 
@@ -569,17 +574,17 @@ where   Uid <> @uid
                                                     if (gDefinition.Owner != null)
                                                     {
                                                         // Check the measure validity.
-                                                        assetVersionCheckObjectTypeAction(gDefinition, r.Measure.MetricAssetVersionUid, null);
+                                                        assetVersionCheckObjectTypeAction(resultsLock, gDefinition, r.Measure.MetricAssetVersionUid, null);
 
                                                         string trueValue = (gDefinition.Owner.Operator == Operator.Populated) ? "1" : "0";
                                                         string falseValue = (gDefinition.Owner.Operator == Operator.Populated) ? "0" : "1";
-                                                        scoreItem.Value = company.Query<bool>(
-                                                            $"select cast(iif(count(1) > 0, {trueValue}, {falseValue}) as bit) " +
-                                                            "from ResponsibilityDetail R " +
-                                                            "inner join ResponsibilityType T on T.ID = R.ResponsibilityTypeID and T.Uid = @ResponsibilityTypeUid " +
-                                                            "where exists ( select 1 from Asset where Uid = @AssetUid and ( (ID = R.AssetID and R.AssetID <> 0) or (AssetTypeID = R.AssetTypeID and R.AssetID = 0) ) )",
-                                                            new { gDefinition.Owner.ResponsibilityTypeUid, r.Result.AssetUid }, commandTimeout: 90
-                                                            ).Single();
+
+                                                        scoreItem.Value = calculateAssetMeasureResultFromDb(
+                                                        $"select cast(iif(count(1) > 0, {trueValue}, {falseValue}) as bit) " +
+                                                        "from ResponsibilityDetail R " +
+                                                        "inner join ResponsibilityType T on T.ID = R.ResponsibilityTypeID and T.Uid = @ResponsibilityTypeUid " +
+                                                        "where exists ( select 1 from Asset where Uid = @AssetUid and ( (ID = R.AssetID and R.AssetID <> 0) or (AssetTypeID = R.AssetTypeID and R.AssetID = 0) ) )",
+                                                        new { gDefinition.Owner.ResponsibilityTypeUid, r.Result.AssetUid });
                                                     }
                                                     else
                                                     {
@@ -590,7 +595,7 @@ where   Uid <> @uid
                                                     if (gDefinition.Predicate != null)
                                                     {
                                                         // Check the measure validity.
-                                                        assetVersionCheckObjectTypeAction(gDefinition, r.Measure.MetricAssetVersionUid, null);
+                                                        assetVersionCheckObjectTypeAction(resultsLock, gDefinition, r.Measure.MetricAssetVersionUid, null);
 
                                                         var predicateExistenceSql = "select cast(iif(sum(bit1) > 0, 1, 0) as bit) from (" +
                                                             "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where PredicateUid = @PredicateUid and SubjectUid = @AssetUid  " +
@@ -601,10 +606,10 @@ where   Uid <> @uid
                                                         switch (gDefinition.Predicate.Operator)
                                                         {
                                                             case Operator.Populated:
-                                                                scoreItem.Value = company.Query<bool>(predicateExistenceSql, new { gDefinition.Predicate.PredicateUid, r.Result.AssetUid }, commandTimeout: 90).Single();
+                                                                scoreItem.Value = calculateAssetMeasureResultFromDb(predicateExistenceSql, new { gDefinition.Predicate.PredicateUid, r.Result.AssetUid });
                                                                 break;
                                                             case Operator.NotPopulated:
-                                                                scoreItem.Value = !company.Query<bool>(predicateExistenceSql, new { gDefinition.Predicate.PredicateUid, r.Result.AssetUid }, commandTimeout: 90).Single();
+                                                                scoreItem.Value = !calculateAssetMeasureResultFromDb(predicateExistenceSql, new { gDefinition.Predicate.PredicateUid, r.Result.AssetUid });
                                                                 break;
                                                         }
                                                     }
@@ -617,7 +622,7 @@ where   Uid <> @uid
                                                     if (gDefinition.Relation != null)
                                                     {
                                                         // Check the measure validity.
-                                                        assetVersionCheckObjectTypeAction(gDefinition, r.Measure.MetricAssetVersionUid, null);
+                                                        assetVersionCheckObjectTypeAction(resultsLock, gDefinition, r.Measure.MetricAssetVersionUid, null);
 
                                                         var operatorSql = "";
                                                         var bitSql = "";
@@ -695,7 +700,8 @@ where   Uid <> @uid
                                                         }
                                                         var relationSql = $"select cast({bitSql} as bit) from ({operatorSql}) a";
 
-                                                        scoreItem.Value = company.Query<bool>(relationSql, parameters, commandTimeout: 90).Single();
+                                                        scoreItem.Value = calculateAssetMeasureResultFromDb(relationSql, parameters);
+                                                        
                                                     }
                                                     else
                                                     {
@@ -944,6 +950,18 @@ when not matched then
                 company.Close();
             }
             return success;
+        }
+
+        bool calculateAssetMeasureResultFromDb(string sql, object parameters)
+        {
+            bool result = false;
+
+            using (var company = GetEnvironmentConnection())
+            {
+                result = company.Query<bool>(sql, parameters, commandTimeout: 90).Single();
+            }
+
+            return result;
         }
     }
 }

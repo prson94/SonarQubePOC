@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.metrics.ProcessAssetScores-v1.18">
+  <changeSet author="Pappas" id="Procedure.metrics.ProcessAssetScores-v1.22">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -18,10 +18,10 @@ as
 begin
 	--Gov
 	--declare	
-	--	@allocationUid uniqueidentifier = 'C5CD6067-AB60-4C88-A4F1-5E6DE8A37FCE',
+	--	@allocationUid uniqueidentifier = '631713D7-0D8D-44A8-9A68-FECFB7F7682E',
 	--	@assets AssetEffectiveDate
-	--insert into @assets values ('29420ad7-e346-4274-b6f1-3e191502df9c', '2021-05-04')
-	--select * from metrics.StagingScoreItem where measureuid = '095032e8-6aa8-438c-9b1f-d108d34faeb0'
+	--insert into @assets values ('4acd41a4-dab7-4fef-89a5-6be4836d1ae0', '2021-05-13')
+	--select * from metrics.StagingScoreItem where assetuid = '4acd41a4-dab7-4fef-89a5-6be4836d1ae0'
 	
 	--DQ
 	--declare	
@@ -203,6 +203,7 @@ begin
 											inner join metrics.Asset A on A.Uid = V.AssetUid and A.IsGroup = 0 
 											left join  #ScoreItems E on E.AssetUid = S.AssetUid and E.MeasureUid = A.Uid
 									where	S.EffectiveDate <= St.EffectiveDate
+											and (V.EffectiveEndDate >= St.EffectiveDate or V.EffectiveEndDate is null)
 											and E.AssetUid is null
 									) Ims
 							where	Ims.RowNumber = 1
@@ -303,7 +304,7 @@ begin
 		begin try
 			update  T
 			set		T.EvidenceHash = coalesce((
-						select	string_agg(ResultUid, '|') as Results 
+						select	string_agg(cast(ResultUid as nvarchar(max)), '|') as Results 
 						from	(
 								select	top 100 percent 
 										R.value as ResultUid
@@ -328,7 +329,7 @@ begin
 		begin try
 			update  T
 			set		T.PriorEvidenceHash = coalesce((
-						select	string_agg(ResultUid, '|') as Results 
+						select	string_agg(cast(ResultUid as nvarchar(max)), '|') as Results 
 						from	(
 								select	top 100 percent 
 										R.value as ResultUid
@@ -430,15 +431,17 @@ begin
 	from	#Scores T
 			cross apply (
 					select	string_agg(
-								cast(MeasureVersionUid as nvarchar(50)) + '|' 
-								+ cast([Value] as nvarchar) + '|' 
-								+ cast(DecimalValue as nvarchar) + '|' 
-								+ cast(AdjustedWeight as nvarchar) + '|' 
-								+ cast(AdjustedMaxWeight as nvarchar) 
-								+ case EvidenceHash 
-									when '' then '' 
-									else '|' + cast(EvidenceHash as nvarchar) 
-								  end, ';') as VersionValueHash
+								cast( 
+									cast(MeasureVersionUid as nvarchar(50)) + '|' 
+									+ cast([Value] as nvarchar) + '|' 
+									+ cast(DecimalValue as nvarchar) + '|' 
+									+ cast(AdjustedWeight as nvarchar) + '|' 
+									+ cast(AdjustedMaxWeight as nvarchar) 
+									+ case EvidenceHash 
+										when '' then '' 
+										else '|' + cast(EvidenceHash as nvarchar) 
+									  end								
+								as nvarchar(max)), ';') as VersionValueHash
 					from	#ScoreItems
 					where	AssetUid = T.AssetUid
 							and EffectiveDate = T.EffectiveDate
@@ -472,7 +475,7 @@ begin
 			inner join (
 				select	T.Uid, DATEADD(dd, -1, S.EffectiveDate) as EndDate
 				from    metrics.Score T
-						inner join #Scores S on T.AllocationUid = @allocationUid and S.AssetUid = T.AssetUid and S.EffectiveDate > T.EffectiveDate and T.EndDate is null			
+						inner join #Scores S on T.AllocationUid = @allocationUid and S.AssetUid = T.AssetUid and S.EffectiveDate > T.EffectiveDate and T.EndDate is null and T.VersionValueHash <> S.VersionValueHash			
 			) V on V.Uid = T.Uid;
 
 	-- Determine if these scores are NOT most recent.
@@ -532,29 +535,29 @@ begin
 	if @scoreType = 1	--Governance
 	begin
 		update	#ScoreItems
-		set		DisplayWeight = cast(metrics.RoundScoreItem(DecimalValue, 3) as decimal(5,3)),
-				DisplayMaxWeight = cast(metrics.RoundScoreItem(AdjustedMaxWeight, 3) as decimal(5,3))
+		set		DisplayWeight = DecimalValue,
+				DisplayMaxWeight = AdjustedMaxWeight
 		where	ParentMeasureUid is null 
 
 		update	C
-		set		C.DisplayWeight = cast(metrics.RoundScoreItem(C.AdjustedWeight*P.AdjustedMaxWeight, 3) as decimal(5,3)),
-				C.DisplayMaxWeight = cast(metrics.RoundScoreItem(C.AdjustedMaxWeight*P.AdjustedMaxWeight, 3) as decimal(5,3))
+		set		C.DisplayWeight = cast((C.AdjustedWeight*P.AdjustedMaxWeight) as decimal(8,6)),
+				C.DisplayMaxWeight = cast((C.AdjustedMaxWeight*P.AdjustedMaxWeight) as decimal(8,6))
 		from	#ScoreItems C
-				inner join #ScoreItems P on P.MeasureUid = C.ParentMeasureUid and P.AssetUid = C.AssetUid-- and P.EffectiveDate = C.EffectiveDate
+				inner join #ScoreItems P on P.MeasureUid = C.ParentMeasureUid and P.AssetUid = C.AssetUid
 	end
 
 	if @scoreType = 2	-- Data Quality
 	begin
 		update	#ScoreItems
-		set		DisplayWeight = cast(metrics.RoundScoreItem(AdjustedWeight, 3) as decimal(5,3)),
-				DisplayMaxWeight = cast(metrics.RoundScoreItem(AdjustedMaxWeight, 3) as decimal(5,3))
+		set		DisplayWeight = AdjustedWeight,
+				DisplayMaxWeight = AdjustedMaxWeight
 		where	ParentMeasureUid is null 
 
 		update	C
-		set		C.DisplayWeight = cast(metrics.RoundScoreItem(C.AdjustedWeight*P.AdjustedMaxWeight, 3) as decimal(5,3)),
-				C.DisplayMaxWeight = cast(metrics.RoundScoreItem(C.AdjustedMaxWeight*P.AdjustedMaxWeight, 3) as decimal(5,3))
+		set		C.DisplayWeight = cast((C.AdjustedWeight*P.AdjustedMaxWeight) as decimal(8,6)), 
+				C.DisplayMaxWeight = cast((C.AdjustedMaxWeight*P.AdjustedMaxWeight) as decimal(8,6))
 		from	#ScoreItems C
-				inner join #ScoreItems P on P.MeasureUid = C.ParentMeasureUid and P.AssetUid = C.AssetUid-- and P.EffectiveDate = C.EffectiveDate
+				inner join #ScoreItems P on P.MeasureUid = C.ParentMeasureUid and P.AssetUid = C.AssetUid
 	end
 
 	-- Update the score value by summing up the root measures' decimal values.

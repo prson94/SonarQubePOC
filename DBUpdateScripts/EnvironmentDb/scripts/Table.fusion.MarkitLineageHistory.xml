@@ -5,21 +5,15 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.fusion.MarkitLineageHistory-v1">
+  <changeSet author="Core" id="Table.fusion.MarkitLineageHistory-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'MarkitLineageHistory')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'MarkitLineageHistory')
 BEGIN
-	CREATE TABLE [fusion].[MarkitLineageHistory](
-		[ID] [int] IDENTITY(1,1) NOT NULL,
-		[Rows] [int] NOT NULL,
-		[TechnicalLineageRows] [int] NOT NULL,
-		[BusinessLineageRows] [int] NOT NULL,
-		[CompletedOn] [datetime] NOT NULL
-	)
+	EXEC sp_rename 'fusion.MarkitLineageHistory', 'MarkitLineageHistory_backup'
 END
 		]]>
     </sql>

@@ -49,13 +49,6 @@
             </div>
         </div>
     </div>
-    <div *ngSwitchCase="PageMode.ViewingAPICredentials">
-        <div class="col s12">
-            <div class="tile tile-detail">
-                <d3s-resource-api hasCloseButton="true" (onClose)="pageMode = PageMode.Default"></d3s-resource-api>
-            </div>
-        </div>
-    </div>
     <div *ngSwitchCase="PageMode.NotFound">
         <div class="col s12">
             <div class="tile tile-detail">
@@ -64,6 +57,8 @@
         </div>
     </div>
 </div>
+
+<d3s-resource-api [isVisible]="isApiKeysPopupVisible" (onClose)="isApiKeysPopupVisible=false"></d3s-resource-api>
 
 
 
