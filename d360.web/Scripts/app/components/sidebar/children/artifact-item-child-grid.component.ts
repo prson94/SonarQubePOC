@@ -5,7 +5,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { ArtifactService } from '../../../services/artifacts.service';
 import { AssetService } from '../../../services/asset.service';
 import { GridDefinitionService } from '../../../services/grid-definition.service';
-import { GridColumn, GridField } from '../../../models/grid-definition.model';
+import { GridColumn, GridField, GridScoreAllocation } from '../../../models/grid-definition.model';
 import { SortOrder } from '../../../models/enums.model';
 import { Artifacts } from '../../../models/artifacts.model';
 import { LazyLoadEvent } from 'primeng/api';
@@ -34,6 +34,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
 
     columns: GridColumn[] = [];
     fields: GridField[] = [];
+    scoreAllocations: GridScoreAllocation[] = [];
     artifacts: Artifacts;
     private searchDelayMilliSeconds: number = 300;
     private simpleSearchID: number = 0;
@@ -102,6 +103,13 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
                 debounceTime(500)).subscribe(res => {
                     this.totalRecords = res.total;
                     this.artifacts = res;
+                    if (this.scoreAllocations && this.scoreAllocations.length > 0) {
+                        res.items.forEach(i => {
+                            this.scoreAllocations.forEach(s => {
+                                i[s.Name + '_threshold'] = this.getThreshold(i[s.Name], s.LowerThreshold, s.UpperThreshold);
+                            });
+                        });
+                    }
 
                     if (this.totalRecords < 1000) {
                         this.useGraph = false;
@@ -111,6 +119,26 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
                     this.ref.markForCheck();
                 });
         });
+    }
+
+    getThreshold(value: string, lower: number, upper: number): string {
+        if (value == null || value.length < 1)
+            return '';
+        if (value.indexOf('%') > -1) {
+            value = value.replace('%', '');
+        }
+        if (isNaN(+value))
+            return '';
+
+        let v = +value;
+
+        if (v <= lower)
+            return 'poor';
+        else if (v > lower && v <= upper)
+            return 'average';
+        else
+            return 'good';
+
     }
 
     getParams() {
@@ -136,6 +164,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
                 this.columns = result.Columns.filter(x => x.datafield != 'Name');
                 /* remove name we want it to be a cool link with tooltip we know its there! */
                 this.fields = result.Fields;
+                this.scoreAllocations = result.ScoreAllocations;
 
                 this.isLoading = false;
                 this.getData();
