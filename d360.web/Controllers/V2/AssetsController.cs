@@ -269,8 +269,11 @@ namespace d360.web.Controllers.V2
                 if (!validator.IsValidOrderDirectionGetAssets(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid order direction passed in the request"));
 
-                if (!validator.IsValidOwnersGetAssets(queryParams))
+                if (!validator.IsValidOwnersGetAssets(queryParams, "_ownedby"))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid user or group uid as owner passed in the request"));
+
+                if (!validator.IsValidOwnersGetAssets(queryParams, "_notownedby"))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid user or group uid as non owner passed in the request"));
 
                 if (!validator.IsValidGetAssets(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid asset Uid in parameters!"));
