@@ -534,7 +534,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 return 0;
         }
 
-        GridColumn getGridColumnForColumn(FieldType item, decimal dynamicFieldWidth, bool serverPaged, bool loadLookupList = true, bool useNameAsDataField = false,bool isCustomField = false)
+        GridColumn getGridColumnForColumn(FieldType item, decimal dynamicFieldWidth, bool serverPaged, bool loadLookupList = true, bool useNameAsDataField = false)
         {
             string cellsFormat = "";
             string columnType = GridColumn.COLUMN_TYPE_STRING;
@@ -652,7 +652,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
             {
                 width = (int)dynamicFieldWidth;
             }
-            var gc = new GridColumn { text = item.FriendlyName, datafield = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat, columnWidth = width, parentFieldTypeID = item.ParentFieldTypeID, canHaveMultipleFilters = canHaveMultipleFilterItems, apiName = item.Name, fieldType = item.Type,isCustomField = isCustomField };
+            var gc = new GridColumn { text = item.FriendlyName, datafield = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat, columnWidth = width, parentFieldTypeID = item.ParentFieldTypeID, canHaveMultipleFilters = canHaveMultipleFilterItems, apiName = item.Name, fieldType = item.Type};
             if (!string.IsNullOrEmpty(item.Category))
             {
                 gc.columngroup = item.Category.Replace(" ", "");
@@ -733,18 +733,18 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
             return fieldType;
         }
 
-        GridField getGridFieldForColumn(FieldType item, bool useNameAsDataField = false, bool isCustomField = false)
+        GridField getGridFieldForColumn(FieldType item, bool useNameAsDataField = false)
         {
-            return new GridField { name = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", type = getGridFieldTypeForColumn(item), apiName = item.Name,isCustomField = isCustomField };
+            return new GridField { name = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", type = getGridFieldTypeForColumn(item), apiName = item.Name};
         }
 
         void parseDynamicColumnsAndFields(List<FieldType> items, List<GridColumn> columns, List<GridField> fields, decimal dynamicFieldWidth, bool serverPaged = false)
         {
             items.ForEach(i =>
             {
-                columns.Add(getGridColumnForColumn(i, dynamicFieldWidth, serverPaged, false, false, true));
+                columns.Add(getGridColumnForColumn(i, dynamicFieldWidth, serverPaged, false));
 
-                fields.Add(getGridFieldForColumn(i, false ,true));
+                fields.Add(getGridFieldForColumn(i));
             });
         }
 
@@ -1094,34 +1094,64 @@ where   h.ID <> @t order by h.[Level] desc;
                 case SystemObjects.ResourceType:
                     #region
 
-                    remainingWidth = 27;
-                    dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
+                    var queryParams = Request.GetQueryNameValuePairs();
+                    bool iscommunityuserresposibility = false;
 
-                    columns.Add(new GridColumn { text = Fields.FirstName_Name, datafield = "FirstName", fieldType = "Text" });
-                    columns.Add(new GridColumn { text = Fields.LastName_Name, datafield = "LastName", fieldType = "Text" });
-                    columns.Add(new GridColumn { text = Fields.Email_Name, datafield = "Email", fieldType = "Text" });
-                    parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
-                    columns.Add(new GridColumn { text = Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F", fieldType = "DateTime" });
-                    columns.Add(new GridColumn { text = "Administrator?", datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, fieldType = "Boolean" });
-                    columns.Add(new GridColumn
+                    if (queryParams.Any(q => q.Key.ToLower() == "iscommunityuserresposibility"))
                     {
-                        text = d360.core.resources.Fields.Status_Name,
-                        datafield = "State",
-                        filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST,
-                        fieldType = "Text",
-                        filteritems = new List<string>() {
-                        CompanyResourceState.Active.ToString(),
-                        CompanyResourceState.Inactive.ToString(),
+                        bool tempbool;
+                        if (!bool.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "iscommunityuserresposibility").Value, out tempbool))
+                        {
+                            iscommunityuserresposibility = false;
+                        }
+                        else
+                        {
+                            iscommunityuserresposibility = tempbool;
+                        }
                     }
-                    });
 
-                    fields.Add(new GridField { name = "IsAdministrator", type = "bool", apiName = "IsAdministrator" });
-                    fields.Add(new GridField { name = "ID", type = "number" });
-                    fields.Add(new GridField { name = "Email", type = "string", apiName = "Email" });
-                    fields.Add(new GridField { name = "FirstName", type = "string", apiName = "FirstName" });
-                    fields.Add(new GridField { name = "LastName", type = "string", apiName = "LastName" });
-                    fields.Add(new GridField { name = "LastLoggedInOn", type = "date", apiName = "LastLoggedInOn" });
-                    fields.Add(new GridField { name = "State", type = "string", apiName = "State" });
+
+                    if (!iscommunityuserresposibility)
+                    {
+                        remainingWidth = 27;
+                        dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
+                        columns.Add(new GridColumn { text = Fields.FirstName_Name, datafield = "FirstName", fieldType = "Text" });
+                        columns.Add(new GridColumn { text = Fields.LastName_Name, datafield = "LastName", fieldType = "Text" });
+                        columns.Add(new GridColumn { text = Fields.Email_Name, datafield = "Email", fieldType = "Text" });
+                        parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
+                        columns.Add(new GridColumn { text = Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F", fieldType = "DateTime" });
+                        columns.Add(new GridColumn { text = "Administrator?", datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, fieldType = "Boolean" });
+                        columns.Add(new GridColumn
+                        {
+                            text = d360.core.resources.Fields.Status_Name,
+                            datafield = "State",
+                            filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST,
+                            fieldType = "Text",
+                            filteritems = new List<string>() {
+                            CompanyResourceState.Active.ToString(),
+                            CompanyResourceState.Inactive.ToString(),
+                        }
+                        });
+                        fields.Add(new GridField { name = "IsAdministrator", type = "bool", apiName = "IsAdministrator" });
+                        fields.Add(new GridField { name = "ID", type = "number" });
+                        fields.Add(new GridField { name = "Email", type = "string", apiName = "Email" });
+                        fields.Add(new GridField { name = "FirstName", type = "string", apiName = "FirstName" });
+                        fields.Add(new GridField { name = "LastName", type = "string", apiName = "LastName" });
+                        fields.Add(new GridField { name = "LastLoggedInOn", type = "date", apiName = "LastLoggedInOn" });
+                        fields.Add(new GridField { name = "State", type = "string", apiName = "State" });
+                    }
+                    else
+                    {
+                        remainingWidth = 27;
+                        dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
+                        columns.Add(new GridColumn { text = "Name", datafield = "FirstName", fieldType = "Text" });
+                        columns.Add(new GridColumn { text = "Owned items", datafield = "OwnedItemCount", fieldType = "number" });
+                        parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
+
+                        fields.Add(new GridField { name = "FirstName", type = "string", apiName = "FirstName" });
+                        fields.Add(new GridField { name = "OwnedItemCount", type = "string", apiName = "OwnedItemCount" });
+
+                    }
                     break;
                     #endregion
             }

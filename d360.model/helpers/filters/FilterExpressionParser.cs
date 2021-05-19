@@ -63,8 +63,19 @@ namespace d360.model.helpers
 
             }
 
+            if (parseType == FilterExpressionParseType.CommunityResposibilityResource)
+            {
+                allowedDefaultFields.Clear();
+                allowedDefaultFields.Add(new DefaultFilter("FirstName", "gr.FirstName + ' ' + gr.LastName", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("OwnedItemCount", "OC.OwnedItemCount", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("State", @"(CASE gr.state 
+                    WHEN 1 THEN 'Active'
+                    WHEN 2 THEN 'InActive'
+                    WHEN 3 THEN 'Deleted' END)", SqlFieldType.Text));
+            }
+
             //Rule results do not have field type db records, so we need to add fields manually
-            if(parseType == FilterExpressionParseType.RuleResults)
+            if (parseType == FilterExpressionParseType.RuleResults)
             {
                 allowedDefaultFields.Clear();
                 allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetClass", "E.EvaluatedAssetTypeClass", SqlFieldType.AssetTypeClass));
@@ -225,7 +236,7 @@ namespace d360.model.helpers
 
             foreach (var token in FilterTokens)
             {
-                if (parseType == FilterExpressionParseType.CustomFields || parseType == FilterExpressionParseType.RuleResults)
+                if (parseType == FilterExpressionParseType.CustomFields || parseType == FilterExpressionParseType.RuleResults || parseType == FilterExpressionParseType.CommunityResposibilityResource)
                 {
                     ParseTokensForCustomFields(sqlParams, sb, token);
                 }
@@ -424,7 +435,8 @@ namespace d360.model.helpers
     {
         CustomFields,
         Relationships,
-        RuleResults
+        RuleResults,
+        CommunityResposibilityResource
     }
 
     public enum SqlFieldType

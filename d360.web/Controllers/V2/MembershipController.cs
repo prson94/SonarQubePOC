@@ -103,6 +103,38 @@ namespace d360.web.Controllers.V2
                 string orderBySQL;
                 long pageSize;
                 long pageNum;
+                bool iscommunityuserresposibility = false;
+                Guid? responsibilitytypeuid = null;
+
+                DynamicParameters dbArgs = new DynamicParameters();
+                List<string> queries = new List<string>();
+                ResourceApiViewModel model = new ResourceApiViewModel();
+                List<string> fieldColumns = new List<string>();
+                List<string> fieldJoins = new List<string>();
+
+                var queryParams = Request.GetQueryNameValuePairs();
+
+                if (queryParams.Any(q => q.Key.ToLower() == "iscommunityuserresposibility"))
+                {
+                    bool tempbool;
+                    if (!bool.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "iscommunityuserresposibility").Value, out tempbool))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Value", $"  {queryParams.ToList().FirstOrDefault(q => q.Key == "iscommunityuserresposibility").Value} is not a valid boolean value")).ConfigureAwait(false);
+                    }
+
+                    iscommunityuserresposibility = tempbool;
+                }
+
+                if (queryParams.Any(q => q.Key.ToLower() == "responsibilitytypeuid"))
+                {
+                    Guid tempguid;
+                    if (!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "responsibilitytypeuid").Value, out tempguid))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Value", $"  {queryParams.ToList().FirstOrDefault(q => q.Key == "responsibilitytypeuid").Value} is not a valid GUID value")).ConfigureAwait(false);
+                    }
+
+                    responsibilitytypeuid = tempguid;
+                }
 
                 var joinBulder = new StringBuilder();
                 joinBulder.Append($@" outer apply (select object,objectid from Asset A1 where A1.Object = 'Resource' and A1.ObjectID = gr.ResourceID) A 
@@ -115,7 +147,51 @@ namespace d360.web.Controllers.V2
                
 
                 var selectBuilder = new StringBuilder();
-                selectBuilder.Append($@"select
+                var countBuilder = new StringBuilder();
+
+                if (iscommunityuserresposibility)
+                {
+                    string sqlStmt = $@"			
+                        drop table if exists #temprsdata;
+
+                        select		OC.ResourceID,
+			                        OC.ResponsibilityTypeID,
+			                        sum(OC.[Count] * OC.AssetCount) as OwnedItemCount
+                        into #temprsdata
+                        from		(
+			                        select		ResponsibilityTypeID,
+						                        ResourceID,
+						                        count(1) as [Count],
+						                        C.Count as AssetCount
+			                        from		ResponsibilityType RT
+                                    inner join  ResponsibilityDetail R on RT.id = r.ResponsibilityTypeID
+			                        cross apply (
+				                        select 
+						                        case when R.ApplyToType = 1 and R.AssetID = 0 then 
+							                        (select count(*) from Asset where AssetTypeID = R.AssetTypeID) 
+						                        else 
+							                        1
+				                        end as [Count]
+			                        ) C
+			                        where		R.IsVisible = 1
+						                        and RT.uid = @ResponsibilityTypeUID
+			                        group by	ResponsibilityTypeID,
+						                        ResourceID,
+						                        C.Count
+			                        ) OC
+                        group by	OC.ResourceID,
+			                        OC.ResponsibilityTypeID;
+
+                    ";
+                    selectBuilder.Append(sqlStmt);
+                    countBuilder.Append(sqlStmt);
+
+                    dbArgs.Add("ResponsibilityTypeUID", responsibilitytypeuid);
+                }
+
+                if (!iscommunityuserresposibility)
+                {
+                    selectBuilder.Append($@"select
                     gr.uid,
                     {(_includeOrganization ? " ao.Uid as OrganizationUid, " : "")} 
                     gr.ResourceID, 
@@ -129,15 +205,23 @@ namespace d360.web.Controllers.V2
                          when 2 then 'InActive'
                          when 3 then 'Deleted' end as State,
                     gr.CreatedOn");
+                }
+                else
+                {
+                    selectBuilder.Append($@"select
+                    gr.ResourceID, 
+                    gr.FirstName + ' ' + gr.LastName FirstName, 
+                    OC.ResponsibilityTypeID,
+                    OC.OwnedItemCount");
+                }
 
-                var countBuilder = new StringBuilder();
-                countBuilder.Append("select count(*) from [reporting].[Global_Resource] gr ");
+                countBuilder.Append("select count(gr.ResourceID) from [reporting].[Global_Resource] gr ");
+                if (iscommunityuserresposibility)
+                {
+                    countBuilder.Append(" inner join #temprsdata OC on OC.ResourceID = gr.ResourceID ");
+                }
 
-                DynamicParameters dbArgs = new DynamicParameters();
-                List<string> queries = new List<string>();
-                ResourceApiViewModel model = new ResourceApiViewModel();
-                List<string> fieldColumns = new List<string>();
-                List<string> fieldJoins = new List<string>();
+
                 Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", _pageSize }, { "_pageNum", _pageNum } };
                 string isValid = isPageSizeAndNumValid(pageParams);
 
@@ -148,7 +232,6 @@ namespace d360.web.Controllers.V2
 
                 var fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
 
-                var queryParams = Request.GetQueryNameValuePairs();
                 getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
 
                 if (Uid != null || ResourceID != null || FirstName != null || LastName != null || State != null || IsAdministrator != null)
@@ -208,7 +291,15 @@ namespace d360.web.Controllers.V2
 
                     if (!string.IsNullOrEmpty(filterValue))
                     {
-                        var filterExpressionParser = new FilterExpressionParser(Company, FilterExpressionParseType.CustomFields, false, true);
+                        FilterExpressionParser filterExpressionParser;
+                        if (!iscommunityuserresposibility)
+                        {
+                            filterExpressionParser = new FilterExpressionParser(Company, FilterExpressionParseType.CustomFields, false, true);
+                        }
+                        else
+                        {
+                            filterExpressionParser = new FilterExpressionParser(Company, FilterExpressionParseType.CommunityResposibilityResource, false, false);
+                        }
                         filterExpressionParser.LoadFieldTypes(fieldTypes, fieldColumns);
                         queries.Add("(" + filterExpressionParser.Parse(filterValue, out Dictionary<string, object> sqlParams, out List<int> filteredFieldIds) + ")");
 
@@ -236,7 +327,15 @@ namespace d360.web.Controllers.V2
                         }
                     }
 
-                    List<string> defaultFields = new List<string> { "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn", "CreatedOn" };
+                    List<string> defaultFields;
+                    if (!iscommunityuserresposibility)
+                    {
+                        defaultFields = new List<string> { "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn", "CreatedOn" };
+                    }
+                    else
+                    {
+                        defaultFields = new List<string> { "FirstName", "OwnedItemCount"};
+                    }
 
                     defaultFields.ForEach(f =>
                     {
@@ -297,7 +396,11 @@ namespace d360.web.Controllers.V2
 
                 string offsetSql = $" {orderBySQL} offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
                 selectBuilder.Append(" from [reporting].[Global_Resource] gr ");
-                
+                if (iscommunityuserresposibility)
+                {
+                    selectBuilder.Append(" inner join #temprsdata OC on OC.ResourceID = gr.ResourceID ");
+                }
+
                 finalSql = $"{selectBuilder} {joinBulder} {whereBuilder} {offsetSql}";
                 countSql = $"{countBuilder} {joinBulder } {whereBuilder}";
 
@@ -308,7 +411,7 @@ namespace d360.web.Controllers.V2
 
                 if (isStreamResponse)
                 {
-                    byte[] xlsResult = GetUsersExcelFromResults(results, fieldTypes);
+                    byte[] xlsResult = GetUsersExcelFromResults(results, fieldTypes, iscommunityuserresposibility);
 
                     var response = createFileResponseMessage(HttpStatusCode.OK, $"Users {System.DateTime.Now.ToShortDateString()}.xlsx", xlsResult);
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
@@ -1373,21 +1476,33 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             }
         }
 
-        private byte[] GetUsersExcelFromResults(IEnumerable<dynamic> results, List<FieldType> fieldTypes)
+        private byte[] GetUsersExcelFromResults(IEnumerable<dynamic> results, List<FieldType> fieldTypes, bool iscommunityuserresposibility)
         {
             List<Tuple<string, string, string>> fieldMap = new List<Tuple<string, string, string>>();
+            if (!iscommunityuserresposibility)
+            {
             fieldMap.Add(new Tuple<string, string, string>("First name", "FirstName", "Text"));
             fieldMap.Add(new Tuple<string, string, string>("Last name", "LastName", "Text"));
             fieldMap.Add(new Tuple<string, string, string>("Email", "Email", "Text"));
             fieldTypes.Where(x => x.IsListable == true).ToList().ForEach(ft =>
-             {
-                 fieldMap.Add(new Tuple<string, string, string>(ft.FriendlyName, ft.Name, ft.Type));
-             });
+            {
+                fieldMap.Add(new Tuple<string, string, string>(ft.FriendlyName, ft.Name, ft.Type));
+            });
             fieldMap.Add(new Tuple<string, string, string>("Created on", "CreatedOn", "Date"));
             fieldMap.Add(new Tuple<string, string, string>("Last logged in on", "LastLoggedInOn", "Date"));
             fieldMap.Add(new Tuple<string, string, string>("Administrator?", "IsAdministrator", "Boolean"));
             fieldMap.Add(new Tuple<string, string, string>("Status", "State", "Text"));
             fieldMap.Add(new Tuple<string, string, string>("User UID", "uid", "Text"));
+            }
+            else
+            {
+                fieldMap.Add(new Tuple<string, string, string>("Name", "FirstName", "Text"));
+                fieldMap.Add(new Tuple<string, string, string>("Owned items", "OwnedItemCount", "Text"));
+                fieldTypes.Where(x => x.IsListable == true).ToList().ForEach(ft =>
+                {
+                    fieldMap.Add(new Tuple<string, string, string>(ft.FriendlyName, ft.Name, ft.Type));
+                });
+            }
 
 
             var document = new SLDocument();

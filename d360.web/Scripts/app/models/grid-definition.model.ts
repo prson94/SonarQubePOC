@@ -6,7 +6,6 @@ export class GridField {
     type: string;
     apiName: string;
     fieldType: string;
-    isCustomField: boolean;
 }
 
 export class GridColumn {
@@ -16,7 +15,6 @@ export class GridColumn {
     type: string;
     description: string;
     columnWidth: number;
-    isCustomField: boolean;
 }
 
 export class GridRelationshipFilterExpression {

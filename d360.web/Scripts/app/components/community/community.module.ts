@@ -10,7 +10,6 @@ import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
-import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 
 import { CommunityComponent } from './community.component';
 import { CommunityResponsibilityCountComponent } from './community-responsibility-count.component';
@@ -42,7 +41,6 @@ import { TableModule } from 'primeng/table';
         D3SSharedModule,
         CoreModule,
         PipesModule,
-        SharedDynamicGridEditorModule,
         SharedGridPagingInfoModule,
     ],
     declarations: [
