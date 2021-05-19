@@ -983,8 +983,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
         var target = event.target as HTMLElement;
         if (!this.elRef.nativeElement.contains(event.target)
             && !this.isInBodyElement(target)
+            && this.condition.field
         ) {
             this.isSelectingValue = false;
+            this.cancel();
         }
     }
 
