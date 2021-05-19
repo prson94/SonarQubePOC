@@ -644,7 +644,9 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
                 this.currentField.Values = [...this.currentField.Values];
 
-                this.currentField.Values.push(null);
+                if (+params.take === res.length) {
+                    this.currentField.Values.push(null);
+                }
 
                 this.isLookupValuesLoading = false;
                 this.cdRef.markForCheck();
