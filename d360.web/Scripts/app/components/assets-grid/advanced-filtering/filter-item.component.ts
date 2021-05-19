@@ -504,6 +504,13 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     loadLookupValues(params: any) {
+        if (this.currentField.Values && this.currentField.Values.length > 0 && !params.filter) {
+            var subData = this.currentField.Values.slice(+params.skip, +params.skip + +params.take);
+            if (!subData.some((x) => !x)) {
+                return;
+            }
+        }
+
         if (this.lazyLoadSubscription) {
             this.lazyLoadSubscription.unsubscribe();
         }
@@ -601,6 +608,13 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     loadRelationshipValues(params: any) {
+        if (this.currentField.Values && this.currentField.Values.length > 0 && !params.filter) {
+            var subData = this.currentField.Values.slice(+params.skip, +params.skip + +params.take);
+            if (!subData.some((x) => !x)) {
+                return;
+            }
+        }
+
         if (this.lazyLoadSubscription) {
             this.lazyLoadSubscription.unsubscribe();
         }
@@ -615,8 +629,9 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.lazyLoadSubscription = this.assetService
             .getAssetsLookupValues(nameAsParam.split("|")[1], params)
             .subscribe((res) => {
-                this.currentField.Values = Array.from({ length: 0 });
-
+                if (!this.currentField.Values || params.filter) {
+                    this.currentField.Values = Array.from({ length: 0 });
+                }
                 let loadedData = [];
 
                 res.forEach((str) => {
@@ -628,6 +643,9 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
 
                 this.currentField.Values = [...this.currentField.Values];
+
+                this.currentField.Values.push(null);
+
                 this.isLookupValuesLoading = false;
                 this.cdRef.markForCheck();
             });
