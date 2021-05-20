@@ -1145,7 +1145,7 @@ namespace d360.web.Controllers.V2
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Filter expression parse error", errorMessage)).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return errorMessageResponse(HttpStatusCode.InternalServerError, "Error retrieving Data Quality Results", ApiMessages.UnknownErrorInvestigatingMessage);
             }

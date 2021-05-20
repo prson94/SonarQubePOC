@@ -7,7 +7,8 @@
   <ItemGroup>
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.1.2" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.24" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Microsoft.WindowsAzure.ConfigurationManager" Version="3.2.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="System.ComponentModel" Version="4.3.0" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
@@ -16,7 +17,7 @@
 	<PackageReference Include="Azure.Storage.Blobs" Version="12.7.0.0" />
     <PackageReference Include="Azure.Storage.Common" Version="12.7.0.0" />
     <PackageReference Include="Azure.Storage.Queues" Version="12.6.0.0" />
-    <PackageReference Include="Dapper" Version="2.0.35" />
+    <PackageReference Include="Dapper" Version="2.0.90" />
 	<PackageReference Include="Elasticsearch.Net" Version="6.0.0.0" />
     <PackageReference Include="Mandrill.net" Version="7.2.0.0" />
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.4.13" />
@@ -58,7 +59,6 @@
     <PackageReference Include="System.Threading.Tasks.Dataflow" Version="5.0.0" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-	<PackageReference Include="Microsoft.WindowsAzure.ConfigurationManager" Version="3.2.3" />
   </ItemGroup>
 
   <ItemGroup>

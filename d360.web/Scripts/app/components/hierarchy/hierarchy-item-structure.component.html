@@ -34,7 +34,6 @@
                 </ng-template>
                 <ng-template pTemplate="header">
                     <tr>
-                        <th style="width:100px"></th>
                         <th *ngFor="let column of columns"
                             [ttSortableColumn]="column.sortable === true ? column.datafield : null">
                             {{column.text}}
@@ -50,9 +49,6 @@
                              let-rowNode
                              let-item="rowData">
                     <tr [ttSelectableRow]="rowNode">
-                        <!--<td class="no-text-overflow">
-                            <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
-                        </td>-->
                         <td class="no-text-overflow" *ngFor="let column of columns; let i = index">
                             <p-treeTableToggler [rowNode]="rowNode" *ngIf="i === 0"></p-treeTableToggler>
                             <d3s-dynamic-field-value [column]="column"

@@ -2868,6 +2868,142 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return resultsModel;
         }
 
+        public async Task<APIExecutionExternalAPIModelResult> GetConnectorStatusItems(IEnumerable<KeyValuePair<string, string>> queryParams, DateTime? _startDate, DateTime? _endDate, Guid? externalId, string component, string status)
+        {
+            string orderDirection = "asc";
+            var includeTotal = true;
+            string orderBySql = "";
+            string offsetSql = "";
+            var parameters = new DynamicParameters();
+            string whereResultCteSql = " ";
+            string StrWhereAnd = "";
+
+            if (_startDate.HasValue)
+            {
+                StrWhereAnd = string.IsNullOrEmpty(StrWhereAnd) ? " where " : " and ";
+                whereResultCteSql = StrWhereAnd + " Createdon >= @_startDate";
+                parameters.Add("@_startDate", _startDate.Value);
+            }
+
+            if (_endDate.HasValue)
+            {
+                StrWhereAnd = string.IsNullOrEmpty(StrWhereAnd) ? " where " : " and ";
+
+                whereResultCteSql += StrWhereAnd + " Createdon <= @_endDate";
+                parameters.Add("@_endDate", _endDate.Value);
+            }
+
+            if (externalId.HasValue)
+            {
+                StrWhereAnd = string.IsNullOrEmpty(StrWhereAnd) ? " where " : " and ";
+
+                whereResultCteSql += StrWhereAnd + " externalId = @externalId";
+                parameters.Add("@externalId", externalId.Value);
+            }
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                StrWhereAnd = string.IsNullOrEmpty(StrWhereAnd) ? " where " : " and ";
+
+                whereResultCteSql += StrWhereAnd + " status = @status";
+                parameters.Add("@status", status);
+            }
+
+            if (!string.IsNullOrEmpty(component))
+            {
+                StrWhereAnd = string.IsNullOrEmpty(StrWhereAnd) ? " where " : " and ";
+
+                whereResultCteSql += StrWhereAnd + " component = @component";
+                parameters.Add("@component", component);
+            }
+
+            if (queryParams.Any(x => x.Key == "_direction"))
+            {
+                string[] allowedDirections = new string[] { "asc", "desc" };
+                var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
+                if (!allowedDirections.Contains(order.Trim().ToLower()))
+                {
+                    return new APIExecutionExternalAPIModelResult
+                    {
+                        Message = "Invalid order direction passed in the request",
+                        StatusCode = HttpStatusCode.BadRequest
+                    };
+                }
+                orderDirection = allowedDirections.Contains(order.Trim().ToLower()) ? order : "asc";
+            }
+
+            if (!queryParams.Any(p => p.Key == "_order"))
+            {
+                orderBySql = $" order by [createdOn] desc, externalid asc";
+            }
+            else
+            {
+
+                var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
+                string[] validOrderByFields = { "status", "externalid", "detail", "component", "createdon" };
+                if (!validOrderByFields.Contains(orderByCol.ToLower()))
+                    return new APIExecutionExternalAPIModelResult
+                    {
+                        Message = "Invalid order passed in the request",
+                        StatusCode = HttpStatusCode.BadRequest
+                    };
+                orderBySql = $" order by {orderByCol} {orderDirection} ";
+            }
+
+            int pageNum = CompanyContext.ParsePageNumber(queryParams, 1);
+            int pageSize = CompanyContext.ParsePageSize(queryParams);
+            string offset = CompanyContext.ParsePageOffsetSql(pageNum, pageSize);
+
+            if (pageSize > 0 || pageNum > 0)
+            {
+                if (pageSize < 1) pageSize = 1;
+                if (pageNum < 1) pageNum = 1;
+
+                offsetSql = $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only ";
+            }
+
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includetotal"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includetotal").Value, out includeTotal);
+            }
+
+            var sql = $@"
+                        SELECT ee.Status
+                              ,ee.externalid
+	                          ,ee.detail
+                              ,ee.component
+                              ,ee.createdOn
+                          FROM [api].[ExecutionExternal] ee
+                          {whereResultCteSql}
+                          {orderBySql}
+                          {offsetSql}
+                        ";
+            var countSQL = $@"
+                        SELECT count(1)
+                          FROM [api].[ExecutionExternal] ee
+                          {whereResultCteSql}
+                        ";
+            var executions = await CompanyContext.QueryAsync<APIExecutionExternalAPIModel>(sql, parameters, ApiTimeout);
+
+            int? count = null;
+            if (includeTotal)
+            {
+                var countresult = await CompanyContext.QueryAsync<int>(countSQL, parameters, ApiTimeout);
+                count = countresult.FirstOrDefault();
+            }
+
+            var resultsModel = new APIExecutionExternalAPIModelResult
+            {
+                items = executions,
+                total = count,
+                pageNum = pageNum,
+                pageSize = pageSize,
+                StatusCode = HttpStatusCode.OK
+            };
+
+            return resultsModel;
+        }
+        
         public void UpsertAssetStyle(int assetTypeId, string foreColor, string backColor, string icon, string objectName = "Tx")
         {
             var style = CompanyContext.GetAssetTypeStyle(assetTypeId);
