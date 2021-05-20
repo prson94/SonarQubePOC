@@ -76,7 +76,7 @@ export class AssetLookupListComponent extends BaseComponent implements OnDestroy
                 this.data = result;
                 this.resources = result.Values
                     .reduce((p, c, i) => {
-                        let idx = p.findIndex((x) => { return x.ResourceName === c.ResourceName });
+                        let idx = p.findIndex((x) => { return x.ResourceName === c.ResourceName; });
                         if (idx === -1) {
                             p.push({
                                 ResourceName: c.ResourceName,
@@ -85,7 +85,7 @@ export class AssetLookupListComponent extends BaseComponent implements OnDestroy
                                 ResourceItemUrl: c.ResourceItemUrl,
                             });
                         } else {
-                            p[idx].ResponsibilityTypes.push(c.ResponsibilityTypeName);
+                            p[parseInt(idx)].ResponsibilityTypes.push(c.ResponsibilityTypeName);
                         }
                         return p;
                     }, [])
@@ -96,7 +96,7 @@ export class AssetLookupListComponent extends BaseComponent implements OnDestroy
                             ResourceUid: x.ResourceUid,
                             ResponsibilityTypes: x.ResponsibilityTypes.sort().join(", "),
                             ResourceItemUrl: x.ResourceItemUrl,
-                        }
+                        };
                     });
                 this.isLoading = false;
                 this.cdRef.markForCheck();
