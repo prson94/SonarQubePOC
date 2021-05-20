@@ -67,6 +67,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
     relationshipFieldIntersectCardinality: string = "";
     relationshipFieldName: string = "";
 
+    minSQLDate = new Date(1753, 0, 1);
+
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
     @ViewChild("multiInput", { static: false }) multiInputRef: MultiInputField;
     @ViewChild("dataTable", { static: false }) dataTable: Table;
@@ -707,16 +709,36 @@ export class FilterItemComponent implements OnInit, OnChanges {
             }
             this.condition.markForDeletion = true;
         }
-
-        this.condition.value = this.rollbackValue1;
-        this.condition.value2 = this.rollbackValue2;
         this.condition.operator = this.rollbackOperator;
         this.currentOperator = this.rollbackOperator;
 
+        this.currentInputType = this.fieldInputType();
+
+        if (this.currentInputType.indexOf("date") !== -1) {
+            this.resetDateFields();
+        }
+        else {
+            this.condition.value = this.rollbackValue1;
+            this.condition.value2 = this.rollbackValue2;
+        }
+
         this.isSelectingValue = false;
+
 
         if (this.multiInputRef) {
             this.multiInputRef.clearTextValue();
+        }
+    }
+
+    private resetDateFields() {
+        if (this.rollbackValue1) {
+            this.condition.value = new Date(this.rollbackValue1);
+        }
+        if (this.rollbackValue2) {
+            this.condition.value2 = new Date(this.rollbackValue2);
+        }
+        else {
+            this.condition.value2 = this.rollbackValue2;
         }
     }
 
@@ -906,7 +928,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     fieldInputType() {
         if (!this.currentOperator) {
-            return;
+            return "";
         }
 
         if (this.condition.field === SystemFields.OwnedByFieldCode) {
@@ -979,7 +1001,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         if (!this.doesNeedValue) {
             return false;
         }
-        if (this.currentInputType.indexOf("multi") !== -1 && this.currentInputType !== "multi-input") {
+        if (this.currentInputType && this.currentInputType.indexOf("multi") !== -1 && this.currentInputType !== "multi-input") {
             return this.isEmpty(this.condition.value) || this.isEmpty(this.condition.value2);
         }
         else {
