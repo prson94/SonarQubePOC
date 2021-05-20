@@ -104,8 +104,8 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
                     this.totalRecords = res.total;
                     this.artifacts = res;
                     if (this.scoreAllocations && this.scoreAllocations.length > 0) {
-                        res.items.forEach(i => {
-                            this.scoreAllocations.forEach(s => {
+                        res.items.forEach((i) => {
+                            this.scoreAllocations.forEach((s) => {
                                 i[s.Name + '_threshold'] = this.getThreshold(i[s.Name], s.LowerThreshold, s.UpperThreshold);
                             });
                         });
@@ -122,22 +122,27 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     }
 
     getThreshold(value: string, lower: number, upper: number): string {
-        if (value == null || value.length < 1)
+        if (value == null || value.length < 1) {
             return '';
+        }
         if (value.indexOf('%') > -1) {
             value = value.replace('%', '');
         }
-        if (isNaN(+value))
+        if (isNaN(+value)) {
             return '';
+        }
 
         let v = +value;
 
-        if (v <= lower)
+        if (v <= lower) {
             return 'poor';
-        else if (v > lower && v <= upper)
+        }
+        else if (v > lower && v <= upper) {
             return 'average';
-        else
+        }
+        else {
             return 'good';
+        }
 
     }
 
