@@ -38,4 +38,34 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Puneet Gupta" id="Table.api.ExecutionExternal-v2">
+    <comment>GOV-14752</comment>
+	<sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] 
+					   where TABLE_SCHEMA = 'api' 
+					   and TABLE_NAME = 'ExecutionExternal' 
+					   and COLUMN_NAME = 'Detail'
+					   and character_maximum_length <= 250 and character_maximum_length > 0)
+			begin
+				alter table api.ExecutionExternal alter column Detail [nvarchar](max) null
+			end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+			if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] 
+					   where TABLE_SCHEMA = 'api' 
+					   and TABLE_NAME = 'ExecutionExternal' 
+					   and COLUMN_NAME = 'Detail'
+					   and character_maximum_length = -1)
+			begin
+				alter table api.ExecutionExternal alter column Detail [nvarchar](250) null
+			end
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

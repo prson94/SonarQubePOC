@@ -19,7 +19,6 @@ namespace d360.core.entities
         public string Status { get; set; }
 
         [DataMember]
-        [Column(TypeName = "varchar"), StringLength(250)]
         public string Detail { get; set; }
 
         [DataMember]
