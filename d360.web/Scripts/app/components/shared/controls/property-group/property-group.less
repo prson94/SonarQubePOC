@@ -2,7 +2,10 @@
 @import "../../../../../../Content/styles/_Variables.less";
 
 .ig-property-group {
-    border-top: 1px solid @ig-grey-t5;
+
+    &.ig-pg-header-line {
+        border-top: 1px solid @ig-grey-t4;
+    }
 
     .ig-pg-header {
         display: inline-flex;
@@ -95,7 +98,6 @@
     }
 
     .pg-collapsable-content {
-
         padding-left: 24px;
         transition: height 200ms ease;
         overflow: hidden;
@@ -105,6 +107,7 @@
         &.no-padding {
             padding-left: 0px;
         }
+
         &.close {
             height: 0px;
             opacity: 0;

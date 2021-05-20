@@ -3,9 +3,9 @@
         <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
     </div>
     <div *ngIf="!isLoading">
-        <div *ngFor="let category of categories">
+        <div *ngFor="let category of categories; let first=first">
             <ng-container *ngIf="useAccordion; else noAccordion">
-                <ig-property-group *ngIf="category.loaded && category.hasData" [expanded]="category.active" [title]="category.name">
+                <ig-property-group *ngIf="category.loaded && category.hasData" [expanded]="category.active" [title]="category.name" [showHeaderLine]="!first">
                     <div readonly>
                         <ig-asset-detail-category [category]="category" [assetUID]="assetUID"></ig-asset-detail-category>
                     </div>
