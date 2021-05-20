@@ -530,6 +530,19 @@ namespace d360.web.Controllers.V2
                         });
                         continue;
                     }
+
+                    string ownershipLookupMessage = ResponsibilityRepository.GetResponsibilityTypeUsedInOwnershipLookupMessage(responsibility, assetType);
+                    if (ownershipLookupMessage != "")
+                    {
+                        results.Add(new ResponsibilityTypeAllocationResponseModel()
+                        {
+                            AssetTypeUid = allocation.AssetTypeUid,
+                            Message = ownershipLookupMessage,
+                            Success = false
+                        });
+                        continue;
+                    }
+
                     results.Add(await ResponsibilityRepository.DeleteAllocation(responsibility, assetType, model.Cascade));
                 }
 

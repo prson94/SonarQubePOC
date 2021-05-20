@@ -129,6 +129,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private maxLengthUpperNumeric = 9999999999;
 
     private disableFieldTypeSelection: boolean = false;
+    public enableListSingleResponsibilityType: boolean = false;
 
     constructor(private fieldsService: FieldsObservableService, private messagesService: MessagesObservableService, private objectDetailService: ObjectDetailService) {
         super();
@@ -422,10 +423,14 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.showDescription = false;
                 this.enableAllowMultipleValues = false;
                 break;
+            case "ownershiplookup":
+                this.showDescription = false;
+                console.log(this.currentType, this.model.FieldType.Type[this.currentType].Definition.ResponsibilityType);
+                this.onEnableListSingleResponsibilityType(Number.isInteger(this.model.FieldType.Type[this.currentType].Definition.ResponsibilityType))
+                break;
             case 'computedownershiplookup':
             case 'json':
             case 'jsonelement':
-            case 'ownershiplookup':
             case 'path':
                 this.showDescription = false;
                 break;
@@ -1457,6 +1462,18 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.FieldType.Type[this.currentType].Search.Suffix = null;
             this.model.FieldType.Type[this.currentType].Search.DisplayOrder = null;
         }
+    }
+
+    onEnableListSingleResponsibilityType(event: boolean) {
+        this.enableListSingleResponsibilityType = event;
+        if (!event) {
+            this.model.FieldType.Type[this.currentType].Definition.ResponsibilityType = null;
+        }
+    }
+
+    public getSelectResponsibilityTypePlaceholder() {
+        //Using a string with space, because if empty string is returned, p-dropdown behaves like there is no placeholder
+        return this.enableListSingleResponsibilityType ? "Value Required" : " ";
     }
 
     private isValidationPatternValid() {

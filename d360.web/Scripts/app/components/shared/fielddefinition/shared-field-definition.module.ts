@@ -16,6 +16,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { SharedModule } from 'primeng/api';
 import { EditorModule } from 'primeng/editor';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { TooltipModule } from "primeng/tooltip";
 
 
 import { CoreModule } from '../core.module';
@@ -53,6 +54,7 @@ import { FieldDefinitionComponent } from './field-definition.component';
         MultiSelectModule,
         SharedModule,
         TableModule,
+        TooltipModule,
     ],
     declarations: [
         FieldTypeForm,

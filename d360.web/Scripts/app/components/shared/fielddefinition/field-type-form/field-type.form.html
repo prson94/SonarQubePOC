@@ -811,6 +811,26 @@
                           active="true"
                           *ngIf="currentType == 'OwnershipLookup'">
             <div class="row">
+                <div class="col s8"
+                     style="margin: 10px 0 0 0; display: flex;">
+                    <p-checkbox binary="true"
+                                name="enableListSingleResponsibilityType"
+                                [ngModel]="enableListSingleResponsibilityType"
+                                (ngModelChange)="onEnableListSingleResponsibilityType($event);"
+                                label="List Single Responsibility Type"></p-checkbox>
+                    <p-dropdown name="selectResponsibilityType"
+                                [required]="enableListSingleResponsibilityType"
+                                [disabled]="!enableListSingleResponsibilityType"
+                                [ngModelOptions]="{standalone: true}"
+                                [options]="lookups.FieldResponsibilityTypes"
+                                [(ngModel)]="model.FieldType.Type[currentType].Definition.ResponsibilityType"
+                                [placeholder]="getSelectResponsibilityTypePlaceholder()"
+                                [style]="{ 'width': '60%' }"
+                                style="padding-left: 10px"
+                                ngDefaultControl></p-dropdown>
+                </div>
+            </div>
+            <div class="row">
                 <div class="col l3 m3 s6"
                      style="margin: 10px 0 10px 0">
                     <p-checkbox binary="true"
@@ -818,32 +838,35 @@
                                 [(ngModel)]="model.FieldType.Type[currentType].Definition.ExpandGroupMembership"
                                 [ngModelOptions]="{standalone: true}"
                                 label="Expand Group Membership?"></p-checkbox>
-                </div>
-                <div class="col l3 m3 s6"
-                     style="margin: 10px 0 10px 0">
+                    <br />
                     <p-checkbox binary="true"
                                 name="displayAssignmentSource"
                                 [(ngModel)]="model.FieldType.Type[currentType].Definition.DisplayAssignmentSource"
                                 [ngModelOptions]="{standalone: true}"
                                 label="Display Assignment Source?"></p-checkbox>
+                    <div class="FieldInstructionsTooltip"
+                         pTooltip="If you have chosen to expand group membership, choosing this option will display the Via column in grids, to identify the group or organization responsible for the addition of users to the list."
+                         [escape]="false"
+                         tooltipPosition="top"
+                         tooltipStyleClass="ig-tooltip">
+                        <i class="fa fa-info-circle"></i>
+                    </div>
                 </div>
-                <div class="col l2 m2 s6"
+                <div class="col l3 m3 s6"
                      style="margin: 10px 0 10px 0">
                     <p-checkbox binary="true"
                                 name="hideFilter"
                                 [(ngModel)]="model.FieldType.Type[currentType].HideFilter"
                                 [ngModelOptions]="{standalone: true}"
                                 label="Hide Grid Filter?"></p-checkbox>
-                </div>
-                <div class="col l2 m2 s6"
-                     style="margin: 10px 0 10px 0">
+                    <br />
                     <p-checkbox binary="true"
                                 name="hideFooter"
                                 [(ngModel)]="model.FieldType.Type[currentType].HideFooter"
                                 [ngModelOptions]="{standalone: true}"
                                 label="Hide Grid Footer?"></p-checkbox>
                 </div>
-                <div class="col l2 m2 s12"
+                <div class="col l3 m3 s6"
                      style="margin: 10px 0 10px 0">
                     <p-checkbox binary="true"
                                 name="hideHeader"

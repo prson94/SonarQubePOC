@@ -23,6 +23,7 @@ namespace d360.model.DataAccessLayer
         ResponsibilityTypeAllocationResponseModel AddAllocation(ResponsibilityType ResponsibiltyType, AssetType AssetType, IEnumerable<int> PermissionsBitMask);
         ResponsibilityTypeAllocationResponseModel EditAllocation(ResponsibilityType responsibility, AssetType assetType, List<int> permissions);
         Task<ResponsibilityTypeAllocationResponseModel> DeleteAllocation(ResponsibilityType responsibility, AssetType assetType, bool cascade);
+        string GetResponsibilityTypeUsedInOwnershipLookupMessage(ResponsibilityType responsibility, AssetType assetType);
         ResponsibilityType GetResponsibilityTypeByUID(Guid uid);
         bool IsValidResponsibilityForAsset(Guid responsibilityUid, Guid assetUid);
         IEnumerable<SecurityAssetModel> GetSecurityAssetModelsForResources(List<Guid> resourceUids, Guid assetUid, Guid responsibilityUid);

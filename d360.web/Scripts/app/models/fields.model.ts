@@ -66,6 +66,7 @@ export class OwnershipLookupSettings {
     ObjectID: number;
     DisplayAssignmentSource: boolean;
     ExpandGroupMembership: boolean;
+    ResponsibilityType: number;
 }
 
 export class FieldType {
@@ -189,6 +190,7 @@ export class Lookups {
     Field_Relationships: SelectItem[];
     Field_CardinalRelationships: SelectItem[];
     Field_CardinalReferenceRelationships: SelectItem[];
+    FieldResponsibilityTypes: SelectItem[];
     ComplexLookupRelations: any[] = [];
     FilteredLookups: any[] = [];
     Field_FieldFromRelRelationships: any[] = [];

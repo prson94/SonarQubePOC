@@ -514,6 +514,15 @@ order by case Object
 
                 if (model == null) throw new NotFoundException("responsibility type relation");
 
+                ResponsibilityType responsibilityType = Company.Filter<ResponsibilityType>(i => i.ID == responsibilityTypeId).FirstOrDefault();
+                AssetType assetType = Company.Filter<AssetType>(i => i.Object == type && i.ObjectID == typeId).FirstOrDefault();
+
+                string ownershipLookupMessage = ResponsibilityRepository.GetResponsibilityTypeUsedInOwnershipLookupMessage(responsibilityType, assetType);
+                if (ownershipLookupMessage != "")
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, "Error Occured!", ownershipLookupMessage);
+                }
+
                 Company.RemoveResponsibilityTypeRelation(model);
 
                 return jsonSuccess("Item successfully removed.", "0", "delete", HttpStatusCode.OK);
