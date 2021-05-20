@@ -320,6 +320,7 @@ namespace d360.model.DataAccessLayer
             bool includeOwnershipLookup = false;
             bool simpleFilterOwnershipOnResource = false;
             bool simpleFilterOwnershipOnSecurityAsset = false;
+            bool isForTreeGrid = false;
 
             if (assetType == null)
                 throw new Exception("Invalid assetType specified");
@@ -408,6 +409,11 @@ namespace d360.model.DataAccessLayer
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includeownershiplookup"))
             {
                 bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includeownershiplookup").Value, out includeOwnershipLookup);
+            }
+
+            if (queryParams.Any(x => x.Key.ToLower() == "isfortreegrid"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "isfortreegrid").Value, out isForTreeGrid);
             }
 
             //check for asset path fields now after include fields have been filtered
@@ -989,7 +995,8 @@ namespace d360.model.DataAccessLayer
                         simpleFilters.Add(simpleFilterOwnership);
                     }
 
-                    if (includeParent)
+                    //do not use simple filter on parent value if response is used for tree grid, otherwise all child items will be matched incorrectly
+                    if (includeParent && !isForTreeGrid)
                     {
                         simpleFilters.Add($"Parent.DisplayValue like @simpleFilter");
                         includeParentInCount = true; // simple filter AND the asset has a parent which posibly impacts the count
@@ -1196,6 +1203,7 @@ namespace d360.model.DataAccessLayer
                     A.UpdatedOn,
                     {(includeCreatedByModifiedBy ? "CA.uid as CreatedByUid," : "")}                    
                     A.CreatedOn,
+                    {(isForTreeGrid ? "LVL.Level as 'Level'," : "")}
                     {(includeParent ? parentFieldSQL : "")}
                     {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
                     {(includeColor ? "ACJ.ColorJson as Color," : "")}
@@ -1214,6 +1222,7 @@ namespace d360.model.DataAccessLayer
                 {string.Join("\n", fieldJoins)}
                 {(includeSegments || hasAssetPathField || whereSql.Contains("Node.") ? " left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID" : "")} 
                 left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
+                {(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
                 {(includeColor ? "cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
                 {(includePermissionDetails ? permissionDetailSQL : "")}
                 {hierarchyParentUidSelect}
@@ -1309,15 +1318,9 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
-            //if we want to include hierarchy items (parents)
+            //if we want to include hierarchy items (parents) for tree grid
             //used in tree grids we want to find all parents from our assets that are included in results
-            bool includeHierarchyItems = false;
-            if (queryParams.Any(x => x.Key.ToLower() == "includehierarchyitems"))
-            {
-                bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "includehierarchyitems").Value, out includeHierarchyItems);
-            }
-
-            if (includeHierarchyItems)
+            if (isForTreeGrid)
             {
                 if (queryParams.Any(x => x.Key.ToLower() == "_simplefilter" || x.Key.ToLower() == "_filter"))
                 {

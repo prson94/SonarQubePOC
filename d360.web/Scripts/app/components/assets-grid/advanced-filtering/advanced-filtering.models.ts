@@ -609,7 +609,7 @@ export class SystemFields {
     public static OwnedByFieldCode: string = "$OwnedBy";
     public static RelationshipFieldCode: string = "$Related";
 
-    public static GetSystemFieldDefinition(): FieldTypeAPIModelFieldCondition[] {
+    public static GetSystemFieldDefinition(gridType: string = "List"): FieldTypeAPIModelFieldCondition[] {
         var fields: FieldTypeAPIModelFieldCondition[] = [];
 
         fields.push({
@@ -646,6 +646,20 @@ export class SystemFields {
 
 
         fields.push(owner);
+        console.log(gridType);
+        if (gridType === "Tree") {
+            var level: FieldTypeAPIModelFieldCondition = {
+                Category: "System Fields",
+                FriendlyName: "Level",
+                Name: "[Level]",
+                Type: new FieldType("Number"),
+                Operators: [],
+                Values: [],
+                IsOwnerField: true,
+                IsSystemField: true
+            };
+            fields.push(level);
+        }
 
         return fields;
     }

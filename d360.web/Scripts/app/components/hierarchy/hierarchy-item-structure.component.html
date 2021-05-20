@@ -1,7 +1,7 @@
 ﻿<div class="row">
-    <div class="col s12">        
+    <div class="col s12">
         <div class="tile tile-detail">
-            <div class="grid-actions-header {{(this.showEditor || this.showDelete || this.isEditing || !isDefinitionLoaded ? 'hidden' : '')}}">
+            <div class="grid-actions-header">
                 <div class="simple-search">
                     <ig-search-field mode="Keypress"
                                      [debounce]="600"
@@ -10,42 +10,42 @@
                                      [infoTooltip]="simpleSearchTooltipHTML">
                     </ig-search-field>
                 </div>
-                <!--<advanced-filtering [loadIdentifier]="gridObject.AssetTypeUID" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
-        <div class="grid-action-buttons">
-            <button *ngIf="showAddButton && hasAddAssetPermissions()"
-                    igButton
-                    pTooltip="Add new asset"
-                    tooltipPosition="top"
-                    tooltipStyleClass="ig-tooltip"
-                    class="ig-button-primary"
-                    icon="fa-plus"
-                    (click)="add()">
-            </button>
+                <advanced-filtering [loadIdentifier]="assetTypeUid" [gridType]="'Tree'" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+                <div class="grid-action-buttons">
+                    <button *ngIf="hasAddAssetPermissions()"
+                            igButton
+                            pTooltip="Add new asset"
+                            tooltipPosition="top"
+                            tooltipStyleClass="ig-tooltip"
+                            class="ig-button-primary"
+                            icon="fa-plus"
+                            (click)="add()">
+                    </button>
 
-            <div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
-                 tooltipPosition="left"
-                 tooltipStyleClass="ig-tooltip">
-                <button igButton
-                        [disabled]="!canExportRecords() || isExportInProgress"
-                        icon="fa-download"
-                        [loading]="isExportInProgress"
-                        (click)="export(false)">
-                </button>
-            </div>
-        </div>-->
+                    <div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+                         tooltipPosition="left"
+                         tooltipStyleClass="ig-tooltip">
+                        <button igButton
+                                [disabled]="!canExportRecords() || isExportInProgress"
+                                icon="fa-download"
+                                [loading]="isExportInProgress"
+                                (click)="export(false)">
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!--<header *ngIf="!showDelete && !showEditor">
-        &nbsp; <d3s-tile-actions [hasAdd]="hasAddAssetPermissions()"
-                                 [hasExport]="true"
-                                 [isExportDisabled]="!canExportRecords()"
-                                 [exportDisabledMessage]="'Export not available for over ' + maxExportRows + ' rows'"
-                                 (addClick)="showAdd(0)"
-                                 (exportClick)="exportExcel(0)"></d3s-tile-actions>
-    </header>
-    <div *ngIf="!showDelete && !showEditor && assetType && assetType.Description && assetType.Description.length >0"
-         [innerHtml]="assetType.Description"
-         class="item-description"></div>-->
+                &nbsp; <d3s-tile-actions [hasAdd]="hasAddAssetPermissions()"
+                                         [hasExport]="true"
+                                         [isExportDisabled]="!canExportRecords()"
+                                         [exportDisabledMessage]="'Export not available for over ' + maxExportRows + ' rows'"
+                                         (addClick)="showAdd(0)"
+                                         (exportClick)="exportExcel(0)"></d3s-tile-actions>
+            </header>
+            <div *ngIf="!showDelete && !showEditor && assetType && assetType.Description && assetType.Description.length >0"
+                 [innerHtml]="assetType.Description"
+                 class="item-description"></div>-->
             <p-treeTable #treeTable
                          *ngIf="!showDelete && !showEditor"
                          [loading]="isLoading"

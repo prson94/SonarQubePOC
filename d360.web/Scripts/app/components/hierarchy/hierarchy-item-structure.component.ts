@@ -19,6 +19,7 @@ import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { TreeTable } from 'primeng/treetable';
 import { V2ApiFilters } from '../../models/asset-search.model';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
+import { Filters } from '../assets-grid/advanced-filtering/advanced-filtering.models';
 
 @Component({
     selector: 'd3s-hierarchy-item-structure',
@@ -29,7 +30,8 @@ import { WebAnalyticsService } from '../../services/web-analytics.service';
         AssetService,
         WebAnalyticsService,
     ],
-    templateUrl: 'hierarchy-item-structure.component.html'
+    templateUrl: 'hierarchy-item-structure.component.html',
+    styleUrls: ['hierarchy-item-structure.component.less']
 })
 
 export class HierarchyItemStructureComponent extends BaseComponent implements OnInit {
@@ -75,8 +77,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     @ViewChild("inputBox", { static: false }) filterText: any;
 
     simpleSearchTooltipHTML: string = `<p>Type to provide a search term. Matches will be found where the value of any column starts with the term or terms provided.</p><p>You can also use wildcards for more control over how the term is matched.
-*account* : Match on values which contain 'account'
-*account : Match on values which end with 'account'</p><p>All matches are case insensitive.</p>`;
+*account* : Match on values which contain 'account'</p><p>All matches are case insensitive.</p>`;
 
     simpleFilterValue: string = '';
 
@@ -215,12 +216,14 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
         let res: TreeNode[] = [];
 
+
         for (let root of rootNodes) {
+            let isExpanded = this.expandedNodes.indexOf(root.AssetUid) !== -1;
             root.Level = levelNumber;
             res.push({
                 key: root.AssetUid,
                 label: root.Path,
-                expanded: false,
+                expanded: isExpanded,
                 data: root,
                 children: (this.buildTreeNodeArray(hierarchies, levelNumber + 1, root.AssetUid))
             });
@@ -428,6 +431,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     }
 
     loadNodes() {
+        this.expandedNodes = this.treeState;
         if (this.assetTypeUid) {
             this.isLoading = true;
 
@@ -436,11 +440,15 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 _includeParent: "true",
                 _pageNum: 1,
                 _loadPermissionDetails: "true",
-                includehierarchyitems: true
+                isForTreeGrid: true
             };
 
             if (this.simpleFilterValue) {
                 uriParams["_simpleFilter"] = "*" + this.simpleFilterValue;
+            }
+
+            if (this.newAdvancedFilters && this.newAdvancedFilters.filter) {
+                uriParams["_filter"] = this.newAdvancedFilters.filter;
             }
 
             this.assetService.getAssets(this.assetTypeUid, uriParams).subscribe((result) => {
@@ -470,6 +478,16 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         else {
             return this.totalRecords <= this.maxExportRows;
         }
+    }
+
+    private newAdvancedFilters: Filters;
+    private advancedFiltersChanged($event) {
+        this.newAdvancedFilters = $event;
+        this.loadNodes();
+    }
+
+    onFiltersLoaded() {
+
     }
 
     expandedNodes: string[] = [];

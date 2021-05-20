@@ -23,6 +23,7 @@ import { Router } from "@angular/router";
 })
 export class AdvancedFilteringComponent implements OnChanges {
     @Input() loadIdentifier: string = "";
+    @Input() gridType: string = "List";
     @Output() onChange = new EventEmitter();
     @Output() onLoad = new EventEmitter();
 
@@ -227,8 +228,8 @@ export class AdvancedFilteringComponent implements OnChanges {
                 tempFields.push(fModel);
             }
         });
-
-        SystemFields.GetSystemFieldDefinition().forEach((f) => {
+        console.log(this.gridType);
+        SystemFields.GetSystemFieldDefinition(this.gridType).forEach((f) => {
             var fModel = f as FieldTypeAPIModelFieldCondition;
             fModel.IsSystemField = true;
             tempFields.push(fModel);
