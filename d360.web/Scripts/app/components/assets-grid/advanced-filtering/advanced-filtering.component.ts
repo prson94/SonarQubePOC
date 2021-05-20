@@ -396,13 +396,22 @@ export class AdvancedFilteringComponent implements OnChanges {
                 newfilter.operator = filter.operator;
                 newfilter.type = filter.type;
                 newfilter.isDefaultFilter = filter.isDefaultFilter;
-                newfilter.value = filter.value;
                 newfilter.isPreloaded = true;
                 newfilter.isConfirmed = true;
                 if (newfilter.type && (newfilter.type.Type.Date || filter.type.Type.DateTime)) {
                     newfilter.value = new Date(filter.value);
                 }
-                newfilter.value2 = filter.value2;
+                else {
+                    newfilter.value = filter.value;
+                }
+
+                if (filter.value2 && newfilter.type && (newfilter.type.Type.Date || filter.type.Type.DateTime)) {
+                    newfilter.value2 = new Date(filter.value2);
+                }
+                else {
+                    newfilter.value2 = filter.value2;
+                }
+
                 loadedFilters.push(newfilter);
             });
             return loadedFilters;

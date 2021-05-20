@@ -62,18 +62,18 @@
                         <ig-number-input igSize="full" [(ngModel)]="condition.value2" [required]="true"></ig-number-input>
                     </ng-container>
 
-                    <ig-date *ngIf="currentInputType === 'date'" [(ngModel)]="condition.value" [appendTo]="'body'" [required]="true"></ig-date>
+                    <ig-date *ngIf="currentInputType === 'date'" [(ngModel)]="condition.value" [appendTo]="'body'" [required]="true" [minDate]="minSQLDate"></ig-date>
                     <ng-container *ngIf="currentInputType === 'multi-date'">
-                        <ig-date [(ngModel)]="condition.value" [appendTo]="'body'" [required]="true"></ig-date>
+                        <ig-date [(ngModel)]="condition.value" [appendTo]="'body'" [required]="true" [minDate]="minSQLDate"></ig-date>
                         <div class="value-separator">and</div>
-                        <ig-date [(ngModel)]="condition.value2" [appendTo]="'body'" [required]="true"></ig-date>
+                        <ig-date [(ngModel)]="condition.value2" [appendTo]="'body'" [required]="true" [minDate]="minSQLDate"></ig-date>
                     </ng-container>
 
-                    <ig-date *ngIf="currentInputType === 'date-time'" [(ngModel)]="condition.value" [showTime]="true" [appendTo]="'body'" [required]="true"></ig-date>
+                    <ig-date *ngIf="currentInputType === 'date-time'" [(ngModel)]="condition.value" [showTime]="true" [appendTo]="'body'" [required]="true" [minDate]="minSQLDate"></ig-date>
                     <ng-container *ngIf="currentInputType === 'multi-date-time'">
-                        <ig-date [(ngModel)]="condition.value" [required]="true" [appendTo]="'body'" [showTime]="true"></ig-date>
+                        <ig-date [(ngModel)]="condition.value" [required]="true" [appendTo]="'body'" [showTime]="true" [minDate]="minSQLDate"></ig-date>
                         <div class="value-separator">and</div>
-                        <ig-date [(ngModel)]="condition.value2" [required]="true" [appendTo]="'body'" [showTime]="true"></ig-date>
+                        <ig-date [(ngModel)]="condition.value2" [required]="true" [appendTo]="'body'" [showTime]="true" [minDate]="minSQLDate"></ig-date>
                     </ng-container>
 
                     <ng-container *ngIf="currentInputType === 'lookup' && currentField && isSelectingValue">
