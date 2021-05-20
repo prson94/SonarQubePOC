@@ -5001,8 +5001,8 @@ SELECT (
         [Route("getAssetTypeObjectAndObjectID/{uid}")]
         public HttpResponseMessage GetObjectandId(Guid uid)
         {
-            var sql = $@"SELECT top 1 Object, ObjectID, Id from AssetType WHERE Uid = '{uid.ToString()}'";
-            var details = Company.Query<dynamic>(sql).Single();
+            var sql = $@"SELECT top 1 Object, ObjectID, Id from AssetType WHERE Uid = @uid";
+            var details = Company.Query<dynamic>(sql, new { uid }).Single();
             return Request.CreateResponse<dynamic>(new { details.Object, details.ObjectID, details.Id });
         }
 
