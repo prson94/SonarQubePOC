@@ -64,6 +64,7 @@ export class OwnershipLookupSettings {
     ID: number;
     Object: string;
     ObjectID: number;
+    DisplayAsList: boolean;
     DisplayAssignmentSource: boolean;
     ExpandGroupMembership: boolean;
     ResponsibilityType: number;

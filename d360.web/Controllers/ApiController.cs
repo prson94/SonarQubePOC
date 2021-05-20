@@ -1530,6 +1530,15 @@ where   h.ID <> @t order by h.[Level] desc;
 
                 if (await AnyComplexLookupGridValues(type, id, ft.ID))
                 {
+                    bool isGrid = true;
+                    if (ft.Type == DataType.OwnershipLookup.ToString() && !string.IsNullOrWhiteSpace(lookup.Definition))
+                    {
+                        FieldTypeOwnershipLookupDefinition lookupdefinition = JsonConvert.DeserializeObject<FieldTypeOwnershipLookupDefinition>(lookup.Definition);
+                        if(lookupdefinition.DisplayAsList == true)
+                        {
+                            isGrid = false;
+                        }
+                    }
                     list.Add(new DetailReadOnlyRowModel
                     {
                         columns = 1,
@@ -1542,7 +1551,7 @@ where   h.ID <> @t order by h.[Level] desc;
                                         HideHeader = (lookup != null) ? lookup.HideHeader : false,
                                         HideFooter = (lookup != null) ? lookup.HideFooter : false,
                                         HideFilter = (lookup != null) ? lookup.HideFilter : false,
-                                        IsComplexLookupGrid = true,
+                                        ComplexLookupType = isGrid ? ComplexLookupType.Grid : ComplexLookupType.List,
                                         LookupObjectID = id,
                                         LookupObjectType = type,
                                         LookupFieldTypeID = ft.ID,
