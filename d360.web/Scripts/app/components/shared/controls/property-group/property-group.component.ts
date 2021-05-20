@@ -17,6 +17,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
     @Input() showMoreInfo: boolean = false;
     @Input() moreInfoHtml: string = "";
     @Input() shouldBePadded: boolean = true;
+    @Input() showHeaderLine: boolean = true;
     @Output() isValid = new EventEmitter();
     invalidCount: number = 0;
     requiredCount: number = 0;

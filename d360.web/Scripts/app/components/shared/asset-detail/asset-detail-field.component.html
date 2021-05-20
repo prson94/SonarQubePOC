@@ -1,40 +1,40 @@
 ﻿<ng-container *ngIf="isArrayValue || fieldDataType == 'tag'; else singleValue">
-    <div *ngIf="fieldDataType != 'tag'">
+    <div *ngIf="fieldDataType != 'tag'" class="ig-value">
         <div *ngFor="let item of field.Values">
-            <d3s-preview-tooltip [objectType]="item.TooltipType" [objectId]="item.TooltipID">
-                <a *ngIf="item.TooltipUrl && field.DataType != 'color'" [href]="item.TooltipUrl" [innerHtml]="(valueCount > 1 ? '&bull; ' : '') + item.Value"></a>
+            <d3s-preview-tooltip [objectType]="item.TooltipType" [objectId]="item.TooltipID" [contentAnchor]="'right'">
+                <a *ngIf="item.TooltipUrl && field.DataType != 'color'" [href]="item.TooltipUrl" [innerHtml]="(valueCount > 1 ? '&bull; ' : '') + item.Value" (click)="$event.preventDefault()"></a>
                 <span *ngIf="!item.TooltipUrl && field.DataType != 'color'" [innerHtml]="item.Value"></span>
                 <d3s-color-display *ngIf="field.DataType =='color'" [url]="item.TooltipUrl" [colorsJSON]="item.Value"></d3s-color-display>
             </d3s-preview-tooltip>
         </div>
     </div>
     <ng-container *ngIf="fieldDataType == 'tag'">
-        <div>
-            <d3s-tag-view [data]="field.Values" [assetUID]="assetUID" [isEditable]="true" [allowAddTag]="true"></d3s-tag-view>
+        <div class="ig-value">
+            <d3s-tag-view [data]="field.Values" [assetUID]="assetUid" [isEditable]="true" [allowAddTag]="true"></d3s-tag-view>
         </div>
     </ng-container>
 </ng-container>
 <ng-template #singleValue>
     <ng-container *ngIf="field.Type == DetailFieldType.Field">
         <ng-container *ngIf="shouldShowEmptyValue; else showFieldValue">
-            <div>{{emptyValue}}</div>
+            <div class="ig-value">{{emptyValue}}</div>
         </ng-container>
         <ng-template #showFieldValue>
             <ng-container [ngSwitch]="fieldDataType">
                 <ng-container *ngSwitchCase="'text'">
-                    <div>{{field.Value}}</div>
+                    <div class="ig-value">{{field.Value}}</div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'path'">
-                    <div [innerHtml]="field.Value | safeHtml"></div>
+                    <div class="ig-value" [innerHtml]="field.Value | safeHtml"></div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'html'">
-                    <div [innerHtml]="field.Value | safeHtml"></div>
+                    <div class="ig-value" [innerHtml]="field.Value | safeHtml"></div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'link'">
-                    <div><a [href]="linkUrl" target="_blank">{{linkName}}<span style="text-decoration:none !important">&nbsp;&nbsp;<i class="fa fa-external-link" pTooltip="This link will open in a new tab" tooltipStyleClass="ig-tooltip" tooltipPosition="top"></i></span></a></div>
+                    <div class="ig-value"><a [href]="linkUrl" target="_blank">{{linkName}}<span style="text-decoration:none !important">&nbsp;&nbsp;<i class="fa fa-external-link" pTooltip="This link will open in a new tab" tooltipStyleClass="ig-tooltip" tooltipPosition="top"></i></span></a></div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'json'">
-                    <div>
+                    <div class="ig-value">
                         <div *ngIf="json == 'Error'; else showJSON">{{field.Value}}</div>
                         <ng-template #showJSON>
                             <ngx-json-view [data]="json"></ngx-json-view>
@@ -42,10 +42,10 @@
                     </div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'number'">
-                    <div>{{formattedNumber}}</div>
+                    <div class="ig-value">{{formattedNumber}}</div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'bool'">
-                    <div>
+                    <div class="ig-value">
                         <ng-container *ngIf="(field.Value || '').toUpperCase() == 'TRUE'">
                             <i class="fa fa-check-circle enabled" title="True"></i> True
                         </ng-container>
@@ -55,18 +55,20 @@
                     </div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'date'">
-                    <div class="FieldDisplayContent">
+                    <div class="ig-value">
                         <div>{{(field.Value | date: dateFormat)}}</div>
                     </div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'datetime'">
-                    <div class="FieldDisplayContent">
+                    <div class="ig-value">
                         <div *ngIf="!isUtcDate">{{(field.Value | utcDate | date: dateTimeFormat)}}</div>
                         <div *ngIf="isUtcDate">{{(field.Value | date: dateTimeFormat)}}</div>
                     </div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'color'">
-                    <d3s-color-display [colorsJSON]="field.Value"></d3s-color-display>
+                    <div class="ig-value">
+                        <d3s-color-display [colorsJSON]="field.Value"></d3s-color-display>
+                    </div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'score'">
                     <span class="ig-colorfield-item grid" style="display: inline-flex !important;">
@@ -77,9 +79,26 @@
                     </span>
                 </ng-container>
                 <ng-container *ngSwitchDefault>
-                    <div>{{field.Value}}</div>
+                    <div class="ig-value">{{field.Value}}</div>
                 </ng-container>
             </ng-container>
+        </ng-template>
+    </ng-container>
+    <ng-container *ngIf="field.Type == DetailFieldType.Tooltip">
+        <d3s-preview-tooltip *ngIf="field.TooltipContext == 'Preview'; else listTooltip" [objectType]="field.TooltipType" [objectId]="field.TooltipID">
+            <a (click)="navigate(field.TooltipUrl)">{{field.Value}}</a>
+        </d3s-preview-tooltip>
+        <ng-template #listTooltip>
+            <d3s-lookup-tooltip *ngIf="field.TooltipUrl; else noLinkTooltip" [objectType]="field.TooltipType" [objectId]="field.TooltipID">
+                <a *ngIf="fieldDataType != 'color'" (click)="navigate(field.TooltipUrl)" [innerText]="field.Value"></a>
+                <d3s-color-display *ngIf="fieldDataType == 'color'" (click)="navigate(field.TooltipUrl)" [colorsJSON]="field.Value"></d3s-color-display>
+            </d3s-lookup-tooltip>
+            <ng-template #noLinkTooltip>
+                <d3s-lookup-tooltip [objectType]="field.TooltipType" [objectId]="field.TooltipID">
+                    <span *ngIf="fieldDataType != 'color'" [innerText]="field.Value"></span>
+                    <d3s-color-display *ngIf="fieldDataType == 'color'" [colorsJSON]="field.Value"></d3s-color-display>
+                </d3s-lookup-tooltip>
+            </ng-template>
         </ng-template>
     </ng-container>
     <ng-container *ngIf="field.Type == DetailFieldType.Lookup">
