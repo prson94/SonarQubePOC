@@ -453,7 +453,11 @@ namespace d360.model.helpers
                     int number = 0;
                     if (!int.TryParse(value.ToString(), NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out number))
                     {
-                        throw new FormatException($"Invalid numeric value for field '{field}'");
+                        //parsing of thousands seperator fails on - symbol
+                        if (!int.TryParse(value.ToString(), out number))
+                        {
+                            throw new FormatException($"Invalid numeric value for field '{field}'");
+                        }
                     }
                     value = number;
                     break;
