@@ -1309,6 +1309,31 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+            //if we want to include hierarchy items (parents)
+            //used in tree grids we want to find all parents from our assets that are included in results
+            bool includeHierarchyItems = false;
+            if (queryParams.Any(x => x.Key.ToLower() == "includehierarchyitems"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "includehierarchyitems").Value, out includeHierarchyItems);
+            }
+
+            if (includeHierarchyItems)
+            {
+                if (queryParams.Any(x => x.Key.ToLower() == "_simplefilter" || x.Key.ToLower() == "_filter"))
+                {
+                    var assetUids = results.Select(x => x.AssetUid).ToList();
+                    var allParents = GetAllParentsAssetUid(assetUids).Distinct().ToList();
+
+                    if (allParents.Count > 0)
+                    {
+                        var par = queryParams.Where(k => k.Key.ToLower() != "_simplefilter" && k.Key.ToLower() != "_filter" && k.Key.ToLower() != "includehierarchyitems").ToList();
+                        par.Add(new KeyValuePair<string, string>("_assetUid", string.Join(",", allParents)));
+                        var fammilyAssets = await GetAssets(assetType, par);
+                        results = results.Union(fammilyAssets.items).ToList();
+                    }
+                }
+            }
+
             model.items = results;
 
             return model;
@@ -1422,17 +1447,17 @@ namespace d360.model.DataAccessLayer
                     var parent = CompanyContext.AssetTypes.FirstOrDefault(x => x.Object == hierarchy.Subject && x.ObjectID == hierarchy.SubjectID);
                     if (parent != null)
                     {
-                       columnName = isChildItem ? "Parent " + parent.Name + " Name" : parent.Name;
-                       ParentAssetTypeUidHeading = parent.Name + " UID";
+                        columnName = isChildItem ? "Parent " + parent.Name + " Name" : parent.Name;
+                        ParentAssetTypeUidHeading = parent.Name + " UID";
                     }
-                        
+
                 }
 
                 fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = columnName });
             }
 
             if (!isChildItem)
-            { 
+            {
                 fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
 
                 fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
@@ -1899,6 +1924,37 @@ namespace d360.model.DataAccessLayer
                 insert into #family 
                 select 
                 uid as AssetUid from family_cte
+                --GET ALL PARENT
+                ;with family_cte as (
+                select a2.uid,ADV.DisplayValue
+                from graph.assetnode an
+                inner join graph.AssetEdge edge2 on edge2.$to_id = an.$node_id and edge2.PredicateType = 4
+                inner join graph.AssetNode rel2 on rel2.$node_id = edge2.$from_id
+                inner join asset a2 on a2.uid = rel2.Uid
+                cross apply GetAssetDisplayValueById(a2.ID)ADV
+                where an.Uid in @assetUid
+                union all
+                select a2.uid, ADV.DisplayValue
+                from family_cte fam, graph.assetnode an
+                inner join graph.AssetEdge edge2 on edge2.$to_id = an.$node_id and edge2.PredicateType = 4
+                inner join graph.AssetNode rel2 on rel2.$node_id = edge2.$from_id
+                inner join asset a2 on a2.uid = rel2.Uid
+                cross apply GetAssetDisplayValueById(a2.ID)ADV
+                where an.Uid = fam.uid)
+                insert into #family 
+                select 
+                uid as AssetUid from family_cte
+                select * from #family";
+
+            return CompanyContext.Query<Guid>(sql, new { assetUid = uids }, ApiTimeout).AsList();
+        }
+
+        private List<Guid> GetAllParentsAssetUid(List<dynamic> uids)
+        {
+            var sql = $@"drop table if exists #family
+                create table #family(
+                 AssetUid uniqueidentifier
+                )
                 --GET ALL PARENT
                 ;with family_cte as (
                 select a2.uid,ADV.DisplayValue
@@ -3003,7 +3059,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
             return resultsModel;
         }
-        
+
         public void UpsertAssetStyle(int assetTypeId, string foreColor, string backColor, string icon, string objectName = "Tx")
         {
             var style = CompanyContext.GetAssetTypeStyle(assetTypeId);

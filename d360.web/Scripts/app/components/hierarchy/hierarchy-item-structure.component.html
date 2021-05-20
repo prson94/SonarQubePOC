@@ -1,24 +1,58 @@
 ﻿<div class="row">
     <div class="col s12">        
         <div class="tile tile-detail">
-            <header *ngIf="!showDelete && !showEditor">
-                &nbsp; <d3s-tile-actions [hasAdd]="hasAddAssetPermissions()"
-                                         [hasExport]="true"
-                                         [isExportDisabled]="!canExportRecords()"
-                                         [exportDisabledMessage]="'Export not available for over ' + maxExportRows + ' rows'"
-                                         (addClick)="showAdd(0)"
-                                         (exportClick)="exportExcel(0)"></d3s-tile-actions>
-            </header>
-            <div *ngIf="!showDelete && !showEditor && assetType && assetType.Description && assetType.Description.length >0"
-                 [innerHtml]="assetType.Description"
-                 class="item-description"></div>
-            <d3s-loading [isLoading]="isLoading"></d3s-loading>
+            <div class="grid-actions-header {{(this.showEditor || this.showDelete || this.isEditing || !isDefinitionLoaded ? 'hidden' : '')}}">
+                <div class="simple-search">
+                    <ig-search-field mode="Keypress"
+                                     [debounce]="600"
+                                     (onSearch)="loadNodes()"
+                                     [(ngModel)]="simpleFilterValue"
+                                     [infoTooltip]="simpleSearchTooltipHTML">
+                    </ig-search-field>
+                </div>
+                <!--<advanced-filtering [loadIdentifier]="gridObject.AssetTypeUID" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+        <div class="grid-action-buttons">
+            <button *ngIf="showAddButton && hasAddAssetPermissions()"
+                    igButton
+                    pTooltip="Add new asset"
+                    tooltipPosition="top"
+                    tooltipStyleClass="ig-tooltip"
+                    class="ig-button-primary"
+                    icon="fa-plus"
+                    (click)="add()">
+            </button>
+
+            <div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+                 tooltipPosition="left"
+                 tooltipStyleClass="ig-tooltip">
+                <button igButton
+                        [disabled]="!canExportRecords() || isExportInProgress"
+                        icon="fa-download"
+                        [loading]="isExportInProgress"
+                        (click)="export(false)">
+                </button>
+            </div>
+        </div>-->
+            </div>
+
+            <!--<header *ngIf="!showDelete && !showEditor">
+        &nbsp; <d3s-tile-actions [hasAdd]="hasAddAssetPermissions()"
+                                 [hasExport]="true"
+                                 [isExportDisabled]="!canExportRecords()"
+                                 [exportDisabledMessage]="'Export not available for over ' + maxExportRows + ' rows'"
+                                 (addClick)="showAdd(0)"
+                                 (exportClick)="exportExcel(0)"></d3s-tile-actions>
+    </header>
+    <div *ngIf="!showDelete && !showEditor && assetType && assetType.Description && assetType.Description.length >0"
+         [innerHtml]="assetType.Description"
+         class="item-description"></div>-->
             <p-treeTable #treeTable
+                         *ngIf="!showDelete && !showEditor"
+                         [loading]="isLoading"
                          [pageLinks]="3"
                          [paginator]="true"
                          [rows]="rowsPerPage"
                          [rowsPerPageOptions]="defaultPagingOptions"
-                         *ngIf="!isLoading && !showDelete && !showEditor"
                          [value]="treeNodeArray"
                          selectionMode="single"
                          [(selection)]="selected"
@@ -26,12 +60,9 @@
                          [style]="{'line-height':'25px'}"
                          [globalFilterFields]="filterColumns"
                          (onFilter)="expandNodes()"
-                         dataKey="AssetUid">
-                <ng-template pTemplate="caption">
-                    <div>
-                        <input type="text" #inputBox pInputText placeholder="Search" (input)="treeTable.filterGlobal($event.target.value, 'contains')" style="width: 100%;margin-bottom:10px;">
-                    </div>
-                </ng-template>
+                         dataKey="AssetUid"
+                         (onNodeExpand)="nodeExpanded($event)"
+                         (onNodeCollapse)="nodeCollapsed($event)">
                 <ng-template pTemplate="header">
                     <tr>
                         <th *ngFor="let column of columns"
