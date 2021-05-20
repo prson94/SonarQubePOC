@@ -1,4 +1,5 @@
 ﻿using d360.core.entities;
+using d360.core.queue;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,5 +33,6 @@ namespace d360.model.DataAccessLayer
         List<ResponsibilityRuleUpsertResponseModel> UpsertResponsibilityRules(Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> responsibilityRules, ApiExecution execution);
         Task<List<ResponsibilityRuleDeleteResponse>> DeleteResponsibilityRules(Guid responsibilityTypeUid, List<Guid> rulesForDeletion);
 
+        Task<ApiExecutionInfo> PostBatchResponsibilityOverride(List<BulkResponsibilityOverridePostModel> models, ApiExecution execution);
     }
 }

@@ -958,4 +958,30 @@ namespace d360.core.entities
         [DataMember(Name = "success")]
         public bool Success { get; set; }
     }
+
+    public class BulkResponsibilityOverridePostModel : IExecutionItem
+    {
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+        [DataMember]
+        public Guid AssetUid { get; set; }        
+        [DataMember]
+        public Guid ResponsibilityTypeUid { get; set; }
+        [DataMember]
+        public Guid AssignedUid { get; set; }
+        [DataMember]
+        public string Description { get; set; }
+    }
+
+    public class BulkResponsibilityOverrideResponseModel : IExecutionItem
+    {
+        [DataMember(Name = "itemNumber")]
+        public int ItemNumber { get; set; }
+        [DataMember(Name = "executionItemUid")]
+        public Guid? ExecutionItemUid { get; set; }
+        [DataMember(Name = "message")]
+        public string Message { get; set; }        
+        [DataMember(Name = "success")]
+        public bool Success { get; set; }
+    }
 }

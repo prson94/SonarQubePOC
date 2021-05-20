@@ -11193,6 +11193,368 @@ EG.GroupUid
                 
             return results;
         }
+
+        public List<BulkResponsibilityOverrideResponseModel> BulkInsertResponsibilityOverride(List<BulkResponsibilityOverridePostModel> request, ApiExecution execution, int timeout = 3600)
+        {
+            var swBegin = Stopwatch.StartNew();
+            TelemetryClient client = new TelemetryClient();
+            const string METHOD_NAME = "BulkInsertResponsibilityOverride";
+            bool isLog = true; // trace info for all assets is extermely useful
+
+            DynamicParameters dbArgs = new DynamicParameters();
+            bool generalChecksCompleted = false;
+            int itemNumber = 1;
+            List<BulkResponsibilityOverrideResponseModel> results = new List<BulkResponsibilityOverrideResponseModel>();
+            CurrentExecutionLocationModel currentLocation = null;
+            var metrics = new Dictionary<string, double>();
+            var sw = Stopwatch.StartNew();
+            var step = 0;
+
+            var dups = request.Where(i => i.ExecutionItemUid.HasValue && i.ExecutionItemUid.Value != Guid.Empty).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+
+            var dupRecords = request.GroupBy(i => new { i.AssetUid, i.ResponsibilityTypeUid, i.AssignedUid }).Where(i => i.Count() > 1).Select(i => new { keyFields = i.Key, Count = i.Count() }).ToList();
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
+            AddMeasurement(metrics, "Checks for duplicates in load", sw.ElapsedMilliseconds, ++step);
+
+            sw.Restart();
+
+            if (dups.Any() || dupRecords.Any())
+            {
+
+                if (dups.Any())
+                {
+                    execution.ErrorMessage = $"Duplicate Execution Item Identifiers: {string.Join(", ", dups.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
+                }
+                else
+                {
+                    execution.ErrorMessage = $"Duplicate Records: {string.Join(", ", dupRecords.Select(i => $"AssetUid: {i.keyFields.AssetUid}, ResponsibilityTypeUid: {i.keyFields.ResponsibilityTypeUid}, AssignedUid: {i.keyFields.AssignedUid}"))}. AssetUid, ResponsibilityTypeUid, AssignedUid are key fields and the combination must be unique within a batch.";
+                }
+
+                results.AddRange(request.Select(i => new BulkResponsibilityOverrideResponseModel { ExecutionItemUid = execution.ExecutionID, Message = execution.ErrorMessage, Success = false }));
+            }
+            else
+            {
+                try
+                {
+                    currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionResponsibilityTypeRelationOverrideItem");
+
+                    AddMeasurement(metrics, "Getting execution current location", sw.ElapsedMilliseconds, ++step);
+                    sw.Restart();
+
+                    if (currentLocation.HighestItemNumberProcessed > 0)
+                    {
+                        results.AddRange(
+                            Query<BulkResponsibilityOverrideResponseModel>(
+                                $"select * from api.ExecutionResponsibilityTypeRelationOverrideItem where ExecutionID = @ExecutionID and ItemNumber <= {currentLocation.HighestItemNumberProcessed}",
+                                new { execution.ExecutionID }
+                            )
+                        );
+                    }
+
+                    #region Build data tables.
+                    var ResponsibilityTypeRelationOverrideTable = new DataTable();
+
+                    ResponsibilityTypeRelationOverrideTable.Columns.Add("ExecutionID", typeof(Guid));
+                    ResponsibilityTypeRelationOverrideTable.Columns.Add("ItemNumber", typeof(int));
+                    ResponsibilityTypeRelationOverrideTable.Columns.Add("ExecutionItemUid", typeof(Guid));
+                    ResponsibilityTypeRelationOverrideTable.Columns.Add("ResponsibilityTypeUid", typeof(Guid));
+                    ResponsibilityTypeRelationOverrideTable.Columns.Add("AssetUid", typeof(Guid));
+                    ResponsibilityTypeRelationOverrideTable.Columns.Add("SecurityAssetUid", typeof(Guid));
+                    ResponsibilityTypeRelationOverrideTable.Columns.Add("Context", typeof(string));
+                    ResponsibilityTypeRelationOverrideTable.Columns.Add("Message", typeof(string));
+                    ResponsibilityTypeRelationOverrideTable.Columns.Add("Success", typeof(bool));
+
+                    #region Populate Data Tables
+                    foreach (var item in request)
+                    {
+                        var row = ResponsibilityTypeRelationOverrideTable.NewRow();
+
+                        row["ExecutionID"] = execution.ExecutionID;
+                        row["ItemNumber"] = itemNumber;
+                        if (item.ExecutionItemUid.HasValue)
+                        {
+                            row["ExecutionItemUid"] = item.ExecutionItemUid;
+                        }
+                        else
+                        {
+                            row["ExecutionItemUid"] = DBNull.Value;
+                        }
+                        row["ResponsibilityTypeUid"] = item.ResponsibilityTypeUid;
+                        row["AssetUid"] = item.AssetUid;
+
+                        row["SecurityAssetUid"] = item.AssignedUid;
+                        row["Context"] = item.Description;
+
+                        ResponsibilityTypeRelationOverrideTable.Rows.Add(row);                        
+
+                        itemNumber++;
+                    }
+                    #endregion
+                    #region Bulk Copy
+
+                    if (Database.Connection.State != ConnectionState.Open)
+                        Connection.Open();
+
+                    using (var transaction = Connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            #region Bulk Copy Data Profile
+                            using (var bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction)
+                            {
+                                BatchSize = ResponsibilityTypeRelationOverrideTable.Rows.Count,
+                                DestinationTableName = "[api].[ExecutionResponsibilityTypeRelationOverrideItem]",
+                                BulkCopyTimeout = SqlBulkBatchTimeout
+                            })
+                            {
+                                bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                                bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                                bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                                bulkCopy.ColumnMappings.Add("ResponsibilityTypeUid", "ResponsibilityTypeUid");
+                                bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
+                                bulkCopy.ColumnMappings.Add("SecurityAssetUid", "SecurityAssetUid");
+                                bulkCopy.ColumnMappings.Add("Context", "Context");
+
+                                bulkCopy.WriteToServer(ResponsibilityTypeRelationOverrideTable);
+                            }
+                            #endregion                            
+
+                            transaction.Commit();
+
+                            AddMeasurement(metrics, "BulkCopy to api.Execution table", sw.ElapsedMilliseconds, ++step);
+                        }
+                        catch (Exception ex)
+                        {
+                            if (transaction != null)
+                            {
+                                transaction.Rollback();
+                            }
+                            throw ex;
+                        }
+
+                    }
+                    #endregion
+
+                    #endregion
+
+                    Connection.Execute($@"
+                        update	api.ExecutionResponsibilityTypeRelationOverrideItem
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'You must provide a valid ResponsibilityTypeUid.'
+                        where	ExecutionID = @ExecutionID and ([ResponsibilityTypeUid] is null or [ResponsibilityTypeUid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER));
+
+                        update	api.ExecutionResponsibilityTypeRelationOverrideItem
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'You must provide a valid AssetUid.'
+                        where	ExecutionID = @ExecutionID and ([AssetUid] is null or [AssetUid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER));
+
+                        update	api.ExecutionResponsibilityTypeRelationOverrideItem
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'You must provide a valid SecurityAssetUid.'
+                        where	ExecutionID = @ExecutionID and ([SecurityAssetUid] is null or [SecurityAssetUid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER));
+
+                        update	ERTROI
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'Asset not found based on AssetUid provided'
+                        from
+                            api.ExecutionResponsibilityTypeRelationOverrideItem ERTROI
+                            left Join
+                            Asset A on ERTROI.AssetUid = A.Uid
+                        where	ExecutionID = @ExecutionID and A.Uid is null;         
+
+                        update	ERTROI
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'ResponsibilityType not found based on ResponsibilityTypeUid provided'
+                        from
+                            api.ExecutionResponsibilityTypeRelationOverrideItem ERTROI
+                            left Join
+                            ResponsibilityType RT on ERTROI.ResponsibilityTypeUid = rt.Uid
+                        where	ExecutionID = @ExecutionID and rt.Uid is null;  
+
+                        update	ERTROI
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'SecurityAsset not found based on SecurityAssetUid provided'
+                        from
+                            api.ExecutionResponsibilityTypeRelationOverrideItem ERTROI
+                            left Join
+                            Asset SA on SA.Uid = ERTROI.SecurityAssetUid and SA.Object in ('Resource', 'Group', 'Organization')
+                        where	ExecutionID = @ExecutionID and SA.Uid is null;
+                        
+                        update	ERTROI
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'Responsibility Type not valid for Asset.'
+                        from
+							api.ExecutionResponsibilityTypeRelationOverrideItem ERTROI
+							inner join ResponsibilityType RT on RT.[uid] = ERTROI.ResponsibilityTypeUid
+							inner join Asset A on A.uid = ERTROI.AssetUid 
+							left join ResponsibilityDetail RD on RD.ResponsibilityTypeID=RT.ID and A.ID = AssetID
+                        where	ExecutionID = @ExecutionID and RD.RuleID is null;						
+
+                        update	ERTROI
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'Responsibility override already exists with AssetUid '+ convert(nvarchar(36), ERTROI.AssetUid) +' and ResponsibilityTypeUid '+ convert(nvarchar(36), ERTROI.ResponsibilityTypeUid) +' and SecurityAssetUid '+ convert(nvarchar(36), ERTROI.SecurityAssetUid)
+                        from
+                            api.ExecutionResponsibilityTypeRelationOverrideItem ERTROI
+                            inner join 
+                            Asset A on ERTROI.AssetUid = A.Uid
+                            inner join 
+                            ResponsibilityType RT on RT.Uid = ERTROI.ResponsibilityTypeUid
+                            inner join
+                            Asset SA on SA.Uid = ERTROI.SecurityAssetUid and SA.Object in ('Resource', 'Group', 'Organization')
+                            inner join
+                            ResponsibilityTypeRelationOverrideItem RTROI on RTROI.ResponsibilityTypeId = RT.ID and RTROI.AssetId = A.Id and RTROI.SecurityAssetId = SA.ObjectId
+                        where ExecutionID = @ExecutionID;",
+                                    new { execution.ExecutionID }, commandTimeout: timeout);
+
+                    AddMeasurement(metrics, "LogResponsibilityTypeRelationOverrideItemErrors", sw.ElapsedMilliseconds, ++step);
+                    sw.Restart();
+
+                    generalChecksCompleted = true;
+                }
+                catch (Exception generalEx)
+                {
+                    generalChecksCompleted = false;
+                    var msg = generalEx.GetFullExceptionData(false);
+                    execution.ErrorMessage = msg;
+                    execution.Processed = 0;
+                    execution.Error = request.Count();
+
+                    results = new List<BulkResponsibilityOverrideResponseModel>();
+                    results.AddRange(request.Select(i => new BulkResponsibilityOverrideResponseModel { ExecutionItemUid = i.ExecutionItemUid, Message = msg, Success = false }));
+                }
+
+                if (generalChecksCompleted)
+                {
+                    int loopSize = 250;
+                    int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
+                    int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
+                    int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
+
+                    for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
+                    {
+                        bool runCompleted = false;
+                        int retryCount = 0;
+
+                        while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+                        {
+                            var querySuffix = $"E.Success is null and E.ExecutionID = @ExecutionID and E.ItemNumber between @beginItemNumber and @endItemNumber";
+                            using (var trans = Connection.BeginTransaction())
+                            {
+                                #region Load valid items into table
+                                try
+                                {
+                                    Connection.Execute($@"
+                                        DROP TABLE IF EXISTS #mergeResultTable
+                                        CREATE TABLE #mergeResultTable (DataProfileId INT, ItemNumber INT) 
+
+                                        MERGE INTO ResponsibilityTypeRelationOverrideItem RTROI
+                                        USING (
+                                                SELECT
+                                                    A.ID as AssetId, 
+                                                    RT.ID as ResponsibilityTypeId, 
+                                                    CASE SA.Object
+                                                        WHEN 'Resource' THEN 'R'
+						                                WHEN 'Group' THEN 'G'
+                                                        WHEN 'Organization' THEN 'O'
+						                                END as SecurityAsset,                                            
+                                                    SA.ObjectID as SecurityAssetId, E.*
+                                                FROM  
+                                                    api.ExecutionResponsibilityTypeRelationOverrideItem E
+                                                INNER JOIN
+                                                    Asset A ON A.Uid = E.AssetUid
+                                                inner join 
+                                                    ResponsibilityType RT on RT.Uid = E.ResponsibilityTypeUid
+                                                inner join
+                                                    Asset SA on SA.Uid = E.SecurityAssetUid and SA.Object in ('Resource', 'Group', 'Organization')
+		                                        WHERE {querySuffix}
+                                                ) ERTROI
+                                        ON (ERTROI.AssetId = RTROI.AssetID AND ERTROI.ResponsibilityTypeId = RTROI.ResponsibilityTypeId and ERTROI.AssetId = RTROI.AssetID)                                        
+                                        WHEN NOT MATCHED THEN
+                                        INSERT
+                                            ([ResponsibilityTypeID]
+                                            ,[AssetID]
+                                            ,[SecurityAsset]
+                                            ,[SecurityAssetID]
+                                            ,[Context]
+                                            ,[UpdatedBy]
+                                            ,[UpdatedOn])
+                                        VALUES
+                                            (ERTROI.ResponsibilityTypeID
+                                            ,ERTROI.AssetID
+                                            ,ERTROI.SecurityAsset
+                                            ,ERTROI.SecurityAssetID
+                                            ,ERTROI.Context
+                                            ,@CurrentResourceID
+                                            ,GETDATE())                               
+                                        OUTPUT  inserted.ID INT, ERTROI.ItemNumber INTO #mergeResultTable;                                                                                   
+                                            ", new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+
+                                    #endregion
+
+                                    // Update success flag.
+                                    Connection.Execute(
+                                        $@"update E 
+                                            set Success = 1 
+                                       From api.ExecutionResponsibilityTypeRelationOverrideItem E
+                                       where {querySuffix};",
+                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+                                    trans.Commit();
+                                    runCompleted = true;
+                                }
+                                catch (Exception ex)
+                                {
+                                    try
+                                    {
+                                        if (trans != null)
+                                        {
+                                            trans.Rollback();
+                                        }
+                                    }
+                                    catch
+                                    {
+                                    }
+
+                                    retryCount++;
+
+                                    if (retryCount > API_V2_RETRY_LIMIT)
+                                    {
+                                        sw.Restart();
+                                        LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionResponsibilityTypeRelationOverrideItem", ex.GetFullExceptionData(false), timeout);
+                                        AddMeasurement(metrics, $"LogLoopExecutionError >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                        sw.Restart();
+                                    }
+                                }
+                            }
+                        }
+
+                        sw.Restart();
+                        results.AddRange(
+                            Query<BulkResponsibilityOverrideResponseModel>(
+                                $"select [ItemNumber],[AssetUid] as uid,[ExecutionItemUid],[Message],[Success] from api.ExecutionResponsibilityTypeRelationOverrideItem where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber ",
+                                new { execution.ExecutionID, beginItemNumber, endItemNumber }
+                            )
+                        );
+                        AddMeasurement(metrics, $"results.AddRange >> BulkResponsibilityOverrideResponse>> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+                        sw.Restart();
+                    }
+                }
+            }
+
+            AddMeasurement(metrics, $"End of Method", swBegin.ElapsedMilliseconds, ++step);
+
+            this.AITrackMetric(client, execution, METHOD_NAME, metrics, isLog);
+
+            if (Database.Connection.State == ConnectionState.Open)
+            {
+                Connection.Close();
+            }
+
+            return results;
+        }
+
         public List<DataProfileDeleteResponse> DeleteDataProfiles(List<AssetDataProfileDeleteModel> models, ApiExecution execution, int timeout = 3600)
         {
             var swBegin = Stopwatch.StartNew();
