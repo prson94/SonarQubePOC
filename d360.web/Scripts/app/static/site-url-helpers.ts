@@ -27,7 +27,7 @@ export class SiteUrlHelpers {
     static SITE_URL_MODEL_ROOT = 'model';
     static SITE_URL_ADMIN_ROOT = 'admin';
     static SITE_URL_HOME_ROOT = 'home';
-    static SITE_URL_GALLERY_ROOT = 'gallery';    
+    static SITE_URL_GALLERY_ROOT = 'gallery';
     static SITE_URL_AUDIT_ROOT = 'sidebar/audit';
     static SITE_URL_DASHBOARD_ROOT = 'dashboard';
     static SITE_URL_FOLLOWERS_ROOT = 'sidebar/followers';
@@ -67,7 +67,7 @@ export class SiteUrlHelpers {
 
     //admin child routes
     static SITE_URL_ADMIN_BULK_LOAD = `load`;
-    static SITE_URL_ADMIN_FUSION = `fusion`;    
+    static SITE_URL_ADMIN_FUSION = `fusion`;
     static SITE_URL_ADMIN_ASSET = `assets`;
     static SITE_URL_ADMIN_ASSET_BUSINESS = `BusinessAsset`;
     static SITE_URL_ADMIN_ASSET_TECHNICAL = `TechnicalAsset`;
@@ -126,7 +126,7 @@ export class SiteUrlHelpers {
         }
         if (objectType.toLowerCase() == "issuetype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES}`;
-        }        
+        }
         if (objectType.toLowerCase() == "responsibilitytype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES}`;
         }
@@ -145,7 +145,12 @@ export class SiteUrlHelpers {
         if (objectType.toLowerCase() == "ruletype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RULES}`;
         }
-
+        if (objectType.toLowerCase() == "resourcetype") {
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES}`;
+        }
+        if (objectType.toLowerCase() == "grouptype") {
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_GROUPS}`;
+        }
         return SiteUrlHelpers.getObjectUrl(objectType, objectId, parentId);
     }
 
