@@ -63,7 +63,7 @@ END
 					   and COLUMN_NAME = 'Detail'
 					   and character_maximum_length = -1)
 			begin
-				alter table api.ExecutionExternal alter column Detail [nvarchar](250) null
+				 alter table api.ExecutionExternal alter column Detail [nvarchar](250) null
 			end
 		]]>
 	</rollback>
