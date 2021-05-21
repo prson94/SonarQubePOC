@@ -81,6 +81,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private scoreTypeOptions: SelectItem[];
     private model: FieldTypeEditorModel;
     private initialItem: FieldTypeEditorModel;
+    private isListable: boolean;
 
     private testPattern: string;
     private testPatternValidationText: string;
@@ -1374,17 +1375,23 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         switch (val) {
             case 'IsDisplayable':
                 if (this.currentType === "OwnershipLookup") {
-                    return ["PolicyType", "TaxonomyType"].indexOf(this.objectType) > 1;
+                    if (this.isListable == true)
+                        return false;
+                    else
+                        return true;
                 }
-                //if (this.model.FieldType.Type['OwnershipLookup'].IsListable) {
-                //    return (['ComplexRelationLookup', 'RefListRelationship'].indexOf(this.currentType) > -1);
-                //}
-                //else
-                    return (['ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship'].indexOf(this.currentType) > -1);
+                else
+                    return (['ComplexRelationLookup', 'RefListRelationship'].indexOf(this.currentType) > -1);
             case 'IsEditable':
                 return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Tag', 'Score'].indexOf(this.currentType) > -1);
             case 'IsListable':
                 if (this.currentType === "OwnershipLookup") {
+                    if (["PolicyType", "TaxonomyType"].indexOf(this.objectType) > -1) {
+                        this.isListable = false;
+                    }
+                    else {
+                        this.isListable = true;
+                    }
                     return ["PolicyType", "TaxonomyType"].indexOf(this.objectType) > -1;
                 }
                 return (['ComplexRelationLookup', 'RefListRelationship', 'Json', 'JSON'].indexOf(this.currentType) > -1
