@@ -120,7 +120,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         let params = { IsCommunityUserResposibility: this.IsCommunityUserResposibility };
 
         this.gridDefinitionService.getGridDefinition(this.objectID, this.objectType, null, null, params).subscribe(
-            result => {
+            (result) => {
                 this.columns = result.Columns;
                 this.fields = result.Fields;
                 if (this.IsCommunityUserResposibility && this.columns && this.columns.length > 3) {

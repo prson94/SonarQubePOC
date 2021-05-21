@@ -27,6 +27,7 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using System.Web.Http;
 using System.Web.Http.Description;
 using static d360.core.entities.Resource;
@@ -81,10 +82,14 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
-        public async Task<IHttpActionResult> GetUsers(Guid? Uid = null, int? ResourceID = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc", string _filter = "", string _simpleFilter = "", bool _includeOrganization = false)
+        public async Task<IHttpActionResult> GetUsers(CancellationToken Cancellationtoken,Guid ? Uid = null, int? ResourceID = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc", string _filter = "", string _simpleFilter = "", bool _includeOrganization = false)
         {
             try
             {
+                if (Cancellationtoken == null)
+                {
+                    Cancellationtoken = CancellationToken.None;
+                }
 
                 var settings = Community.GetCompanySettings();
                 bool IsCurrentUser = false;
@@ -185,6 +190,8 @@ namespace d360.web.Controllers.V2
 			                        ) OC
                         group by	OC.ResourceID,
 			                        OC.ResponsibilityTypeID;
+
+                        create index idx_temprsdata on #temprsdata(ResourceID);
 
                     ";
                     selectBuilder.Append(sqlStmt);
@@ -378,7 +385,15 @@ namespace d360.web.Controllers.V2
                         whereBuilder.Append(" and ");
                     }
                 }
-                List<string> validCols = new List<string> { "uid", "ResourceID", "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn", "State", "CreatedOn" };
+                List<string> validCols;
+                if (!iscommunityuserresposibility)
+                {
+                    validCols = new List<string> { "uid", "ResourceID", "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn", "State", "CreatedOn" };
+                }
+                else
+                {
+                    validCols = new List<string> { "FirstName", "OwnedItemCount"};
+                }
                 validCols.AddRange(fieldTypes.Select(x => x.Name));
 
                 if (validCols.All(x => x.ToLowerInvariant() != _order.ToLowerInvariant()))
@@ -407,8 +422,17 @@ namespace d360.web.Controllers.V2
                 finalSql = $"{selectBuilder} {joinBulder} {whereBuilder} {offsetSql}";
                 countSql = $"{countBuilder} {joinBulder } {whereBuilder}";
 
-                var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs, ApiTimeout);
-                var countResults = await Company.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
+                var results = await Company.Database.Connection.QueryAsync(
+                             new CommandDefinition(finalSql,
+                            cancellationToken: Cancellationtoken,
+                            parameters: dbArgs,
+                            commandTimeout: ApiTimeout));
+
+                int countResults = await Company.Database.Connection.QueryFirstOrDefaultAsync<int>(
+                             new CommandDefinition(countSql,
+                            cancellationToken: Cancellationtoken,
+                            parameters: dbArgs,
+                            commandTimeout: ApiTimeout));
 
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
 
@@ -423,7 +447,7 @@ namespace d360.web.Controllers.V2
                 else
                 {
                     model.items = results;
-                    model.total = countResults.FirstOrDefault();
+                    model.total = countResults;
                     var response = Request.CreateResponse(HttpStatusCode.OK, model);
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
 
