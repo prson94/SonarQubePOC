@@ -55,6 +55,9 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
             this.fieldValue = this.item[colKey];
         }
 
+        if (this.fieldType == 'lookup') {
+            console.log(colKey + ":" + this.fieldValue);
+        }
 
 
         if ((this.fieldType == 'bool') && (typeof this.fieldValue === 'boolean')) {
