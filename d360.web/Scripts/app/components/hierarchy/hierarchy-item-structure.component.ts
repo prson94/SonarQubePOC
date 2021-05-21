@@ -380,7 +380,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     private showHierarchy(asset) {
         this.assetService.getUIDetailsForAssetUID(asset.AssetUid)
-            .subscribe(res => {
+            .subscribe((res) => {
                 let url = SiteUrlHelpers.getObjectUrl(this.object, res.ObjectId, this.objectTypeId);
                 this.router.navigateByUrl(url);
             });
