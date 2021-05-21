@@ -33,6 +33,7 @@ namespace d360.extensions
         string GetFileContentsAsString(string folderName, string fileName);
 
         Task<string> GetFileContentsAsString(string folderName, string fileName, Encoding encoding);
+        Task GetFileStream(string folderName, string fileName, Stream sr);
 
         List<string> ListFilenamesByPrefix(string folderName, string prefix);
 
