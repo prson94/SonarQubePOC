@@ -22,6 +22,8 @@ import { AssetService } from "../../../services/asset.service";
 export class FilterItemComponent implements OnInit, OnChanges {
     @Input() assetTypeUid: string = "";
     @Input() loadIdentifier: string = "";
+    @Input() gridType: string = "List";
+    @Input() treeMaxLevel: number = 1;
     @Input() condition: AdvancedFilterFieldCondition;
     @Input() fields: FieldTypeAPIModelFieldCondition[] = null;
     @Input() operators: OperatorModel[] = [];
@@ -108,7 +110,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
             });
 
-            SystemFields.GetSystemFieldDefinition().forEach((f) => {
+            SystemFields.GetSystemFieldDefinition(this.gridType, this.treeMaxLevel).forEach((f) => {
                 systemFieldsGroup.items.push({ value: f.Name, label: f.FriendlyName });
             });
 

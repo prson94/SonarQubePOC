@@ -1186,6 +1186,7 @@ namespace d360.model.DataAccessLayer
                 {(includeAssetPathInCount ? " left join graph.AssetNodeDisplayPath Node on Node.id = a.id" : "")} 
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
+                {(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
                 {string.Join("\n", countJoins)}
                 {hierarchyParentUidSelect}
                 {(includeParentInCount ? parentApplySQL : "")}
@@ -1324,15 +1325,21 @@ namespace d360.model.DataAccessLayer
             {
                 if (queryParams.Any(x => x.Key.ToLower() == "_simplefilter" || x.Key.ToLower() == "_filter"))
                 {
-                    var assetUids = results.Select(x => x.AssetUid).ToList();
-                    var allParents = GetAllParentsAssetUid(assetUids).Distinct().ToList();
+                    List<Guid> assetUids = new List<Guid>();
+                    foreach (var item in results)
+                    {
+                        var data = (IDictionary<string, object>)item;
+                        assetUids.Add(Guid.Parse(data["AssetUid"].ToString()));
+                    }
+
+                    var allParents = GetAllParentsAssetUid(assetUids).Distinct().Where(x => !assetUids.Contains(x)).ToList();
 
                     if (allParents.Count > 0)
                     {
-                        var par = queryParams.Where(k => k.Key.ToLower() != "_simplefilter" && k.Key.ToLower() != "_filter" && k.Key.ToLower() != "includehierarchyitems").ToList();
+                        var par = queryParams.Where(k => k.Key.ToLower() != "_simplefilter" && k.Key.ToLower() != "_filter" && k.Key.ToLower() != "isfortreegrid").ToList();
                         par.Add(new KeyValuePair<string, string>("_assetUid", string.Join(",", allParents)));
                         var fammilyAssets = await GetAssets(assetType, par);
-                        results = results.Union(fammilyAssets.items).ToList();
+                        results = results.Union(fammilyAssets.items).ToList().ToList();
                     }
                 }
             }
@@ -1952,7 +1959,7 @@ namespace d360.model.DataAccessLayer
             return CompanyContext.Query<Guid>(sql, new { assetUid = uids }, ApiTimeout).AsList();
         }
 
-        private List<Guid> GetAllParentsAssetUid(List<dynamic> uids)
+        private List<Guid> GetAllParentsAssetUid(List<Guid> uids)
         {
             var sql = $@"drop table if exists #family
                 create table #family(

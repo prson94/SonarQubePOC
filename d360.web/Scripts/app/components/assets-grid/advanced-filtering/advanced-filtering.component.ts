@@ -3,7 +3,7 @@ import * as _ from "lodash";
 import { OperatorModel } from "../../../models/operator.model";
 import { FieldsObservableService } from "../../../services/fieldsObservable.service";
 import { CompanySettingsService } from "../../../services/settings.service";
-import { FieldType, FieldTypeAPIModel, FieldTypeAPIModelField, FieldTypeHelper } from "../../../models/fieldtype-api.model";
+import { FieldType, FieldTypeAPIModelField, FieldTypeHelper } from "../../../models/fieldtype-api.model";
 import { forkJoin, Observable, of } from "rxjs";
 import { AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, FieldTypeAPIModelFieldCondition, Filters, SystemFields } from "./advanced-filtering.models";
 import { DatePipe } from "@angular/common";
@@ -24,6 +24,7 @@ import { Router } from "@angular/router";
 export class AdvancedFilteringComponent implements OnChanges {
     @Input() loadIdentifier: string = "";
     @Input() gridType: string = "List";
+    @Input() treeMaxLevel: number = 1;
     @Output() onChange = new EventEmitter();
     @Output() onLoad = new EventEmitter();
 
@@ -228,8 +229,8 @@ export class AdvancedFilteringComponent implements OnChanges {
                 tempFields.push(fModel);
             }
         });
-        console.log(this.gridType);
-        SystemFields.GetSystemFieldDefinition(this.gridType).forEach((f) => {
+
+        SystemFields.GetSystemFieldDefinition(this.gridType, this.treeMaxLevel).forEach((f) => {
             var fModel = f as FieldTypeAPIModelFieldCondition;
             fModel.IsSystemField = true;
             tempFields.push(fModel);
@@ -423,7 +424,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 
     getQuery() {
         this.filters = this.conditions.getFilters(this.allocations);
-
+        console.log(this.filters.filter);
         this.cdRef.markForCheck();
     }
 

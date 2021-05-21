@@ -403,6 +403,12 @@ export class AdvancedFilterFieldCondition {
             return `'${this.parseDateTimeToString(value, true)}'`;
         }
 
+        if (this.fieldType === "Lookup" && this.field === "[Level]") {
+            if (value) {
+                return `${value}`;
+            }
+        }
+
         if (this.fieldType === "Lookup") {
             if (value.value) {
                 return `'${value.value}'`;
@@ -609,7 +615,7 @@ export class SystemFields {
     public static OwnedByFieldCode: string = "$OwnedBy";
     public static RelationshipFieldCode: string = "$Related";
 
-    public static GetSystemFieldDefinition(gridType: string = "List"): FieldTypeAPIModelFieldCondition[] {
+    public static GetSystemFieldDefinition(gridType: string, maxTreeLevel: number = 1): FieldTypeAPIModelFieldCondition[] {
         var fields: FieldTypeAPIModelFieldCondition[] = [];
 
         fields.push({
@@ -644,20 +650,20 @@ export class SystemFields {
             IsSystemField: true
         };
 
-
-        fields.push(owner);
-        console.log(gridType);
         if (gridType === "Tree") {
             var level: FieldTypeAPIModelFieldCondition = {
                 Category: "System Fields",
                 FriendlyName: "Level",
                 Name: "[Level]",
-                Type: new FieldType("Number"),
+                Type: new FieldType("Lookup"),
                 Operators: [],
                 Values: [],
-                IsOwnerField: true,
                 IsSystemField: true
             };
+
+            for (let i = 1; i <= maxTreeLevel; i++) {
+                level.Values.push({ value: i.toString(), title: i.toString() });
+            }
             fields.push(level);
         }
 

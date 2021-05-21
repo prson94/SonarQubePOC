@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, ViewChild } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { AssetTypeClass, AssetTypeLevelApiModel } from '../../models/asset.model';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -20,6 +20,7 @@ import { TreeTable } from 'primeng/treetable';
 import { V2ApiFilters } from '../../models/asset-search.model';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { Filters } from '../assets-grid/advanced-filtering/advanced-filtering.models';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'd3s-hierarchy-item-structure',
@@ -34,7 +35,7 @@ import { Filters } from '../assets-grid/advanced-filtering/advanced-filtering.mo
     styleUrls: ['hierarchy-item-structure.component.less']
 })
 
-export class HierarchyItemStructureComponent extends BaseComponent implements OnInit {
+export class HierarchyItemStructureComponent extends BaseComponent implements OnInit, OnDestroy {
 
     rowsPerPage: number = 25;
 
@@ -80,6 +81,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 *account* : Match on values which contain 'account'</p><p>All matches are case insensitive.</p>`;
 
     simpleFilterValue: string = '';
+    areAllExpanded: boolean = false;
+    loadNodesSub: Subscription;
 
     constructor(
         private route: ActivatedRoute,
@@ -145,9 +148,14 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 this.levels = result[0].Levels;
                 this.maxLevelAllowed = result[0].HierarchyMaximumDepth;
                 this.load();
-                this.loadNodes();
             });
         });
+    }
+
+    ngOnDestroy() {
+        if (this.loadNodesSub) {
+            this.loadNodesSub.unsubscribe();
+        }
     }
 
     load() {
@@ -218,7 +226,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
 
         for (let root of rootNodes) {
-            let isExpanded = this.expandedNodes.indexOf(root.AssetUid) !== -1;
+            let isExpanded = this.expandedNodes.indexOf(root.AssetUid) !== -1 || this.areAllExpanded;
             root.Level = levelNumber;
             res.push({
                 key: root.AssetUid,
@@ -432,8 +440,13 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     loadNodes() {
         this.expandedNodes = this.treeState;
+        this.areAllExpanded = false;
         if (this.assetTypeUid) {
             this.isLoading = true;
+
+            if (this.loadNodesSub) {
+                this.loadNodesSub.unsubscribe();
+            }
 
             let uriParams: any = {
                 _pageSize: 50000,
@@ -445,13 +458,15 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
             if (this.simpleFilterValue) {
                 uriParams["_simpleFilter"] = "*" + this.simpleFilterValue;
+                this.areAllExpanded = true;
             }
 
             if (this.newAdvancedFilters && this.newAdvancedFilters.filter) {
                 uriParams["_filter"] = this.newAdvancedFilters.filter;
+                this.areAllExpanded = true;
             }
 
-            this.assetService.getAssets(this.assetTypeUid, uriParams).subscribe((result) => {
+            this.loadNodesSub = this.assetService.getAssets(this.assetTypeUid, uriParams).subscribe((result) => {
                 this.totalRecords += result.total;
                 this.buildScoreAllocationThresholds();
                 this.hierarchy = result.items;
@@ -487,7 +502,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     }
 
     onFiltersLoaded() {
-
+        this.loadNodes();
     }
 
     expandedNodes: string[] = [];
