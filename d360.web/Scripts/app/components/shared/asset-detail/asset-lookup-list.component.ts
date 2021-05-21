@@ -94,7 +94,7 @@ export class AssetLookupListComponent extends BaseComponent implements OnDestroy
                         return {
                             ResourceName: x.ResourceName,
                             ResourceUid: x.ResourceUid,
-                            ResponsibilityTypes: x.ResponsibilityTypes.sort().join(", "),
+                            ResponsibilityTypes: x.ResponsibilityTypes.filter((v, i, s) => s.indexOf(v) === i).sort().join(", "),
                             ResourceItemUrl: x.ResourceItemUrl,
                         };
                     });
