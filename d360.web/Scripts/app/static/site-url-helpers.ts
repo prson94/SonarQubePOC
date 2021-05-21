@@ -145,10 +145,10 @@ export class SiteUrlHelpers {
         if (objectType.toLowerCase() == "ruletype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RULES}`;
         }
-        if (objectType.toLowerCase() == "resourcetype") {
+        if (objectType.toLowerCase() === "resourcetype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES}`;
         }
-        if (objectType.toLowerCase() == "grouptype") {
+        if (objectType.toLowerCase() === "grouptype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_GROUPS}`;
         }
         return SiteUrlHelpers.getObjectUrl(objectType, objectId, parentId);
