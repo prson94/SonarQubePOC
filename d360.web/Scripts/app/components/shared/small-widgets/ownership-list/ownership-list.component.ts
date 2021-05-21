@@ -18,17 +18,20 @@ class OwnershipResource {
                 </ul>
                 <a *ngIf="listLength > moreLimit" [innerHtml]="moreText()" (click)="toggleMore($event)"></a>`,
     styles: [`
-        li.nobullet {
-            list-style-type: none;
-            margin-left: -12px;
-        }
-        li.noshow {
-            display: none;
-        }
         ul.ownershiplist {
             padding: 0;
             margin: 0;
             padding-left: 16px;
+        }
+        ul.ownershiplist li {
+            list-style-type: disc;
+        }
+        ul.ownershiplist li.nobullet {
+            list-style-type: none;
+            margin-left: -12px;
+        }
+        ul.ownershiplist li.noshow {
+            display: none;
         }
         ul.ownershiplist li span {
             margin-left: -4px;

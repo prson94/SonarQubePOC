@@ -25,7 +25,7 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
     <TargetFrameworkProfile />
-    <IISExpressSSLPort>
+	<IISExpressSSLPort>
     </IISExpressSSLPort>
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
@@ -1042,6 +1042,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-detail\asset-detail-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-detail\asset-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-detail\asset-lookup-grid.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-detail\asset-lookup-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\calculation\measure-rule-results.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\calculation\score-calculation.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\definition\measure-conditions-details.component.ts" />

@@ -101,7 +101,7 @@
             </ng-template>
         </ng-template>
     </ng-container>
-    <ng-container *ngIf="field.Type == DetailFieldType.Lookup">
+    <ng-container *ngIf="field.Type == DetailFieldType.LookupGrid">
         <ig-asset-lookup-grid    [data]="field.Data"
                                  [hideHeader]="field.HideHeader"
                                  [hideFooter]="field.HideFooter"
@@ -109,5 +109,11 @@
                                  [field]="field"
                                  [assetUid]="assetUid">
         </ig-asset-lookup-grid>
+    </ng-container>
+    <ng-container *ngIf="field.Type == DetailFieldType.LookupList">
+        <ig-asset-lookup-list [data]="field.Data"
+                              [field]="field"
+                              [assetUid]="assetUid">
+        </ig-asset-lookup-list>
     </ng-container>
 </ng-template>

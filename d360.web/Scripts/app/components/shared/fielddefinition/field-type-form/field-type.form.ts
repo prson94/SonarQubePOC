@@ -1471,6 +1471,15 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
     }
 
+    onDisplayAsList(event: boolean) {
+        if (event) {
+            this.model.FieldType.Type[this.currentType].Definition.DisplayAssignmentSource = false;
+            this.model.FieldType.Type[this.currentType].HideFilter = false;
+            this.model.FieldType.Type[this.currentType].HideFooter = false;
+            this.model.FieldType.Type[this.currentType].HideHeader = false;
+        }
+    }
+
     public getSelectResponsibilityTypePlaceholder() {
         //Using a string with space, because if empty string is returned, p-dropdown behaves like there is no placeholder
         return this.enableListSingleResponsibilityType ? "Value Required" : " ";
