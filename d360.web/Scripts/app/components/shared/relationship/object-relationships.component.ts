@@ -225,6 +225,10 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
             var cardinality = this.selected.IsSubject ? this.selected.Object.Cardinality : this.selected.Subject.Cardinality;
 
             this.cardinalityShow = (cardinality === "Many") || (this.selected.Count === 0 && cardinality !== "Many");
+
+            this.readOnly = this.selected.Predicate.Type === "InterTypeHierarchy"
+                || this.selected.Predicate.Type === "IntraTypeHierarchy";
+
             this.hasAdd = this.cardinalityShow
                 && this.hasRelationships
                 && this.selected
