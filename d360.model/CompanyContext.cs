@@ -337,6 +337,17 @@ where	T.[Class] in ({classList})").ToList();
             return list;
         }
 
+        public async Task<IEnumerable<AllowedIntersectionType>> GetAllowedIntersectionTypes(string type, int id)
+        {
+            return await Database.Connection
+                .QueryAsync<AllowedIntersectionType>("GetAllowedIntersectionTypes @SourceType, @SourceTypeID",
+                new
+                {
+                    SourceType = new Dapper.DbString { Value = type, IsAnsi = true, IsFixedLength = true, Length = 50 },
+                    SourceTypeID = id
+                }).ConfigureAwait(false);
+        }
+
         public string GetFormattedFieldLookupValue(int fieldTypeID, string fieldValue)
         {
             return
