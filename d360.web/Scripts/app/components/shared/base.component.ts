@@ -25,6 +25,8 @@ export class BaseComponent {
     public gridStateStorage: string = 'session';
     public maxExportRows = CompanySettings.MaxExcelExportRows;
 
+    readonly resourceTypeUid = '00000001-0000-0000-0000-A00000000011';
+    readonly groupTypeUid = '00000001-0000-0000-0000-B00000000012';
 
     // current object info
     uid: string;
@@ -468,6 +470,14 @@ export class BaseComponent {
     auditContextUrl(): string {
         const blankUid = '00000000-0000-0000-0000-000000000000';
         let uid = this.uid;
+
+        if (this.objectType === "ResourceType") {
+            return `/${this.objectType}/${this.resourceTypeUid}`;
+        }
+
+        if (this.objectType === "GroupType") {
+            return `/${this.objectType}/${this.groupTypeUid}`;
+        }
 
         //Tag needs to be part of the URL for the header to behave
         if (this.objectType == 'Tag') {
