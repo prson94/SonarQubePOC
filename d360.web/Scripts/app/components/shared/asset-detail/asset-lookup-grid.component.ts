@@ -123,8 +123,11 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         return 'string';
     }
 
-    navigate(url: string) {
+    navigate(url: string, e: any) {
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
+        if (e) {
+            e.preventDefault();
+        }
     }
 
     export() {

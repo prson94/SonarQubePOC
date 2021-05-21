@@ -120,152 +120,67 @@ namespace d360.web.Controllers
 
                 if (!string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue)
                 {
-                    if (ft.AllowMultipleValues || !ft.AllowMultipleValues)
+
+                    ro.Values = new List<ReadOnlyFieldValue>();
+                    ro.Value = "values";
+
+                    var items = ((!string.IsNullOrEmpty(value)) ? value.Split(',') : new string[] { });
+                    var itemIds = new List<long>();
+                    var isReference = ft.LookupObjectType == "ReferenceItem";
+                    var tooltipContext = isReference ? TemplateAction.LookupPreview.ToString() : TemplateAction.Preview.ToString();
+                    var lookupUrl = k?.LookupUrl;
+
+                    foreach (var item in items)
                     {
-                        ro.Values = new List<ReadOnlyFieldValue>();
-                        ro.Value = "values";
-
-                        var items = ((!string.IsNullOrEmpty(value)) ? value.Split(',') : new string[] { });
-                        var itemIds = new List<long>();
-
-                        foreach (var item in items)
-                        {
-                            if (long.TryParse(item, out long listId)) itemIds.Add(listId);
-                        }
-
-                        if (itemIds.Count > 0)
-                        {
-                            var lookupItems = await Company.QueryAsync<FieldLookupValue>(@"select FieldTypeID, LookupObjectType, LookupObjectID, Value, Text from fieldlookupvalue where fieldtypeid = @fId and value in @vals order by Text", new { fId = ft.ID, vals = itemIds }).ConfigureAwait(false);
-
-                            if (lookupItems != null)
-                            {
-                                if (LookupFieldHasColorItem(ft))
-                                {
-                                    foreach (var item in lookupItems)
-                                    {
-                                        ro.DataType = "color";
-                                        var detail = Company.GetObjectDetail(ft.LookupObjectType, item.Value);
-                                        var colorData = await Company.QueryFirstOrDefaultAsync<string>($@"SELECT colorJSON FROM Asset A cross apply dbo.GetAssetColorJsonByColor(A.Color) WHERE A.ID = @ID ", new { ID = (detail != null ? detail.AssetID : 0) }).ConfigureAwait(false);
-                                        var obj = JObject.Parse(colorData ?? "{}");
-
-                                        ro.Values.Add(new ReadOnlyFieldValue
-                                        {
-                                            TooltipContext = "Preview",
-                                            TooltipID = item.Value,
-                                            Value = $"[{{\"name\":\"{item.Text}\", \"color\":\"{(string)obj["Value"] ?? "transparent"}\"}}]",
-                                            TooltipType = ft.LookupObjectType,
-                                            TooltipUrl = (detail == null ? "" : detail.Url)
-                                        });
-
-                                    }
-                                }
-                                else
-                                {
-                                    foreach (var item in lookupItems)
-                                    {
-                                        var detail = Company.GetObjectDetail(ft.LookupObjectType, item.Value);
-                                        ro.Values.Add(new ReadOnlyFieldValue
-                                        {
-                                            TooltipContext = "Preview",
-                                            TooltipID = item.Value,
-                                            Value = item.Text,
-                                            TooltipType = ft.LookupObjectType,
-                                            TooltipUrl = (detail == null ? "" : detail.Url)
-                                        });
-                                    }
-                                }
-                            }
-                        }
+                        if (long.TryParse(item, out long listId)) itemIds.Add(listId);
                     }
-                    else
+
+                    if (itemIds.Count > 0)
                     {
-                        bool showPreviewLink = true;
-                        if (k != null)
+                        var lookupItems = await Company.QueryAsync<FieldLookupValue>(@"select FieldTypeID, LookupObjectType, LookupObjectID, Value, Text from fieldlookupvalue where fieldtypeid = @fId and value in @vals order by Text", new { fId = ft.ID, vals = itemIds }).ConfigureAwait(false);
+
+                        if (lookupItems != null)
                         {
-                            if (k.Value == "0")
+                            if (LookupFieldHasColorItem(ft))
                             {
-                                showPreviewLink = false;
-                            }
-                        }
-
-                        if (showPreviewLink)
-                        {
-                            ro.TooltipContext = TemplateAction.LookupPreview.ToString();
-
-                            if (ft.LookupObjectType == "Lookup")
-                            {
-                                if (ft.LookupObjectID.HasValue)
+                                foreach (var item in lookupItems)
                                 {
-                                    ro.TooltipID = ft.LookupObjectID;
-                                }
-                                else
-                                {
-                                    ro.TooltipID = 0;
-                                }
+                                    ro.DataType = "color";
+                                    var detail = Company.GetObjectDetail(ft.LookupObjectType, item.Value);
+                                    var colorData = await Company.QueryFirstOrDefaultAsync<string>($@"SELECT colorJSON FROM Asset A cross apply dbo.GetAssetColorJsonByColor(A.Color) WHERE A.ID = @ID ", new { ID = (detail != null ? detail.AssetID : 0) }).ConfigureAwait(false);
+                                    var obj = JObject.Parse(colorData ?? "{}");
+                                    var url = isReference && !string.IsNullOrEmpty(lookupUrl) ? lookupUrl : detail?.Url ?? "";
 
+                                    ro.Values.Add(new ReadOnlyFieldValue
+                                    {
+                                        TooltipContext = tooltipContext,
+                                        TooltipID = item.Value,
+                                        Value = $"[{{\"name\":\"{item.Text}\", \"color\":\"{(string)obj["Value"] ?? "transparent"}\"}}]",
+                                        TooltipType = ft.LookupObjectType,
+                                        TooltipUrl = url
+                                    });
+
+                                }
                             }
                             else
                             {
-                                if (ft.LookupObjectType == "Artifact" || ft.LookupObjectType == "Taxonomy" || ft.LookupObjectType == "TaxonomyType")
-                                    ro.TooltipContext = TemplateAction.Preview.ToString();
-
-                                if (string.IsNullOrEmpty(value))
+                                foreach (var item in lookupItems)
                                 {
-                                    ro.TooltipID = 0;
-                                }
-                                else
-                                {
-                                    int textValue;
-                                    if (int.TryParse(value, out textValue))
+                                    var detail = Company.GetObjectDetail(ft.LookupObjectType, item.Value);
+                                    var url = isReference && !string.IsNullOrEmpty(lookupUrl) ? lookupUrl : detail?.Url ?? "";
+                                    ro.Values.Add(new ReadOnlyFieldValue
                                     {
-                                        ro.TooltipID = textValue;
-                                    }
+                                        TooltipContext = tooltipContext,
+                                        TooltipID = item.Value,
+                                        Value = item.Text,
+                                        TooltipType = ft.LookupObjectType,
+                                        TooltipUrl = url
+                                    });
                                 }
-                            }
-
-                            ro.TooltipType = ft.LookupObjectType;
-                            if (k != null)
-                            {
-                                if (!string.IsNullOrEmpty(k.LookupUrl))
-                                {
-                                    ro.TooltipUrl = k.LookupUrl;
-                                }
-                                else if (int.TryParse(value, out int val))
-                                {
-                                    var det = Company.GetObjectDetail(k.LookupObjectType, val);
-                                    if (det != null)
-                                    {
-                                        ro.TooltipUrl = det.Url;
-                                    }
-
-                                    if (ft.LookupObjectType == "ReferenceItem")
-                                    {
-                                        var lookupID = ft.LookupObjectID.HasValue ? ft.LookupObjectID : 0;
-                                        var lookupAssetTypeID = (det != null ? det.AssetTypeID : 0);
-
-                                        var colorData = await Company.QueryFirstOrDefaultAsync<string>($@"SELECT colorJSON FROM Asset A cross apply dbo.GetAssetColorJsonByColor(A.Color) WHERE A.ID = @ID ", new { ID = (det != null ? det.AssetID : 0) }).ConfigureAwait(false);
-
-                                        // if we have color data on the current asset otherwise we have to check if other assets in the same type have a color
-                                        if (colorData != null || (Company.Assets.Any(x => x.AssetTypeID == lookupAssetTypeID && x.Color != null)))
-                                        {
-                                            JObject obj = null;
-                                            if (colorData != null)
-                                            {
-                                                obj = JObject.Parse(colorData);
-                                                ro.Value = $"[{{\"name\":\"{formattedValue}\",\"color\":\"{(string)obj["Value"] ?? "transparent"}\"}}]";
-                                            }
-                                            else
-                                            {
-                                                ro.Value = $"[{{\"name\":\"{formattedValue}\",\"color\":\"transparent\"}}]";
-                                            }
-                                            ro.DataType = "color";
-                                        }
-                                    }
-                                }
-
                             }
                         }
                     }
+
                 }
 
                 list.Add(new DetailReadOnlyRowModel
