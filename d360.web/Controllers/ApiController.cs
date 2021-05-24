@@ -1836,6 +1836,11 @@ where   h.ID <> @t order by h.[Level] desc;
         {
             var selected = Company.GetRelationshipFieldItems(fieldTypeID, @object, objectID, offset, rows, query, true);
 
+            if (selected.ContainsKey("RelationshipError"))
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, (string)selected["RelationshipError"]);
+            }
+
             List<System.Web.Mvc.SelectListItem> selection = new List<System.Web.Mvc.SelectListItem>();
 
             if (selected.ContainsKey("Selection"))
