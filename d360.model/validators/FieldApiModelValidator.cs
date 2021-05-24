@@ -146,14 +146,6 @@ namespace d360.model.validators
                 }
 
                 #region IsDisplayable   
-                if (field.Type.ComputedOwnershipLookup != null)
-                {
-                    if (field.Type.ComputedOwnershipLookup.IsDisplayable == false)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. IsDisplayable parameter value must be true for type Ownership Lookup.");
-                    }
-                }
-
                 if (field.Type.ComputedRelationshipLookup != null)
                 {
                     if (field.Type.ComputedRelationshipLookup.IsDisplayable == false)
