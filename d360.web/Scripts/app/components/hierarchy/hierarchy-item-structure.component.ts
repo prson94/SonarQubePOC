@@ -378,8 +378,12 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             return 'good';
     }
 
-    private showHierarchy(id: number) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(this.object, id, this.objectTypeId));
+    private showHierarchy(asset) {
+        this.assetService.getUIDetailsForAssetUID(asset.AssetUid)
+            .subscribe((res) => {
+                let url = SiteUrlHelpers.getObjectUrl(this.object, res.ObjectId, this.objectTypeId);
+                this.router.navigateByUrl(url);
+            });
     }
 
     private expandNodes() {        
@@ -429,7 +433,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 _pageSize: 50000,
                 _includeParent: "true",
                 _pageNum: 1,
-                _loadPermissionDetails: "true"
+                _loadPermissionDetails: "true",
+                _listColorsAsJSON: "true"
             };
 
             this.assetService.getAssets(this.assetTypeUid, uriParams).subscribe((result) => {
