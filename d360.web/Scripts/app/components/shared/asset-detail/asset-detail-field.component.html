@@ -34,7 +34,7 @@
                     <div class="ig-value" [innerHtml]="field.Value | safeHtml"></div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'html'">
-                    <div class="ig-value" [innerHtml]="field.Value | safeHtml"></div>
+                    <div class="ig-value ig-html" [innerHtml]="field.Value | safeHtml"></div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'link'">
                     <div class="ig-value"><a [href]="linkUrl" target="_blank">{{linkName}}<span style="text-decoration:none !important">&nbsp;&nbsp;<i class="fa fa-external-link" pTooltip="This link will open in a new tab" tooltipStyleClass="ig-tooltip" tooltipPosition="top"></i></span></a></div>
@@ -53,10 +53,10 @@
                 <ng-container *ngSwitchCase="'bool'">
                     <div class="ig-value">
                         <ng-container *ngIf="(field.Value || '').toUpperCase() == 'TRUE'">
-                            <i class="fa fa-check-circle enabled" title="True"></i> True
+                            <i class="fa fa-check-circle enabled ig-bool" title="True"></i>True
                         </ng-container>
                         <ng-container *ngIf="(field.Value || '').toUpperCase() == 'FALSE'">
-                            <i class="fa fa-times-circle disabled" title="False"></i> False
+                            <i class="fa fa-times-circle disabled ig-bool" title="False"></i>False
                         </ng-container>
                     </div>
                 </ng-container>
