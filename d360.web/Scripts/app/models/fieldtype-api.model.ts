@@ -222,8 +222,10 @@ export class ComputedOwnershipLookup implements ICommonOptions {
 }
 
 export class ComputedOwnershipLookupDefinition {
+    DisplayAsList: boolean = false;
     DisplayAssignmentSource: boolean = false;
     ExpandGroupMembership: boolean = true;
+    ResponsibilityType: number = null;
 }
 
 export class ComputedRelationshipField implements ICommonOptions {
