@@ -1809,6 +1809,16 @@ where   h.ID <> @t order by h.[Level] desc;
             return await Company.QueryAsync<FilterObjectItem>(sql, new { id, intersectTypeId });
         }
 
+        /// <summary>
+        /// Gets a list of available relationships types based on the source type specified in parameters. 
+        /// Used in the Filter By Relationship tile on artifact list pages.
+        /// </summary>
+        [Route("{type}/{id:int}/relationshiptypes")]
+        public async Task<IEnumerable<AllowedIntersectionType>> GetRelationshipTypes(SystemObjects type, int id)
+        {
+            return await Company.GetAllowedIntersectionTypes(type.ToString(), id);
+        }
+
         [Route("relationships/{id:int}"), HttpDelete]
         public HttpResponseMessage DeleteRelationship(int id)
         {

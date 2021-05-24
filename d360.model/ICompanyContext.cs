@@ -171,6 +171,7 @@ namespace d360.model
         string GenerateFormResponsesEmailContent(long itemId);
         Task<List<IntersectTypeApiViewModel>> GetActiveIntersectTypesByObjectType(int id, SystemObjects type);
         List<AllocationPossibility> GetAllocationOptions();
+        Task<IEnumerable<AllowedIntersectionType>> GetAllowedIntersectionTypes(string type, int id);
         IQueryable<ResponsibilityType> GetAllowedResponsibilityTypesByAsset(long id);
         AssetDetail GetAssetDetail(long id);
         AssetDetail GetAssetDetail(string objectType, long objectId);

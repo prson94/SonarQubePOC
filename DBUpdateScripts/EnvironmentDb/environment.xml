@@ -437,6 +437,7 @@
 	<include file="scripts/Procedure.dbo.GenerateAllAssetTypeDisplayValues.xml"/>
 	<include file="scripts/Procedure.dbo.GenerateAssetDisplayValue.xml"/>
 	<include file="scripts/Procedure.dbo.GenerateAssetTypeDisplayValues.xml"/>
+	<include file="scripts/Procedure.dbo.GetAllowedIntersectionTypes.xml"/>
 	<include file="scripts/Procedure.dbo.GetAssetHierarchy.xml"/>
 	<include file="scripts/Procedure.dbo.GetAttributeAndIntersectHierarchyByObject.xml"/>
 	<include file="scripts/Procedure.dbo.GetAverageScoreByObjectType.xml"/>
