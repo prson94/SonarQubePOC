@@ -40,31 +40,7 @@ namespace d360.model.DataAccessLayer
             this.StorageProvider = storageProvider;
             this.Community = community;
         }
-
-        /// <summary>
-        /// Common code for creating batch calls.
-        /// </summary>
-        /// <param name="executionInfo"></param>
-        /// <param name="execution"></param>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        protected async Task<ApiExecutionInfo> CreateApiBatchJob(ApiExecutionInfo executionInfo, ApiExecution execution, object data)
-        {
-            // Save to storage container.
-            await StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(data));
-
-            // Save to the database.
-            execution.ExecutionID = executionInfo.ExecutionID;
-            CompanyContext.Add(execution);
-
-            // Save to queue.
-            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
-            {
-                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
-            }
-
-            return executionInfo;
-        }
+       
         public Asset GetAssetByObjectId(string obj, int objId)
         {
             return CompanyContext.Filter<Asset>(i => i.Object == obj && i.ObjectID == objId).SingleOrDefault();
@@ -2668,7 +2644,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 Action = ApiExecutionAction.DeleteAssetTypes
             };
 
-            return await CreateApiBatchJob(executionInfo, execution, assetTypes);
+            return await CreateApiBatchJob(executionInfo, execution, assetTypes, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
 
@@ -2694,7 +2670,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 execution.Total = assets.Count;
             }
 
-            return await CreateApiBatchJob(executionInfo, execution, assets);
+            return await CreateApiBatchJob(executionInfo, execution, assets, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
         public async Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetUpdate> assets, ApiExecution execution, bool sendWorkflowEvents = true)
@@ -2709,7 +2685,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 SendWorkflowEvents = sendWorkflowEvents
             };
 
-            return await CreateApiBatchJob(executionInfo, execution, assets);
+            return await CreateApiBatchJob(executionInfo, execution, assets, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
         public async Task<ApiExecutionInfo> PostBulkAssets(List<AssetInsert> assets, ApiExecution execution, bool sendWorkflowEvents = true)
@@ -2724,7 +2700,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 SendWorkflowEvents = sendWorkflowEvents
             };
 
-            return await CreateApiBatchJob(executionInfo, execution, assets);
+            return await CreateApiBatchJob(executionInfo, execution, assets, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
         public Predicate GetPredicateByUID(Guid predicateGuid)

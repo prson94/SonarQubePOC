@@ -434,6 +434,18 @@ namespace igx.jobs.apiexecutionprocessor
 
                                 await SaveResultsJsonToAzure(deleteDataProfileResult, log, "Asset Data Profile", HttpMethod.Delete).ConfigureAwait(false);
                                 break;
+                            case ApiExecutionAction.PostResponsibilityOverride:
+                                var postResponsibilityOverride = await storage.DeserializeJsonObjectFromBlobAsync<List<BulkResponsibilityOverridePostModel>>(Info.StorageFolder, Info.RequestFileName);
+
+                                log.WriteLine($"POST Responsibility Override (DB Start): Total raw Data Profile Records: {postResponsibilityOverride.Count}");
+                                var postResponsibilityOverrideResult = company.BulkInsertResponsibilityOverride(postResponsibilityOverride, dbExecutionItem, dbExecutionTimeout);
+                                dbExecutionItem.Processed = postResponsibilityOverrideResult.Count(i => i.Success);
+                                dbExecutionItem.Error = postResponsibilityOverrideResult.Count(i => !i.Success);
+                                log.WriteLine($"POST Responsibility Override (DB Complete): Total Processed: {dbExecutionItem.Processed}.");
+                                log.WriteLine($"POST Responsibility Override (DB Complete): Total Error: {dbExecutionItem.Error}.");
+
+                                await SaveResultsJsonToAzure(postResponsibilityOverrideResult, log, "Responsibility Override", HttpMethod.Post).ConfigureAwait(false);
+                                break;
                         }
                     }
                     dbExecutionItem.CompletedOn = DateTime.UtcNow;
