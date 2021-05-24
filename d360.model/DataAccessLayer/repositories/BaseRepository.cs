@@ -1,6 +1,8 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.queue;
+using d360.extensions;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -8,7 +10,7 @@ using SpreadsheetLight;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer.repositories
 {
@@ -887,6 +889,31 @@ namespace d360.model.DataAccessLayer.repositories
                     index++;
                 }
             }
+        }
+
+        /// <summary>
+        /// Common code for creating batch calls.
+        /// </summary>
+        /// <param name="executionInfo"></param>
+        /// <param name="execution"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        protected async Task<ApiExecutionInfo> CreateApiBatchJob(ApiExecutionInfo executionInfo, ApiExecution execution, object data, IStorageProvider storageProvider, IQueueSource queueSource)
+        {
+            // Save to storage container.
+            await storageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(data));
+
+            // Save to the database.
+            execution.ExecutionID = executionInfo.ExecutionID;
+            CompanyContext.Add(execution);
+
+            // Save to queue.
+            if (!await queueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            {
+                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
+            }
+
+            return executionInfo;
         }
 
     }    

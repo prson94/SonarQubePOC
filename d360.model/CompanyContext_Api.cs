@@ -11327,10 +11327,15 @@ EG.GroupUid
                         }
                         catch (Exception ex)
                         {
-                            if (transaction != null)
+                            try
                             {
-                                transaction.Rollback();
+                                if (transaction != null)
+                                {
+                                    transaction.Rollback();
+                                }
                             }
+                            catch { }
+                            
                             throw ex;
                         }
 

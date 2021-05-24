@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Table.api.ExecutionResponsibilityTypeRelationOverrideItem-v1">
+  <changeSet author="bquinlivan" id="Table.api.ExecutionResponsibilityTypeRelationOverrideItem-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -23,7 +23,7 @@ BEGIN
 		[Context] [nvarchar](max) NULL,
 		[Message] [nvarchar](max) NULL,
 		[Success] [bit] NULL
-	CONSTRAINT [PK_ExecutionResponsibilityTypeRelationOverrideItem] PRIMARY KEY CLUSTERED 
+	CONSTRAINT [PK_ExecutionResponsibilityTypeRelationOverrideItem] PRIMARY KEY NONCLUSTERED 
 	(
 		[ExecutionID] ASC,
 		[ItemNumber] ASC
@@ -31,6 +31,16 @@ BEGIN
 	) ON [PRIMARY]
 END
 
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionResponsibilityTypeRelationOverrideItem')
+BEGIN
+	ALTER TABLE [api].[ExecutionResponsibilityTypeRelationOverrideItem] DROP CONSTRAINT [PK_ExecutionResponsibilityTypeRelationOverrideItem]
+
+	ALTER TABLE [api].[ExecutionResponsibilityTypeRelationOverrideItem] ADD  CONSTRAINT [PK_ExecutionResponsibilityTypeRelationOverrideItem] PRIMARY KEY NONCLUSTERED 
+	(
+		[ExecutionID] ASC,
+		[ItemNumber] ASC
+	)
+END
 		]]>
     </sql>
 	<rollback>

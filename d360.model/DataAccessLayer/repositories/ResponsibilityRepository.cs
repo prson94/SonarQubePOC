@@ -1036,32 +1036,7 @@ where   Success is null", transaction: trans);
                 Action = ApiExecutionAction.PostResponsibilityOverride
             };
 
-            return await CreateApiBatchJob(executionInfo, execution, models).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Common code for creating batch calls.
-        /// </summary>
-        /// <param name="executionInfo"></param>
-        /// <param name="execution"></param>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        protected async Task<ApiExecutionInfo> CreateApiBatchJob(ApiExecutionInfo executionInfo, ApiExecution execution, object data)
-        {
-            // Save to storage container.
-            await StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(data));
-
-            // Save to the database.
-            execution.ExecutionID = executionInfo.ExecutionID;
-            Company.Add(execution);
-
-            // Save to queue.
-            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
-            {
-                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
-            }
-
-            return executionInfo;
-        }
+            return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
+        }        
     }
 }
