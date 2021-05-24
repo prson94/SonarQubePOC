@@ -11178,6 +11178,9 @@ EG.GroupUid
                         );
                         AddMeasurement(metrics, $"results.AddRange >> DataProfileUpsertResponse>> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
+
+                        beginItemNumber += loopSize;
+                        endItemNumber += loopSize;
                     }
                 }
             }
@@ -11928,6 +11931,9 @@ EG.GroupUid
                         );
                         AddMeasurement(metrics, $"results.AddRange >> DataProfileUpsertResponse>> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
+
+                        beginItemNumber += loopSize;
+                        endItemNumber += loopSize;
                     }
                 }                                
 
