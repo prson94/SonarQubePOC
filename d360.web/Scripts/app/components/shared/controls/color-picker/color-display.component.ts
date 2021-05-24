@@ -1,5 +1,6 @@
 ﻿
 import { Component, OnInit, Input } from '@angular/core';
+import { Router } from '@angular/router';
 import * as _ from 'lodash';
 
 @Component({
@@ -12,7 +13,7 @@ import * as _ from 'lodash';
                             <span *ngIf="!url" class="ig-colorfield-item-label">
                                 {{item.name}}
                             </span>
-                            <a *ngIf="url" class="ig-colorfield-item-label" [href]="url">
+                            <a *ngIf="url" class="ig-colorfield-item-label" [href]="url" (click)="navigate(url, $event)">
                                 {{item.name}}
                             </a>
                         </span>
@@ -29,7 +30,7 @@ export class ColorDisplayComponent implements OnInit {
 
     public colorsObject: any;
 
-    constructor() {
+    constructor(private router: Router) {
     }
     ngOnInit() {
         if (this.colorsJSON) {
@@ -59,5 +60,10 @@ export class ColorDisplayComponent implements OnInit {
                 }
                 return `hsl(${(hash * 2) % 360}, 70%, 70%)`;
         }
+    }
+
+    navigate(url: string, e: any) {
+        this.router.navigateByUrl(url);
+        e.preventDefault();
     }
 }

@@ -269,7 +269,7 @@ export class TagView extends BaseComponent implements OnInit {
                 this.showDeleteOption = false;
             if (this.auth.isAdmin || this.hasModifyAssetPermissions())
                 this.showDeleteOption = true;
-            if (!this.showDeleteOption) {
+            if (!this.showDeleteOption || true) {
                 var tagElements = this.container.nativeElement.querySelectorAll('.tagging');
                 (function () {
                     if (typeof NodeList.prototype.forEach === "function") return false;

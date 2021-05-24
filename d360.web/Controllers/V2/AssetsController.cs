@@ -1642,7 +1642,7 @@ namespace d360.web.Controllers.V2
                                     result.Add("objectId", referenceItemTypeID);
                                     result.Add("fieldTypeId", fieldType.ID);
                                     result.Add("showDescription", showDescription);
-                                    result.Add("url", $"/reference/{referenceItemTypeID}");
+                                    result.Add("url", $"/reference;referenceListId={assetType.uid.ToString().ToLower()}");
                                 }
                             }
                         }
