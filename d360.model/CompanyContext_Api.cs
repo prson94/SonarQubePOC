@@ -11544,6 +11544,9 @@ EG.GroupUid
                         );
                         AddMeasurement(metrics, $"results.AddRange >> BulkResponsibilityOverrideResponse>> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
+
+                        beginItemNumber += loopSize;
+                        endItemNumber += loopSize;
                     }
                 }
             }
