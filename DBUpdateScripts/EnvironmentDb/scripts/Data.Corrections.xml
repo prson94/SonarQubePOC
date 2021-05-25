@@ -1271,4 +1271,19 @@ from	metrics.AssetVersion V
 		</sql>
 	</changeSet>
 
+	<changeSet author="TDuric" id="Data.Corrections.GOV-14813">
+			<sql dbms="mssql" splitStatements="false" stripComments="false">
+	<![CDATA[
+	UPDATE [dbo].[AssetType]
+	SET CanEditParent = 1
+	where CanEditParent IS NULL
+
+	ALTER TABLE [dbo].[AssetType]
+	ALTER COLUMN CanEditParent bit NOT NULL;
+	
+	ALTER TABLE [dbo].[AssetType] ADD  CONSTRAINT [DF_AssetType_CanEditParent]  DEFAULT ((1)) FOR [CanEditParent]
+	]]>
+		</sql>
+	</changeSet>
+
 </databaseChangeLog>
