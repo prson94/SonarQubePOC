@@ -833,6 +833,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 valid = false;
         }
 
+        if (this.currentType === "OwnershipLookup") {
+            if (this.enableListSingleResponsibilityType) {
+                return this.model.FieldType.Type[this.currentType].Definition.ResponsibilityType !== null;
+            }
+        }
+
         if (!this.isValidationPatternValid()) {
             valid = false;
         }

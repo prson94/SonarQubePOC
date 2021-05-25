@@ -12,7 +12,7 @@ class OwnershipResource {
     selector: "d3s-ownership-list",
     template: `<span *ngIf="listLength===0">- - -</span>
                 <ul *ngIf="listLength > 0" class="ownershiplist">
-                    <li *ngFor="let owner of list; let i = index" [ngClass]="{'nobullet': listLength === 1, 'noshow': ((i >= moreLimit) && !showMore)}">
+                    <li *ngFor="let owner of list; let i = index" [ngClass]="{'noshow': ((i >= moreLimit) && !showMore)}">
                         <span><a [href]="owner.ResourceItemUrl" [innerHtml]="owner.ResourceName" (click)="$event.stopPropagation()"></a> {{formatResponsibilityTypes(owner.ResponsibilityTypes)}}</span>
                     </li>
                 </ul>
@@ -26,7 +26,7 @@ class OwnershipResource {
         ul.ownershiplist li {
             list-style-type: disc;
         }
-        ul.ownershiplist li.nobullet {
+        ul.ownershiplist li:first-child:nth-last-child(1) {
             list-style-type: none;
             margin-left: -12px;
         }
