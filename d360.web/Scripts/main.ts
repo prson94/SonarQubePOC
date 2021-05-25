@@ -3,15 +3,13 @@ import { enableProdMode } from '@angular/core';
 import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
 
-if (environment.production) {
-    enableProdMode();
-}
 
 declare var __BUILD_DATE: string;
 declare var VersionNumber: string;
+declare var PRODUCTION: boolean;
 
 
-if (environment.production) {
+if (PRODUCTION) { //environment.production FOR ng build
     enableProdMode();
 }
 else {
@@ -19,7 +17,7 @@ else {
 }
 
 console.log("Govern Assembly Version: " + VersionNumber)
-//console.log("Govern Build Date: " + __BUILD_DATE);
+console.log("Govern Build Date: " + __BUILD_DATE);  // remove for ng build
 console.log("Browser Language: " + navigator.language);
 
 
