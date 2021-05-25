@@ -40,7 +40,7 @@ namespace d360.model.DataAccessLayer
             this.StorageProvider = storageProvider;
             this.Community = community;
         }
-       
+
         public Asset GetAssetByObjectId(string obj, int objId)
         {
             return CompanyContext.Filter<Asset>(i => i.Object == obj && i.ObjectID == objId).SingleOrDefault();
@@ -678,7 +678,7 @@ namespace d360.model.DataAccessLayer
                     var definition = (dynamic)JsonConvert.DeserializeObject(lookup.Definition);
                     string responsibilityIdCondition = "";
                     bool includeResponsibilityNames = true;
-                    if(definition.ResponsibilityType != null && definition.ResponsibilityType > 0)
+                    if (definition.ResponsibilityType != null && definition.ResponsibilityType > 0)
                     {
                         responsibilityIdCondition = $" and ola{f.ID}.ResponsibilityTypeID = {definition.ResponsibilityType}";
                         includeResponsibilityNames = false;
@@ -1409,17 +1409,17 @@ namespace d360.model.DataAccessLayer
                     var parent = CompanyContext.AssetTypes.FirstOrDefault(x => x.Object == hierarchy.Subject && x.ObjectID == hierarchy.SubjectID);
                     if (parent != null)
                     {
-                       columnName = isChildItem ? "Parent " + parent.Name + " Name" : parent.Name;
-                       ParentAssetTypeUidHeading = parent.Name + " UID";
+                        columnName = isChildItem ? "Parent " + parent.Name + " Name" : parent.Name;
+                        ParentAssetTypeUidHeading = parent.Name + " UID";
                     }
-                        
+
                 }
 
                 fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = columnName });
             }
 
             if (!isChildItem)
-            { 
+            {
                 fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
 
                 fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
@@ -2096,6 +2096,11 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             if (model.Uid != Guid.Empty)
             {
                 uid = model.Uid;
+            }
+
+            if (!model.CanEditParent.HasValue)
+            {
+                model.CanEditParent = true;
             }
 
             switch (model.Class)
@@ -2990,7 +2995,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
             return resultsModel;
         }
-        
+
         public void UpsertAssetStyle(int assetTypeId, string foreColor, string backColor, string icon, string objectName = "Tx")
         {
             var style = CompanyContext.GetAssetTypeStyle(assetTypeId);
