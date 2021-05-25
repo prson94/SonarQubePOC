@@ -13,10 +13,10 @@ export class RedirectGuard implements CanActivate {
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
 
-        if (ResourceHomePage != null && ResourceHomePage != "" && ResourceHomePage != '/') {
+        if (ResourceHomePage !== null && ResourceHomePage !== "" && ResourceHomePage !== '/') {
             this.router.navigate([ResourceHomePage]);
         }
-        else if (CompanySettings != null && CompanySettings.DefaultRoute != null && CompanySettings.DefaultRoute != '' && CompanySettings.DefaultRoute != '/') {
+        else if (CompanySettings !== null && CompanySettings.DefaultRoute !== null && CompanySettings.DefaultRoute !== '' && CompanySettings.DefaultRoute !== '/') {
             this.router.navigate([CompanySettings.DefaultRoute]);
         } else {
             this.router.navigate(['home']);

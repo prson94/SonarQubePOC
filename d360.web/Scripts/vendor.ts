@@ -18,7 +18,7 @@ import 'primeng/checkbox';
 import 'primeng/dialog';
 import 'primeng/dropdown';
 import 'primeng/editor';
-import 'primeng/fileupload'
+import 'primeng/fileupload';
 import 'primeng/toast';
 import 'primeng/inputmask';
 import 'primeng/inputnumber';
