@@ -454,6 +454,13 @@ namespace d360.core.entities
         public bool Success { get; set; }
     }
 
+    public class RelationshipCountModel
+    {
+        public Guid IntersectTypeUid { get; set; }
+        public int Count { get; set; }
+        public bool IsSubject { get; set; }
+    }
+
     [DataContract]
     public class DatabaseBulkRelationshipResult : IWorkflowEnabledAsset, IGraphAsset
     {
@@ -721,6 +728,9 @@ namespace d360.core.entities
         public Guid? AssigneeTypeUid { get; set; }
         [DataMember]
         public List<RuleThen> Conditions { get; set; } = new List<RuleThen>();
+
+        [DataMember]
+        public ResponsibilityMatchType MatchType { get; set; } = ResponsibilityMatchType.And;
     }
 
     [DataContract]
@@ -945,6 +955,32 @@ namespace d360.core.entities
         public string Message { get; set; }
         [DataMember(Name = "count")]
         public int DeletedCount { get; set; }
+        [DataMember(Name = "success")]
+        public bool Success { get; set; }
+    }
+
+    public class BulkResponsibilityOverridePostModel : IExecutionItem
+    {
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+        [DataMember]
+        public Guid AssetUid { get; set; }        
+        [DataMember]
+        public Guid ResponsibilityTypeUid { get; set; }
+        [DataMember]
+        public Guid AssignedUid { get; set; }
+        [DataMember]
+        public string Description { get; set; }
+    }
+
+    public class BulkResponsibilityOverrideResponseModel : IExecutionItem
+    {
+        [DataMember(Name = "itemNumber")]
+        public int ItemNumber { get; set; }
+        [DataMember(Name = "executionItemUid")]
+        public Guid? ExecutionItemUid { get; set; }
+        [DataMember(Name = "message")]
+        public string Message { get; set; }        
         [DataMember(Name = "success")]
         public bool Success { get; set; }
     }

@@ -278,6 +278,7 @@
 	<include file="scripts/Table.api.ExecutionUser.xml"/>
 	<include file="scripts/Table.api.ExecutionDiagramAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionDiagramAssetField.xml"/>
+	<include file="scripts/Table.api.ExecutionResponsibilityTypeRelationOverrideItem.xml"/>
 	<include file="scripts/Table.dbo.ConnectorLabel.xml"/>
 	<include file="scripts/Table.api.ExecutionExternal.xml"/>
 	
@@ -409,7 +410,6 @@
 	<include file="scripts/Function.graph.CheckCircularRelationshipCollision.xml"/>
 	<include file="scripts/Function.graph.Hop_GenerateSalt.xml"/>
 	<include file="scripts/Function.metrics.CalculateRollupPath.xml"/>
-	<include file="scripts/Function.metrics.RoundScoreItem.xml"/>				<!--Function used for score calculation, relying on RandomNumber view -->
 	<include file="scripts/Function.utility.FieldDetails.xml"/>
 	<include file="scripts/Function.utility.GenerateFormattedMultipleValue.xml"/>
 	<include file="scripts/Function.utility.GetAssetBusinessKey.xml"/>
@@ -439,7 +439,6 @@
 	<include file="scripts/Procedure.dbo.GenerateAssetDisplayValue.xml"/>
 	<include file="scripts/Procedure.dbo.GenerateAssetTypeDisplayValues.xml"/>
 	<include file="scripts/Procedure.dbo.GetAllowedIntersectionTypes.xml"/>
-	<include file="scripts/Procedure.dbo.GetAllowedIntersectionTypesByIntersect.xml"/>
 	<include file="scripts/Procedure.dbo.GetAssetHierarchy.xml"/>
 	<include file="scripts/Procedure.dbo.GetAttributeAndIntersectHierarchyByObject.xml"/>
 	<include file="scripts/Procedure.dbo.GetAverageScoreByObjectType.xml"/>
@@ -450,7 +449,6 @@
 	<include file="scripts/Procedure.dbo.GetCommentDetailsByType.xml"/>
 	<include file="scripts/Procedure.dbo.GetComplexLookupByAsset.xml"/>
 	<include file="scripts/Procedure.dbo.GetDynamicAssets.xml"/>
-	<include file="scripts/Procedure.dbo.GetLineage.xml"/>
 	<include file="scripts/Procedure.dbo.GetObjectStatistics.xml"/>
 	<include file="scripts/Procedure.dbo.GetPageInformation.xml"/>
 	<include file="scripts/Procedure.dbo.GetReferenceItemValues.xml"/>
@@ -463,12 +461,7 @@
 	<include file="scripts/Procedure.dbo.SecondaryNavSettings.xml"/>
 	<include file="scripts/Procedure.dbo.UpdateDependentObjectTypeDisplayValues.xml"/>
 	<include file="scripts/Procedure.dbo.VoteComment.xml"/>
-	<include file="scripts/Procedure.fusion.GenerateEagleLineageData.xml"/>
-	<include file="scripts/Procedure.fusion.GenerateFoundationLineage.xml"/>
-	<include file="scripts/Procedure.fusion.GenerateMarkitMapLineage.xml"/>
-	<include file="scripts/Procedure.fusion.GenerateMarkitMapLineageData.xml"/>
 	<include file="scripts/Procedure.fusion.GetAttributesByFusion.xml"/>
-	<include file="scripts/Procedure.fusion.LoadMarkitMapLineageData.xml"/>
 	<include file="scripts/Procedure.fusion.ProcessFusionCacheInQueue.xml"/>
 	<include file="scripts/Procedure.fusion.UpdateFusionTextPaths.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_Initial.xml"/>
@@ -496,6 +489,8 @@
 	<include file="scripts/Procedure.utility.GetOwnersForWFFollowers.xml"/>
 	<include file="scripts/Procedure.workflow.changeItemState.xml"/>
 
+
+	<include file="scripts/Function.Deletions.xml"/>
 	<include file="scripts/Procedure.Deletions.xml"/>
     <include file="scripts/Procedure.dbo.SimpleAssetSearch.xml"/>
 

@@ -336,6 +336,8 @@ namespace d360.web.Controllers
                 existing.Name = model.Name;
                 existing.Description = model.Description;
 
+                int allPermissions = Permission.DeleteAsset.GetList().Sum(i => i.Value);
+
                 // First, do the ADDs.
                 foreach (var nr in model.ResponsibilityTypeRelations)
                 {
@@ -346,7 +348,7 @@ namespace d360.web.Controllers
                             ObjectType = nr.ObjectType,
                             ObjectID = nr.ObjectID,
                             ResponsibilityTypeID = existing.ID,
-                            PermissionsBitMask = 0,
+                            PermissionsBitMask = allPermissions,
                             CreatedBy = Company.CurrentResourceID,
                             CreatedOn = DateTime.UtcNow,
                             UpdatedBy = Company.CurrentResourceID,
@@ -513,6 +515,15 @@ order by case Object
                     i.ObjectID == typeId).SingleOrDefault();
 
                 if (model == null) throw new NotFoundException("responsibility type relation");
+
+                ResponsibilityType responsibilityType = Company.Filter<ResponsibilityType>(i => i.ID == responsibilityTypeId).FirstOrDefault();
+                AssetType assetType = Company.Filter<AssetType>(i => i.Object == type && i.ObjectID == typeId).FirstOrDefault();
+
+                string ownershipLookupMessage = ResponsibilityRepository.GetResponsibilityTypeUsedInOwnershipLookupMessage(responsibilityType, assetType);
+                if (ownershipLookupMessage != "")
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, "Error Occured!", ownershipLookupMessage);
+                }
 
                 Company.RemoveResponsibilityTypeRelation(model);
 

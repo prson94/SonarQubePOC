@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Procedure.api.DeleteExecutionRecords-v5">
+  <changeSet author="bquinlivan" id="Procedure.api.DeleteExecutionRecords-v6">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -48,7 +48,8 @@
 					delete EADPS from api.ExecutionAssetDataProfileSample EADPS inner join api.Execution E on EADPS.ExecutionID = E.ExecutionID where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan
 					delete EDADP from api.ExecutionDeleteAssetDataProfile EDADP inner join api.Execution E on EDADP.ExecutionID = E.ExecutionID where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan
 					delete EU from api.ExecutionUser EU inner join api.Execution E on EU.ExecutionID = E.ExecutionID where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan
-
+					delete ERTROI from api.ExecutionResponsibilityTypeRelationOverrideItem ERTROI inner join api.Execution E on ERTROI.ExecutionID = E.ExecutionID where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan
+          
 					-- finally delete the api.execution records themselves
 					delete from api.Execution where [route] is not null and [route] != 'BULK' and DATEDIFF(day, CompletedOn, getutcdate()) > @numberOfDaysOlderThan
 
@@ -105,6 +106,10 @@
 					delete from api.ExecutionRelationshipType where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
 					delete from api.ExecutionResponsibilityRule where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
 					delete from api.ExecutionResponsibilityType where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete EADP from api.ExecutionAssetDataProfile EADP inner join api.Execution E on EADP.ExecutionID = E.ExecutionID where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan
+					delete EADPS from api.ExecutionAssetDataProfileSample EADPS inner join api.Execution E on EADPS.ExecutionID = E.ExecutionID where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan
+					delete EDADP from api.ExecutionDeleteAssetDataProfile EDADP inner join api.Execution E on EDADP.ExecutionID = E.ExecutionID where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan
+					delete EU from api.ExecutionUser EU inner join api.Execution E on EU.ExecutionID = E.ExecutionID where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan
 
 					-- finally delete the api.execution records themselves
 					delete from api.Execution where [route] is not null and [route] != 'BULK' and DATEDIFF(day, CompletedOn, getutcdate()) > @numberOfDaysOlderThan

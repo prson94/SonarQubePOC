@@ -26,11 +26,9 @@ import { BaseComponent } from '../base.component';
 
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { AssetEditorModel, AssetTypeClass } from '../../../models/asset.model';
+import { AssetEditorModel } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
-import { JsonCoreResult } from '../../../models/jsonresult.model';
 import { Subject } from 'rxjs';
-import { Value } from '../../../models/settings.model';
 
 @Component({
     selector: 'd3s-dynamic-editor',
@@ -46,6 +44,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() directions: string;
     @Input() objectID: number = 0;
     @Input() objectTypeUid: string;
+    @Input() targetUid: string;
+
     @Input() assetUid: string;
     @Input() parentID: number;
     @Input() objectType: string;
@@ -70,6 +70,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() useModelBinding: boolean = false;
     @Input() dataModel: any = null;
 
+    @Input() isSaveDisabled: boolean = false;
+
     @Output() modelChanged = new EventEmitter();
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
@@ -83,6 +85,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     private consolidateToTag: any;
     private isInError: boolean = false;
     private isInErrorMessage: string = "";
+    readonly defaultCategory: string = "General";
 
     form: FormGroup;
 
@@ -188,8 +191,13 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         }
 
         this.isLoading = true;
+
+        if (this.objectType === "IntersectType" && this.action === "Edit") {
+            this.useTypeUidForDefinition = false;
+        }
+
         if (this.useTypeUidForDefinition) {
-            this.editorDefinitionService.getEditorDefinitionUid(this.objectTypeUid, this.objectType)
+            this.editorDefinitionService.getEditorDefinitionUid(this.objectTypeUid, this.objectType, this.targetUid)
                 .subscribe(result => {
                     this.handleEditor(result);
                 });
@@ -246,7 +254,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             this.fields.forEach(f => {
 
                 if (f.Category == null) {
-                    currentCategory = "";
+                    currentCategory =  "";
                 }
                 else {
                     currentCategory = f.Category;
@@ -289,6 +297,22 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     n.Fields.push(f);
                     curCategory.rows.push(n);
                 }
+            });
+
+            this.categories = this.categories.sort((a, b) => {
+                if (b.name === this.defaultCategory && !a.name) {
+                    return -1;
+                }
+                else if (a.name === this.defaultCategory && !b.name) {
+                    return 1;
+                }
+                else if (!a.name || a.name === this.defaultCategory) {
+                    return -1;
+                }
+                else if (!b.name|| b.name === this.defaultCategory) {
+                    return 1;
+                }
+                return 0;
             });
 
 
@@ -402,10 +426,10 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 if (validation.rule && validation.rule.startsWith('length=')) {
                     var vals = validation.rule.split(',');
 
-                    if (vals.length == 2) {
+                    if (vals.length === 2) {
                         maxLen = +vals[1];
 
-                        if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
+                        if (field.FieldType === 'Number' || field.FieldType === 'Decimal') {
                             validators.push(Validators.max(maxLen));
                         } else {
                             validators.push(Validators.maxLength(maxLen));
@@ -416,7 +440,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                             minLen = +minParts[1];
 
                             if (minLen > 1) {
-                                if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
+                                if (field.FieldType === 'Number' || field.FieldType === 'Decimal') {
                                     validators.push(Validators.min(minLen));
                                 } else {
                                     // only min length > 1
@@ -430,7 +454,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 } else if (validation.rule && validation.rule.startsWith('minLength=')) {
                     minLen = +validation.rule.split('=').pop();
 
-                    if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
+                    if (field.FieldType === 'Number' || field.FieldType === 'Decimal') {
                         validators.push(Validators.min(minLen));
                     } else {
                         validators.push(Validators.minLength(minLen));
@@ -438,7 +462,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 } else if (validation.rule && validation.rule.startsWith('maxLength=')) {
                     maxLen = +validation.rule.split('=').pop();
 
-                    if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
+                    if (field.FieldType === 'Number' || field.FieldType === 'Decimal') {
                         validators.push(Validators.max(maxLen));
                     } else {
                         validators.push(Validators.maxLength(maxLen));
@@ -455,7 +479,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             validators.push(Validators.required);
         }
 
-        if (field.FieldType == 'Number') {
+        if (field.FieldType === 'Number') {
             validators.push(FormHelpers.integerValidator);
 
             if (validators.indexOf(Validators.min) == -1) {
@@ -466,7 +490,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 validators.push(Validators.max(maxLen));
             }
         }
-        if (field.FieldType == 'Decimal') {
+        if (field.FieldType === 'Decimal') {
             validators.push(FormHelpers.numberValidator);
 
             if (validators.indexOf(Validators.min) == -1) {

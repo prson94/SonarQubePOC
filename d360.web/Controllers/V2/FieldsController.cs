@@ -25,6 +25,7 @@ using d360.model.DataAccessLayer;
 using Resources;
 using System.Web.Http.Description;
 using d360.core.helpers;
+using System.Globalization;
 
 namespace d360.web.Controllers.V2
 {
@@ -255,7 +256,7 @@ namespace d360.web.Controllers.V2
                     var typePermissions = Company.GetTypePermissions(typeIdentifierInfoModel.Object, typeIdentifierInfoModel.ObjectID);
                     if (typePermissions != null)
                     {
-                        hasPermissions = typePermissions.Any(i => i.ID == Permission.ModifyAsset);
+                        hasPermissions = typePermissions.Any(i => i.ID == Permission.EditAsset);
                     }
                 }
 
@@ -641,7 +642,6 @@ namespace d360.web.Controllers.V2
                 var disallowedPathClasses = new List<AssetTypeClass>() {
                     AssetTypeClass.Organization,
                     AssetTypeClass.Fusion,
-                    AssetTypeClass.FusionQuery,
                     AssetTypeClass.User,
                 };
                 if (AssetTypeUid != null && disallowedPathClasses.Contains(@class))
@@ -652,8 +652,7 @@ namespace d360.web.Controllers.V2
                 var disallowedScoreClasses = new List<AssetTypeClass>() {
                     AssetTypeClass.Organization,
                     AssetTypeClass.Fusion,
-                    AssetTypeClass.FusionAttribute,
-                    AssetTypeClass.FusionQuery,
+                    AssetTypeClass.FusionAttribute,                    
                     AssetTypeClass.User,
                     AssetTypeClass.ReferenceItemType,
                     AssetTypeClass.Diagram
@@ -685,6 +684,16 @@ namespace d360.web.Controllers.V2
                     .Select(ft => new { title = $"{ft.FriendlyName} ({ft.Name})", value = ft.Name })
                     .ToList();
 
+                List<dynamic> Field_ResponsibilityTypes = null;
+                if (AssetTypeUid != null)
+                {
+                    Field_ResponsibilityTypes = Company.Query<dynamic>(@"SELECT rt.name AS title, rt.id AS value
+                    FROM ResponsibilityType rt
+                    INNER JOIN ResponsibilityTypeRelation rtr ON rtr.ResponsibilityTypeID = rt.ID
+                    INNER JOIN AssetType at ON rtr.ObjectType = at.Object AND rtr.ObjectID = at.ObjectID
+                    WHERE at.uid = @uid
+                    ORDER BY rt.name", new { uid = AssetTypeUid }).ToList();
+                }
                 #endregion
 
 
@@ -697,6 +706,7 @@ namespace d360.web.Controllers.V2
                     Field_CardinalRelationships,
                     Field_FieldFromRelRelationships,
                     Field_CardinalReferenceRelationships,
+                    Field_ResponsibilityTypes,
                     DataTypes = dataTypeOptions,
                     FilteredLookups = filteredLookups,
                     Patterns = patterns.Select(i => new { title = i.Key, value = i.Value }),
@@ -769,6 +779,7 @@ namespace d360.web.Controllers.V2
                 List<dynamic> relationItems = null;
                 dynamic ownershipLookupSettings = null;
                 dynamic JsonElementSettings = null;
+                dynamic refListFromRelSettings = null;
 
                 if (ft != null)
                 {
@@ -826,9 +837,17 @@ namespace d360.web.Controllers.V2
                             {
                                 definition.DisplayAssignmentSource,
                                 definition.ExpandGroupMembership,
+                                definition.ResponsibilityType,
                                 lookup.HideFilter,
                                 lookup.HideFooter,
                                 lookup.HideHeader
+                            };
+                        }
+                        else if (ft.Type == DataType.RefListRelationship.ToString())
+                        {
+                            refListFromRelSettings = new
+                            {
+                                definition.DisplayRefListDescription
                             };
                         }
                     }
@@ -841,6 +860,7 @@ namespace d360.web.Controllers.V2
                     FusionItems = fusionItems,
                     JsonElementSettings,
                     OwnershipLookupSettings = ownershipLookupSettings,
+                    RefListFromRelSettings = refListFromRelSettings,
                     RelationItems = relationItems
                 });
             }
@@ -2021,6 +2041,23 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
             var prefix = "Fields.GetFilterVales => ";
             try
             {
+                if (assetTypeUid == Guid.Empty && fieldName == "EvaluatedAssetClass")
+                {
+                    var classInfos = AssetTypeClass.BusinessAsset.GetAsList();
+                    if (!string.IsNullOrEmpty(filter))
+                    {
+                        classInfos = classInfos.Where(x => x.Name.ToLower(CultureInfo.InvariantCulture).Contains(filter.ToLower(CultureInfo.InvariantCulture).Trim('\''))
+                        || x.Value.ToLower(CultureInfo.InvariantCulture).Contains(filter.ToLower(CultureInfo.InvariantCulture).Trim('\''))).ToList();
+                    }
+
+                    if (skip.HasValue && take.HasValue)
+                    {
+                        classInfos = classInfos.Skip(skip.Value).Take(take.Value).ToList();
+                    }
+
+                    return Request.CreateResponse(HttpStatusCode.OK, new { items = classInfos.Select(x => x.Name).ToList() });
+                }
+
                 string pagingQuery = "";
                 string whereQuery = "";
                 if (skip != null && take != null)

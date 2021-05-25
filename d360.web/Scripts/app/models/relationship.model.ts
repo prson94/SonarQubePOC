@@ -1,5 +1,15 @@
 ﻿import { Predicate } from "./predicate.model";
 
+export class RelationItem {
+    ID: number;
+    IntersectTypeID: number;
+    Object: string;
+    ObjectID: number;
+    TypeName: string;
+    Name: string;
+    Url: string;
+}
+
 export class RelationshipTypeEdge {
     Uid: string;
     Name: string;
@@ -14,6 +24,19 @@ export class RelationshipType {
     Predicate: Predicate;
     Subject: RelationshipTypeEdge;
     Object: RelationshipTypeEdge;
+}
+
+export class RelationshipCount {
+    IntersectTypeUid: string;
+    Count: number;
+    IsSubject: boolean;
+}
+
+export class RelationshipTypeUIModel extends RelationshipType {
+    Count: number;
+    TypeName: string;
+    AllowEditFromRelationshipEditor: boolean = true;
+    IsSubject: boolean = false;
 }
 
 export class RelationshipDetail {

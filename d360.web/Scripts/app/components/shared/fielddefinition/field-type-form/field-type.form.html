@@ -795,6 +795,14 @@
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl></p-dropdown>
                 </div>
+                <div class="col s12"
+                     style="margin: 0 0 10px 0">
+                    <p-checkbox binary="true"
+                                name="showRefListFromRelDescription"
+                                [(ngModel)]="model.FieldType.Type[currentType].DisplayRefListDescription"
+                                [ngModelOptions]="{standalone: true}"
+                                label="Show Reference List Description"></p-checkbox>
+                </div>
             </div>
         </simple-accordion>
 
@@ -803,45 +811,94 @@
                           active="true"
                           *ngIf="currentType == 'OwnershipLookup'">
             <div class="row">
-                <div class="col l3 m3 s6"
-                     style="margin: 10px 0 10px 0">
+                <div class="col s12"
+                     style="margin: 10px 0 0 0; display: flex;">
                     <p-checkbox binary="true"
-                                name="expandGroupMembership"
-                                [(ngModel)]="model.FieldType.Type[currentType].Definition.ExpandGroupMembership"
+                                name="enableListSingleResponsibilityType"
+                                [ngModel]="enableListSingleResponsibilityType"
+                                (ngModelChange)="onEnableListSingleResponsibilityType($event);"
+                                label="List Single Responsibility Type"></p-checkbox>
+                    <p-dropdown name="selectResponsibilityType"
+                                [required]="enableListSingleResponsibilityType"
+                                [disabled]="!enableListSingleResponsibilityType"
                                 [ngModelOptions]="{standalone: true}"
-                                label="Expand Group Membership?"></p-checkbox>
+                                [options]="lookups.FieldResponsibilityTypes"
+                                [(ngModel)]="model.FieldType.Type[currentType].Definition.ResponsibilityType"
+                                [placeholder]="getSelectResponsibilityTypePlaceholder()"
+                                [style]="{ 'width': '60%' }"
+                                style="padding-left: 10px"
+                                ngDefaultControl></p-dropdown>
                 </div>
-                <div class="col l3 m3 s6"
+            </div>
+            <div class="row">
+                <div class="col s12"
                      style="margin: 10px 0 10px 0">
-                    <p-checkbox binary="true"
-                                name="displayAssignmentSource"
-                                [(ngModel)]="model.FieldType.Type[currentType].Definition.DisplayAssignmentSource"
-                                [ngModelOptions]="{standalone: true}"
-                                label="Display Assignment Source?"></p-checkbox>
-                </div>
-                <div class="col l2 m2 s6"
-                     style="margin: 10px 0 10px 0">
-                    <p-checkbox binary="true"
-                                name="hideFilter"
-                                [(ngModel)]="model.FieldType.Type[currentType].HideFilter"
-                                [ngModelOptions]="{standalone: true}"
-                                label="Hide Grid Filter?"></p-checkbox>
-                </div>
-                <div class="col l2 m2 s6"
-                     style="margin: 10px 0 10px 0">
-                    <p-checkbox binary="true"
-                                name="hideFooter"
-                                [(ngModel)]="model.FieldType.Type[currentType].HideFooter"
-                                [ngModelOptions]="{standalone: true}"
-                                label="Hide Grid Footer?"></p-checkbox>
-                </div>
-                <div class="col l2 m2 s12"
-                     style="margin: 10px 0 10px 0">
-                    <p-checkbox binary="true"
-                                name="hideHeader"
-                                [(ngModel)]="model.FieldType.Type[currentType].HideHeader"
-                                [ngModelOptions]="{standalone: true}"
-                                label="Hide Grid Column Headers?"></p-checkbox>
+                    <ul style="column-width: 220px; margin: 0px;">
+                        <li>
+                            <p-checkbox binary="true"
+                                        name="displayAsList"
+                                        [ngModel]="model.FieldType.Type[currentType].Definition.DisplayAsList"
+                                        (ngModelChange)="model.FieldType.Type[currentType].Definition.DisplayAsList=$event;onDisplayAsList($event);"
+                                        [ngModelOptions]="{standalone: true}"
+                                        label="Display as List"></p-checkbox>
+                            <div class="FieldInstructionsTooltip"
+                                 pTooltip="Display the Ownership Lookup field as a list rather than a grid in the Definition panel. Please note that a listable Ownership Lookup field is always shown as a list in grids."
+                                 [escape]="false"
+                                 tooltipPosition="top"
+                                 tooltipStyleClass="ig-tooltip">
+                                <i class="fa fa-info-circle"></i>
+                            </div>
+                        </li>
+                        <li>
+                            <p-checkbox binary="true"
+                                        name="expandGroupMembership"
+                                        [(ngModel)]="model.FieldType.Type[currentType].Definition.ExpandGroupMembership"
+                                        [ngModelOptions]="{standalone: true}"
+                                        label="Expand Group Membership?"></p-checkbox>
+                        </li>
+                        <li>
+                            <p-checkbox binary="true"
+                                        name="displayAssignmentSource"
+                                        [(ngModel)]="model.FieldType.Type[currentType].Definition.DisplayAssignmentSource"
+                                        [ngModelOptions]="{standalone: true}"
+                                        [disabled]="model.FieldType.Type[currentType].Definition.DisplayAsList"
+                                        label="Display Assignment Source?"></p-checkbox>
+                            <div class="FieldInstructionsTooltip"
+                                 pTooltip="If you have chosen to expand group membership, choosing this option will display the Via column in grids, to identify the group or organization responsible for the addition of users to the list."
+                                 [escape]="false"
+                                 [tooltipDisabled]="model.FieldType.Type[currentType].Definition.DisplayAsList"
+                                 [ngClass]="{'disabled':model.FieldType.Type[currentType].Definition.DisplayAsList}"
+                                 tooltipPosition="top"
+                                 tooltipStyleClass="ig-tooltip">
+                                <i class="fa fa-info-circle"></i>
+                            </div>
+                        </li>
+                        <li>
+                            <p-checkbox binary="true"
+                                        name="hideFilter"
+                                        [(ngModel)]="model.FieldType.Type[currentType].HideFilter"
+                                        [ngModelOptions]="{standalone: true}"
+                                        [disabled]="model.FieldType.Type[currentType].Definition.DisplayAsList"
+                                        label="Hide Grid Filter?"></p-checkbox>
+                        </li>
+                        <li>
+                            <p-checkbox binary="true"
+                                        name="hideFooter"
+                                        [(ngModel)]="model.FieldType.Type[currentType].HideFooter"
+                                        [ngModelOptions]="{standalone: true}"
+                                        [disabled]="model.FieldType.Type[currentType].Definition.DisplayAsList"
+                                        label="Hide Grid Footer?"></p-checkbox>
+                        </li>
+                        <li>
+                            <p-checkbox binary="true"
+                                        name="hideHeader"
+                                        [(ngModel)]="model.FieldType.Type[currentType].HideHeader"
+                                        [ngModelOptions]="{standalone: true}"
+                                        [disabled]="model.FieldType.Type[currentType].Definition.DisplayAsList"
+                                        label="Hide Grid Column Headers?"></p-checkbox>
+                        </li>
+                    </ul>
+                    
                 </div>
             </div>
         </simple-accordion>

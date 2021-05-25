@@ -1,6 +1,6 @@
-﻿<div class="ig-property-group">
+﻿<div class="ig-property-group" [ngClass]="showHeaderLine ? 'ig-pg-header-line' : null">
     <div class="header-wrapper">
-        <div class="ig-pg-header" (click)="expanded = !expanded" tabindex="1" (keypress)="onInputKeyUp($event)">
+        <div class="ig-pg-header" (click)="expanded = !expanded; expandedChange.emit(expanded);" tabindex="1" (keypress)="onInputKeyUp($event)">
             <span class="fa fa-chevron-circle-right" [ngClass]="{'down': expanded}"></span>
             <div class="pg-title noselect" [ngClass]="{'close': !expanded}">{{title}}</div>
             <div class="info-tip" *ngIf="showMoreInfo">
@@ -13,6 +13,6 @@
         </div>
     </div>
     <div class="pg-collapsable-content" [ngClass]="{'close': !expanded, 'no-padding': !shouldBePadded}" #pgcontainer>
-        <ng-content select="[inputs]"></ng-content>
+        <ng-content select="[inputs], [readonly]"></ng-content>
     </div>
 </div>

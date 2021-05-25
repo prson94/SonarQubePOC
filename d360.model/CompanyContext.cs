@@ -216,32 +216,6 @@ namespace d360.model
 
         #endregion
 
-        #region Legacy Lineage
-
-        public DbSet<Map> Maps { get; set; }
-
-        public DbSet<MapGroup> MapGroups { get; set; }
-
-        public DbSet<MapGroupItem> MapGroupItems { get; set; }
-
-        public DbSet<MapType> MapTypes { get; set; }
-
-        public DbSet<MapTypeOrder> MapTypeOrders { get; set; }
-
-        public DbSet<MapItem> MapItems { get; set; }
-
-        public DbSet<MapRule> MapRules { get; set; }
-
-        public DbSet<MapRuleItem> MapRuleItems { get; set; }
-
-        public DbSet<MapRuleItemMapItem> MapRuleItemMapItems { get; set; }
-
-        public DbSet<MapSequence> MapSequences { get; set; }
-
-        public DbSet<MapSequenceContext> MapSequenceContexts { get; set; }
-
-        #endregion
-
         #region Repository Methods
 
 
@@ -924,14 +898,14 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
             return itName != null ? itName : "Name";
         }
 
-        public bool TypeHasParent(SystemObjects type, int id)
+        public bool TypeHasParent(SystemObjects type, int id, PredicateType parentFunctionalType = PredicateType.InterTypeHierarchy)
         {
 
             var sql = @"select 1 from IntersectType I
                     inner join [Predicate] P on P.ID = I.PredicateID
                     where P.[Type] = @type and [Object] = @object and ObjectID = @objectId";
 
-            return Query<dynamic>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50, IsFixedLength = true }, objectId = id }).Any();
+            return Query<dynamic>(sql, new { type = (int)parentFunctionalType, @object = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50, IsFixedLength = true }, objectId = id }).Any();
         }
 
         public AssetDetail GetParentObject(int id, SystemObjects obj)
@@ -1637,15 +1611,6 @@ where	I.ID is null";
             modelBuilder.Entity<Question>().HasMany<QuestionTypeOption>(i => i.QuestionTypeOptions).WithMany(i => i.Questions).Map(i =>
             {
                 i.MapLeftKey("QuestionID").MapRightKey("QuestionTypeOptionID").ToTable("QuestionOption");
-            });
-            modelBuilder.Entity<MapRule>().HasMany<MapRuleItem>(i => i.MapRuleItems).WithMany(i => i.MapRules).Map(i =>
-            {
-                i.MapLeftKey("MapRuleID").MapRightKey("MapRuleItemID").ToTable("MapRuleItemMapRule");
-            });
-
-            modelBuilder.Entity<Map>().HasMany<MapItem>(i => i.MapItems).WithMany(i => i.Maps).Map(i =>
-            {
-                i.MapLeftKey("MapID").MapRightKey("MapItemID").ToTable("MapItemMap");
             });
 
             modelBuilder.Entity<Score>().HasMany<ScoreItem>(i => i.Items).WithMany(i => i.Scores).Map(i =>
@@ -2969,10 +2934,10 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     objectId = ConnectorLabels.FirstOrDefault(x => x.uid == objectUid).ID;
                     break;
                 default:
-                    objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == objectType.ToString())?.ObjectID ?? 0;
+                    objectId = Assets.FirstOrDefault(x => x.uid == objectUid)?.ObjectID ?? 0;
                     if (objectId <= 0)
                     {
-                        throw new ArgumentNullException($"Method not implemented for object type '{objectType}'");
+                        throw new ArgumentNullException($"Asset not found based on uid '{objectUid}'");
                     }
                     break;
             }

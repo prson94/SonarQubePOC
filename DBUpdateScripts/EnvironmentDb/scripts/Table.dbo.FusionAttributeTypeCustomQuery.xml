@@ -5,33 +5,32 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Table.dbo.FusionAttributeTypeCustomQuery-v2">
-    <comment>GOV-14306</comment>
+  <changeSet author="Puneet Gupta" id="Table.dbo.FusionAttributeTypeCustomQuery-Drop-v3">
+    <comment>GOV-14307</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
     
-    IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionAttributeTypeCustomQuery')
+			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionAttributeTypeCustomQuery_bak')
 			BEGIN
-				exec sp_rename 'dbo.FusionAttributeTypeCustomQuery', 'FusionAttributeTypeCustomQuery_bak';
+				drop table FusionAttributeTypeCustomQuery_bak;
 			END
-
-			IF EXISTS (select * from sys.foreign_keys where name = 'FK_FusionAttributeTypeCustomQuery_Fusion')
-			BEGIN	
-				ALTER TABLE [dbo].[FusionAttributeTypeCustomQuery_bak] DROP CONSTRAINT [FK_FusionAttributeTypeCustomQuery_Fusion]
-			END
-			      
-			IF EXISTS (select * from sys.foreign_keys where name = 'FK_FusionAttributeTypeCustomQuery_FusionAttributeType')
-			BEGIN	
-				ALTER TABLE [dbo].[FusionAttributeTypeCustomQuery_bak] DROP CONSTRAINT [FK_FusionAttributeTypeCustomQuery_FusionAttributeType]
-			END			
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionAttributeTypeCustomQuery_bak')
+BEGIN
+	CREATE TABLE [dbo].[FusionAttributeTypeCustomQuery_bak](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[FusionID] [int] NOT NULL,
+		[FusionAttributeTypeID] [int] NOT NULL,
+		[Query] [nvarchar](max) NULL,
+		CONSTRAINT [PK_FusionAttributeTypeCustomQuery] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+	)
+END
 		]]>
 	</rollback>
   </changeSet>

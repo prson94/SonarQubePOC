@@ -40,6 +40,12 @@ export class EditorField {
     ItemSize: number;
     UseNativeLookupControl: boolean;
     UseColorControl: boolean;
+
+    IsAssetLazyLoad: boolean;
+    AssetUid: string;
+    TargetAssetTypeUid: string;
+    IntersectTypeUid: string;
+    ObjectCardinality: string;
 }
 
 export class EditorCategory {

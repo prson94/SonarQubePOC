@@ -3,8 +3,10 @@ using d360.core.entities;
 using d360.core.entities.Metric;
 using d360.core.enums;
 using d360.core.queue;
+using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 using Dapper;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -16,10 +18,15 @@ namespace d360.model.DataAccessLayer
     public class ResponsibilityRepository : BaseRepository, IResponsibilityRepository
     {
         ICompanyContext Company;
-        public ResponsibilityRepository(ICompanyContext companyContext)
+        internal IStorageProvider StorageProvider;
+        internal IQueueSource QueueSource;
+
+        public ResponsibilityRepository(ICompanyContext companyContext, IStorageProvider storageProvider, IQueueSource queueSource)
             : base(companyContext)
         {
             this.Company = companyContext;
+            this.StorageProvider = storageProvider;
+            this.QueueSource = queueSource;
         }
 
         public async Task<AssetResponsibilitiesApiModel> GetResponsibilities(IEnumerable<KeyValuePair<string, string>> queryParams, string responsibilityUidFilter, string assigneeUidFilter, string assetUidFilter, string assetTypeUidFilter, int pageSize, int pageNum, int timeout)
@@ -720,6 +727,26 @@ where 1=1
             }
         }
 
+        public string GetResponsibilityTypeUsedInOwnershipLookupMessage(ResponsibilityType responsibility, AssetType assetType)
+        {
+            string errorMessage = "";
+            List<string> usedByOwnershipFields = Company.Query<string>($@"SELECT ft.FriendlyName
+                    FROM [dbo].[AssetType] at
+                    INNER JOIN [dbo].[FieldType] ft on at.id = ft.AssetTypeID
+                    INNER JOIN [dbo].[fieldTypeLookup] ftl on ft.id = ftl.FieldTypeId
+                    WHERE ft.Type = '{DataType.OwnershipLookup}'
+                    AND at.id = @assetTypeId
+                    AND TRY_CAST(JSON_VALUE(FTL.Definition, '$.ResponsibilityType') AS int) = @responsibilityTypeId", new { responsibilityTypeId = responsibility.ID, assetTypeId = assetType.ID }).ToList();
+
+            if (usedByOwnershipFields.Any())
+            {
+                string fieldsMultiple = usedByOwnershipFields.Count() > 1 ? "s" : "";
+                string fields = "'" + string.Join("', '", usedByOwnershipFields.ToArray()) + "'";
+                errorMessage = $"This asset assignment is used in the field definition{fieldsMultiple} {fields}. Please update or delete this prior to deleting the asset assignment.";
+            }
+            return errorMessage;
+        }
+
         public ResponsibilityType GetResponsibilityTypeByUID(Guid uid)
         {
             return Company.ResponsibilityTypes.FirstOrDefault(x => x.UID == uid);
@@ -1017,5 +1044,19 @@ where   Success is null", transaction: trans);
             
             return returnResults;
         }
+
+        public async Task<ApiExecutionInfo> PostBatchResponsibilityOverride(List<BulkResponsibilityOverridePostModel> models, ApiExecution execution)
+        {
+            var executionInfo = new ApiExecutionInfo
+            {
+                CompanyID = Company.CurrentCompanyID,
+                CompanyDomainPrefix = Company.CurrentCompanyDomain,
+                ExecutionID = Guid.NewGuid(),
+                ResourceID = execution.ResourceID,
+                Action = ApiExecutionAction.PostResponsibilityOverride
+            };
+
+            return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
+        }        
     }
 }

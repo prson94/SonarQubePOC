@@ -25,6 +25,7 @@ import { FormsModule } from '@angular/forms';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { SharedDeleteFormModule } from '../delete.form';
 import { ObjectDetailCategoryComponent } from './object-detail-category.component';
+import { PropertyGroupModule } from '../controls/property-group/property-group.component';
 
 
 @NgModule({
@@ -48,7 +49,8 @@ import { ObjectDetailCategoryComponent } from './object-detail-category.componen
         IgColorPickerModule,
         FormsModule,
         AutoCompleteModule,
-        SharedDeleteFormModule
+        SharedDeleteFormModule,
+        PropertyGroupModule,
     ],
     declarations: [
         DynamicLookupGridComponent,
@@ -59,7 +61,8 @@ import { ObjectDetailCategoryComponent } from './object-detail-category.componen
     ],
     exports: [
         ObjectDetailComponent,
-        ObjectDetailFieldComponent
+        ObjectDetailFieldComponent,
+        SynonymsTile,
     ],
     providers: [{
         provide: HTTP_INTERCEPTORS,

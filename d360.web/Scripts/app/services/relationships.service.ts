@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
-import { RelationshipType, RelationshipDetail, ObjectRelationship, RelatedItem, ObjectRelationshipCount, PossibleTechnicalRelationship, PredicateDropdown } from '../models/relationship.model';
+import { RelationshipType, RelationshipDetail, ObjectRelationship, RelatedItem, ObjectRelationshipCount, PredicateDropdown, RelationshipCount, RelationItem } from '../models/relationship.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
 import { Observable, forkJoin } from 'rxjs';
@@ -16,8 +16,14 @@ export class RelationshipsService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getRelationshipTypes(): Observable<RelationshipType[]> {
-        return this.http.get('api/v2/relationships/types?state=1')
+    getRelationshipTypes(assetTypeUid: string = null): Observable<RelationshipType[]> {
+        var url = 'api/v2/relationships/types?state=1';
+
+        if (assetTypeUid) {
+            url += `&AssetTypeUid=${assetTypeUid}`;
+        }
+
+        return this.http.get(url)
             .pipe(
                 map(response => <RelationshipType[]>response),
                 catchError(err => this.handleError(err))
@@ -41,7 +47,7 @@ export class RelationshipsService extends BaseObservableService {
             );
     }
 
-    saveRelationships(intersectTypeUid: number, model: any[]): Observable<ApiResult[]> {
+    saveRelationships(intersectTypeUid: string, model: any[]): Observable<ApiResult[]> {
         if (model.length > this.MAX_SYNCHRONOUS_API_ITEM_COUNT) {
             var models: any[] = [];
             for (var i = 0; i < model.length; i += this.MAX_SYNCHRONOUS_API_ITEM_COUNT) {
@@ -97,7 +103,7 @@ export class RelationshipsService extends BaseObservableService {
         );
     }
 
-    deleteRelationshipV2(intersectTypeUid: number, model: any[]): Observable<ApiResult[]> {
+    deleteRelationshipV2(intersectTypeUid: string, model: any[]): Observable<ApiResult[]> {
         const httpHeaders = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: model
         };
@@ -229,6 +235,19 @@ export class RelationshipsService extends BaseObservableService {
             );
     }
 
+    public getRelations(
+        object: string,
+        objectId: number
+    ): Observable<RelationItem[]> {
+        return this
+            .http
+            .get(`api/${object}/${objectId}/relations`)
+            .pipe(
+                map((response) => <RelationItem[]>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     exportObjectRelationshipsToExcel(objectType: string, objectId: number, targetType: string, targetTypeId: number, intersectTypeID: number, queryString: string, criticalOnly?: boolean) {
         criticalOnly = (criticalOnly == undefined ? false : criticalOnly);
 
@@ -275,5 +294,44 @@ export class RelationshipsService extends BaseObservableService {
         this.tagTooltipsCache.push(data);
 
         return obs;
+    }
+
+    getRelationships(intersectTypeUid: string, params: any, isExport = false): Observable<any> {
+        var url = 'api/v2/relationships?RelationshipTypeUid=' + intersectTypeUid;
+
+        if (params) {
+            url += "&" + Object.keys(params).map((key) => key + '=' + params[key]).join('&');
+        }
+
+        if (isExport === false) {
+            return this.http.get(url)
+                .pipe(
+                    map((response) => <any>response),
+                    catchError((err) => {
+                        if (!this.isErrorFromFilterExpression(err)) {
+                            return this.handleError(err);
+                        }
+                        else {
+                            throw err;
+                        }
+
+                    }
+                    )
+                );
+        }
+        else {
+            this.http.get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
+                .subscribe((data) => this.downloadFile(data, 'relationship type items'));
+        }
+    }
+
+    getRelationshipsCountsForAsset(assetUid: string): Observable<RelationshipCount[]> {
+        var url = 'api/v2/relationships/counts/' + assetUid;
+
+        return this.http.get(url)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
     }
 }

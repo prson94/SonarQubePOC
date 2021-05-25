@@ -9,23 +9,32 @@ namespace igx.jobs.scoreprocessor.Models
 {
     internal class AssetVersionCheckObjectTypes : List<AssetVersionCheckObjectType>
     {
-        public bool OkToAddToList(Guid versionUid)
+        public bool OkToAddToList(Object locker, Guid versionUid)
         {
-            return !this.Any(i => i.AssetVersionUid == versionUid);
+            var ok = false;
+            lock (locker)
+            {
+                ok = !this.Any(i => i.AssetVersionUid == versionUid);
+            }
+            return ok;
         }
 
-        public bool ShouldContinueAnalysis(Guid versionUid)
+        public bool ShouldContinueAnalysis(Object locker, Guid versionUid)
         {
             var shouldContinue = true;
-            var item = this.SingleOrDefault(i => i.AssetVersionUid == versionUid);
-            if (item != null)
-            {
-                shouldContinue = item.Valid;
+
+            lock (locker) {
+                var item = this.FirstOrDefault(i => i.AssetVersionUid == versionUid);
+                if (item != null)
+                {
+                    shouldContinue = item.Valid;
+                }
+                else
+                {
+                    shouldContinue = true;
+                }
             }
-            else
-            {
-                shouldContinue = true;
-            }
+
             return shouldContinue;
         }
     }

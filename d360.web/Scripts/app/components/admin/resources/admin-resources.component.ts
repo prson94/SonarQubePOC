@@ -10,15 +10,16 @@ import { SecondaryNavService } from '../../../services/right-sidebar.service';
     templateUrl: './admin-resources.component.html'
 })
 
-export class AdminResourcesComponent extends AdminBaseComponent implements OnInit {    
+export class AdminResourcesComponent extends AdminBaseComponent implements OnInit {
     constructor(headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, secondaryNavService: SecondaryNavService,) {
-        super(headerBreadcrumbService, titleService);        
+        super(headerBreadcrumbService, titleService);
         this.areaName = "Users";
         this.adminHeading = "Security";
         this.secondaryNavService = secondaryNavService;
-       
+
         this.setCommonItems();
-        this.setObjectInfo('ResourceType', 1);        
+        this.setObjectInfo('ResourceType', 1);
+        this.buildSecondaryNavigationForObject(0, 'ResourceType');
     }
     ngOnInit() {
         this.clearSidebar();

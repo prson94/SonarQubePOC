@@ -1,28 +1,52 @@
 ﻿<header>
     <span *ngIf="showTitle; else noTitle">Results</span>
-    <ng-template #noTitle>&nbsp;</ng-template>
-    <d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()" [hasRefresh]="true" (refreshClick)="getData();"></d3s-tile-actions>
 </header>
-<div *ngIf="showSimpleFilter">
-    <input type="text" style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />
+
+<div class="grid-actions-header">
+    <div class="simple-search">
+        <ig-search-field mode="Keypress"
+                         [debounce]="600"
+                         (onSearch)="getData($event)"
+                         [(ngModel)]="simpleTextFilter"
+                         [infoTooltip]="simpleSearchTooltipHTML">
+        </ig-search-field>
+    </div>
+    <advanced-filtering [loadIdentifier]="'RuleResults_' + ruleUid" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+    <div class="grid-action-buttons">
+        <div pTooltip="Export to Excel"
+             tooltipPosition="left"
+             tooltipStyleClass="ig-tooltip">
+            <button igButton
+                    icon="fa-download"
+                    (click)="doExport()">
+            </button>
+        </div>
+    </div>
 </div>
+
+<div class="debug-code" *ngIf="isDebugMode">
+    <ng-container *ngIf="newAdvancedFilters && newAdvancedFilters.filter">
+        {{newAdvancedFilters.filter}}
+    </ng-container>
+</div>
+
 <d3s-rule-column-filter [hidden]="showSimpleFilter" [(relationshipFilter)]="relationships" [(filters)]="filters" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-rule-column-filter>
 <p-table #dt
-            [value]="items"
-            selectionMode="single"
-            [metaKeySelection]="true"
-            [globalFilterFields]="['RunDate','EffectiveDate','PassFraction','RowsPassed','RowsFailed','Passed','FusionAttribute']"
-            [pageLinks]="3"
-            [paginator]="true"
-            [rows]="rowsPerPage"
-            [rowsPerPageOptions]="defaultPagingOptions"
-            [lazy]="true"
-            (onLazyLoad)="loadRuleResultsLazy($event)"
-            [totalRecords]="totalRecords"
-            [scrollable]="true"
-            [loading]="isLoading"
-            [loadingIcon]="'fa fa-spinner fa-spin'"
-            scrollWidth="100%">
+         [value]="items"
+         selectionMode="single"
+         [metaKeySelection]="true"
+         [globalFilterFields]="['RunDate','EffectiveDate','PassFraction','RowsPassed','RowsFailed','Passed','FusionAttribute']"
+         [pageLinks]="3"
+         [paginator]="true"
+         [rows]="rowsPerPage"
+         [rowsPerPageOptions]="defaultPagingOptions"
+         [lazy]="true"
+         (onLazyLoad)="loadRuleResultsLazy($event)"
+         [totalRecords]="totalRecords"
+         [scrollable]="true"
+         [loading]="isLoading"
+         [loadingIcon]="'fa fa-spinner fa-spin'"
+         scrollWidth="100%">
     <ng-template pTemplate="colgroup">
         <colgroup>
             <col style="width: 100px">
@@ -105,12 +129,13 @@
                 <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.EvaluatedAssetClass}}</span>
             </td>
             <td>
-                <span class="{{item.IsDuplicate ? 'duplicate' : ''}}" [innerHTML]="formatPath(item.EvaluatedAssetTypePath)"></span> 
+                <span class="{{item.IsDuplicate ? 'duplicate' : ''}}" [innerHTML]="formatPath(item.EvaluatedAssetTypePath)"></span>
             </td>
             <td>
                 <span class="{{item.IsDuplicate ? 'duplicate-preview' : ''}}">
                     <d3s-preview-tooltip *ngIf="item.EvaluatedAssetDisplayPath" [uid]="item.EvaluatedAssetUid">
-                        <span [innerHTML]="formatPath(item.EvaluatedAssetDisplayPath)"></span></d3s-preview-tooltip>
+                        <span [innerHTML]="formatPath(item.EvaluatedAssetDisplayPath)"></span>
+                    </d3s-preview-tooltip>
                 </span>
             </td>
             <td>
@@ -133,8 +158,8 @@
                 <div class="RowTools">
                     <a style="cursor:pointer;" (click)="selected=item;">
                         <i [copy-clipboard]="item.ResultUid"
-                            [pTooltip]="'Rule Result UID: \n' + item.ResultUid + '\n\n (click to copy)\n'"
-                            tooltipPosition="top" class="fa fa-info"></i>
+                           [pTooltip]="'Rule Result UID: \n' + item.ResultUid + '\n\n (click to copy)\n'"
+                           tooltipPosition="top" class="fa fa-info"></i>
                     </a>
                 </div>
             </td>
@@ -153,4 +178,4 @@
     <ng-template pTemplate="summary">
         <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
     </ng-template>
-</p-table>   
+</p-table>

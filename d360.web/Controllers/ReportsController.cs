@@ -3,7 +3,7 @@ using d360.core.entities;
 using d360.model;
 using d360.web.Models;
 using d360.web.Models.Attributes;
-using Microsoft.PowerBI.Api;
+using Microsoft.PowerBI.Api.V2;
 using Microsoft.Rest;
 using System;
 using System.Collections.Generic;
@@ -34,15 +34,15 @@ namespace d360.web.Controllers
         private static readonly string pbiAuthorityUrl = "https://login.microsoftonline.com/02292cae-2fe6-4371-8da1-b03d14808575";
         private static readonly string pbiResourceUrl = "https://analysis.windows.net/powerbi/api";
         private static readonly string pbiUrl = "https://api.powerbi.com";
-        
-        
+
+
         [Route("powerbi/tokens/{reportId}")]
         public async Task<JsonNetResult> GetPowerBITokens(string reportId)
         {
             var companySettings = Community.GetCompanySettings();
             var groupId = string.Empty;
             var clientId = string.Empty;
-            
+
             companySettings.TryGetValue("PowerBIClientId", out clientId);
             companySettings.TryGetValue("PowerBIGroupId", out groupId);
 
@@ -67,24 +67,23 @@ namespace d360.web.Controllers
 
             using (var client = new PowerBIClient(new Uri(pbiUrl), tokenCredentials))
             {
-                var groupUid = Guid.Parse(groupId);
-                var reportsResponse = await client.Reports.GetReportsAsync(groupUid);               
-                var report = reportsResponse.Value.FirstOrDefault(r => string.Compare(r.Id.ToString(), reportId,true) == 0 );
+                var reportsResponse = await client.Reports.GetReportsAsync(groupId);
+                var report = reportsResponse.Value.FirstOrDefault(r => string.Compare(r.Id, reportId, true) == 0);
 
-                if(report == null)
+                if (report == null)
                 {
                     throw new Exception("No such report");
                 }
 
-                Microsoft.PowerBI.Api.Models.GenerateTokenRequest generateTokenRequestParameters = new Microsoft.PowerBI.Api.Models.GenerateTokenRequest(accessLevel: "view");
+                Microsoft.PowerBI.Api.V2.Models.GenerateTokenRequest generateTokenRequestParameters = new Microsoft.PowerBI.Api.V2.Models.GenerateTokenRequest(accessLevel: "view");
 
-                var tokenResponse = await client.Reports.GenerateTokenInGroupAsync(groupUid, report.Id, generateTokenRequestParameters);
+                var tokenResponse = await client.Reports.GenerateTokenInGroupAsync(groupId, report.Id, generateTokenRequestParameters);
 
                 if (tokenResponse == null)
                 {
-                    throw new Exception("Failed to generate embed token.");                    
+                    throw new Exception("Failed to generate embed token.");
                 }
-                                
+
                 var viewModel = new PowerBIReportViewModel
                 {
                     Report = report,
@@ -92,7 +91,7 @@ namespace d360.web.Controllers
                 };
 
                 return new JsonNetResult { Data = viewModel, Formatting = Newtonsoft.Json.Formatting.None };
-            }            
+            }
         }
 
         [Route("reports")]
@@ -104,10 +103,10 @@ namespace d360.web.Controllers
                 return null;
             }
 
-            var reports = Company.Reports.Include(rpt=>rpt.Responsibilities).OrderBy(x => x.Name).ToList();
+            var reports = Company.Reports.Include(rpt => rpt.Responsibilities).OrderBy(x => x.Name).ToList();
 
             foreach (var report in reports)
-            {                
+            {
                 if (report.Responsibilities == null) continue;
                 var visibleTo = "";
                 foreach (var responsibility in report.Responsibilities)
@@ -116,7 +115,7 @@ namespace d360.web.Controllers
                         visibleTo += ",";
                     visibleTo += responsibility.ResponsibilityTypeID.ToString();
                 }
-                report.VisibleTo = string.IsNullOrEmpty(visibleTo)? null:visibleTo;
+                report.VisibleTo = string.IsNullOrEmpty(visibleTo) ? null : visibleTo;
             }
 
             return new JsonNetResult { Data = reports, Formatting = Newtonsoft.Json.Formatting.None };
@@ -136,7 +135,7 @@ namespace d360.web.Controllers
                     var asset = Company.AssetDetails.Where(x => x.Object == objectType.ToString() && x.ObjectID == id).First();
 
                     objectId = asset.TypeID;
-                }                
+                }
 
                 var reports = Company.Filter<Report>(x => x.ObjectType == type && x.ObjectID == objectId && x.ReportType != "legacy").Include(rpt => rpt.Responsibilities).OrderBy(i => i.Name).ToList();
 
@@ -159,7 +158,7 @@ namespace d360.web.Controllers
 
                 if (currentUserResponsibilityTypeList != null && currentUserResponsibilityTypeList.Count() > 0)
                 {
-                    currentUserResponsibilityTypeIDList = currentUserResponsibilityTypeList.Select(i => i.ResponsibilityTypeID).ToList();                    
+                    currentUserResponsibilityTypeIDList = currentUserResponsibilityTypeList.Select(i => i.ResponsibilityTypeID).ToList();
                 }
 
                 //check that the current user has access to the current report
@@ -206,7 +205,7 @@ namespace d360.web.Controllers
                             currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.TypeID == report.ObjectID && x.Type == report.ObjectType && x.ResourceID == Company.CurrentResourceID).ToList();
                         else
                             currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.ObjectID == report.ObjectID && x.Object == report.ObjectType && x.ResourceID == Company.CurrentResourceID).ToList();
-                        
+
                         var currentUserResponsibilityTypeIDList = new List<int>();
 
                         if (currentUserResponsibilityType != null && currentUserResponsibilityType.Count() > 0)
@@ -235,7 +234,7 @@ namespace d360.web.Controllers
 
         [Route("byid/{id:int}")]
         public JsonNetResult GetReportsByID(int id)
-        {            
+        {
             var report = Company.Reports.Include(rpt => rpt.Responsibilities).FirstOrDefault(x => x.ID == id && x.ReportType != "legacy");
             var type = report.ObjectType;
 
@@ -246,7 +245,7 @@ namespace d360.web.Controllers
             {
                 currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.ObjectID == report.ObjectID && x.Object == type && x.ResourceID == Company.CurrentResourceID).ToList();
                 var asset = Company.AssetTypes.FirstOrDefault(x => x.Object == (type + "Type") && x.ObjectID == report.ObjectID);
-                   
+
                 if (asset != null)
                     currentUserResponsibilityTypeList.AddRange(Company.ResponsibilityDetails.Where(x => x.AssetTypeID == asset.ID && x.AssetID == 0 && x.ResourceID == Company.CurrentResourceID).ToList());
 
@@ -281,7 +280,7 @@ namespace d360.web.Controllers
             }
             return new JsonNetResult { Data = report, Formatting = Newtonsoft.Json.Formatting.None };
         }
-                
+
         [Route("home"), ValidateContracts(Ignore = true), HttpGet]
         public JsonNetResult GetHomePageReports()
         {

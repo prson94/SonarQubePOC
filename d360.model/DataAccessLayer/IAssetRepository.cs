@@ -40,6 +40,7 @@ namespace d360.model.DataAccessLayer
         AssetType GetAssetTypeByModel(AssetTypeUpsert model);
         ApiExecution GetExecutionItemByUid(Guid executionUid);
         Task<APIExecutionAPIModelResult> GetExecutionItems(IEnumerable<KeyValuePair<string, string>> queryParams);
+        Task<APIExecutionExternalAPIModelResult> GetConnectorStatusItems(IEnumerable<KeyValuePair<string, string>> queryParams, DateTime? _startDate, DateTime? _endDate, Guid? externalId, string status, string component);
         void UpsertAssetStyle(int assetTypeId, string foreColor, string backColor, string icon, string objectName = "Tx");
         bool DoesAssetExists(Guid uid);
         bool IsReachedTransformationLimit(AssetTypeUpsert model);
@@ -49,7 +50,7 @@ namespace d360.model.DataAccessLayer
         Task<List<extensions.PathComponent>> GetAssetPath(Guid assetUid);
         Task<Dictionary<Guid, List<extensions.PathComponent>>> GetAssetPathComponents(IEnumerable<Guid> assetUids);
         Task<dynamic> GetAssetTypeDetails(AssetType type);
-        Task<SLDocument> GetAssetsExcel(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams);
+        Task<SLDocument> GetAssetsExcel(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams, bool isChildItem = false);
         Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses);
         Task<AssetsCountModel> GetAssetsCounts();
         Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid);

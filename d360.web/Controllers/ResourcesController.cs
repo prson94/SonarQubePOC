@@ -467,7 +467,7 @@ from	FollowDetail F
                     {
                         //For Tooltip data for Issues, we want multivalue fields separated out in an array of each separate value
                         //for use on the workflow monitor page 
-                        //We'll maintain the compound comma separated valuie in "Value" for compatability with other pages
+                        //We'll maintain the compound comma separated value in "Value" for compatability with other pages
                         var sql = @"select ft.objectId as IssueId,
                                f.FormattedValue as [Value],
                                ft.FriendlyName as Name,
@@ -773,26 +773,6 @@ Order by ColumnOrder,Name
             {
                 return Json(new { title = "Error Occurred!", message = ex.Message, type = "error" }, JsonRequestBehavior.AllowGet);
             }
-        }
-
-        [Route("MyApiCredentials")]
-        public JsonNetResult MyApiCredentials()
-        {
-            if (!Company.CurrentResourceIsAdmin && !this.ShowAllUsersAPIKey())
-                return jsonNetException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var resource = Community.GetById<Resource>(Community.CurrentResourceID);
-
-            return new JsonNetResult
-            {
-                Data = new
-                {
-                    PublicKey = resource.APIPublicKey,
-                    PrivateKey = resource.APIPrivateKey
-                },
-                Formatting = Newtonsoft.Json.Formatting.None
-
-            };
         }
 
         private List<TooltipFieldLevelPathModel> GetFieldLevelPathFromAssetNodeSegment(Guid uid) {

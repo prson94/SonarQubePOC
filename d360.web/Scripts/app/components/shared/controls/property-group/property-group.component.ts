@@ -17,10 +17,12 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
     @Input() showMoreInfo: boolean = false;
     @Input() moreInfoHtml: string = "";
     @Input() shouldBePadded: boolean = true;
+    @Input() showHeaderLine: boolean = true;
     @Output() isValid = new EventEmitter();
     invalidCount: number = 0;
     requiredCount: number = 0;
-    expanded: boolean = true;
+    @Input() expanded: boolean = true;
+    @Output() expandedChange = new EventEmitter();
 
     private requiredPos: number = 0;
     private invalidPos: number = 0;
@@ -38,9 +40,11 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
     }
 
     ngAfterViewInit(): void {
-        this.igformGroup.valueChanges.subscribe(x => {
-            this.delayedRefresh();
-        });
+        if (this.igformGroup) {
+            this.igformGroup.valueChanges.subscribe(x => {
+                this.delayedRefresh();
+            });
+        }
     }
 
     ngOnInit(): void {

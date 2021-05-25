@@ -32,7 +32,7 @@ namespace d360.web.Controllers
         {
             var list = new List<EditableField>();
 
-            if (!Company.HasAssetTypePermission(SystemObjects.FusionType, ft, Permission.ModifyAsset))
+            if (!Company.HasAssetTypePermission(SystemObjects.FusionType, ft, Permission.AddAsset))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var fusion = new Fusion();
@@ -68,7 +68,7 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();
             var a = Company.GetById<Fusion>(id, i => i.FusionOwners);
 
-            if (!Company.HasAssetPermission(SystemObjects.Fusion, id, Permission.ModifyAsset))
+            if (!Company.HasAssetPermission(SystemObjects.Fusion, id, Permission.EditAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
@@ -125,7 +125,7 @@ namespace d360.web.Controllers
                 var type = Company.GetById<FusionType>(typeID);
                 if (type == null) throw new NotFoundException("fusion type");
 
-                if (!Company.HasAssetTypePermission(SystemObjects.FusionType, typeID, Permission.ModifyAsset))
+                if (!Company.HasAssetTypePermission(SystemObjects.FusionType, typeID, Permission.AddAsset))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 var rawOwners = parseTextField(form, "Owners");
@@ -210,7 +210,7 @@ namespace d360.web.Controllers
                 var model = Company.GetById<Fusion>(parseIntField(form, "ID"), i => i.FusionOwners);
                 if (model == null) throw new NotFoundException("configuration");
 
-                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.ID, Permission.ModifyAsset))
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.ID, Permission.AddAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 var rawOwners = parseTextField(form, "Owners");
@@ -433,7 +433,7 @@ namespace d360.web.Controllers
         [Route("FusionAttributeType_AddFields"), NonNullableParameters]
         public JsonResult FusionAttribute_AddFields(int fat, int f)
         {
-            if (!Company.HasAssetPermission(SystemObjects.Fusion, f, Permission.ModifyAsset))
+            if (!Company.HasAssetPermission(SystemObjects.Fusion, f, Permission.AddAsset))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -457,7 +457,7 @@ namespace d360.web.Controllers
             if (a == null)
                 return jsonException("Fusion attribute not found.", HttpStatusCode.BadRequest, "Not found");
 
-            if (!Company.HasAssetPermission(SystemObjects.Fusion, a.FusionID, Permission.ModifyAsset))
+            if (!Company.HasAssetPermission(SystemObjects.Fusion, a.FusionID, Permission.EditAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
@@ -494,7 +494,7 @@ namespace d360.web.Controllers
 
                 if (model == null) throw new NotFoundException("Fusion Attribute");
 
-                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.FusionID, Permission.ModifyAsset))
+                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.FusionID, Permission.EditAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.FusionAttribute, model.ID, Company.GetFieldTypesByObject(SystemObjects.FusionAttributeType, model.FusionAttributeTypeID).ToList(), form, Server, false);

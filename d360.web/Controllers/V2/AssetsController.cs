@@ -132,7 +132,7 @@ namespace d360.web.Controllers.V2
                 Guid? fusionTypeGuid = Guid.Empty;
                 if (!string.IsNullOrEmpty(FusionTypeUID))
                 {
-                    if (Class == null || (Class == AssetTypeClass.FusionQuery || Class == AssetTypeClass.FusionAttribute))
+                    if (Class == null || Class == AssetTypeClass.FusionAttribute)
                     {
                         fusionTypeGuid = Guid.Parse(FusionTypeUID);
                     }
@@ -269,8 +269,11 @@ namespace d360.web.Controllers.V2
                 if (!validator.IsValidOrderDirectionGetAssets(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid order direction passed in the request"));
 
-                if (!validator.IsValidOwnersGetAssets(queryParams))
+                if (!validator.IsValidOwnersGetAssets(queryParams, "_ownedby"))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid user or group uid as owner passed in the request"));
+
+                if (!validator.IsValidOwnersGetAssets(queryParams, "_notownedby"))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid user or group uid as non owner passed in the request"));
 
                 if (!validator.IsValidGetAssets(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid asset Uid in parameters!"));
@@ -341,6 +344,11 @@ namespace d360.web.Controllers.V2
                         bool isHierachyItem = false;
                         var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_ishierachyitem").Value;
                         bool.TryParse(value, out isHierachyItem);
+
+                        bool isChildItem = false;
+                        var valueChild = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_ischildtab").Value;
+                        bool.TryParse(valueChild, out isChildItem);
+
                         var paramList = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson").ToList();
 
                         paramList.RemoveAll(x => x.Key.ToLower() == "_includeownershiplookup");
@@ -355,7 +363,7 @@ namespace d360.web.Controllers.V2
                         }
                         else
                         {
-                            results = await AssetRepository.GetAssetsExcel(assetTypeUid, queryParams);
+                            results = await AssetRepository.GetAssetsExcel(assetTypeUid, queryParams, isChildItem);
                         }
 
                         var stream = new MemoryStream();
@@ -880,8 +888,10 @@ namespace d360.web.Controllers.V2
                 if (assetType == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {assetTypeUid} could not be found."));
 
-                if (!Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, Permission.ModifyAsset))
+                if (!Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, Permission.AddAsset))
+                {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add assets of this type."));
+                }
 
                 if (assets == null)
                     assets = readRequestJsonContent<List<AssetInsert>>(Request).Result;
@@ -1062,6 +1072,7 @@ namespace d360.web.Controllers.V2
         ]
         public dynamic GetUIDetails(Guid assetUid)
         {
+
             return Company.Query<dynamic>($@"select Object,ObjectId,DisplayValue,lower(AssetTypeUid) as AssetTypeUid, TypeName from AssetDetail where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
         }
 
@@ -1621,6 +1632,18 @@ namespace d360.web.Controllers.V2
                             {
                                 result.Add("name", assetType.Name);
                                 result.Add("description", assetType.Description);
+
+                                if (returnForUI)
+                                {
+                                    var definition = JsonConvert.DeserializeObject<dynamic>(string.IsNullOrEmpty(fieldType.Definition) ? "{}" : fieldType.Definition);
+                                    var showDescription = definition == null ? true : definition?.DisplayRefListDescription?.Value ?? true;
+
+                                    result.Add("isReferenceListFromRelationship", true);
+                                    result.Add("objectId", referenceItemTypeID);
+                                    result.Add("fieldTypeId", fieldType.ID);
+                                    result.Add("showDescription", showDescription);
+                                    result.Add("url", $"/reference;referenceListId={assetType.uid.ToString().ToLower()}");
+                                }
                             }
                         }
                     }

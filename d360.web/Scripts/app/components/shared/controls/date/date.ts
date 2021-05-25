@@ -87,7 +87,7 @@ export class IgDate implements ControlValueAccessor, OnInit, AfterViewInit, OnDe
     private checkInterval;
     ngAfterViewInit() {
         this.checkInterval = setInterval(() => {
-            if (this.calendar.overlayVisible) {
+            if (this.calendar.overlayVisible && this.calendar.overlay) {
                 if (this.calendar.overlay.className.indexOf(this.getStyleClass) == -1) {
                     this.calendar.overlay.classList.add(this.getStyleClass);
                     this.calendar.overlay.classList.add("ig-date-overlay-normal-index");

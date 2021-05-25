@@ -22,6 +22,7 @@ using System.Configuration;
 using Newtonsoft.Json.Linq;
 using System.Text;
 using d360.model.helpers;
+using System.Globalization;
 
 namespace d360.model.DataAccessLayer
 {
@@ -1164,8 +1165,8 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                         metricAssetVersion.MatchConditionsOnly = model.MatchConditionsOnly;
                         metricAssetVersion.Threshold = model.Threshold;
                         metricAssetVersion.Weight = model.Weight;
-                        
-                        if (metricAsset.IsGroup && model.Allocation.ScoreType == ScoreType.Governance && definitionToSave.Governance != null) 
+
+                        if (metricAsset.IsGroup && model.Allocation.ScoreType == ScoreType.Governance && definitionToSave.Governance != null)
                         {
                             // Be sure to set the definition for group, no extraneous bad data.
                             definitionToSave.Governance.External = null;
@@ -2182,7 +2183,7 @@ for json path";
             return results;
         }
 
-        public DataQualityGetResultModel GetDataQualityResults(Guid owningAssetUid, Guid? evaluatedAssetUid = null, int pageSize = 250, int pageNum = 1, string sort = null, string direction = "asc", DateTime? effectiveDateStart = null, DateTime? effectiveDateEnd = null, bool includeDuplicateFlag = false, string _filter = "")
+        public DataQualityGetResultModel GetDataQualityResults(Guid owningAssetUid, Guid? evaluatedAssetUid = null, int pageSize = 250, int pageNum = 1, string sort = null, string direction = "asc", DateTime? effectiveDateStart = null, DateTime? effectiveDateEnd = null, bool includeDuplicateFlag = false, string _filter = "", string _simpleFilter = "")
         {
             var result = new DataQualityGetResultModel();
             var parameters = new DynamicParameters();
@@ -2193,7 +2194,7 @@ for json path";
                     whereSql = "",
                     whereCteEvaluatedBySql = "",
                     whereResultCteSql = "",
-                    orderSql = "R.EffectiveDate",
+                    orderSql = "EffectiveDate",
                     pagingSql = "offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only";
 
             if (effectiveDateStart.HasValue)
@@ -2209,7 +2210,7 @@ for json path";
             if (evaluatedAssetUid.HasValue)
             {
                 whereCteEvaluatedBySql = " and AE.Uid = @evaluatedAssetUid";
-                whereSql = (string.IsNullOrEmpty(whereSql) ? "where" : "and") + " E.EvaluatedAssetUid = @evaluatedAssetUid";
+                whereSql += (string.IsNullOrEmpty(whereSql) ? "where" : "and") + " EvaluatedAssetUid = @evaluatedAssetUid";
             }
 
             if (!string.IsNullOrEmpty(_filter))
@@ -2222,7 +2223,36 @@ for json path";
                 {
                     parameters.Add(item.Key, item.Value);
                 }
-                whereSql = (string.IsNullOrEmpty(whereSql) ? " where " : " and ") + query;
+                whereSql += (string.IsNullOrEmpty(whereSql) ? " where " : " and ") + query;
+            }
+
+            if (!string.IsNullOrEmpty(_simpleFilter))
+            {
+                var allFields = new [] {
+                "EffectiveDate",
+                 "FailCount",
+                 "PassCount",
+                 "PassFraction",
+                 "RunDate",
+                 "TotalCount",
+                "EvaluatedAssetDisplayPath",
+                "EvaluatedAssetTypePath"
+                };
+
+                parameters.Add("@simpleFilter", $"%{_simpleFilter}%");
+                var simpleQuery = string.Join(" or ", allFields.Select(x => $"({x} like @simpleFilter)").ToList());
+
+                var classes = AssetTypeClass.BusinessAsset.GetAsList();
+                var match = classes.Where(x => x.Name.ToLower(CultureInfo.InvariantCulture).Contains(_simpleFilter.ToLower(CultureInfo.InvariantCulture).Trim('\''))
+                || x.Value.ToLower(CultureInfo.InvariantCulture).Contains(_simpleFilter.ToLower(CultureInfo.InvariantCulture).Trim('\''))).ToList();
+
+                if (match.Count > 0)
+                {
+                    var query = $" or (EvaluatedAssetTypeClass in ({string.Join(",", match.Select(x => (int)x.ID))}))";
+                    simpleQuery += query;
+                }
+
+                whereSql += (string.IsNullOrEmpty(whereSql) ? " where " : " and ") + $"({simpleQuery})";
             }
 
             if (!string.IsNullOrWhiteSpace(sort))
@@ -2239,22 +2269,22 @@ for json path";
                     case "ResultUid":
                     case "RunDate":
                     case "TotalCount":
-                        orderSql = $"R.{sort}";
+                        orderSql = $"{sort}";
                         break;
                     case "EvaluatedAssetClass":
-                        orderSql = "E.EvaluatedAssetTypeClass";
+                        orderSql = "EvaluatedAssetTypeClass";
                         break;
                     case "EvaluatedAssetDisplayPath":
-                        orderSql = "E.EvaluatedAssetDisplayPath";
+                        orderSql = "EvaluatedAssetDisplayPath";
                         break;
                     case "EvaluatedAssetPath":
-                        orderSql = "E.EvaluatedAssetPath";
+                        orderSql = "EvaluatedAssetPath";
                         break;
                     case "EvaluatedAssetTypePath":
-                        orderSql = "P.[Path]";
+                        orderSql = "EvaluatedAssetTypePath";
                         break;
                     default:
-                        orderSql = "R.EffectiveDate";
+                        orderSql = "EffectiveDate";
                         break;
                 }
             }
@@ -2327,9 +2357,18 @@ for json path";
             parameters.Add("@pageNum", result.pageNum);
             parameters.Add("@pageSize", result.pageSize);
 
-            result.total = Company.Query<int>($"{cteSql} select count(1) {fromSql} {whereSql}", parameters, ApiTimeout).FirstOrDefault();
+            var countQuery = $@"{cteSql}, Results as (select {columnSql} {fromSql}) select count(1) from results {whereSql}";
 
-            result.items = Company.Query<DataQualityGetResultItem>($"{cteSql} select {columnSql} {fromSql} {whereSql} {orderSql} {pagingSql}", parameters, ApiTimeout).ToList();
+            result.total = Company.Query<int>(countQuery, parameters, ApiTimeout).FirstOrDefault();
+
+            var itemsQuery = $@"{cteSql}, 
+                    Results as (select {columnSql} {fromSql}) 
+			        select * from results
+                    {whereSql} 
+                    {orderSql} 
+                    {pagingSql}";
+
+            result.items = Company.Query<DataQualityGetResultItem>(itemsQuery, parameters, ApiTimeout).ToList();
 
             if (result.items == null)
             {

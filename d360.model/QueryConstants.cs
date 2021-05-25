@@ -17,7 +17,6 @@ namespace d360.model
 				when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()}: '
 				when T.Object = 'AttributeType' then 'Attribute: '
 				when T.Object = 'GroupType' then 'Group: '
-				when T.Object = 'MapType' then 'Map: '
 				when T.Object = 'OrganizationType' then 'Organization: '
 				when T.Object = 'ResourceType' then 'Resource: '
 				else ''
@@ -644,73 +643,6 @@ from	AssetType T
 where T.[object]='RuleType' and		T.ObjectID = @id";
 
 
-        
-        public static readonly string SourceRuleList = @"
-select	R.SubjectName + ' ' + coalesce(R.PredicateName, 'stores') + ' ' + R.ObjectName as SubjectName,
-		R.SubjectID,
-		R.SubjectUrl,
-		R.SubjectTypeName,
-		MS.Description,
-		(
-		select substring(
-						(
-						SELECT  ', ' + D.DisplayValue AS 'data()' 
-						from	MapSequenceContext MSC
-								inner join AssetDetail D on MSC.[Object] = D.[Object] and MSC.ObjectID = D.ObjectID and MSC.MapSequenceID = MS.ID
-						FOR		XML PATH('')
-						), 2, 2500)
-		) as Contexts,
-		MS.Sequence
-from	MapItem MI
-		inner join MapSequence MS on MS.MapItemID = MI.ID
-		inner join IntersectDetail R on R.ID = MI.SourceIntersectID
-where	(
-			@focal + cast(@focalID as varchar) <> @obj + cast(@objID as varchar) and 
-			
-			(MI.TargetIntersectID in 
-			( 
-				select	ID 
-				from	[Intersect] 
-				where	( 
-						(Subject = @focal and SubjectID = @focalID and Object = @obj and ObjectID = @objID) OR 
-						(Subject = @obj and SubjectID = @objID and Object = @focal and ObjectID = @focalID) 
-						) 
-			) or
-						(MI.SourceIntersectID in 
-			( 
-				select	ID 
-				from	[Intersect] 
-				where	( 
-						(Subject = @focal and SubjectID = @focalID and Object = @obj and ObjectID = @objID) OR 
-						(Subject = @obj and SubjectID = @objID and Object = @focal and ObjectID = @focalID) 
-						) 
-			)))
-		) OR
-		(
-			@focal + cast(@focalID as varchar) = @obj + cast(@objID as varchar) and 
-			(MI.TargetIntersectID in 
-			( 
-				select	ID 
-				from	[Intersect] 
-				where	( 
-						(Subject = @focal and SubjectID = @focalID) OR 
-						(Object = @focal and ObjectID = @focalID) 
-						) 
-			)
-			or
-			MI.SourceIntersectID in 
-			( 
-				select	ID 
-				from	[Intersect] 
-				where	( 
-						(Subject = @focal and SubjectID = @focalID) OR 
-						(Object = @focal and ObjectID = @focalID) 
-						) 
-			)
-			)
-		)
-order by MS.Sequence";
-
         public static readonly string SynonymTypes = @"
         declare	@ot varchar(50),
 		        @otid int
@@ -874,174 +806,6 @@ from	AssetType T
 							) O
 					) S
 where	T.ObjectID = @id and T.Object='TaxonomyType'";
-
-
-        public static readonly string ImpactAnalysisDiagram = @"
-declare @links table ([from] varchar(250), [to] varchar(250), [text] varchar(50), predicateid int, intersectid int)
-declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] int, typeName nvarchar(250), typeNamePlural nvarchar(250), [type] nvarchar(250), typeId int, name nvarchar(500), back varchar(7), fore varchar(7), [predicate] nvarchar(250), predicateLabel nvarchar(250), predicateid int, intersectid int, isLeaf bit)
-
-	insert into @nodes
-		select	
-                D.AssetID,
-                D.Object + cast(D.ObjectID as varchar),
-				D.Object,
-				D.ObjectID,
-				DT.Name as ObjectTypeName,
-				DT.Name as ObjectTypeName,
-				DT.Object as ObjectType,
-				DT.ObjectID as ObjectTypeID,
-				D.[Name],
-				coalesce(S.IconBackColor, '#000') as IconBackColor,
-				coalesce(S.IconForeColor, '#fff') as IconForeColor,
-				case 
-					when I.Subject = @type and I.SubjectID = @id then coalesce(P.Name, 'uses')
-					else coalesce(P.Inverse, 'used in')
-				end as [Predicate],
-                coalesce(P.Name, 'uses') + ' (' + coalesce(P.Inverse, 'used in') + ')' as [PredicateLabel],
-				P.ID as PredicateID,
-				I.ID,
-				1 as isLeaf
-		from	(
-		         select ID, Subject, SubjectID, Object, ObjectID, IntersectTypeID from [Intersect]
-				 union all
-				 select 0 as ID, Subject, SubjectID, Object, ObjectID, ID as IntersectTypeID from [IntersectType] 
-				 where Subject = 'ReferenceItemType' and Object = 'ReferenceItemType'
-				) I
-				left join 
-				(
-					select A.ID as AssetID, A.AssetTypeID, A.[Object], A.ObjectID, D.DisplayValue as [Name] from Asset A
-					cross apply GetAssetDisplayValueById(A.ID) D
-					union all
-					select null as AssetID, ID as AssetTypeID, [Object], [ObjectID], [Name] from AssetType where [Object] = 'ReferenceItemType'
-				) D on 
-					D.[Object] = case 
-								when I.[Subject] = @type and I.SubjectID = @id then I.[Object]
-								else I.[Subject]
-								end 
-					and
-					D.ObjectID = case 
-								when I.[Subject] = @type and I.SubjectID = @id then I.ObjectID
-								else I.SubjectID
-								end
-				left join AssetType DT on DT.ID = D.AssetTypeID
-                left join AssetTypeStyle S on S.ID = DT.ID
-				inner join IntersectType T on T.ID = I.IntersectTypeID
-				left join [Predicate] P on P.ID = T.PredicateID
-		where	( 
-					(I.Subject = @type and I.SubjectID = @id) OR 
-					(I.Object = @type and I.ObjectID = @id)  
-				)
-                and coalesce(D.[Object],'') != 'Map' and D.ObjectID is not null;
-	
-	insert into @links
-		select	@type + cast(@id as varchar),
-				[key],
-				[predicate],
-				[predicateid],
-				[intersectid]
-		from	@nodes
-
-
-	insert into @nodes
-		select	
-                D.ID,
-                D.Object + cast(D.ObjectID as varchar),
-				D.Object,
-				D.ObjectID,
-				DT.Name as ObjectTypeName,
-				DT.Name as ObjectTypeName,
-				DT.Object as ObjectType,
-				DT.ObjectID as ObjectTypeID,
-			    utility.GetAssetDisplayValueWrapper(D.ID) as TextPath,
-				coalesce(S.IconBackColor, '#000') as IconBackColor,
-				coalesce(S.IconForeColor, '#fff') as IconForeColor,
-				null,
-				null,
-				null,
-				null,
-				1 as isLeaf
-		from	Asset D
-				inner join AssetType DT on DT.ID = D.AssetTypeID
-                left join AssetTypeStyle S on S.ID = DT.ID
-		where	D.Object = @type and D.ObjectID = @id
-
-		insert into @nodes
-		select	
-                D.ID,
-                D.Object + cast(D.ObjectID as varchar),
-				D.Object,
-				D.ObjectID,
-				null as ObjectTypeName,
-				null as ObjectTypeName,
-				null as ObjectType,
-				null as ObjectTypeID,
-			    D.[Name] as TextPath,
-				coalesce(S.IconBackColor, '#000') as IconBackColor,
-				coalesce(S.IconForeColor, '#fff') as IconForeColor,
-				null,
-				null,
-				null,
-				null,
-				1 as isLeaf
-		from	AssetType D
-                left join AssetTypeStyle S on S.ID = D.ID
-		where	D.Object = @type and D.ObjectID = @id
-
-		--check for downstream relationships to pre-emptively show/hide expander button
-		update n
-		set isLeaf = 0
-		from @nodes n
-		inner join [Intersect] I on ((I.[Subject] = n.[obj] AND I.[SubjectID] = n.[objid])
-			OR (I.[Object] = n.[obj] AND I.[ObjectID] = n.[objid])) 
-			AND I.ID <> n.intersectid;
-
-		update @nodes
-		set isLeaf = 0
-		where intersectid is null;
-
-
-	select	(
-			select * from @links for json path			
-			) as 'links',
-			(
-			select * from @nodes for json path			
-			) as 'nodes'
-	for json path, WITHOUT_ARRAY_WRAPPER";
-		
-        public static readonly string MapItems = @"
-select	MI.ID as MapItemID,
-				
-		SI.ObjectTypeName as SourceType,
-		SI.ObjectName as SourceName,
-		SI.Object as Source,
-		SI.ObjectID as SourceID,
-
-		SF.Name as SourceFusion,
-		SFA.TextPath as SourceFusionAttribute,
-		SFT.TextPath as SourceFusionAttributeType,
-
-		TI.ObjectTypeName as TargetType,
-		TI.ObjectName as TargetName,
-		TI.Object as Target,
-		TI.ObjectID as TargetID,
-
-		TF.Name as TargetFusion,
-		TFA.TextPath as TargetFusionAttribute,
-		TFT.TextPath as TargetFusionAttributeType
-
-from	MapItem MI
-		inner join IntersectDetail SI on SI.ID = MI.SourceIntersectID
-		inner join IntersectDetail TI ON TI.ID = MI.TargetIntersectID
-		left join MapRuleItemMapItem J on J.MapItemID = MI.ID
-		left join MapRuleItem MRI on MRI.ID = J.MapRuleItemID
-		left join FusionAttribute SFA on SFA.ID = MRI.SourceFusionAttributeID
-		left join FusionAttributeType SFT on SFT.ID = SFA.FusionAttributeTypeID
-		left join Fusion SF on SF.ID = SFA.FusionID
-		left join FusionAttribute TFA on TFA.ID = MRI.TargetFusionAttributeID
-		left join FusionAttributeType TFT on TFT.ID = TFA.FusionAttributeTypeID
-		left join Fusion TF on TF.ID = TFA.FusionID
-where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
-		AND (TI.Subject = @target and TI.SubjectID = @targetID)";
 
         public static readonly string ShoppingCartItemList = @"
                 select 
@@ -1332,7 +1096,7 @@ order by IST.StartedOn desc, IST.CompletedOn desc
 	            v.Version, 
 	            v.UpdatedOn,
 	            r.FirstName + ' ' + r.LastName as UpdatedBy,  
-	            ta.Name as ObjectTypeName, 
+	            coalesce(ta.Name, it.Name,ITypeName.Name) as ObjectTypeName, 
 	            coalesce(isst.Object, ta.Object) as Object, 
 	            coalesce(isst.ObjectID, ta.ObjectID) as ObjectID, 
 	            dbo.GenerateAssetTypeUrl(ta.ID) as NgUrl, 
@@ -1359,13 +1123,16 @@ order by IST.StartedOn desc, IST.CompletedOn desc
 			left join Issue iss on i.Object ='Issue' and iss.ID = i.ObjectID
 			left join Asset issa on issa.Object = iss.Object and issa.ObjectID = iss.ObjectID
 			left join AssetType isst on isst.ID = issa.AssetTypeID
+			left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id) 
             left join workflow.versionstep vs on vs.versionid = v.id
             left join workflow.itemstep s on s.stepid = vs.id and s.CompletedOn is null
             left join workflow.itemassignment ia on ia.itemid = s.itemid
+			left  join [dbo].[intersect] inter on (i.[object]='Intersect' and inter.id=i.[objectId])
+            outer apply dbo.GetIntersectTypeNames(inter.IntersectTypeId) ITypeName
             where {0} t.State <> 3
             {1}
             group by t.id, t.name, v.Version, v.UpdatedOn, v.UpdatedBy,ta.Name, coalesce(isst.Object, ta.Object), 
-            coalesce(isst.ObjectID,ta.ObjectID), ta.ID, v.id, t.PublishedVersionID, r.FirstName, r.LastName
+            coalesce(isst.ObjectID,ta.ObjectID),it.Name,ITypeName.Name, ta.ID, v.id, t.PublishedVersionID, r.FirstName, r.LastName
 			)
             select 
 	            a.*,

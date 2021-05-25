@@ -398,6 +398,54 @@ namespace igx.jobs.apiexecutionprocessor
 
                                 #endregion
                                 break;
+                            case ApiExecutionAction.PostDataProfile:
+                                var postDataProfile = await storage.DeserializeJsonObjectFromBlobAsync<List<DataProfileUpsertModel>>(Info.StorageFolder, Info.RequestFileName);
+
+                                log.WriteLine($"POST Asset Data Profile (DB Start): Total raw Data Profile Records: {postDataProfile.Count}");
+                                var postDataProfileResult = company.UpsertDataProfiles(postDataProfile, dbExecutionItem, true, dbExecutionTimeout);
+                                dbExecutionItem.Processed = postDataProfileResult.Count(i => i.Success);
+                                dbExecutionItem.Error = postDataProfileResult.Count(i => !i.Success);
+                                log.WriteLine($"POST Asset Data Profile (DB Complete): Total Processed: {dbExecutionItem.Processed}.");
+                                log.WriteLine($"POST Asset Data Profile (DB Complete): Total Error: {dbExecutionItem.Error}.");
+
+                                await SaveResultsJsonToAzure(postDataProfileResult, log, "Asset Data Profile", HttpMethod.Post).ConfigureAwait(false);
+                                break;
+                            case ApiExecutionAction.PutDataProfile:
+                                var putDataProfile = await storage.DeserializeJsonObjectFromBlobAsync<List<DataProfileUpsertModel>>(Info.StorageFolder, Info.RequestFileName);
+
+                                log.WriteLine($"PUT Asset Data Profile (DB Start): Total raw Data Profile Records: {putDataProfile.Count}");
+                                var putDataProfileResult = company.UpsertDataProfiles(putDataProfile, dbExecutionItem, false, dbExecutionTimeout);
+                                dbExecutionItem.Processed = putDataProfileResult.Count(i => i.Success);
+                                dbExecutionItem.Error = putDataProfileResult.Count(i => !i.Success);
+                                log.WriteLine($"PUT Asset Data Profile (DB Complete): Total Processed: {dbExecutionItem.Processed}.");
+                                log.WriteLine($"PUT Asset Data Profile (DB Complete): Total Error: {dbExecutionItem.Error}.");
+
+                                await SaveResultsJsonToAzure(putDataProfileResult, log, "Asset Data Profile", HttpMethod.Put).ConfigureAwait(false);
+                                break;
+                            case ApiExecutionAction.DeleteDataProfile:
+                                var deleteDataProfile = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetDataProfileDeleteModel>>(Info.StorageFolder, Info.RequestFileName);
+
+                                log.WriteLine($"DELETE Asset Data Profile (DB Start): Total raw Data Profile Records: {deleteDataProfile.Count}");
+                                var deleteDataProfileResult = company.DeleteDataProfiles(deleteDataProfile, dbExecutionItem, dbExecutionTimeout);
+                                dbExecutionItem.Processed = deleteDataProfileResult.Count(i => i.Success);
+                                dbExecutionItem.Error = deleteDataProfileResult.Count(i => !i.Success);
+                                log.WriteLine($"DELETE Asset Data Profile (DB Complete): Total Processed: {dbExecutionItem.Processed}.");
+                                log.WriteLine($"DELETE Asset Data Profile (DB Complete): Total Error: {dbExecutionItem.Error}.");
+
+                                await SaveResultsJsonToAzure(deleteDataProfileResult, log, "Asset Data Profile", HttpMethod.Delete).ConfigureAwait(false);
+                                break;
+                            case ApiExecutionAction.PostResponsibilityOverride:
+                                var postResponsibilityOverride = await storage.DeserializeJsonObjectFromBlobAsync<List<BulkResponsibilityOverridePostModel>>(Info.StorageFolder, Info.RequestFileName);
+
+                                log.WriteLine($"POST Responsibility Override (DB Start): Total raw Data Profile Records: {postResponsibilityOverride.Count}");
+                                var postResponsibilityOverrideResult = company.BulkInsertResponsibilityOverride(postResponsibilityOverride, dbExecutionItem, dbExecutionTimeout);
+                                dbExecutionItem.Processed = postResponsibilityOverrideResult.Count(i => i.Success);
+                                dbExecutionItem.Error = postResponsibilityOverrideResult.Count(i => !i.Success);
+                                log.WriteLine($"POST Responsibility Override (DB Complete): Total Processed: {dbExecutionItem.Processed}.");
+                                log.WriteLine($"POST Responsibility Override (DB Complete): Total Error: {dbExecutionItem.Error}.");
+
+                                await SaveResultsJsonToAzure(postResponsibilityOverrideResult, log, "Responsibility Override", HttpMethod.Post).ConfigureAwait(false);
+                                break;
                         }
                     }
                     dbExecutionItem.CompletedOn = DateTime.UtcNow;
@@ -461,14 +509,14 @@ namespace igx.jobs.apiexecutionprocessor
             return await company.Database.Connection.QueryFirstOrDefaultAsync<bool>("select api.ShouldAllowNewBatchCall( @executionID)", new { executionID }, commandTimeout:300);
         }
 
-        private void Company_AssetsPartiallyProcessed(object sender, AssetsPartiallyProcessedEventArgs e)
+        private async void Company_AssetsPartiallyProcessed(object sender, AssetsPartiallyProcessedEventArgs e)
         {
-            storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(e.Results));
+            await storage.SerializeJsonObjectToBlobAsync(Info.StorageFolder, Info.ResponseFileName, e.Results);
         }
 
-        private void Company_RelationshipsPartiallyProcessed(object sender, RelationshipsPartiallyProcessedEventArgs e)
+        private async void Company_RelationshipsPartiallyProcessed(object sender, RelationshipsPartiallyProcessedEventArgs e)
         {
-            storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(e.Results));
+            await storage.SerializeJsonObjectToBlobAsync(Info.StorageFolder, Info.ResponseFileName, e.Results);
         }
     }
 }

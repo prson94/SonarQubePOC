@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.dbo.GetAllowedIntersectionTypes-v4">
+  <changeSet author="Pappas" id="Procedure.dbo.GetAllowedIntersectionTypes-v6">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -132,118 +132,7 @@ END
     </sql>
 	<rollback>
 		<![CDATA[	
-create or alter procedure [dbo].[GetAllowedIntersectionTypes]
-	@SourceType varchar(50),
-	@SourceTypeID int,
-	@IntersectID int = 0
-AS
-BEGIN
-	SET NOCOUNT ON;
 
-	declare @tbl table (IntersectTypeID int, TargetType varchar(50), TargetTypeID int, TargetName nvarchar(500), ParentIntersectID int, PredicateName nvarchar(100), SourceName nvarchar(500), SourceTypeID int, SourceType varchar(50));
-	
-	insert into @tbl
-		(IntersectTypeID, TargetType, TargetTypeID, TargetName, ParentIntersectID, PredicateName, SourceName, SourceTypeID, SourceType)
-		SELECT	RT.ID,
-				case 
-					when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.Object 
-					else RT.Subject
-				end AS TargetType,
-				case 
-					when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.ObjectID
-					else RT.SubjectID
-				end AS TargetTypeID,
-				case 
-					when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.ObjectName
-					else RT.SubjectName
-				end AS TargetName,
-				NULL,
-				RT.PredicateName,
-				case 
-					when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.SubjectName
-					else RT.ObjectName
-				end AS SourceName,
-				case 
-					when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.SubjectID
-					else RT.ObjectID
-				end AS SourceTypeID,
-				case 
-					when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.Subject
-					else RT.Object
-				end AS SourceType
-		FROM	IntersectTypeDetail RT
-		WHERE	(RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID) OR 
-				(RT.Object = @SourceType and RT.ObjectID = @SourceTypeID)
-				
-	
-			insert into @tbl
-			(IntersectTypeID, TargetType, TargetTypeID, TargetName, ParentIntersectID, PredicateName, SourceName, SourceTypeID, SourceType)
-			SELECT	RT.ID,
-					case 
-						when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.Object 
-						else RT.Subject
-					end AS TargetType,
-					case 
-						when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.ObjectID
-						else RT.SubjectID
-					end AS TargetTypeID,
-					case 
-						when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.ObjectName
-						else RT.SubjectName
-					end AS TargetName,
-					NULL,
-					RT.PredicateName,
-					case 
-						when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.SubjectName
-						else RT.ObjectName
-					end AS SourceName,
-					case 
-						when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.SubjectID
-						else RT.ObjectID
-					end AS SourceTypeID,
-					case 
-						when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.Subject
-						else RT.Object
-				end AS SourceType
-			FROM	IntersectTypeDetail RT
-					inner join @tbl t on (t.TargetType = 'MapType'  and (RT.Subject = 'MapType' and RT.SubjectID = t.TargetTypeID) )
-
-	
-	delete from @tbl where TargetType = 'MapType' and SourceTypeID = @SourceTypeID and SourceType = @SourceType;
-	
-	select		distinct
-				IntersectTypeID, 
-				TargetType, 
-				TargetTypeID, 
-				case
-					when TargetType = 'TaxonomyType' then 'Model: '
-					when TargetType ='DomainType' then 'Reference: '
-					when TargetType = 'FusionType' then 'Fusion: '
-					when TargetType = 'FusionAttributeType' then 'Fusion: '
-					when TargetType = 'ArtifactType' and AT.Class = 1 then 'Business Asset: '
-					when TargetType = 'ArtifactType' and AT.Class = 8 then 'Technical Asset: '
-					when TargetType = 'RuleType' then 'Rules: '
-					when TargetType = 'PolicyType' then 'Policies: '
-					when TargetType = 'Maptype' then 'Map: ' + SourceName
-					else ''
-				end + ' : ' + TargetName as TargetName, 
-				ParentIntersectID,
-				PredicateName
-	from		@tbl 
-	left join dbo.AssetType AT on AT.Object = 'ArtifactType' and AT.ObjectID = @SourceTypeID
-	order by	case
-					when TargetType = 'TaxonomyType' then 'Model: '
-					when TargetType = 'DomainType' then 'Reference: '
-					when TargetType = 'FusionType' then 'Fusion: '
-					when TargetType = 'FusionAttributeType' then 'Fusion: '
-					when TargetType = 'ArtifactType' and AT.Class = 1 then 'Business Asset: '
-					when TargetType = 'ArtifactType' and AT.Class = 8 then 'Technical Asset: '
-					when TargetType = 'RuleType' then 'Rules: '
-					when TargetType = 'PolicyType' then 'Policies: '
-					when TargetType = 'Maptype' then 'Map: ' + SourceName
-					else ''
-				end + ' : ' + TargetName
-END
 		]]>
 	</rollback>
   </changeSet>

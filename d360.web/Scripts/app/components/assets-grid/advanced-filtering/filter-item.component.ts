@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, OnChanges, Output, EventEmitter, HostListener } from "@angular/core";
+﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, OnChanges, Output, EventEmitter, HostListener, AfterViewChecked } from "@angular/core";
 import { LazyLoadEvent, SelectItem, SelectItemGroup } from "primeng/api";
 import * as _ from "lodash";
 import { FieldTypeAPIModelFieldCondition } from "../../../models/field-condition-grid.models";
@@ -21,6 +21,7 @@ import { AssetService } from "../../../services/asset.service";
 })
 export class FilterItemComponent implements OnInit, OnChanges {
     @Input() assetTypeUid: string = "";
+    @Input() loadIdentifier: string = "";
     @Input() condition: AdvancedFilterFieldCondition;
     @Input() fields: FieldTypeAPIModelFieldCondition[] = null;
     @Input() operators: OperatorModel[] = [];
@@ -66,6 +67,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
     relationshipFieldIntersectCardinality: string = "";
     relationshipFieldName: string = "";
 
+    minSQLDate = new Date(1753, 0, 1);
+
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
     @ViewChild("multiInput", { static: false }) multiInputRef: MultiInputField;
     @ViewChild("dataTable", { static: false }) dataTable: Table;
@@ -77,8 +80,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
         private tagService: TagService,
         private assetService: AssetService
     ) {
-
-        setInterval(() => this.updateTopPosition(), 25);
+        setInterval(() => {
+            this.updateTopPosition();
+            this.setSelectionVirtualScrollHeight();
+        }, 25);
     }
 
     ngOnChanges() {
@@ -92,53 +97,67 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
     ngOnInit() {
         this.allFieldsDropdown = [];
-        let assetFieldGroup: SelectItemGroup = { value: "asset-field", label: "Asset Fields", items: [] };
-        let systemFieldsGroup: SelectItemGroup = { value: "system-field", label: "System Fields", items: [] };
-        let relationshipGroup: SelectItemGroup = { value: "rel-field", label: "Relationships", items: [] };
-        this.allFieldsDropdown.push(assetFieldGroup);
-        this.allFieldsDropdown.push(systemFieldsGroup);
-        this.allFieldsDropdown.push(relationshipGroup);
 
-        this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
-            assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
-        });
+        if (this.isAssetType) {
+            if (this.fields && this.fields.length > 0) {
+                let assetFieldGroup: SelectItemGroup = { value: "asset-field", label: "Asset Fields", items: [] };
+                this.allFieldsDropdown.push(assetFieldGroup);
 
-        SystemFields.GetSystemFieldDefinition().forEach((f) => {
-            systemFieldsGroup.items.push({ value: f.Name, label: f.FriendlyName });
-        });
+                this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
+                    assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
+                });
+            }
 
-        SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).forEach((f) => {
-            relationshipGroup.items.push({ value: f.Name, label: f.FriendlyName });
-        });
+            if (SystemFields.GetSystemFieldDefinition().length > 0) {
+                let systemFieldsGroup: SelectItemGroup = { value: "system-field", label: "System Fields", items: [] };
+                this.allFieldsDropdown.push(systemFieldsGroup);
 
+                SystemFields.GetSystemFieldDefinition().forEach((f) => {
+                    systemFieldsGroup.items.push({ value: f.Name, label: f.FriendlyName });
+                });
+            }
+
+            if (SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).length > 0) {
+                let relationshipGroup: SelectItemGroup = { value: "rel-field", label: "Relationships", items: [] };
+                this.allFieldsDropdown.push(relationshipGroup);
+
+                SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).forEach((f) => {
+                    relationshipGroup.items.push({ value: f.Name, label: f.FriendlyName });
+                });
+            }
+        }
+
+        if (this.isRuleResults) {
+            let assetFieldGroup: SelectItemGroup = { value: "rule-results-field", label: "Asset Fields", items: [] };
+            this.allFieldsDropdown.push(assetFieldGroup);
+            this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
+                assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
+            });
+        }
     }
 
     filterTable($event: any) {
         this.dataTable.filterGlobal($event.target.value, "contains");
-        setTimeout(() => this.setSelectionVirtualScrollHeight(null), 50);
     }
 
-    setSelectionVirtualScrollHeight(res: any) {
+    setSelectionVirtualScrollHeight() {
         try {
             let count: number = 0;
+            let res = [];
 
-            if (res == null) {
-                if (this.isLazyLoad() === true || !this.dataTable) {
-                    return;
-                }
-                else {
-                    var filter = this.dataTable?.filters?.global["value"] as string;
-                    var filtered = this.dataTable.value.filter((x) => (x["title"] as string).toLowerCase().indexOf(filter.toLowerCase()) !== -1);
-                    res = new Array(filtered.length);
-                }
+            if (!this.dataTable || !this.dataTable.value) {
+                return;
             }
 
+            var filter = this.dataTable?.filters?.global ? (this.dataTable?.filters?.global["value"] as string) : "";
+            if (!filter || !this.dataTable.filteredValue) {
+                res = new Array(this.dataTable.value.length);
+            }
+            else {
+                res = new Array(this.dataTable.filteredValue.length);
+            }
             if (res.length) {
                 count = res.length;
-            }
-
-            if (res?.items) {
-                count = res.items.length;
             }
 
             if (this.condition && this.condition.field && this.condition.field === SystemFields.OwnedByFieldCode) {
@@ -147,15 +166,15 @@ export class FilterItemComponent implements OnInit, OnChanges {
             }
 
             let calculatedHeight: number = 0;
-            let maxHeight: number = 340;
+            let maxHeight: number = 320;
             let minHeight: number = 50;
             let margins: number = 180;
             let bottomPos: number = (this.elRef.nativeElement as HTMLElement).getBoundingClientRect().bottom;
 
             if (count < 10) {
-                calculatedHeight = count * 34;
-                if (calculatedHeight < 34) {
-                    calculatedHeight = 34;
+                calculatedHeight = count * 32;
+                if (calculatedHeight < 32) {
+                    calculatedHeight = 32;
                 }
 
             }
@@ -177,7 +196,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.selectionScrollHeight = calculatedHeight + "px";
         }
         catch (ex) {
-            this.selectionScrollHeight = "340px";
+            console.warn(ex);
+            this.selectionScrollHeight = "320px";
         }
         this.cdRef.markForCheck();
     }
@@ -209,7 +229,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 }
             }
 
-            this.setSelectionVirtualScrollHeight(null);
         }
         catch (ex) {
             console.warn(ex);
@@ -302,6 +321,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
             ft.Operators[1].label = "does not contain";
         }
 
+        if (this.isRuleResults) {
+            if (ft.Name !== "EvaluatedAssetClass") {
+                ft.Operators = ft.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
+            }
+        }
+
         return ft ? ft.Operators : [];
     }
 
@@ -343,7 +368,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.isSelectingValue = true;
         }
         this.updateFocus();
-        setTimeout(() => this.setSelectionVirtualScrollHeight(null), 50);
     }
 
     updateFocus() {
@@ -490,12 +514,23 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     loadLookupValues(params: any) {
+        if (this.currentField.Values && this.currentField.Values.length > 0 && !params.filter) {
+            var subData = this.currentField.Values.slice(+params.skip, +params.skip + +params.take);
+            if (!subData.some((x) => !x)) {
+                return;
+            }
+        }
+
         if (this.lazyLoadSubscription) {
             this.lazyLoadSubscription.unsubscribe();
         }
         this.isLookupValuesLoading = true;
+        var fieldTypeUid = this.currentField.AssetTypeUid;
+        if (!fieldTypeUid) {
+            fieldTypeUid = "00000000-0000-0000-0000-000000000000";
+        }
 
-        this.lazyLoadSubscription = this.fieldsService.getLookupValues(this.currentField.AssetTypeUid, this.currentField.Name.trim(), params)
+        this.lazyLoadSubscription = this.fieldsService.getLookupValues(fieldTypeUid, this.currentField.Name.trim(), params)
             .subscribe((res) => {
                 if (!this.currentField.Values || this.currentField.Values.length === 0) {
                     this.currentField.Values = Array.from({ length: res.count });
@@ -512,7 +547,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.currentField.Values = [...this.currentField.Values];
 
                 this.isLookupValuesLoading = false;
-                this.setSelectionVirtualScrollHeight(res);
 
                 this.cdRef.markForCheck();
             });
@@ -530,7 +564,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 });
 
                 this.isLookupValuesLoading = false;
-                this.setSelectionVirtualScrollHeight(res);
                 this.cdRef.markForCheck();
             });
 
@@ -578,7 +611,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.currentField.Values = this.currentField.Values.sort((a, b) => { return a.title > b.title ? 1 : 0; });
 
                 this.isLookupValuesLoading = false;
-                this.setSelectionVirtualScrollHeight(res);
 
                 this.cdRef.markForCheck();
             });
@@ -586,6 +618,13 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     loadRelationshipValues(params: any) {
+        if (this.currentField.Values && this.currentField.Values.length > 0 && !params.filter) {
+            var subData = this.currentField.Values.slice(+params.skip, +params.skip + +params.take);
+            if (!subData.some((x) => !x)) {
+                return;
+            }
+        }
+
         if (this.lazyLoadSubscription) {
             this.lazyLoadSubscription.unsubscribe();
         }
@@ -600,8 +639,9 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.lazyLoadSubscription = this.assetService
             .getAssetsLookupValues(nameAsParam.split("|")[1], params)
             .subscribe((res) => {
-                this.currentField.Values = Array.from({ length: 0 });
-
+                if (!this.currentField.Values || params.filter) {
+                    this.currentField.Values = Array.from({ length: 0 });
+                }
                 let loadedData = [];
 
                 res.forEach((str) => {
@@ -613,8 +653,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
 
                 this.currentField.Values = [...this.currentField.Values];
+
+                if (+params.take === res.length) {
+                    this.currentField.Values.push(null);
+                }
+
                 this.isLookupValuesLoading = false;
-                this.setSelectionVirtualScrollHeight(res);
                 this.cdRef.markForCheck();
             });
     }
@@ -673,16 +717,36 @@ export class FilterItemComponent implements OnInit, OnChanges {
             }
             this.condition.markForDeletion = true;
         }
-
-        this.condition.value = this.rollbackValue1;
-        this.condition.value2 = this.rollbackValue2;
         this.condition.operator = this.rollbackOperator;
         this.currentOperator = this.rollbackOperator;
 
+        this.currentInputType = this.fieldInputType();
+
+        if (this.currentInputType.indexOf("date") !== -1) {
+            this.resetDateFields();
+        }
+        else {
+            this.condition.value = this.rollbackValue1;
+            this.condition.value2 = this.rollbackValue2;
+        }
+
         this.isSelectingValue = false;
+
 
         if (this.multiInputRef) {
             this.multiInputRef.clearTextValue();
+        }
+    }
+
+    private resetDateFields() {
+        if (this.rollbackValue1) {
+            this.condition.value = new Date(this.rollbackValue1);
+        }
+        if (this.rollbackValue2) {
+            this.condition.value2 = new Date(this.rollbackValue2);
+        }
+        else {
+            this.condition.value2 = this.rollbackValue2;
         }
     }
 
@@ -872,7 +936,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     fieldInputType() {
         if (!this.currentOperator) {
-            return;
+            return "";
         }
 
         if (this.condition.field === SystemFields.OwnedByFieldCode) {
@@ -945,7 +1009,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         if (!this.doesNeedValue) {
             return false;
         }
-        if (this.currentInputType.indexOf("multi") !== -1 && this.currentInputType !== "multi-input") {
+        if (this.currentInputType && this.currentInputType.indexOf("multi") !== -1 && this.currentInputType !== "multi-input") {
             return this.isEmpty(this.condition.value) || this.isEmpty(this.condition.value2);
         }
         else {
@@ -969,8 +1033,11 @@ export class FilterItemComponent implements OnInit, OnChanges {
         var target = event.target as HTMLElement;
         if (!this.elRef.nativeElement.contains(event.target)
             && !this.isInBodyElement(target)
+            && this.condition.field
+            && this.isSelectingValue
         ) {
             this.isSelectingValue = false;
+            this.cancel();
         }
     }
 
@@ -1028,5 +1095,22 @@ export class FilterItemComponent implements OnInit, OnChanges {
             return false;
         }
         return this.nonValueOperators.indexOf(this.condition.operator.toString()) !== -1;
+    }
+
+    get isAssetType() {
+        return this.loadIdentifier.length === 36 && !this.loadIdentifier.startsWith("RuleResults");
+    }
+
+    get isRuleResults() {
+        return this.loadIdentifier.startsWith("RuleResults");
+    }
+
+    getFieldsDropdownClass(): string {
+        if (this.isRuleResults) {
+            return "ig-dropdown-hide-groups";
+        }
+        else {
+            return "ig-dropdown-grouped";
+        }
     }
 }

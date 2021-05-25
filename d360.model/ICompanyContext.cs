@@ -82,17 +82,6 @@ namespace d360.model
         DbSet<LoadItemColumn> LoadItemColumns { get; set; }
         DbSet<LoadItem> LoadItems { get; set; }
         DbSet<Load> Loads { get; set; }
-        DbSet<MapGroupItem> MapGroupItems { get; set; }
-        DbSet<MapGroup> MapGroups { get; set; }
-        DbSet<MapItem> MapItems { get; set; }
-        DbSet<MapRuleItemMapItem> MapRuleItemMapItems { get; set; }
-        DbSet<MapRuleItem> MapRuleItems { get; set; }
-        DbSet<MapRule> MapRules { get; set; }
-        DbSet<Map> Maps { get; set; }
-        DbSet<MapSequenceContext> MapSequenceContexts { get; set; }
-        DbSet<MapSequence> MapSequences { get; set; }
-        DbSet<MapTypeOrder> MapTypeOrders { get; set; }
-        DbSet<MapType> MapTypes { get; set; }
         DbSet<MetricAsset> MetricAssets { get; set; }
         DbSet<MetricAssetVersion> MetricAssetVersions { get; set; }
         DbSet<MetricAssetVersionCondition> MetricAssetVersionConditions { get; set; }
@@ -180,7 +169,6 @@ namespace d360.model
         Task ExecuteStep(long itemStepID, long itemID, EventObjectInfo objectInfo);
         bool ExecuteTimerSteps();
         string GenerateFormResponsesEmailContent(long itemId);
-        Task GenerateMarkitBusinessLineage();
         Task<List<IntersectTypeApiViewModel>> GetActiveIntersectTypesByObjectType(int id, SystemObjects type);
         List<AllocationPossibility> GetAllocationOptions();
         Task<IEnumerable<AllowedIntersectionType>> GetAllowedIntersectionTypes(string type, int id);
@@ -269,7 +257,7 @@ namespace d360.model
         bool SaveOrUpdateAsset(Asset asset, List<Field> fields, int parentId = -1);
         Task SendDigestEmails(EnvironmentLevel environmentLevel);
         void SendWorkflowEvents(string objectType, int objectTypeID, IEnumerable<IWorkflowEnabledAsset> results, core.enums.Workflow.ChangeType? changeTypeOverride = null, List<AssetFieldTypeUpdate> fieldUpdates = null, ScoreType? scoreType = null);        
-        bool TypeHasParent(SystemObjects type, int id);
+        bool TypeHasParent(SystemObjects type, int id, PredicateType parentFunctionalType = PredicateType.InterTypeHierarchy);
         new bool Update<T>(T item) where T : BaseObject;
         bool UpdateFollowStatus(SystemObjects type, int objectID, int? resourceID, bool includeChildren = false);        
         IntersectType UpsertIntersectType(IntersectType model, int lineageVersion);
@@ -327,7 +315,9 @@ namespace d360.model
 
         List<DataProfileUpsertResponse> UpsertDataProfiles(List<DataProfileUpsertModel> request, ApiExecution execution, bool isInsert, int timeout = 3600);
 
-        List<DataProfileDeleteResponse> DeleteDataProfiles(List<AssetDataProfileDeleteModel> models, ApiExecution execution);
+        List<DataProfileDeleteResponse> DeleteDataProfiles(List<AssetDataProfileDeleteModel> models, ApiExecution execution, int timeout = 3600);
+
+        List<BulkResponsibilityOverrideResponseModel> BulkInsertResponsibilityOverride(List<BulkResponsibilityOverridePostModel> request, ApiExecution execution, int timeout = 3600);
 
         #region API Query Parameter Parsing
 

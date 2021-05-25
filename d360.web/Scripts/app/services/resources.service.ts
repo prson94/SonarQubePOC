@@ -22,8 +22,13 @@ export class ResourcesService extends BaseObservableService {
             );
     }
 
-    getResources(): Observable<Resource[]> {
-        return this.http.get('/api/resources/1')
+    getResources(includeInactive: boolean = true): Observable<Resource[]> {
+
+        let url = '/api/resources/1';
+        if (includeInactive === false) {
+            url += '?includeInactive=false';
+        }
+        return this.http.get(url)
             .pipe(
                 map((response) => <Resource[]>response),
                 catchError((err) => this.handleError(err))
@@ -44,7 +49,7 @@ export class ResourcesService extends BaseObservableService {
             }));
     }
 
-    public saveResource(        
+    public saveResource(
         resource: ResourceApiModel,
         lookupFieldsPassedByValue: boolean = true,
         IsChangePasswordReqeust: boolean = false
@@ -193,8 +198,19 @@ export class ResourcesService extends BaseObservableService {
         window.location.assign(uri);
     }
 
-    getMyCredentials(): Observable<ResourceAPICredentials> {
-        return this.http.get('resources/myapicredentials')
+    getApiKeys(): Observable<ResourceAPICredentials> {
+        return this.http.get('/api/v2/membership/users/me/apikey')
+            .pipe(
+                map((response) => <ResourceAPICredentials>response),
+                catchError((err) => this.handleError(err))
+            );
+    }
+
+    regenerateApiKeys(model: ResourceAPICredentials): Observable<ResourceAPICredentials> {
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+        };
+        return this.http.post('/api/v2/membership/users/me/apikey', model, httpOptions)
             .pipe(
                 map((response) => <ResourceAPICredentials>response),
                 catchError((err) => this.handleError(err))

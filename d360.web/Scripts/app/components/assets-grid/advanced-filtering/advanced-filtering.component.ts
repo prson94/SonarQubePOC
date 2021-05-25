@@ -3,8 +3,8 @@ import * as _ from "lodash";
 import { OperatorModel } from "../../../models/operator.model";
 import { FieldsObservableService } from "../../../services/fieldsObservable.service";
 import { CompanySettingsService } from "../../../services/settings.service";
-import { FieldTypeAPIModelField, FieldTypeHelper } from "../../../models/fieldtype-api.model";
-import { forkJoin, Observable } from "rxjs";
+import { FieldType, FieldTypeAPIModel, FieldTypeAPIModelField, FieldTypeHelper } from "../../../models/fieldtype-api.model";
+import { forkJoin, Observable, of } from "rxjs";
 import { AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, FieldTypeAPIModelFieldCondition, Filters, SystemFields } from "./advanced-filtering.models";
 import { DatePipe } from "@angular/common";
 import { AllocationService } from "../../../services/allocations.service";
@@ -22,9 +22,11 @@ import { Router } from "@angular/router";
     providers: [FieldsObservableService, CompanySettingsService, AllocationService, RelationshipsService]
 })
 export class AdvancedFilteringComponent implements OnChanges {
-    @Input() assetTypeUid: string = "";
+    @Input() loadIdentifier: string = "";
     @Output() onChange = new EventEmitter();
+    @Output() onLoad = new EventEmitter();
 
+    assetTypeUid: string = "";
     allocations: ScoreTypeAllocation[] = [];
     relationshipTypes: RelationshipType[] = [];
 
@@ -44,6 +46,10 @@ export class AdvancedFilteringComponent implements OnChanges {
             title: "Clear Filters",
             callback: () => {
                 this.conditions.filters = [];
+                this.conditions.connector = " and ";
+                this.filterMenu[2].isChecked = true;
+                this.filterMenu[3].isChecked = false;
+
                 this.clearFiltersStorage();
                 this.fields.forEach((field) => {
                     if (field.Type) {
@@ -135,12 +141,16 @@ export class AdvancedFilteringComponent implements OnChanges {
     }
 
     private initializeData() {
+        if (this.isAssetType) {
+            this.assetTypeUid = this.loadIdentifier;
+        }
+
         this.visible = false;
         forkJoin(
             this.settingsService.getOperators(true),
-            this.fieldsService.getFieldsV2(this.assetTypeUid, null, null),
-            this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid),
-            this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid)
+            this.getFieldsObs(),
+            this.getScoreAllocationObs(),
+            this.getRelationshipTypeObs()
         ).subscribe((response) => {
             this.operators = response[0];
             let res = response[1] as FieldTypeAPIModelField[];
@@ -159,7 +169,11 @@ export class AdvancedFilteringComponent implements OnChanges {
             else {
                 this.processLoadedData(res);
             }
-        });
+
+
+            this.onLoad.emit();
+        }
+        );
 
 
     }
@@ -187,12 +201,13 @@ export class AdvancedFilteringComponent implements OnChanges {
                 results.forEach((f) => {
                     var refField = f[0];
                     var idx = toLoad.findIndex((tl) => tl.uid === refField["AssetTypeUid"] && tl.field === refField.Name);
-                    var origField = res.findIndex((rf) => rf.Name === toLoad[parseInt(idx.toString())].origField);
-                    var prop = Object.keys(refField.Type)[0];
-                    refField.Type[prop]["IsPrimaryFilter"] = toLoad[idx].persistInFilters;
+                    if (idx !== -1) {
+                        var origField = res.findIndex((rf) => rf.Name === toLoad[parseInt(idx.toString())].origField);
+                        var prop = Object.keys(refField.Type)[0];
+                        refField.Type[prop]["IsPrimaryFilter"] = toLoad[idx].persistInFilters;
 
-                    res[parseInt(origField.toString())].Type = refField.Type;
-
+                        res[parseInt(origField.toString())].Type = refField.Type;
+                    }
                 });
                 this.processLoadedData(res);
             });
@@ -265,17 +280,24 @@ export class AdvancedFilteringComponent implements OnChanges {
                 if (Object.keys(field.Type).some((x) => x === key)) {
                     isDefaultFilter = field.Type[key]["IsPrimaryFilter"];
                 }
-
-                if (isDefaultFilter === true && !loadedFilters.some((x) => x.field === field.Name)) {
-                    var defaultFilter = new AdvancedFilterFieldCondition(this.datePipe);
-                    defaultFilter.field = field.Name;
-                    defaultFilter.isDefaultFilter = true;
-                    this.conditions.filters.push(defaultFilter);
+                if (isDefaultFilter === true) {
+                    var existingFilter = loadedFilters.filter((f) => f !== null).find((df) => df.isDefaultFilter === true && df.field === field.Name);
+                    if (existingFilter) {
+                        this.conditions.filters.push(existingFilter);
+                        var idx = loadedFilters.indexOf(existingFilter);
+                        loadedFilters[parseInt(idx.toString())] = null;
+                    }
+                    else {
+                        var defaultFilter = new AdvancedFilterFieldCondition(this.datePipe);
+                        defaultFilter.field = field.Name;
+                        defaultFilter.isDefaultFilter = true;
+                        this.conditions.filters.push(defaultFilter);
+                    }
                 }
             }
         });
 
-        loadedFilters.forEach((f) => {
+        loadedFilters.filter((f) => f !== null).forEach((f) => {
             this.conditions.filters.push(f);
         });
 
@@ -303,11 +325,30 @@ export class AdvancedFilteringComponent implements OnChanges {
     }
 
     getLocalStorageKey() {
-        return this.assetTypeUid + "_advancedFilters";
+        return this.loadIdentifier + "_advancedFilters";
     }
 
     private saveFilters() {
-        localStorage.setItem(this.getLocalStorageKey(), JSON.stringify(this.conditions.filters));
+        localStorage.setItem(this.getLocalStorageKey(), JSON.stringify(this.conditions));
+    }
+
+    private getStorageFilters(): AdvancedFilterFieldConditionCollection {
+        var data = localStorage.getItem(this.getLocalStorageKey());
+        if (data) {
+            const parsedFilters = JSON.parse(data);
+            let state: AdvancedFilterFieldConditionCollection;
+            if (Array.isArray(parsedFilters)) {
+                //backward compatibility -- case when only filters array was saved (not including all|any option)
+                state = new AdvancedFilterFieldConditionCollection();
+                state.connector = " and ";
+                state.filters = parsedFilters as AdvancedFilterFieldCondition[];
+            }
+            else {
+                state = parsedFilters as AdvancedFilterFieldConditionCollection;
+            }
+            return state;
+        }
+        return null;
     }
 
     private clearFiltersStorage() {
@@ -316,13 +357,30 @@ export class AdvancedFilteringComponent implements OnChanges {
 
     private loadFilters(): AdvancedFilterFieldCondition[] {
         try {
-            var prefilters: any[] = [];
             let loadedFilters: AdvancedFilterFieldCondition[] = [];
+            var savedState = this.getStorageFilters();
+            if (!savedState && !savedState.filters) {
+                return [];
+            }
 
-            var storageFilters = localStorage.getItem(this.getLocalStorageKey());
-            prefilters = JSON.parse(storageFilters);
-            (prefilters as any[]).forEach((f) => {
+            if (savedState.connector) {
+                this.conditions.connector = savedState.connector;
+                if (this.conditions.connector === " or ") {
+                    this.filterMenu[3].isChecked = true;
+                    this.filterMenu[2].isChecked = false;
+                }
+            }
+
+            savedState.filters.forEach((f) => {
                 var filter = f as AdvancedFilterFieldCondition;
+
+                //do not load from storage if field got removed in meantime
+                if (this.fields && filter.field) {
+                    if (!this.fields.some((f) => f.Name === filter.field)) {
+                        return false;
+                    }
+                }
+
                 if (!filter.operator) {
                     return false;
                 }
@@ -338,13 +396,22 @@ export class AdvancedFilteringComponent implements OnChanges {
                 newfilter.operator = filter.operator;
                 newfilter.type = filter.type;
                 newfilter.isDefaultFilter = filter.isDefaultFilter;
-                newfilter.value = filter.value;
                 newfilter.isPreloaded = true;
                 newfilter.isConfirmed = true;
                 if (newfilter.type && (newfilter.type.Type.Date || filter.type.Type.DateTime)) {
                     newfilter.value = new Date(filter.value);
                 }
-                newfilter.value2 = filter.value2;
+                else {
+                    newfilter.value = filter.value;
+                }
+
+                if (filter.value2 && newfilter.type && (newfilter.type.Type.Date || filter.type.Type.DateTime)) {
+                    newfilter.value2 = new Date(filter.value2);
+                }
+                else {
+                    newfilter.value2 = filter.value2;
+                }
+
                 loadedFilters.push(newfilter);
             });
             return loadedFilters;
@@ -356,7 +423,7 @@ export class AdvancedFilteringComponent implements OnChanges {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes && changes.assetTypeUid && changes.assetTypeUid.currentValue !== changes.assetTypeUid.previousValue) {
+        if (changes && changes.loadIdentifier && changes.loadIdentifier.currentValue !== changes.loadIdentifier.previousValue) {
             this.initializeData();
         }
         this.cdRef.detectChanges();
@@ -367,4 +434,76 @@ export class AdvancedFilteringComponent implements OnChanges {
 
         this.cdRef.markForCheck();
     }
+
+
+    get isAssetType() {
+        return this.loadIdentifier.length === 36 && !this.loadIdentifier.startsWith("RuleResults");
+    }
+
+    get isRuleResults() {
+        return this.loadIdentifier.startsWith("RuleResults");
+    }
+
+
+    getFieldsObs(): Observable<FieldTypeAPIModelField[]> {
+        if (this.isAssetType) {
+            return this.fieldsService.getFieldsV2(this.assetTypeUid, null, null);
+        }
+        else if (this.isRuleResults) {
+            var fields: FieldTypeAPIModelField[] = [];
+            fields.push({
+                Name: "EvaluatedAssetClass", FriendlyName: "Asset Class", Type: new FieldType("Lookup"), Category: ""
+            });
+            fields.push({
+                Name: "EvaluatedAssetTypePath", FriendlyName: "Asset Type", Type: new FieldType("Path"), Category: ""
+            });
+            fields.push({
+                Name: "EvaluatedAssetDisplayPath", FriendlyName: "Asset", Type: new FieldType("Path"), Category: ""
+            });
+            fields.push({
+                Name: "RunDate", FriendlyName: "Run Date", Type: new FieldType("DateTime"), Category: ""
+            });
+            fields.push({
+                Name: "EffectiveDate", FriendlyName: "Effective Date", Type: new FieldType("Date"), Category: ""
+            });
+            fields.push({
+                Name: "PassFraction", FriendlyName: "Pass Fraction", Type: new FieldType("Decimal"), Category: ""
+            });
+            fields.push({
+                Name: "PassCount", FriendlyName: "Rows Passed", Type: new FieldType("Number"), Category: ""
+            });
+            fields.push({
+                Name: "FailCount", FriendlyName: "Rows Failed", Type: new FieldType("Number"), Category: ""
+            });
+            fields.push({
+                Name: "TotalCount", FriendlyName: "Total Rows", Type: new FieldType("Number"), Category: ""
+            });
+            fields.push({
+                Name: "Outdated", FriendlyName: "Outdated Rule Result", Type: new FieldType("Boolean"), Category: ""
+            });
+            var staticObs = of(fields);
+            return staticObs;
+        }
+    }
+
+    getScoreAllocationObs(): Observable<ScoreTypeAllocation[]> {
+        if (this.isAssetType) {
+            return this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid);
+        }
+        else if (this.isRuleResults) {
+            var staticObs = of([]);
+            return staticObs;
+        }
+    }
+
+    getRelationshipTypeObs(): Observable<RelationshipType[]> {
+        if (this.isAssetType) {
+            return this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid);
+        }
+        else if (this.isRuleResults) {
+            var staticObs = of([]);
+            return staticObs;
+        }
+    }
+
 }

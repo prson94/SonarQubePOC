@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild, OnDestroy } from "@angular/core";
+﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core";
 import { Router } from "@angular/router";
 import { GridColumn, GridField } from "../../../models/grid-definition.model";
 import { GridDefinitionService } from "../../../services/grid-definition.service";
@@ -7,26 +7,32 @@ import { BaseComponent } from "../base.component";
 import { SiteUrlHelpers } from "../../../static/site-url-helpers";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { AssetService } from "../../../services/asset.service";
+import { LazyLoadEvent } from "primeng/api";
+import { Subscription } from "rxjs";
+import { debounceTime } from "rxjs/operators";
+import { RelationshipTypeUIModel } from "../../../models/relationship.model";
 
 
 @Component({
     selector: "d3s-dynamic-relationship-grid",
     providers: [GridDefinitionService, RelationshipsService, AssetService],
-    templateUrl: "./dynamic-relationship-grid.component.html"
+    templateUrl: "./dynamic-relationship-grid.component.html",
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class DynamicRelationshipGridComponent extends BaseComponent implements OnChanges, OnDestroy {
-    @Input() objectType: string;
-    @Input() objectID: number;
-    @Input() objectUid: number;
-    @Input() objectName: string;
-    @Input() targetType: string;
-    @Input() targetTypeID: number;
-    @Input() targetName: string;
-    @Input() intersectTypeID: number;
+    @Input() intersectTypeUid: string;
+    @Input() assetUid: string;
+    @Input() objectUid: string;
+    @Input() subjectUid: string;
+    @Input() isSubject: boolean;
+
+    @Input() relationshipName: string = '';
+    @Input() count: number = 0;
+
     @Input() addRelationship: boolean;
-    @Input() hasEdit: boolean = true;
-    @Input() hasDelete: boolean = true;
+    @Input() hasEdit: boolean = false;
+    @Input() hasDelete: boolean = false;
     @Input() readOnly: boolean = false;
 
     @Output() readOnlyChange = new EventEmitter();
@@ -38,9 +44,13 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     @Output() onFilterChange = new EventEmitter();
 
     @Input() simpleFilter: boolean;
-    @Input() isSubject: boolean;
+
+    isSaveDisabled: boolean = false;
 
     private fields: GridField[] = [];
+    private currentParams: any;
+
+    relationshipLoadSub: Subscription;
 
     get globalFilterFields(): string[] {
         return this.columns.map((c) => c.datafield);
@@ -54,8 +64,10 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     showDelete: boolean = false;
     showEditPencil: boolean = true;
     isGridLoading: boolean = false;
-    isDataLoading: boolean = false;
+    isDataLoading: boolean = true;
     theDeleteCallback: Function;
+
+    totalRecords: number = 0;
 
     @ViewChild("dt", { static: false }) datatable;
 
@@ -63,84 +75,160 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         private gridDefinitionService: GridDefinitionService,
         protected relationshipsService: RelationshipsService,
         private messagesService: MessagesObservableService,
-        private assetService: AssetService
+        private assetService: AssetService,
+        private cdRef: ChangeDetectorRef
     ) {
         super();
         this.theDeleteCallback = this.deleteItem.bind(this);
     }
 
     ngOnDestroy(): void {
+        if (this.relationshipLoadSub) {
+            this.relationshipLoadSub.unsubscribe();
+        }
         this.closeEditor();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if ((changes["objectID"]
-            || changes["objectType"]
-            || changes["intersectTypeID"]
-            || changes["targetTypeID"]
-            || changes["isSubject"])
+        if ((changes["intersectTypeUid"]
+            || changes["objectUid"]
+            || changes["subjectUid"]
+            || changes["isSubject"]
+        )
 
-            && (this.objectID != null
-                && this.objectType != null
-                && this.targetType != null
-                && this.targetTypeID != null
-                && this.intersectTypeID != null
-                && this.isSubject != null)) {
+            && (this.intersectTypeUid != null
+                && this.objectUid != null
+                && this.subjectUid != null)) {
+            this.relations = [];
             this.load();
         }
     }
 
     load() {
         this.getFieldsDefinition();
-        this.getData();
     }
 
     getFieldsDefinition() {
         this.isGridLoading = true;
-        this.gridDefinitionService.getGridDefinition(this.intersectTypeID, "IntersectType", this.targetTypeID, this.targetType).subscribe(
-            (result) => {
+
+        this.gridDefinitionService.getGridDefinition(this.intersectTypeUid, "IntersectType")
+            .subscribe((result) => {
                 this.isGridLoading = false;
                 this.columns = result.Columns;
                 this.fields = result.Fields;
                 this.showEditPencil = (result.FieldsCount > 0);
                 this.readOnly = result.IsReadOnly;
                 this.readOnlyChange.emit(this.readOnly);
-            }
-        );
-        this.isGridLoading = false;
+                this.cdRef.markForCheck();
+            });
     }
 
-    getData(forceEditorOpen: boolean = false) {
+    loadRelationshipLazy($event: LazyLoadEvent) {
+
+        var params = {};
+        if (this.isSubject) {
+            params["subjectUid"] = this.assetUid;
+            params["_order"] = "object.[path]";
+        }
+        else {
+            params["objectUid"] = this.assetUid;
+            params["_order"] = "subject.[path]";
+        }
+
+        if ($event.globalFilter) {
+            params["_simpleFilter"] = "*" + $event.globalFilter;
+        }
+
+        if ($event.sortField) {
+            params["_direction"] = "asc";
+            var field = this.columns.filter((f) => f.datafield === $event.sortField);
+            if (field && field.length > 0) {
+                if (field[0]["apiName"]) {
+                    params["_order"] = field[0]["apiName"];
+
+                } else if (field[0].datafield === "Name") {
+                    params["_order"] = this.isSubject ? "object.[path]" : "subject.[path]";
+                }
+            }
+
+            if ($event.sortOrder === -1) {
+                params["_direction"] = "desc";
+            }
+        }
+
+
+        if ($event.filters) {
+            let filters: string[] = [];
+            var keys = Object.keys($event.filters);
+            keys.forEach((key) => {
+                var col = this.columns.filter((f) => f.datafield === key);
+                if (col.length > 0) {
+                    var fieldApiName = col[0]["apiName"];
+                    if (!fieldApiName && col[0].text === "Asset Path") {
+                        if (this.isSubject) {
+                            fieldApiName = "Object.[Path]";
+                        }
+                        else {
+                            fieldApiName = "Subject.[Path]";
+                        }
+                    }
+
+                    var value = $event.filters[key].value;
+
+                    let operator = "ct";
+
+                    switch (col[0]["filtertype"]) {
+                        case "number":
+                            operator = "eq";
+                            break;
+                        default:
+                            value = (value as string).replace(/'/g, "&apos;");
+                            value = `'${encodeURIComponent(value)}'`;
+                            operator = "ct";
+                            break;
+                    }
+                    filters.push(`(${fieldApiName} ${operator} ${value})`);
+                }
+            })
+            if (filters.length > 0) {
+                params["_filter"] = `(${filters.join(" and ")})`;
+            }
+        }
+
+        params["_includePath"] = true;
+        params["_pageSize"] = $event.rows;
+        params["_pageNum"] = ($event.first / $event.rows) + 1;
+
+        this.currentParams = JSON.parse(JSON.stringify(params));
+
+        if (this.relationshipLoadSub) {
+            this.relationshipLoadSub.unsubscribe();
+        }
+
         this.isDataLoading = true;
-        this.relationshipsService.getObjectRelationships(
-            this.objectType,
-            this.objectID,
-            this.targetType,
-            this.targetTypeID,
-            this.intersectTypeID,
-            false,
-            !this.isSubject)
-            .subscribe((result) => {
-                this.relations = result;
-                if (this.relations.length > 0) {
-                    this.selected = this.relations[0];
-                }
-                this.relationshipAdded.emit({ count: result.length });
-                if (this.shouldShowEditor() && !forceEditorOpen) {
-                    this.closeEditor();
-                }
-                this.isDataLoading = false;
 
-                //Update name fields to contain full path for table filtering
-                if (this.columns.some((x) => x["apiName"] == "Name")) {
-                    var nameField = this.columns.filter((x) => x["apiName"] == "Name")[0];
-
-                    this.relations.forEach(rel => {
-                        rel[nameField.datafield] = rel.Name;
+        this.relationshipLoadSub = this.relationshipsService
+            .getRelationships(this.intersectTypeUid, params)
+            .pipe(debounceTime(200))
+            .subscribe((res) => {
+                this.totalRecords = +res["total"];
+                this.relations = [...[]];
+                if (this.totalRecords > 0) {
+                    this.relations = res["items"] as any[];
+                    this.relations.forEach((rel) => {
+                        rel["Name"] = this.isSubject ? rel.Object["[Path]"] : rel.Subject["[Path]"];
                     });
                 }
+                this.isDataLoading = false;
+                this.cdRef.markForCheck();
             },
-                () => { this.isDataLoading = false; });
+                (err) => {
+                    this.totalRecords = 0;
+                    this.relations = [];
+                    this.isDataLoading = false;
+                    this.cdRef.markForCheck();
+                }
+            );
     }
 
     private shouldShowEditor(): boolean {
@@ -161,6 +249,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }
 
     saveRelationship(event) {
+        this.isSaveDisabled = true;
         let model: any[] = [];
         let fields: any = {};
         for (var prop in event.item) {
@@ -174,28 +263,25 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             assets.forEach(a => {
                 let newRel: any = {};
                 if (this.isSubject)
-                    newRel = { SubjectAssetUid: this.objectUid, ObjectAssetUid: a, Fields: fields };
+                    newRel = { SubjectAssetUid: this.assetUid, ObjectAssetUid: a, Fields: fields };
                 else
-                    newRel = { ObjectAssetUid: this.objectUid, SubjectAssetUid: a, Fields: fields };
+                    newRel = { ObjectAssetUid: this.assetUid, SubjectAssetUid: a, Fields: fields };
 
                 model.push(newRel);
             });
         }
         else {
             let newRel: any = {};
-            if (this.isSubject)
-                newRel = { SubjectAssetUid: this.objectUid, ObjectAssetUid: this.selected.ObjectUid, Fields: fields };
-            else
-                newRel = { ObjectAssetUid: this.objectUid, SubjectAssetUid: this.selected.ObjectUid, Fields: fields };
-
+            newRel = { SubjectAssetUid: this.selected.Subject.Uid, ObjectAssetUid: this.selected.Object.Uid, Fields: fields };
             model.push(newRel);
         }
 
-        this.relationshipsService.saveRelationships(this.intersectTypeID, model)
+        this.relationshipsService.saveRelationships(this.intersectTypeUid, model)
             .subscribe(res => {
 
                 if (event.action == "new") {
                     this.showMessageForApiResults(this.messagesService, res, " Relationships succesfully added!");
+                    this.relationshipAdded.emit({ uid: this.intersectTypeUid, isSubject: this.isSubject, data: model });
                 }
                 else {
                     this.showMessageForApiResults(this.messagesService, res, " Relationships succesfully updated!");
@@ -203,12 +289,10 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
                 if (!res.some(x => x.Success != true)) {
                     this.closeEditor();
-                    this.getData();
+                }
 
-                }
-                else {
-                    this.getData(true);
-                }
+                this.isSaveDisabled = false;
+                this.cdRef.markForCheck();
             });
     }
 
@@ -220,13 +304,13 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         deleteItem["uid"] = item;
         model.push(deleteItem);
 
-        this.relationshipsService.deleteRelationshipV2(this.intersectTypeID, model)
+        this.relationshipsService.deleteRelationshipV2(this.intersectTypeUid, model)
             .subscribe(res => {
 
                 this.showMessageForApiResults(this.messagesService, res, " Relationship succesfully deleted!");
                 if (!res.some((x) => x.Success != true)) {
                     this.relations = this.relations.filter((x) => x.Uid != item);
-                    this.relationshipRemoved.emit();
+                    this.relationshipRemoved.emit({ uid: this.intersectTypeUid, isSubject: this.isSubject });
                 }
                 this.showDelete = false;
                 this.deleteOff.emit();
@@ -269,5 +353,9 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         }
         qstring += "&filterscount=" + count;
         this.onFilterChange.emit(qstring);
+    }
+
+    getAssetUid(item: RelationshipTypeUIModel) {
+        return this.isSubject ? item.Object.Uid : item.Subject.Uid;
     }
 }

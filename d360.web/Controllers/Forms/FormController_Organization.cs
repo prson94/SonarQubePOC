@@ -34,7 +34,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "AdministratorEmail", Name = "Administrator Email", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
 
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.OrganizationType, ot).ToList(), 2);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.OrganizationType, ot).ToList(), 2, false);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -61,7 +61,9 @@ namespace d360.web.Controllers
                     list,
                     Company.GetFieldTypesByObject(SystemObjects.OrganizationType, a.OrganizationTypeID).ToList(),
                     Company.GetFieldRelationsByObject(SystemObjects.Organization, id).ToList(),
-                    2
+                    2,
+                    false,
+                    false
                 )
             );
 

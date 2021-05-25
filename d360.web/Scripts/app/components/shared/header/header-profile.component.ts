@@ -14,54 +14,11 @@ declare var CompanySettings;
 
 @Component({
     selector: 'd3s-header-profile',
-    template: ` <span #item class="header-search" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)" >
-                    <a class="photo hide-on-med-and-down"><img [src]="'/api/v2/membership/users/' + resourceUid + '/image?size=25'" height="25" width="25" /></a>
-                    <div class="show-on-medium-and-down hide-on-med-and-up">
-                        <div class="mini-menu-line">
-                            <div class="check-gutter"></div><div class="text">My Account</div><div class="expand-gutter"><i class="fa fa-caret-right"></i></div>
-                        </div>
-                    </div>
-                    <div class="search-child header-profile-panel">                        
-                        <div class="row">          
-                            <ul>
-                                <li class="header-item label">
-                                    <div class="mini-menu-line">
-                                        <div class="text no-gutter">
-                                            <span>
-                                                {{userName}} <br>
-                                                {{userEmail}}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li [routerLink]="resourceUrl()" class="header-item">
-                                    <div class="mini-menu-line">
-                                        <div class="text no-gutter">View Profile</div>
-                                    </div>
-                                </li>
-                                <li *ngIf="showAllUsersAPIKey" [routerLink]="'/resource/my/apikey'" class="header-item">
-                                    <div class="mini-menu-line">
-                                        <div class="text no-gutter">API Key</div>
-                                    </div>                                
-                                </li>
-                                <li *ngIf="!singleSignOn"  [routerLink]="'/resource/'+resourceId+'/changepassword'" class="header-item">
-                                    <div class="mini-menu-line">
-                                        <div class="text no-gutter">Change Password</div>
-                                    </div>                                
-                                </li>
-                                <li class="header-item" (click)="signOut()">
-                                    <div class="mini-menu-line">
-                                        <div class="text no-gutter">Sign Out</div>
-                                    </div>                                
-                                </li>
-                            </ul>                                                    
-                        </div>
-                    </div>
-                <span>`,    
+    templateUrl: 'header-profile.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class HeaderProfileComponent implements OnInit , OnDestroy{    
+export class HeaderProfileComponent implements OnInit, OnDestroy {
 
     public active: boolean = false;
     private hideHandle: number = 0;
@@ -71,23 +28,24 @@ export class HeaderProfileComponent implements OnInit , OnDestroy{
     public userName: string = ResourceName;
     public userEmail: string = ResourceEmail;
     showAllUsersAPIKey: boolean = false;
+    isApiKeysPopupVisible: boolean = false;
     private isAdminSub: Subscription;
     constructor(
-        private router: Router,        
+        private router: Router,
         private ref: ChangeDetectorRef,
         private authenticationService: AuthenticationService
     ) { }
-    
+
     ngOnInit() {
 
         this.isAdminSub = this.authenticationService.isAdmin$.subscribe(x => {
-            let isAdmin: boolean = x; 
+            let isAdmin: boolean = x;
             if (isAdmin || (CompanySettings != null && CompanySettings.ShowAllUsersAPIKey != null && CompanySettings.ShowAllUsersAPIKey.toString() == 'true'))
                 this.showAllUsersAPIKey = true;
             else
                 this.showAllUsersAPIKey = false;
         });
-       
+
         if (this.authenticationService.isAdmin || (CompanySettings != null && CompanySettings.ShowAllUsersAPIKey != null && CompanySettings.ShowAllUsersAPIKey.toString() == 'true'))
             this.showAllUsersAPIKey = true;
     }
@@ -119,7 +77,7 @@ export class HeaderProfileComponent implements OnInit , OnDestroy{
             menuPanel.style.zIndex = 1000;
             menuPanel.style.top = 40 + 'px'; // -1 for the border so it blends
             menuPanel.style.right = (dims.width) + 'px';
-            menuPanel.style.position = 'fixed';  
+            menuPanel.style.position = 'fixed';
             if (dims.width > 0) {
                 menuPanel.style.top = dims.top + 'px';
                 menuPanel.style['border-right'] = 'none';
@@ -136,6 +94,6 @@ export class HeaderProfileComponent implements OnInit , OnDestroy{
         },
             500);
     }
-    
+
 }
 

@@ -846,7 +846,7 @@ namespace d360.web.Controllers
         public JsonNetResult GetSecondaryNavigationSettings(SecondaryNavigationPostModel model)
         {
             bool execProcedure = true;
-            SecondaryNavigationResponseModel responseModel = new SecondaryNavigationResponseModel() { Items = new SecondaryNavItems() };            
+            SecondaryNavigationResponseModel responseModel = new SecondaryNavigationResponseModel() { Items = new SecondaryNavItems() };
             //Static nav
             if (model.AssetUid == null)
             {
@@ -1015,6 +1015,26 @@ namespace d360.web.Controllers
                     }
                     responseModel.Items.HasGovernanceRoleUidSet = govRoleUid != null && govRoleUid != Guid.Empty;
                 }
+
+                if (model.ObjectType == SystemObjects.ResourceType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.ResourceType.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.DisplayValue = "Users";
+                    responseModel.MainTabTitle = "Users";
+                    responseModel.Items.HasAudit = true;
+                }
+
+                if (model.ObjectType == SystemObjects.GroupType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.GroupType.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.DisplayValue = "Groups";
+                    responseModel.MainTabTitle = "Groups";
+                    responseModel.Items.HasAudit = true;
+                }
             }
 
 
@@ -1028,6 +1048,21 @@ namespace d360.web.Controllers
                 responseModel.MainTabTitle = "Tagged Assets";
                 responseModel.Items.HasAudit = true;
                 responseModel.Uid = tag.uid;
+            }
+
+            if (model.AssetUid != null)
+            {
+                var asset = Company.Assets.FirstOrDefault(x => x.uid == model.AssetUid);
+                if (asset != null && (asset.Object == "Resource" || asset.Object == "Group"))
+                {
+                    execProcedure = false;
+                    responseModel.Object = asset.Object;
+                    responseModel.ObjectID = asset.ObjectID;
+                    responseModel.DisplayValue = asset.Object == "Resource" ? "Users" : "Groups";
+                    responseModel.MainTabTitle = asset.Object == "Resource" ? "Users" : "Groups";
+                    responseModel.Items.HasAudit = true;
+                    responseModel.Uid = asset.uid;
+                }
             }
 
             if (execProcedure)
@@ -1089,7 +1124,7 @@ namespace d360.web.Controllers
                 if (model.AssetUid != null)
                 {
                     var permissions = Company.GetPermissions(responseModel.AssetId, responseModel.AssetTypeId);
-                    if (permissions.Any(x => x.ID == Permission.ReadAsset) || permissions.Count == 0)
+                    if (permissions.Any(x => x.ID == Permission.ReadResponsibilities) || permissions.Count == 0)
                     {
                         responseModel.Items.HasOwnership = true;
                     }
@@ -1103,7 +1138,7 @@ namespace d360.web.Controllers
                 if (model.AssetId == null && model.AssetTypeUid != null)
                 {
                     var permissions = Company.GetTypePermissions(responseModel.ObjectType, responseModel.ObjectTypeId);
-                    if (permissions.Any(x => x.ID == Permission.ReadAsset) || permissions.Count == 0)
+                    if (permissions.Any(x => x.ID == Permission.ReadResponsibilities) || permissions.Count == 0)
                     {
                         responseModel.Items.HasOwnership = true;
                     }

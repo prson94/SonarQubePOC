@@ -61,10 +61,10 @@
                                                 </div>
                                             </div>
                                             <div class="score-badges">
-                                                <span pTooltip="{{'Measure Score = ' + getAsPrecentage(subItem._adjustedWeight)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
+                                                <span pTooltip="{{'Measure Score = ' + getAsPrecentage(subItem.DisplayWeight)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
                                                     <ig-badge [variant]="subItem._badgeStyle" [text]="getAsPrecentage(subItem.DisplayWeight)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
                                                 </span>
-                                                <span pTooltip="{{'Maximum possible score for measure = measure weight = ' + getAsPrecentage(subItem._adjustedMaxWeight)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
+                                                <span pTooltip="{{'Maximum possible score for measure = measure weight = ' + getAsPrecentage(subItem.DisplayMaxWeight)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
                                                     <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(subItem.DisplayMaxWeight)"></ig-badge>
                                                 </span>
                                             </div>

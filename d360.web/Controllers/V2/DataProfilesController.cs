@@ -1,4 +1,5 @@
 ﻿using d360.core.entities;
+using d360.core.queue;
 using d360.model;
 using d360.model.DataAccessLayer;
 using d360.web.Filters;
@@ -151,8 +152,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PostDataProfiles(List<DataProfileUpsertModel> models)
         {
-            var prefix = "DataProfiles.PostDataProfiles => ";
-            var execution = getApiExecution(models.Count);
+            var prefix = "DataProfiles.PostDataProfiles => ";            
 
             if (!Company.CurrentResourceIsAdmin)
             {
@@ -161,16 +161,18 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                var validationResult = ValidateDataProfileUpsertRequest(models, true);
+                if (validationResult.StatusCode != HttpStatusCode.OK)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
+                }
+
                 if (models.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} Data Profile records in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items.")).ConfigureAwait(false);
                 }
 
-                var validationResult =  ValidateDataProfileUpsertRequest(models, true);
-                if(validationResult.StatusCode != HttpStatusCode.OK)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
-                }
+                var execution = getApiExecution(models.Count);
 
                 var results =  DataProfiles.UpsertDataProfiles(models, execution, true);
 
@@ -203,9 +205,8 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> PutDataProfiles(List<DataProfileUpsertModel> models)
-        {
+        {            
             var prefix = "DataProfiles.PutDataProfiles => ";
-            var execution = getApiExecution(models.Count);
 
             if (!Company.CurrentResourceIsAdmin)
             {
@@ -214,16 +215,18 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                if (models.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} Data Profile records in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items.")).ConfigureAwait(false);
-                }
-
                 var validationResult = ValidateDataProfileUpsertRequest(models, false);
                 if (validationResult.StatusCode != HttpStatusCode.OK)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
                 }
+
+                if (models.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} Data Profile records in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items.")).ConfigureAwait(false);
+                }                               
+
+                var execution = getApiExecution(models.Count);
 
                 var results = DataProfiles.UpsertDataProfiles(models, execution, false);
 
@@ -303,8 +306,174 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Provides support for adding a large set of Data Profile records.
+        /// </summary>
+        /// <param name="models">Data Profile record collection.</param>
+        /// <returns>Results response containing the ExecutionID of the request.</returns>
+        [
+            HttpPost,
+            Route("batch"),
+            SwaggerRequestExample(typeof(AssetInsert), typeof(AssetInsertsExample)),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> PostBulkDataProfilesAsync(List<DataProfileUpsertModel> models)
+        {
+            var prefix = "DataProfiles.PostBulkDataProfilesAsync => ";
+
+            try
+            {
+                List<ValidationResult> validationResults = new List<ValidationResult>();
+                foreach (var model in models)
+                {
+                    bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
+                    if (!isValid)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResults.First().ErrorMessage)).ConfigureAwait(false);
+                    }
+                }
+
+                var execution = getApiExecution(models.Count);                
+
+                ApiExecutionInfo executionInfo = await DataProfiles.PostBatchDataProfiles(models, execution);
+
+                var result = Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            new ApiExecutionRecievedResponse
+                            {
+                                ExecutionID = executionInfo.ExecutionID,
+                                Message = "Now processing request. Please check back with this ExecutionID for status.",
+                                Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{executionInfo.ExecutionID}"
+                            });
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(result)).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string> {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Provides support for updating a large set of Data Profile records.
+        /// </summary>
+        /// <param name="models">Data Profile record collection.</param>
+        /// <returns>Results response containing the ExecutionID of the request.</returns>
+        [
+            HttpPut,
+            Route("batch"),
+            SwaggerRequestExample(typeof(AssetInsert), typeof(AssetInsertsExample)),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> PutBulkDataProfilesAsync(List<DataProfileUpsertModel> models)
+        {
+            var prefix = "DataProfiles.PutBulkDataProfilesAsync => ";
+
+            try
+            {
+                List<ValidationResult> validationResults = new List<ValidationResult>();
+                foreach (var model in models)
+                {
+                    bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
+                    if (!isValid)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResults.First().ErrorMessage)).ConfigureAwait(false);
+                    }
+                }
+                
+                var execution = getApiExecution(models.Count);
+
+                ApiExecutionInfo executionInfo = await DataProfiles.PutBatchDataProfiles(models, execution);
+
+                var result = Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            new ApiExecutionRecievedResponse
+                            {
+                                ExecutionID = executionInfo.ExecutionID,
+                                Message = "Now processing request. Please check back with this ExecutionID for status.",
+                                Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{executionInfo.ExecutionID}"
+                            });
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(result)).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string> {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Provides support for deleting a large set of Data Profile records.
+        /// </summary>
+        /// <param name="models">Data Profile Delete request collection.</param>
+        /// <returns>Results response containing the ExecutionID of the request.</returns>
+        [
+            HttpDelete,
+            Route("batch"),
+            SwaggerRequestExample(typeof(AssetInsert), typeof(AssetInsertsExample)),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> DeleteBulkDataProfilesAsync(List<AssetDataProfileDeleteModel> models)
+        {
+            var prefix = "DataProfiles.DeleteBulkDataProfilesAsync => ";
+
+            try
+            {
+                var execution = getApiExecution(models.Count);
+
+                ApiExecutionInfo executionInfo = await DataProfiles.DeleteBatchDataProfiles(models, execution);
+
+                var result = Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            new ApiExecutionRecievedResponse
+                            {
+                                ExecutionID = executionInfo.ExecutionID,
+                                Message = "Now processing request. Please check back with this ExecutionID for status.",
+                                Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{executionInfo.ExecutionID}"
+                            });
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(result)).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string> {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+            }
+        }
+
         public WorkHttpStatus ValidateDataProfileUpsertRequest(List<DataProfileUpsertModel> models, bool IsInsert)
         {
+            if (models == null || models.Count == 0)
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "You have not provided a valid JSON structure for this request.");
+            }
+
             //Key Field Validation
             if (models.Any(dp => dp.profileSetDate == null || dp.assetUid == null))
             {
@@ -339,7 +508,17 @@ namespace d360.web.Controllers.V2
                 if (!recordExists && !IsInsert)
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Record does not exist for AssetUid {model.assetUid} and ProfileSetDate {model.profileSetDate.Date:yyyy-MM-dd}");
-                }                
+                }
+                
+                if(model.topK !=null && model.topK.Any(x=> x.Trim() == string.Empty))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Elements in topK cannot be Empty strings");
+                }
+
+                if (model.bottomK != null && model.bottomK.Any(x => x.Trim() == string.Empty))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Elements in bottomK cannot be Empty strings");
+                }
 
                 bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
                 if (!isValid)

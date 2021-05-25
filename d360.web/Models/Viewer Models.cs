@@ -440,7 +440,7 @@ namespace d360.web.Models
         public string FieldDescription { get; set; }
 
         [DataMember]
-        public bool IsComplexLookupGrid { get; set; }
+        public ComplexLookupType ComplexLookupType { get; set; } = ComplexLookupType.None;
 
         [DataMember]
         public string LookupObjectType { get; set; }
@@ -603,7 +603,7 @@ namespace d360.web.Models
 
     public class PowerBIReportViewModel
     {
-        public Microsoft.PowerBI.Api.Models.Report Report { get; set; }
+        public Microsoft.PowerBI.Api.V2.Models.Report Report { get; set; }
 
         public string AccessToken { get; set; }
     }

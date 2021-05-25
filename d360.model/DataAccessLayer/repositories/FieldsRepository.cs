@@ -231,8 +231,10 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'OwnershipLookup' then FTL.HideHeader else null end as 'Type.ComputedOwnershipLookup.HideHeader', 
 		        case when FT.Type = 'OwnershipLookup' then FTL.HideFooter else null end as 'Type.ComputedOwnershipLookup.HideFooter', 
 		        case when FT.Type = 'OwnershipLookup' then FTL.HideFilter else null end as 'Type.ComputedOwnershipLookup.HideFilter', 
+                case when FT.Type = 'OwnershipLookup' then try_cast(JSON_VALUE(FTL.Definition, '$.DisplayAsList') as bit) else null end as 'Type.ComputedOwnershipLookup.Definition.DisplayAsList',
                 case when FT.Type = 'OwnershipLookup' then try_cast(JSON_VALUE(FTL.Definition, '$.DisplayAssignmentSource') as bit) else null end as 'Type.ComputedOwnershipLookup.Definition.DisplayAssignmentSource',
 		        case when FT.Type = 'OwnershipLookup' then try_cast(JSON_VALUE(FTL.Definition, '$.ExpandGroupMembership') as bit) else null end as 'Type.ComputedOwnershipLookup.Definition.ExpandGroupMembership',
+		        case when FT.Type = 'OwnershipLookup' then try_cast(JSON_VALUE(FTL.Definition, '$.ResponsibilityType') as int) else null end as 'Type.ComputedOwnershipLookup.Definition.ResponsibilityType',
 		        case when FT.Type = 'OwnershipLookup' then FT.IsDisplayable else null end as 'Type.ComputedOwnershipLookup.IsDisplayable',
 		        case when FT.Type = 'OwnershipLookup' then FT.ShowIfEmpty else null end as 'Type.ComputedOwnershipLookup.ShowIfEmpty',
 		        case when FT.Type = 'OwnershipLookup' then FT.IsListable else null end as 'Type.ComputedOwnershipLookup.IsListable',
@@ -293,6 +295,7 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'RefListRelationship' then IT.Uid else null end as 'Type.ComputedRelationshipReferenceList.IntersectTypeUid',
 		        case when FT.Type = 'RefListRelationship' then FT.IsDisplayable else null end as 'Type.ComputedRelationshipReferenceList.IsDisplayable',
 		        case when FT.Type = 'RefListRelationship' then FT.ShowIfEmpty else null end as 'Type.ComputedRelationshipReferenceList.ShowIfEmpty',
+                case when FT.Type = 'RefListRelationship' then coalesce(JSON_VALUE(FT.Definition,'$.DisplayRefListDescription'),'true') else null end as 'Type.ComputedRelationshipReferenceList.DisplayRefListDescription',
 
 		        case when FT.Type = 'Date' then FT.ColumnOrder else null end as 'Type.Date.ColumnOrder',
 		        case when FT.Type = 'Date' then FT.ColumnWidth else null end as 'Type.Date.ColumnWidth',
@@ -651,8 +654,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                     var disallowedClasses = new List<AssetTypeClass>() {
                         AssetTypeClass.Organization, 
                         AssetTypeClass.Fusion, 
-                        AssetTypeClass.FusionAttribute, 
-                        AssetTypeClass.FusionQuery, 
+                        AssetTypeClass.FusionAttribute,                         
                         AssetTypeClass.User, 
                         AssetTypeClass.ReferenceItemType
                     };
@@ -1009,6 +1011,7 @@ from	IntersectType I
                     }
                     newFieldType.LookupObjectType = "IntersectType";
                     newFieldType.LookupObjectID = relationshipsFieldType;
+                    newFieldType.Definition = JsonConvert.SerializeObject(new { f.Type.ComputedRelationshipReferenceList.DisplayRefListDescription });
                 }
                 else if (f.Type.Date != null)
                 {

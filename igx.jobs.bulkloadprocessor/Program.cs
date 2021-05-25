@@ -40,6 +40,7 @@ namespace igx.jobs.bulkloadprocessor
     public class BulkLoadProcessor
     {
         const string functionName = "BulkLoad_Process";
+        const int SqlBulkBatchSize = 5000;
 
         public async static Task Run([QueueTrigger("%BulkLoadQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
         {
@@ -82,20 +83,24 @@ namespace igx.jobs.bulkloadprocessor
                     companyConnection.Close();
 
                     if (loadItemRowCount <= 0)
-                    {
-                        byte[] bytes;
+                    {                        
+                        SLDocument xls = null;
                         if (load.File == null)
-                        {
-                            var data = storage.GetFileContentsAsString($"{constants.COMPANY_BULK_LOAD_FOLDER}",$"{loadInfo.CompanyID}/load_{load.ID}.{load.Extension}");
-                            bytes = Encoding.Default.GetBytes(data);
+                        {        
+                            using (MemoryStream stream = new MemoryStream())
+                            {
+                                await storage.GetFileStream($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{loadInfo.CompanyID}/load_{load.ID}.{load.Extension}", stream);
+                                
+                                xls = new SLDocument(stream);                                
+                            }                            
                         }
                         else
-                        {
-                            bytes = load.File;
+                        {                            
+                            var memoryStream = new MemoryStream(load.File);
+                            xls = new SLDocument(memoryStream);
                         }
 
-                        var memoryStream = new MemoryStream(bytes);
-                        var xls = new SLDocument(memoryStream);
+                        
 
                         var stats = xls.GetWorksheetStatistics();
 
@@ -158,7 +163,7 @@ namespace igx.jobs.bulkloadprocessor
                         {
                             using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, trans))
                             {
-                                bulkCopy.BatchSize = loadItems.Count;
+                                bulkCopy.BatchSize = SqlBulkBatchSize;
                                 bulkCopy.DestinationTableName = "dbo.LoadItem";
                                 bulkCopy.BulkCopyTimeout = 3600;
 
@@ -194,7 +199,7 @@ namespace igx.jobs.bulkloadprocessor
                         {
                             using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, trans))
                             {
-                                bulkCopy.BatchSize = loadItemColumns.Count;
+                                bulkCopy.BatchSize = SqlBulkBatchSize;
                                 bulkCopy.DestinationTableName = "dbo.LoadItemColumn";
                                 bulkCopy.BulkCopyTimeout = 3600;
 
@@ -248,28 +253,31 @@ namespace igx.jobs.bulkloadprocessor
 
                         #region Update Lookup Values
 
-                        using (var trans = companyConnection.BeginTransaction())
+                        var lookupColumns = loadColumns.Where(l => l.IsLookup);
+
+                        if (lookupColumns.Any())
                         {
-
-                            var lookupColumns = loadColumns.Where(l => l.IsLookup);
-                            List<dynamic> tempLookupColumns = new List<dynamic>();
-
-                            foreach(var col in lookupColumns)
+                            using (var trans = companyConnection.BeginTransaction())
                             {
-                                var loadCol = load.LoadColumns.FirstOrDefault(l => l.Name == col.Name);
+                                List<dynamic> tempLookupColumns = new List<dynamic>();
 
-                                if (loadCol != null && col.FieldTypeId != null)
+                                foreach (var col in lookupColumns)
                                 {
-                                    tempLookupColumns.Add(new {
-                                        LoadID = load.ID,
-                                        loadCol.ColumnIndex,
-                                        col.Name,
-                                        FieldTypeID = col.FieldTypeId
-                                    });
-                                }
-                            }
+                                    var loadCol = load.LoadColumns.FirstOrDefault(l => l.Name == col.Name);
 
-                            companyConnection.Execute(@"drop table if exists #tempLookupColumns;
+                                    if (loadCol != null && col.FieldTypeId != null)
+                                    {
+                                        tempLookupColumns.Add(new
+                                        {
+                                            LoadID = load.ID,
+                                            loadCol.ColumnIndex,
+                                            col.Name,
+                                            FieldTypeID = col.FieldTypeId
+                                        });
+                                    }
+                                }
+
+                                companyConnection.Execute(@"drop table if exists #tempLookupColumns;
                             create table #tempLookupColumns (
                                 LoadID int,
                                 Name nvarchar(max),
@@ -278,46 +286,48 @@ namespace igx.jobs.bulkloadprocessor
                                 );", transaction: trans);
 
 
-                            using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, trans))
-                            {
 
-                                bulkCopy.BatchSize = tempLookupColumns.Count;
-                                bulkCopy.DestinationTableName = "#tempLookupColumns";
-                                bulkCopy.BulkCopyTimeout = 3600;
-
-                                var table = new System.Data.DataTable();
-                                var columnName = "LoadID";
-                                table.Columns.Add(columnName, typeof(int));
-                                bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                                columnName = "Name";
-                                table.Columns.Add(columnName, typeof(string));
-                                bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                                columnName = "ColumnIndex";
-                                table.Columns.Add(columnName, typeof(int));
-                                bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                                columnName = "FieldTypeID";
-                                table.Columns.Add(columnName, typeof(int));
-                                bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                                foreach (var item in tempLookupColumns)
+                                using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, trans))
                                 {
-                                    var row = table.NewRow();
 
-                                    row["LoadID"] = item.LoadID;
-                                    row["Name"] = item.Name;
-                                    row["ColumnIndex"] = item.ColumnIndex;
-                                    row["FieldTypeID"] = item.FieldTypeID;
+                                    bulkCopy.BatchSize = SqlBulkBatchSize;
+                                    bulkCopy.DestinationTableName = "#tempLookupColumns";
+                                    bulkCopy.BulkCopyTimeout = 3600;
 
-                                    table.Rows.Add(row);
+                                    var table = new System.Data.DataTable();
+                                    var columnName = "LoadID";
+                                    table.Columns.Add(columnName, typeof(int));
+                                    bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                    columnName = "Name";
+                                    table.Columns.Add(columnName, typeof(string));
+                                    bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                    columnName = "ColumnIndex";
+                                    table.Columns.Add(columnName, typeof(int));
+                                    bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                    columnName = "FieldTypeID";
+                                    table.Columns.Add(columnName, typeof(int));
+                                    bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                    foreach (var item in tempLookupColumns)
+                                    {
+                                        var row = table.NewRow();
+
+                                        row["LoadID"] = item.LoadID;
+                                        row["Name"] = item.Name;
+                                        row["ColumnIndex"] = item.ColumnIndex;
+                                        row["FieldTypeID"] = item.FieldTypeID;
+
+                                        table.Rows.Add(row);
+                                    }
+
+                                    bulkCopy.WriteToServer(table);
                                 }
 
-                                bulkCopy.WriteToServer(table);
-                            }
 
-                            companyConnection.Execute(@"
+                                companyConnection.Execute(@"
                                 declare @maxlen int = 0;
 
                                 drop table if exists #TempBulkLookupValues;
@@ -347,7 +357,8 @@ namespace igx.jobs.bulkloadprocessor
 
                                 ", transaction: trans, commandTimeout: 3600);
 
-                            trans.Commit();
+                                trans.Commit();
+                            }
                         }
 
                         #endregion
@@ -716,7 +727,7 @@ CREATE NONCLUSTERED INDEX IX_TempUsers_LoadID_RowIndex_Email ON #Users ( LoadID 
 
                     var usersBulkCopy = new SqlBulkCopy(community, SqlBulkCopyOptions.Default, trans)
                     {
-                        BatchSize = tbl.Rows.Count,
+                        BatchSize = SqlBulkBatchSize,
                         DestinationTableName = "#Users",
                         BulkCopyTimeout = 3600
                     };
@@ -939,7 +950,7 @@ CREATE NONCLUSTERED INDEX IX_TempUsers_ResourceID ON #Users ( ResourceID ASC );
 
                     var usersBulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans)
                     {
-                        BatchSize = tbl.Rows.Count,
+                        BatchSize = SqlBulkBatchSize,
                         DestinationTableName = "#Users",
                         BulkCopyTimeout = 3600
                     };

@@ -8,9 +8,9 @@
         <span class="text" [innerHTML]="uiFilterLabel"></span>
     </div>
     <i *ngIf="condition.field && hasRemoveIcon()"
-       class="remove-button fa fa-times-circle"
+       class="remove-button fa {{(condition.isDefaultFilter ? 'fa-undo' : 'fa-times-circle')}}"
        (click)="remove()"
-       pTooltip="Remove filter"
+       pTooltip="{{(condition.isDefaultFilter ? 'Reset filter' : 'Remove filter')}}"
        tooltipPosition="top"
        tooltipStyleClass="ig-tooltip">
     </i>
@@ -25,7 +25,7 @@
                     [(ngModel)]="condition.field"
                     (onChange)="onFieldSelected($event)"
                     igSize="medium"
-                    panelStyleClass="ig-dropdown-grouped"
+                    [panelStyleClass]="getFieldsDropdownClass()"
                     appendTo="body">
             <ng-template let-group pTemplate="group">
                 <div class="group-item">
@@ -62,18 +62,18 @@
                         <ig-number-input igSize="full" [(ngModel)]="condition.value2" [required]="true"></ig-number-input>
                     </ng-container>
 
-                    <ig-date *ngIf="currentInputType === 'date'" [(ngModel)]="condition.value" [appendTo]="'body'" [required]="true"></ig-date>
+                    <ig-date *ngIf="currentInputType === 'date'" [(ngModel)]="condition.value" [appendTo]="'body'" [required]="true" [minDate]="minSQLDate"></ig-date>
                     <ng-container *ngIf="currentInputType === 'multi-date'">
-                        <ig-date [(ngModel)]="condition.value" [appendTo]="'body'" [required]="true"></ig-date>
+                        <ig-date [(ngModel)]="condition.value" [appendTo]="'body'" [required]="true" [minDate]="minSQLDate"></ig-date>
                         <div class="value-separator">and</div>
-                        <ig-date [(ngModel)]="condition.value2" [appendTo]="'body'" [required]="true"></ig-date>
+                        <ig-date [(ngModel)]="condition.value2" [appendTo]="'body'" [required]="true" [minDate]="minSQLDate"></ig-date>
                     </ng-container>
 
-                    <ig-date *ngIf="currentInputType === 'date-time'" [(ngModel)]="condition.value" [showTime]="true" [appendTo]="'body'" [required]="true"></ig-date>
+                    <ig-date *ngIf="currentInputType === 'date-time'" [(ngModel)]="condition.value" [showTime]="true" [appendTo]="'body'" [required]="true" [minDate]="minSQLDate"></ig-date>
                     <ng-container *ngIf="currentInputType === 'multi-date-time'">
-                        <ig-date [(ngModel)]="condition.value" [required]="true" [appendTo]="'body'" [showTime]="true"></ig-date>
+                        <ig-date [(ngModel)]="condition.value" [required]="true" [appendTo]="'body'" [showTime]="true" [minDate]="minSQLDate"></ig-date>
                         <div class="value-separator">and</div>
-                        <ig-date [(ngModel)]="condition.value2" [required]="true" [appendTo]="'body'" [showTime]="true"></ig-date>
+                        <ig-date [(ngModel)]="condition.value2" [required]="true" [appendTo]="'body'" [showTime]="true" [minDate]="minSQLDate"></ig-date>
                     </ng-container>
 
                     <ng-container *ngIf="currentInputType === 'lookup' && currentField && isSelectingValue">
@@ -172,7 +172,7 @@
             <div class="buttons flex">
                 <button *ngIf="hasRemoveButton()"
                         igButton
-                        icon="fa-trash"
+                        icon="{{(condition.isDefaultFilter ? 'fa-undo' : 'fa-trash')}}"
                         style="margin-left:0px;"
                         pTooltip="{{(condition.isDefaultFilter ? 'Reset filter' : 'Remove filter')}}"
                         tooltipPosition="top"

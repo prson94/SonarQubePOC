@@ -1,0 +1,112 @@
+﻿<div *ngIf="isReferenceListFromRelationship">
+    <div class="row" style="margin-bottom: 10px">
+        <div>
+            <div class="FieldDisplayContent">
+                <div>Reference List: <d3s-preview-tooltip objectType="ReferenceItemType" [objectId]="data.objectId"><a [href]="data?.url" (click)="navigate(data?.url, $event)">{{data?.name}}</a></d3s-preview-tooltip></div>
+            </div>
+            <div *ngIf="data?.description" class="FieldDisplayContent">
+                <div *ngIf="showDescription" [innerHtml]="data.description | safeHtml"></div>
+                <div>
+                    <a (click)="toggleShowDescription()">{{showDescription ? "Hide Description" : "Show Description"}}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="ig-lookup-grid-filter-container">
+    <div [hidden]="!showSimpleFilter || hideFilter" class="ig-lookup-grid-simple-filter-container">
+        <input igInput type="text" size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="ig-lookup-grid-simple-filter">
+        <span class="ig-lookup-grid-filter-search-icon"><i class="fa fa-search"></i></span>
+    </div>
+    <div *ngIf="!showSimpleFilter || hideFilter" class="ig-lookup-grid-filter-placeholder">&nbsp;</div>
+    <div class="ig-lookup-grid-button-container">
+        <button igButton 
+                class="ig-lookup-grid-button" 
+                icon="fa-download" 
+                (click)="export()" 
+                pTooltip="Export to Excel" 
+                tooltipPosition="top" 
+                tooltipStyleClass="ig-tooltip"></button>
+        <button igButton 
+                *ngIf="!hideFilter && !hideHeader" 
+                class="ig-lookup-grid-button" 
+                icon="fa-filter" 
+                (click)="showSimpleFilter = !showSimpleFilter"
+                pTooltip="Filter Mode" 
+                tooltipPosition="left" 
+                tooltipStyleClass="ig-tooltip"></button>
+    </div>
+</div>
+<div>
+    <p-table #dt
+             [value]="data?.Values"
+             selectionMode="single"
+             [metaKeySelection]="true"
+             [globalFilterFields]="globalFilterFields"
+             [pageLinks]="3"
+             [paginator]="!hideFooter"
+             [rows]="defaultInitialItemsPerPage"
+             [rowsPerPageOptions]="defaultPagingOptions"
+             [totalRecords]="data?.total"
+             [loading]="isLoading"
+             [loadingIcon]="'fa fa-spinner fa-spin'"
+             [lazy]="true"
+             [scrollable]="true"
+             (onLazyLoad)="loadData($event)">
+        <ng-template pTemplate="colgroup">
+            <colgroup>
+                <col *ngFor="let column of visibleColumns" [style.width]="(column.columnWidth == null || column.columnWidth < 1) ? '125px' : column.columnWidth + 'px'">
+            </colgroup>
+        </ng-template>
+        <ng-template pTemplate="header">
+            <tr [hidden]="hideHeader">
+                <th *ngFor="let column of visibleColumns" [style.width]="(column.columnWidth == null || column.columnWidth < 1) ? '125px' : column.columnWidth + 'px'" [pSortableColumn]="column.sortable ? column.datafield : null">
+                    <span *ngIf="column.description != null && column.description != ''" [pTooltip]="column.description" tooltipPosition="top">{{column.text}}</span>
+                    <span *ngIf="column.description == null || column.description == ''">{{column.text}}</span>
+                    <d3s-sortIcon *ngIf="column.sortable" [field]="column.datafield"></d3s-sortIcon>
+                </th>
+            </tr>
+            <tr [hidden]="showSimpleFilter || hideFilter">
+                <th *ngFor="let column of visibleColumns">
+                    <d3s-column-filter *ngIf="column.filterable" [field]="column.datafield" [datatype]="'text'"></d3s-column-filter>
+                </th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+            <tr [pSelectableRow]="item">
+                <td *ngFor="let column of visibleColumns">
+                    <div [ngSwitch]="column.type">
+                        <span *ngSwitchCase="'date'">
+                            <span *ngIf="item[column.datafield] && item[column.datafield] !== ''">{{item[column.datafield] | utcDate | date:'shortDate'}}</span>
+                        </span>
+                        <span *ngSwitchCase="'datetime'">
+                            <span *ngIf="item[column.datafield] && item[column.datafield] !== ''">{{item[column.datafield] | utcDate | date:'short'}}</span>
+                        </span>
+                        <span *ngSwitchCase="'bool'">
+                            <i *ngIf="(item[column.datafield] || '').toString().toUpperCase() == 'TRUE'" class="fa fa-check enabled" title="True"></i>
+                            <i *ngIf="(item[column.datafield] || '').toString().toUpperCase() == 'FALSE'" class="fa fa-times disabled" title="False"></i>
+                        </span>
+                        <span *ngSwitchCase="'number'">{{item[column.datafield]}}</span>
+                        <span *ngSwitchCase="'lookup'" style="display:block; word-wrap:break-word !important">
+                            <d3s-lookup-tooltip [objectType]="item[column.objectfield]" [objectId]="item[column.objectidfield]">
+                                <a (click)="navigate(item[column.urlfield])" [innerText]="item[column.datafield]"></a>
+                            </d3s-lookup-tooltip>
+                        </span>
+                        <span *ngSwitchCase="'preview'" style="display:block; word-wrap:break-word !important">
+                            <d3s-preview-tooltip [uid]="item[column.uidfield]" [align]="'right'">
+                                <a (click)="navigate(item[column.urlfield])" [innerText]="item[column.datafield]"></a>
+                            </d3s-preview-tooltip>
+                        </span>
+                        <span *ngSwitchCase="'link'" style="display:block; word-wrap:break-word !important" [innerHtml]="item[column.datafield]"></span>
+                        <span *ngSwitchCase="'html'" style="display:block; word-wrap:break-word !important" [innerHtml]="item[column.datafield]"></span>
+                        <span *ngSwitchCase="'Score'" style="display:block; word-wrap:break-word !important" [innerHtml]="getScoreFieldHTML(item,column.datafield)"></span>
+                        <span *ngSwitchDefault style="display:block; word-wrap:break-word !important" [innerText]="item[column.datafield]"></span>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template *ngIf="!hideFooter" pTemplate="summary">
+            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="data?.total"></d3s-grid-paging-info>
+        </ng-template>
+    </p-table>
+</div>

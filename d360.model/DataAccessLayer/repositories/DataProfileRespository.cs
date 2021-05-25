@@ -9,6 +9,8 @@ using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using d360.core.exceptions;
 using Newtonsoft.Json;
+using d360.core.queue;
+using d360.extensions;
 
 namespace d360.model.DataAccessLayer
 {
@@ -16,12 +18,16 @@ namespace d360.model.DataAccessLayer
     {
         internal ICompanyContext CompanyContext;
         internal ICommunityContext Community;
+        internal IStorageProvider StorageProvider;
+        internal IQueueSource QueueSource;
 
-        public DataProfileRepository(ICompanyContext companyContext, ICommunityContext community)
+        public DataProfileRepository(ICompanyContext companyContext, ICommunityContext community, IStorageProvider storageProvider, IQueueSource queueSource)
             : base(companyContext)
         {
             this.CompanyContext = companyContext;
             this.Community = community;
+            this.StorageProvider = storageProvider;
+            this.QueueSource = queueSource;
         }
 
         public async Task<AssetDataProfilesApiViewModel> GetDataProfiles(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -86,11 +92,11 @@ namespace d360.model.DataAccessLayer
                                 ,ADP.[SampleCount]
                                 ,ADP.[NullCount]
                                 ,ADP.[BlankCount]
-                                ,ADP.[MeanValue]
-                                ,ADP.[MinimumValue] as maxValue
-                                ,ADP.[MaximumValue] as minValue
-                                ,ADP.[MinimumLength]
-                                ,ADP.[MaximumLength]
+                                ,ADP.[MeanValue] as mean
+                                ,ADP.[MinimumValue] as min
+                                ,ADP.[MaximumValue] as max
+                                ,ADP.[MinimumLength] as minLength
+                                ,ADP.[MaximumLength] as maxLength
                                 ,ADP.[StandardDeviation]
                                 ,ADP.[Multiline]
                                 ,ADP.[RegExp]
@@ -111,20 +117,28 @@ namespace d360.model.DataAccessLayer
 	                            ,JSON_QUERY(cardinalityDetail.[value]) as cardinalityDetail
                                 ,ADP.[ShapeCardinality] as shapesCardinality
 	                            ,JSON_QUERY(shapesDetail.[value]) as shapesDetail
-                                ,JSON_QUERY((select CONCAT('[""', STRING_AGG(STRING_ESCAPE(cast([value] as nvarchar(36)), 'JSON'), '"",""'), '""]')
+                                ,JSON_QUERY(
+                                    REPLACE(
+                                        REPLACE((select CONCAT('[""', STRING_AGG(STRING_ESCAPE(cast([value] as nvarchar(36)), 'JSON'), '"",""'), '""]')
                                                         from AssetDataProfileSample
                                                         where
                                                             AssetDataProfileId = ADP.ID
                                                             and
                                                             lower(SampleType) = 'topk'
-                                                        )) as topk
-                                ,JSON_QUERY((select CONCAT('[""', STRING_AGG(STRING_ESCAPE(cast([value] as nvarchar(36)), 'JSON'), '"",""'), '""]')
+                                                )
+                                        , '"""",','')
+                                    ,'""""',''))  as topk
+                                ,JSON_QUERY(
+                                    REPLACE(
+                                        REPLACE((select CONCAT('[""', STRING_AGG(STRING_ESCAPE(cast([value] as nvarchar(36)), 'JSON'), '"",""'), '""]')
                                                         from AssetDataProfileSample
                                                         where
                                                             AssetDataProfileId = ADP.ID
                                                             and
                                                             lower(SampleType) = 'bottomk'
-                                                        )) as bottomk
+                                                        )
+                                        , '"""",','')
+                                    ,'""""','')) as bottomk
                             from 
 	                            Asset A
 	                            Inner Join 
@@ -223,9 +237,12 @@ namespace d360.model.DataAccessLayer
                         for Json Path";                
 
             var jsonStrings = await CompanyContext.QueryAsync<string>(sql, dbArgs, ApiTimeout);
-            var json = string.Join("", jsonStrings);
+            var json = string.Join("", jsonStrings);            
 
             results.items = JsonConvert.DeserializeObject<List<DataProfileModel>>(string.IsNullOrEmpty(json) ? "[]" : json);
+
+            results.items.Where(x => x.topK.Count == 0).ToList().ForEach(x=>x.topK=null);
+            results.items.Where(x => x.bottomK.Count == 0).ToList().ForEach(x => x.bottomK = null);
 
             if (includeTotal)
             {
@@ -299,6 +316,48 @@ namespace d360.model.DataAccessLayer
             }
 
             return results;
-        }          
+        }
+
+        public async Task<ApiExecutionInfo> PostBatchDataProfiles(List<DataProfileUpsertModel> models, ApiExecution execution)
+        {
+            var executionInfo = new ApiExecutionInfo
+            {
+                CompanyID = CompanyContext.CurrentCompanyID,
+                CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+                ExecutionID = Guid.NewGuid(),
+                ResourceID = execution.ResourceID,
+                Action = ApiExecutionAction.PostDataProfile,
+            };
+
+            return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
+        }
+
+        public async Task<ApiExecutionInfo> PutBatchDataProfiles(List<DataProfileUpsertModel> models, ApiExecution execution)
+        {
+            var executionInfo = new ApiExecutionInfo
+            {
+                CompanyID = CompanyContext.CurrentCompanyID,
+                CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+                ExecutionID = Guid.NewGuid(),
+                ResourceID = execution.ResourceID,
+                Action = ApiExecutionAction.PutDataProfile,
+            };
+
+            return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
+        }
+
+        public async Task<ApiExecutionInfo> DeleteBatchDataProfiles(List<AssetDataProfileDeleteModel> models, ApiExecution execution)
+        {
+            var executionInfo = new ApiExecutionInfo
+            {
+                CompanyID = CompanyContext.CurrentCompanyID,
+                CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+                ExecutionID = Guid.NewGuid(),
+                ResourceID = execution.ResourceID,
+                Action = ApiExecutionAction.DeleteDataProfile,
+            };
+
+            return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
+        }
     }
 }

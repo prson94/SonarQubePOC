@@ -103,8 +103,6 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         this.setCommonSecondaryNavTabs(false, true, hasDashboard);
 
         this.secondaryNavService.showItem(new SecondaryNavItem('History', 'fusionhistory', ['fa-archive'], `/fusion/history/${this.fusionId}`));
-
-        if (isManual) this.secondaryNavService.showItem(new SecondaryNavItem('Load Data', 'fusionload', ['fa-file-excel-o'], `/fusion/manual/load/${this.fusionId}`));           
     }
     
     private buildBreadcrumb() {  

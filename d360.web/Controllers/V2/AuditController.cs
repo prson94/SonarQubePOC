@@ -44,13 +44,7 @@ namespace d360.web.Controllers.V2
         /// Retrieves audit data for the given asset unique identifier.
         /// </summary>
         /// <remarks>
-        /// In addition to the below query parameters a field name for the asset type can be specified to filter by exact match. For example MyCustomField=someExactValue. TODO
-        /// *  If you use the object asset type Uid as the assetTypeUid value, only use of the subjectUid filter is supported.
-        /// *  If you use the subject asset type Uid as the assetTypeUid value, only use of the objectUid filter is supported.
-        /// *  If you use either the subjectUid or objectUid filter, the predicateUid must be included in the request. 
-        /// *  If you do not include the predicateUid, any values given in the subjectUid or objectUid field are ignored.
-        /// 
-        /// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
+        /// Results can be filted using the _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
         /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
         /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
         /// 
@@ -142,8 +136,27 @@ namespace d360.web.Controllers.V2
                     }
                     isAssetType = true;
                 }
+                string baseSql = "";
+                if (isAssetType)
+                {
+                    switch (assetType.Object)
+                    {
+                        case "ResourceType":
+                            baseSql = GetBaseAuditQueryObject(SystemObjects.Resource, false);
+                            break;
+                        case "GroupType":
+                            baseSql = GetBaseAuditQueryObject(SystemObjects.Group, false);
+                            break;
+                        default:
+                            baseSql = GetBaseAuditQueryForAssetTypeUid(assetType?.Class == AssetTypeClass.Reference);
+                            break;
+                    }
+                }
+                else
+                {
+                    baseSql = GetBaseAuditQueryForUid();
+                }
 
-                string baseSql = isAssetType ? GetBaseAuditQueryForAssetTypeUid(assetType?.Class == AssetTypeClass.Reference) : GetBaseAuditQueryForUid();
                 dbArgs.Add("uid", assetUid);
 
                 string whereSql = "";
@@ -448,7 +461,8 @@ namespace d360.web.Controllers.V2
                 from reporting.global_audit ga";
 
             //get all auditing by type (introduced in tagging)
-            if (auditingByType) {
+            if (auditingByType)
+            {
                 //Class value will be 11. To reuse columns from regular query, add by cross joining a select 11
                 querySql += @"
                 left outer join reporting.global_fieldaudit fa on(fa.auditid = ga.id) and ga.Action != 'Removed'
@@ -456,7 +470,8 @@ namespace d360.web.Controllers.V2
                 cross join (select 11 as Class) AT
                 cross join (select 11 as AssetTypeClass) AD
                 where ga.[Object] = @objType";
-            } else
+            }
+            else
             {
                 querySql += @"
                 left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
@@ -554,8 +569,10 @@ namespace d360.web.Controllers.V2
 	            ga.action,
 	            ActionA.uid as actionAssetUid,
 	            ActionAT.uid as actionAssetTypeUid,
-                ga.ActionObject,
-	            ga.ActionObjectTypeName as actionObjectTypeName,
+                case when ga.ActionObject = 'Intersect' then 'Relationship'
+                     when ga.ActionObject = 'IntersectType' then 'RelationshipType'
+                     else ga.ActionObject end ActionObject,
+	            case when ga.ActionObjectTypeName = 'Intersect Type' then 'Relationship Type' else ga.ActionObjectTypeName end as actionObjectTypeName,
 	            ga.actionObjectName,
 	            ga.actionDescription,
 	            fa.FieldName as Field,
@@ -620,8 +637,10 @@ namespace d360.web.Controllers.V2
 	            ga.action,
 	            ActionA.uid as actionAssetUid,
 	            ActionAT.uid as actionAssetTypeUid,
-                ga.ActionObject,
-	            ga.ActionObjectTypeName as actionObjectTypeName,
+                case when ga.ActionObject = 'Intersect' then 'Relationship'
+                     when ga.ActionObject = 'IntersectType' then 'RelationshipType'
+                     else ga.ActionObject end ActionObject,
+	            case when ga.ActionObjectTypeName = 'Intersect Type' then 'Relationship Type' else ga.ActionObjectTypeName end as actionObjectTypeName,
 	            ga.actionObjectName,
 	            ga.actionDescription,
 	            fa.FieldName as Field,
@@ -653,7 +672,7 @@ namespace d360.web.Controllers.V2
             left join AssetType ActionAT on ActionA.AssetTypeID = ActionAT.ID            
             ";
 
-            if(includeReferenceItem)
+            if (includeReferenceItem)
             {
                 querySql += $@" UNION select
                     ad.uid,
@@ -668,8 +687,10 @@ namespace d360.web.Controllers.V2
 	                ga.action,
 	                ActionA.uid as actionAssetUid,
 	                ActionAT.uid as actionAssetTypeUid,
-                    ga.ActionObject,
-	                ga.ActionObjectTypeName as actionObjectTypeName,
+                     case when ga.ActionObject = 'Intersect' then 'Relationship'
+                          when ga.ActionObject = 'IntersectType' then 'RelationshipType'
+                          else ga.ActionObject end ActionObject,
+	                case when ga.ActionObjectTypeName = 'Intersect Type' then 'Relationship Type' else ga.ActionObjectTypeName end as actionObjectTypeName,
 	                ga.actionObjectName,
 	                ga.actionDescription,
 	                fa.FieldName as Field,
@@ -710,6 +731,110 @@ namespace d360.web.Controllers.V2
             return querySql;
         }
 
+        private string GetBaseAuditQueryObject(SystemObjects systemObject, bool includeTypeAudits)
+        {
+            string objectTypeName = systemObject.ToString() + "Type";
+            string querySql = $@"select
+	            at.uid,
+	            at.Name as name,
+	            r.uid as resourceUid,
+	            CASE WHEN R.State = {(int)CompanyResourceState.Deleted} THEN
+		            R.FirstName + ' ' + R.LastName + ' (deleted)'
+	            ELSE
+		            R.FirstName + ' ' + R.LastName
+	            END as resourceName,
+	            ga.Date as date,
+	            ga.action,
+	            ActionA.uid as actionAssetUid,
+	            ActionAT.uid as actionAssetTypeUid,
+                ga.ActionObject,
+	            ga.ActionObjectTypeName as actionObjectTypeName,
+	            ga.actionObjectName,
+	            ga.actionDescription,
+	            fa.FieldName as Field,
+	            CASE WHEN ga.Action = 'Tag Consolidate' THEN
+		            ga.ObjectName
+	            ELSE
+		            fa.Value
+	            END as NewValue,
+	            AT.Class as Class,
+	            fa.[Version] as 'Version',
+	            CASE WHEN ga.Action  = 'Tag Consolidate' THEN
+		            ga.ActionObjectName
+	            ELSE
+		            (select top 1 fa_sub.value as 'value'
+		            from reporting.global_fieldaudit fa_sub
+		            inner join reporting.global_audit ga_sub on (fa_sub.auditid = ga_sub.id)	
+		            where ga_sub.[object] = ga.[object] 
+		            and ga_sub.[objectid] = ga.[objectid] 
+		            and fa_sub.version = (fa.Version - 1) 
+		            and fa_sub.fieldname = fa.FieldName 
+		            and fa_sub.fieldtypeid = fa.FieldTypeId 
+		            and ga_sub.actionObjectId=ga.actionObjectId)
+	            END AS 'PreviousValue'
+            from reporting.global_audit ga
+            left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
+            inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
+            left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
+            left join Asset ActionA on ActionA.Object = ga.ActionObject and ActionA.ObjectID = ga.ActionObjectID
+            left join AssetType ActionAT on ActionA.AssetTypeID = ActionAT.ID            
+			where ga.Object = '{systemObject.ToString()}'
+            ";
+
+            if (includeTypeAudits)
+            {
+                querySql += $@"union
+select
+	            at.uid,
+	            at.Name as name,
+	            r.uid as resourceUid,
+	            CASE WHEN R.State = {(int)CompanyResourceState.Deleted} THEN
+		            R.FirstName + ' ' + R.LastName + ' (deleted)'
+	            ELSE
+		            R.FirstName + ' ' + R.LastName
+	            END as resourceName,
+	            ga.Date as date,
+	            ga.action,
+	            ActionA.uid as actionAssetUid,
+	            ActionAT.uid as actionAssetTypeUid,
+                ga.ActionObject,
+	            ga.ActionObjectTypeName as actionObjectTypeName,
+	            ga.actionObjectName,
+	            ga.actionDescription,
+	            fa.FieldName as Field,
+	            CASE WHEN ga.Action = 'Tag Consolidate' THEN
+		            ga.ObjectName
+	            ELSE
+		            fa.Value
+	            END as NewValue,
+	            AT.Class as Class,
+	            fa.[Version] as 'Version',
+	            CASE WHEN ga.Action  = 'Tag Consolidate' THEN
+		            ga.ActionObjectName
+	            ELSE
+		            (select top 1 fa_sub.value as 'value'
+		            from reporting.global_fieldaudit fa_sub
+		            inner join reporting.global_audit ga_sub on (fa_sub.auditid = ga_sub.id)	
+		            where ga_sub.[object] = ga.[object] 
+		            and ga_sub.[objectid] = ga.[objectid] 
+		            and fa_sub.version = (fa.Version - 1) 
+		            and fa_sub.fieldname = fa.FieldName 
+		            and fa_sub.fieldtypeid = fa.FieldTypeId 
+		            and ga_sub.actionObjectId=ga.actionObjectId)
+	            END AS 'PreviousValue'
+            from reporting.global_audit ga
+            left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
+            inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
+            left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
+            left join Asset ActionA on ActionA.Object = ga.ActionObject and ActionA.ObjectID = ga.ActionObjectID
+            left join AssetType ActionAT on ActionA.AssetTypeID = ActionAT.ID            
+			where ga.Object = '{objectTypeName}'";
+            }
+
+            return querySql;
+        }
+
+
         public string IsPageSizeAndNumValid(IEnumerable<KeyValuePair<string, string>> queryParams, int pageSizeLimit = 250)
         {
             var parameters = queryParams.ToList();
@@ -725,8 +850,9 @@ namespace d360.web.Controllers.V2
                 }
                 if (long.TryParse(_pageSize, out pageSize))
                 {
-                    if (pageSize > pageSizeLimit) { 
-                        return "Invalid pageSize value provided. Number is too large"; 
+                    if (pageSize > pageSizeLimit)
+                    {
+                        return "Invalid pageSize value provided. Number is too large";
                     }
                     if (pageSize <= 0)
                     {

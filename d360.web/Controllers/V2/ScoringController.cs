@@ -888,11 +888,11 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <param name="assetUid">The public identifier for the asset.</param>
         /// <param name="allocationUid">The allocation identifier of score to return.</param>
+        /// <param name="effectiveDate">The date which you want to retrieve a score for. If not provided, the entire score history will be returned. If provided, the date must be today or earlier.</param>
         /// <returns>The score history for a given an asset type Uid and score type.</returns>
         [
             HttpGet,
             Route("history/{allocationUid}/{assetUid}/scores"),
-            SwaggerParameter("effectiveDate", "The date which you want to retrieve a score for. If not provided, the entire score history will be returned. If provided, the date must be today or earlier.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the score history given an asset and allocation.", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),

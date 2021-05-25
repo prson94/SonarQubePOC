@@ -28,7 +28,6 @@ enum PageMode {
     Assignment,
     EditingInfo,
     EditingPassword,
-    ViewingAPICredentials,
     NotFound
 }
 
@@ -50,6 +49,8 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     private totNumber = 0;
     private days = 90;
     private resourceType = ' ';
+
+    isApiKeysPopupVisible = false;
 
     private statistics: ObjectStatistics;
     private selectedWorkflow: WorkflowType;
@@ -210,7 +211,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                 this.pageMode = PageMode.EditingPassword;
                 break;
             case 'api':
-                this.pageMode = PageMode.ViewingAPICredentials;
+                this.isApiKeysPopupVisible = true;
                 break;
             default:
                 this.pageMode = PageMode.Default;

@@ -83,7 +83,26 @@ namespace d360.web.Controllers
                 }
             }
 
-            if (!string.IsNullOrEmpty(formattedValue))
+            if (ft.Type == DataType.Link.ToString())
+            {
+                var ro = new ReadOnlyField
+                {
+                    Name = ft.FriendlyName,
+                    Value = value,
+                    FieldDescription = ft.DisplayDescription,
+                    FieldName = ft.Name,
+                    ShowIfEmpty = ft.ShowIfEmpty,
+                    DataType = ft.Type
+                };
+
+                list.Add(new DetailReadOnlyRowModel
+                {
+                    columns = 1,
+                    FirstColumnFields = new List<ReadOnlyField> { ro },
+                    Category = ft.Category
+                });
+            }
+            else if (!string.IsNullOrEmpty(formattedValue))
             {
                 var ro = new ReadOnlyField
                 {
@@ -101,152 +120,67 @@ namespace d360.web.Controllers
 
                 if (!string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue)
                 {
-                    if (ft.AllowMultipleValues)
+
+                    ro.Values = new List<ReadOnlyFieldValue>();
+                    ro.Value = "values";
+
+                    var items = ((!string.IsNullOrEmpty(value)) ? value.Split(',') : new string[] { });
+                    var itemIds = new List<long>();
+                    var isReference = ft.LookupObjectType == "ReferenceItem";
+                    var tooltipContext = isReference ? TemplateAction.LookupPreview.ToString() : TemplateAction.Preview.ToString();
+                    var lookupUrl = k?.LookupUrl;
+
+                    foreach (var item in items)
                     {
-                        ro.Values = new List<ReadOnlyFieldValue>();
-                        ro.Value = "values";
-
-                        var items = ((!string.IsNullOrEmpty(value)) ? value.Split(',') : new string[] { });
-                        var itemIds = new List<long>();
-
-                        foreach (var item in items)
-                        {
-                            if (long.TryParse(item, out long listId)) itemIds.Add(listId);
-                        }
-
-                        if (itemIds.Count > 0)
-                        {
-                            var lookupItems = await Company.QueryAsync<FieldLookupValue>(@"select FieldTypeID, LookupObjectType, LookupObjectID, Value, Text from fieldlookupvalue where fieldtypeid = @fId and value in @vals order by Text", new { fId = ft.ID, vals = itemIds }).ConfigureAwait(false);
-
-                            if (lookupItems != null)
-                            {
-                                if (LookupFieldHasColorItem(ft))
-                                {
-                                    foreach (var item in lookupItems)
-                                    {
-                                        ro.DataType = "color";
-                                        var detail = Company.GetObjectDetail(ft.LookupObjectType, item.Value);
-                                        var colorData = await Company.QueryFirstOrDefaultAsync<string>($@"SELECT colorJSON FROM Asset A cross apply dbo.GetAssetColorJsonByColor(A.Color) WHERE A.ID = @ID ", new { ID = (detail != null ? detail.AssetID : 0) }).ConfigureAwait(false);
-                                        var obj = JObject.Parse(colorData ?? "{}");
-
-                                        ro.Values.Add(new ReadOnlyFieldValue
-                                        {
-                                            TooltipContext = "Preview",
-                                            TooltipID = item.Value,
-                                            Value = $"[{{\"name\":\"{item.Text}\", \"color\":\"{(string)obj["Value"] ?? "transparent"}\"}}]",
-                                            TooltipType = ft.LookupObjectType,
-                                            TooltipUrl = (detail == null ? "" : detail.Url)
-                                        });
-
-                                    }
-                                }
-                                else
-                                {
-                                    foreach (var item in lookupItems)
-                                    {
-                                        var detail = Company.GetObjectDetail(ft.LookupObjectType, item.Value);
-                                        ro.Values.Add(new ReadOnlyFieldValue
-                                        {
-                                            TooltipContext = "Preview",
-                                            TooltipID = item.Value,
-                                            Value = item.Text,
-                                            TooltipType = ft.LookupObjectType,
-                                            TooltipUrl = (detail == null ? "" : detail.Url)
-                                        });
-                                    }
-                                }
-                            }
-                        }
+                        if (long.TryParse(item, out long listId)) itemIds.Add(listId);
                     }
-                    else
+
+                    if (itemIds.Count > 0)
                     {
-                        bool showPreviewLink = true;
-                        if (k != null)
+                        var lookupItems = await Company.QueryAsync<FieldLookupValue>(@"select FieldTypeID, LookupObjectType, LookupObjectID, Value, Text from fieldlookupvalue where fieldtypeid = @fId and value in @vals order by Text", new { fId = ft.ID, vals = itemIds }).ConfigureAwait(false);
+
+                        if (lookupItems != null)
                         {
-                            if (k.Value == "0")
+                            if (LookupFieldHasColorItem(ft))
                             {
-                                showPreviewLink = false;
-                            }
-                        }
-
-                        if (showPreviewLink)
-                        {
-                            ro.TooltipContext = TemplateAction.LookupPreview.ToString();
-
-                            if (ft.LookupObjectType == "Lookup")
-                            {
-                                if (ft.LookupObjectID.HasValue)
+                                foreach (var item in lookupItems)
                                 {
-                                    ro.TooltipID = ft.LookupObjectID;
-                                }
-                                else
-                                {
-                                    ro.TooltipID = 0;
-                                }
+                                    ro.DataType = "color";
+                                    var detail = Company.GetObjectDetail(ft.LookupObjectType, item.Value);
+                                    var colorData = await Company.QueryFirstOrDefaultAsync<string>($@"SELECT colorJSON FROM Asset A cross apply dbo.GetAssetColorJsonByColor(A.Color) WHERE A.ID = @ID ", new { ID = (detail != null ? detail.AssetID : 0) }).ConfigureAwait(false);
+                                    var obj = JObject.Parse(colorData ?? "{}");
+                                    var url = isReference && !string.IsNullOrEmpty(lookupUrl) ? lookupUrl : detail?.Url ?? "";
 
+                                    ro.Values.Add(new ReadOnlyFieldValue
+                                    {
+                                        TooltipContext = tooltipContext,
+                                        TooltipID = item.Value,
+                                        Value = $"[{{\"name\":\"{item.Text}\", \"color\":\"{(string)obj["Value"] ?? "transparent"}\"}}]",
+                                        TooltipType = ft.LookupObjectType,
+                                        TooltipUrl = url
+                                    });
+
+                                }
                             }
                             else
                             {
-                                if (ft.LookupObjectType == "Artifact" || ft.LookupObjectType == "Taxonomy" || ft.LookupObjectType == "TaxonomyType")
-                                    ro.TooltipContext = TemplateAction.Preview.ToString();
-
-                                if (string.IsNullOrEmpty(value))
+                                foreach (var item in lookupItems)
                                 {
-                                    ro.TooltipID = 0;
-                                }
-                                else
-                                {
-                                    int textValue;
-                                    if (int.TryParse(value, out textValue))
+                                    var detail = Company.GetObjectDetail(ft.LookupObjectType, item.Value);
+                                    var url = isReference && !string.IsNullOrEmpty(lookupUrl) ? lookupUrl : detail?.Url ?? "";
+                                    ro.Values.Add(new ReadOnlyFieldValue
                                     {
-                                        ro.TooltipID = textValue;
-                                    }
+                                        TooltipContext = tooltipContext,
+                                        TooltipID = item.Value,
+                                        Value = item.Text,
+                                        TooltipType = ft.LookupObjectType,
+                                        TooltipUrl = url
+                                    });
                                 }
-                            }
-
-                            ro.TooltipType = ft.LookupObjectType;
-                            if (k != null)
-                            {
-                                if (!string.IsNullOrEmpty(k.LookupUrl))
-                                {
-                                    ro.TooltipUrl = k.LookupUrl;
-                                }
-                                else if (int.TryParse(value, out int val))
-                                {
-                                    var det = Company.GetObjectDetail(k.LookupObjectType, val);
-                                    if (det != null)
-                                    {
-                                        ro.TooltipUrl = det.Url;
-                                    }
-
-                                    if (ft.LookupObjectType == "ReferenceItem")
-                                    {
-                                        var lookupID = ft.LookupObjectID.HasValue ? ft.LookupObjectID : 0;
-                                        var lookupAssetTypeID = (det != null ? det.AssetTypeID : 0);
-
-                                        var colorData = await Company.QueryFirstOrDefaultAsync<string>($@"SELECT colorJSON FROM Asset A cross apply dbo.GetAssetColorJsonByColor(A.Color) WHERE A.ID = @ID ", new { ID = (det != null ? det.AssetID : 0) }).ConfigureAwait(false);
-
-                                        // if we have color data on the current asset otherwise we have to check if other assets in the same type have a color
-                                        if (colorData != null || (Company.Assets.Any(x => x.AssetTypeID == lookupAssetTypeID && x.Color != null)))
-                                        {
-                                            JObject obj = null;
-                                            if (colorData != null)
-                                            {
-                                                obj = JObject.Parse(colorData);
-                                                ro.Value = $"[{{\"name\":\"{formattedValue}\",\"color\":\"{(string)obj["Value"] ?? "transparent"}\"}}]";
-                                            }
-                                            else
-                                            {
-                                                ro.Value = $"[{{\"name\":\"{formattedValue}\",\"color\":\"transparent\"}}]";
-                                            }
-                                            ro.DataType = "color";
-                                        }
-                                    }
-                                }
-
                             }
                         }
                     }
+
                 }
 
                 list.Add(new DetailReadOnlyRowModel
@@ -278,13 +212,30 @@ namespace d360.web.Controllers
             }
             else if (ft.Type == DataType.Score.ToString())
             {
-                var assetScore = (await Company.QueryFirstOrDefaultAsync<string>("select FormattedValue from dbo.GetAssetScoreById(@id, @scoreType)"
-                    , new { id = details.AssetID, ft.ScoreType }).ConfigureAwait(false)) + "";
+                var assetScore = (await Company.QueryFirstOrDefaultAsync<dynamic>(@"
+select	case when S.Value is null then 
+			' ' 
+		else 
+			cast(cast((round(S.[Value] * 100, 1)) as float) as nvarchar) + '%'
+		end as [Value],
+		case when cast((round(S.[Value] * 100, 1)) as float) < L.LowerThreshold then
+			'poor'
+		when cast((round(S.[Value] * 100, 1)) as float) between L.LowerThreshold and L.UpperThreshold then
+			'average'
+		when cast((round(S.[Value] * 100, 1)) as float) > L.UpperThreshold then
+			'good'
+		else
+			'none'
+		end as Threshold		
+from	metrics.Score S
+		inner join Asset A on A.uid = S.AssetUid and A.id = @id and S.EndDate is null
+		inner join metrics.Allocation L on L.uid = S.AllocationUid and L.ScoreType = @scoreType and L.OverrideName is null"
+                    , new { id = details.AssetID, ft.ScoreType }).ConfigureAwait(false));
 
                 var ro = new ReadOnlyField
                 {
                     Name = ft.FriendlyName,
-                    Value = assetScore,
+                    Value = ((assetScore != null) ? JsonConvert.SerializeObject(new { name = assetScore.Value, Threshold = assetScore.Threshold }) : null),
                     FieldDescription = ft.DisplayDescription,
                     FieldName = ft.Name,
                     ShowIfEmpty = ft.ShowIfEmpty,
@@ -912,8 +863,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     fields.Add(new GridField { name = "TypeID", type = "number" });
                     fields.Add(new GridField { name = "Type", type = "string" });
                     fields.Add(new GridField { name = "TypeName", type = "string" });
-                    fields.Add(new GridField { name = "Url", type = "string" });
-                    fields.Add(new GridField { name = "HasTechnicalRelationships", type = "bool" });
+                    fields.Add(new GridField { name = "Url", type = "string" });                    
                     break;
                 #endregion                
                 case SystemObjects.TaxonomyType:
@@ -1483,129 +1433,6 @@ where   h.ID <> @t order by h.[Level] desc;
 
         #endregion
 
-        #region Lineage
-
-        [HttpGet, Route("maps/{source}/{sourceID:int}/{target}/{targetID:int}/mapitems")]
-        public HttpResponseMessage MapItems(string source, int sourceID, string target, int targetID)
-        {
-            var list = Company.Query<dynamic>(QueryConstants.MapItems, new { source, sourceID, target, targetID });
-
-            return Request.CreateResponse(HttpStatusCode.OK, list);
-        }
-
-
-        [Route("lineage/query/relationshiptypes"), HttpGet]
-        public HttpResponseMessage QueryRelationshipTypes(string query)
-        {
-            if (string.IsNullOrWhiteSpace(query))
-                return Request.CreateResponse(HttpStatusCode.OK, "");
-            query = sanitizeQueryString(query);
-            var types = Company.Query<IntersectTypeApiViewNamed>(@"
-select  ID, 
-        SubjectName + ' ' + coalesce(PredicateName, '/') + ' ' +  ObjectName as Name, 
-        Subject, 
-        SubjectID, 
-        Object, 
-        ObjectID 
-from    IntersectTypeDetail 
-where   [Subject] <> 'FusionAttributeType' 
-        and [Object] <> 'FusionAttributeType'
-        and (
-            [SubjectName] like '%' + @query + '%' OR
-            [ObjectName] like '%' + @query + '%'
-            )", new { query });
-
-            return Request.CreateResponse(HttpStatusCode.OK, types);
-        }
-
-        [Route("lineage/query/objects/{type}/{id:int}"), HttpGet]
-        public HttpResponseMessage QueryObjects(string type, int id, string query, int maxResults = 25)
-        {
-            if (string.IsNullOrWhiteSpace(query))
-                return Request.CreateResponse(HttpStatusCode.OK, "");
-            query = sanitizeQueryString(query);
-
-            var sql = $@"
-select  top {maxResults}
-        A.[Object] + '|' + cast(A.ObjectID as varchar) as ID,
-        A.[Object],
-	    A.ObjectID,
-	    A.DisplayValue as [Name],
-		T.TextPath,
-	    A.TypeName as ObjectTypeName,
-	    A.BackColor as IconBackColor,
-	    A.ForeColor as IconForeColor,
-        case when A.[DisplayValue] like @query + '%' then
-            1
-        else
-            10
-        end as rnk
-from        AssetDetail A
-			cross apply dbo.GetAssetTextPathById(A.ID, '/') T
-where       Type = @type 
-            and TypeID = @id
-            and DisplayValue like '%' + @query + '%'
-order by    rnk, [Name]";
-
-
-            var objects = Company.Query<dynamic>(sql, new { type = new DbString { Value = type, IsAnsi = true, IsFixedLength = true, Length = 50 }, id, query });
-
-            return Request.CreateResponse(HttpStatusCode.OK, objects);
-        }
-
-        [Route("lineage/query/fusionattributes"), HttpGet]
-        public HttpResponseMessage QueryFusionAttributes(string query, int maxResults = 25)
-        {
-            if (string.IsNullOrWhiteSpace(query))
-                return Request.CreateResponse(HttpStatusCode.OK, "");
-            query = sanitizeQueryString(query);
-
-            var objects = Company.Query<dynamic>($@"select top {maxResults}
-			    ID,
-	            TextPath as Name,
-                case when TextPath like @query + '%' then
-                    1
-                else
-                    10
-                end as rnk
-                from FusionAttribute
-                where Deleted = 0 AND TextPath like  '%' + @query + '%'
-                order by rnk, TextPath", new { query = query });
-
-            return Request.CreateResponse(HttpStatusCode.OK, objects);
-        }
-        string sanitizeQueryString(string query)
-        {
-            query = query ?? "";
-            query = query.Replace("%", "[%]").Replace("_", "[_]").TrimStart(' ');
-            return query;
-        }
-
-
-        [Route("lineage/mappings"), HttpGet]
-        public HttpResponseMessage GetLineageMaps()
-        {
-            var sql = @"
-                        select
-                            M.ID
-	                        ,M.Name
-	                        ,M.Transformation
-	                        ,M.MapTypeID as 'MapTypeID'
-	                        ,MT.Name as 'MapType'
-	                        ,MT.Description as 'MapTypeDescription'
-	                        ,MT.MapClass as 'MapClass'
-                        from
-                            map M
-                            inner join maptype MT on (M.MapTypeID = MT.ID);
-                    ";
-
-            var list = Company.Query<dynamic>(sql);
-
-
-            return Request.CreateResponse(HttpStatusCode.OK, list);
-        }
-        #endregion
-
         #region Complex Lookup Fields
 
         private async Task<List<DetailReadOnlyRowModel>> RenderComplexLookupField(string type, int id, FieldType ft)
@@ -1616,54 +1443,17 @@ order by    rnk, [Name]";
             {
                 var lookup = await Company.QueryFirstOrDefaultAsync<FieldTypeLookup>("select FieldTypeID, HideHeader, HideFooter, LookupType, Definition, HideFilter from FieldTypeLookup where FieldTypeID = @id", new { id = ft.ID });
 
-                #region Reference List Lookup Info
-
-                DetailReadOnlyRowModel referenceListRowModel = null;
-
-                if (ft.LookupObjectType == SystemObjects.IntersectType.ToString() && ft.LookupObjectID.HasValue)
-                {
-                    var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == ft.LookupObjectID.Value && ((i.Subject == type && i.SubjectID == id) || (i.Object == type && i.ObjectID == id))).FirstOrDefault();
-                    if (intersect != null)
-                    {
-                        var referenceItemTypeID = (intersect.Subject == type && intersect.SubjectID == id) ? intersect.ObjectID : intersect.SubjectID;
-                        var referenceItemType = Company.AssetTypes.FirstOrDefault(x => x.Object == "ReferenceItemType" && x.ObjectID == referenceItemTypeID);
-
-                        referenceListRowModel = new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField {
-                                        Column = 1,
-                                        Name = $"{ft.FriendlyName} Name",
-                                        FieldDescription = ft.DisplayDescription,
-                                        FieldName = ft.Name,
-                                        Value = referenceItemType?.Name,
-                                        ShowIfEmpty = ft.ShowIfEmpty
-                                    }
-                                },
-                            SecondColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField {
-                                        Column = 2,
-                                        Name = $"{ft.FriendlyName} Description",
-                                        FieldDescription = ft.DisplayDescription,
-                                        FieldName = ft.Name,
-                                        Value = referenceItemType?.Description,
-                                        ShowIfEmpty = ft.ShowIfEmpty,
-                                        DataType = "Html"
-                                    }
-                                },
-                            Category = ft.Category
-                        };
-                    }
-                }
-
-                #endregion
-
                 if (await AnyComplexLookupGridValues(type, id, ft.ID))
                 {
-                    if (referenceListRowModel != null)
-                        list.Add(referenceListRowModel);
-
+                    bool isGrid = true;
+                    if (ft.Type == DataType.OwnershipLookup.ToString() && !string.IsNullOrWhiteSpace(lookup.Definition))
+                    {
+                        FieldTypeOwnershipLookupDefinition lookupdefinition = JsonConvert.DeserializeObject<FieldTypeOwnershipLookupDefinition>(lookup.Definition);
+                        if(lookupdefinition.DisplayAsList == true)
+                        {
+                            isGrid = false;
+                        }
+                    }
                     list.Add(new DetailReadOnlyRowModel
                     {
                         columns = 1,
@@ -1676,7 +1466,7 @@ order by    rnk, [Name]";
                                         HideHeader = (lookup != null) ? lookup.HideHeader : false,
                                         HideFooter = (lookup != null) ? lookup.HideFooter : false,
                                         HideFilter = (lookup != null) ? lookup.HideFilter : false,
-                                        IsComplexLookupGrid = true,
+                                        ComplexLookupType = isGrid ? ComplexLookupType.Grid : ComplexLookupType.List,
                                         LookupObjectID = id,
                                         LookupObjectType = type,
                                         LookupFieldTypeID = ft.ID,
@@ -1689,8 +1479,6 @@ order by    rnk, [Name]";
                 }
                 else if (ft.ShowIfEmpty)
                 {
-                    if (referenceListRowModel != null)
-                        list.Add(referenceListRowModel);
 
                     var ro = new ReadOnlyField
                     {
@@ -1944,21 +1732,6 @@ order by    rnk, [Name]";
         public async Task<IEnumerable<AllowedIntersectionType>> GetRelationshipTypes(SystemObjects type, int id)
         {
             return await Company.GetAllowedIntersectionTypes(type.ToString(), id);
-        }
-
-        [Route("{focal}/{focalID:int}/sources/{obj}/{objID:int}/rules")]
-        public HttpResponseMessage GetSourceRules(string focal, int focalID, string obj, int objID)
-        {
-            return Request.CreateResponse(HttpStatusCode.OK,
-                Company.Query<dynamic>(QueryConstants.SourceRuleList,
-                new
-                {
-                    focal = new Dapper.DbString { Value = focal, IsAnsi = true },
-                    focalID,
-                    obj = new Dapper.DbString { Value = obj, IsAnsi = true },
-                    objID
-                })
-            );
         }
 
         [Route("relationships/{id:int}"), HttpDelete]
@@ -2321,7 +2094,7 @@ from    ResponsibilityTypeRelationRule R
             getDynamicFieldJoinStatements(id, "Policy", out joins, out columns, false, false, true, false, "A.ObjectID");
 
             var permissionSql = $@"case when exists (
-                                        select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & {(int)Permission.ModifyAsset} = {(int)Permission.ModifyAsset} and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
+                                        select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & {(int)Permission.EditAsset} = {(int)Permission.EditAsset} and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
 						                ) 
 						                    then 1
 						                    else 0
@@ -2457,7 +2230,7 @@ from        (
         #region Resources
 
         [HttpGet, Route("resources/{typeID:int}")]
-        public HttpResponseMessage GetResourcesByType(int typeID, string filter = "")
+        public HttpResponseMessage GetResourcesByType(int typeID, string filter = "", bool includeInactive = true)
         {
             var settings = Community.GetCompanySettings();
             //check that current user is an admin or the company settings allow users to be listed
@@ -2468,6 +2241,16 @@ from        (
             var columns = "";
             var filterSql = "";
             getDynamicFieldJoinStatements(typeID, "Resource", out joins, out columns, false, false);
+
+            var dbArgs = new DynamicParameters();
+            dbArgs.Add("deleteStatus", CompanyResourceState.Deleted);
+            dbArgs.Add("inactiveStatus", CompanyResourceState.Inactive);
+
+            var statusCondition = $"State <> @deleteStatus";
+            if (includeInactive == false)
+            {
+                statusCondition = $"State not in (@deleteStatus, @inactiveStatus)";
+            }
 
             var querySql = $@"
 select  A.FirstName,
@@ -2489,12 +2272,11 @@ from    (
                 IsAdministrator,
                 ResourceID as ID
         from	reporting.Global_Resource
-                where State <> @excludeStatus
+                where {statusCondition} 
         ) A 
         {joins}";
 
-            var dbArgs = new DynamicParameters();
-            dbArgs.Add("excludeStatus", CompanyResourceState.Deleted);
+
 
             if (HideData3SixtyUsers())
             {
@@ -2722,14 +2504,14 @@ from    (
         }
 
         [Route("{type}/{uid}/detail")]
-        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, Guid uid)
+        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, Guid uid, bool useSingleColumn = false)
         {
             int objectId = -1;
             switch (type)
             {
                 case SystemObjects.Tag:
                     objectId = Company.Tags.FirstOrDefault(x => x.uid == uid).ID;
-                    return await GetObjectDetailFields(type, objectId);
+                    return await GetObjectDetailFields(type, objectId, useSingleColumn);
                 default:
                     return null;
             }
@@ -2737,9 +2519,9 @@ from    (
 
 
         [Route("{type}/{id:int}/detail")]
-        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, int id)
+        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, int id, bool useSingleColumn = false)
         {
-            var model = new DetailReadOnlyModel() { columns = 2 };
+            var model = new DetailReadOnlyModel() { columns = useSingleColumn ? 1 : 2 };
 
             int row = 0;
             switch (type)
@@ -4336,6 +4118,19 @@ where v.id = {0}", id)).FirstOrDefault();
 
             }
 
+            if (useSingleColumn)
+            {
+                model.rows.ForEach(r =>
+                {
+                    if (r.columns == 2)
+                    {
+                        r.FirstColumnFields.AddRange(r.SecondColumnFields);
+                        r.columns = 1;
+                        r.SecondColumnFields = new List<ReadOnlyField>();
+                    }
+                });
+            }
+
             return model;
         }
 
@@ -4623,7 +4418,7 @@ where v.id = {0}", id)).FirstOrDefault();
 , case when PD.AssetID is not null then cast(1 as bit) else cast(0 as bit) end as CanDelete ";
 
             var permissionJoins = $@"
-outer apply (select top 1 * from UserAssetPermissions(@userId,@targetAssetTypeId) where PermissionsBitMask & {(int)Permission.ModifyRelationships} = {(int)Permission.ModifyRelationships} and AssetTypeID = @targetAssetTypeId and (AssetID = IA.ID or AssetID = 0)) PE 
+outer apply (select top 1 * from UserAssetPermissions(@userId,@targetAssetTypeId) where PermissionsBitMask & {(int)Permission.EditRelationships} = {(int)Permission.EditRelationships} and AssetTypeID = @targetAssetTypeId and (AssetID = IA.ID or AssetID = 0)) PE 
 outer apply (select top 1 * from UserAssetPermissions(@userId,@targetAssetTypeId) where PermissionsBitMask & {(int)Permission.DeleteRelationships} = {(int)Permission.DeleteRelationships} and AssetTypeID = @targetAssetTypeId and (AssetID = IA.ID or AssetID = 0)) PD ";
 
             if (isTargetSubjectSame)
@@ -4684,19 +4479,11 @@ select	I.[Uid],
 		case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end as TypeID,
 		AST.Name as TypeName,
         IA.uid as ObjectUid,
-		T.HasTechnicalRelationships,
         case when I.Subject = @type and I.SubjectID = @id then cast(1 as bit) else cast(0 as bit) end as IsSubject
         {assetColumns}
 from	[Intersect] I
         inner join IntersectType IT on IT.ID = I.IntersectTypeID
-		{assetJoin}
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as HasTechnicalRelationships
-					from	[Intersect]
-					where	Subject = 'Intersect' and SubjectID = I.ID) T
+		{assetJoin}		
 where	{whereSql}
         and I.IntersectTypeID = {intersectTypeID} ";
             }
@@ -4732,20 +4519,11 @@ select	I.[Uid],
 		IT.Object Type,
 		IT.ObjectID TypeID,
 		AST.Name as TypeName,
-		T.HasTechnicalRelationships,
         case when I.Subject = @type and I.SubjectID = @id then cast(1 as bit) else cast(0 as bit) end as IsSubject
         {assetColumns}
 from	[Intersect] I
 		inner join IntersectType IT on IT.ID = I.IntersectTypeID
-		{assetJoin}
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as HasTechnicalRelationships
-					from	[Intersect]
-					where	Subject = 'Intersect' and SubjectID = I.ID
-					) T
+		{assetJoin}		
 where	((I.Subject = @type  and I.SubjectID = @id) {(includeInverse ? " or (I.Object = @type  and I.ObjectID = @id) " : "")})        
         and I.IntersectTypeID = {intersectTypeID} ";
             }
@@ -4790,20 +4568,11 @@ select	I.[Uid],
 		IT.Subject as Type,
 		IT.SubjectID as TypeID,
 		AST.Name as TypeName,
-		T.HasTechnicalRelationships,
         case when I.Subject = @type and I.SubjectID = @id then cast(1 as bit) else cast(0 as bit) end as IsSubject
         {assetColumns}
 from    [Intersect] I 
         inner join IntersectType IT on IT.ID = I.IntersectTypeID 
-        {assetJoin} 
-        cross apply(
-                    select	case 
-                                when count(1) > 0 then cast(1 as bit)
-							    else cast(0 as bit)
-                            end as HasTechnicalRelationships
-                    from    [Intersect]
-                    where   Subject = 'Intersect' and SubjectID = I.ID
-                    ) T 
+        {assetJoin}         
 where   ( 
         (I.Object = @type and I.ObjectID = @id) 
         {(includeInverse ? " or (I.Subject = @type  and I.SubjectID = @id) " : "")}
@@ -4898,77 +4667,6 @@ where   (
             result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
             {
                 FileName = $"{detail.Name.GetSafeFilename()} relations as of {DateTime.Now.ToShortDateString()}.xlsx"
-            };
-            return result;
-        }
-
-        [Route("export/maps/{source}/{sourceID:int}/{target}/{targetID:int}/mapitems/excel.xls"), HttpGet]
-        public HttpResponseMessage MapItemsExcelExport(SystemObjects source, int sourceID, SystemObjects target, int targetID)
-        {
-            var list = Company.Query<dynamic>(QueryConstants.MapItems, new { source = source.ToString(), sourceID, target = target.ToString(), targetID });
-
-            var document = new SLDocument();
-            document.AddWorksheet("MapItems");
-
-            #region Create the list sheet
-
-            #region Header
-
-            var colIndex = 0;
-
-            document.SetCellValue(1, ++colIndex, "Source Type");
-            document.SetCellValue(1, ++colIndex, "Source Name");
-            document.SetCellValue(1, ++colIndex, "Source Fusion");
-            document.SetCellValue(1, ++colIndex, "Source Fusion Attribute Type");
-            document.SetCellValue(1, ++colIndex, "Source Fusion Attribute");
-
-
-            document.SetCellValue(1, ++colIndex, "Target Type");
-            document.SetCellValue(1, ++colIndex, "Target Name");
-            document.SetCellValue(1, ++colIndex, "Target Fusion");
-            document.SetCellValue(1, ++colIndex, "Target Fusion Attribute Type");
-            document.SetCellValue(1, ++colIndex, "Target Fusion Attribute");
-
-            #endregion
-
-            int rowIndex = 1;
-            foreach (var row in list)
-            {
-                var dataColIndex = 0;
-                rowIndex++;
-
-                document.SetCellValue(rowIndex, ++dataColIndex, row.SourceType ?? "");
-                document.SetCellValue(rowIndex, ++dataColIndex, row.SourceName ?? "");
-                document.SetCellValue(rowIndex, ++dataColIndex, row.SourceFusion ?? "");
-                document.SetCellValue(rowIndex, ++dataColIndex, row.SourceFusionAttributeType ?? "");
-                document.SetCellValue(rowIndex, ++dataColIndex, row.SourceFusionAttribute ?? "");
-
-                document.SetCellValue(rowIndex, ++dataColIndex, row.TargetType ?? "");
-                document.SetCellValue(rowIndex, ++dataColIndex, row.TargetName ?? "");
-                document.SetCellValue(rowIndex, ++dataColIndex, row.TargetFusion ?? "");
-                document.SetCellValue(rowIndex, ++dataColIndex, row.TargetFusionAttributeType ?? "");
-                document.SetCellValue(rowIndex, ++dataColIndex, row.TargetFusionAttribute ?? "");
-
-            }
-
-            #endregion
-
-            var sourceObj = GetObjectDetail(source, sourceID);
-            var targetObj = GetObjectDetail(target, targetID);
-
-            var stream = new MemoryStream();
-            document.SaveAs(stream);
-
-            stream.Position = 0;
-            HttpResponseMessage result = null;
-            // serve the file to the client      
-            result = Request.CreateResponse(HttpStatusCode.OK);
-            result.Content = new StreamContent(stream);
-            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
-            result.Content.Headers.ContentLength = stream.Length;
-            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
-            {
-                FileName = $"{sourceObj.Name} to {targetObj.Name} mappings {DateTime.Now.ToShortDateString()}.xlsx"
             };
             return result;
         }
@@ -5237,8 +4935,8 @@ SELECT (
         [Route("getAssetTypeObjectAndObjectID/{uid}")]
         public HttpResponseMessage GetObjectandId(Guid uid)
         {
-            var sql = $@"SELECT top 1 Object, ObjectID, Id from AssetType WHERE Uid = '{uid.ToString()}'";
-            var details = Company.Query<dynamic>(sql).Single();
+            var sql = $@"SELECT top 1 Object, ObjectID, Id from AssetType WHERE Uid = @uid";
+            var details = Company.Query<dynamic>(sql, new { uid }).Single();
             return Request.CreateResponse<dynamic>(new { details.Object, details.ObjectID, details.Id });
         }
 

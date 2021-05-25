@@ -1,5 +1,5 @@
 import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef } from '@angular/core';
-import { DetailRow, DetailField, DetailFieldType, NymType, Category } from '../../../models/object-detail.model';
+import { DetailRow, DetailField, DetailFieldType, ComplexLookupType, NymType, Category } from '../../../models/object-detail.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetService } from '../../../services/asset.service';
@@ -21,6 +21,7 @@ export class ObjectDetailComponent implements OnChanges {
     @Input() hasAddRelationshipsPermissions: boolean;
     @Input() hasModifyRelationshipsPermissions: boolean;
     @Input() hasDeleteRelationshipsPermissions: boolean;
+    @Input() useAccordion: boolean = false;
     private assetUID: string;
     private assetTypeUID: string;
     private isLoading = false;
@@ -28,6 +29,7 @@ export class ObjectDetailComponent implements OnChanges {
 
     readonly systemProperties: string = "System Fields";
     readonly noCategory: string = "None";
+    readonly defaultCategory: string = "General";
 
     private categories: Category[] = new Array<Category>();
     private systemPropertiesCategory: Category = new Category(this.systemProperties);
@@ -60,7 +62,7 @@ export class ObjectDetailComponent implements OnChanges {
                     this.categories = [];
                     for (var i = 0; i < this.rows.length; i++) {
                         if (this.rows[i].Category == null || this.rows[i].Category === "" || this.rows[i].Category === this.noCategory) {
-                            this.rows[i].Category = "General";
+                            this.rows[i].Category = this.defaultCategory;
                         }
                     }
 
@@ -70,8 +72,12 @@ export class ObjectDetailComponent implements OnChanges {
                     this.rows = this.rows.filter(r => !r.Category || r.Category.toUpperCase() != this.systemProperties.toUpperCase());
 
                     this.rows.forEach(r => {
-                        if (r.Category && r.Category.toUpperCase() != this.noCategory.toUpperCase() && this.categories.find(c => c.name == r.Category) == null)
-                            this.categories.push(new Category(r.Category));
+                        if (r.Category && r.Category.toUpperCase() !== this.noCategory.toUpperCase() && this.categories.find((c) => c.name === r.Category) == null) {
+                            let category = new Category(r.Category);
+                            category.active = true;
+                            this.categories.push(category);
+                        }
+
 
                         this.populateRow(r)
                     });
@@ -89,6 +95,19 @@ export class ObjectDetailComponent implements OnChanges {
                             }
                         }
                     }
+
+
+                    this.categories = this.categories.sort((a, b) => {
+                        if (a.name === this.defaultCategory || b.name === this.systemProperties) {
+                            return -1;
+                        }
+                        if (b.name === this.defaultCategory || a.name === this.systemProperties) {
+                            return 1;
+                        }
+
+                        return 0;
+                    });
+
                     this.rows = displayRows;
                     this.loadCategory();
                     this.loadState();
@@ -108,9 +127,11 @@ export class ObjectDetailComponent implements OnChanges {
             else
                 field.Type = DetailFieldType.None;
         }
-        
-        if (field.IsComplexLookupGrid) {
-            field.Type = DetailFieldType.Lookup;
+
+        if (field.ComplexLookupType === ComplexLookupType.Grid) {
+            field.Type = DetailFieldType.LookupGrid;
+        } else if (field.ComplexLookupType === ComplexLookupType.List) {
+            field.Type = DetailFieldType.LookupList;
         }
     }
 
@@ -141,7 +162,7 @@ export class ObjectDetailComponent implements OnChanges {
             c.rows.forEach(r => {
                 let fcount = r.FirstColumnFields.length;
                 r.FirstColumnFields.forEach(f => {
-                    if (f.Type == DetailFieldType.Lookup) {
+                    if (f.Type == DetailFieldType.LookupGrid || f.Type === DetailFieldType.LookupList) {
                         if (!f.Data || !f.Data.Values || f.Data.Values.length == 0) {
                             c.hasData = true;
                         }
@@ -189,7 +210,7 @@ export class ObjectDetailComponent implements OnChanges {
         row.SecondColumnFields.forEach(s => {
             this.setDetailFieldType(s);
 
-            if (s.Type == DetailFieldType.Lookup) {
+            if (s.Type == DetailFieldType.LookupGrid || s.Type === DetailFieldType.LookupList) {
                 this.assetService.getAssetsComplexFieldValue(this.objectUID, s.FieldName)
                     .subscribe(i => {
                         s.Data = i;
