@@ -11,6 +11,7 @@ import { AssetTypeClass } from '../../../models/asset.model';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { RelationshipType } from '../../../models/relationship.model';
 import { EditorField } from '../../../models/editor-field.model';
+import { ResourcesService } from '../../../services/resources.service';
 
 export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
@@ -21,7 +22,7 @@ export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
 @Component({
     selector: 'd3s-multiselect-grid',
     templateUrl: "multiselect-grid.component.html",
-    providers: [MULTISELECT_GRID_VALUE_ACCESSOR, AssetService, AssetTypeService],
+    providers: [MULTISELECT_GRID_VALUE_ACCESSOR, AssetService, AssetTypeService, ResourcesService],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
@@ -53,14 +54,14 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         private assetService: AssetService,
         private assetTypeService: AssetTypeService,
         private relationshipService: RelationshipsService,
+        private resourceService: ResourcesService,
         private ref: ChangeDetectorRef) {
         super();
     }
 
     get isLazyLoad() {
-        //we are not using lazy load on assets api only in case when our relationship is from or to Reference List
-        //this should be handled separately as we are dealing with asset type here, not asset
-        return !this.isReferenceListType(this.targetAssetTypeUid);
+        //we are not using lazy load on assets api only in case when our relationship is from or to Reference List or User
+        return !this.isReferenceListType(this.targetAssetTypeUid) && this.targetClass !== "User";
     }
 
     ngOnInit() {
@@ -71,11 +72,68 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
                     this.relationshipType = rel.filter((r) => r.Uid === this.intersectTypeUid)[0];
                     this.isSubject = this.relationshipType.Subject.Uid === ad.AssetTypeUid;
                     this.ref.markForCheck();
-                    if (!this.isLazyLoad) {
+                    if (this.isReferenceListType(this.targetAssetTypeUid)) {
                         this.loadReferenceListTypeData();
+                    }
+                    else if (this.targetClass === "User") {
+                        this.loadUsers();
                     }
                 });
             });
+    }
+
+    loadUsers() {
+        this.isLoading = true;
+
+        var params = {};
+        if (this.isSubject) {
+            params["subjectUid"] = this.assetUid;
+            params["_order"] = "object.[path]";
+        }
+        else {
+            params["objectUid"] = this.assetUid;
+            params["_order"] = "subject.[path]";
+        }
+
+        params["_includePath"] = true;
+        params["_pageSize"] = 10000;
+        params["_pageNum"] = 1;
+
+        var usersParam = {};
+        usersParam["_pageSize"] = 10000;
+        usersParam["_pageNum"] = 1;
+
+        forkJoin(
+            this.relationshipService.getRelationships(this.intersectTypeUid, params),
+            this.resourceService.getResourceLazy(usersParam)
+        ).subscribe((results) => {
+            let relations: RelationshipType[];
+            if (results[0].items) {
+                relations = results[0].items as RelationshipType[];
+            }
+            else {
+                relations = [];
+            }
+            var types = results[1].items;
+            var toRemove = this.isSubject ? relations.map((m) => m.Object["Uid"].toLowerCase()) : relations.map((m) => m.Subject["Uid"].toLowerCase());
+
+            this.items = [...[]];
+            types.forEach((user) => {
+                if (!toRemove.some((s) => s === user.uid.toLowerCase())) {
+                    this.items.push({
+                        "Text": user.FirstName + " " + user.LastName,
+                        "Value": user.uid
+                    });
+                }
+            });
+
+            this.items = this.items.sort((a, b) => { return a.Text > b.Text ? 1 : -1; });
+
+            this.lazyLoadTotalCount = this.items.length;
+
+            this.isLoading = false;
+            this.ref.markForCheck();
+        });
     }
 
     loadReferenceListTypeData() {
@@ -228,5 +286,10 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
 
     registerOnTouched(fn: Function): void {
         this.onModelTouched = fn;
+    }
+
+
+    get targetClass() {
+        return this.isSubject ? this.relationshipType.Object.Class : this.relationshipType.Subject.Class;
     }
 }
