@@ -433,7 +433,6 @@ export class AdvancedFilteringComponent implements OnChanges {
 
     getQuery() {
         this.filters = this.conditions.getFilters(this.allocations);
-        console.log(this.filters.filter);
         this.cdRef.markForCheck();
     }
 

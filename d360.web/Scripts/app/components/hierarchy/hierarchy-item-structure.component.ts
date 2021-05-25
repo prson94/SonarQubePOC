@@ -139,7 +139,6 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             }
             uriParams.includelevels = "true";
 
-            this.isLoading = true;
             this.assetTypeService.getAssetTypes(uriParams).subscribe((result) => {
                 this.assetType = result[0];
                 this.assetTypeUid = result[0].uid;
@@ -197,9 +196,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                     this.secondaryNavService.showHeader(true);
                 });
 
-            //this.loadHierarchy();
             this.setBrowserTitle(this.titleService, this.assetType.Name);
-            this.isLoading = false;
         });
     }
 
@@ -326,18 +323,29 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         params._onlyListableFields = false;
         params._direction = this.treeTable._sortOrder == 1 ? 'ASC' : 'DESC';
         if (this.treeTable._sortField != undefined) {
-            params._order = this.treeTable._sortField;
+            var field = this.columns.filter((f) => f.datafield === this.treeTable._sortField)[0];
+            params._order = field["apiName"];
         }
         else {
             params.useTypeLevelDefaultSorts = true;
             delete params._order;
         }
-        if (this.filterText.nativeElement.value != '')
-            params._simpleFilter = '*' + this.filterText.nativeElement.value;
-        else
-            delete params._simpleFilter;
+
+        if (this.simpleFilterValue) {
+            params["_simpleFilter"] = "*" + this.simpleFilterValue;
+            this.areAllExpanded = true;
+        }
+
+        if (this.newAdvancedFilters && this.newAdvancedFilters.filter) {
+            params["_filter"] = this.newAdvancedFilters.filter;
+            this.areAllExpanded = true;
+        }
+
+        params["isForTreeGrid"] = true;
+
         params._isHierachyItem = true;
-        this.assetService.downloadAssetsExcel(this.assetTypeUid, params, 'Filtered ' + this.assetType.Name);
+        this.isLoading = true;
+        this.assetService.downloadAssetsExcel(this.assetTypeUid, params, 'Filtered ' + this.assetType.Name, () => { this.isLoading = false; });
     }
 
     private showAdd(level: number) {
@@ -442,6 +450,10 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         );
     }
 
+    onSort() {
+        setTimeout(() => this.loadNodes(), 20);
+    }
+
     loadNodes() {
         this.expandedNodes = this.treeState;
         this.areAllExpanded = false;
@@ -460,6 +472,16 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 _listColorsAsJSON: "true",
                 isForTreeGrid: true
             };
+
+            uriParams._direction = this.treeTable._sortOrder == 1 ? 'ASC' : 'DESC';
+            if (this.treeTable._sortField != undefined) {
+                var field = this.columns.filter((f) => f.datafield === this.treeTable._sortField)[0];
+                uriParams._order = field["apiName"];
+            }
+            else {
+                uriParams.useTypeLevelDefaultSorts = true;
+                delete uriParams._order;
+            }
 
             if (this.simpleFilterValue) {
                 uriParams["_simpleFilter"] = "*" + this.simpleFilterValue;

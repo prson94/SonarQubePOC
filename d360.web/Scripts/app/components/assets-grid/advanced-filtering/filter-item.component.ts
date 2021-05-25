@@ -110,11 +110,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 });
             }
 
-            if (SystemFields.GetSystemFieldDefinition().length > 0) {
+            var systemFields = SystemFields.GetSystemFieldDefinition(this.gridType, this.treeMaxLevel);
+            if (systemFields.length > 0) {
                 let systemFieldsGroup: SelectItemGroup = { value: "system-field", label: "System Fields", items: [] };
                 this.allFieldsDropdown.push(systemFieldsGroup);
 
-                SystemFields.GetSystemFieldDefinition(this.gridType, this.treeMaxLevel).forEach((f) => {
+                systemFields.forEach((f) => {
                     systemFieldsGroup.items.push({ value: f.Name, label: f.FriendlyName });
                 });
             }
