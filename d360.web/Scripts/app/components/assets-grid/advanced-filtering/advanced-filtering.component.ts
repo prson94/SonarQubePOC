@@ -200,13 +200,15 @@ export class AdvancedFilteringComponent implements OnChanges {
             forkJoin(obsArr).subscribe((results) => {
                 results.forEach((f) => {
                     var refField = f[0];
-                    var idx = toLoad.findIndex((tl) => tl.uid === refField["AssetTypeUid"] && tl.field === refField.Name);
-                    if (idx !== -1) {
-                        var origField = res.findIndex((rf) => rf.Name === toLoad[parseInt(idx.toString())].origField);
-                        var prop = Object.keys(refField.Type)[0];
-                        refField.Type[prop]["IsPrimaryFilter"] = toLoad[idx].persistInFilters;
+                    if (refField) {
+                        var idx = toLoad.findIndex((tl) => tl.uid === refField["AssetTypeUid"] && tl.field === refField.Name);
+                        if (idx !== -1) {
+                            var origField = res.findIndex((rf) => rf.Name === toLoad[parseInt(idx.toString())].origField);
+                            var prop = Object.keys(refField.Type)[0];
+                            refField.Type[prop]["IsPrimaryFilter"] = toLoad[idx].persistInFilters;
 
-                        res[parseInt(origField.toString())].Type = refField.Type;
+                            res[parseInt(origField.toString())].Type = refField.Type;
+                        }
                     }
                 });
                 this.processLoadedData(res);
