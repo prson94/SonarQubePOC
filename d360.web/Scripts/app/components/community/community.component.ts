@@ -31,7 +31,7 @@ import * as Highcharts from 'highcharts';
             </div>
             <div class="col l6 m12 s12" *ngIf="selectedResponsibilityUid">
                 <div class="tile tile-detail">  
-                    <d3s-community-responsibility-count [responsibilityTypeName]="selectedResponsibilityName" [responsibilityTypeUid]="selectedResponsibilityUid" [(selected)]="selectedResource"></d3s-community-responsibility-count>                    
+                    <d3s-user-list [UserListHeading] = "GetHeadingLabel()" [ResponsibilityTypeUid]="selectedResponsibilityUid" [IsCommunityUserResposibility]="true" [(selected)]="selectedResource"></d3s-user-list>                    
                 </div>
             </div>
             <div class="col s12" *ngIf="selectedResource">
@@ -48,7 +48,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
     responsibilitiesPie: Object;
     selectedResponsibilityUid: string = "";
     selectedResponsibilityName: string;
-    selectedResource: ResourceResponsibilityTypeCount;
+    selectedResource: any;
 
     constructor(protected responsibilityTypeService: ResponsibilityTypeService,
         protected titleService: Title,
@@ -144,5 +144,8 @@ export class CommunityComponent extends BaseComponent implements OnInit {
         this.selectedResource = null;
         this.selectedResponsibilityName = e.point.name; //name
         this.selectedResponsibilityUid = e.point.uid; // triggers user responsibilities piece to load.    
+    }
+    GetHeadingLabel() {
+        return 'Users Assigned As ' + this.selectedResponsibilityName;
     }
 }
