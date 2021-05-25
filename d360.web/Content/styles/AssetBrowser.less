@@ -7,13 +7,12 @@
   }
 
   .button-spacer {
-    display: inline-block;
+    display: inline-flex;
     margin: 0px 16px 0px 16px;
     width: 1px;
     height: 32px;
     background-color: @igx-grey-xlight;
     line-height: 32px;
-    vertical-align: middle;
   }
 
   .error-panel {
@@ -39,100 +38,25 @@
     border-bottom-left-radius: 0px;
     border-bottom-right-radius: 0px;
 
+    .diagram-type-picker {
+      width: 180px;
+    }
+
     .controls-left {
       z-index: 50;
-
-      .button-spacer {
-        display: inline-block;
-        margin: 0px 16px 0px 16px;
-        width: 1px;
-        height: 32px;
-        background-color: @igx-grey-xlight;
-        line-height: 32px;
-        vertical-align: middle;
-      }
+      height: 32px;
+      display: flex;
     }
 
     .controls-right {
       position: absolute;
       z-index: 50;
       right: 0px;
+      display: flex;
 
       span {
         padding: 8px;
         cursor: pointer;
-      }
-    }
-
-    p-dropdown {
-      .p-dropdown {
-        width: 400px;
-        min-height: 34px;
-        border-radius: 2px;
-        box-shadow: 0 1px 0 0 rgba(22, 29, 37, 0.05);
-        border: solid 1px @igx-grey-xlight;
-        background-color: @ig-white;
-
-        .p-dropdown-label {
-          line-height: 25px;
-          padding-left: 16px;
-          color: black;
-        }
-
-        .p-dropdown-trigger {
-          width: 32px;
-          height: 32px;
-          padding: 0 4px;
-
-          .p-dropdown-trigger-icon {
-            top: 4px;
-            left: auto;
-            margin-top: auto;
-            margin-left: auto;
-            height: 24px;
-            width: 24px;
-            background-color: @ig-grey-t5;
-            line-height: 24px;
-            text-align: center;
-            border-radius: 2px;
-            font-weight: bolder;
-          }
-        }
-
-        .p-dropdown-panel {
-          border-radius: 2px;
-          box-shadow: 0 1px 0 0 rgba(22, 29, 37, 0.05);
-          border: solid 1px @igx-grey-xlight;
-          background-color: @ig-white;
-
-          .p-dropdown-filter {
-            height: 32px;
-            border-radius: 2px;
-          }
-
-          .p-dropdown-filter-icon {
-            font-size: 16px;
-            background-color: #006fc0;
-            color: white;
-            padding: 4px;
-            border-radius: 2px;
-            top: 10px;
-            right: 9px;
-          }
-        }
-
-        .p-dropdown-item {
-          padding: 4px;
-
-          &:hover {
-            background-color: #ffef99;
-          }
-
-          .option-name {
-            display: inline-block;
-            max-width: 400px;
-          }
-        }
       }
     }
   }
@@ -567,7 +491,7 @@
   }
 
   .asset-browser-button-group {
-    display: inline-block;
+    display: inline-flex;
     height: 32px;
 
     &.zoom-controls {
@@ -614,6 +538,7 @@
     border-radius: 4px;
     height: 32px;
     width: 300px;
+    top: -2px;
 
     input {
       background: none;

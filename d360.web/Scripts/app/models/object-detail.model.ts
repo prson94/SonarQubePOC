@@ -27,10 +27,17 @@ export class DetailRow {
 
 export enum DetailFieldType {
     Field,
-    Lookup,
+    LookupGrid,
+    LookupList,
     Tooltip,
     None,
     Hidden,
+}
+
+export enum ComplexLookupType {
+    None = 0,
+    Grid = 1,
+    List = 2,
 }
 
 export class DetailSubField {
@@ -49,7 +56,7 @@ export class DetailField {
     HideFooter: boolean;
     HideHeader: boolean;
     HideFilter: boolean;
-    IsComplexLookupGrid: boolean;
+    ComplexLookupType: ComplexLookupType;
     LookupObjectID: number;
     LookupObjectType: string;
     LookupFieldTypeID: number;

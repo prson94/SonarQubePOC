@@ -855,7 +855,7 @@ from	[Load] L
 
                 var loadItems = new List<LoadItem>();
                 var loadColumns = Query<LoadColumn>("select * from LoadColumn LC where LoadID = @id", new { id = load.ID }).ToList();
-                var loadItemColumns = Query<LoadItemColumn>("select * from LoadItemColumn where LoadID = @id", new { id = load.ID }).ToList();
+                
 
                 var assetTypeLevels = new Dictionary<int, string>();
 
@@ -888,108 +888,129 @@ from	[Load] L
                     loadItems = Query<LoadItem>("select * from LoadItem where LoadID = @id", new { id = load.ID }).ToList();
                 }
 
-                //create API models
-                foreach (var item in loadItems)
+                //do this in blocks of 500
+
+                int loopSize = 500;
+
+                int currentLocation = 0; 
+                int numberOfLoops = (int)Math.Ceiling((decimal)(loadItems.Count - currentLocation) / loopSize);
+                int beginItemNumber = currentLocation;
+                int endItemNumber = (currentLocation + loopSize) > loadItems.Count ? loadItems.Count : currentLocation + loopSize;
+                int rowIndexStartNumber = 2;
+
+                for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
                 {
-                    var fieldsToSkip = new List<string>();
-                    string assetTypeLevel = null;
+                    //bulk load rowindex starts with 2!
+                    var loadItemColumns = Query<LoadItemColumn>("select * from LoadItemColumn where LoadID = @id and RowIndex between @beginItemNumber and @endItemNumber", new { id = load.ID, beginItemNumber = beginItemNumber+ rowIndexStartNumber, endItemNumber = endItemNumber + rowIndexStartNumber }).ToList();
 
-                    var rowColumns = loadItemColumns.Where(l => l.RowIndex == item.RowIndex).ToList();
-
-                    if (assetType.Class == AssetTypeClass.Model)
+                    //create API models
+                    //foreach (var item in loadItems)
+                    for(int currentIndex = beginItemNumber; currentIndex < endItemNumber; currentIndex++)
                     {
-                        assetTypeLevel = assetTypeLevels[item.Level];
+                        var item = loadItems[currentIndex];
+                        var fieldsToSkip = new List<string>();
+                        string assetTypeLevel = null;
 
-                        //ignore parent key fields, not needed for API
-                        var keyFields = FieldTypes.Where(f => f.Object == assetType.Object && f.ObjectID == assetType.ObjectID && f.IsPartOfKey);
-                        foreach (var k in keyFields)
-                            fieldsToSkip.AddRange(assetTypeLevels.ToList().Where(l => l.Key != item.Level).Select(l => $"{l.Value} {k.Name}"));
-                    }
+                        var rowColumns = loadItemColumns.Where(l => l.RowIndex == item.RowIndex).ToList();
 
-                    if (!item.AssetUid.HasValue)
-                    {
-                        var insert = new AssetInsert();
-                        insert.ExecutionItemUid = item.ExecutionItemUid;
-                        insert.Fields = new Dictionary<string, string>();
-
-                        //resolve model parent
-                        if (assetType.Class == AssetTypeClass.Model && item.Level > 1)
+                        if (assetType.Class == AssetTypeClass.Model)
                         {
-                            var parentKeyHash = await GetModelKeyHashForLevel(item, assetType, item.Level - 1);
-                            var itemPath = await GetModelPathForLevel(item, assetType, item.Level);
+                            assetTypeLevel = assetTypeLevels[item.Level];
 
-                            Guid? parentUid = (await QueryAsync<Guid?>(@"select [uid] from asset a
+                            //ignore parent key fields, not needed for API
+                            var keyFields = FieldTypes.Where(f => f.Object == assetType.Object && f.ObjectID == assetType.ObjectID && f.IsPartOfKey);
+                            foreach (var k in keyFields)
+                                fieldsToSkip.AddRange(assetTypeLevels.ToList().Where(l => l.Key != item.Level).Select(l => $"{l.Value} {k.Name}"));
+                        }
+
+                        if (!item.AssetUid.HasValue)
+                        {
+                            var insert = new AssetInsert();
+                            insert.ExecutionItemUid = item.ExecutionItemUid;
+                            insert.Fields = new Dictionary<string, string>();
+
+                            //resolve model parent
+                            if (assetType.Class == AssetTypeClass.Model && item.Level > 1)
+                            {
+                                var parentKeyHash = await GetModelKeyHashForLevel(item, assetType, item.Level - 1);
+                                var itemPath = await GetModelPathForLevel(item, assetType, item.Level);
+
+                                Guid? parentUid = (await QueryAsync<Guid?>(@"select [uid] from asset a
                                 cross apply GetAssetKeyHashById(A.ID) S
 								cross apply dbo.GetAssetTextPathById(A.ID, '>') TP
                                 where a.AssetTypeID = @assetTypeId 
                                 and TP.TextPath like @textPath
-                                and S.KeyHash = @parentKeyHash", new { parentKeyHash, assetTypeId = assetType.ID, textPath = itemPath})).FirstOrDefault();
+                                and S.KeyHash = @parentKeyHash", new { parentKeyHash, assetTypeId = assetType.ID, textPath = itemPath })).FirstOrDefault();
 
-                            if (parentUid.HasValue)
-                                insert.ParentUid = parentUid;
-                        }
+                                if (parentUid.HasValue)
+                                    insert.ParentUid = parentUid;
+                            }
 
-                        foreach (var field in rowColumns)
-                        {
-                            var col = loadColumns.FirstOrDefault(c => c.ColumnIndex == field.ColumnIndex);
-
-                            //resolve parent
-                            if (parentAssetType != null && col.Name == parentAssetType.Name)
+                            foreach (var field in rowColumns)
                             {
-                                if (!string.IsNullOrWhiteSpace(field.Value))
+                                var col = loadColumns.FirstOrDefault(c => c.ColumnIndex == field.ColumnIndex);
+
+                                //resolve parent
+                                if (parentAssetType != null && col.Name == parentAssetType.Name)
                                 {
-                                    string parentUid = "";
-                                    int endIndex = field.Value.LastIndexOf(']');
-                                    int startIndex = field.Value.LastIndexOf('[') + 1;
-                                    if (startIndex > -1 && endIndex > -1 && startIndex < endIndex)
+                                    if (!string.IsNullOrWhiteSpace(field.Value))
                                     {
-                                        parentUid = field.Value.Substring(startIndex, (endIndex - startIndex));
-                                        insert.ParentUid = new Guid(parentUid);
+                                        string parentUid = "";
+                                        int endIndex = field.Value.LastIndexOf(']');
+                                        int startIndex = field.Value.LastIndexOf('[') + 1;
+                                        if (startIndex > -1 && endIndex > -1 && startIndex < endIndex)
+                                        {
+                                            parentUid = field.Value.Substring(startIndex, (endIndex - startIndex));
+                                            insert.ParentUid = new Guid(parentUid);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if (!string.IsNullOrEmpty(field.Value) && !fieldsToSkip.Contains(col.Name))
+                                    {
+                                        if (!string.IsNullOrEmpty(assetTypeLevel) && col.Name.StartsWith($"{assetTypeLevel} "))
+                                            insert.Fields.Add(col.Name.Replace($"{assetTypeLevel} ", ""), field.Value);
+                                        else
+                                            insert.Fields.Add(col.Name, field.Value);
                                     }
                                 }
                             }
-                            else
+                            postAssets.Add(insert);
+                        }
+                        else
+                        {
+                            var update = new AssetUpdate();
+                            update.ExecutionItemUid = item.ExecutionItemUid;
+
+                            if ((parentAssetType != null || assetType.Class == AssetTypeClass.Model) && item.ParentAssetUid.HasValue)
+                                update.ParentUid = item.ParentAssetUid;
+
+                            update.Uid = ((Guid)item.AssetUid);
+                            update.Fields = new Dictionary<string, string>();
+
+                            foreach (var field in rowColumns)
                             {
-                                if (!string.IsNullOrEmpty(field.Value) && !fieldsToSkip.Contains(col.Name))
+                                var col = loadColumns.FirstOrDefault(c => c.ColumnIndex == field.ColumnIndex);
+
+                                if (parentAssetType != null && col.Name == parentAssetType.Name)
                                 {
-                                    if (!string.IsNullOrEmpty(assetTypeLevel) && col.Name.StartsWith($"{assetTypeLevel} "))
-                                        insert.Fields.Add(col.Name.Replace($"{assetTypeLevel} ", ""), field.Value);
+                                    continue;
+                                }
+                                else if (!fieldsToSkip.Contains(col.Name))
+                                {
+                                    if (assetTypeLevel != null && col.Name.StartsWith($"{assetTypeLevel} "))
+                                        update.Fields.Add(col.Name.Replace($"{assetTypeLevel} ", ""), field.Value);
                                     else
-                                        insert.Fields.Add(col.Name, field.Value);
+                                        update.Fields.Add(col.Name, field.Value);
                                 }
                             }
+                            putAssets.Add(update);
                         }
-                        postAssets.Add(insert);
                     }
-                    else
-                    {
-                        var update = new AssetUpdate();
-                        update.ExecutionItemUid = item.ExecutionItemUid;
 
-                        if ((parentAssetType != null || assetType.Class == AssetTypeClass.Model) && item.ParentAssetUid.HasValue)
-                            update.ParentUid = item.ParentAssetUid;
-
-                        update.Uid = ((Guid)item.AssetUid);
-                        update.Fields = new Dictionary<string, string>();
-
-                        foreach (var field in rowColumns)
-                        {
-                            var col = loadColumns.FirstOrDefault(c => c.ColumnIndex == field.ColumnIndex);
-
-                            if (parentAssetType != null && col.Name == parentAssetType.Name)
-                            {
-                                continue;
-                            }
-                            else if (!fieldsToSkip.Contains(col.Name))
-                            {
-                                if (assetTypeLevel != null && col.Name.StartsWith($"{assetTypeLevel} "))
-                                    update.Fields.Add(col.Name.Replace($"{assetTypeLevel} ", ""), field.Value);
-                                else
-                                    update.Fields.Add(col.Name, field.Value);
-                            }
-                        }
-                        putAssets.Add(update);
-                    }
+                    beginItemNumber += loopSize;
+                    endItemNumber += loopSize;
                 }
 
                 if (putAssets.Any())

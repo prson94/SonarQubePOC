@@ -327,6 +327,16 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                List<ValidationResult> validationResults = new List<ValidationResult>();
+                foreach (var model in models)
+                {
+                    bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
+                    if (!isValid)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResults.First().ErrorMessage)).ConfigureAwait(false);
+                    }
+                }
+
                 var execution = getApiExecution(models.Count);                
 
                 ApiExecutionInfo executionInfo = await DataProfiles.PostBatchDataProfiles(models, execution);
@@ -374,6 +384,16 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                List<ValidationResult> validationResults = new List<ValidationResult>();
+                foreach (var model in models)
+                {
+                    bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
+                    if (!isValid)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResults.First().ErrorMessage)).ConfigureAwait(false);
+                    }
+                }
+                
                 var execution = getApiExecution(models.Count);
 
                 ApiExecutionInfo executionInfo = await DataProfiles.PutBatchDataProfiles(models, execution);

@@ -40,6 +40,7 @@ export class AdminGroupsComponent extends AdminBaseComponent {
         this.adminHeading = "Security";
         this.setCommonItems();
         this.theDeleteCallback = this.deleteService.bind(this);
+        this.buildSecondaryNavigationForObject(0, 'GroupType');
     }
 
     ngOnInit() {

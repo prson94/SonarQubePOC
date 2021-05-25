@@ -278,6 +278,7 @@
 	<include file="scripts/Table.api.ExecutionUser.xml"/>
 	<include file="scripts/Table.api.ExecutionDiagramAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionDiagramAssetField.xml"/>
+	<include file="scripts/Table.api.ExecutionResponsibilityTypeRelationOverrideItem.xml"/>
 	<include file="scripts/Table.dbo.ConnectorLabel.xml"/>
 	<include file="scripts/Table.api.ExecutionExternal.xml"/>
 	
@@ -437,6 +438,7 @@
 	<include file="scripts/Procedure.dbo.GenerateAllAssetTypeDisplayValues.xml"/>
 	<include file="scripts/Procedure.dbo.GenerateAssetDisplayValue.xml"/>
 	<include file="scripts/Procedure.dbo.GenerateAssetTypeDisplayValues.xml"/>
+	<include file="scripts/Procedure.dbo.GetAllowedIntersectionTypes.xml"/>
 	<include file="scripts/Procedure.dbo.GetAssetHierarchy.xml"/>
 	<include file="scripts/Procedure.dbo.GetAttributeAndIntersectHierarchyByObject.xml"/>
 	<include file="scripts/Procedure.dbo.GetAverageScoreByObjectType.xml"/>

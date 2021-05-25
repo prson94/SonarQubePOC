@@ -1,4 +1,4 @@
-﻿import { Component, EventEmitter, Output, Input, HostBinding, ChangeDetectionStrategy, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+﻿import { Component, EventEmitter, Output, Input, HostBinding, ChangeDetectionStrategy, OnInit, ChangeDetectorRef, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { ToolTipService } from '../../services/tooltip.service';
 import { TooltipSingletonService } from '../../services/tooltip-singleton.service';
@@ -8,8 +8,10 @@ import { TooltipInfo, TooltipFieldValue, LookupTooltipInfo } from '../../models/
     selector: 'd3s-lookup-tooltip',
     template: ` 
                 <span #item class="d3s-tooltip" [ngClass]="{'d3s-tooltip-active':active}" (mouseenter)="show(item,tip)" (mouseleave)="hide()" (click)="click.emit()">
-                    <i *ngIf="icon && icon !=''" class="fa" [ngClass]="['fa-' + this.icon, class ? class: '']"  [ngStyle]="{'color': iconColor}"></i>                    
-                    <ng-content></ng-content>                    
+                    <i *ngIf="icon && icon !=''" class="fa" [ngClass]="['fa-' + this.icon, class ? class: '']"  [ngStyle]="{'color': iconColor}"></i>
+                    <div style="display: inline-block" #lookupText>
+                        <ng-content></ng-content>   
+                    </div>                
                     <div class="tooltip-child tooltip-panel" #tip [innerHtml]="data?.html"></div>
                 </span>
               `,
@@ -22,6 +24,7 @@ export class LookupTooltipComponent implements OnDestroy  {
     @Input() objectId: number;
     @Input() icon: string;
     @Input() class: string;
+    @Input() contentAnchor: string = 'left';
     @HostBinding('style.color') @Input() iconColor: string;
     @HostBinding('style.background') @Input() foreColor: string;
 
@@ -30,7 +33,8 @@ export class LookupTooltipComponent implements OnDestroy  {
     public active: boolean = false;
     public data: LookupTooltipInfo = null;
     private toolTipSub: any;
-    
+
+    @ViewChild('lookupText') lookupText: ElementRef;
 
     @Output() click = new EventEmitter();    
 
@@ -69,11 +73,15 @@ export class LookupTooltipComponent implements OnDestroy  {
     }
     
     showPanel(panel, item) {
+        let xoffset = 0;
+        if (this.contentAnchor === 'right' && this.lookupText && this.lookupText.nativeElement) {
+            xoffset = this.lookupText.nativeElement.offsetWidth + 5;
+        }
         if (panel && !this.active) {            
             this.active = true;
             panel.style.zIndex = 1000;
             panel.style.top = item.getBoundingClientRect().bottom + 'px';
-            panel.style.left = item.getBoundingClientRect().left + 'px';
+            panel.style.left = xoffset + item.getBoundingClientRect().left + 'px';
                         
             window.setTimeout(() => {
                 this.repositionMenuToFit(window.innerHeight, window.innerWidth, panel);

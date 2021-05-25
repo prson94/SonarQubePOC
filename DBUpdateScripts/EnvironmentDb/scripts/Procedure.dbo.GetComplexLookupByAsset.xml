@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Procedure.dbo.GetComplexLookupByAsset-v44">
-  <comment>GOV-14494</comment>
+  <changeSet author="TKlok" id="Procedure.dbo.GetComplexLookupByAsset-v45">
+  <comment>GOV-14369</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -540,31 +540,35 @@ set nocount on;
 	end
 	else if @type = 'OwnershipLookup'
 	begin
-		-- {"DisplayAssignmentSource":false,"ExpandGroupMembership":true}
+		-- {"DisplayAssignmentSource":false,"ExpandGroupMembership":true, ResponsibilityType:6}
 		declare @displayAssignmentSource bit,
-				@expandGroupMembership bit
+				@expandGroupMembership bit,
+				@responsibilityType int
 
 		select	@displayAssignmentSource = R.DisplayAssignmentSource,
-				@expandGroupMembership = R.ExpandGroupMembership
+				@expandGroupMembership = R.ExpandGroupMembership,
+				@responsibilityType = R.ResponsibilityType
 		from	FieldTypeLookup O
-				cross apply OPENJSON(O.[Definition], N'lax $') with (DisplayAssignmentSource bit, ExpandGroupMembership bit) R
+				cross apply OPENJSON(O.[Definition], N'lax $') with (DisplayAssignmentSource bit, ExpandGroupMembership bit, ResponsibilityType int) R
 		where	O.FieldTypeID = @fieldTypeId;
 
 		if @countOnly = 0 or exists(select 1 from @filters) or @hasSimpleFilter = 1
 		begin
 			-- Common
-			insert into @columns ([text], datafield, columntype, sort) values ('Responsibility', 'ResponsibilityTypeName', 'textbox', 1);
+			if(@responsibilityType is null)
+			begin
+				insert into @columns ([text], datafield, columntype, sort) values ('Responsibility', 'ResponsibilityTypeName', 'textbox', 1);
+				insert into @datafields values ('ResponsibilityTypeName', 'string', 1);
+				insert into @selects values ('R.ResponsibilityTypeName', 'ResponsibilityTypeName');
+				insert into @orders values ('R.ResponsibilityTypeName', 1);
+			end
 			
-			insert into @datafields values ('ResponsibilityTypeName', 'string', 1);
 			insert into @datafields values ('ResourceName', 'preview', 2);
 			insert into @datafields values ('ResourceItemUrl', 'string', 4);
 			insert into @datafields values ('Context', 'html', 7);
 			
-			insert into @selects values ('R.ResponsibilityTypeName', 'ResponsibilityTypeName');
 			insert into @selects values ('R.Context', 'Context');
 			
-			insert into @orders values ('R.ResponsibilityTypeName', 1);
-
 			if @expandGroupMembership = 1
 			begin
 				if @displayAssignmentSource = 1
@@ -604,6 +608,12 @@ set nocount on;
 			end
 			
 			insert into @columns ([text], datafield, columntype, sort) values ('Context', 'Context', 'textbox', 4)
+		end
+		
+		if(@responsibilityType is not null)
+		begin
+			insert into @wheres
+			select concat('R.ResponsibilityTypeId = ', @responsibilityType);
 		end
 
 		insert into @tables values 
@@ -780,7 +790,9 @@ set nocount on;
 
 		if @type = 'OwnershipLookup'
 		begin
-			insert into @fields (FieldTypeName) values ('ResponsibilityTypeName'),('ResourceName'),('Context')
+			insert into @fields (FieldTypeName)
+			select [name] from @datafields
+			where [name] in ('ResponsibilityTypeName','ResourceName','Context')
 			
 			;with simpleFilterQueries as (
 				select CONCAT( FieldTypeName ,' like ', '@simpleFilter') as Filter 
@@ -1208,6 +1220,7 @@ set nocount on;
 									else 'H' + F.RRN + '_F' + F.FT + '.FormattedValue asc'
 								end
 							when F.FieldTypeID = 0 and F.FieldTypeName = 'DisplayValue' then 'H' + F.RRN + '_DV.DisplayValue asc'
+							when F.FieldTypeID = 0 and F.FieldTypeName = '_assetPath' then 'H' + F.RRN + '__assetPath asc'
 							else null
 						end,
 						F.SortOrder

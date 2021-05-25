@@ -91,8 +91,9 @@ namespace d360.core.entities
 
     public class FieldTypeOwnershipLookupDefinition
     {
+        public bool DisplayAsList { get; set; }
         public bool DisplayAssignmentSource { get; set; } = true;
-
         public bool ExpandGroupMembership { get; set; } = true;
+        public int? ResponsibilityType { get; set; }
     }
 }

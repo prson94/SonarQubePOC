@@ -2,10 +2,12 @@
     ChangeDetectionStrategy,
     ChangeDetectorRef,
     Component,
+    ElementRef,
     EventEmitter,
     HostBinding,
     Input,
-    Output
+    Output,
+    ViewChild
 } from '@angular/core';
 import {Router} from '@angular/router';
 import {ToolTipService} from '../../services/tooltip.service';
@@ -29,6 +31,7 @@ export class PreviewTooltipComponent {
     @Input() innerHtmlContent: string;
     @Input() uid: string;
     @Input() align: string;
+    @Input() contentAnchor: string = 'left';
     @HostBinding('style.color') @Input() iconColor: string;
     @HostBinding('style.background') @Input() foreColor: string;
 
@@ -42,6 +45,8 @@ export class PreviewTooltipComponent {
     public mouseIn: boolean = false;
     private colorHtml: string = "";
     @Output() click = new EventEmitter();
+
+    @ViewChild('previewText') previewText: ElementRef;
 
     constructor(
         private toolTipService: ToolTipService,
@@ -161,6 +166,10 @@ export class PreviewTooltipComponent {
     }
 
     showPanel(panel, item) {
+        let xoffset = 0;
+        if (this.contentAnchor === 'right' && this.previewText && this.previewText.nativeElement) {
+            xoffset = this.previewText.nativeElement.offsetWidth + 5;
+        }
         if (panel && !this.active) {
             this.active = true;
             panel.style.zIndex = 1000;
@@ -168,9 +177,10 @@ export class PreviewTooltipComponent {
             if (this.isRightAligned()) {
                 let minwidth = getComputedStyle(panel).minWidth;
                 let panelWidth = parseInt(minwidth.substr(0, minwidth.length - 2)) || 400;
-                panel.style.left = (item.getBoundingClientRect().right - panelWidth) + 'px';
-            } else
-                panel.style.left = item.getBoundingClientRect().left + 'px';
+                panel.style.left = xoffset + (item.getBoundingClientRect().right - panelWidth) + 'px';
+            } else {
+                panel.style.left = xoffset + item.getBoundingClientRect().left + 'px';
+            }
 
             window.setTimeout(() => {
                 this.repositionMenuToFit(window.innerHeight, this.isRightAligned() ? item.getBoundingClientRect().right : window.innerWidth, panel);
@@ -204,5 +214,10 @@ export class PreviewTooltipComponent {
 
     isRightAligned(): boolean {
         return this.align == 'right';
+    }
+
+    public navigate(e: any, url: string) {
+        this.router.navigateByUrl(url);
+        e.preventDefault();
     }
 }

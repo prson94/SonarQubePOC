@@ -171,6 +171,7 @@ namespace d360.model
         string GenerateFormResponsesEmailContent(long itemId);
         Task<List<IntersectTypeApiViewModel>> GetActiveIntersectTypesByObjectType(int id, SystemObjects type);
         List<AllocationPossibility> GetAllocationOptions();
+        Task<IEnumerable<AllowedIntersectionType>> GetAllowedIntersectionTypes(string type, int id);
         IQueryable<ResponsibilityType> GetAllowedResponsibilityTypesByAsset(long id);
         AssetDetail GetAssetDetail(long id);
         AssetDetail GetAssetDetail(string objectType, long objectId);
@@ -315,6 +316,8 @@ namespace d360.model
         List<DataProfileUpsertResponse> UpsertDataProfiles(List<DataProfileUpsertModel> request, ApiExecution execution, bool isInsert, int timeout = 3600);
 
         List<DataProfileDeleteResponse> DeleteDataProfiles(List<AssetDataProfileDeleteModel> models, ApiExecution execution, int timeout = 3600);
+
+        List<BulkResponsibilityOverrideResponseModel> BulkInsertResponsibilityOverride(List<BulkResponsibilityOverridePostModel> request, ApiExecution execution, int timeout = 3600);
 
         #region API Query Parameter Parsing
 

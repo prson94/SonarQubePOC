@@ -13,11 +13,14 @@ import { TagViewModule } from "../tags/d3s-tag-view.module";
 import { AssetDetailCategoryComponent } from "./asset-detail-category.component";
 import { AssetDetailComponent } from "./asset-detail.component";
 import { AssetLookupGridComponent } from "./asset-lookup-grid.component";
+import { AssetLookupListComponent } from "./asset-lookup-list.component";
 import { SharedObjectDetailsModule } from "../objectdetails/shared-object-details.module";
 import { PropertyGroupModule } from "../controls/property-group/property-group.component";
 import { TilesModule } from "../tiles/tiles.module";
 import { TableModule } from "primeng/table";
 import { SharedGridPagingInfoModule } from "../grid-paging-info.component";
+import { OwnershipListModule } from "../small-widgets/ownership-list/ownership-list.component";
+
 
 @NgModule({
     imports: [
@@ -34,18 +37,21 @@ import { SharedGridPagingInfoModule } from "../grid-paging-info.component";
         TilesModule,
         TableModule,
         SharedGridPagingInfoModule,
+        OwnershipListModule,
     ],
     declarations: [
         AssetDetailFieldComponent,
         AssetDetailCategoryComponent,
         AssetDetailComponent,
         AssetLookupGridComponent,
+        AssetLookupListComponent,
     ],
     exports: [
         AssetDetailFieldComponent,
         AssetDetailCategoryComponent,
         AssetDetailComponent,
         AssetLookupGridComponent,
+        AssetLookupListComponent,
     ],
     providers: [{
         provide: HTTP_INTERCEPTORS,

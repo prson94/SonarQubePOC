@@ -265,10 +265,6 @@ namespace d360.web.Controllers.V2
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Status parameter value is required.")).ConfigureAwait(false);
             }
-            if (model.Detail?.Length > 250)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Detail cannot exceed 250 characters.")).ConfigureAwait(false);
-            }
             if (model.Component?.Length > 250)
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Component cannot exceed 250 characters.")).ConfigureAwait(false);

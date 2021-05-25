@@ -98,7 +98,13 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
             this.relationshipService.getRelationships(this.intersectTypeUid, params),
             this.assetTypeService.getAssetTypesByClass(AssetTypeClass.Reference)
         ).subscribe((results) => {
-            var relations = results[0].items as RelationshipType[];
+            let relations: RelationshipType[];
+            if (results[0].items) {
+                relations = results[0].items as RelationshipType[];
+            }
+            else {
+                relations = [];
+            }
             var types = results[1];
             var toRemove = this.isSubject ? relations.map((m) => m.Object["AssetTypeUid"].toLowerCase()) : relations.map((m) => m.Subject["AssetTypeUid"].toLowerCase());
 

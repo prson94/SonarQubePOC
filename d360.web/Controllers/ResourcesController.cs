@@ -467,7 +467,7 @@ from	FollowDetail F
                     {
                         //For Tooltip data for Issues, we want multivalue fields separated out in an array of each separate value
                         //for use on the workflow monitor page 
-                        //We'll maintain the compound comma separated valuie in "Value" for compatability with other pages
+                        //We'll maintain the compound comma separated value in "Value" for compatability with other pages
                         var sql = @"select ft.objectId as IssueId,
                                f.FormattedValue as [Value],
                                ft.FriendlyName as Name,

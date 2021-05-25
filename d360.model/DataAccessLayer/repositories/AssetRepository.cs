@@ -40,31 +40,7 @@ namespace d360.model.DataAccessLayer
             this.StorageProvider = storageProvider;
             this.Community = community;
         }
-
-        /// <summary>
-        /// Common code for creating batch calls.
-        /// </summary>
-        /// <param name="executionInfo"></param>
-        /// <param name="execution"></param>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        protected async Task<ApiExecutionInfo> CreateApiBatchJob(ApiExecutionInfo executionInfo, ApiExecution execution, object data)
-        {
-            // Save to storage container.
-            await StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(data));
-
-            // Save to the database.
-            execution.ExecutionID = executionInfo.ExecutionID;
-            CompanyContext.Add(execution);
-
-            // Save to queue.
-            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
-            {
-                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
-            }
-
-            return executionInfo;
-        }
+       
         public Asset GetAssetByObjectId(string obj, int objId)
         {
             return CompanyContext.Filter<Asset>(i => i.Object == obj && i.ObjectID == objId).SingleOrDefault();
@@ -643,6 +619,7 @@ namespace d360.model.DataAccessLayer
                     drop table if exists #OwnershipLookupAssets;
                     create table #OwnershipLookupAssets (
 						AssetID bigint,
+                        ResponsibilityTypeID int,
                         ResponsibilityTypeName nvarchar(250),
                         ResourceName nvarchar(501),
                         SecurityAsset char(1),
@@ -655,6 +632,7 @@ namespace d360.model.DataAccessLayer
 					);
 					insert into #OwnershipLookupAssets
                         SELECT [AssetID]
+                              ,[ResponsibilityTypeID]
                               ,[ResponsibilityTypeName]
                               ,[ResourceName]
                               ,[SecurityAsset]
@@ -668,29 +646,31 @@ namespace d360.model.DataAccessLayer
                         where rd.assetid <> 0 and IsVisible = 1 and rd.[AssetTypeID] = @assetTypeId
                         union all
                         select a.[ID] as AssetID
-                              ,rd.[ResponsibilityTypeName]
-                              ,rd.[ResourceName]
-                              ,rd.[SecurityAsset]
-                              ,rd.[SecurityAssetName]
-                              ,rd.[Context]
-                              ,rd.[ResourceId]
-                              ,rd.[ResourceUid]
-                              ,rd.[SecurityAssetId]
-                              ,rd.[SecurityAssetUid]
+                             ,rd.[ResponsibilityTypeID]
+                             ,rd.[ResponsibilityTypeName]
+                             ,rd.[ResourceName]
+                             ,rd.[SecurityAsset]
+                             ,rd.[SecurityAssetName]
+                             ,rd.[Context]
+                             ,rd.[ResourceId]
+                             ,rd.[ResourceUid]
+                             ,rd.[SecurityAssetId]
+                             ,rd.[SecurityAssetUid]
                         from ResponsibilityDetail rd
                         inner join asset a on rd.assettypeid = a.assettypeid
                         where rd.assetid = 0 and IsVisible = 1 and rd.assettypeid = @assetTypeId
                         union all
                         select a.[ID] as AssetID
-                                ,rd.[ResponsibilityTypeName]
-                                ,rd.[ResourceName]
-                                ,rd.[SecurityAsset]
-                                ,rd.[SecurityAssetName]
-                                ,rd.[Context]
-                                ,rd.[ResourceId]
-                                ,rd.[ResourceUid]
-                                ,rd.[SecurityAssetId]
-                                ,rd.[SecurityAssetUid]
+                             ,rd.[ResponsibilityTypeID]
+                             ,rd.[ResponsibilityTypeName]
+                             ,rd.[ResourceName]
+                             ,rd.[SecurityAsset]
+                             ,rd.[SecurityAssetName]
+                             ,rd.[Context]
+                             ,rd.[ResourceId]
+                             ,rd.[ResourceUid]
+                             ,rd.[SecurityAssetId]
+                             ,rd.[SecurityAssetUid]
                         from ResponsibilityDetail rd
                         inner join asset a on rd.assetid = a.id
                         where rd.AssetTypeID = 0 and IsVisible = 1 and a.AssetTypeID = @assetTypeId;
@@ -702,12 +682,19 @@ namespace d360.model.DataAccessLayer
                 {
                     FieldTypeLookup lookup = CompanyContext.FieldTypeLookups.Where(ftl => ftl.FieldTypeID == f.ID).FirstOrDefault();
                     var definition = (dynamic)JsonConvert.DeserializeObject(lookup.Definition);
+                    string responsibilityIdCondition = "";
+                    bool includeResponsibilityNames = true;
+                    if(definition.ResponsibilityType != null && definition.ResponsibilityType > 0)
+                    {
+                        responsibilityIdCondition = $" and ola{f.ID}.ResponsibilityTypeID = {definition.ResponsibilityType}";
+                        includeResponsibilityNames = false;
+                    }
                     string innerOwnershipQuery = "";
                     if ((bool)definition.ExpandGroupMembership)
                     {
                         innerOwnershipQuery = $@"select ResponsibilityTypeName, ResourceName, ResourceUid, ResourceItemUrl from #OwnershipLookupAssets ola{f.ID}
                             cross apply (select  concat('resource/', cast(ResourceID as varchar)) as ResourceItemUrl) ola{f.ID}x
-			                where ola{f.ID}.assetid = a.id
+			                where ola{f.ID}.assetid = a.id {responsibilityIdCondition}
 			                group by ResponsibilityTypeName, ResourceName, ResourceUid, ResourceItemUrl";
                         simpleFilterOwnershipOnResource = true;
                     }
@@ -715,15 +702,15 @@ namespace d360.model.DataAccessLayer
                     {
                         innerOwnershipQuery = $@"select ResponsibilityTypeName, SecurityAssetName as ResourceName, SecurityAssetUid as ResourceUid, ResourceItemUrl  from #OwnershipLookupAssets ola{f.ID}
                             cross apply (select  concat(case SecurityAsset when 'R' then '/resource/' else '/group/' end, cast(SecurityAssetID as varchar)) as ResourceItemUrl) ola{f.ID}x
-                			where ola{f.ID}.assetid = a.id
+                			where ola{f.ID}.assetid = a.id {responsibilityIdCondition}
                             group by ResponsibilityTypeName, SecurityAssetName, SecurityAssetUid, ResourceItemUrl";
                         simpleFilterOwnershipOnSecurityAsset = true;
                     }
-
+                    string responsibilityNameSelect = includeResponsibilityNames ? "string_agg(ResponsibilityTypeName,', ')" : "''";
                     string ownershipQuery = $@"
                         outer apply(
                             select FormattedValue = (
-		                        select ResourceName, string_agg(ResponsibilityTypeName,', ') AS ResponsibilityTypes, ResourceUid, ResourceItemUrl
+		                        select ResourceName, {responsibilityNameSelect} AS ResponsibilityTypes, ResourceUid, ResourceItemUrl
 		                        from ( {innerOwnershipQuery} ) Responsibilites{f.ID}
                                 group by ResourceName, ResourceUid, ResourceItemUrl
                                 order by ResourceName
@@ -2723,7 +2710,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 Action = ApiExecutionAction.DeleteAssetTypes
             };
 
-            return await CreateApiBatchJob(executionInfo, execution, assetTypes);
+            return await CreateApiBatchJob(executionInfo, execution, assetTypes, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
 
@@ -2749,7 +2736,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 execution.Total = assets.Count;
             }
 
-            return await CreateApiBatchJob(executionInfo, execution, assets);
+            return await CreateApiBatchJob(executionInfo, execution, assets, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
         public async Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetUpdate> assets, ApiExecution execution, bool sendWorkflowEvents = true)
@@ -2764,7 +2751,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 SendWorkflowEvents = sendWorkflowEvents
             };
 
-            return await CreateApiBatchJob(executionInfo, execution, assets);
+            return await CreateApiBatchJob(executionInfo, execution, assets, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
         public async Task<ApiExecutionInfo> PostBulkAssets(List<AssetInsert> assets, ApiExecution execution, bool sendWorkflowEvents = true)
@@ -2779,7 +2766,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 SendWorkflowEvents = sendWorkflowEvents
             };
 
-            return await CreateApiBatchJob(executionInfo, execution, assets);
+            return await CreateApiBatchJob(executionInfo, execution, assets, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
         public Predicate GetPredicateByUID(Guid predicateGuid)

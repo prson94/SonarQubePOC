@@ -66,6 +66,23 @@
     position: relative;
     overflow: hidden;
 
+    &.loading {
+      height: 32px;
+      color: @ig-grey;
+      pointer-events: none;
+
+      .spinner {
+        margin-top: 6px;
+        margin-left: 10px;
+      }
+
+      .loader-text {
+        position: absolute;
+        top: 5px;
+        left: 36px;
+      }
+    }
+
     .filters-list-menu {
       position: absolute;
       top: 0;

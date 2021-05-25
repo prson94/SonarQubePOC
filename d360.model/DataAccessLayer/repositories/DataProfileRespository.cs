@@ -329,7 +329,7 @@ namespace d360.model.DataAccessLayer
                 Action = ApiExecutionAction.PostDataProfile,
             };
 
-            return await CreateApiBatchJob(executionInfo, execution, models).ConfigureAwait(false);
+            return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
         public async Task<ApiExecutionInfo> PutBatchDataProfiles(List<DataProfileUpsertModel> models, ApiExecution execution)
@@ -343,7 +343,7 @@ namespace d360.model.DataAccessLayer
                 Action = ApiExecutionAction.PutDataProfile,
             };
 
-            return await CreateApiBatchJob(executionInfo, execution, models).ConfigureAwait(false);
+            return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
         public async Task<ApiExecutionInfo> DeleteBatchDataProfiles(List<AssetDataProfileDeleteModel> models, ApiExecution execution)
@@ -357,32 +357,7 @@ namespace d360.model.DataAccessLayer
                 Action = ApiExecutionAction.DeleteDataProfile,
             };
 
-            return await CreateApiBatchJob(executionInfo, execution, models).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Common code for creating batch calls.
-        /// </summary>
-        /// <param name="executionInfo"></param>
-        /// <param name="execution"></param>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        protected async Task<ApiExecutionInfo> CreateApiBatchJob(ApiExecutionInfo executionInfo, ApiExecution execution, object data)
-        {
-            // Save to storage container.
-            await StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(data));
-
-            // Save to the database.
-            execution.ExecutionID = executionInfo.ExecutionID;
-            CompanyContext.Add(execution);
-
-            // Save to queue.
-            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
-            {
-                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
-            }
-
-            return executionInfo;
+            return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
         }
     }
 }

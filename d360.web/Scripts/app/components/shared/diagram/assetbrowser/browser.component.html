@@ -9,11 +9,11 @@
         <div class="tile tile-detail" style="padding: 0">
             <div [hidden]="isLoading" class="asset-browser-header">
                 <div class="controls-left">
-                    <div style="display: inline-block">
+                    <div style="display: inline-flex">
                         <d3s-assetbrowser-viewchange [current]="displayConfiguration.DiagramType" (apply)="viewchange_Apply($event)" [items]="diagramTypes?.items"></d3s-assetbrowser-viewchange>
                     </div>
                     <div class="button-spacer"></div>
-                    <div style="display: inline-block">
+                    <div style="display: inline-flex">
                         <d3s-assetbrowser-search *ngIf="displayConfiguration.DiagramType != 3" (next)="search_GoToResult($event)" [numberOfResults]="searchResults.length" (previous)="search_GoToResult($event)" (search)="search_Execute($event)"></d3s-assetbrowser-search>
 
                         <ng-container *ngIf="displayConfiguration.DiagramType == 3">
@@ -24,7 +24,7 @@
                                 </ng-container>
                             </ng-container>
                             <ng-container *ngIf="canEditProcessDiagram()">
-                                <button pTooltip="Edit Process Diagram" tooltipPosition="top" tooltipStyleClass="ig-tooltip" *ngIf="canEditProcessDiagram()" igButton [disabled]="!processDiagramRef || !processDiagramRef.isDiagramLoaded" class="ig-button-primary" icon="fa-pencil" label="Edit" (click)="editProcess()"></button>&nbsp;&nbsp;
+                                <button pTooltip="Edit Process Diagram" tooltipPosition="top" tooltipStyleClass="ig-tooltip" *ngIf="canEditProcessDiagram()" igButton [disabled]="!processDiagramRef || !processDiagramRef.isDiagramLoaded" class="ig-button-primary" icon="fa-pencil" label="Edit" (click)="editProcess()"></button>
                                 <ng-container *ngIf="!isProcessDiagramEmpty()">
                                     <div class="button-spacer"></div>
                                     <button pTooltip="View and edit relationships for the selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton label="Item Relationships" id="igx-relationship-items" class="ig-button-pad-right" [disabled]="!processDiagramRef || !processDiagramRef.selectedNodeData" (click)="processDiagramRef.doControlledAction('open-related-assets')"></button>

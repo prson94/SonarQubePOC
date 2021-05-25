@@ -395,8 +395,12 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             return 'good';
     }
 
-    private showHierarchy(id: number) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(this.object, id, this.objectTypeId));
+    private showHierarchy(asset) {
+        this.assetService.getUIDetailsForAssetUID(asset.AssetUid)
+            .subscribe((res) => {
+                let url = SiteUrlHelpers.getObjectUrl(this.object, res.ObjectId, this.objectTypeId);
+                this.router.navigateByUrl(url);
+            });
     }
 
     private expandNodes() {
@@ -453,6 +457,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 _includeParent: "true",
                 _pageNum: 1,
                 _loadPermissionDetails: "true",
+                _listColorsAsJSON: "true",
                 isForTreeGrid: true
             };
 

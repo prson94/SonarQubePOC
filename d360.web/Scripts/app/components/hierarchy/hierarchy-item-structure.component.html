@@ -70,8 +70,7 @@
                         <th *ngFor="let column of columns"
                             [ttSortableColumn]="column.sortable === true ? column.datafield : null">
                             {{column.text}}
-                            <p-treeTableSortIcon *ngIf="column.sortable === true"
-                                                 [field]="column.datafield"></p-treeTableSortIcon>
+                            <p-treeTableSortIcon *ngIf="column.sortable === true" [field]="column.datafield"></p-treeTableSortIcon>
                         </th>
                         <th style="width: 40px"></th>
                         <th style="width: 40px"></th>
@@ -84,10 +83,22 @@
                     <tr [ttSelectableRow]="rowNode">
                         <td class="no-text-overflow" *ngFor="let column of columns; let i = index">
                             <p-treeTableToggler [rowNode]="rowNode" *ngIf="i === 0"></p-treeTableToggler>
-                            <d3s-dynamic-field-value [column]="column"
-                                                     [fields]="fields"
-                                                     [useApiName]="true"
-                                                     [item]="item"></d3s-dynamic-field-value>
+                            <ng-container *ngIf="i === 0">
+                                <a (click)="showHierarchy(item)"
+                                   [ngStyle]="setTreeNodeStyles(rowNode.node)"
+                                   class="link">
+                                    <d3s-dynamic-field-value [column]="column"
+                                                             [fields]="fields"
+                                                             [useApiName]="true"
+                                                             [item]="item"></d3s-dynamic-field-value>
+                                </a>
+                            </ng-container>
+                            <ng-container *ngIf="i !== 0">
+                                <d3s-dynamic-field-value [column]="column"
+                                                         [fields]="fields"
+                                                         [useApiName]="true"
+                                                         [item]="item"></d3s-dynamic-field-value>
+                            </ng-container>
                         </td>
                         <td>
                             <div class="RowTools">
