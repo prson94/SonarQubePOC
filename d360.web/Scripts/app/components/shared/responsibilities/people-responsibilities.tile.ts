@@ -20,6 +20,8 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     @Input() assetUid: string;
     @Input() overrideItemID: number;
     @Input() title: string = "Responsibilities";
+    @Input() showTitle: boolean = true;
+    @Input() showRowTools: boolean = true;
 
     public deleteCallback: Function;
    
