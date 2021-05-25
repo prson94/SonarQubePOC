@@ -142,8 +142,8 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
                     this.model.AssetType.AutoDisplayParent = true;
                 }
                 if (this.model.AssetType.CanEditParent === null &&
-                    (this.assetTypeClass == AssetTypeClass.BusinessAsset || this.assetTypeClass == AssetTypeClass.TechnicalAsset)
-                    && this.model.AssetType.ParentUid != null
+                    (this.assetTypeClass === AssetTypeClass.BusinessAsset || this.assetTypeClass === AssetTypeClass.TechnicalAsset)
+                    && this.model.AssetType.ParentUid !== null
                 ) {
                     this.model.AssetType.CanEditParent = true;
                 }
