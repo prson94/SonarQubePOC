@@ -2179,7 +2179,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         CreatedOn = DateTime.UtcNow,
                         Hierarchical = true,
                         UseAsTransformation = model.UseAsTransformation,
-                        Class = AssetTypeClass.Policy
+                        Class = AssetTypeClass.Policy,
+                        CanEditParent = model.CanEditParent
                     };
 
                     if (p.HierarchyMaximumDepth <= 0 || p.HierarchyMaximumDepth > 10)
@@ -2208,7 +2209,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         CreatedOn = DateTime.UtcNow,
                         Hierarchical = true,
                         UseAsTransformation = model.UseAsTransformation,
-                        Class = AssetTypeClass.Model
+                        Class = AssetTypeClass.Model,
+                        CanEditParent = model.CanEditParent
                     };
 
                     if (t.HierarchyMaximumDepth <= 0 || t.HierarchyMaximumDepth > 10)
@@ -2244,7 +2246,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         CreatedBy = resourceId,
                         CreatedOn = DateTime.UtcNow,
                         UseAsTransformation = model.UseAsTransformation,
-                        Class = AssetTypeClass.Reference
+                        Class = AssetTypeClass.Reference,
+                        CanEditParent = model.CanEditParent
                     };
                     isNamePartOfKey = false;
                     nameFriendlyName = "Long Description";
@@ -2321,7 +2324,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         CanOwnFusion = model.CanOwnFusion ?? false,
                         Parent = parentAssetType,
                         AutoDisplayParent = model.AutoDisplayParent,
-                        FlowObjectType = model.FlowObjectType
+                        FlowObjectType = model.FlowObjectType,
+                        CanEditParent = model.CanEditParent
                     };
                     CompanyContext.Add(diagram);
                     parentType = SystemObjects.TaskType;
