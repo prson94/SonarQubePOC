@@ -1,12 +1,13 @@
 ﻿<header>
     <span *ngIf="showTitle; else noTitle">Results</span>
+    <ng-template #noTitle></ng-template>
 </header>
 
 <div class="grid-actions-header">
     <div class="simple-search">
         <ig-search-field mode="Keypress"
                          [debounce]="600"
-                         (onSearch)="getData($event)"
+                         (onSearch)="getData()"
                          [(ngModel)]="simpleTextFilter"
                          [infoTooltip]="simpleSearchTooltipHTML">
         </ig-search-field>
