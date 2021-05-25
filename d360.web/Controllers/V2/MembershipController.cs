@@ -160,6 +160,8 @@ namespace d360.web.Controllers.V2
 
                 if (iscommunityuserresposibility)
                 {
+                    int responsibilityTypeID = Company.ResponsibilityTypes.Where(t => t.UID == responsibilitytypeuid).Select(t => t.ID).First();
+
                     string sqlStmt = $@"			
                         drop table if exists #temprsdata;
 
@@ -172,18 +174,17 @@ namespace d360.web.Controllers.V2
 						                        ResourceID,
 						                        count(1) as [Count],
 						                        C.Count as AssetCount
-			                        from		ResponsibilityType RT
-                                    inner join  ResponsibilityDetail R on RT.id = r.ResponsibilityTypeID
-			                        cross apply (
+			                        from		ResponsibilityDetail R 
+                                    cross apply (
 				                        select 
 						                        case when R.ApplyToType = 1 and R.AssetID = 0 then 
-							                        (select count(*) from Asset where AssetTypeID = R.AssetTypeID) 
+							                        (select count(1) from Asset a where a.AssetTypeID = R.AssetTypeID) 
 						                        else 
 							                        1
 				                        end as [Count]
 			                        ) C
 			                        where		R.IsVisible = 1
-						                        and RT.uid = @ResponsibilityTypeUID
+						                        and R.ResponsibilityTypeID = @responsibilityTypeID
 			                        group by	ResponsibilityTypeID,
 						                        ResourceID,
 						                        C.Count
@@ -191,13 +192,11 @@ namespace d360.web.Controllers.V2
                         group by	OC.ResourceID,
 			                        OC.ResponsibilityTypeID;
 
-                        create index idx_temprsdata on #temprsdata(ResourceID);
-
                     ";
                     selectBuilder.Append(sqlStmt);
                     countBuilder.Append(sqlStmt);
 
-                    dbArgs.Add("ResponsibilityTypeUID", responsibilitytypeuid);
+                    dbArgs.Add("responsibilityTypeID", responsibilityTypeID);
                 }
 
                 if (!iscommunityuserresposibility)
@@ -226,12 +225,16 @@ namespace d360.web.Controllers.V2
                     OC.OwnedItemCount");
                 }
 
-                countBuilder.Append("select count(gr.ResourceID) from [reporting].[Global_Resource] gr ");
                 if (iscommunityuserresposibility)
                 {
-                    countBuilder.Append(" inner join #temprsdata OC on OC.ResourceID = gr.ResourceID ");
+                    countBuilder.Append($@"select count(1) from #temprsdata OC
+                                           inner join [reporting].[Global_Resource] gr 
+                                           on gr.ResourceID = OC.ResourceID");
                 }
-
+                else
+                {
+                    countBuilder.Append("select count(1) from [reporting].[Global_Resource] gr ");
+                }
 
                 Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", _pageSize }, { "_pageNum", _pageNum } };
                 string isValid = isPageSizeAndNumValid(pageParams);
@@ -241,7 +244,16 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", isValid)).ConfigureAwait(false);
                 }
 
-                var fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
+                List<FieldType> fieldTypes;
+
+                if (iscommunityuserresposibility)
+                {
+                    fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1 && f.IsListable == true).ToList();
+                }
+                else
+                {
+                    fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
+                }
 
                 getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
 
@@ -414,10 +426,14 @@ namespace d360.web.Controllers.V2
                 model.pageSize = pageSize;
 
                 string offsetSql = $" {orderBySQL} offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
-                selectBuilder.Append(" from [reporting].[Global_Resource] gr ");
                 if (iscommunityuserresposibility)
                 {
-                    selectBuilder.Append(" inner join #temprsdata OC on OC.ResourceID = gr.ResourceID ");
+                    selectBuilder.Append($@" from #temprsdata OC inner join [reporting].[Global_Resource] gr on gr.ResourceID = OC.ResourceID");
+                }
+                else
+                {
+                    selectBuilder.Append(" from [reporting].[Global_Resource] gr ");
+
                 }
                 finalSql = $"{selectBuilder} {joinBulder} {whereBuilder} {offsetSql}";
                 countSql = $"{countBuilder} {joinBulder } {whereBuilder}";
