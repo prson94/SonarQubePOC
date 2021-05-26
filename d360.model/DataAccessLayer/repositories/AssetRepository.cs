@@ -2386,6 +2386,11 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             if (!string.IsNullOrEmpty(model?.Name ?? null))
                 model.Name = model.Name.Trim();
 
+            if (!model.CanEditParent.HasValue)
+            {
+                model.CanEditParent = true;
+            }
+
             switch (model.Class)
             {
                 case AssetTypeClass.BusinessAsset:
@@ -2445,11 +2450,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         assetType.FlowObjectType = model.FlowObjectType;
                     }
 
-
-                    if (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset)
-                    {
-                        assetType.CanEditParent = model.CanEditParent;
-                    }
+                    assetType.CanEditParent = model.CanEditParent;
 
                     #endregion
                     break;
@@ -2469,6 +2470,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
                     assetType.AutoDisplayDescription = model.AutoDisplayDescription;
                     assetType.Notes = model.Notes ?? assetType.Notes;
+                    assetType.CanEditParent = model.CanEditParent;
 
                     #endregion
                     break;
@@ -2485,6 +2487,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     assetType.Name = model.Name;
                     assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
                     assetType.Description = model.Description;
+                    assetType.CanEditParent = model.CanEditParent;
 
                     #endregion
                     break;
