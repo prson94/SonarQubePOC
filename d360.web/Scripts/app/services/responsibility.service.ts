@@ -25,8 +25,8 @@ export class ResponsibilityService extends BaseObservableService implements IRes
     getHasResponsibilities(assetUid: string): Observable<boolean> {
         return this.http.get(`/api/v2/responsibilities/hasassignments/${assetUid}`)
             .pipe(
-                map(response => <boolean>response),
-                catchError(err => this.handleError(err))
+                map((response) => <boolean>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
