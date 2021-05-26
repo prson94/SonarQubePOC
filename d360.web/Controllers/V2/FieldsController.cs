@@ -1710,13 +1710,9 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     }).Distinct().ToList();
                 relatedTypeList.ForEach(r =>
                 {
-                    if (list.ContainsKey($"Related Item.{r.Name}"))
+                    if (!list.ContainsKey($"Related Item.{r.Name} ({r.ID})"))
                     {
                         list.Add($"Related Item.{r.Name} ({r.ID})", r.ID);
-                    }
-                    else
-                    {
-                        list.Add($"Related Item.{r.Name}", r.ID);
                     }
                 });
 
