@@ -104,10 +104,8 @@ export class HeaderHelpComponent implements OnInit {
 
 
     ngOnInit(): void {        
-        this.loadCustomHelp()
-    }
-
-    
+        this.loadCustomHelp();
+    }    
 
     loadCustomHelp(): void {
         this.customHelpResources$ = this.resourceService.getHelpResources();            
