@@ -473,7 +473,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 isForTreeGrid: true
             };
 
-            uriParams._direction = this.treeTable._sortOrder == 1 ? 'ASC' : 'DESC';
+            uriParams._direction = this.treeTable._sortOrder === 1 ? 'ASC' : 'DESC';
             if (this.treeTable._sortField != undefined) {
                 var field = this.columns.filter((f) => f.datafield === this.treeTable._sortField)[0];
                 uriParams._order = field["apiName"];
@@ -546,11 +546,11 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     }
 
     saveTreeState() {
-        localStorage.setItem(this.getNodesStateKey, JSON.stringify(this.expandedNodes))
+        localStorage.setItem(this.getNodesStateKey, JSON.stringify(this.expandedNodes));
     }
 
     get treeState(): string[] {
-        var loadedData = localStorage.getItem(this.getNodesStateKey)
+        var loadedData = localStorage.getItem(this.getNodesStateKey);
         if (!loadedData) {
             return [];
         }
