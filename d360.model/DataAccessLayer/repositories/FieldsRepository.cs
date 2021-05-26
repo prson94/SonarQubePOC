@@ -867,13 +867,9 @@ from	IntersectType I
 
                         relatedTypeList.ForEach(r =>
                         {
-                            var fieldName = $"Related Item.{r.Name}";
+                            var fieldName = $"Related Item.{r.Name} ({r.ID})";
 
-                            if (computedFields.ContainsKey(fieldName))
-                            {
-                                computedFields.Add($"{fieldName} ({r.ID})", r.ID);
-                            }
-                            else
+                            if (!computedFields.ContainsKey(fieldName))
                             {
                                 computedFields.Add(fieldName, r.ID);
                             }
