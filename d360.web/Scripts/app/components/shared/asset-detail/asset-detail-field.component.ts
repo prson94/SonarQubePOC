@@ -15,7 +15,7 @@ export class AssetDetailFieldComponent {
 
     readonly emptyValue: string = "---";
     readonly dateFormat: string = "d MMM yyyy";
-    readonly dateTimeFormat: string = "d MMM yyyy h:mm:ss";
+    readonly dateTimeFormat: string = "d MMM yyyy HH:mm:ss";
     DetailFieldType = DetailFieldType;
 
     jsonValue: any = null;
