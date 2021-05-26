@@ -1,5 +1,5 @@
 ﻿<div *ngIf="assetID">
-    <div *ngIf="showTitle">
+    <div *ngIf="showTitle === true">
         <header>
             {{title}}
             <d3s-tile-actions [hasAdd]="hasAddResponsibilitiesPermissions()" (addClick)="add();" *ngIf="!isEditing && !isAdding && !isDeleting" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>

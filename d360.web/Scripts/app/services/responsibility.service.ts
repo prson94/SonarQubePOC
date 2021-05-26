@@ -22,6 +22,14 @@ export class ResponsibilityService extends BaseObservableService implements IRes
             );
     }
 
+    getHasResponsibilities(assetUid: string): Observable<boolean> {
+        return this.http.get(`/api/v2/responsibilities/hasassignments/${assetUid}`)
+            .pipe(
+                map(response => <boolean>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     getResponsibilityItemEditor(assetID: number, responsibilityID: number, assetUid: string, responsibilityUid: string, resourceUid: string): Observable<ResponsibilityEditorModel> {
         return this.http.get(`form/Responsibility?assetID=${assetID}&overrideID=${responsibilityID}&assetUid=${assetUid}&responsibilityUid=${responsibilityUid}&resourceUid=${resourceUid}`)
 
@@ -35,7 +43,7 @@ export class ResponsibilityService extends BaseObservableService implements IRes
                         model.selectedResource = model.responsibility.SecurityAsset + '|' + model.responsibility.SecurityAssetID;                    
 
                     if (model.responsibility.ResponsibilityTypeID)
-                        model.selectedResponsibilityType = model.responsibilityTypes.find(x => x.Selected == true).Value;//model.responsibility.ResponsibilityTypeID.toString();                        
+                        model.selectedResponsibilityType = model.responsibilityTypes.find(x => x.Selected == true).Value;                       
 
                     return model;
                 }),

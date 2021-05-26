@@ -95,6 +95,20 @@ namespace d360.model.DataAccessLayer
             return (await Company.Database.Connection.QueryAsync<OwnershipApiModel>(sql, new { id = asset.ID, typeId = asset.AssetTypeID }));
         }
 
+        public async Task<bool> HasOwnership(Guid assetUid)
+        {
+            var asset = Company.Assets.Where(x => x.uid == assetUid).FirstOrDefault();
+
+            var sql = $@"
+                select  CASE WHEN EXISTS (
+                        select  1 
+                        from    [dbo].[ResponsibilityDetail] R
+                        where   R.AssetID = @id or (R.AssetID = 0 and R.AssetTypeId = @typeId)) THEN 1
+                        ELSE 0 END";
+
+            return (await Company.Database.Connection.QueryFirstAsync<bool>(sql, new { id = asset.ID, typeId = asset.AssetTypeID }));
+        }
+
         public async Task<ResponsibilityTypeRuleStatsViewModel> GetResponsibilityRuleStats(Guid responsibilityTypeRuleUid)
         {
             var responsibilityTypeRuleStats = new ResponsibilityTypeRuleStatsViewModel();
