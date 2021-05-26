@@ -56,9 +56,10 @@ namespace d360.web.Controllers.V2
         IAssetRepository AssetRepository;
         ITagRepository tagRepository;
         IRelationshipRepository relationshipRepository;
+        IFieldsRepository fieldsRepository;
 
         public AssetsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IAssetRepository repository, ITagRepository tagRepository,
-            IRelationshipRepository relationshipRepository)
+            IRelationshipRepository relationshipRepository, IFieldsRepository fieldsRepository)
             : base(community, company)
         {
             QueueSource = queueSource;
@@ -66,6 +67,7 @@ namespace d360.web.Controllers.V2
             this.AssetRepository = repository;
             this.tagRepository = tagRepository;
             this.relationshipRepository = relationshipRepository;
+            this.fieldsRepository = fieldsRepository;
         }
 
         #endregion
@@ -1305,6 +1307,7 @@ namespace d360.web.Controllers.V2
                 bool returnuseUidUrls = true;
                 string orderBy = string.Empty;
                 string direction = string.Empty;
+                string filters = string.Empty;
 
                 if (qparams.Any(x => x.Key.ToLower() == "usefriendlynames"))
                 {
@@ -1359,21 +1362,75 @@ namespace d360.web.Controllers.V2
                     simpleFilter = $"%{qparams.FirstOrDefault(x => x.Key.ToLower() == "simplefilter").Value}%";
                 }
 
-                DataTable advFilters = null;
                 if (qparams.Any(x => x.Key.ToLower() == "filter"))
                 {
+                    var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
+                    var definition = ftl.ParseComplexLookupDefinition();
+
+                    var mappings = definition.GetFieldMapings();
+                    var fieldTypeIds = mappings.Where(x => x.Value != null).Select(x => x.Value.FieldTypeID).Where(x => x > 0).ToList();
+                    List<FieldType> fields = Company.FieldTypes.Where(x => fieldTypeIds.Contains(x.ID)).AsNoTracking().ToList();
+                    foreach (var f in mappings)
+                    {
+                        if (f.Value == null)
+                        {
+                            var ft = new FieldType();
+                            ft.Name = f.Key;
+                            ft.Type = DataType.Text.ToString();
+                            fields.Add(ft);
+                            continue;
+                        }
+
+                        if (f.Value.FieldTypeID > 0 && !f.Value.FieldTypeName.StartsWith("Related Item."))
+                        {
+                            var ft = fields.FirstOrDefault(x => x.ID == f.Value.FieldTypeID);
+                            ft.Name = f.Key;
+
+                        }
+                        else if (f.Value.FieldTypeName == "DisplayValue" || f.Value.FieldTypeName.Contains("_assetPath"))
+                        {
+                            var ft = new FieldType();
+                            ft.Name = f.Key;
+                            ft.FriendlyName = f.Value.FieldTypeName;
+                            ft.Type = DataType.Text.ToString();
+                            fields.Add(ft);
+                        }
+                        else if (f.Value.FieldTypeName.StartsWith("Related Item."))
+                        {
+                            var it = Company.IntersectTypes.FirstOrDefault(x => x.ID == f.Value.FieldTypeID);
+                            var ft = new FieldType();
+
+                            ft.Name = f.Key;
+                            ft.FriendlyName = f.Value.FieldTypeName;
+                            ft.Type = DataType.Relationship.ToString();
+                            ft.LookupObjectType = "IntersectType";
+                            ft.LookupObjectID = it.ID;
+                            fields.Add(ft);
+
+                            var ft2 = new FieldType();
+
+                            ft2.Name = "Related:" + it.uid; ;
+                            ft2.FriendlyName = f.Value.FieldTypeName;
+                            ft2.Type = DataType.Relationship.ToString();
+                            ft2.LookupObjectType = "IntersectType";
+                            ft2.LookupObjectID = it.ID;
+                            fields.Add(ft2);
+                        }
+                        else
+                        {
+                            var ft = new FieldType();
+                            ft.Name = f.Key;
+                            ft.FriendlyName = f.Value.FieldTypeName;
+                            ft.Type = DataType.Text.ToString();
+                            fields.Add(ft);
+                        }
+                    }
+
+
                     var filter = qparams.FirstOrDefault(x => x.Key.ToLower() == "filter").Value;
-                    var filterExpressionParser = new FilterExpressionParser(this.Company, FilterExpressionParseType.CustomFields, false, false, true);
-                    advFilters = filterExpressionParser.ParseAsFiltersDataTable(filter);
-                }
-                else
-                {
-                    advFilters = new DataTable();
-                    advFilters.Columns.Add("FieldType");
-                    advFilters.Columns.Add("Operator");
-                    advFilters.Columns.Add("TypeID");
-                    advFilters.Columns.Add("OptionalIdentifier");
-                    advFilters.Columns.Add("FilterValues");
+                    var filterExpressionParser = new FilterExpressionParser(this.Company, FilterExpressionParseType.ComplexLookupField, false, false, true);
+                    filterExpressionParser.LoadFieldTypes(fields, null);
+                    filters = filterExpressionParser.ParseAsFiltersDataTable(filter);
                 }
 
                 if (qparams.Any(x => x.Key.ToLower() == "_order"))
@@ -1448,7 +1505,7 @@ namespace d360.web.Controllers.V2
                 dbArgs.Add("orderBy", orderBy);
                 dbArgs.Add("orderDirection", direction);
                 dbArgs.Add("useUidUrls", returnuseUidUrls);
-                dbArgs.Add("filters", advFilters.AsTableValuedParameter("dbo.AssetFiltersTable"));
+                dbArgs.Add("filters", filters);
 
                 var reader = await Company.QueryMultipleAsync(
                         "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0,0, @pageSize, @pageNum, @simpleFilter, @orderBy, @orderDirection, @useUidUrls, @filters",
@@ -1535,7 +1592,7 @@ namespace d360.web.Controllers.V2
                 dbArgsCount.Add("pageSize", pageSize);
                 dbArgsCount.Add("pageNum", pageNum);
                 dbArgsCount.Add("simpleFilter", simpleFilter);
-                dbArgsCount.Add("filters", advFilters.AsTableValuedParameter("dbo.AssetFiltersTable"));
+                dbArgsCount.Add("filters", filters);
 
                 var count = Company.Query<int>(
                      "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, 1, 0, @pageSize, @pageNum, @simpleFilter, '','', 0, @filters",

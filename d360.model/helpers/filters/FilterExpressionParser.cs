@@ -85,7 +85,7 @@ namespace d360.model.helpers
                 allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetTypePath", "EvaluatedAssetTypePath", SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetPath", "EvaluatedAssetPath", SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetDisplayPath", "EvaluatedAssetDisplayPath", SqlFieldType.Text));
-               
+
                 allowedDefaultFields.Add(new DefaultFilter("EffectiveDate", "EffectiveDate", SqlFieldType.Date));
                 allowedDefaultFields.Add(new DefaultFilter("RunDate", "RunDate", SqlFieldType.DateTime));
 
@@ -121,35 +121,32 @@ namespace d360.model.helpers
             this.fieldColumns = columns;
         }
 
-        public DataTable ParseAsFiltersDataTable(string filterString)
+        public string ParseAsFiltersDataTable(string filterString)
         {
-
-            DataTable filterDT = new DataTable();
-            filterDT.Columns.Add("FieldType");
-            filterDT.Columns.Add("Operator");
-            filterDT.Columns.Add("TypeID");
-            filterDT.Columns.Add("OptionalIdentifier");
-            filterDT.Columns.Add("FilterValues");
-            this.Parse(filterString, out _, out _);
-
-            foreach (var item in this.FilterTokens.Where(x => x.IsOnlyOperator != true))
+            if (parseType != FilterExpressionParseType.ComplexLookupField)
             {
-                DataRow row = filterDT.NewRow();
-                row["FieldType"] = "F";
-                row["Operator"] = item.@operator;
-                row["TypeID"] = 0;
-                row["OptionalIdentifier"] = item.Field;
-                row["FilterValues"] = item.ValueAsString.Trim('%');
+                throw new InvalidOperationException("ParseAsFiltersDataTable is only allowed for FilterExpressionParseType.ComplexLookupField");
+            }
 
-                filterDT.Rows.Add(row);
+            Tokenize(filterString);
+
+            string query = "";
+
+            foreach (var item in this.FilterTokens)
+            {
+                query += ParseTokensForComplexFields(item);
             }
 
 
-            return filterDT;
+            return !string.IsNullOrEmpty(query) ? "(" + query + ")" : "";
         }
 
         public string Parse(string filterString, out Dictionary<string, object> sqlParams, out List<int> fieldIds)
         {
+            if (parseType == FilterExpressionParseType.ComplexLookupField)
+            {
+                throw new InvalidOperationException("For FilterExpressionParseType.ComplexLookupField call ParseAsFiltersDataTable");
+            }
             fieldIds = this.filteredFieldIDs;
             this.FilterTokens.Clear();
             try
@@ -176,6 +173,41 @@ namespace d360.model.helpers
 
             filterString = filterString.Trim();
 
+            StringBuilder sb = new StringBuilder();
+
+            if (!ValidateString(filterString))
+            {
+                throw new FormatException("Filter expression contains unclosed quotations or brackets.");
+            }
+
+            Tokenize(filterString);
+
+            if (parseType == FilterExpressionParseType.Relationships)
+            {
+                CheckRelationshipTokens(FilterTokens);
+            }
+
+            foreach (var token in FilterTokens)
+            {
+                if (parseType == FilterExpressionParseType.CustomFields || parseType == FilterExpressionParseType.RuleResults || parseType == FilterExpressionParseType.RelationshipCustomFields || parseType == FilterExpressionParseType.CommunityResposibilityResource)
+                {
+                    ParseTokensForCustomFields(sqlParams, sb, token);
+                }
+                else if (parseType == FilterExpressionParseType.Relationships)
+                {
+                    ParseTokensForRelationships(sqlParams, sb, token);
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        private void Tokenize(string filterString)
+        {
             Regex regex = new Regex(@"\'(.+?)\'");
             var matchGroups = regex.Matches(filterString);
 
@@ -188,14 +220,7 @@ namespace d360.model.helpers
                 valuesMap.Add(new Tuple<string, string>(key, matchValue));
             }
 
-
-            if (!ValidateString(filterString))
-            {
-                throw new FormatException("Filter expression contains unclosed quotations or brackets.");
-            }
-
             string[] tokens = GetTokens(ref filterString);
-            StringBuilder sb = new StringBuilder();
 
             for (int j = 0; j < tokens.Length; j++)
             {
@@ -242,29 +267,6 @@ namespace d360.model.helpers
                 }
                 i = tokens.Length;
             }
-
-            if (parseType == FilterExpressionParseType.Relationships)
-            {
-                CheckRelationshipTokens(FilterTokens);
-            }
-
-            foreach (var token in FilterTokens)
-            {
-                if (parseType == FilterExpressionParseType.CustomFields || parseType == FilterExpressionParseType.RuleResults || parseType == FilterExpressionParseType.RelationshipCustomFields || parseType == FilterExpressionParseType.CommunityResposibilityResource)
-                {
-                    ParseTokensForCustomFields(sqlParams, sb, token);
-                }
-                else if (parseType == FilterExpressionParseType.Relationships)
-                {
-                    ParseTokensForRelationships(sqlParams, sb, token);
-                }
-                else
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            return sb.ToString();
         }
 
         private void ParseTokensForRelationships(Dictionary<string, object> sqlParams, StringBuilder sb, FilterToken token)
@@ -334,6 +336,59 @@ namespace d360.model.helpers
                 }
             }
         }
+
+        private string ParseTokensForComplexFields(FilterToken token)
+        {
+
+
+            if (token.IsOnlyOperator)
+            {
+                return token.@operator;
+            }
+            if (token.Field.ToLower().StartsWith("related:"))
+            {
+                var intersectTypeUid = token.Field.ToLower().Replace("related:", "");
+                var intersectUid = token.ValueAsString;
+                var ftRelationship = fieldTypes.Where(x => x.Name.ToLower() == token.Field.ToLower()).FirstOrDefault();
+                var ftQueryName = fieldTypes.FirstOrDefault(x => x.LookupObjectID == ftRelationship.LookupObjectID && x.LookupObjectType == ftRelationship.LookupObjectType && ftRelationship.Name != x.Name).Name;
+                if (ftRelationship != null)
+                {
+                    string relField = ftQueryName.Replace("_IntersectTypeUid", "_Uid");
+                    return $"({ftQueryName} eq {intersectTypeUid} and {relField} eq {intersectUid})";
+                }
+            }
+            else
+            {
+
+                var fieldType = this.fieldTypes.FirstOrDefault(x => x.Name.ToLower() == token.Field);
+
+                if (fieldType != null && disallowedFieldTypes.Contains(fieldType.Type))
+                {
+                    throw new Exception("Field with name '" + token.Field + "' is not supported (" + fieldType.Type + ")!");
+                }
+
+                token.LoadFieldType(fieldType, null);
+                token.UpdateTokenValueForType();
+
+                if (!token.IsNullValue)
+                {
+                    return $"({token.Field} {token.GetSQLOperator(token.@operator)} '{token.ValueAsString}')";
+                }
+                else
+                {
+                    if (!(new[] { "eq", "ne" }.Contains(token.@operator)))
+                    {
+                        throw new FormatException($"NULL value filter can be used only with 'eq' and 'ne' operator!");
+                    }
+
+                    return $"({token.Field} { token.GetSQLNullOperator(token.@operator)})";
+                }
+
+            }
+
+            return "";
+        }
+
 
         private string[] GetTokens(ref string filterString)
         {
@@ -451,7 +506,8 @@ namespace d360.model.helpers
         Relationships,
         RuleResults,
         RelationshipCustomFields,
-        CommunityResposibilityResource
+        CommunityResposibilityResource,
+        ComplexLookupField
     }
 
     public enum SqlFieldType

@@ -70,6 +70,48 @@ namespace d360.web.Models
             return customContractProperties;
         }
 
+
+        public static Dictionary<string, FieldTypeComplexLookupDefinitionField> GetFieldMapings(this FieldTypeComplexLookupDefinition definition)
+        {
+            List<Guid> assetTypes = definition.Relations.Select(x => x.AssetTypeUid.HasValue ? x.AssetTypeUid.Value : Guid.Empty).ToList();
+
+            Dictionary<string, FieldTypeComplexLookupDefinitionField> map = new Dictionary<string, FieldTypeComplexLookupDefinitionField>();
+
+            for (int i = 0; i < definition.Relations.Count; i++)
+            {
+                map.Add($"H{i + 1}_Uid", null);
+                map.Add($"H{i + 1}_Url", null);
+            }
+
+            definition.Fields.ForEach(ft =>
+            {
+                var assetIdx = assetTypes.IndexOf(ft.AssetTypeUid) + 1;
+                var fname = string.IsNullOrEmpty(ft.OverrideDisplayName) ? ft.FieldTypeName : ft.OverrideDisplayName;
+
+                if (ft.FieldTypeID > 0)
+                {
+                    if (ft.FieldTypeName.StartsWith("Related Item."))
+                    {
+                        map.Add($"H{assetIdx}_{ft.FieldTypeID}_IntersectTypeUid", ft);
+                        map.Add($"H{assetIdx}_{ft.FieldTypeID}_Uid", null);
+                        map.Add($"H{assetIdx}_{ft.FieldTypeID}_DisplayValue", null);
+                        map.Add($"H{assetIdx}_{ft.FieldTypeID}_Url", null);
+
+                    }
+                    else
+                    {
+                        map.Add($"H{assetIdx}_{ft.FieldTypeID}", ft);
+                    }
+                }
+                else
+                {
+                    map.Add($"H{assetIdx}_{ft.FieldTypeName}", ft);
+                }
+            });
+            return map;
+        }
+
+
         public static List<dynamic> UnflattenJson(this FieldTypeComplexLookupDefinition definition, List<dynamic> Values)
         {
             List<dynamic> unflattened = new List<dynamic>();
