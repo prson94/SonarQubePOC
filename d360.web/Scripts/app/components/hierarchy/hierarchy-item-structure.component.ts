@@ -522,8 +522,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         }
     }
 
-    private newAdvancedFilters: Filters;
-    private advancedFiltersChanged($event) {
+    newAdvancedFilters: Filters;
+    advancedFiltersChanged($event) {
         this.newAdvancedFilters = $event;
         this.loadNodes();
     }
