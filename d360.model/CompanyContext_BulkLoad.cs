@@ -1017,7 +1017,10 @@ from	[Load] L
 
                     beginItemNumber += loopSize;
                     endItemNumber += loopSize;
-                    if (endItemNumber > loadItems.Count) endItemNumber = loadItems.Count;
+                    if (endItemNumber > loadItems.Count)
+                    {
+                        endItemNumber = loadItems.Count;
+                    }
                 }
 
                 if (putAssets.Any())
