@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using SpreadsheetLight;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
@@ -402,6 +403,7 @@ from	[Load] L
         #region v2 API Methods
 
         private const int timeout = 3600;
+        private const int defaultBulkLoadLoopSize = 500;
         private readonly List<string> v2ApiActions = new List<string>() { "P", "R", "U" };
 
         internal class BulkLoadExecutionFields_Assets
@@ -888,9 +890,14 @@ from	[Load] L
                     loadItems = Query<LoadItem>("select * from LoadItem where LoadID = @id", new { id = load.ID }).ToList();
                 }
 
-                //do this in blocks of 500
+                //do this in blocks of n items at a time to avoid loading everything in one shot.
+                int loopSize = defaultBulkLoadLoopSize;
 
-                int loopSize = 500;
+                //check for an override to the default.
+                if (int.TryParse(ConfigurationManager.AppSettings["BulkLoadLoopSize"], out int tempLoopSize))
+                {
+                    loopSize = tempLoopSize >= 0 ? tempLoopSize : defaultBulkLoadLoopSize;
+                }                
 
                 int currentLocation = 0; 
                 int numberOfLoops = (int)Math.Ceiling((decimal)(loadItems.Count - currentLocation) / loopSize);
@@ -903,16 +910,15 @@ from	[Load] L
                     //bulk load rowindex starts with 2!
                     var loadItemColumns = Query<LoadItemColumn>("select * from LoadItemColumn where LoadID = @id and RowIndex between @beginItemNumber and @endItemNumber", new { id = load.ID, beginItemNumber = beginItemNumber+ rowIndexStartNumber, endItemNumber = endItemNumber + rowIndexStartNumber }).ToList();
 
-                    //create API models
-                    //foreach (var item in loadItems)
+                    //create API models                    
                     for(int currentIndex = beginItemNumber; currentIndex < endItemNumber; currentIndex++)
-                    {
+                    {                        
                         var item = loadItems[currentIndex];
                         var fieldsToSkip = new List<string>();
                         string assetTypeLevel = null;
 
                         var rowColumns = loadItemColumns.Where(l => l.RowIndex == item.RowIndex).ToList();
-
+                        
                         if (assetType.Class == AssetTypeClass.Model)
                         {
                             assetTypeLevel = assetTypeLevels[item.Level];
@@ -1011,6 +1017,7 @@ from	[Load] L
 
                     beginItemNumber += loopSize;
                     endItemNumber += loopSize;
+                    if (endItemNumber > loadItems.Count) endItemNumber = loadItems.Count;
                 }
 
                 if (putAssets.Any())
