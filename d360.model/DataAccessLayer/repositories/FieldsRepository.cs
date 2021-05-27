@@ -1806,6 +1806,32 @@ from	IntersectType I
                         Type = DataType.Text.ToString()
                     }).ToList();
             }
+            else if (fieldType.Type == "RefListRelationship")
+            {
+                var fields = Company.Query<FieldType>($@"
+                        declare @referenceId int;
+
+                        set @referenceId = (select top 1 I.ObjectID from fieldtype FT
+                        inner join [Intersect] I on I.IntersectTypeID = FT.LookupObjectID
+                        where FT.[Type] = 'RefListRelationship' and FT.ID = @fieldTypeId)
+
+                        select * from FieldType where
+                        objectid = @referenceid and Object = 'ReferenceItemType'
+                        ", new { fieldTypeId = fieldType.ID }).ToList();
+
+                fields.Add(new FieldType()
+                {
+                    Name = "Code",
+                    Type = DataType.Text.ToString()
+                });
+
+                if (handleFiltersAsString)
+                {
+                    fields.ForEach(x => x.Type = DataType.Text.ToString());
+                }
+
+                return fields;
+            }
             else
             {
 

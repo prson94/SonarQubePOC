@@ -368,10 +368,10 @@ namespace d360.model.helpers
                 }
 
                 token.LoadFieldType(fieldType, null);
-                token.UpdateTokenValueForType();
 
                 if (!token.IsNullValue)
                 {
+                    token.UpdateTokenValueForType();
                     return $"({token.Field} {token.GetSQLOperator(token.@operator)} '{token.ValueAsString}')";
                 }
                 else
