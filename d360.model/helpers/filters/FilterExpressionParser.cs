@@ -176,11 +176,6 @@ namespace d360.model.helpers
 
             StringBuilder sb = new StringBuilder();
 
-            if (!ValidateString(filterString))
-            {
-                throw new FormatException("Filter expression contains unclosed quotations or brackets.");
-            }
-
             Tokenize(filterString);
 
             if (parseType == FilterExpressionParseType.Relationships)
@@ -219,6 +214,12 @@ namespace d360.model.helpers
                 var matchValue = matchGroups[j].Value;
                 filterString = filterString.Replace(matchValue, key.ToLower());
                 valuesMap.Add(new Tuple<string, string>(key, matchValue));
+            }
+
+
+            if (!ValidateString(filterString))
+            {
+                throw new FormatException("Filter expression contains unclosed quotations or brackets.");
             }
 
             string[] tokens = GetTokens(ref filterString);
