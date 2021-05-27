@@ -1025,6 +1025,7 @@
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.textarea.component.ts" />
+    <None Include="Scripts\app\components\hierarchy\hierarchy-item-structure.component.less" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy-item-structure.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy-list.component.ts" />

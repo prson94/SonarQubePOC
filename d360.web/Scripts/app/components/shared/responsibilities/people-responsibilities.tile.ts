@@ -1,4 +1,4 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Output, Component, OnChanges, SimpleChange, ChangeDetectorRef } from '@angular/core';
 import { ResponsibilityItem, ResponsibilityItemDetail, IResponsibilityService, ResponsibilityItemDetailV2 } from '../../../models/responsibility.model';
 import { FormMessage } from '../../../models/form.model';
 import { ResponsibilityService } from '../../../services/responsibility.service';
@@ -20,6 +20,8 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     @Input() assetUid: string;
     @Input() overrideItemID: number;
     @Input() title: string = "Responsibilities";
+    @Input() showTitle: boolean = true;
+    @Input() showRowTools: boolean = true;
 
     public deleteCallback: Function;
    
@@ -31,7 +33,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     private isDeleting = false;
     private isAdding = false;
 
-    constructor(private responsibilityService: ResponsibilityService, private permissionsService: PermissionsService, protected messagesService: MessagesObservableService, private router: Router) {
+    constructor(private responsibilityService: ResponsibilityService, private permissionsService: PermissionsService, protected messagesService: MessagesObservableService, private router: Router, private ref: ChangeDetectorRef) {
         super();
     }
 
@@ -57,7 +59,6 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     }
 
     load(): void {
-
         if (this.assetUid == null)
             return;
 
@@ -65,10 +66,12 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
         
         this.responsibilityService.getResponsibilityDetail(this.assetUid)
             .subscribe(data => {
-                this.responsibilities = data.filter(x => x.IsVisible==true);
+                this.responsibilities = data.filter((x) => x.IsVisible === true);
                 this.selectedRow = this.responsibilities[0];
                 this.isLoading = false;
+                this.ref.markForCheck();
             });
+
         this.loadPermissionsById(this.permissionsService, this.assetID);
     }
 
