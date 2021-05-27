@@ -814,11 +814,10 @@ on          (
 when matched then
 	update
 	set	T.FirstName = S.FirstName,
-		T.LastName = S.LastName,
-		T.Status = S.UserStatus
+		T.LastName = S.LastName
 when not matched by target then
-    insert  (Username, [Password], LastName, FirstName, Email, [Status])
-    values  (S.Email, 'not set', S.LastName, S.FirstName, S.Email, S.UserStatus)
+    insert  (Username, [Password], LastName, FirstName, Email)
+    values  (S.Email, 'not set', S.LastName, S.FirstName, S.Email)
 output S.LoadID, S.RowIndex, inserted.ID, inserted.[uid], $action into #UsersResult;", transaction: trans);
 
                     community.Execute(@"
