@@ -256,9 +256,6 @@ var dataProfileIdsSql = $@"
 
             results.items = JsonConvert.DeserializeObject<List<DataProfileModel>>(string.IsNullOrEmpty(json) ? "[]" : json);
 
-            results.items.Where(x => x.topK?.Count == 0).ToList().ForEach(x=>x.topK=null);
-            results.items.Where(x => x.bottomK?.Count == 0).ToList().ForEach(x => x.bottomK = null);
-
             if (includeTotal)
             {
                 var countSQL = $@"
