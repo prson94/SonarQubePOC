@@ -6,10 +6,7 @@ namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]    
     public class HelpResource : BaseIntObject, IIntObject
-    {
-        [DataMember]
-        public HelpResourceType Type { get; set; }
-
+    {        
         [DataMember]
         public string Name { get; set; }
 
