@@ -815,4 +815,19 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     isRequired() {
         return (this.field.Validations && this.field.Validations.some(x => x.rule == 'required') == true) || this.field.Required;
     }
+
+    getName(item: string) {
+        var path = item.split('].[');
+        var name = path[path.length - 1].replace('[', '').replace(']', '');
+        return name;
+    }
+    getPath(item: string) {
+        let tokens = item.split('].[');
+        if (tokens.length > 0) {
+            let path = item.replace(/\]./g, ' > ').replace(/\[/g, '').replace(/\]/g, '');
+            return path;
+        } else {
+            return item.replace(/\[/g, '').replace(/\]/g, '');
+        }
+    }
 }
