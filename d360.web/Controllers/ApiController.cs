@@ -3305,8 +3305,20 @@ from    (
                             }
                             });
                         }
-                    }
-                    load = null;
+                        else if(load.Action == "Promotion") // if bulk load promote display current status of the job
+                        {
+                            var currentStatus = GetPromotionStatusMessage(load);                            
+                            
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Status", FieldName = "Status", FieldDescription = "", Value = currentStatus  }
+                            }
+                            });
+                        }
+                    }                    
                     break;
                 #endregion
                 case SystemObjects.Policy:
@@ -4162,6 +4174,44 @@ where v.id = {0}", id)).FirstOrDefault();
             }
 
             return model;
+        }
+
+        private string GetPromotionStatusMessage(LoadDetail load)
+        {
+            var status = "Queued...";
+            if (Company.LoadItems.Any(x => x.LoadID == load.ID))
+            {
+                status = "Processing spreadsheet data...";
+
+                //once there are load items and put / post execution are both null
+                var loadInfo = Company.Loads.FirstOrDefault(x => x.ID == load.ID);
+                //once a post / put uid is in place
+                if (loadInfo != null && (loadInfo.PostExecutionID.HasValue || loadInfo.PutExecutionID.HasValue))
+                {
+                    status = "Submitted requests waiting processing...";
+                    //check if post / put uid is started
+                    if (loadInfo.PostExecutionID.HasValue)
+                    {
+                        var post = Company.ApiExecutions.FirstOrDefault(x => x.ExecutionID == loadInfo.PostExecutionID.Value);
+
+                        if(post != null && post.ProcessingStartedOn.HasValue)
+                        {
+                            status = "Submitted requests processing data...";
+                        }
+                        else
+                        {
+                            var put = Company.ApiExecutions.FirstOrDefault(x => x.ExecutionID == loadInfo.PutExecutionID.Value);
+
+                            if (put != null && post.ProcessingStartedOn.HasValue)
+                            {
+                                status = "Submitted requests processing data...";
+                            }
+                        }
+                    }
+                }
+            }
+
+            return status;
         }
 
         private string getUserLastSeenText(DateTime? dateLastLoggedIn)
