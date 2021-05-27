@@ -1357,6 +1357,14 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
+                //to be removed with new filtering UI component
+                //current(sprint 5/2021) filtering uses contains on all fields, so we need to avoid value checks on numbers, decimals etc...
+                bool handleFiltersAsString = false;
+                if (qparams.Any(x => x.Key.ToLower() == "handlefiltersasstring"))
+                {
+                    bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "handlefiltersasstring").Value, out handleFiltersAsString);
+                }
+
                 if (qparams.Any(x => x.Key.ToLower() == "simplefilter"))
                 {
                     simpleFilter = $"%{qparams.FirstOrDefault(x => x.Key.ToLower() == "simplefilter").Value}%";
@@ -1364,68 +1372,7 @@ namespace d360.web.Controllers.V2
 
                 if (qparams.Any(x => x.Key.ToLower() == "filter"))
                 {
-                    var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
-                    var definition = ftl.ParseComplexLookupDefinition();
-
-                    var mappings = definition.GetFieldMapings();
-                    var fieldTypeIds = mappings.Where(x => x.Value != null).Select(x => x.Value.FieldTypeID).Where(x => x > 0).ToList();
-                    List<FieldType> fields = Company.FieldTypes.Where(x => fieldTypeIds.Contains(x.ID)).AsNoTracking().ToList();
-                    foreach (var f in mappings)
-                    {
-                        if (f.Value == null)
-                        {
-                            var ft = new FieldType();
-                            ft.Name = f.Key;
-                            ft.Type = DataType.Text.ToString();
-                            fields.Add(ft);
-                            continue;
-                        }
-
-                        if (f.Value.FieldTypeID > 0 && !f.Value.FieldTypeName.StartsWith("Related Item."))
-                        {
-                            var ft = fields.FirstOrDefault(x => x.ID == f.Value.FieldTypeID);
-                            ft.Name = f.Key;
-
-                        }
-                        else if (f.Value.FieldTypeName == "DisplayValue" || f.Value.FieldTypeName.Contains("_assetPath"))
-                        {
-                            var ft = new FieldType();
-                            ft.Name = f.Key;
-                            ft.FriendlyName = f.Value.FieldTypeName;
-                            ft.Type = DataType.Text.ToString();
-                            fields.Add(ft);
-                        }
-                        else if (f.Value.FieldTypeName.StartsWith("Related Item."))
-                        {
-                            var it = Company.IntersectTypes.FirstOrDefault(x => x.ID == f.Value.FieldTypeID);
-                            var ft = new FieldType();
-
-                            ft.Name = f.Key;
-                            ft.FriendlyName = f.Value.FieldTypeName;
-                            ft.Type = DataType.Relationship.ToString();
-                            ft.LookupObjectType = "IntersectType";
-                            ft.LookupObjectID = it.ID;
-                            fields.Add(ft);
-
-                            var ft2 = new FieldType();
-
-                            ft2.Name = "Related:" + it.uid; ;
-                            ft2.FriendlyName = f.Value.FieldTypeName;
-                            ft2.Type = DataType.Relationship.ToString();
-                            ft2.LookupObjectType = "IntersectType";
-                            ft2.LookupObjectID = it.ID;
-                            fields.Add(ft2);
-                        }
-                        else
-                        {
-                            var ft = new FieldType();
-                            ft.Name = f.Key;
-                            ft.FriendlyName = f.Value.FieldTypeName;
-                            ft.Type = DataType.Text.ToString();
-                            fields.Add(ft);
-                        }
-                    }
-
+                    List<FieldType> fields = fieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, handleFiltersAsString);
 
                     var filter = qparams.FirstOrDefault(x => x.Key.ToLower() == "filter").Value;
                     var filterExpressionParser = new FilterExpressionParser(this.Company, FilterExpressionParseType.ComplexLookupField, false, false, true);

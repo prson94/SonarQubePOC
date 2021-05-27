@@ -354,7 +354,7 @@ namespace d360.model.helpers
                 if (ftRelationship != null)
                 {
                     string relField = ftQueryName.Replace("_IntersectTypeUid", "_Uid");
-                    return $"({ftQueryName} eq {intersectTypeUid} and {relField} eq {intersectUid})";
+                    return $"({ftQueryName} = '{intersectTypeUid}' and {relField} = '{intersectUid}')";
                 }
             }
             else
