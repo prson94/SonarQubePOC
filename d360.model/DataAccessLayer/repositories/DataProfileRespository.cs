@@ -182,7 +182,7 @@ namespace d360.model.DataAccessLayer
             var decendentSQL = $@"
                                 drop table if exists #assetIds
                                 create table #assetIds (
-	                                id int
+	                                id bigint
                                 )
 
                                 insert into #assetIds (id) values (@assetId)
@@ -191,12 +191,12 @@ namespace d360.model.DataAccessLayer
                                 BEGIN
                                     drop table if exists #childIds
                                     create table #childIds (
-	                                    id int
+	                                    id bigint
                                     )
 
                                     drop table if exists #parentIds
                                     create table #parentIds (
-	                                    id int
+	                                    id bigint
                                     )
                                 
                                     insert into #parentIds (id) values (@assetId)
@@ -224,7 +224,7 @@ namespace d360.model.DataAccessLayer
 var dataProfileIdsSql = $@"
                                 drop table if exists #assetdataprofileids
                                 create table #assetdataprofileids (
-	                                id int
+	                                id bigint
                                 )
                                 
                                 insert into #assetdataprofileids
