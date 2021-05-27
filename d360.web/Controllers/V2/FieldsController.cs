@@ -823,7 +823,13 @@ namespace d360.web.Controllers.V2
                             {
                                 foreach (var f in definition.Fields)
                                 {
-                                    var r = relationItems.Where(i => i.AssetTypeUid == f.AssetTypeUid).FirstOrDefault();
+                                    if(f.RelationIndex == null)
+                                    {
+                                        f.RelationIndex = relationItems.FindIndex(i => i.AssetTypeUid == f.AssetTypeUid);
+                                    }
+
+                                    var r = ((int)f.RelationIndex > -1) ? relationItems[(int)f.RelationIndex] : null;
+
                                     if (r != null)
                                     {
                                         r.DisplayFields.Add(f);
