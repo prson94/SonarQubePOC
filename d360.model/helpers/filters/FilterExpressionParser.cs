@@ -349,7 +349,7 @@ namespace d360.model.helpers
             if (token.Field.ToLower().StartsWith("related:"))
             {
                 var intersectTypeUid = token.Field.ToLower().Replace("related:", "");
-                var intersectUid = token.ValueAsString;
+                var intersectUid = token.EscapedValueAsString;
                 var ftRelationship = fieldTypes.Where(x => x.Name.ToLower() == token.Field.ToLower()).FirstOrDefault();
                 var ftQueryName = fieldTypes.FirstOrDefault(x => x.LookupObjectID == ftRelationship.LookupObjectID && x.LookupObjectType == ftRelationship.LookupObjectType && ftRelationship.Name != x.Name).Name;
                 if (ftRelationship != null)
@@ -373,7 +373,7 @@ namespace d360.model.helpers
                 if (!token.IsNullValue)
                 {
                     token.UpdateTokenValueForType();
-                    return $"({token.Field} {token.GetSQLOperator(token.@operator)} '{token.ValueAsString}')";
+                    return $"({token.Field} {token.GetSQLOperator(token.@operator)} '{token.EscapedValueAsString}')";
                 }
                 else
                 {

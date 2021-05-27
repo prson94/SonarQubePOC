@@ -59,6 +59,7 @@ namespace d360.model.helpers
                 return field;
             }
         }
+
         public string ValueAsString
         {
             get
@@ -67,11 +68,11 @@ namespace d360.model.helpers
             }
         }
 
-        public object ValueAsObject
+        public string EscapedValueAsString
         {
             get
             {
-                return value;
+                return value.ToString().Replace("'", "''");
             }
         }
 
@@ -558,7 +559,7 @@ namespace d360.model.helpers
                     value = (int)match.ID;
                     break;
                 default:
-                    
+
 
                     value = value.ToString().Trim('\'').Replace("&apos;", "'");
                     break;
