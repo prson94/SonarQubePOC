@@ -131,15 +131,14 @@ namespace d360.model.helpers
 
             Tokenize(filterString);
 
-            string query = "";
+            StringBuilder query = new StringBuilder();
 
             foreach (var item in this.FilterTokens)
             {
-                query += ParseTokensForComplexFields(item);
+                query.Append(ParseTokensForComplexFields(item));
             }
 
-
-            return !string.IsNullOrEmpty(query) ? "(" + query + ")" : "";
+            return query.Length > 0 ? $"({query})" : "";
         }
 
         public string Parse(string filterString, out Dictionary<string, object> sqlParams, out List<int> fieldIds)

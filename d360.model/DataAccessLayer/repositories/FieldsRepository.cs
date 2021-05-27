@@ -1790,13 +1790,13 @@ from	IntersectType I
         {
             if (fieldType.Type == "OwnershipLookup")
             {
-                List<string> allowedFields = new List<string>()
+                List<string> allowedFields = new List<string>
                         {
                             "ResourceItemUrl","SecurityAssetName","Context","ResourceUid","ResponsibilityTypeName","ResourceName","SecurityAssetUid"
                         };
 
                 return allowedFields.Select(x =>
-                    new FieldType()
+                    new FieldType
                     {
                         Name = x,
                         Type = DataType.Text.ToString()
@@ -1815,7 +1815,7 @@ from	IntersectType I
                         objectid = @referenceid and Object = 'ReferenceItemType'
                         ", new { fieldTypeId = fieldType.ID }).ToList();
 
-                fields.Add(new FieldType()
+                fields.Add(new FieldType
                 {
                     Name = "Code",
                     Type = DataType.Text.ToString()
@@ -1876,7 +1876,7 @@ from	IntersectType I
 
                         var ft2 = new FieldType();
 
-                        ft2.Name = "Related:" + it.uid; ;
+                        ft2.Name = "Related:" + it.uid;
                         ft2.FriendlyName = f.Value.FieldTypeName;
                         ft2.Type = DataType.Relationship.ToString();
                         ft2.LookupObjectType = "IntersectType";
