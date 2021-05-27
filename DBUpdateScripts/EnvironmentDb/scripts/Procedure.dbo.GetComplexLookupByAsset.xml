@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Procedure.dbo.GetComplexLookupByAsset-v45">
-  <comment>GOV-14369</comment>
+  <changeSet author="TKlok" id="Procedure.dbo.GetComplexLookupByAsset-v46">
+  <comment>GOV-14819</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -86,9 +86,20 @@ set nocount on;
 					) R
 			where	O.FieldTypeID = @fieldTypeId;
 
-		insert into @fields (AssetTypeUid, Object, ObjectID, FieldTypeID, FieldTypeName, [Filter], OverrideDisplayName, DisplayOrder, SortOrder, Show, Width, FriendlyName)
-			select		F.*,
-						FT.FriendlyName
+		insert into @fields (AssetTypeUid, Object, ObjectID, FieldTypeID, FieldTypeName, [Filter], OverrideDisplayName, DisplayOrder, SortOrder, Show, Width, FriendlyName, RelationRowNumber)
+			select		F.AssetTypeUid,
+						F.Object,
+						F.ObjectID,
+						F.FieldTypeID,
+						F.FieldTypeName,
+						F.[Filter],
+						F.OverrideDisplayName,
+						F.DisplayOrder,
+						F.SortOrder,
+						F.Show,
+						F.Width,
+						FT.FriendlyName,
+						F.RelationIndex + 1 as RelationRowNumber
 			from		FieldTypeLookup O
 						cross apply OPENJSON(O.[Definition], N'lax $.Fields') with (
 							AssetTypeUid uniqueidentifier,
@@ -101,7 +112,8 @@ set nocount on;
 							DisplayOrder int, 
 							SortOrder int, 
 							Show bit, 
-							Width int
+							Width int,
+							RelationIndex int
 						) F
 						left join FieldType FT on FT.ID = F.FieldTypeID and F.FieldTypeName not like 'Related Item.%'
 			where		O.FieldTypeID = @fieldTypeId
@@ -144,7 +156,8 @@ set nocount on;
 		from	@fields F
 				left join AssetType A on A.Uid = F.AssetTypeUid;
 
-		update F set F.RRN = R.RN, F.RelationRowNumber = R.RowNumber from @fields F inner join @relations R on R.Object = F.Object and R.ObjectID = F.ObjectID;
+		update @fields SET RRN = cast(RelationRowNumber as varchar(5)) WHERE RelationRowNumber IS NOT NULL;
+		update F set F.RRN = R.RN, F.RelationRowNumber = R.RowNumber from @fields F inner join @relations R on R.Object = F.Object and R.ObjectID = F.ObjectID WHERE F.RelationRowNumber IS NULL;
 		update R set R.FieldCount = F.[Count] from @relations R cross apply (select count(1) as [Count] from @fields where Object = R.Object and ObjectID = R.ObjectID) F;
 
 		update	F
@@ -528,7 +541,7 @@ set nocount on;
 					cross apply openjson(F.Definition, N'lax $') with (DataType varchar(25)) J;
 
 			insert into @columns ([text], datafield, columntype, uidfield, urlfield, description, columnwidth, sort)
-				select coalesce(OverrideDisplayName, FriendlyName, replace(FieldTypeName, 'Related Item.', '')), DataField, ColumnDataType, BaseField+'Uid', BaseField+'Url', Description, Width, RowNumber from @fields where Show = 1 order by RowNumber;
+				select coalesce(OverrideDisplayName, FriendlyName, replace(FieldTypeName, 'Related Item.', '')), DataField, ColumnDataType, BaseField+'Uid', BaseField+'Url', Description, Width, Row_Number() over (order by RelationRowNumber, RowNumber) from @fields where Show = 1;
 
 			insert into @datafields
 				select distinct DataField, FieldDataType, RowNumber from @fields where DataField is not null
@@ -1429,31 +1442,35 @@ set nocount on;
 	end
 	else if @type = 'OwnershipLookup'
 	begin
-		-- {"DisplayAssignmentSource":false,"ExpandGroupMembership":true}
+		-- {"DisplayAssignmentSource":false,"ExpandGroupMembership":true, ResponsibilityType:6}
 		declare @displayAssignmentSource bit,
-				@expandGroupMembership bit
+				@expandGroupMembership bit,
+				@responsibilityType int
 
 		select	@displayAssignmentSource = R.DisplayAssignmentSource,
-				@expandGroupMembership = R.ExpandGroupMembership
+				@expandGroupMembership = R.ExpandGroupMembership,
+				@responsibilityType = R.ResponsibilityType
 		from	FieldTypeLookup O
-				cross apply OPENJSON(O.[Definition], N'lax $') with (DisplayAssignmentSource bit, ExpandGroupMembership bit) R
+				cross apply OPENJSON(O.[Definition], N'lax $') with (DisplayAssignmentSource bit, ExpandGroupMembership bit, ResponsibilityType int) R
 		where	O.FieldTypeID = @fieldTypeId;
 
 		if @countOnly = 0 or exists(select 1 from @filters) or @hasSimpleFilter = 1
 		begin
 			-- Common
-			insert into @columns ([text], datafield, columntype, sort) values ('Responsibility', 'ResponsibilityTypeName', 'textbox', 1);
+			if(@responsibilityType is null)
+			begin
+				insert into @columns ([text], datafield, columntype, sort) values ('Responsibility', 'ResponsibilityTypeName', 'textbox', 1);
+				insert into @datafields values ('ResponsibilityTypeName', 'string', 1);
+				insert into @selects values ('R.ResponsibilityTypeName', 'ResponsibilityTypeName');
+				insert into @orders values ('R.ResponsibilityTypeName', 1);
+			end
 			
-			insert into @datafields values ('ResponsibilityTypeName', 'string', 1);
 			insert into @datafields values ('ResourceName', 'preview', 2);
 			insert into @datafields values ('ResourceItemUrl', 'string', 4);
 			insert into @datafields values ('Context', 'html', 7);
 			
-			insert into @selects values ('R.ResponsibilityTypeName', 'ResponsibilityTypeName');
 			insert into @selects values ('R.Context', 'Context');
 			
-			insert into @orders values ('R.ResponsibilityTypeName', 1);
-
 			if @expandGroupMembership = 1
 			begin
 				if @displayAssignmentSource = 1
@@ -1493,6 +1510,12 @@ set nocount on;
 			end
 			
 			insert into @columns ([text], datafield, columntype, sort) values ('Context', 'Context', 'textbox', 4)
+		end
+		
+		if(@responsibilityType is not null)
+		begin
+			insert into @wheres
+			select concat('R.ResponsibilityTypeId = ', @responsibilityType);
 		end
 
 		insert into @tables values 
@@ -1669,7 +1692,9 @@ set nocount on;
 
 		if @type = 'OwnershipLookup'
 		begin
-			insert into @fields (FieldTypeName) values ('ResponsibilityTypeName'),('ResourceName'),('Context')
+			insert into @fields (FieldTypeName)
+			select [name] from @datafields
+			where [name] in ('ResponsibilityTypeName','ResourceName','Context')
 			
 			;with simpleFilterQueries as (
 				select CONCAT( FieldTypeName ,' like ', '@simpleFilter') as Filter 
