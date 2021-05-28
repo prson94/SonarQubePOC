@@ -243,8 +243,6 @@ namespace d360.model.DataAccessLayer
             var permissionsCriteria = "";
             DynamicParameters dbArgs = new DynamicParameters();
 
-            dbArgs.Add("assetIds", assetIDList);
-
             if (!string.IsNullOrEmpty(assigneeUidFilter))
             {
                 assigneeFilterCriteria = $" and s.[uid] = @assigneeUidFilter";
@@ -265,7 +263,31 @@ namespace d360.model.DataAccessLayer
                 dbArgs.Add("p", (int)Permission.ReadResponsibilities);
             }
 
-            var sql = $@"select 
+            var assetIDSQL = $@"drop table if exists #assetIds
+                                create table #assetIds (
+	                                id bigint
+                                )
+                                CREATE CLUSTERED INDEX ix_assetIds ON #assetIds ([id]);";
+
+
+            for (int i = 0; i < assetIDList.Count(); i ++)
+            {
+                if(i % 1000 == 0)
+                {
+                    assetIDSQL += $@"
+                                insert into #assetIds (id) VALUES ({assetIDList.ElementAt(i)})";                    
+                }
+                else
+                {
+                    assetIDSQL += $",({assetIDList.ElementAt(i)})";
+                }
+                              
+            }
+
+            var sql = $@"                                                
+                        {assetIDSQL}                        
+
+                       select 
                         a.id as 'AssetID',
 	                    'rule' as 'AssigneeMethod',
 	                    rsa.SecurityAsset,
@@ -280,11 +302,12 @@ namespace d360.model.DataAccessLayer
 	                    inner join [dbo].[ResponsibilityTypeRelationRule] rr on rr.ResponsibilityTypeID = rt.id
 	                    inner join [dbo].[ResponsibilityTypeRelation] rtr on rtr.ObjectID = rr.ObjectID and rtr.ObjectType = rr.[Object]
 	                    inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rsa on rsa.RuleID = rr.id
-	                    inner join [dbo].[assettype] att on att.[object] = rr.[object] and att.objectid = rr.objectid
+	                    inner join [dbo].[assettype] att on att.[object] = rr.[object] and att.objectid = rr.objectid                        
 	                    inner join [dbo].asset a on a.AssetTypeID = att.id
+                        inner join #assetIds assetIDs on a.id = assetIDs.id
                         cross apply [dbo].[GetSecurityAssetUid](rsa.SecurityAsset,rsa.SecurityAssetID) s
                     where
-	                    rr.applytotype = 1 and a.id in @assetIds
+	                    rr.applytotype = 1
                         {responsibilityFilterCriteria} {assigneeFilterCriteria} {permissionsCriteria}
                     union
                     select 
@@ -303,10 +326,11 @@ namespace d360.model.DataAccessLayer
 	                    inner join [dbo].[ResponsibilityTypeRelation] rtr on rtr.ObjectID = rr.ObjectID and rtr.ObjectType = rr.[Object]
 	                    inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rsa on rsa.RuleID = rr.id
 	                    inner join [dbo].[ResponsibilityRuleResultAsset] ra on ra.RuleID = rr.id	
-                        inner join [dbo].[asset] a on ra.assetid = a.id
+                        inner join #assetIds assetIDs on ra.assetid = assetIDs.id
+                        inner join [dbo].[asset] a on a.id = assetIDs.id
                         cross apply [dbo].[GetSecurityAssetUid](rsa.SecurityAsset,rsa.SecurityAssetID) s
                     where
-	                    rr.applytotype = 0 and ra.assetid in @assetIds
+	                    rr.applytotype = 0
                         {responsibilityFilterCriteria} {assigneeFilterCriteria} {permissionsCriteria}
                     union
                     select 
@@ -321,11 +345,12 @@ namespace d360.model.DataAccessLayer
                         s.[Name] as 'AssigneeName'
                     from
 	                    [dbo].[ResponsibilityType] rt
-	                    inner join [dbo].[ResponsibilityTypeRelationOverrideItem] oride on oride.ResponsibilityTypeID = rt.id	    
-                        inner join [dbo].[asset] a on a.id = oride.assetid
+	                    inner join [dbo].[ResponsibilityTypeRelationOverrideItem] oride on oride.ResponsibilityTypeID = rt.id	  
+                        inner join #assetIds assetIDs on oride.assetid = assetIDs.id
+                        inner join [dbo].[asset] a on a.id = assetIDs.id
                         cross apply [dbo].[GetSecurityAssetUid](oride.SecurityAsset,oride.SecurityAssetID) s                        
                     where
-	                    oride.assetid in @assetIds {responsibilityFilterCriteria} {overrideAssigneeFilterCriteria} {permissionsCriteria}";
+	                    1=1 {responsibilityFilterCriteria} {overrideAssigneeFilterCriteria} {permissionsCriteria}";
 
             return (await Company.Database.Connection.QueryAsync<ResponsibilityApiModel>(sql, dbArgs, null, timeout));
         }
