@@ -3050,5 +3050,59 @@ namespace d360.web.Controllers.V2
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
+
+        /// <summary>
+        /// Return all level names for asset type uid specified.
+        /// </summary>
+        /// <param name="assetTypeUid"></param>
+        [
+            HttpGet,
+            ApiExplorerSettings(IgnoreApi = true),
+            MapToApiVersion("2.0"),
+            Route("{assetTypeUid}/levels"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "true/false based on relationship exists on assettype.", typeof(bool)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+            ]
+        public async Task<HttpResponseMessage> GetAssetTypeLevels(Guid assetTypeUid)
+        {
+            var prefix = "Assets.GetAssetTypeLevels => ";
+            var errorMessage = "";
+
+            try
+            {
+                var query = $@"
+drop table if exists #levelNameMapping
+create table #levelNameMapping (Level int, Name nvarchar(250), Description nvarchar(4000))
+
+declare @levelCount int = (select top 1 HierarchyMaximumDepth from AssetType at where at.uid = @assetTypeUid)
+   while @levelCount > 0
+    begin
+        insert into #levelNameMapping (Level) values (@levelCount)
+
+        set @levelCount = @levelCount - 1
+    end
+
+update T
+set T.Name = ATL.Name,
+    T.Description = ATL.Description
+from #levelNameMapping T
+inner join AssetType at on at.uid = @assetTypeUid
+inner join AssetTypeLevel ATL on atl.assettypeid = at.id and atl.level = T.Level
+
+select Level, ISNULL(Name,'Level '+ cast(Level as nvarchar(10))) as Name, Description from #levelNameMapping order by [Level] asc";
+
+                var results = await Company.QueryAsync<dynamic>(query, new { assetTypeUid });
+
+                return Request.CreateResponse(HttpStatusCode.OK, results);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
     }
 }

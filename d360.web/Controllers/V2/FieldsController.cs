@@ -652,7 +652,7 @@ namespace d360.web.Controllers.V2
                 var disallowedScoreClasses = new List<AssetTypeClass>() {
                     AssetTypeClass.Organization,
                     AssetTypeClass.Fusion,
-                    AssetTypeClass.FusionAttribute,                    
+                    AssetTypeClass.FusionAttribute,
                     AssetTypeClass.User,
                     AssetTypeClass.ReferenceItemType,
                     AssetTypeClass.Diagram
@@ -823,7 +823,7 @@ namespace d360.web.Controllers.V2
                             {
                                 foreach (var f in definition.Fields)
                                 {
-                                    if(f.RelationIndex == null)
+                                    if (f.RelationIndex == null)
                                     {
                                         f.RelationIndex = relationItems.FindIndex(i => i.AssetTypeUid == f.AssetTypeUid);
                                     }
@@ -2045,11 +2045,12 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
             {
                 if (assetTypeUid == Guid.Empty && fieldName == "EvaluatedAssetClass")
                 {
-                    var classInfos = AssetTypeClass.BusinessAsset.GetAsList();
+                    var classInfos = AssetTypeClass.BusinessAsset.GetAsList().Where(x => x.ID == AssetTypeClass.BusinessAsset || x.ID == AssetTypeClass.TechnicalAsset);
                     if (!string.IsNullOrEmpty(filter))
                     {
                         classInfos = classInfos.Where(x => x.Name.ToLower(CultureInfo.InvariantCulture).Contains(filter.ToLower(CultureInfo.InvariantCulture).Trim('\''))
-                        || x.Value.ToLower(CultureInfo.InvariantCulture).Contains(filter.ToLower(CultureInfo.InvariantCulture).Trim('\''))).ToList();
+                        || x.Value.ToLower(CultureInfo.InvariantCulture).Contains(filter.ToLower(CultureInfo.InvariantCulture).Trim('\'')))
+                            .ToList();
                     }
 
                     if (skip.HasValue && take.HasValue)
