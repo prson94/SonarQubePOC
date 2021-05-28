@@ -2758,7 +2758,7 @@ namespace d360.model
 
             definition.Fields.ForEach(ft =>
             {
-                var assetIdx = assetTypes.IndexOf(ft.AssetTypeUid) + 1;
+                var assetIdx = (ft.RelationIndex ?? assetTypes.IndexOf(ft.AssetTypeUid)) + 1;
                 var fname = string.IsNullOrEmpty(ft.OverrideDisplayName) ? ft.FieldTypeName : ft.OverrideDisplayName;
 
                 if (ft.FieldTypeID > 0)
