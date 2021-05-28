@@ -13,7 +13,6 @@ namespace d360.model.helpers
     {
         private ICompanyContext CompanyContext;
 
-
         private int parameterIdx { get; set; }
         private string field { get; set; }
         public string @operator { get; set; }
@@ -60,11 +59,20 @@ namespace d360.model.helpers
                 return field;
             }
         }
+
         public string ValueAsString
         {
             get
             {
                 return value.ToString();
+            }
+        }
+
+        public string EscapedValueAsString
+        {
+            get
+            {
+                return value.ToString().Replace("'", "''");
             }
         }
 
@@ -367,14 +375,17 @@ namespace d360.model.helpers
         public void LoadFieldType(FieldType ft, List<string> fieldColumns)
         {
             fieldType = ft;
-            fieldColumn = fieldColumns.FirstOrDefault(x => x.Contains($"F" + fieldType.ID));
+            if (fieldColumn != null)
+            {
+                fieldColumn = fieldColumns.FirstOrDefault(x => x.Contains($"F" + fieldType.ID));
+            }
         }
         public void LoadRelationshipData(IntersectType it, AssetType at)
         {
             this.intersectType = it;
             this.assetType = at;
         }
-        private void UpdateTokenValueForType()
+        public void UpdateTokenValueForType()
         {
             CheckFieldValue();
 
@@ -428,7 +439,10 @@ namespace d360.model.helpers
                 this.AppendNullOperatorForNotOperators(fieldSql);
             }
 
-            sqlParamsRef.Add($"@filter_{parameterIdx}", value);
+            if (sqlParamsRef != null)
+            {
+                sqlParamsRef.Add($"@filter_{parameterIdx}", value);
+            }
 
         }
 
@@ -545,6 +559,8 @@ namespace d360.model.helpers
                     value = (int)match.ID;
                     break;
                 default:
+
+
                     value = value.ToString().Trim('\'').Replace("&apos;", "'");
                     break;
             }
@@ -691,7 +707,7 @@ namespace d360.model.helpers
             }
         }
 
-        private string GetSQLOperator(string value)
+        public string GetSQLOperator(string value)
         {
             switch (value)
             {
@@ -707,7 +723,7 @@ namespace d360.model.helpers
             }
         }
 
-        private string GetSQLNullOperator(string value)
+        public string GetSQLNullOperator(string value)
         {
             switch (value)
             {

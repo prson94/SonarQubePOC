@@ -448,7 +448,6 @@
     <Compile Include="Controllers\TaxonomyController.cs" />
     <Compile Include="Extensions\PowerBI.cs" />
     <Compile Include="Filters\AjaxValidationAntiForgeryTokenAttribute.cs" />
-    <Compile Include="Filters\CustomJSONContract.cs" />
     <Compile Include="Filters\ExceptionHandlingAttribute.cs" />
     <Compile Include="Filters\StringEnumControllerAttribute.cs" />
     <Compile Include="Filters\SwaggerContentTypesAttribute.cs" />
@@ -469,7 +468,6 @@
     <Compile Include="Models\Attributes\NonNullableParametersAttribute.cs" />
     <Compile Include="Models\ClientErrorModel.cs" />
     <Compile Include="Models\Diagram Models.cs" />
-    <Compile Include="Models\Extensions.cs" />
     <Compile Include="Models\Filter Models.cs" />
     <Compile Include="Models\Attributes\AiExceptionFilterAttribute.cs" />
     <Compile Include="Models\Attributes\AiHandleErrorAttribute.cs" />

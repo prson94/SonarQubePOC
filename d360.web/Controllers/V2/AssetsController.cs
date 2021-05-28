@@ -56,9 +56,10 @@ namespace d360.web.Controllers.V2
         IAssetRepository AssetRepository;
         ITagRepository tagRepository;
         IRelationshipRepository relationshipRepository;
+        IFieldsRepository fieldsRepository;
 
         public AssetsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IAssetRepository repository, ITagRepository tagRepository,
-            IRelationshipRepository relationshipRepository)
+            IRelationshipRepository relationshipRepository, IFieldsRepository fieldsRepository)
             : base(community, company)
         {
             QueueSource = queueSource;
@@ -66,6 +67,7 @@ namespace d360.web.Controllers.V2
             this.AssetRepository = repository;
             this.tagRepository = tagRepository;
             this.relationshipRepository = relationshipRepository;
+            this.fieldsRepository = fieldsRepository;
         }
 
         #endregion
@@ -1305,6 +1307,7 @@ namespace d360.web.Controllers.V2
                 bool returnuseUidUrls = true;
                 string orderBy = string.Empty;
                 string direction = string.Empty;
+                string filters = string.Empty;
 
                 if (qparams.Any(x => x.Key.ToLower() == "usefriendlynames"))
                 {
@@ -1354,26 +1357,27 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
+                //to be removed with new filtering UI component
+                //current(sprint 5/2021) filtering uses contains on all fields, so we need to avoid value checks on numbers, decimals etc...
+                bool handleFiltersAsString = false;
+                if (qparams.Any(x => x.Key.ToLower() == "handlefiltersasstring"))
+                {
+                    bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "handlefiltersasstring").Value, out handleFiltersAsString);
+                }
+
                 if (qparams.Any(x => x.Key.ToLower() == "simplefilter"))
                 {
                     simpleFilter = $"%{qparams.FirstOrDefault(x => x.Key.ToLower() == "simplefilter").Value}%";
                 }
 
-                DataTable advFilters = null;
                 if (qparams.Any(x => x.Key.ToLower() == "filter"))
                 {
+                    List<FieldType> fields = fieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, handleFiltersAsString);
+
                     var filter = qparams.FirstOrDefault(x => x.Key.ToLower() == "filter").Value;
-                    var filterExpressionParser = new FilterExpressionParser(this.Company, FilterExpressionParseType.CustomFields, false, false, true);
-                    advFilters = filterExpressionParser.ParseAsFiltersDataTable(filter);
-                }
-                else
-                {
-                    advFilters = new DataTable();
-                    advFilters.Columns.Add("FieldType");
-                    advFilters.Columns.Add("Operator");
-                    advFilters.Columns.Add("TypeID");
-                    advFilters.Columns.Add("OptionalIdentifier");
-                    advFilters.Columns.Add("FilterValues");
+                    var filterExpressionParser = new FilterExpressionParser(this.Company, FilterExpressionParseType.ComplexLookupField, false, false, true);
+                    filterExpressionParser.LoadFieldTypes(fields, null);
+                    filters = filterExpressionParser.ParseAsFiltersDataTable(filter);
                 }
 
                 if (qparams.Any(x => x.Key.ToLower() == "_order"))
@@ -1448,7 +1452,7 @@ namespace d360.web.Controllers.V2
                 dbArgs.Add("orderBy", orderBy);
                 dbArgs.Add("orderDirection", direction);
                 dbArgs.Add("useUidUrls", returnuseUidUrls);
-                dbArgs.Add("filters", advFilters.AsTableValuedParameter("dbo.AssetFiltersTable"));
+                dbArgs.Add("filters", filters);
 
                 var reader = await Company.QueryMultipleAsync(
                         "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0,0, @pageSize, @pageNum, @simpleFilter, @orderBy, @orderDirection, @useUidUrls, @filters",
@@ -1535,7 +1539,7 @@ namespace d360.web.Controllers.V2
                 dbArgsCount.Add("pageSize", pageSize);
                 dbArgsCount.Add("pageNum", pageNum);
                 dbArgsCount.Add("simpleFilter", simpleFilter);
-                dbArgsCount.Add("filters", advFilters.AsTableValuedParameter("dbo.AssetFiltersTable"));
+                dbArgsCount.Add("filters", filters);
 
                 var count = Company.Query<int>(
                      "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, 1, 0, @pageSize, @pageNum, @simpleFilter, '','', 0, @filters",
