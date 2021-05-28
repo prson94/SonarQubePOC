@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.dbo.GetComplexLookupByAsset-v46">
+  <changeSet author="TDuric" id="Procedure.dbo.GetComplexLookupByAsset-v47">
   <comment>GOV-14680</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -86,9 +86,20 @@ set nocount on;
 					) R
 			where	O.FieldTypeID = @fieldTypeId;
 
-		insert into @fields (AssetTypeUid, Object, ObjectID, FieldTypeID, FieldTypeName, [Filter], OverrideDisplayName, DisplayOrder, SortOrder, Show, Width, FriendlyName)
-			select		F.*,
-						FT.FriendlyName
+		insert into @fields (AssetTypeUid, Object, ObjectID, FieldTypeID, FieldTypeName, [Filter], OverrideDisplayName, DisplayOrder, SortOrder, Show, Width, FriendlyName, RelationRowNumber)
+			select		F.AssetTypeUid,
+						F.Object,
+						F.ObjectID,
+						F.FieldTypeID,
+						F.FieldTypeName,
+						F.[Filter],
+						F.OverrideDisplayName,
+						F.DisplayOrder,
+						F.SortOrder,
+						F.Show,
+						F.Width,
+						FT.FriendlyName,
+						F.RelationIndex + 1 as RelationRowNumber
 			from		FieldTypeLookup O
 						cross apply OPENJSON(O.[Definition], N'lax $.Fields') with (
 							AssetTypeUid uniqueidentifier,
@@ -101,7 +112,8 @@ set nocount on;
 							DisplayOrder int, 
 							SortOrder int, 
 							Show bit, 
-							Width int
+							Width int,
+							RelationIndex int
 						) F
 						left join FieldType FT on FT.ID = F.FieldTypeID and F.FieldTypeName not like 'Related Item.%'
 			where		O.FieldTypeID = @fieldTypeId
@@ -144,7 +156,8 @@ set nocount on;
 		from	@fields F
 				left join AssetType A on A.Uid = F.AssetTypeUid;
 
-		update F set F.RRN = R.RN, F.RelationRowNumber = R.RowNumber from @fields F inner join @relations R on R.Object = F.Object and R.ObjectID = F.ObjectID;
+		update @fields SET RRN = cast(RelationRowNumber as varchar(5)) WHERE RelationRowNumber IS NOT NULL;
+		update F set F.RRN = R.RN, F.RelationRowNumber = R.RowNumber from @fields F inner join @relations R on R.Object = F.Object and R.ObjectID = F.ObjectID WHERE F.RelationRowNumber IS NULL;
 		update R set R.FieldCount = F.[Count] from @relations R cross apply (select count(1) as [Count] from @fields where Object = R.Object and ObjectID = R.ObjectID) F;
 
 		update	F
@@ -528,7 +541,7 @@ set nocount on;
 					cross apply openjson(F.Definition, N'lax $') with (DataType varchar(25)) J;
 
 			insert into @columns ([text], datafield, columntype, uidfield, urlfield, description, columnwidth, sort)
-				select coalesce(OverrideDisplayName, FriendlyName, replace(FieldTypeName, 'Related Item.', '')), DataField, ColumnDataType, BaseField+'Uid', BaseField+'Url', Description, Width, RowNumber from @fields where Show = 1 order by RowNumber;
+				select coalesce(OverrideDisplayName, FriendlyName, replace(FieldTypeName, 'Related Item.', '')), DataField, ColumnDataType, BaseField+'Uid', BaseField+'Url', Description, Width, Row_Number() over (order by RelationRowNumber, RowNumber) from @fields where Show = 1;
 
 			insert into @datafields
 				select distinct DataField, FieldDataType, RowNumber from @fields where DataField is not null
@@ -1422,6 +1435,7 @@ set nocount on;
 		declare @displayAssignmentSource bit,
 				@expandGroupMembership bit,
 				@responsibilityType int
+
 		select	@displayAssignmentSource = R.DisplayAssignmentSource,
 				@expandGroupMembership = R.ExpandGroupMembership,
 				@responsibilityType = R.ResponsibilityType
@@ -1486,6 +1500,7 @@ set nocount on;
 			insert into @wheres
 			select concat('R.ResponsibilityTypeId = ', @responsibilityType);
 		end
+
 		insert into @tables values 
 			(' from [dbo].[ResponsibilityDetail] R'),
 			('inner join Asset A on A.ID = @assetId');

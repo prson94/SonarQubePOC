@@ -1429,7 +1429,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             return;
         var definitionArray: Relation[] = [];
         var fieldsArray: DefinitionField[] = [];
-        this.model.RelationItems.forEach(x => {
+        this.model.RelationItems.forEach((x, i) => {
             let definition = {
                 IntersectTypeUid: x.IntersectTypeUid,
                 AssetTypeUid: x.AssetTypeUid,
@@ -1437,7 +1437,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 Direction: Direction[x.Direction]
             };
 
-            let mappedFields: DefinitionField[] = x.DisplayFields.filter(x => x.Show || x.Filter !== '' || x.SortOrder).map((f) => {
+            let mappedFields: DefinitionField[] = x.DisplayFields.filter(xf => xf.Show || xf.Filter !== '' || xf.SortOrder).map((f) => {
                 return {
                     AssetTypeUid: x.AssetTypeUid,
                     FieldTypeName: f.FieldTypeName,
@@ -1446,7 +1446,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     DisplayOrder: f.DisplayOrder,
                     SortOrder: f.SortOrder,
                     Show: f.Show,
-                    Width: f.Width
+                    Width: f.Width,
+                    RelationIndex: i
                 };
             });
             definitionArray.push(definition);
