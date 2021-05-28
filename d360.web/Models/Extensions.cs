@@ -15,7 +15,12 @@ namespace d360.web.Models
     {
         public static FieldTypeComplexLookupDefinition ParseComplexLookupDefinition(this FieldTypeLookup lookup)
         {
-            return JsonConvert.DeserializeObject<FieldTypeComplexLookupDefinition>(lookup.Definition);
+            FieldTypeComplexLookupDefinition definition = JsonConvert.DeserializeObject<FieldTypeComplexLookupDefinition>(lookup.Definition);
+            foreach(var f in definition.Fields.Where(f => f.RelationIndex == null)) {
+                f.RelationIndex = definition.Relations.FindIndex(r => r.AssetTypeUid == f.AssetTypeUid);
+            }
+            return definition;
+            
         }
 
         public static FieldTypeOwnershipLookupDefinition ParseOwnershipLookupDefinition(this FieldTypeLookup lookup)
@@ -44,7 +49,7 @@ namespace d360.web.Models
             int relatedItemIdx = 0;
             definition.Fields.ForEach(ft =>
             {
-                var assetIdx = assetTypes.IndexOf(ft.AssetTypeUid) + 1;
+                var assetIdx = (ft.RelationIndex ?? assetTypes.IndexOf(ft.AssetTypeUid)) + 1;
                 var fname = string.IsNullOrEmpty(ft.OverrideDisplayName) ? ft.FieldTypeName : ft.OverrideDisplayName;
 
                 if (ft.FieldTypeID > 0)

@@ -1,102 +1,131 @@
-﻿<div class="row">
-    <div class="col s12">        
+﻿<div class="row hierarchy-grid">
+    <div class="col s12">
         <div class="tile tile-detail">
-            <header *ngIf="!showDelete && !showEditor">
-                &nbsp; <d3s-tile-actions [hasAdd]="hasAddAssetPermissions()"
-                                         [hasExport]="true"
-                                         [isExportDisabled]="!canExportRecords()"
-                                         [exportDisabledMessage]="'Export not available for over ' + maxExportRows + ' rows'"
-                                         (addClick)="showAdd(0)"
-                                         (exportClick)="exportExcel(0)"></d3s-tile-actions>
-            </header>
             <div *ngIf="!showDelete && !showEditor && assetType && assetType.Description && assetType.Description.length >0"
                  [innerHtml]="assetType.Description"
                  class="item-description"></div>
-            <d3s-loading [isLoading]="isLoading"></d3s-loading>
-            <p-treeTable #treeTable
-                         [pageLinks]="3"
-                         [paginator]="true"
-                         [rows]="rowsPerPage"
-                         [rowsPerPageOptions]="defaultPagingOptions"
-                         *ngIf="!isLoading && !showDelete && !showEditor"
-                         [value]="treeNodeArray"
-                         selectionMode="single"
-                         [(selection)]="selected"
-                         styleClass="breadcrumbTree treetable"
-                         [style]="{'line-height':'25px'}"
-                         [globalFilterFields]="filterColumns"
-                         (onFilter)="expandNodes()"
-                         dataKey="AssetUid">
-                <ng-template pTemplate="caption">
-                    <div>
-                        <input type="text" #inputBox pInputText placeholder="Search" (input)="treeTable.filterGlobal($event.target.value, 'contains')" style="width: 100%;margin-bottom:10px;">
+
+            <div class="grid-actions-header" *ngIf="!showDelete && !showEditor">
+                <div class="simple-search">
+                    <ig-search-field mode="Keypress"
+                                     [debounce]="600"
+                                     (onSearch)="loadNodes()"
+                                     [(ngModel)]="simpleFilterValue"
+                                     [infoTooltip]="simpleSearchTooltipHTML">
+                    </ig-search-field>
+                </div>
+                <advanced-filtering [loadIdentifier]="assetTypeUid" [gridType]="'Tree'" [treeMaxLevel]="maxLevelAllowed" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+                <div class="grid-action-buttons">
+                    <button *ngIf="hasAddAssetPermissions()"
+                            igButton
+                            pTooltip="Add new asset"
+                            tooltipPosition="top"
+                            tooltipStyleClass="ig-tooltip"
+                            class="ig-button-primary"
+                            icon="fa-plus"
+                            (click)="showAdd(0)">
+                    </button>
+
+                    <div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+                         tooltipPosition="left"
+                         tooltipStyleClass="ig-tooltip">
+                        <button igButton
+                                [disabled]="!canExportRecords() || isExportInProgress"
+                                icon="fa-download"
+                                [loading]="isExportInProgress"
+                                (click)="exportExcel(0)">
+                        </button>
                     </div>
-                </ng-template>
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th *ngFor="let column of columns"
-                            [ttSortableColumn]="column.sortable === true ? column.datafield : null">
-                            {{column.text}}
-                            <p-treeTableSortIcon *ngIf="column.sortable === true" [field]="column.datafield"></p-treeTableSortIcon>
-                        </th>
-                        <th style="width: 40px"></th>
-                        <th style="width: 40px"></th>
-                        <th style="width: 40px"></th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body"
-                             let-rowNode
-                             let-item="rowData">
-                    <tr [ttSelectableRow]="rowNode">
-                        <td class="no-text-overflow" *ngFor="let column of columns; let i = index">
-                            <p-treeTableToggler [rowNode]="rowNode" *ngIf="i === 0"></p-treeTableToggler>
-                            <ng-container *ngIf="i === 0">
-                                <a (click)="showHierarchy(item)"
-                                   [ngStyle]="setTreeNodeStyles(rowNode.node)"
-                                   class="link">
+                </div>
+            </div>
+
+            <div class="tree-wrapper">
+                <p-treeTable #treeTable
+                             *ngIf="!showDelete && !showEditor"
+                             [pageLinks]="3"
+                             [paginator]="true"
+                             [rows]="rowsPerPage"
+                             [rowsPerPageOptions]="defaultPagingOptions"
+                             [value]="treeNodeArray"
+                             selectionMode="single"
+                             [(selection)]="selected"
+                             styleClass="breadcrumbTree treetable"
+                             [style]="{'line-height':'25px'}"
+                             [globalFilterFields]="filterColumns"
+                             dataKey="AssetUid"
+                             [loading]="isLoading"
+                             [loadingIcon]="'fa fa-spinner fa-spin'"
+                             [showLoader]="true"
+                             (onNodeExpand)="nodeExpanded($event)"
+                             (onNodeCollapse)="nodeCollapsed($event)">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th *ngFor="let column of columns"
+                                [ttSortableColumn]="column.sortable === true ? column.datafield : null"
+                                (click)="onSort()">
+                                {{column.text}}
+                                <p-treeTableSortIcon *ngIf="column.sortable === true" [field]="column.datafield"></p-treeTableSortIcon>
+                            </th>
+                            <th style="width: 40px"></th>
+                            <th style="width: 40px"></th>
+                            <th style="width: 40px"></th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body"
+                                 let-rowNode
+                                 let-item="rowData">
+                        <tr [ttSelectableRow]="rowNode">
+                            <td class="no-text-overflow" *ngFor="let column of columns; let i = index">
+                                <p-treeTableToggler [rowNode]="rowNode" *ngIf="i === 0"></p-treeTableToggler>
+                                <ng-container *ngIf="i === 0">
+                                    <a (click)="showHierarchy(item)"
+                                       [ngStyle]="setTreeNodeStyles(rowNode.node)"
+                                       class="link">
+                                        <d3s-dynamic-field-value [column]="column"
+                                                                 [fields]="fields"
+                                                                 [useApiName]="true"
+                                                                 [item]="item"></d3s-dynamic-field-value>
+                                    </a>
+                                </ng-container>
+                                <ng-container *ngIf="i !== 0">
                                     <d3s-dynamic-field-value [column]="column"
                                                              [fields]="fields"
                                                              [useApiName]="true"
                                                              [item]="item"></d3s-dynamic-field-value>
-                                </a>
-                            </ng-container>
-                            <ng-container *ngIf="i !== 0">
-                                <d3s-dynamic-field-value [column]="column"
-                                                         [fields]="fields"
-                                                         [useApiName]="true"
-                                                         [item]="item"></d3s-dynamic-field-value>
-                            </ng-container>
-                        </td>
-                        <td>
-                            <div class="RowTools">
-                                <a style="cursor:pointer;"
-                                   *ngIf="displayChildAdd(item?.Level)"
-                                   (click)="selected = rowNode.node; showAdd(item.Level)"><i class="fa fa-plus"></i></a>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="RowTools"
-                                 *ngIf="item.Permissions.ModifyAsset">
-                                <a style="cursor:pointer;"
-                                   (click)="selected = rowNode.node; showEditor = true;"><i class="fa fa-pencil"></i></a>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="RowTools"
-                                 *ngIf="item.Permissions.DeleteAsset">
-                                <a *ngIf="!rowNode.node.children || rowNode.node.children?.length == 0"
-                                   style="cursor:pointer;"
-                                   (click)="selected = rowNode.node; showDelete=true;"><i class="fa fa-trash-o"></i></a>
-                            </div>
-                        </td>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="summary">
-                    <d3s-grid-paging-info [first]="treeTable.first"
-                                          [rows]="treeTable.rows"
-                                          [totalRecords]="treeTable.totalRecords"></d3s-grid-paging-info>
-                </ng-template>
-            </p-treeTable>
+                                </ng-container>
+                            </td>
+                            <td>
+                                <div class="RowTools">
+                                    <a style="cursor:pointer;"
+                                       *ngIf="displayChildAdd(item?.Level)"
+                                       (click)="selected = rowNode.node; showAdd(item.Level)"><i class="fa fa-plus"></i></a>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="RowTools"
+                                     *ngIf="item.Permissions.ModifyAsset">
+                                    <a style="cursor:pointer;"
+                                       (click)="selected = rowNode.node; showEditor = true;"><i class="fa fa-pencil"></i></a>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="RowTools"
+                                     *ngIf="item.Permissions.DeleteAsset">
+                                    <a *ngIf="!rowNode.node.children || rowNode.node.children?.length == 0"
+                                       style="cursor:pointer;"
+                                       (click)="selected = rowNode.node; showDelete=true;"><i class="fa fa-trash-o"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="summary">
+                        <d3s-grid-paging-info [first]="treeTable.first"
+                                              [rows]="treeTable.rows"
+                                              [totalRecords]="treeTable.totalRecords"></d3s-grid-paging-info>
+                    </ng-template>
+                </p-treeTable>
+            </div>
+
 
             <d3s-asset-delete-editor *ngIf="showDelete"
                                      [uid]="selected?.data?.AssetUid"

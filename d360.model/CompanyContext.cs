@@ -154,6 +154,8 @@ namespace d360.model
 
         public DbSet<GraphFilter> GraphFilters { get; set; }
 
+        public DbSet<HelpResource> HelpResources { get; set; }
+
         public DbSet<Intersect> Intersects { get; set; }
 
         public DbSet<IntersectDetail> IntersectDetails { get; set; }                /* VIEW */

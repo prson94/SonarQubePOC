@@ -315,16 +315,10 @@ from	FollowDetail F
         #region Json
 
         [HttpGet, Route("HelpResources")]
-        public JsonNetResult GetHelpResources()
-        {            
-            var resources = Community
-                .Filter<CompanyHelpResource>(
-                    i => i.CompanyID == Community.CurrentCompanyID,
-                    i => i.HelpResource)
-                .OrderBy(i => i.HelpResource.Type)
-                .ThenBy(i => i.SortOrder)
-                .Select(i => i.HelpResource)
-                .ToList();
+        public async Task<JsonNetResult> GetHelpResources()
+        {
+            var sql = "select id, uid, type, name, description, url, sortindex from helpresource order by type, sortindex";
+            var resources = await Company.QueryAsync<HelpResource>(sql);
 
             return new JsonNetResult
             {

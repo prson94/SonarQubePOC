@@ -823,7 +823,13 @@ namespace d360.web.Controllers.V2
                             {
                                 foreach (var f in definition.Fields)
                                 {
-                                    var r = relationItems.Where(i => i.AssetTypeUid == f.AssetTypeUid).FirstOrDefault();
+                                    if(f.RelationIndex == null)
+                                    {
+                                        f.RelationIndex = relationItems.FindIndex(i => i.AssetTypeUid == f.AssetTypeUid);
+                                    }
+
+                                    var r = ((int)f.RelationIndex > -1) ? relationItems[(int)f.RelationIndex] : null;
+
                                     if (r != null)
                                     {
                                         r.DisplayFields.Add(f);
@@ -1710,13 +1716,9 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     }).Distinct().ToList();
                 relatedTypeList.ForEach(r =>
                 {
-                    if (list.ContainsKey($"Related Item.{r.Name}"))
+                    if (!list.ContainsKey($"Related Item.{r.Name} ({r.ID})"))
                     {
                         list.Add($"Related Item.{r.Name} ({r.ID})", r.ID);
-                    }
-                    else
-                    {
-                        list.Add($"Related Item.{r.Name}", r.ID);
                     }
                 });
 

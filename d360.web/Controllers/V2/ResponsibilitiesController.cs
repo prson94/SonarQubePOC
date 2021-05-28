@@ -881,6 +881,49 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Checks whether or not the asset with the given uid has any ownership records.
+        /// </summary>   
+        /// <returns>Returns true or false.</returns>
+        [
+            HttpGet,
+            Route("hasassignments/{assetUid}"),
+            ApiExplorerSettings(IgnoreApi = true),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A boolean representing whether or not the asset has ownership records.", typeof(bool)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Asset Uid item doesn't exist or is not a valid type for ownership."),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetAssetHasOwnership(Guid assetUid)
+        {
+            var prefix = "Responsibilities.GetAssetHasOwnership => ";
+            var errorMessage = "";
+
+            try
+            {
+                var validAsset = Company.Assets.Any(x => x.uid == assetUid);
+
+                if (!validAsset)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Asset does not exist for UID provided.")).ConfigureAwait(false);
+                }
+
+
+                var res = await ResponsibilityRepository.HasOwnership(assetUid);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res))).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
+            }
+        }
+
 
         /// <summary>
         /// Updates responsibility types of a given responsibility types list.

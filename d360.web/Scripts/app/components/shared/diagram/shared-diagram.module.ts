@@ -74,6 +74,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
 import { SearchFieldModule } from '../controls/search-field/search-field.component';
 import { DirectivesModule } from '../../../directives/directives.module';
+import { SharedResponsibilitiesModule } from '../responsibilities/shared-responsibilities.module';
 
 
 @NgModule({
@@ -99,6 +100,7 @@ import { DirectivesModule } from '../../../directives/directives.module';
         SiteModalModule,
         SharedRelationshipModule,
         SharedObjectDetailsModule,
+        SharedResponsibilitiesModule,
         //prime        
         CheckboxModule,
         ContextMenuModule,

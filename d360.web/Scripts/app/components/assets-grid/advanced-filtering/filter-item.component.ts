@@ -22,6 +22,8 @@ import { AssetService } from "../../../services/asset.service";
 export class FilterItemComponent implements OnInit, OnChanges {
     @Input() assetTypeUid: string = "";
     @Input() loadIdentifier: string = "";
+    @Input() gridType: string = "List";
+    @Input() treeMaxLevel: number = 1;
     @Input() condition: AdvancedFilterFieldCondition;
     @Input() fields: FieldTypeAPIModelFieldCondition[] = null;
     @Input() operators: OperatorModel[] = [];
@@ -108,11 +110,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 });
             }
 
-            if (SystemFields.GetSystemFieldDefinition().length > 0) {
+            var systemFields = SystemFields.GetSystemFieldDefinition(this.gridType, this.treeMaxLevel);
+            if (systemFields.length > 0) {
                 let systemFieldsGroup: SelectItemGroup = { value: "system-field", label: "System Fields", items: [] };
                 this.allFieldsDropdown.push(systemFieldsGroup);
 
-                SystemFields.GetSystemFieldDefinition().forEach((f) => {
+                systemFields.forEach((f) => {
                     systemFieldsGroup.items.push({ value: f.Name, label: f.FriendlyName });
                 });
             }

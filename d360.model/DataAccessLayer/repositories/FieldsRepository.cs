@@ -279,9 +279,10 @@ select	@pageSize as 'pageSize',
 				        DF.DisplayOrder,
 				        DF.SortOrder,
 				        DF.Show,
-				        DF.Width
+				        DF.Width,
+                        DF.RelationIndex
 		        from	OPENJSON(FTL.Definition) with (Fields nvarchar(max) as json) D
-				        outer apply OPENJSON(D.Fields) with (AssetTypeUid uniqueidentifier, FieldTypeID int, FieldTypeName nvarchar(250), [Filter] nvarchar(500), OverrideDisplayName nvarchar(250), DisplayOrder int, SortOrder int, Show bit, Width int) DF
+				        outer apply OPENJSON(D.Fields) with (AssetTypeUid uniqueidentifier, FieldTypeID int, FieldTypeName nvarchar(250), [Filter] nvarchar(500), OverrideDisplayName nvarchar(250), DisplayOrder int, SortOrder int, Show bit, Width int, RelationIndex int) DF
 				        left join AssetType AST on AST.Uid = DF.AssetTypeUid
 				        left join FieldType AFT on AFT.ID = DF.FieldTypeID
 		        order by DF.DisplayOrder
@@ -867,13 +868,9 @@ from	IntersectType I
 
                         relatedTypeList.ForEach(r =>
                         {
-                            var fieldName = $"Related Item.{r.Name}";
+                            var fieldName = $"Related Item.{r.Name} ({r.ID})";
 
-                            if (computedFields.ContainsKey(fieldName))
-                            {
-                                computedFields.Add($"{fieldName} ({r.ID})", r.ID);
-                            }
-                            else
+                            if (!computedFields.ContainsKey(fieldName))
                             {
                                 computedFields.Add(fieldName, r.ID);
                             }
@@ -957,7 +954,22 @@ from	IntersectType I
                         field.SortOrder = i.SortOrder;
                         field.Width = i.Width;
                         field.Show = i.Show;
-                        if (!definitionFields.Any(o => o.FieldTypeID == field.FieldTypeID) && field.FieldTypeID > 0)
+                        if (i.RelationIndex != null)
+                        {
+                            if(definitionRelations[i.RelationIndex ?? 0].AssetTypeUid != field.AssetTypeUid)
+                            {
+                                hasDefinitionError = true;
+                                definitionErrorMessage = $@"The definition provided for the computed relationship lookup {f.Name} is invalid. Field {i.FieldTypeName} does not match Asset Type.";
+                                return;
+                            }
+                            field.RelationIndex = i.RelationIndex;
+                        }
+                        else
+                        {
+                            field.RelationIndex = definitionRelations.FindIndex(r => r.AssetTypeUid == field.AssetTypeUid);
+                        }
+
+                        if (!definitionFields.Any(o => o.FieldTypeID == field.FieldTypeID && o.RelationIndex == field.RelationIndex) && field.FieldTypeID > 0)
                         {
                             definitionFields.Add(field);
                         }

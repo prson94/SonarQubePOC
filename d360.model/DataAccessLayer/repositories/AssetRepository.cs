@@ -296,6 +296,7 @@ namespace d360.model.DataAccessLayer
             bool includeOwnershipLookup = false;
             bool simpleFilterOwnershipOnResource = false;
             bool simpleFilterOwnershipOnSecurityAsset = false;
+            bool isForTreeGrid = false;
 
             if (assetType == null)
                 throw new Exception("Invalid assetType specified");
@@ -384,6 +385,11 @@ namespace d360.model.DataAccessLayer
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includeownershiplookup"))
             {
                 bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includeownershiplookup").Value, out includeOwnershipLookup);
+            }
+
+            if (queryParams.Any(x => x.Key.ToLower() == "isfortreegrid"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "isfortreegrid").Value, out isForTreeGrid);
             }
 
             //check for asset path fields now after include fields have been filtered
@@ -976,7 +982,8 @@ namespace d360.model.DataAccessLayer
                         simpleFilters.Add(simpleFilterOwnership);
                     }
 
-                    if (includeParent)
+                    //do not use simple filter on parent value if response is used for tree grid, otherwise all child items will be matched incorrectly
+                    if (includeParent && !isForTreeGrid)
                     {
                         simpleFilters.Add($"Parent.DisplayValue like @simpleFilter");
                         includeParentInCount = true; // simple filter AND the asset has a parent which posibly impacts the count
@@ -1166,6 +1173,7 @@ namespace d360.model.DataAccessLayer
                 {(includeAssetPathInCount ? " left join graph.AssetNodeDisplayPath Node on Node.id = a.id" : "")} 
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
+                {(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
                 {string.Join("\n", countJoins)}
                 {hierarchyParentUidSelect}
                 {(includeParentInCount ? parentApplySQL : "")}
@@ -1183,6 +1191,7 @@ namespace d360.model.DataAccessLayer
                     A.UpdatedOn,
                     {(includeCreatedByModifiedBy ? "CA.uid as CreatedByUid," : "")}                    
                     A.CreatedOn,
+                    {(isForTreeGrid ? "LVL.Level as 'Level'," : "")}
                     {(includeParent ? parentFieldSQL : "")}
                     {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
                     {(includeColor ? "ACJ.ColorJson as Color," : "")}
@@ -1201,6 +1210,7 @@ namespace d360.model.DataAccessLayer
                 {string.Join("\n", fieldJoins)}
                 {(includeSegments || hasAssetPathField || whereSql.Contains("Node.") ? " left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID" : "")} 
                 left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
+                {(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
                 {(includeColor ? "cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
                 {(includePermissionDetails ? permissionDetailSQL : "")}
                 {hierarchyParentUidSelect}
@@ -1292,6 +1302,31 @@ namespace d360.model.DataAccessLayer
                                 data[ft.Name] = JsonConvert.DeserializeObject(val);
                             }
                         });
+                    }
+                }
+            }
+
+            //if we want to include hierarchy items (parents) for tree grid
+            //used in tree grids we want to find all parents from our assets that are included in results
+            if (isForTreeGrid)
+            {
+                if (queryParams.Any(x => x.Key.ToLower() == "_simplefilter" || x.Key.ToLower() == "_filter"))
+                {
+                    List<Guid> assetUids = new List<Guid>();
+                    foreach (var item in results)
+                    {
+                        var data = (IDictionary<string, object>)item;
+                        assetUids.Add(Guid.Parse(data["AssetUid"].ToString()));
+                    }
+
+                    var allParents = GetAllParentsAssetUid(assetUids).Distinct().Where(x => !assetUids.Contains(x)).ToList();
+
+                    if (allParents.Count > 0)
+                    {
+                        var par = queryParams.Where(k => k.Key.ToLower() != "_simplefilter" && k.Key.ToLower() != "_filter" && k.Key.ToLower() != "isfortreegrid").ToList();
+                        par.Add(new KeyValuePair<string, string>("_assetUid", string.Join(",", allParents)));
+                        var fammilyAssets = await GetAssets(assetType, par);
+                        results = results.Union(fammilyAssets.items).ToList().ToList();
                     }
                 }
             }
@@ -1911,6 +1946,37 @@ namespace d360.model.DataAccessLayer
             return CompanyContext.Query<Guid>(sql, new { assetUid = uids }, ApiTimeout).AsList();
         }
 
+        private List<Guid> GetAllParentsAssetUid(List<Guid> uids)
+        {
+            var sql = $@"drop table if exists #family
+                create table #family(
+                 AssetUid uniqueidentifier
+                )
+                --GET ALL PARENT
+                ;with family_cte as (
+                select a2.uid,ADV.DisplayValue
+                from graph.assetnode an
+                inner join graph.AssetEdge edge2 on edge2.$to_id = an.$node_id and edge2.PredicateType = 4
+                inner join graph.AssetNode rel2 on rel2.$node_id = edge2.$from_id
+                inner join asset a2 on a2.uid = rel2.Uid
+                cross apply GetAssetDisplayValueById(a2.ID)ADV
+                where an.Uid in @assetUid
+                union all
+                select a2.uid, ADV.DisplayValue
+                from family_cte fam, graph.assetnode an
+                inner join graph.AssetEdge edge2 on edge2.$to_id = an.$node_id and edge2.PredicateType = 4
+                inner join graph.AssetNode rel2 on rel2.$node_id = edge2.$from_id
+                inner join asset a2 on a2.uid = rel2.Uid
+                cross apply GetAssetDisplayValueById(a2.ID)ADV
+                where an.Uid = fam.uid)
+                insert into #family 
+                select 
+                uid as AssetUid from family_cte
+                select * from #family";
+
+            return CompanyContext.Query<Guid>(sql, new { assetUid = uids }, ApiTimeout).AsList();
+        }
+
 
         private string extractColorNameFromJSON(string jsonString)
         {
@@ -2386,6 +2452,11 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             if (!string.IsNullOrEmpty(model?.Name ?? null))
                 model.Name = model.Name.Trim();
 
+            if (!model.CanEditParent.HasValue)
+            {
+                model.CanEditParent = true;
+            }
+
             switch (model.Class)
             {
                 case AssetTypeClass.BusinessAsset:
@@ -2445,11 +2516,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         assetType.FlowObjectType = model.FlowObjectType;
                     }
 
-
-                    if (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset)
-                    {
-                        assetType.CanEditParent = model.CanEditParent;
-                    }
+                    assetType.CanEditParent = model.CanEditParent;
 
                     #endregion
                     break;
@@ -2469,6 +2536,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
                     assetType.AutoDisplayDescription = model.AutoDisplayDescription;
                     assetType.Notes = model.Notes ?? assetType.Notes;
+                    assetType.CanEditParent = model.CanEditParent;
 
                     #endregion
                     break;
@@ -2485,6 +2553,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     assetType.Name = model.Name;
                     assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
                     assetType.Description = model.Description;
+                    assetType.CanEditParent = model.CanEditParent;
 
                     #endregion
                     break;

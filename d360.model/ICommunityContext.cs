@@ -13,16 +13,14 @@ namespace d360.model
         DbSet<Client> Clients { get; set; }
         DbSet<Company> Companies { get; set; }
         DbSet<CompanyDomainSetting> CompanyDomainSettings { get; set; }        
-        DbSet<CompanyRebuildJobStatus> CompanyRebuildJobStatuses { get; set; }
-        DbSet<CompanyHelpResource> CompanyHelpResources { get; set; }
+        DbSet<CompanyRebuildJobStatus> CompanyRebuildJobStatuses { get; set; }        
         DbSet<CompanyResource> CompanyResources { get; set; }
         DbSet<CompanySetting> CompanySettings { get; set; }
         CompanySsoModel CurrentCompanySsoModel { get; set; }
         DbSet<DatabaseServer> DatabaseServers { get; set; }
         DbSet<DomainCertificate> DomainCertificates { get; set; }
         DbSet<DomainSetting> DomainSettings { get; set; }                
-        DbSet<GenericCommand> GenericCommands { get; set; }
-        DbSet<HelpResource> HelpResources { get; set; }        
+        DbSet<GenericCommand> GenericCommands { get; set; }        
         DbSet<Resource> Resources { get; set; }
         DbSet<Setting> Settings { get; set; }
 
