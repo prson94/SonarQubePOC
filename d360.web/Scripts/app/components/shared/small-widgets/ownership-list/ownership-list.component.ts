@@ -11,7 +11,7 @@ class OwnershipResource {
 @Component({
     selector: "d3s-ownership-list",
     template: `<span *ngIf="listLength===0">- - -</span>
-                <ul *ngIf="listLength > 0" class="ownershiplist">
+                <ul *ngIf="listLength > 0" class="ownershiplist {{(listLength === 1 ? 'single-entry' : '')}}">
                     <li *ngFor="let owner of list; let i = index" [ngClass]="{'noshow': ((i >= moreLimit) && !showMore)}">
                         <span><a [href]="owner.ResourceItemUrl" [innerHtml]="owner.ResourceName" (click)="$event.stopPropagation()"></a> {{formatResponsibilityTypes(owner.ResponsibilityTypes)}}</span>
                     </li>
@@ -33,8 +33,11 @@ class OwnershipResource {
         ul.ownershiplist li.noshow {
             display: none;
         }
-        ul.ownershiplist li span {
+        .single-entry span {
             margin-left: -4px;
+        }
+        a {
+            color: #51a6dc;
         }
     `],
 })

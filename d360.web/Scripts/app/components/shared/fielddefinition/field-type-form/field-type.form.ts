@@ -426,7 +426,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 break;
             case "ownershiplookup":
                 this.showDescription = false;
-                console.log(this.currentType, this.model.FieldType.Type[this.currentType].Definition.ResponsibilityType);
                 this.onEnableListSingleResponsibilityType(Number.isInteger(this.model.FieldType.Type[this.currentType].Definition.ResponsibilityType))
                 break;
             case 'computedownershiplookup':
@@ -1387,15 +1386,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'IsEditable':
                 return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Tag', 'Score'].indexOf(this.currentType) > -1);
             case 'IsListable':
-                if (this.currentType === "OwnershipLookup") {
-                    if (["PolicyType", "TaxonomyType"].indexOf(this.objectType) > -1) {
-                        this.isListable = false;
-                    }
-                    else {
-                        this.isListable = true;
-                    }
-                    return ["PolicyType", "TaxonomyType"].indexOf(this.objectType) > -1;
-                }
                 return (['ComplexRelationLookup', 'RefListRelationship', 'Json', 'JSON'].indexOf(this.currentType) > -1
                     || (this.currentType == 'Relationship' && !this.isListableRelationship));
             case 'IsRequired':
