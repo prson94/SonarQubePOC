@@ -689,18 +689,17 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         return this.fieldsService.getLookupTokens(uid).pipe(map(
             r => {
                 this.model.LookupTokens = r;
-                if (this.model.LookupTokens && this.model.LookupTokens.length > 0)
-                {                
+                if (this.model.LookupTokens && this.model.LookupTokens.length > 0) {
                     if (
                         (this.model.FieldType.Type[this.currentType].Format.Display == null
-                        || this.model.FieldType.Type[this.currentType].Format.Display.length == 0)
+                            || this.model.FieldType.Type[this.currentType].Format.Display.length == 0)
                     ) {
                         this.model.FieldType.Type[this.currentType].Format.Display = this.model.LookupTokens[0].value;
                     }
 
                     if (
                         (this.model.FieldType.Type[this.currentType].Format.Edit == null
-                        || this.model.FieldType.Type[this.currentType].Format.Edit.length == 0)
+                            || this.model.FieldType.Type[this.currentType].Format.Edit.length == 0)
                     ) {
                         this.model.FieldType.Type[this.currentType].Format.Edit = this.model.LookupTokens[0].value;
                     }
@@ -1375,14 +1374,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         switch (val) {
             case 'IsDisplayable':
-                if (this.currentType === "OwnershipLookup") {
-                    if (this.isListable == true)
-                        return false;
-                    else
-                        return true;
-                }
-                else
-                    return (['ComplexRelationLookup', 'RefListRelationship'].indexOf(this.currentType) > -1);
+                return (['ComplexRelationLookup', 'RefListRelationship'].indexOf(this.currentType) > -1);
             case 'IsEditable':
                 return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Tag', 'Score'].indexOf(this.currentType) > -1);
             case 'IsListable':
