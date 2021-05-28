@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
@@ -263,23 +264,24 @@ namespace d360.model.DataAccessLayer
                 dbArgs.Add("p", (int)Permission.ReadResponsibilities);
             }
 
-            var assetIDSQL = $@"drop table if exists #assetIds
+            StringBuilder assetIDSQL = new StringBuilder();
+            assetIDSQL.Append($@"drop table if exists #assetIds
                                 create table #assetIds (
 	                                id bigint
                                 )
-                                CREATE CLUSTERED INDEX ix_assetIds ON #assetIds ([id]);";
+                                CREATE CLUSTERED INDEX ix_assetIds ON #assetIds ([id]);");
 
-
+            
             for (int i = 0; i < assetIDList.Count(); i ++)
             {
                 if(i % 1000 == 0)
                 {
-                    assetIDSQL += $@"
-                                insert into #assetIds (id) VALUES ({assetIDList.ElementAt(i)})";                    
+                    assetIDSQL.Append($@"
+                                insert into #assetIds (id) VALUES ({assetIDList.ElementAt(i)})");                    
                 }
                 else
                 {
-                    assetIDSQL += $",({assetIDList.ElementAt(i)})";
+                    assetIDSQL.Append($",({assetIDList.ElementAt(i)})");
                 }
                               
             }
