@@ -649,7 +649,8 @@ export class SystemFields {
             IsOwnerField: true,
             IsSystemField: true
         };
-
+        fields.push(owner);
+        
         if (gridType === "Tree") {
             var level: FieldTypeAPIModelFieldCondition = {
                 Category: "System Fields",
