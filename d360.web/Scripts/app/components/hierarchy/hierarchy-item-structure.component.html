@@ -14,7 +14,7 @@
                                      [infoTooltip]="simpleSearchTooltipHTML">
                     </ig-search-field>
                 </div>
-                <advanced-filtering [loadIdentifier]="assetTypeUid" [gridType]="'Tree'" [treeMaxLevel]="maxLevelAllowed" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+                <advanced-filtering [loadIdentifier]="assetTypeUid" [gridType]="'Tree'" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
                 <div class="grid-action-buttons">
                     <button *ngIf="hasAddAssetPermissions()"
                             igButton

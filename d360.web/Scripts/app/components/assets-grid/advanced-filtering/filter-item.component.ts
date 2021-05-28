@@ -23,7 +23,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
     @Input() assetTypeUid: string = "";
     @Input() loadIdentifier: string = "";
     @Input() gridType: string = "List";
-    @Input() treeMaxLevel: number = 1;
     @Input() condition: AdvancedFilterFieldCondition;
     @Input() fields: FieldTypeAPIModelFieldCondition[] = null;
     @Input() operators: OperatorModel[] = [];
@@ -110,7 +109,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 });
             }
 
-            var systemFields = SystemFields.GetSystemFieldDefinition(this.gridType, this.treeMaxLevel);
+            var systemFields = SystemFields.GetSystemFieldDefinition(this.gridType);
             if (systemFields.length > 0) {
                 let systemFieldsGroup: SelectItemGroup = { value: "system-field", label: "System Fields", items: [] };
                 this.allFieldsDropdown.push(systemFieldsGroup);
@@ -474,7 +473,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
         var type = this.getFieldType(this.condition);
         if (type.Type) {
             if (this.condition.fieldType === "Lookup") {
-                this.loadLookupValues(params);
+                if (this.condition.field === "[Level]") {
+                    this.loadLookupValuesForLevelNames();
+                }
+                else {
+                    this.loadLookupValues(params);
+                }
             }
             if (this.condition.fieldType === "Tag") {
                 this.loadTagValues();
@@ -529,6 +533,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
         this.isLookupValuesLoading = true;
         var fieldTypeUid = this.currentField.AssetTypeUid;
+
         if (!fieldTypeUid) {
             fieldTypeUid = "00000000-0000-0000-0000-000000000000";
         }
@@ -554,7 +559,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.cdRef.markForCheck();
             });
     }
-
 
     loadTagValues() {
         if (!this.currentField.Values) {
@@ -662,6 +666,30 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 }
 
                 this.isLookupValuesLoading = false;
+                this.cdRef.markForCheck();
+            });
+    }
+
+    loadLookupValuesForLevelNames() {
+        if (this.lazyLoadSubscription) {
+            this.lazyLoadSubscription.unsubscribe();
+        }
+        this.isLookupValuesLoading = true;
+
+        this.lazyLoadSubscription = this.assetTypeService.getAssetTypeLevels(this.assetTypeUid)
+            .subscribe((res) => {
+                if (!this.currentField.Values || this.currentField.Values.length === 0) {
+                    this.currentField.Values = Array.from({ length: res.length });
+                }
+                let loadedData = [];
+
+                res.forEach((item) => {
+                    loadedData.push({ title: item.Name, value: item.Level });
+                });
+
+                this.currentField.Values = [...loadedData];
+                this.isLookupValuesLoading = false;
+
                 this.cdRef.markForCheck();
             });
     }

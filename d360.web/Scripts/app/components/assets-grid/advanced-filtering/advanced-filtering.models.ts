@@ -615,7 +615,7 @@ export class SystemFields {
     public static OwnedByFieldCode: string = "$OwnedBy";
     public static RelationshipFieldCode: string = "$Related";
 
-    public static GetSystemFieldDefinition(gridType: string, maxTreeLevel: number = 1): FieldTypeAPIModelFieldCondition[] {
+    public static GetSystemFieldDefinition(gridType: string): FieldTypeAPIModelFieldCondition[] {
         var fields: FieldTypeAPIModelFieldCondition[] = [];
 
         fields.push({
@@ -660,10 +660,6 @@ export class SystemFields {
                 Values: [],
                 IsSystemField: true
             };
-
-            for (let i = 1; i <= maxTreeLevel; i++) {
-                level.Values.push({ value: i.toString(), title: i.toString() });
-            }
             fields.push(level);
         }
 
