@@ -493,7 +493,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 this.areAllExpanded = true;
             }
 
-            this.loadNodesSub = this.assetService.getAssets(this.assetTypeUid, uriParams).subscribe((result) => {
+            this.loadNodesSub = this.assetService.getAssets(this.assetTypeUid, uriParams, true).subscribe((result) => {
                 this.totalRecords += result.total;
                 this.buildScoreAllocationThresholds();
                 this.hierarchy = result.items;
