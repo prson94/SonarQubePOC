@@ -317,7 +317,7 @@ from	FollowDetail F
         [HttpGet, Route("HelpResources")]
         public async Task<JsonNetResult> GetHelpResources()
         {
-            var sql = "select id, uid, type, name, description, url, sortindex from helpresource order by type, sortindex";
+            var sql = "select ID, uid, Name, Description, Url, SortIndex from helpresource order by sortindex";
             var resources = await Company.QueryAsync<HelpResource>(sql);
 
             return new JsonNetResult
