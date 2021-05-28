@@ -159,8 +159,8 @@ export class AssetTypeService extends BaseObservableService {
         return this.http
             .get(`api/v2/assets/${assetTypeUid}/levels`)
             .pipe(
-                map(res => <AssetTypeLevelApiModel[] & ErrorResponse>res),
-                catchError(err => this.handleError(err))
+                map((res) => <AssetTypeLevelApiModel[] & ErrorResponse>res),
+                catchError((err) => this.handleError(err))
             );
     }
     //#endregion
