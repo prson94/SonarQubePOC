@@ -124,7 +124,7 @@ export class ResourcesService extends BaseObservableService {
             }));
     }
 
-    exportResources(params: any, filename: string) {
+    exportResources(params: any, filename: string): Observable<any> {
         params['_pageNum'] = 1;
         params['_pageSize'] = 100000;
 
@@ -135,9 +135,11 @@ export class ResourcesService extends BaseObservableService {
                 qString = '?' + qString;
         }
 
-        this.http.get('/api/v2/membership/users' + qString,
+        return this.http.get('/api/v2/membership/users' + qString,
             { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
-            .subscribe((data: any) => this.downloadFile(data, filename));
+            .pipe(map(data => this.downloadFile(data, filename)),
+                catchError(err => this.handleError(err))
+            );
     }
 
     getResponsibilityBreakdownByResource(id: number, responsibilityTypeUid: string = ""): Observable<CountObject[]> {

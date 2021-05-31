@@ -41,7 +41,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     showResetPwd: boolean = false;
 
     allowPasswordReset: boolean = false;
-
+    isExportInProgress: boolean = false;
     simpleFilter: string = "";
 
     totalRecords: number;
@@ -100,8 +100,14 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     public export() {
-        var filename = this.IsCommunityUserResposibility === true ? this.UserListHeading + ".xlsx" : "Users.xlsx";
-        this.resourcesService.exportResources(this.getParams(), filename);
+        var filename = this.IsCommunityUserResposibility === true ? `Filtered List of ${this.UserListHeading} ${new Date().toDateString()}.xlsx` : "Users.xlsx";
+        this.isExportInProgress = true;
+        this.resourcesService.exportResources(this.getParams(), filename).subscribe(
+            (res) => {
+                this.isExportInProgress = false;
+                this.changeDetectorRef.markForCheck();
+            }
+        );
     }
 
     load() {
@@ -336,7 +342,17 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
 
     }
 
+    canExportRecords() {
+        if (this.IsCommunityUserResposibility) {
+            return this.totalRecords <= this.maxExportRows;
+        }
+        else {
+            return true;
+        }
+    }
+
     IsReadOnly() {
         return !this.IsCommunityUserResposibility;
     }
+
 };
