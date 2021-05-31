@@ -375,7 +375,7 @@ namespace d360.model.helpers
         public void LoadFieldType(FieldType ft, List<string> fieldColumns)
         {
             fieldType = ft;
-            if (fieldColumn != null)
+            if (fieldColumns != null)
             {
                 fieldColumn = fieldColumns.FirstOrDefault(x => x.Contains($"F" + fieldType.ID));
             }
