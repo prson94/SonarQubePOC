@@ -69,7 +69,9 @@ export class FilterItemComponent implements OnInit, OnChanges {
     relationshipFieldName: string = "";
 
     minSQLDate = new Date(1753, 0, 1);
-
+    numberMax: number = null;
+    numberMin: number = null;
+   
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
     @ViewChild("multiInput", { static: false }) multiInputRef: MultiInputField;
     @ViewChild("dataTable", { static: false }) dataTable: Table;
@@ -976,6 +978,14 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
         var type = this.getTypeForCondition(this.condition);
 
+        if (type === "Number") {
+            this.numberMax = 2147483647;
+            this.numberMin = -2147483648;
+        }
+        if (type === "Decimal") {
+            this.numberMax = 9223372036854775807;
+            this.numberMin = -9223372036854775808;
+        }
         if (type === "Number" || type === "Decimal" || type === "Score") {
 
             if (this.currentOperator.toString() === "IsInBand") {

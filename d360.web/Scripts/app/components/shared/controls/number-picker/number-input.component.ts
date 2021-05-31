@@ -31,6 +31,8 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
     @Input() ariaRequired: boolean;
     @Input() ariaInvalid: boolean;
 
+    @Input() enforceMaxMin: boolean = false;
+
     private hasValue: boolean = false;
     value: number;
     onModelChange: Function = () => { };
@@ -42,6 +44,17 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
     writeValue(obj: any): void {
         if (obj != undefined && obj != null) {
             this.hasValue = true;
+            if (this.enforceMaxMin) {
+                var value = +this.el.nativeElement.value;
+                if (this.max && value > this.max) {
+                    value = this.max;
+                    this.el.nativeElement.value = value;
+                }
+                if (this.min && value < this.min) {
+                    value = this.min;
+                    this.el.nativeElement.value = value;
+                }
+            }
         }
         else {
             this.hasValue = false;
