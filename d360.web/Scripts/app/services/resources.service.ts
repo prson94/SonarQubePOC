@@ -137,8 +137,8 @@ export class ResourcesService extends BaseObservableService {
 
         return this.http.get('/api/v2/membership/users' + qString,
             { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
-            .pipe(map(data => this.downloadFile(data, filename)),
-                catchError(err => this.handleError(err))
+            .pipe(map((data) => this.downloadFile(data, filename)),
+                catchError((err) => this.handleError(err))
             );
     }
 
