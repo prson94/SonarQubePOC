@@ -77,13 +77,12 @@ namespace d360.web.Controllers
             if (intersectType != null)
             {
                 var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-                //var parents = Company.Query<SelectListItem>($"select convert(nvarchar(36), A.uid) as Value, AD.DisplayValue as Text from Asset a inner join AssetDisplayValue AD on AD.AssetID = A.ID where A.AssetTypeID = {intersectType.SubjectAssetTypeID}").OrderBy(i => i.Text).ToList();
                 var parents = Company.Query<SelectListItem>(
            $@"select 
                                     lower(convert(nvarchar(36), A.uid)) as Value, 
-                                    AN.KeyPath as Text 	
-                                        from Asset A inner join AssetDisplayValue AD on A.ID = AD.AssetID 
-                                        inner join graph.AssetNodeKeyPath AN on AN.ID = A.ID 
+                                    AN.DisplayPath as Text 	
+                                        from Asset A 
+                                        inner join graph.AssetNodeDisplayPath AN on AN.ID = A.ID 
                                         where A.AssetTypeID = {parentType.ID}").OrderBy(i => i.Text).ToList();
                 list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentUid", Name = $"Parent {pluralize.Singularize(intersectType.SubjectName)}", FieldType = DataType.Lookup.ToString(), Value = ((p > 0) ? p.ToString() : null), Items = parents, VirtualScroll = parents.Count > 9, ItemSize = 20 });
             }
@@ -121,9 +120,9 @@ namespace d360.web.Controllers
                     var parents = Company.Query<SelectListItem>(
            $@"select 
                                     lower(convert(nvarchar(36), A.uid)) as Value, 
-                                    AN.KeyPath as Text 	
-                                        from Asset A inner join AssetDisplayValue AD on A.ID = AD.AssetID 
-                                        inner join graph.AssetNodeKeyPath AN on AN.ID = A.ID 
+                                    AN.DisplayPath as Text 	
+                                        from Asset A 
+                                        inner join graph.AssetNodeDisplayPath AN on AN.ID = A.ID 
                                         where A.AssetTypeID = {parentType.ID}").OrderBy(i => i.Text).ToList();
 
 

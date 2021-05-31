@@ -817,17 +817,8 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     getName(item: string) {
-        var path = item.split('].[');
-        var name = path[path.length - 1].replace('[', '').replace(']', '');
+        var path = item.split(' > ');
+        var name = path[path.length - 1];
         return name;
-    }
-    getPath(item: string) {
-        let tokens = item.split('].[');
-        if (tokens.length > 0) {
-            let path = item.replace(/\]./g, ' > ').replace(/\[/g, '').replace(/\]/g, '');
-            return path;
-        } else {
-            return item.replace(/\[/g, '').replace(/\]/g, '');
-        }
     }
 }

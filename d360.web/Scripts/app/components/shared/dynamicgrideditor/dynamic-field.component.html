@@ -55,11 +55,6 @@
                                     <ng-template let-selitem pTemplate="selectedItem">
                                         <div>{{getName(selitem.label)}}</div>
                                     </ng-template>
-                                    <ng-template let-item pTemplate="item">
-                                        <div>
-                                            <div class="selectlistinfoitem-text">{{getPath(item.Text)}}</div>
-                                        </div>
-                                    </ng-template>
                                 </p-dropdown>
                             </ng-container>
                             <ng-container *ngIf="field.UseColorControl">
