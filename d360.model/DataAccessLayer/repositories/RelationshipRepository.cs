@@ -968,11 +968,6 @@ from	IntersectType I
                 fields.Add(new FieldType { Type = "string", Object = "Object", Name = "[Path]", FriendlyName = "Object Asset Path" });
             }
 
-            if (includeAssetPath)
-            {
-                fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "[Path]", FriendlyName = "Subject Asset Path" });
-            }
-
             #region Populate Excel Document
 
             document.RenameWorksheet(SLDocument.DefaultFirstSheetName, relationshipSheetName);
