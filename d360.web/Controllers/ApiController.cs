@@ -1122,35 +1122,6 @@ where   h.ID <> @t order by h.[Level] desc;
             });
         }
 
-
-        [HttpGet, Route("{type}/{id:int}/grid/definition/parentValues")]
-        public async Task<HttpResponseMessage> GetGridParentFilterItems(string type, int id)
-        {
-            if ((type ?? "").ToUpper() == "ARTIFACTTYPE")
-            {
-                var parentType = Company.GetParentType(id, SystemObjects.ArtifactType);
-
-                if (parentType == null) return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("parent"));
-
-                var res = await Company.QueryAsync<string>("select ADV.DisplayValue from AssetDisplayValue ADV inner join Asset A on (A.ID = ADV.AssetID) inner join AssetType ATT on (A.AssetTypeID = ATT.ID) where ATT.[Object] = 'ArtifactType' and ATT.[ObjectID] = @objID order by 1", new { objID = parentType.ObjectID });
-
-                return Request.CreateResponse(HttpStatusCode.OK, res);
-            }
-
-            return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("parent"));
-        }
-
-        [HttpGet, Route("{type}/{id:int}/grid/definition/filterValues/{fieldTypeId:int}")]
-        public HttpResponseMessage GetGridFilterItems(int fieldTypeId)
-        {
-            var ft = Company.GetById<FieldType>(fieldTypeId);
-            if (ft == null)
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("field type"));
-
-            var gridColumn = getGridColumnForColumn(ft, 0, false, true);
-            return Request.CreateResponse(HttpStatusCode.OK, gridColumn.filteritems);
-        }
-
         #endregion
 
         #region Navigation

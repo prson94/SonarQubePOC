@@ -104,33 +104,4 @@ export class ArtifactTypeService extends BaseObservableService {
             this.formTreeR(child, data);
         });
     }
-
-    public getFilterListItems(
-        id: number,
-        type: string,
-        fieldTypeId: number
-    ) {
-        return this
-            .http
-            .get(`api/${type}/${id}/grid/definition/filterValues/${fieldTypeId}`)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            )
-            ;
-    }
-
-    public getObjectTypeParentsListItems(
-        id: number,
-        type: string
-    ) {
-        return this
-            .http
-            .get(`api/${type}/${id}/grid/definition/parentValues`)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            )
-            ;
-    }
 }
