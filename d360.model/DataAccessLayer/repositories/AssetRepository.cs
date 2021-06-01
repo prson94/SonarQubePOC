@@ -710,7 +710,7 @@ namespace d360.model.DataAccessLayer
                     string ownershipQuery = $@"
                         outer apply(
                             select FormattedValue = (
-		                        select ResourceName, {responsibilityNameSelect} AS ResponsibilityTypes, ResourceUid, ResourceItemUrl
+		                        select ResourceName, {responsibilityNameSelect} AS ResponsibilityTypes, LOWER(ResourceUid) AS ResourceUid, ResourceItemUrl
 		                        from ( {innerOwnershipQuery} ) Responsibilites{f.ID}
                                 group by ResourceName, ResourceUid, ResourceItemUrl
                                 order by ResourceName
