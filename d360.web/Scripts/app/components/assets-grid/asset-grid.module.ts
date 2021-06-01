@@ -4,7 +4,6 @@ import { FormsModule } from "@angular/forms";
 import { HttpClientModule, HTTP_INTERCEPTORS } from "@angular/common/http";
 import { RouterModule } from "@angular/router";
 
-
 import { CoreModule } from "../shared/core.module";
 import { WorkflowModule } from "../workflow/workflow.module";
 import { D3SSharedModule } from "../shared/shared.module";
@@ -26,10 +25,8 @@ import { TableModule } from "primeng/table";
 import { MultiSelectModule } from "primeng/multiselect";
 import { TooltipModule } from "primeng/tooltip";
 import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
-import { AssetGridColumnFilterComponent } from "./asset-grid-column-filter.component";
 import { AssetGridCustomExportComponent } from "./asset-grid-custom-export.component";
 import { AssetGridTopLevelListComponent } from "./asset-grid-top-level-list.component";
-import { AssetGridTopLevelFilterComponent } from "./asset-grid-top-level-filter.component";
 import { AssetGridComponent } from "./asset-grid.component";
 import { SharedAssetScoreModule } from "../shared/asset-score/shared-asset-score.module";
 import { AdvancedFiltersModule } from "./advanced-filtering/advanced-filtering.module";
@@ -71,18 +68,14 @@ import { SearchFieldModule } from "../shared/controls/search-field/search-field.
         SearchFieldModule
     ],
     declarations: [
-        AssetGridColumnFilterComponent,
         AssetGridCustomExportComponent,
         AssetGridComponent,
-        AssetGridTopLevelFilterComponent,
         AssetGridTopLevelListComponent
     ],
     exports: [
-        AssetGridColumnFilterComponent,
         AssetGridCustomExportComponent,
         AssetGridComponent,
-        AssetGridTopLevelListComponent,
-        AssetGridTopLevelFilterComponent
+        AssetGridTopLevelListComponent
     ],
     providers: [
         {
