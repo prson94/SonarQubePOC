@@ -1,18 +1,20 @@
 ﻿<ng-container *ngIf="isArrayValue || fieldDataType == 'tag'; else singleValue">
-    <div *ngIf="fieldDataType != 'tag'" class="ig-value">
-        <div *ngFor="let item of field.Values">
-            <d3s-preview-tooltip *ngIf="item.TooltipContext == 'Preview'; else listTooltip" [objectType]="item.TooltipType" [objectId]="item.TooltipID" [contentAnchor]="'right'">
-                <a *ngIf="item.TooltipUrl && fieldDataType != 'color'" [href]="item.TooltipUrl" [innerHtml]="(valueCount > 1 ? '&bull; ' : '') + item.Value" (click)="navigate(item.TooltipUrl, $event)"></a>
-                <span *ngIf="!item.TooltipUrl && fieldDataType != 'color'" [innerHtml]="item.Value"></span>
-                <d3s-color-display *ngIf="fieldDataType == 'color'" [url]="item.TooltipUrl" [colorsJSON]="item.Value"></d3s-color-display>
-            </d3s-preview-tooltip>
-            <ng-template #listTooltip>
+    <div *ngIf="fieldDataType != 'tag'" class="ig-value ig-item-list">
+        <ul *ngFor="let item of field.Values">
+            <li *ngIf="item.TooltipContext == 'Preview'" class="ig-item">
+                <d3s-preview-tooltip [objectType]="item.TooltipType" [objectId]="item.TooltipID" [contentAnchor]="'right'">
+                    <a *ngIf="item.TooltipUrl && fieldDataType != 'color'" [href]="item.TooltipUrl" [innerHtml]="(valueCount > 1 ? '&bull; ' : '') + item.Value" (click)="navigate(item.TooltipUrl, $event)"></a>
+                    <span *ngIf="!item.TooltipUrl && fieldDataType != 'color'" [innerHtml]="item.Value"></span>
+                    <d3s-color-display *ngIf="fieldDataType == 'color'" [url]="item.TooltipUrl" [colorsJSON]="item.Value"></d3s-color-display>
+                </d3s-preview-tooltip>
+            </li>
+            <li *ngIf="item.TooltipContext != 'Preview'">
                 <d3s-lookup-tooltip *ngIf="item.TooltipUrl; else noLinkTooltip" [objectType]="item.TooltipType" [objectId]="item.TooltipID" [contentAnchor]="'right'">
                     <a *ngIf="fieldDataType != 'color'" [href]="item.TooltipUrl" (click)="navigate(item.TooltipUrl, $event)" [innerText]="item.Value"></a>
                     <d3s-color-display *ngIf="fieldDataType == 'color'" [colorsJSON]="item.Value" [url]="item.TooltipUrl"></d3s-color-display>
                 </d3s-lookup-tooltip>
-            </ng-template>
-        </div>
+            </li>
+        </ul>
     </div>
     <ng-container *ngIf="fieldDataType == 'tag'">
         <div class="ig-value">
