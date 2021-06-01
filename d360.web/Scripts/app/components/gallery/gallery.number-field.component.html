@@ -23,6 +23,18 @@
         </div>
     </div>
     <div class="gallery-section">
+        <h4>Step = 1 (integer) + required</h4>
+        <div>
+            <ig-number-input required="true" [step]="1"></ig-number-input>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Step = 0.01 (decimal) + required</h4>
+        <div>
+            <ig-number-input required="true" [step]="0.01"></ig-number-input>
+        </div>
+    </div>
+    <div class="gallery-section">
         <h4>Disabled</h4>
         <div>
             <ig-number-input disabled="true"></ig-number-input>
@@ -73,7 +85,7 @@
             </form>
         </div>
         <div class="row">&nbsp;</div>
-        <div class="row">&nbsp;</div> 
+        <div class="row">&nbsp;</div>
         <div>
             <div class="row">
                 <b>Reactive forms with custom validation</b>
