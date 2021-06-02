@@ -154,6 +154,8 @@ namespace d360.model
 
         public DbSet<GraphFilter> GraphFilters { get; set; }
 
+        public DbSet<HelpResource> HelpResources { get; set; }
+
         public DbSet<Intersect> Intersects { get; set; }
 
         public DbSet<IntersectDetail> IntersectDetails { get; set; }                /* VIEW */
@@ -486,7 +488,9 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 
             if (intersectType == null)
             {
-                throw new ArgumentNullException("Invalid Relationship field encountered invalid or deleted relationship type encountered.");
+                var error = new Dictionary<string, object>();
+                error.Add("RelationshipError", "Invalid Relationship field encountered invalid or deleted relationship type encountered.");
+                return error;
             }
 
             int count = 0, objID = 0;

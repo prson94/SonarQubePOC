@@ -403,6 +403,12 @@ export class AdvancedFilterFieldCondition {
             return `'${this.parseDateTimeToString(value, true)}'`;
         }
 
+        if (this.fieldType === "Lookup" && this.field === "[Level]") {
+            if (value) {
+                return `${value}`;
+            }
+        }
+
         if (this.fieldType === "Lookup") {
             if (value.value) {
                 return `'${value.value}'`;
@@ -609,7 +615,7 @@ export class SystemFields {
     public static OwnedByFieldCode: string = "$OwnedBy";
     public static RelationshipFieldCode: string = "$Related";
 
-    public static GetSystemFieldDefinition(): FieldTypeAPIModelFieldCondition[] {
+    public static GetSystemFieldDefinition(gridType: string): FieldTypeAPIModelFieldCondition[] {
         var fields: FieldTypeAPIModelFieldCondition[] = [];
 
         fields.push({
@@ -643,9 +649,20 @@ export class SystemFields {
             IsOwnerField: true,
             IsSystemField: true
         };
-
-
         fields.push(owner);
+        
+        if (gridType === "Tree") {
+            var level: FieldTypeAPIModelFieldCondition = {
+                Category: "System Fields",
+                FriendlyName: "Level",
+                Name: "[Level]",
+                Type: new FieldType("Lookup"),
+                Operators: [],
+                Values: [],
+                IsSystemField: true
+            };
+            fields.push(level);
+        }
 
         return fields;
     }

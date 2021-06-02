@@ -17,8 +17,16 @@ export class ResponsibilityService extends BaseObservableService implements IRes
     getResponsibilityDetail(assetUid: string): Observable<ResponsibilityItemDetailV2[]> {
         return this.http.get(`/api/v2/responsibilities/assignments/${assetUid}`)
             .pipe(
-                map(response => <ResponsibilityItemDetailV2[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ResponsibilityItemDetailV2[]>response),
+                catchError((err) => this.handleError(err))
+            );
+    }
+
+    getHasResponsibilities(assetUid: string): Observable<boolean> {
+        return this.http.get(`/api/v2/responsibilities/hasassignments/${assetUid}`)
+            .pipe(
+                map((response) => <boolean>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -34,8 +42,9 @@ export class ResponsibilityService extends BaseObservableService implements IRes
                     if (model.responsibility.SecurityAsset)                        
                         model.selectedResource = model.responsibility.SecurityAsset + '|' + model.responsibility.SecurityAssetID;                    
 
-                    if (model.responsibility.ResponsibilityTypeID)
-                        model.selectedResponsibilityType = model.responsibilityTypes.find(x => x.Selected == true).Value;//model.responsibility.ResponsibilityTypeID.toString();                        
+                    if (model.responsibility.ResponsibilityTypeID) {
+                        model.selectedResponsibilityType = model.responsibilityTypes.find((x) => x.Selected === true).Value;                       
+                    }
 
                     return model;
                 }),

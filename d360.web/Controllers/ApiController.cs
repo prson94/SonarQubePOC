@@ -603,7 +603,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
             {
                 width = (int)dynamicFieldWidth;
             }
-            var gc = new GridColumn { text = item.FriendlyName, datafield = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat, columnWidth = width, parentFieldTypeID = item.ParentFieldTypeID, canHaveMultipleFilters = canHaveMultipleFilterItems, apiName = item.Name, fieldType = item.Type };
+            var gc = new GridColumn { text = item.FriendlyName, datafield = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat, columnWidth = width, parentFieldTypeID = item.ParentFieldTypeID, canHaveMultipleFilters = canHaveMultipleFilterItems, apiName = item.Name, fieldType = item.Type};
             if (!string.IsNullOrEmpty(item.Category))
             {
                 gc.columngroup = item.Category.Replace(" ", "");
@@ -686,7 +686,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
 
         GridField getGridFieldForColumn(FieldType item, bool useNameAsDataField = false)
         {
-            return new GridField { name = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", type = getGridFieldTypeForColumn(item), apiName = item.Name };
+            return new GridField { name = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", type = getGridFieldTypeForColumn(item), apiName = item.Name};
         }
 
         void parseDynamicColumnsAndFields(List<FieldType> items, List<GridColumn> columns, List<GridField> fields, decimal dynamicFieldWidth, bool serverPaged = false)
@@ -1045,34 +1045,64 @@ where   h.ID <> @t order by h.[Level] desc;
                 case SystemObjects.ResourceType:
                     #region
 
-                    remainingWidth = 27;
-                    dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
+                    var queryParams = Request.GetQueryNameValuePairs();
+                    bool iscommunityuserresposibility = false;
 
-                    columns.Add(new GridColumn { text = Fields.FirstName_Name, datafield = "FirstName", fieldType = "Text" });
-                    columns.Add(new GridColumn { text = Fields.LastName_Name, datafield = "LastName", fieldType = "Text" });
-                    columns.Add(new GridColumn { text = Fields.Email_Name, datafield = "Email", fieldType = "Text" });
-                    parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
-                    columns.Add(new GridColumn { text = Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F", fieldType = "DateTime" });
-                    columns.Add(new GridColumn { text = "Administrator?", datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, fieldType = "Boolean" });
-                    columns.Add(new GridColumn
+                    if (queryParams.Any(q => q.Key.ToLower() == "iscommunityuserresposibility"))
                     {
-                        text = d360.core.resources.Fields.Status_Name,
-                        datafield = "State",
-                        filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST,
-                        fieldType = "Text",
-                        filteritems = new List<string>() {
-                        CompanyResourceState.Active.ToString(),
-                        CompanyResourceState.Inactive.ToString(),
+                        bool tempbool;
+                        if (!bool.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "iscommunityuserresposibility").Value, out tempbool))
+                        {
+                            iscommunityuserresposibility = false;
+                        }
+                        else
+                        {
+                            iscommunityuserresposibility = tempbool;
+                        }
                     }
-                    });
 
-                    fields.Add(new GridField { name = "IsAdministrator", type = "bool", apiName = "IsAdministrator" });
-                    fields.Add(new GridField { name = "ID", type = "number" });
-                    fields.Add(new GridField { name = "Email", type = "string", apiName = "Email" });
-                    fields.Add(new GridField { name = "FirstName", type = "string", apiName = "FirstName" });
-                    fields.Add(new GridField { name = "LastName", type = "string", apiName = "LastName" });
-                    fields.Add(new GridField { name = "LastLoggedInOn", type = "date", apiName = "LastLoggedInOn" });
-                    fields.Add(new GridField { name = "State", type = "string", apiName = "State" });
+
+                    if (!iscommunityuserresposibility)
+                    {
+                        remainingWidth = 27;
+                        dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
+                        columns.Add(new GridColumn { text = Fields.FirstName_Name, datafield = "FirstName", fieldType = "Text" });
+                        columns.Add(new GridColumn { text = Fields.LastName_Name, datafield = "LastName", fieldType = "Text" });
+                        columns.Add(new GridColumn { text = Fields.Email_Name, datafield = "Email", fieldType = "Text" });
+                        parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
+                        columns.Add(new GridColumn { text = Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F", fieldType = "DateTime" });
+                        columns.Add(new GridColumn { text = "Administrator?", datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, fieldType = "Boolean" });
+                        columns.Add(new GridColumn
+                        {
+                            text = d360.core.resources.Fields.Status_Name,
+                            datafield = "State",
+                            filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST,
+                            fieldType = "Text",
+                            filteritems = new List<string>() {
+                            CompanyResourceState.Active.ToString(),
+                            CompanyResourceState.Inactive.ToString(),
+                        }
+                        });
+                        fields.Add(new GridField { name = "IsAdministrator", type = "bool", apiName = "IsAdministrator" });
+                        fields.Add(new GridField { name = "ID", type = "number" });
+                        fields.Add(new GridField { name = "Email", type = "string", apiName = "Email" });
+                        fields.Add(new GridField { name = "FirstName", type = "string", apiName = "FirstName" });
+                        fields.Add(new GridField { name = "LastName", type = "string", apiName = "LastName" });
+                        fields.Add(new GridField { name = "LastLoggedInOn", type = "date", apiName = "LastLoggedInOn" });
+                        fields.Add(new GridField { name = "State", type = "string", apiName = "State" });
+                    }
+                    else
+                    {
+                        remainingWidth = 27;
+                        dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
+                        columns.Add(new GridColumn { text = "Name", datafield = "FirstName", fieldType = "Text" });
+                        columns.Add(new GridColumn { text = "Owned items", datafield = "OwnedItemCount", fieldType = "number" });
+                        parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
+
+                        fields.Add(new GridField { name = "FirstName", type = "string", apiName = "FirstName" });
+                        fields.Add(new GridField { name = "OwnedItemCount", type = "string", apiName = "OwnedItemCount" });
+
+                    }
                     break;
                     #endregion
             }
@@ -1090,35 +1120,6 @@ where   h.ID <> @t order by h.[Level] desc;
                 IsReadOnly = isReadOnly,
                 ScoreAllocations = scoreAllocations
             });
-        }
-
-
-        [HttpGet, Route("{type}/{id:int}/grid/definition/parentValues")]
-        public async Task<HttpResponseMessage> GetGridParentFilterItems(string type, int id)
-        {
-            if ((type ?? "").ToUpper() == "ARTIFACTTYPE")
-            {
-                var parentType = Company.GetParentType(id, SystemObjects.ArtifactType);
-
-                if (parentType == null) return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("parent"));
-
-                var res = await Company.QueryAsync<string>("select ADV.DisplayValue from AssetDisplayValue ADV inner join Asset A on (A.ID = ADV.AssetID) inner join AssetType ATT on (A.AssetTypeID = ATT.ID) where ATT.[Object] = 'ArtifactType' and ATT.[ObjectID] = @objID order by 1", new { objID = parentType.ObjectID });
-
-                return Request.CreateResponse(HttpStatusCode.OK, res);
-            }
-
-            return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("parent"));
-        }
-
-        [HttpGet, Route("{type}/{id:int}/grid/definition/filterValues/{fieldTypeId:int}")]
-        public HttpResponseMessage GetGridFilterItems(int fieldTypeId)
-        {
-            var ft = Company.GetById<FieldType>(fieldTypeId);
-            if (ft == null)
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("field type"));
-
-            var gridColumn = getGridColumnForColumn(ft, 0, false, true);
-            return Request.CreateResponse(HttpStatusCode.OK, gridColumn.filteritems);
         }
 
         #endregion
@@ -1760,6 +1761,11 @@ where   h.ID <> @t order by h.[Level] desc;
         public HttpResponseMessage GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null)
         {
             var selected = Company.GetRelationshipFieldItems(fieldTypeID, @object, objectID, offset, rows, query, true);
+
+            if (selected.ContainsKey("RelationshipError"))
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, (string)selected["RelationshipError"]);
+            }
 
             List<System.Web.Mvc.SelectListItem> selection = new List<System.Web.Mvc.SelectListItem>();
 
@@ -3275,8 +3281,20 @@ from    (
                             }
                             });
                         }
-                    }
-                    load = null;
+                        else if(load.Action == "Promotion") // if bulk load promote display current status of the job
+                        {
+                            var currentStatus = GetPromotionStatusMessage(load);                            
+                            
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Status", FieldName = "Status", FieldDescription = "", Value = currentStatus  }
+                            }
+                            });
+                        }
+                    }                    
                     break;
                 #endregion
                 case SystemObjects.Policy:
@@ -4132,6 +4150,44 @@ where v.id = {0}", id)).FirstOrDefault();
             }
 
             return model;
+        }
+
+        private string GetPromotionStatusMessage(LoadDetail load)
+        {
+            var status = "Queued...";
+            if (Company.LoadItems.Any(x => x.LoadID == load.ID))
+            {
+                status = "Processing spreadsheet data...";
+
+                //once there are load items and put / post execution are both null
+                var loadInfo = Company.Loads.FirstOrDefault(x => x.ID == load.ID);
+                //once a post / put uid is in place
+                if (loadInfo != null && (loadInfo.PostExecutionID.HasValue || loadInfo.PutExecutionID.HasValue))
+                {
+                    status = "Submitted requests waiting processing...";
+                    //check if post / put uid is started
+                    if (loadInfo.PostExecutionID.HasValue)
+                    {
+                        var post = Company.ApiExecutions.FirstOrDefault(x => x.ExecutionID == loadInfo.PostExecutionID.Value);
+
+                        if(post != null && post.ProcessingStartedOn.HasValue)
+                        {
+                            status = "Submitted requests processing data...";
+                        }
+                        else
+                        {
+                            var put = Company.ApiExecutions.FirstOrDefault(x => x.ExecutionID == loadInfo.PutExecutionID.Value);
+
+                            if (put != null && post.ProcessingStartedOn.HasValue)
+                            {
+                                status = "Submitted requests processing data...";
+                            }
+                        }
+                    }
+                }
+            }
+
+            return status;
         }
 
         private string getUserLastSeenText(DateTime? dateLastLoggedIn)

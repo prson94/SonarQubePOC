@@ -426,7 +426,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 break;
             case "ownershiplookup":
                 this.showDescription = false;
-                console.log(this.currentType, this.model.FieldType.Type[this.currentType].Definition.ResponsibilityType);
                 this.onEnableListSingleResponsibilityType(Number.isInteger(this.model.FieldType.Type[this.currentType].Definition.ResponsibilityType))
                 break;
             case 'computedownershiplookup':
@@ -690,18 +689,17 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         return this.fieldsService.getLookupTokens(uid).pipe(map(
             r => {
                 this.model.LookupTokens = r;
-                if (this.model.LookupTokens && this.model.LookupTokens.length > 0)
-                {                
+                if (this.model.LookupTokens && this.model.LookupTokens.length > 0) {
                     if (
                         (this.model.FieldType.Type[this.currentType].Format.Display == null
-                        || this.model.FieldType.Type[this.currentType].Format.Display.length == 0)
+                            || this.model.FieldType.Type[this.currentType].Format.Display.length == 0)
                     ) {
                         this.model.FieldType.Type[this.currentType].Format.Display = this.model.LookupTokens[0].value;
                     }
 
                     if (
                         (this.model.FieldType.Type[this.currentType].Format.Edit == null
-                        || this.model.FieldType.Type[this.currentType].Format.Edit.length == 0)
+                            || this.model.FieldType.Type[this.currentType].Format.Edit.length == 0)
                     ) {
                         this.model.FieldType.Type[this.currentType].Format.Edit = this.model.LookupTokens[0].value;
                     }
@@ -1376,26 +1374,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         switch (val) {
             case 'IsDisplayable':
-                if (this.currentType === "OwnershipLookup") {
-                    if (this.isListable == true)
-                        return false;
-                    else
-                        return true;
-                }
-                else
-                    return (['ComplexRelationLookup', 'RefListRelationship'].indexOf(this.currentType) > -1);
+                return (['ComplexRelationLookup', 'RefListRelationship'].indexOf(this.currentType) > -1);
             case 'IsEditable':
                 return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Tag', 'Score'].indexOf(this.currentType) > -1);
             case 'IsListable':
-                if (this.currentType === "OwnershipLookup") {
-                    if (["PolicyType", "TaxonomyType"].indexOf(this.objectType) > -1) {
-                        this.isListable = false;
-                    }
-                    else {
-                        this.isListable = true;
-                    }
-                    return ["PolicyType", "TaxonomyType"].indexOf(this.objectType) > -1;
-                }
                 return (['ComplexRelationLookup', 'RefListRelationship', 'Json', 'JSON'].indexOf(this.currentType) > -1
                     || (this.currentType == 'Relationship' && !this.isListableRelationship));
             case 'IsRequired':
@@ -1429,7 +1411,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             return;
         var definitionArray: Relation[] = [];
         var fieldsArray: DefinitionField[] = [];
-        this.model.RelationItems.forEach(x => {
+        this.model.RelationItems.forEach((x, i) => {
             let definition = {
                 IntersectTypeUid: x.IntersectTypeUid,
                 AssetTypeUid: x.AssetTypeUid,
@@ -1437,7 +1419,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 Direction: Direction[x.Direction]
             };
 
-            let mappedFields: DefinitionField[] = x.DisplayFields.filter(x => x.Show || x.Filter !== '' || x.SortOrder).map((f) => {
+            let mappedFields: DefinitionField[] = x.DisplayFields.filter(xf => xf.Show || xf.Filter !== '' || xf.SortOrder).map((f) => {
                 return {
                     AssetTypeUid: x.AssetTypeUid,
                     FieldTypeName: f.FieldTypeName,
@@ -1446,7 +1428,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     DisplayOrder: f.DisplayOrder,
                     SortOrder: f.SortOrder,
                     Show: f.Show,
-                    Width: f.Width
+                    Width: f.Width,
+                    RelationIndex: i
                 };
             });
             definitionArray.push(definition);

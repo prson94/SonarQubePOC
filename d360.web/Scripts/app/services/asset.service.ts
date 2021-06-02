@@ -171,6 +171,10 @@ export class AssetService extends BaseObservableService {
                 url = url + '&' + qString;
         }
 
+        //to be removed with new filtering UI component
+        //current(sprint 5/2021) filtering uses contains on all fields, so we need to avoid value checks on numbers, decimals etc...
+        url += "&handleFiltersAsString=true";
+
         if (!isExport) {
             return this.http.get(url)
                 .pipe(

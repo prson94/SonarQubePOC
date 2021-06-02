@@ -917,6 +917,7 @@ from	IntersectType I
         {
             JObject results = await GetRelationships(queryParams);
             var includeTotal = true;
+            var includeAssetPath = false;
 
             if (queryParams != null)
             {
@@ -927,6 +928,14 @@ from	IntersectType I
                     if (!bool.TryParse(queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value, out includeTotal))
                     {
                         includeTotal = true;
+                    }
+                }
+
+                if (queryParamsList.Any(q => q.Key.ToLower() == "_includepath"))
+                {
+                    if (!bool.TryParse(queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "_includepath").Value, out includeAssetPath))
+                    {
+                        includeAssetPath = false;
                     }
                 }
             }
@@ -948,8 +957,16 @@ from	IntersectType I
             fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Inverse", FriendlyName = "Predicate Inverse" });
             fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "Uid", FriendlyName = "Subject Uid" });
             fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "AssetTypeUid", FriendlyName = "Subject AssetTypeUid" });
+            if (includeAssetPath)
+            {
+                fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "[Path]", FriendlyName = "Subject Asset Path" });
+            }
             fields.Add(new FieldType { Type = "string", Object = "Object", Name = "Uid", FriendlyName = "Object Uid" });
             fields.Add(new FieldType { Type = "string", Object = "Object", Name = "AssetTypeUid", FriendlyName = "Object AssetTypeUid" });
+            if (includeAssetPath)
+            {
+                fields.Add(new FieldType { Type = "string", Object = "Object", Name = "[Path]", FriendlyName = "Object Asset Path" });
+            }
 
             #region Populate Excel Document
 

@@ -100,7 +100,7 @@ export class TagService extends BaseObservableService {
     }
 
     doesTagExist(tag: TagType): Observable<any> {
-        let url = `api/v2/tags/exists?value=${tag.Value}`;
+        let url = 'api/v2/tags/exists?value=' + encodeURIComponent(tag.Value);
         return this.http.get(url, { observe: "response" })
             .pipe(map((data) => {
                 return data.status;

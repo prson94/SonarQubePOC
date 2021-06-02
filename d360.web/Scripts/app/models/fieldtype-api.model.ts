@@ -285,6 +285,7 @@ export class DefinitionField {
     SortOrder: number = 0;
     Show: boolean;
     Width: number;
+    RelationIndex: number;
 }
 
 export class Relation {

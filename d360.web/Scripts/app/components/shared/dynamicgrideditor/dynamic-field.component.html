@@ -52,6 +52,9 @@
                                             [virtualScroll]="field.VirtualScroll"
                                             [required]="isRequired()"
                                             [overlayLowerZIndex]="true">
+                                    <ng-template let-selitem pTemplate="selectedItem">
+                                        <div>{{getName(selitem.label)}}</div>
+                                    </ng-template>
                                 </p-dropdown>
                             </ng-container>
                             <ng-container *ngIf="field.UseColorControl">

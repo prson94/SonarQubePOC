@@ -5,78 +5,65 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfile-v8">
+  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfile-v9">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetDataProfile')
-BEGIN
-	CREATE TABLE [dbo].[AssetDataProfile](
-		[ID] BIGINT IDENTITY(1,1) NOT NULL,
-		[AssetID] BIGINT NOT NULL,
-		[ProfileSetDate] DATE NOT NULL,
-		[SampleCount] BIGINT NULL,
-		[NullCount] BIGINT NULL,
-		[BlankCount] BIGINT NULL,
-		[MeanValue] DECIMAL(22,4) NULL,		
-		[MinimumValue] NVARCHAR(500) NULL,
-		[MaximumValue] NVARCHAR(500) NULL,
-		[MinimumLength] INT NULL,
-		[MaximumLength] INT NULL,
-		[StandardDeviation] DECIMAL(28,4) NULL,		
-		[Multiline] BIT NULL,
-		[RegExp] NVARCHAR(200) NULL,
-		[Confidence] DECIMAL(28,4) NULL,
-		[Type] NVARCHAR(200) NULL,
-		[TypeQualifier] NVARCHAR(200) NULL,		
-		[LogicalType] BIT NULL,
-		[LeadingWhiteSpace] BIT NULL,
-		[LeadingZeroCount] INT NULL,
-		[TrailingWhiteSpace] BIT NULL,
-		[MatchCount] BIGINT NULL,
-		[OutlierCardinality] INT NULL,
-		[PossibleKey] BIT NULL,
-		[DataSignature] NVARCHAR(200) NULL,
-		[StructureSignature] NVARCHAR(200) NULL,
-		[Cardinality] INT NULL,
-		[ShapeCardinality] INT NULL,
-		[CreatedBy] INT NOT NULL,
-		[CreatedOn] DATETIME NOT NULL,
-		[UpdatedBy] INT NOT NULL,
-		[UpdatedOn] DATETIME NOT NULL,
-		CONSTRAINT [PK_AssetDataProfile_ID] PRIMARY KEY NONCLUSTERED ([ID]),
-		CONSTRAINT [FK_AssetDataProfile_Asset] FOREIGN KEY (AssetID) REFERENCES Asset(ID) ON DELETE CASCADE
-	)
-	
-	CREATE CLUSTERED INDEX IX_AssetDataProfile_AssetID_ProfileSetDate ON dbo.AssetDataProfile ([AssetID], [ProfileSetDate]);
-	
-	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID ON dbo.AssetDataProfile ([AssetID]);
-	
-	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_Confidence ON dbo.AssetDataProfile ([AssetID], [Confidence]);
-	
-	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_TypeQualifier ON dbo.AssetDataProfile ([AssetID], [TypeQualifier]);
+	IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetDataProfile')
+	BEGIN
+		CREATE TABLE [dbo].[AssetDataProfile](
+			[ID] BIGINT IDENTITY(1,1) NOT NULL,
+			[AssetID] BIGINT NOT NULL,
+			[ProfileSetDate] DATE NOT NULL,
+			[SampleCount] BIGINT NULL,
+			[NullCount] BIGINT NULL,
+			[BlankCount] BIGINT NULL,
+			[MeanValue] FLOAT NULL,		
+			[MinimumValue] NVARCHAR(500) NULL,
+			[MaximumValue] NVARCHAR(500) NULL,
+			[MinimumLength] INT NULL,
+			[MaximumLength] INT NULL,
+			[StandardDeviation] FLOAT NULL,		
+			[Multiline] BIT NULL,
+			[RegExp] NVARCHAR(200) NULL,
+			[Confidence] DECIMAL(28,4) NULL,
+			[Type] NVARCHAR(200) NULL,
+			[TypeQualifier] NVARCHAR(200) NULL,		
+			[LogicalType] BIT NULL,
+			[LeadingWhiteSpace] BIT NULL,
+			[LeadingZeroCount] INT NULL,
+			[TrailingWhiteSpace] BIT NULL,
+			[MatchCount] BIGINT NULL,
+			[OutlierCardinality] INT NULL,
+			[PossibleKey] BIT NULL,
+			[DataSignature] NVARCHAR(200) NULL,
+			[StructureSignature] NVARCHAR(200) NULL,
+			[Cardinality] INT NULL,
+			[ShapeCardinality] INT NULL,
+			[CreatedBy] INT NOT NULL,
+			[CreatedOn] DATETIME NOT NULL,
+			[UpdatedBy] INT NOT NULL,
+			[UpdatedOn] DATETIME NOT NULL,
+			CONSTRAINT [PK_AssetDataProfile_ID] PRIMARY KEY NONCLUSTERED ([ID]),
+			CONSTRAINT [FK_AssetDataProfile_Asset] FOREIGN KEY (AssetID) REFERENCES Asset(ID) ON DELETE CASCADE
+		)
+		
+		CREATE CLUSTERED INDEX IX_AssetDataProfile_AssetID_ProfileSetDate ON dbo.AssetDataProfile ([AssetID], [ProfileSetDate]);
+		
+		CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID ON dbo.AssetDataProfile ([AssetID]);
+		
+		CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_Confidence ON dbo.AssetDataProfile ([AssetID], [Confidence]);
+		
+		CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_TypeQualifier ON dbo.AssetDataProfile ([AssetID], [TypeQualifier]);
 
-	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_DataSignature ON dbo.AssetDataProfile ([AssetID], [DataSignature]);
-	
-	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_StructureSignature ON dbo.AssetDataProfile ([AssetID], [StructureSignature]);
-END
+		CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_DataSignature ON dbo.AssetDataProfile ([AssetID], [DataSignature]);
+		
+		CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_StructureSignature ON dbo.AssetDataProfile ([AssetID], [StructureSignature]);
+	END
 
-IF NOT EXISTS (
-	SELECT
-		*
-	FROM
-		sys.foreign_keys FK
-		INNER JOIN
-		sys.all_objects AO on FK.parent_object_id = AO.object_id     
-	where 
-		FK.[NAME] = 'FK_AssetDataProfile_Asset' 
-		and 
-		delete_referential_action_desc = 'CASCADE'
-)
-BEGIN
-	IF EXISTS (
+	IF NOT EXISTS (
 		SELECT
 			*
 		FROM
@@ -85,41 +72,48 @@ BEGIN
 			sys.all_objects AO on FK.parent_object_id = AO.object_id     
 		where 
 			FK.[NAME] = 'FK_AssetDataProfile_Asset' 
+			and 
+			delete_referential_action_desc = 'CASCADE'
 	)
 	BEGIN
+		IF EXISTS (
+			SELECT
+				*
+			FROM
+				sys.foreign_keys FK
+				INNER JOIN
+				sys.all_objects AO on FK.parent_object_id = AO.object_id     
+			where 
+				FK.[NAME] = 'FK_AssetDataProfile_Asset' 
+		)
+		BEGIN
+			ALTER TABLE AssetDataProfile
+			DROP CONSTRAINT FK_AssetDataProfile_Asset;
+		END
+		
+
 		ALTER TABLE AssetDataProfile
-		DROP CONSTRAINT FK_AssetDataProfile_Asset;
+		ADD CONSTRAINT [FK_AssetDataProfile_Asset] FOREIGN KEY (AssetID) REFERENCES Asset(ID) ON DELETE CASCADE
 	END
-	
 
 	ALTER TABLE AssetDataProfile
-	ADD CONSTRAINT [FK_AssetDataProfile_Asset] FOREIGN KEY (AssetDataProfileID) REFERENCES AssetDataProfile(ID) ON DELETE CASCADE
-END
+	ALTER COLUMN StandardDeviation FLOAT
+
+	ALTER TABLE AssetDataProfile
+	ALTER COLUMN MeanValue FLOAT
+
 		]]>
     </sql>
 	<rollback>
 	
 		<![CDATA[			
 		
-			IF EXISTS (
-				SELECT
-					*
-				FROM
-					sys.foreign_keys FK
-					INNER JOIN
-					sys.all_objects AO on FK.parent_object_id = AO.object_id     
-				where 
-					FK.[NAME] = 'FK_AssetDataProfile_Asset' 
-					and 
-					delete_referential_action_desc = 'CASCADE'
-			)
-			BEGIN
-				ALTER TABLE AssetDataProfile
-				DROP CONSTRAINT FK_AssetDataProfile_Asset;
+		ALTER TABLE AssetDataProfile
+		ALTER Column StandardDeviation DECIMAL(28,4)
 
-				ALTER TABLE AssetDataProfile
-				ADD CONSTRAINT [FK_AssetDataProfile_Asset] FOREIGN KEY (AssetDataProfileID) REFERENCES AssetDataProfile(ID)
-			END
+		ALTER TABLE AssetDataProfile
+		ALTER Column MeanValue DECIMAL(22,4)
+
 		]]>
 	</rollback>
   </changeSet>

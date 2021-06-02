@@ -22,6 +22,7 @@ import { AssetService } from "../../../services/asset.service";
 export class FilterItemComponent implements OnInit, OnChanges {
     @Input() assetTypeUid: string = "";
     @Input() loadIdentifier: string = "";
+    @Input() gridType: string = "List";
     @Input() condition: AdvancedFilterFieldCondition;
     @Input() fields: FieldTypeAPIModelFieldCondition[] = null;
     @Input() operators: OperatorModel[] = [];
@@ -68,7 +69,9 @@ export class FilterItemComponent implements OnInit, OnChanges {
     relationshipFieldName: string = "";
 
     minSQLDate = new Date(1753, 0, 1);
-
+    numberMax: number = null;
+    numberMin: number = null;
+   
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
     @ViewChild("multiInput", { static: false }) multiInputRef: MultiInputField;
     @ViewChild("dataTable", { static: false }) dataTable: Table;
@@ -108,11 +111,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 });
             }
 
-            if (SystemFields.GetSystemFieldDefinition().length > 0) {
+            var systemFields = SystemFields.GetSystemFieldDefinition(this.gridType);
+            if (systemFields.length > 0) {
                 let systemFieldsGroup: SelectItemGroup = { value: "system-field", label: "System Fields", items: [] };
                 this.allFieldsDropdown.push(systemFieldsGroup);
 
-                SystemFields.GetSystemFieldDefinition().forEach((f) => {
+                systemFields.forEach((f) => {
                     systemFieldsGroup.items.push({ value: f.Name, label: f.FriendlyName });
                 });
             }
@@ -471,7 +475,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
         var type = this.getFieldType(this.condition);
         if (type.Type) {
             if (this.condition.fieldType === "Lookup") {
-                this.loadLookupValues(params);
+                if (this.condition.field === "[Level]") {
+                    this.loadLookupValuesForLevelNames();
+                }
+                else {
+                    this.loadLookupValues(params);
+                }
             }
             if (this.condition.fieldType === "Tag") {
                 this.loadTagValues();
@@ -526,6 +535,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
         this.isLookupValuesLoading = true;
         var fieldTypeUid = this.currentField.AssetTypeUid;
+
         if (!fieldTypeUid) {
             fieldTypeUid = "00000000-0000-0000-0000-000000000000";
         }
@@ -551,7 +561,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.cdRef.markForCheck();
             });
     }
-
 
     loadTagValues() {
         if (!this.currentField.Values) {
@@ -659,6 +668,30 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 }
 
                 this.isLookupValuesLoading = false;
+                this.cdRef.markForCheck();
+            });
+    }
+
+    loadLookupValuesForLevelNames() {
+        if (this.lazyLoadSubscription) {
+            this.lazyLoadSubscription.unsubscribe();
+        }
+        this.isLookupValuesLoading = true;
+
+        this.lazyLoadSubscription = this.assetTypeService.getAssetTypeLevels(this.assetTypeUid)
+            .subscribe((res) => {
+                if (!this.currentField.Values || this.currentField.Values.length === 0) {
+                    this.currentField.Values = Array.from({ length: res.length });
+                }
+                let loadedData = [];
+
+                res.forEach((item) => {
+                    loadedData.push({ title: item.Name, value: item.Level });
+                });
+
+                this.currentField.Values = [...loadedData];
+                this.isLookupValuesLoading = false;
+
                 this.cdRef.markForCheck();
             });
     }
@@ -945,6 +978,14 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
         var type = this.getTypeForCondition(this.condition);
 
+        if (type === "Number") {
+            this.numberMax = 2147483647;
+            this.numberMin = -2147483648;
+        }
+        if (type === "Decimal") {
+            this.numberMax = 9223372036854775807;
+            this.numberMin = -9223372036854775808;
+        }
         if (type === "Number" || type === "Decimal" || type === "Score") {
 
             if (this.currentOperator.toString() === "IsInBand") {

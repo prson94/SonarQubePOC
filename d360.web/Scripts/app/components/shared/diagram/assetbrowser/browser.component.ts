@@ -331,7 +331,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let enabled = false;
 
         if (this.selectedDiagramAsset) {
-            enabled = (this.selectedDiagramAsset.Owners.length > 0);
+            enabled = (this.selectedDiagramAsset.HasOwners === true);
         }
 
         return enabled;
@@ -1752,13 +1752,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             .subscribe((asset) => {
                 diagramAsset.Url = "/asset/" + assetUid;
                 diagramAsset.Path = asset.Path;
-
+                diagramAsset.Uid = assetUid;
+                diagramAsset.Id = asset.AssetId;
                 forkJoin(
                     this.fieldsService.getFieldsV2(asset.AssetTypeUid, null, null),
                     this.assetService.getUIDetailsForAssetUID(assetUid),
-                    this.responsibilityService.getResponsibilityDetail(assetUid)
+                    this.responsibilityService.getHasResponsibilities(assetUid)
                 )
-                    .subscribe(([fields, ui, responsibilities]) => {
+                    .subscribe(([fields, ui, hasOwners]) => {
 
                         fields.forEach((fieldType) => {
                             let typeName = Object.keys(fieldType.Type)[0];
@@ -1776,15 +1777,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             }
                         });
 
-                        responsibilities.forEach((responsibility) => {
-                            diagramAsset.Owners.push({
-                                ResourceName: responsibility.Resource,
-                                ResponsibilityTypeName: responsibility.Responsibility,
-                                ResponsibilityTypeUid: responsibility.ResponsibilityUid,
-                                ResourceUid: responsibility.ResourceUid
-                            });
-                        });
-
+                        diagramAsset.HasOwners = hasOwners;
                         diagramAsset.TypeName = ui.TypeName;
                         diagramAsset.DisplayValue = ui.DisplayValue;
                         diagramAsset.Loaded = true;

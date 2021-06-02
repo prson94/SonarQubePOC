@@ -17,7 +17,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -448,7 +448,6 @@
     <Compile Include="Controllers\TaxonomyController.cs" />
     <Compile Include="Extensions\PowerBI.cs" />
     <Compile Include="Filters\AjaxValidationAntiForgeryTokenAttribute.cs" />
-    <Compile Include="Filters\CustomJSONContract.cs" />
     <Compile Include="Filters\ExceptionHandlingAttribute.cs" />
     <Compile Include="Filters\StringEnumControllerAttribute.cs" />
     <Compile Include="Filters\SwaggerContentTypesAttribute.cs" />
@@ -469,7 +468,6 @@
     <Compile Include="Models\Attributes\NonNullableParametersAttribute.cs" />
     <Compile Include="Models\ClientErrorModel.cs" />
     <Compile Include="Models\Diagram Models.cs" />
-    <Compile Include="Models\Extensions.cs" />
     <Compile Include="Models\Filter Models.cs" />
     <Compile Include="Models\Attributes\AiExceptionFilterAttribute.cs" />
     <Compile Include="Models\Attributes\AiHandleErrorAttribute.cs" />
@@ -769,7 +767,6 @@
     <Content Include="Scripts\app\components\assets-grid\advanced-filtering\filter-item.component.html" />
     <Content Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.component.html" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.html" />
-    <Content Include="Scripts\app\components\assets-grid\asset-grid-column-filter.component.html" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-details.component.html" />
@@ -949,7 +946,6 @@
     <Content Include="Scripts\app\components\workflowmonitor\workflowmonitor-list.component.html" />
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="Scripts\app\components\admin\scoring\measure-editor-dataquality.component.html" />
-    <Content Include="Scripts\app\components\assets-grid\asset-grid-top-level-filter.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-editor.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-field.component.html" />
     <Content Include="Scripts\app\components\shared\relationship\object-relationships.component.html" />
@@ -1031,6 +1027,7 @@
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.textarea.component.ts" />
+    <None Include="Scripts\app\components\hierarchy\hierarchy-item-structure.component.less" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy-item-structure.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy-list.component.ts" />
@@ -1561,7 +1558,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-custom-export.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-list.component.ts" />
@@ -1829,7 +1825,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-base.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-column-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-list.component.ts" />
