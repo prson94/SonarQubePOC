@@ -535,10 +535,7 @@ where 1=1
 
             if (impactedMeasureVersions.Count > 0)
             {
-                Company.SendScoreEventWithPayload(
-                    ScoreQueueChangeType.CheckTypeDependencyRemoved,
-                    new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions }
-                );
+                Company.CreateCheckDependencyRemovedNotificationExecution(impactedMeasureVersions);
             }
 
             return result;
@@ -673,10 +670,7 @@ where 1=1
                                 }).Distinct().ToList()
                             }).ToList();
 
-                        if (structuredMeasures.Count > 0)
-                        {
-                            Company.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, structuredMeasures);
-                        }
+                        Company.CreateMeasureChangedResultExecution(structuredMeasures);
 
                         #endregion
 
@@ -798,7 +792,8 @@ where 1=1
             var measureResults = Company.Query<ResponsibilityAssetMeasureProcessedResult>(@"
     select  A.Uid as AssetUid, 
             M.Uid as MetricAssetUid,
-            V.Uid as MetricAssetVersionUid
+            V.Uid as MetricAssetVersionUid,
+            M.AllocationUid
     from    Asset A 
             inner join AssetType T on T.ID = A.AssetTypeID and A.ID = @ID
             inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
@@ -819,15 +814,12 @@ where 1=1
                     EffectiveDate = today,
                     Measures = m.Select(o => new AssetMeasureChildModel
                     {
+                        AllocationUid = o.AllocationUid,
                         MetricAssetUid = o.MetricAssetUid,
                         MetricAssetVersionUid = o.MetricAssetVersionUid
                     }).Distinct().ToList()
                 }).ToList();
-
-            if (structuredMeasures.Count > 0)
-            {
-                Company.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, structuredMeasures);
-            }
+            Company.CreateMeasureChangedResultExecution(structuredMeasures);
         }
 
         public void InsertResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources, string context)
@@ -1022,10 +1014,7 @@ where   Success is null", transaction: trans);
 
                     trans.Commit();
 
-                    if (structuredMeasures.Count > 0)
-                    {
-                        Company.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, structuredMeasures);
-                    }
+                    Company.CreateMeasureChangedResultExecution(structuredMeasures);
                 }
                 catch (Exception)
                 {

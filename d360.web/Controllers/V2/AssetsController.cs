@@ -689,7 +689,7 @@ namespace d360.web.Controllers.V2
 
                 if (assetType == null) return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Type", AssetTypeErrors.NotFoundGeneric));
 
-                Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = assetType.ID });
+                Company.CreateRollupPathChangedExecution(assetTypeId: assetType.ID);
 
                 var result = new AssetTypeSuccess { Uid = assetType.uid, Message = "Asset Type is created", Success = true };
 
@@ -826,8 +826,7 @@ namespace d360.web.Controllers.V2
 
                 //update affected display values
                 Company.CreateOrUpdateTypeDisplayValuesAsync(model.ObjectID, model.Object.ToString());
-
-                Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = assetType.ID });
+                Company.CreateRollupPathChangedExecution(assetTypeId: assetType.ID);
 
                 var result = new AssetTypeSuccess { Uid = model.Uid, Message = $"{model.Name} successfully updated.", Success = true };
 
@@ -2121,8 +2120,7 @@ namespace d360.web.Controllers.V2
                 deletes.Add(new AssetTypeDelete() { Cascade = assetType.Cascade, ExecutionItemUid = Guid.NewGuid(), Uid = assetType.Uid });
 
                 var deleteAssetTypesResults = AssetRepository.DeleteSingleAssetType(deletes, type, execution);
-
-                Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = type.ID });
+                Company.CreateRollupPathChangedExecution(assetTypeId: type.ID);
 
                 return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(

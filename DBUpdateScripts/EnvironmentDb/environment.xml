@@ -215,6 +215,7 @@
 	<include file="scripts/Table.metrics.AssetVersionConditionItem.xml"/>
 	<include file="scripts/Table.metrics.AssetVersionConditionItemValue.xml"/>
 	<include file="scripts/Table.metrics.Execution.xml"/>
+	<include file="scripts/Table.metrics.ExecutionItem.xml"/>
 	<include file="scripts/Table.metrics.RollupPath.xml"/>
 	<include file="scripts/Table.metrics.RollupPathLink.xml"/>
 	<include file="scripts/Table.metrics.RollupPathSegment.xml"/>

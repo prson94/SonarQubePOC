@@ -1747,10 +1747,7 @@ from	IntersectType I
 
             if (impactedMeasureVersions.Count > 0)
             {
-                Company.SendScoreEventWithPayload(
-                    ScoreQueueChangeType.CheckTypeDependencyRemoved,
-                    new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions }
-                );
+                Company.CreateCheckDependencyRemovedNotificationExecution(impactedMeasureVersions);
             }
         }
 

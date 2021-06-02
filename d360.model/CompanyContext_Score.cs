@@ -50,9 +50,11 @@ namespace d360.model
 
         public DbSet<ScoreExecution> ScoreExecutions { get; set; }
 
+        public DbSet<ScoreExecutionItem> ScoreExecutionItems { get; set; }
+
         #endregion
 
-        #region Methods
+        #region Bulk Import Methods
 
         public List<InternalScoreResultApiResponseModel> BulkMetricsImport(List<InternalScoreResultApiRequestModel> model, ApiExecution execution, MetricAllocation allocation)
         {
@@ -302,34 +304,77 @@ from    #InternalMeasures T
 
     update #InternalMeasures set Message = null where Success = 1;", new { execution.ExecutionID }, transaction: trans);
 
-
                     #endregion
 
-                    results = Connection.Query<InternalScoreResultApiResponseModel>(
-                        $"select AssetUid, MetricAssetUid, EffectiveDate, Result, Success as IsSuccess, Message as ErrorMessage from #InternalMeasures",
-                        new { execution.ExecutionID },
-                        commandTimeout: 1200, transaction: trans
-                    ).ToList();
+                    // Send score recalculation notifications.
+                    var sql = @"
+declare @ef date = cast(getutcdate() as date)
+
+insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
+    select	{0} as ExecutionID,
+		    @changeType as ChangeType,
+		    ROW_NUMBER() OVER(ORDER BY M.AssetUid) as RowNumber,
+		    (
+            select	M.AssetUid,
+		    	    IM.EffectiveDate,
+				    (
+				    select	IM.AllocationUid,
+						    IM.MetricAssetUid,
+						    V.Uid as MetricAssetVersionUid,
+						    IM.Result
+				    from	#InternalMeasures IM
+							inner join metrics.AssetVersion V on V.AssetUid = IM.MetricAssetUid  and ( (IM.EffectiveDate between V.EffectiveDate and V.EffectiveEndDate) or (IM.EffectiveDate >= V.EffectiveDate and V.EffectiveEndDate is null) )
+					where	IM.AssetUid = M.AssetUid
+							for json path
+				    ) as Measures
+		    for json path, WITHOUT_ARRAY_WRAPPER
+		    ) as Payload,
+		    0 as [State]
+    from		#InternalMeasures M
+    where		Success = 1
+	group by	AssetUid";
+
+                    var scoreExecution = new ScoreExecution
+                    {
+                        Uid = Guid.NewGuid(),
+                        TriggeredByExecutionUid = execution.ExecutionID,
+                        StartedOn = DateTime.UtcNow,
+                        PercentComplete = 0
+                    };
+                    Add(scoreExecution);
+
+                    var changeType = ScoreQueueChangeType.AssetMeasures;
+                    sql = sql.Replace("{0}", scoreExecution.ID.ToString());
+                    int rowsImpacted = Execute(sql, new { changeType = (int)changeType }, commandTimeout: 1200, transaction: trans);
+
+                    Execute(@"
+update  T 
+set     T.Processed = P.[Count], 
+        T.Error = E.[Count], 
+        T.ProcessingStartedOn = null, 
+        T.CompletedOn = getutcdate() 
+from    api.Execution T 
+        cross apply (
+            select count() as [Count] from #InternalMeasures where Success = 1
+        ) P 
+        cross apply (
+            select count() as [Count] from #InternalMeasures where Success = 0
+        ) E 
+where   T.ExecutionID = @EecutionID", new { execution.ExecutionID }, transaction: trans);
 
                     trans.Commit();
 
-                    execution.Error = results.Count(i => !i.IsSuccess);
-                    execution.Processed = results.Count(i => i.IsSuccess);
-                    execution.ProcessingStartedOn = null;
-                    execution.CompletedOn = DateTime.UtcNow;
-                    Update(execution);
-
-                    var queueResults = results.Where(r => r.IsSuccess).Select(r => new ExternalMeasureResultsCreatedModel
+                    if (rowsImpacted > 0)
                     {
-                        AssetUid = r.AssetUid,
-                        EffectiveDate = r.EffectiveDate.Value,
-                        MetricAssetUid = r.MetricAssetUid,
-                        Result = r.Result
-                    }).ToList();
-
-                    if (queueResults.Count > 0)
-                    {
-                        SendScoreEventWithPayload(ScoreQueueChangeType.ExternalMeasureResultsCreated, queueResults, execution.ExecutionID);
+                        var info = new ScoreQueueInfo
+                        {
+                            CompanyID = CurrentCompanyID,
+                            ResourceID = CurrentResourceID,
+                            ChangeType = ScoreQueueChangeType.AssetMeasures,
+                            ExecutionUid = scoreExecution.Uid,
+                            StartedOn = execution.StartedOn
+                        };
+                        QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
                     }
                 }
                 catch (Exception ex)
@@ -809,12 +854,7 @@ where   E.ExecutionID = @ExecutionID
 
             try
             {
-                // Send to ScoreEngine.
-                var scores = results.Where(i => i.IsSuccess).Select(i => new ScoreCreatedModel { AllocationUid = i.AllocationUid, AssetUid = i.AssetUid, EffectiveDate = i.EffectiveDate }).ToList();
-                if (scores.Count > 0)
-                {
-                    SendScoreEventWithPayload(ScoreQueueChangeType.ExternalScoresCreated, scores, execution.ExecutionID);
-                }
+                CreateExternalScoreWorkflowCheckExecution(execution.ExecutionID);
 
                 execution.Error = results.Count(i => !i.IsSuccess);
                 execution.Processed = results.Count(i => i.IsSuccess);
@@ -837,7 +877,9 @@ where   E.ExecutionID = @ExecutionID
 
             return results;
         }
-
+        
+        #endregion Bulk Import Methods
+        
         public ObjectStatisticTileModel GetObjectStatistics(SystemObjects type, int id)
         {
             var model = new ObjectStatisticTileModel { Items = new List<ObjectStatisticTileItemModel>() };
@@ -880,72 +922,840 @@ where   E.ExecutionID = @ExecutionID
             return model;
         }
 
-        public Guid SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid? triggeredByExecutionUid = null, Guid? triggeredByMeasureUid = null, TimeSpan? timespan = null)
+        #region Score Engine Methods
+
+        public void CreateCheckDependencyRemovedNotificationExecution(List<Guid> versionUids)
+        {
+            var execution = createScoreExecution();
+
+            var executionItem = new ScoreExecutionItem
+            {
+                ChangeType = ScoreQueueChangeType.CheckTypeDependencyRemoved,
+                ExecutionID = execution.ID,
+                State = ScoreExecutionItemState.NotProcessed,
+                RowNumber = 1,
+                Payload = JsonConvert.SerializeObject(new CheckTypeDependencyRemovedModel { VersionUids = versionUids })
+            };
+            Add(executionItem);
+
+            sendScoreQueueMessage(execution, ScoreQueueChangeType.CheckTypeDependencyRemoved);
+        }
+
+        public void CreateCheckDependencyRemovedResultExecution(List<Guid> versionUids)
+        {
+            var sql = @"
+create table #results (AssetUid uniqueidentifier, AllocationUid  uniqueidentifier, MetricAssetUid uniqueidentifier, MetricAssetVersionUid uniqueidentifier, Result bit)
+insert into #results
+	select	distinct
+			S.AssetUid,
+			A2.AllocationUid,
+			A2.Uid as MetricAssetUid,
+			V2.Uid as MetricAssetVersionUid,
+			I2.Value as Result
+	from	metrics.AssetVersion V
+			inner join metrics.ScoreItem I on  I.AssetVersionUid = V.Uid
+			inner join metrics.ScoreItemLink L on L.ScoreItemUid = I.Uid 
+			inner join metrics.Score S on S.Uid = L.ScoreUid and S.EndDate is null
+			inner join metrics.ScoreItemLink L2 on L2.ScoreUid = S.Uid and L2.ScoreItemUid <> I.Uid
+			inner join metrics.ScoreItem I2 on I2.Uid = L2.ScoreItemUid
+			inner join metrics.AssetVersion V2 on V2.Uid = I2.AssetVersionUid and V2.State = 1
+			inner join metrics.Asset A2 on A2.State = 1 and A2.Uid = V2.AssetUid and A2.IsGroup = 0
+	where   V.Uid in @versionUids;
+
+CREATE INDEX IX_TempResults ON #results ( AssetUid );
+
+declare @ef date = cast(getutcdate() as date);
+
+insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
+    select  *
+    from    (
+	        select	@ID as ExecutionID,
+			        @changeType as ChangeType,
+			        ROW_NUMBER() over (order by AssetUid asc) as RowNumber,
+			        (
+			        select	A.AssetUid,
+					        @ef as EffectiveDate,
+					        (
+					        select	AllocationUid,
+							        MetricAssetUid,
+							        MetricAssetVersionUid,
+							        Result
+					        from	#results
+					        where	AssetUid = A.AssetUid
+					        for json path
+					        ) as Measures
+			        for json path, WITHOUT_ARRAY_WRAPPER
+			        ) as Payload,
+			        0 as [State]
+	        from	#results A
+	        group by A.AssetUid
+            ) J 
+    where   J.Payload like '%Measures%';";
+
+            var execution = createScoreExecution();
+
+            int rowsImpacted = Connection.Execute(
+                sql,
+                new
+                {
+                    execution.ID,
+                    versionUids,
+                    changeType = (int)ScoreQueueChangeType.AssetMeasures
+                });
+
+            if (rowsImpacted > 0)
+            {
+                sendScoreQueueMessage(execution);
+            }
+        }
+
+        public void CreateExternalScoreWorkflowCheckExecution(Guid apiExecutionUid)
+        {
+            var sql = @"
+insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
+    select  @ID as ExecutionID, 
+            @changeType as ChangeType,
+		    E.ItemNumber as RowNumber,
+		    (
+		    select	E.AllocationUid,
+				    E.AssetUid, 
+				    E.EffectiveDate
+		    for json path, WITHOUT_ARRAY_WRAPPER
+		    ) as Payload,
+            0 as [State]
+    from    api.ExecutionScore E
+    where   E.ExecutionID = @apiExecutionUid ";
+
+            var execution = createScoreExecution();
+
+            int rowsImpacted = Connection.Execute(
+                sql,
+                new
+                {
+                    execution.ID,
+                    apiExecutionUid,
+                    changeType = (int)ScoreQueueChangeType.WorkflowCheck
+                });
+
+            if (rowsImpacted > 0)
+            {
+                sendScoreQueueMessage(execution, ScoreQueueChangeType.WorkflowCheck);
+            }
+        }
+
+        public void CreateImportAssetsExecution(Guid apiExecutionUid, Guid assetTypeUid)
+        {
+            var sql = @"
+declare @ef date = cast(getutcdate() as date); 
+insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
+    select  * 
+    from    (
+            select	@ID as ExecutionID,
+		            @changeType as ChangeType,
+		            EA.ItemNumber as RowNumber,
+		            (
+		            select	EA.Uid as AssetUid, 
+				            @ef as EffectiveDate,
+				            (
+				            select	A.Uid as AllocationUid,
+						            M.Uid as MetricAssetUid,
+						            V.Uid as MetricAssetVersionUid,
+						            cast(0 as bit) as Result
+				            from	metrics.Allocation A 
+						            inner join metrics.Asset M on M.AllocationUid = A.Uid and A.AssetTypeUid = @assetTypeUid and M.State = 1 and A.ScoreType = 1 and A.IsExternallyCalculated = 0 and M.IsGroup = 0
+						            cross apply (
+							            select	Uid
+							            from	metrics.AssetVersion 
+							            where	AssetUid = M.Uid
+									            and EffectiveDate <= getutcdate()
+									            and EffectiveEndDate is null
+									            and JSON_VALUE(Definition, '$.Governance.Check') <> 'External'
+									            and Definition <> '{}'
+						            ) V
+				            for json path
+				            ) as Measures
+		            for json path, WITHOUT_ARRAY_WRAPPER
+		            ) as Payload,
+		            0 as [State]
+            from	api.ExecutionAsset EA 
+            where	EA.ExecutionID = @apiExecutionUid
+		            and EA.Success = 1
+            ) J 
+    where   J.Payload like '%Measures%';";
+
+            var execution = createScoreExecution(apiExecutionUid);
+
+            int rowsImpacted = Connection.Execute(
+                sql, 
+                new
+                {
+                    apiExecutionUid,
+                    execution.ID,
+                    changeType = (int)ScoreQueueChangeType.AssetMeasures,
+                    assetTypeUid
+                });
+
+            if (rowsImpacted > 0)
+            {
+                sendScoreQueueMessage(execution);
+            }
+        }
+
+        public void CreateDeleteRelationshipsExecution(Guid apiExecutionUid, int intersectTypeId)
+        {
+            if (isScoreAllocationPresentForIntersectType(intersectTypeId))
+            {
+                var sql = @"
+declare @ef date = cast(getutcdate() as date); 
+insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
+    select  *
+    from    (
+            select	@ID as ExecutionID,
+		            @changeType as ChangeType,
+		            ROW_NUMBER() OVER(order by A.ID) as RowNumber,
+		            (
+		            select	A.Uid as AssetUid, 
+				            @ef as EffectiveDate,
+				            (
+				            select	SAL.Uid as AllocationUid,
+						            SA.Uid as MetricAssetUid,
+						            V.Uid as MetricAssetVersionUid,
+						            cast(0 as bit) as Result
+				            from	metrics.Allocation SAL
+							        inner join metrics.Asset SA on SA.AllocationUid = SAL.Uid and SA.State = 1 and SA.IsGroup = 0
+							        cross apply (
+								        select	Uid
+								        from	metrics.AssetVersion 
+								        where	AssetUid = SA.Uid
+										        and EffectiveDate <= getutcdate()
+										        and EffectiveEndDate is null
+										        and (
+										        (JSON_VALUE(Definition, '$.Governance.Check') = 'Relation' and JSON_VALUE(Definition, '$.Governance.Relation.IntersectTypeUid') = T.Uid)
+										        or 
+										        (JSON_VALUE(Definition, '$.Governance.Check') = 'Predicate' and JSON_VALUE(Definition, '$.Governance.Predicate.PredicateUid') = P.Uid)                        
+										        )
+										        and Definition is not null 
+										        and Definition <> 'null' 
+										        and Definition <> '{}'
+							        ) V
+					        where	SAL.AssetTypeUid = ST.Uid and SAL.ScoreType = 1
+							        for json path
+				            ) as Measures
+		            for json path, WITHOUT_ARRAY_WRAPPER
+		            ) as Payload,
+		            0 as [State]
+	        from	api.ExecutionDeletedRelationship ER
+                    inner join api.Execution Ex on Ex.ExecutionID = ER.ExecutionID
+                    cross apply openjson(Ex.Fields) with (IntersectTypeUid uniqueidentifier '$.IntersectTypeUid') DF
+                    inner join IntersectType T on T.Uid = DF.IntersectTypeUid
+                    inner join Predicate P on P.ID = T.PredicateID 
+			        inner join Asset A on (A.ID = ER.SubjectID or A.ID = ER.ObjectID)
+                        and ER.ExecutionID = @apiExecutionUid 
+					    and ER.Success = 1
+			        inner join AssetType ST on ST.ID = A.AssetTypeID
+            ) J 
+    where   J.Payload like '%Measures%';";
+
+                var execution = createScoreExecution(apiExecutionUid);
+
+                int rowsImpacted = Connection.Execute(
+                    sql,
+                    new
+                    {
+                        apiExecutionUid,
+                        execution.ID,
+                        changeType = (int)ScoreQueueChangeType.AssetMeasures
+                    });
+
+                if (rowsImpacted > 0)
+                {
+                    sendScoreQueueMessage(execution);
+                }
+            }
+        }
+
+        public void CreateImportRelationshipsExecution(Guid apiExecutionUid, int intersectTypeId)
+        {
+            if (isScoreAllocationPresentForIntersectType(intersectTypeId))
+            {
+                var sql = @"
+declare @ef date = cast(getutcdate() as date); 
+insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
+    select  *
+    from    (
+            select	@ID as ExecutionID,
+		            @changeType as ChangeType,
+		            ROW_NUMBER() OVER(order by S.ID) as RowNumber,
+		            (
+		            select	S.Uid as AssetUid, 
+				            @ef as EffectiveDate,
+				            (
+				            select	SAL.Uid as AllocationUid,
+						            SA.Uid as MetricAssetUid,
+						            V.Uid as MetricAssetVersionUid,
+						            cast(0 as bit) as Result
+				            from	metrics.Allocation SAL
+							        inner join metrics.Asset SA on SA.AllocationUid = SAL.Uid and SA.State = 1 and SA.IsGroup = 0
+							        cross apply (
+								        select	Uid
+								        from	metrics.AssetVersion 
+								        where	AssetUid = SA.Uid
+										        and EffectiveDate <= getutcdate()
+										        and EffectiveEndDate is null
+										        and (
+										        (JSON_VALUE(Definition, '$.Governance.Check') = 'Relation' and JSON_VALUE(Definition, '$.Governance.Relation.IntersectTypeUid') = T.Uid)
+										        or 
+										        (JSON_VALUE(Definition, '$.Governance.Check') = 'Predicate' and JSON_VALUE(Definition, '$.Governance.Predicate.PredicateUid') = P.Uid)                        
+										        )
+										        and Definition is not null 
+										        and Definition <> 'null' 
+										        and Definition <> '{}'
+							        ) V
+					        where	SAL.AssetTypeUid = ST.Uid and SAL.ScoreType = 1
+							        for json path
+				            ) as Measures
+		            for json path, WITHOUT_ARRAY_WRAPPER
+		            ) as Payload,
+		            0 as [State]
+	        from	api.ExecutionRelationship ER
+			        inner join [Intersect] R on R.ID = ER.IntersectID 
+					        and ER.ExecutionID = @apiExecutionUid 
+					        and ER.Success = 1
+			        inner join IntersectType T on T.ID = R.IntersectTypeID 
+			        inner join [Predicate] P on P.ID = T.PredicateID 
+			        inner join Asset S on (S.Object = R.Subject and S.ObjectID = R.SubjectID) or (S.Object = R.Object and S.ObjectID = R.ObjectID)
+			        inner join AssetType ST on ST.ID = S.AssetTypeID
+            ) J 
+     where J.Payload like '%Measures%';";
+
+                var execution = createScoreExecution(apiExecutionUid);
+
+                int rowsImpacted = Connection.Execute(
+                    sql,
+                    new
+                    {
+                        apiExecutionUid,
+                        execution.ID,
+                        changeType = (int)ScoreQueueChangeType.AssetMeasures
+                    });
+
+                if (rowsImpacted > 0)
+                {
+                    sendScoreQueueMessage(execution);
+                }
+            }
+        }
+
+        public Guid CreateMeasureChangedNotificationExecution(MetricAssetVersion version, DateTime effectiveDate, Guid? triggeredByMeasureUid = null)
+        {
+            var execution = createScoreExecution(null, triggeredByMeasureUid);
+
+            var executionItem = new ScoreExecutionItem
+            {
+                ChangeType = ScoreQueueChangeType.MeasureChanged,
+                ExecutionID = execution.ID,
+                State = ScoreExecutionItemState.NotProcessed,
+                RowNumber = 1,
+                Payload = JsonConvert.SerializeObject(
+                    new MeasureChangedModel
+                    {
+                        EffectiveDate = effectiveDate,
+                        MetricAssetUid = version.AssetUid,
+                        MetricAssetVersionUid = version.Uid
+                    }
+                )
+            };
+            Add(executionItem);
+
+            sendScoreQueueMessage(execution, ScoreQueueChangeType.MeasureChanged);
+
+            return execution.Uid;
+        }
+
+        public void CreateMeasureChangedResultExecution(List<AssetMeasureModel> list, Guid? apiExecutionUid = null)
+        {
+            if (list.Count > 0)
+            {
+                var scoreExecutionItems = new List<ScoreExecutionItem>();
+                var effectiveDates = list.Select(o => o.EffectiveDate).Distinct().OrderBy(o => o).ToList();
+                effectiveDates.ForEach(ed =>
+                {
+                    var execution = createScoreExecution(apiExecutionUid);
+
+                    var itemsTable = new DataTable();
+                    itemsTable.Columns.Add("ExecutionID", typeof(long));
+                    itemsTable.Columns.Add("ChangeType", typeof(int));
+                    itemsTable.Columns.Add("RowNumber", typeof(int));
+                    itemsTable.Columns.Add("Payload", typeof(string));
+
+                    scoreExecutionItems.Clear();
+                    var assetMeasuresSubset = list.Where(m => m.EffectiveDate == ed).ToList();
+                    for (int i = 0; i < assetMeasuresSubset.Count; i++)
+                    {
+                        var itemRow = itemsTable.NewRow();
+                        itemRow["ExecutionID"] = execution.ID;
+                        itemRow["ChangeType"] = (int)ScoreQueueChangeType.AssetMeasures;
+                        itemRow["RowNumber"] = i + 1;
+                        itemRow["Payload"] = JsonConvert.SerializeObject(assetMeasuresSubset[i]);
+                        itemsTable.Rows.Add(itemRow);
+                    }
+
+                    using (var trans = Connection.BeginTransaction())
+                    {
+                        Connection.Execute(@"
+create table #ExecutionItem (
+	ExecutionID bigint not null,
+	ChangeType int not null,
+	RowNumber int not null,
+	Payload nvarchar(max) not null,
+	CONSTRAINT [PK_MetricsExecutionItem] PRIMARY KEY CLUSTERED ( ExecutionID DESC, ChangeType DESC, RowNumber ASC )
+)", transaction: trans);
+                        using (var bulkCopy = Connection.CreateBulkCopy("#ExecutionItem", trans: trans))
+                        {
+                            bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                            bulkCopy.ColumnMappings.Add("ChangeType", "ChangeType");
+                            bulkCopy.ColumnMappings.Add("RowNumber", "RowNumber");
+                            bulkCopy.ColumnMappings.Add("Payload", "Payload");
+
+                            bulkCopy.WriteToServer(itemsTable);
+                        }
+
+                        Connection.Execute(@"
+merge [metrics].[ExecutionItem] as T
+using #ExecutionItem as S
+on (S.ExecutionID = T.ExecutionID and S.ChangeType = T.ChangeType and S.RowNumber = T.RowNumber)
+when matched then 
+update set 
+    T.Payload = S.Payload,
+    T.State = 0
+when not matched then
+    insert (ExecutionID, ChangeType, RowNumber, State, Payload) 
+    values (S.ExecutionID, S.ChangeType, S.RowNumber, 0, S.Payload);", transaction: trans);
+
+                        trans.Commit();
+                    }
+
+                    sendScoreQueueMessage(execution);
+                });
+            }
+        }
+
+        public void CreateMeasureRemovedNotificationExecution(MetricAssetVersion version)
+        {
+            var execution = createScoreExecution();
+
+            var executionItem = new ScoreExecutionItem
+            {
+                ChangeType = ScoreQueueChangeType.MeasureRemoved,
+                ExecutionID = execution.ID,
+                State = ScoreExecutionItemState.NotProcessed,
+                RowNumber = 1,
+                Payload = JsonConvert.SerializeObject(
+                    new MeasureRemovedModel
+                    {
+                        EffectiveEndDate = version.EffectiveEndDate.Value,
+                        MetricAssetUid = version.AssetUid,
+                        MetricAssetVersionUid = version.Uid
+                    }
+                )
+            };
+            Add(executionItem);
+
+            sendScoreQueueMessage(execution, ScoreQueueChangeType.MeasureRemoved);
+        }
+
+        public void CreateMeasureRemovedResultExecution(Guid metricAssetVersionUid)
+        {
+            var execution = createScoreExecution();
+            var changeType = (int)ScoreQueueChangeType.AssetMeasures;
+            int rowsAffected = 0;
+
+            if (Connection.State != ConnectionState.Open)
+            {
+                Connection.Open();
+            }
+
+            string sql = "declare @ef date = cast(getutcdate() as date), @numberOfResults int = 0;";
+
+            // Build list of results before deleting score links and other score data.
+            sql += @"
+create table #results (AssetUid uniqueidentifier, AllocationUid  uniqueidentifier, MetricAssetUid uniqueidentifier, MetricAssetVersionUid uniqueidentifier, Result bit);
+
+insert into #results
+	select	distinct
+			S.AssetUid
+			,A.AllocationUid
+			,A.Uid as MetricAssetUid
+			,V.Uid as MetricAssetVersionUid
+			,coalesce(SI.Result, 0) as Result
+	from	metrics.ScoreItem I
+			inner join metrics.ScoreItemLink L on L.ScoreItemUid = I.Uid and I.AssetVersionUid = @metricAssetVersionUid
+			inner join metrics.Score S on S.Uid = L.ScoreUid
+			inner join metrics.AssetVersion LV on LV.Uid = I.AssetVersionUid 
+			inner join metrics.Asset LA on LA.Uid = LV.AssetUid
+			inner join metrics.Asset A on A.AllocationUid = LA.AllocationUid and A.Uid <> LA.Uid and A.IsGroup = 0 and (A.ParentUid <> LV.AssetUid or A.ParentUid is null)
+			cross apply (
+				select	max(EffectiveDate) as EffectiveDate
+				from	metrics.AssetVersion
+				where	AssetUid = A.Uid
+						and [State] = 1 
+						and EffectiveDate <= @ef 
+						and (EffectiveEndDate > @ef or EffectiveEndDate is null)
+			) MV
+			inner join metrics.AssetVersion V on A.Uid = V.AssetUid and V.State = 1 and V.EffectiveDate = MV.EffectiveDate
+			outer apply (
+				select	II.Value as Result
+				from	metrics.ScoreItemLink IL
+						inner join metrics.ScoreItem II on IL.ScoreItemUid = II.Uid and IL.ScoreUid = S.Uid and II.AssetVersionUid = V.Uid
+			) SI;
+
+CREATE INDEX IX_TempResults ON #results ( AssetUid );
+";
+
+            // Delete asset scores where this measure is the only one that was present and was created today (a one-measure score).
+            // Also delete score items linked to these scores that we will be deleting, but are NOT linked to any other (i.e. earlier) scores.
+            sql += @"
+create table #Scores (Uid uniqueidentifier, EffectiveDate date, EndDate date, OtherMeasuresCount int);
+
+insert into #Scores
+	select	distinct
+			L.ScoreUid,
+			S.EffectiveDate,
+			S.EndDate,
+			C.[Count] as OtherMeasuresCount
+	from	metrics.ScoreItem I
+			inner join metrics.ScoreItemLink L on L.ScoreItemUid = I.Uid and I.AssetVersionUid = @metricAssetVersionUid
+			inner join metrics.Score S on S.Uid = L.ScoreUid and S.EffectiveDate = @ef and S.EndDate is null
+			cross apply (
+				select	count(1) as [Count]
+				from	metrics.ScoreItemLink IL
+						inner join metrics.ScoreItem II on II.Uid = IL.ScoreItemUid and IL.ScoreUid = S.Uid and IL.ScoreItemUid <> L.ScoreItemUid 
+						inner join metrics.AssetVersion IV on IV.Uid = II.AssetVersionUid and IV.State = 1
+						inner join metrics.Asset IA on IA.State = 1 and IA.Uid = IV.AssetUid and IA.ParentUid is null
+			) C;
+
+-- Delete the link between this measure version and today's score. 
+delete	L 
+from	metrics.ScoreItemLink L 
+		inner join metrics.Score S on S.Uid = L.ScoreUid and S.EffectiveDate = @ef and S.EndDate is null 
+		inner join metrics.ScoreItem I on I.Uid = L.ScoreItemUid and I.AssetVersionUid = @metricAssetVersionUid; 
+
+-- End-date active scores that are prior to current UTC.
+update  T 
+set     T.EndDate = dateadd(dd, -1, @ef) ,
+		T.[Log] = T.[Log] + 'End-dated by Score Execution ' + cast(@ExecutionId as varchar(50)) + '; '
+from	metrics.Score T 
+		inner join #Scores S on S.Uid = T.Uid and S.EffectiveDate < @ef; 
+
+-- Delete any staging data tied to this measure version / effective date
+delete	metrics.StagingScoreItem where MeasureVersionUid = @metricAssetVersionUid and EffectiveDate = @ef; 
+
+-- Delete asset scores where this measure is the only one that was present and was created today (a one-measure score).
+delete  T 
+from	metrics.Score T 
+		inner join #Scores S on S.Uid = T.Uid and S.OtherMeasuresCount = 0 and S.EffectiveDate = @ef;";
+                
+            // Now insert into execution result table
+            sql += @"
+insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
+select  *
+from    (
+        select	@ID as ExecutionID,
+		        @changeType as ChangeType,
+		        ROW_NUMBER() over (order by AssetUid asc) as RowNumber,
+		        (
+		        select	A.AssetUid,
+				        @ef as EffectiveDate,
+				        (
+				        select	AllocationUid,
+						        MetricAssetUid,
+						        MetricAssetVersionUid,
+						        Result
+				        from	#results
+				        where	AssetUid = A.AssetUid
+				        for json path
+				        ) as Measures
+		        for json path, WITHOUT_ARRAY_WRAPPER
+		        ) as Payload,
+		        0 as [State]
+        from	#results A
+        group by A.AssetUid
+        ) J 
+where   J.Payload like '%Measures%';";
+                
+            rowsAffected = Connection.Execute(sql, new { ExecutionId = execution.Uid, execution.ID, metricAssetVersionUid, changeType }, commandTimeout: 1200);
+
+            if (rowsAffected > 0)
+            {
+                sendScoreQueueMessage(execution);
+            }
+        }
+
+        public void CreateRollupPathChangedExecution(int? intersectTypeId = null, int? assetTypeId = null, Guid? triggeredByApiExecutionUid = null)
+        {
+            var execution = createScoreExecution(triggeredByApiExecutionUid);
+
+            var executionItem = new ScoreExecutionItem
+            {
+                ExecutionID = execution.ID,
+                ChangeType = ScoreQueueChangeType.RollupPathChanged,
+                RowNumber = 1,
+                State = ScoreExecutionItemState.NotProcessed,
+                Payload = JsonConvert.SerializeObject(new RollupPathChangedModel { IntersectTypeId = intersectTypeId, AssetTypeId = assetTypeId })
+            };
+            Add(executionItem);
+
+            sendScoreQueueMessage(execution, ScoreQueueChangeType.RollupPathChanged);
+        }
+
+        public void CreateRuleResultsRemovedExecution(Guid assetUid)
+        {
+            var sql = @"
+create table #results (AssetUid uniqueidentifier, AllocationUid  uniqueidentifier, MetricAssetUid uniqueidentifier, MetricAssetVersionUid uniqueidentifier, EffectiveDate date, Result bit)
+insert into #results
+    select	S.AssetUid,
+            A.AllocationUid,
+		    V.AssetUid as MetricAssetUid,
+		    I.AssetVersionUid as MetricAssetVersionUid,
+		    S.EffectiveDate,
+            0 as Result
+    from	metrics.ScoreItem I
+		    inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid
+		    inner join metrics.Asset A on A.Uid = V.AssetUid
+		    inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.ScoreType = 2
+		    cross apply openjson(I.Evidence) Ev
+		    cross apply openjson(Ev.value) Rp 
+		    cross apply openjson(Rp.value)  with (Uid nvarchar(max) '$.Uid') as P
+		    inner join metrics.ScoreItemLink SIL on SIL.ScoreItemUid = I.Uid
+		    inner join metrics.Score S on S.Uid = SIL.ScoreUid
+    where	Evidence <> '{}' 
+		    and Evidence is not null
+		    and ISNUMERIC(Ev.[key]) = 1
+		    and Rp.[key] = 'RollupPath' 
+		    and P.Uid = @assetUid;
+
+CREATE INDEX IX_TempResults ON #results ( AssetUid );
+
+insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
+    select  * 
+    from    (
+	        select	@ID as ExecutionID,
+			        @changeType as ChangeType,
+			        ROW_NUMBER() over (order by AssetUid asc) as RowNumber,
+			        (
+			        select	A.AssetUid,
+					        A.EffectiveDate,
+					        (
+					        select	AllocationUid,
+							        MetricAssetUid,
+							        MetricAssetVersionUid,
+							        Result
+					        from	#results
+					        where	AssetUid = A.AssetUid
+                                    and EffectiveDate = A.EffectiveDate
+					        for json path
+					        ) as Measures
+			        for json path, WITHOUT_ARRAY_WRAPPER
+			        ) as Payload,
+			        0 as [State]
+	        from	#results A
+	        group by A.AssetUid, A.EffectiveDate
+            ) J 
+    where   J.Payload like '%Measures%';";
+
+            var execution = createScoreExecution();
+
+            int rowsImpacted = Connection.Execute(
+                sql,
+                new
+                {
+                    execution.ID,
+                    assetUid,
+                    changeType = (int)ScoreQueueChangeType.AssetMeasures
+                });
+
+            if (rowsImpacted > 0)
+            {
+                sendScoreQueueMessage(execution);
+            }
+        }
+
+        public void CreateRulesRemovedExecution(Guid apiExecutionUid, List<Guid> assetUids)
+        {
+            assetUids.ForEach(uid =>
+            {
+                var execution = createScoreExecution(apiExecutionUid);
+
+                var executionItem = new ScoreExecutionItem
+                {
+                    ChangeType = ScoreQueueChangeType.RuleAssetRemoved,
+                    ExecutionID = execution.ID,
+                    State = ScoreExecutionItemState.NotProcessed,
+                    RowNumber = 1,
+                    Payload = JsonConvert.SerializeObject(new RuleAssetRemovedModel { AssetUid = uid })
+                };
+                Add(executionItem);
+
+                sendScoreQueueMessage(execution, ScoreQueueChangeType.RuleAssetRemoved);
+            });
+        }
+
+        public void CreateRulesRemovedExecution(Guid apiExecutionUid, int assetTypeId)
+        {
+            var anyActiveMeasureVersions = Query<bool>(@"
+select cast(iif(count(1) > 0, 1, 0) as bit) as [Any] 
+from metrics.RollupPathSegment Se 
+inner join metrics.AssetVersionRollupPath Ar on Ar.RollupPathUid = Se.RollupPathUid and Se.AssetTypeID = @assetTypeId 
+inner join metrics.AssetVersion Ve on Ve.Uid = Ar.AssetVersionUid and Ve.EffectiveEndDate is null", new { assetTypeId }).First();
+
+            if (anyActiveMeasureVersions)
+            {
+                var assetUids = Query<Guid>("select uid from api.ExecutionDeletedAsset where ExecutionID = @apiExecutionUid and Success = 1", new { apiExecutionUid }).ToList();
+                CreateRulesRemovedExecution(apiExecutionUid, assetUids);
+            }
+        }
+
+        public void CreateWorkflowCheckExecution(ScoreExecution execution, ScoreQueueChangeType previousChangeType)
+        {
+            var sql = @"
+insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
+	select	ExecutionID,
+			@changeType,
+			RowNumber,
+			(
+				select	json_value(Measures, '$[0].AllocationUid') as AllocationUid,
+						AssetUid,
+						EffectiveDate
+				from	openjson(I.Payload) with (AssetUid uniqueidentifier '$.AssetUid', EffectiveDate date '$.EffectiveDate', Measures nvarchar(max) '$.Measures' as json)
+				for json path, WITHOUT_ARRAY_WRAPPER
+			) as Payload,
+			0 as [State]
+	from	metrics.ExecutionItem I
+	where	ExecutionID = @ID 
+			and ChangeType = @previousChangeType
+			and [State] = 1";
+
+            int rowsImpacted = Connection.Execute(
+                sql,
+                new
+                {
+                    execution.ID,
+                    changeType = (int)ScoreQueueChangeType.WorkflowCheck,
+                    previousChangeType = (int)previousChangeType
+                });
+
+            if (rowsImpacted > 0)
+            {
+                sendScoreQueueMessage(execution, ScoreQueueChangeType.WorkflowCheck);
+            }
+        }
+
+        public void CreateWorkflowItemFieldUpdateExecution(AssetType assetType, Asset asset)
+        {
+            if (assetType != null && asset != null && Any<MetricAllocation>(i => i.AssetTypeUid == assetType.uid && i.ScoreType == ScoreType.Governance && !i.IsExternallyCalculated))
+            {
+                var sql = @"
+declare @ef date = cast(getutcdate() as date)
+
+insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
+    select  * 
+    from    ( 
+            select	@ID as ExecutionID,
+		            @changeType as ChangeType,
+		            1 as RowNumber,
+		            (
+		            select	@AssetUid as AssetUid, 
+				            @ef as EffectiveDate,
+				            (
+				            select	A.Uid as AllocationUid,
+						            M.Uid as MetricAssetUid,
+						            V.Uid as MetricAssetVersionUid,
+						            cast(0 as bit) as Result
+				            from	metrics.Allocation A 
+						            inner join metrics.Asset M on M.AllocationUid = A.Uid and A.AssetTypeUid = @AssetTypeUid and M.State = 1 and A.ScoreType = 1 and A.IsExternallyCalculated = 0 and M.IsGroup = 0
+						            cross apply (
+							            select	Uid
+							            from	metrics.AssetVersion 
+							            where	AssetUid = M.Uid
+									            and EffectiveDate <= getutcdate()
+									            and EffectiveEndDate is null
+									            and JSON_VALUE(Definition, '$.Governance.Check') <> 'External'
+									            and Definition <> '{}'
+						            ) V
+				            for json path
+				            ) as Measures
+		            for json path, WITHOUT_ARRAY_WRAPPER
+		            ) as Payload,
+		            0 as [State]
+            from	Asset EA 
+            where	EA.Uid = @AssetUid
+            ) J 
+    where   J.Payload like '%Measures%'";
+
+                var execution = createScoreExecution();
+
+                int rowsImpacted = Connection.Execute(
+                    sql,
+                    new
+                    {
+                        execution.ID,
+                        AssetUid = asset.uid,
+                        AssetTypeUid = assetType.uid,
+                        changeType = (int)ScoreQueueChangeType.AssetMeasures
+                    });
+
+                if (rowsImpacted > 0)
+                {
+                    sendScoreQueueMessage(execution);
+                }
+            }
+        }
+
+        #region helpers
+
+        private ScoreExecution createScoreExecution(Guid? triggeredByApiExecutionUid = null, Guid? triggeredMeasureUid = null)
         {
             var execution = new ScoreExecution
             {
                 Uid = Guid.NewGuid(),
-                TriggeredByExecutionUid = triggeredByExecutionUid,
-                TriggeredByMeasureUid = triggeredByMeasureUid,
                 StartedOn = DateTime.UtcNow,
-                PercentComplete = 0
+                PercentComplete = 0,
+                TriggeredByExecutionUid = triggeredByApiExecutionUid,
+                TriggeredByMeasureUid = triggeredMeasureUid
             };
-            Add(execution);
 
+            Add(execution);
+            
+            return execution;
+        }
+        
+        private void sendScoreQueueMessage(ScoreExecution execution, ScoreQueueChangeType changeType = ScoreQueueChangeType.AssetMeasures)
+        {
             var info = new ScoreQueueInfo
             {
                 CompanyID = CurrentCompanyID,
                 ResourceID = CurrentResourceID,
                 ChangeType = changeType,
                 ExecutionUid = execution.Uid,
-                StartedOn = execution.StartedOn,
-                Location = ScoreQueueExecutionDataLocation.File
+                StartedOn = execution.StartedOn
             };
-            Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.StorageFile, item).Wait();
-            if (timespan.HasValue)
-            {
-                QueueSource.CreateMessageAsync(Config.GetValue<string>("ScoringQueue"), info, timespan.Value).Wait();
-            }
-            else
-            {
-                QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
-            }
-            
-            return execution.Uid;
-        }
 
-        public async Task SendContinuingScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid executionUid, DateTime startedOn)
-        {
-            var info = new ScoreQueueInfo
-            {
-                CompanyID = CurrentCompanyID,
-                ResourceID = CurrentResourceID,
-                ChangeType = changeType,
-                ExecutionUid = executionUid,
-                StartedOn = startedOn,
-                Location = ScoreQueueExecutionDataLocation.File
-            };
-            await Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.StorageFile, item);
             QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
         }
 
-        public async Task SaveScoreProcessingResultsAsync<T>(Guid executionUid, ScoreQueueChangeType changeType, string resultFileSuffix, T item, DateTime? startedOn = null)
+        private bool isScoreAllocationPresentForIntersectType(int id)
         {
-            if (!startedOn.HasValue)
-            {
-                startedOn = DateTime.UtcNow;
-            }
+            var present = Query<bool>(@"
+select	cast(iif(count(1)>0,1,0) as bit) 
+from	IntersectType T
+	inner join AssetType A on (A.Object = T.Subject and A.ObjectID = T.SubjectID) or (A.Object = T.Object and A.ObjectID = T.ObjectID)
+	inner join metrics.Allocation L on L.AssetTypeUid = A.Uid and L.ScoreType = 1
+where   T.ID = @id", new { id }).Single();
 
-            var info = new ScoreQueueInfo
-            {
-                CompanyID = CurrentCompanyID,
-                ChangeType = changeType,
-                ExecutionUid = executionUid,
-                StartedOn = startedOn.Value,
-                Location = ScoreQueueExecutionDataLocation.File
-            };
-            await Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, $"{info.StorageFilePrefix}_{resultFileSuffix}.json", item);
+            return present;
         }
+
+        #endregion helpers
 
         public List<Guid> GetImpactedMeasureVersionsBy(MetricGovernanceCheckType check, int typeId)
         {
@@ -1000,10 +1810,6 @@ from	metrics.AssetVersion V
             
             return list;
         }
-
-        #endregion
-
-        #region Score Engine Methods
 
         public DataQualityMeasureQueryModel BuildDataQualityMeasureQueryModel(MetricDataQualityQueryType queryType, Guid assetVersionRollupPathUid)
         {
@@ -1175,7 +1981,7 @@ from	metrics.AssetVersion V
             return list;
         }
 
-        public List<AssetMeasureModel> GetDataQualityAssetEffectiveDateResultModels(DataQualityMeasureQueryModel query, Guid metricAssetUid, Guid metricAssetVersionUid, DateTime measureEffectiveDate)
+        public List<AssetMeasureModel> GetDataQualityAssetEffectiveDateResultModels(DataQualityMeasureQueryModel query, Guid allocationUid, Guid metricAssetUid, Guid metricAssetVersionUid, DateTime measureEffectiveDate)
         {
             var args = new DynamicParameters();
             args.Add("@AssetVersionEffectiveDate", measureEffectiveDate, DbType.Date);
@@ -1194,6 +2000,7 @@ from	metrics.AssetVersion V
                     EffectiveDate = o.EffectiveDate, 
                     Measures = new List<AssetMeasureChildModel> {
                         new AssetMeasureChildModel { 
+                            AllocationUid = allocationUid,
                             MetricAssetUid = metricAssetUid, 
                             MetricAssetVersionUid = metricAssetVersionUid, 
                             Result = false
@@ -1205,7 +2012,7 @@ from	metrics.AssetVersion V
             return list;
         }
 
-        #endregion
+        #endregion Score Engine Methods
     }
 
     internal class MetricHierarchyBuilder
