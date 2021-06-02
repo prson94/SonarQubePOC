@@ -10649,13 +10649,13 @@ EG.GroupUid
                     DataProfileTable.Columns.Add("SampleCount", typeof(long));
                     DataProfileTable.Columns.Add("NullCount", typeof(long));
                     DataProfileTable.Columns.Add("BlankCount", typeof(long));
-                    DataProfileTable.Columns.Add("MeanValue", typeof(decimal));
+                    DataProfileTable.Columns.Add("MeanValue", typeof(double));
                     DataProfileTable.Columns.Add("MinimumValue", typeof(string));
 
                     DataProfileTable.Columns.Add("MaximumValue", typeof(string));
                     DataProfileTable.Columns.Add("MinimumLength", typeof(int));
                     DataProfileTable.Columns.Add("MaximumLength", typeof(int));
-                    DataProfileTable.Columns.Add("StandardDeviation", typeof(decimal));
+                    DataProfileTable.Columns.Add("StandardDeviation", typeof(double));
                     DataProfileTable.Columns.Add("Type", typeof(string));
 
                     DataProfileTable.Columns.Add("Multiline", typeof(bool));
