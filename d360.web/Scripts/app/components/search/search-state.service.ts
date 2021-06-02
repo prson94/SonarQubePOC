@@ -116,6 +116,7 @@ export class SearchStateService extends BaseObservableService {
         this._initial = !keepFilters;
         if (!keepFilters) {
             this._checkTreeKeys = null;
+            this.selectedFilters = [];
             this.advancedFilters = [];
             this._pageNumber.next(0);
         }
