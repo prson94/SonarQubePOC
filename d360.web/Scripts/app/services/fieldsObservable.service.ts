@@ -436,7 +436,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
                             (res) => {
                                 return { fieldTypeID: event.fieldTypeID, results: res, event: event.event }
                             }
-                        )
+                        ),
+                        catchError(err => this.handleError(err))
                     );
                 }
             )
