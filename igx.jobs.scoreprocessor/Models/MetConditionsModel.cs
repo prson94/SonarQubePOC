@@ -5,7 +5,7 @@ namespace igx.jobs.scoreprocessor.Models
 {
     internal class MetConditionsModel
     {
-        public bool ConditionMet { get; set; } = false;
+        public bool ConditionMet { get; set; }
         public decimal? SelectedWeight { get; set; }
         public float? SelectedThreshold { get; set; }
         public Guid? SelectedConditionUid

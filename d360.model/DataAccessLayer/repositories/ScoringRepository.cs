@@ -711,6 +711,9 @@ end";
                     case ScoreQueueChangeType.WorkflowCheck:
                         model.Payload = item.GetPayload<ScoreCreatedModel>();
                         break;
+                    default:
+                        model.Payload = "{}";
+                        break;
                 }
                 models.Add(model);
             }

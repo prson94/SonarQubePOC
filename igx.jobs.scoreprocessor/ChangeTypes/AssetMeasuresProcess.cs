@@ -122,19 +122,6 @@ from	metrics.Asset A
 		) Al on Al.AllocationUid = A.AllocationUid and ( (Al.EffectiveDate between V.EffectiveDate and V.EffectiveEndDate) or (Al.EffectiveDate >= V.EffectiveDate and V.EffectiveEndDate is null) )";
 
         const string SUPPORTING_DATA_SQL = @"
-select	distinct 
-		M.AllocationUid, A.AssetTypeId, P.AssetUid, P.EffectiveDate
-from	metrics.ExecutionItem I
-		cross apply openjson(Payload) 
-			with ( AssetUid uniqueidentifier '$.AssetUid', EffectiveDate date '$.EffectiveDate', Measures nvarchar(max) '$.Measures' AS JSON ) P 
-		cross apply openjson(P.Measures) 
-            with ( AllocationUid uniqueidentifier '$.AllocationUid', MetricAssetUid uniqueidentifier '$.MetricAssetUid', MetricAssetVersionUid uniqueidentifier '$.MetricAssetVersionUid', Result bit '$.Result' ) M 
-		inner join Asset A on A.Uid = P.AssetUid
-where	I.ExecutionID = @ExecutionID
-		and I.ChangeType = 0
-order by P.EffectiveDate,
-		P.AssetUid;
-
 select  * 
 from    FieldType 
 where   AssetTypeID in (
@@ -167,9 +154,7 @@ where   AssetTypeID in (
                 checkIfOtherRunningExecutions(company);
                 startExecutionProcessing(company);
 
-                var supportingDataRequest = await company.QueryMultipleAsync(SUPPORTING_DATA_SQL, new { ExecutionID = ExecutionRecord.ID }, commandTimeout: 900); 
-                var uniqueAssetCombinations = supportingDataRequest.Read<UniqueAssetEffectiveDateModel>().ToList();
-                var fieldTypes = supportingDataRequest.Read<FieldType>().ToList();
+                var fieldTypes = company.Query<FieldType>(SUPPORTING_DATA_SQL, new { ExecutionID = ExecutionRecord.ID }, commandTimeout: 900); 
 
                 // Get the full list of relevant measures based on the allocations and effective dates.
                 var allocationRequest = await company.QueryAsync<AllocationDataModel>(ALLOCATION_SQL, new { ExecutionID = ExecutionRecord.ID });

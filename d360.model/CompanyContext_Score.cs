@@ -1248,7 +1248,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 
         public Guid CreateMeasureChangedNotificationExecution(MetricAssetVersion version, DateTime effectiveDate, Guid? triggeredByMeasureUid = null)
         {
-            var execution = createScoreExecution(null, triggeredByMeasureUid);
+            var execution = createScoreExecution( triggeredMeasureUid: triggeredByMeasureUid);
 
             var executionItem = new ScoreExecutionItem
             {

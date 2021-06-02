@@ -13,8 +13,7 @@ namespace d360.core.queue
         RollupPathChanged = 5,
         WorkflowCheck = 6,
         CheckTypeDependencyRemoved = 7,
-        RuleAssetRemoved = 8,
-        ResponsibilityRuleProcessed = 9
+        RuleAssetRemoved = 8
     }
 
     public class ScoreQueueInfo
