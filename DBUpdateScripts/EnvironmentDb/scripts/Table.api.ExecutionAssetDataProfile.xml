@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Table.api.ExecutionAssetDataProfile-v3">
+  <changeSet author="bquinlivan" id="Table.api.ExecutionAssetDataProfile-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -24,12 +24,12 @@ BEGIN
 		[SampleCount] BIGINT NULL,
 		[NullCount] BIGINT NULL,
 		[BlankCount] BIGINT NULL,
-		[MeanValue] DECIMAL(22,4) NULL,		
+		[MeanValue] FLOAT NULL,		
 		[MinimumValue] NVARCHAR(500) NULL,
 		[MaximumValue] NVARCHAR(500) NULL,
 		[MinimumLength] INT NULL,
 		[MaximumLength] INT NULL,
-		[StandardDeviation] DECIMAL(28,4) NULL,
+		[StandardDeviation] FLOAT NULL,
 		[Multiline] BIT NULL,
 		[RegExp] NVARCHAR(200) NULL,
 		[Confidence] DECIMAL(28,4) NULL,
@@ -127,10 +127,22 @@ END
 ALTER table api.ExecutionAssetDataProfile
 ALTER COLUMN [RegExp] NVARCHAR(MAX);
 
+ALTER table api.ExecutionAssetDataProfile
+ALTER COLUMN [MeanValue] FLOAT;
+
+ALTER table api.ExecutionAssetDataProfile
+ALTER COLUMN [StandardDeviation] FLOAT;
+
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
+
+		ALTER table api.ExecutionAssetDataProfile
+		ALTER COLUMN [MeanValue] DECIMAL(22,4);
+
+		ALTER table api.ExecutionAssetDataProfile
+		ALTER COLUMN [StandardDeviation] DECIMAL(28,4);
 
 		]]>
 	</rollback>
