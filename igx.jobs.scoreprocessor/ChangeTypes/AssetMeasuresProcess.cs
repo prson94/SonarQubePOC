@@ -154,7 +154,8 @@ where   AssetTypeID in (
                 checkIfOtherRunningExecutions(company);
                 startExecutionProcessing(company);
 
-                var fieldTypes = company.Query<FieldType>(SUPPORTING_DATA_SQL, new { ExecutionID = ExecutionRecord.ID }, commandTimeout: 900); 
+                var fieldTypesRequest = await company.QueryAsync<FieldType>(SUPPORTING_DATA_SQL, new { ExecutionID = ExecutionRecord.ID }, commandTimeout: 900);
+                var fieldTypes = fieldTypesRequest.ToList();
 
                 // Get the full list of relevant measures based on the allocations and effective dates.
                 var allocationRequest = await company.QueryAsync<AllocationDataModel>(ALLOCATION_SQL, new { ExecutionID = ExecutionRecord.ID });
