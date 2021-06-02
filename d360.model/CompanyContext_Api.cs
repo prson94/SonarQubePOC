@@ -495,11 +495,33 @@ from	api.ExecutionAsset E
             new { executionID }, commandTimeout: timeout);
         }
 
-        private void LogFieldLookupErrors(Guid executionID, string obj, int objID, string errorPrefix, int timeout = 3600)
+        private void LogFieldLookupErrors(Guid executionID, string obj, int objID, string errorPrefix, bool lookupFieldsPassedByValue, int timeout = 3600)
         {
             string targetTable = "api.ExecutionRelationship";
             if (obj != "IntersectType") targetTable = "api.ExecutionAsset";
-            Connection.Execute($@"
+
+            if (lookupFieldsPassedByValue)
+            {
+                Connection.Execute($@"
+update	T
+set		T.Success = 0,
+		T.[Message] = coalesce(T.[Message] + '; ', '') + '{errorPrefix} contains one or more fields with invalid lookup values: [' + S.FieldValue + ']'
+from	{targetTable} T
+		inner join	(
+					select F.* from FieldType FT
+					inner join {ApiExecutionFieldTable} F on F.FieldTypeID = ft.Id and executionid = @executionid
+					cross apply STRING_SPLIT(f.fieldvalue,',')Val
+					left join AssetType AT on AT.object = ft.lookupobjecttype + 'Type' and at.ObjectID = ft.LookupObjectID
+					left join Asset A on A.AssetTypeID = AT.ID and A.ObjectID = try_cast(val.Value as int)
+					left join AssetType RefType on RefType.Object = ft.LookupObjectType and RefType.Object = 'ReferenceItemType' and reftype.objectid =  try_cast(val.Value as int)
+					where FT.Object = @obj and FT.ObjectID = @objid and [Type] = 'Lookup' and F.FieldValue is not null and (A.Id is null and reftype.id is null) and (try_cast(val.Value as int) <> 0 or try_cast(val.Value as int) IS NULL)
+					) 
+					S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
+", new { executionID, obj = new DbString { Value = obj, Length = 50, IsAnsi = true }, objID }, commandTimeout: timeout);
+            }
+            else
+            {
+                Connection.Execute($@"
 update	T
 set		T.Success = 0,
 		T.[Message] = coalesce(T.[Message] + '; ', '') + '{errorPrefix} contains one or more fields with invalid lookup values: [' + S.Names + ']'
@@ -517,6 +539,8 @@ from	{targetTable} T
 					group by	A.ExecutionID, A.ItemNumber
 					) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
 ", new { executionID, obj = new DbString { Value = obj, Length = 50, IsAnsi = true }, objID }, commandTimeout: timeout);
+            }
+
         }
 
         private void LogRelationshipErrors(Guid executionID, string obj, int objID, string errorPrefix, int timeout = 3600, bool lookupFieldsPassedByValue = false)
@@ -4782,7 +4806,7 @@ where   ExecutionID = @ExecutionID
 
                     if (hasLookupFieldTypes)
                     {
-                        LogFieldLookupErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout);
+                        LogFieldLookupErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", lookupFieldsPassedByValue, timeout);
                         AddMeasurement(metrics, "LogFieldLookupErrors", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
                     }
@@ -5714,7 +5738,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                         }
                         AddMeasurement(metrics, "ResolveFieldLookupValues", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
-                        LogFieldLookupErrors(execution.ExecutionID, "IntersectType", rt.ID, "Relationship", timeout);
+                        LogFieldLookupErrors(execution.ExecutionID, "IntersectType", rt.ID, "Relationship", lookupFieldsPassedByValue, timeout);
                         AddMeasurement(metrics, "LogFieldLookupErrors", sw.ElapsedMilliseconds, ++step);
                     }
 
@@ -7851,7 +7875,7 @@ where	ExecutionID = @ExecutionID and (Name is null or Name = '');
         public void CalculateProposedKeyHashes(AssetType at, Guid executionID, int timeout = 3600, int? parentIntersectTypeId = null, SqlTransaction trans = null, string assetTable = "api.ExecutionAsset", string fieldTable = "api.ExecutionField")
         {
             string keyErrorMessage = "'Key values match another asset under a different set of key fields. '";
-            string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey varchar(32)); CREATE CLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
+            string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey varchar(32)); CREATE NONCLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
             string keyComparisonUpdateStatement = $@"
                         update  T 
                         set     T.Success = 0, 
@@ -10460,13 +10484,13 @@ EG.GroupUid
                     DataProfileTable.Columns.Add("SampleCount", typeof(long));
                     DataProfileTable.Columns.Add("NullCount", typeof(long));
                     DataProfileTable.Columns.Add("BlankCount", typeof(long));
-                    DataProfileTable.Columns.Add("MeanValue", typeof(decimal));
+                    DataProfileTable.Columns.Add("MeanValue", typeof(double));
                     DataProfileTable.Columns.Add("MinimumValue", typeof(string));
 
                     DataProfileTable.Columns.Add("MaximumValue", typeof(string));
                     DataProfileTable.Columns.Add("MinimumLength", typeof(int));
                     DataProfileTable.Columns.Add("MaximumLength", typeof(int));
-                    DataProfileTable.Columns.Add("StandardDeviation", typeof(decimal));
+                    DataProfileTable.Columns.Add("StandardDeviation", typeof(double));
                     DataProfileTable.Columns.Add("Type", typeof(string));
 
                     DataProfileTable.Columns.Add("Multiline", typeof(bool));

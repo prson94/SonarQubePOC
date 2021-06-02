@@ -123,8 +123,11 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         return 'string';
     }
 
-    navigate(url: string) {
+    navigate(url: string, e: any) {
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
+        if (e) {
+            e.preventDefault();
+        }
     }
 
     export() {
@@ -171,7 +174,8 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
             var advFilters: string[] = [];
 
             keys.forEach((key) => {
-                var q = key + ' ct ' + `'${encodeURIComponent(event.filters[key].value)}'`;
+                let cleanValue = (event.filters[key].value as string).replace(/'/g, "&apos;");
+                var q = key + ' ct ' + `'${encodeURIComponent(cleanValue)}'`;
                 advFilters.push(q);
             });
 

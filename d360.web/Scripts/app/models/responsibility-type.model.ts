@@ -151,7 +151,7 @@ export class ResponsibilityTypeRelationRuleDefinitionThen {
     Object: string;
     ObjectID: number;
     Conditions: ResponsibilityTypeRelationRuleDefinitionThenItem[] = [];
-    MatchType: string;
+    MatchType: string = "and";
 }
 
 export class ResponsibilityTypeRelationRuleDefinitionThenItem {

@@ -280,22 +280,25 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         this.relationSub = this.fieldsService.getRelationshipFieldItems(this.relationSource$)
             .subscribe(res => {
                 this.relationItemsLoading = false;
-                this.field.Items = res.results["items"];
-                this.selectRelationItems(this.relationItems);
+                if (res != undefined) {
+                    this.field.Items = res.results["items"];
+                    this.selectRelationItems(this.relationItems);
 
-                //When setting count we need to take into calculation items that are disregarded in cardinality check but still presend in already selected items
-                //Update page count only when filters changes
-                let hasCardinalityOne: boolean = res.results["hasCardinalityOne"] ? res.results["hasCardinalityOne"] : false;
-                if (res.event.globalFilter !== this.currentRelationshipLoadedFilter) {
-                    if (hasCardinalityOne) {
-                        var selectedCount = this.relationItems ? this.relationItems.length : 0;
-                        this.field.RecordCount = selectedCount + res.results["count"];
-                    }
-                    else {
-                        this.field.RecordCount = res.results["count"];
-                    }
+                    //When setting count we need to take into calculation items that are disregarded in cardinality check but still presend in already selected items
+                    //Update page count only when filters changes
+                    let hasCardinalityOne: boolean = res.results["hasCardinalityOne"] ? res.results["hasCardinalityOne"] : false;
+                    if (res.event.globalFilter !== this.currentRelationshipLoadedFilter) {
+                        if (hasCardinalityOne) {
+                            var selectedCount = this.relationItems ? this.relationItems.length : 0;
+                            this.field.RecordCount = selectedCount + res.results["count"];
+                        }
+                        else {
+                            this.field.RecordCount = res.results["count"];
+                        }
 
-                    this.currentRelationshipLoadedFilter = res.event.globalFilter;
+                        this.currentRelationshipLoadedFilter = res.event.globalFilter;
+                    }
+                    this.ref.markForCheck();
                 }
                 this.ref.markForCheck();
             });
@@ -814,5 +817,11 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
     isRequired() {
         return (this.field.Validations && this.field.Validations.some(x => x.rule == 'required') == true) || this.field.Required;
+    }
+
+    getName(item: string) {
+        var path = item.split(' > ');
+        var name = path[path.length - 1];
+        return name;
     }
 }

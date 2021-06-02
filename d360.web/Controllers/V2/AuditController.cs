@@ -569,8 +569,10 @@ namespace d360.web.Controllers.V2
 	            ga.action,
 	            ActionA.uid as actionAssetUid,
 	            ActionAT.uid as actionAssetTypeUid,
-                ga.ActionObject,
-	            ga.ActionObjectTypeName as actionObjectTypeName,
+                case when ga.ActionObject = 'Intersect' then 'Relationship'
+                     when ga.ActionObject = 'IntersectType' then 'RelationshipType'
+                     else ga.ActionObject end ActionObject,
+	            case when ga.ActionObjectTypeName = 'Intersect Type' then 'Relationship Type' else ga.ActionObjectTypeName end as actionObjectTypeName,
 	            ga.actionObjectName,
 	            ga.actionDescription,
 	            fa.FieldName as Field,
@@ -635,8 +637,10 @@ namespace d360.web.Controllers.V2
 	            ga.action,
 	            ActionA.uid as actionAssetUid,
 	            ActionAT.uid as actionAssetTypeUid,
-                ga.ActionObject,
-	            ga.ActionObjectTypeName as actionObjectTypeName,
+                case when ga.ActionObject = 'Intersect' then 'Relationship'
+                     when ga.ActionObject = 'IntersectType' then 'RelationshipType'
+                     else ga.ActionObject end ActionObject,
+	            case when ga.ActionObjectTypeName = 'Intersect Type' then 'Relationship Type' else ga.ActionObjectTypeName end as actionObjectTypeName,
 	            ga.actionObjectName,
 	            ga.actionDescription,
 	            fa.FieldName as Field,
@@ -683,8 +687,10 @@ namespace d360.web.Controllers.V2
 	                ga.action,
 	                ActionA.uid as actionAssetUid,
 	                ActionAT.uid as actionAssetTypeUid,
-                    ga.ActionObject,
-	                ga.ActionObjectTypeName as actionObjectTypeName,
+                     case when ga.ActionObject = 'Intersect' then 'Relationship'
+                          when ga.ActionObject = 'IntersectType' then 'RelationshipType'
+                          else ga.ActionObject end ActionObject,
+	                case when ga.ActionObjectTypeName = 'Intersect Type' then 'Relationship Type' else ga.ActionObjectTypeName end as actionObjectTypeName,
 	                ga.actionObjectName,
 	                ga.actionDescription,
 	                fa.FieldName as Field,

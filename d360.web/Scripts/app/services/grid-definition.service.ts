@@ -19,12 +19,20 @@ export class GridDefinitionService extends BaseObservableService {
         objectID: number | string,
         objectType: string,
         parentID?: number,
-        parentType?: string
+        parentType?: string,
+        params: any = null
     ): Observable<GridDefinition> {
         let url = `api/${objectType}/${objectID}/grid/definition`;
+        let addparameterchar = '?';
 
         if ((parentID >= 0) && parentType) {
             url += `?target=${parentType}&targetID=${parentID}`;
+            addparameterchar = '&';
+        }
+
+        if (params) {
+            var qString = Object.keys(params).map((key) => [key, params[key]].join("=")).join('&');
+            url += addparameterchar + qString;
         }
 
         return this.http.get(url).pipe(

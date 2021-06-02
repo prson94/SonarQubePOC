@@ -34,7 +34,8 @@ import { ToastModule } from 'primeng/toast';
 import { TreeModule } from 'primeng/tree';
 import { TableModule } from 'primeng/table';
 import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score.module';
-
+import { SearchFieldModule } from "../shared/controls/search-field/search-field.component";
+import { AdvancedFiltersModule } from '../assets-grid/advanced-filtering/advanced-filtering.module';
 
 @NgModule({
     imports: [
@@ -70,6 +71,9 @@ import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score
         SharedDynamicGridEditorModule,
         SharedAssetEditorsModule,
         TilesModule,
+
+        AdvancedFiltersModule,
+        SearchFieldModule
     ],
     declarations: [
         HierarchyComponent,

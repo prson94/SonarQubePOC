@@ -1,12 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
-using System;
+﻿using Newtonsoft.Json.Serialization;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Web;
 
-namespace d360.web.Filters
+namespace d360.model.helpers
 {
     public class CustomJSONContractResolver : DefaultContractResolver
     {

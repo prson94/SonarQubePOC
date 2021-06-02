@@ -54,7 +54,9 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     }
 
     ngOnDestroy(): void {
-        this.relGrid.ngOnDestroy();
+        if (this.relGrid) {
+            this.relGrid.ngOnDestroy();
+        }
         if (this.loadDataSubs) {
             this.loadDataSubs.unsubscribe();
         }

@@ -1,0 +1,43 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="kmcnamee" id="Table.dbo.Help-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'HelpResource')
+BEGIN
+	CREATE TABLE [dbo].[HelpResource](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[uid] [uniqueidentifier] default(newid()) NOT NULL,
+	[Type] [int] NOT NULL,
+	[Name] [nvarchar](500) NOT NULL,
+	[Description] [nvarchar](max) NULL,
+	[Url] [nvarchar](2000) NOT NULL,
+	[SortIndex] int NOT NULL default(0)
+ CONSTRAINT [PK_HelpResource] PRIMARY KEY CLUSTERED 
+	(
+		[ID] ASC
+	)
+)
+END
+
+IF EXISTS (
+  SELECT *
+  FROM   sys.columns
+  WHERE  object_id = OBJECT_ID(N'[dbo].[HelpResource]')
+  AND name = 'Type'
+  )
+  BEGIN
+    ALTER TABLE [dbo].[HelpResource] DROP COLUMN [Type]
+END
+		]]>
+    </sql>	
+  </changeSet>
+</databaseChangeLog>

@@ -221,14 +221,14 @@ export class FieldsObservableService extends BaseObservableService implements IF
                         i.forEach((j) => {
                             l.IntersectTypes.push({ value: j.value, label: j.label, id: null });
                         });
-
+                                                
                         l.Field_Relationships = this.ftItemToSelectItem(r.Field_Relationships);
                         l.Field_CardinalRelationships = this.ftItemToSelectItem(r.Field_CardinalRelationships);
                         l.Field_CardinalReferenceRelationships = this.ftItemToSelectItem(r.Field_CardinalReferenceRelationships);
                         l.Field_FieldFromRelRelationships = this.ftItemToSelectItem(r.Field_FieldFromRelRelationships);
                         l.Field_JsonDataTypes = this.ftItemToSelectItem(r.Field_JsonDataTypes);
                         l.Field_JsonFields = this.ftItemToSelectItem(r.Field_JsonFields);
-                        l.FieldResponsibilityTypes = this.ftItemToSelectItem(r.Field_ResponsibilityTypes);
+                        l.FieldResponsibilityTypes = this.ftItemToSelectItem(r.Field_ResponsibilityTypes == null ? [] : r.Field_ResponsibilityTypes);
                         l.Lookups = this.ftItemToSelectItem(r.Lookups);
                         l.Patterns = this.ftItemToSelectItem(r.Patterns);
                         l.ComplexLookupRelations = r.ComplexLookupRelations;
@@ -436,7 +436,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
                             (res) => {
                                 return { fieldTypeID: event.fieldTypeID, results: res, event: event.event }
                             }
-                        )
+                        ),
+                        catchError(err => this.handleError(err))
                     );
                 }
             )

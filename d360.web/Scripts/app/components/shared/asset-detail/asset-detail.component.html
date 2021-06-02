@@ -28,6 +28,9 @@
                                        [readonly]="false"
                                        [hasAdd]="hasAddRelationshipsPermissions"
                                        [hasDelete]="hasDeleteRelationshipsPermissions"></d3s-synonyms-tile>
+                    <div style="height: 32px">
+                        &nbsp;
+                    </div>
                 </div>
             </ig-property-group>
             <ig-property-group *ngIf="systemPropertiesCategory.loaded && systemPropertiesCategory.hasData" [title]="systemPropertiesCategory.name" [expanded]="systemPropertiesCategory.active" (expandedChange)="systemPropertiesCategory.active = $event; saveState()">

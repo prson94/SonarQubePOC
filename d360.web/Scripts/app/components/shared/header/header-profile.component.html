@@ -43,4 +43,4 @@
     </div>
 </span>
 
-<d3s-resource-api [isVisible]="isApiKeysPopupVisible" (onClose)="isApiKeysPopupVisible=false"></d3s-resource-api>
+<d3s-resource-api *ngIf="showAllUsersAPIKey" [isVisible]="isApiKeysPopupVisible" (onClose)="isApiKeysPopupVisible=false"></d3s-resource-api>

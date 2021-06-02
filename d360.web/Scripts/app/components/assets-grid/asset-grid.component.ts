@@ -141,9 +141,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     canExportRecords() {
         return this.totalRecords <= this.maxExportRows;
     }
-    get showGridSimpleFilter(): boolean {
-        return this.stateService.artifactTypeFilters.showSimpleFilter;
-    }
 
     onFiltersLoaded() {
         this.showAssetListPage();

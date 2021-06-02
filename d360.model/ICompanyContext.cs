@@ -70,7 +70,8 @@ namespace d360.model
         DbSet<FusionType> FusionTypes { get; set; }
         DbSet<GlobalReportingResource> GlobalReportingResources { get; set; }
         DbSet<GraphFilter> GraphFilters { get; set; }
-        DbSet<Group> Groups { get; set; }                
+        DbSet<Group> Groups { get; set; }            
+        DbSet<HelpResource> HelpResources { get; set; }
         DbSet<IntersectDetail> IntersectDetails { get; set; }
         DbSet<Intersect> Intersects { get; set; }
         DbSet<IntersectTypeDetail> IntersectTypeDetails { get; set; }

@@ -26,6 +26,7 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using System.IO;
 using Dapper;
+using d360.model.helpers.filters;
 
 namespace d360.web.Controllers.V2
 {
@@ -579,6 +580,11 @@ namespace d360.web.Controllers.V2
                     return response;
                 }
 
+            }
+            catch (FilterExpressionParserException ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return ReturnApiError(HttpStatusCode.BadRequest, errorMessage);
             }
             catch (Exception ex)
             {
