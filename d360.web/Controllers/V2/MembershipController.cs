@@ -222,7 +222,10 @@ namespace d360.web.Controllers.V2
                     gr.ResourceID, 
                     gr.FirstName + ' ' + gr.LastName FirstName, 
                     OC.ResponsibilityTypeID,
-                    OC.OwnedItemCount");
+                    OC.OwnedItemCount,
+                    gr.FirstName FName, 
+                    gr.LastName LName,
+                    gr.uid");
                 }
 
                 if (iscommunityuserresposibility)
@@ -357,7 +360,7 @@ namespace d360.web.Controllers.V2
                     }
                     else
                     {
-                        defaultFields = new List<string> { "FirstName", "OwnedItemCount"};
+                        defaultFields = new List<string> { "gr.FirstName + ' ' + gr.LastName", "OC.OwnedItemCount"};
                     }
 
                     defaultFields.ForEach(f =>
@@ -1539,12 +1542,14 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             }
             else
             {
-                fieldMap.Add(new Tuple<string, string, string>("Name", "FirstName", "Text"));
-                fieldMap.Add(new Tuple<string, string, string>("Owned items", "OwnedItemCount", "Text"));
+                fieldMap.Add(new Tuple<string, string, string>("First Name", "FName", "Text"));
+                fieldMap.Add(new Tuple<string, string, string>("Last Name", "LName", "Text"));
+                fieldMap.Add(new Tuple<string, string, string>("Items Owned", "OwnedItemCount", "Text"));
                 fieldTypes.Where(x => x.IsListable == true).ToList().ForEach(ft =>
                 {
                     fieldMap.Add(new Tuple<string, string, string>(ft.FriendlyName, ft.Name, ft.Type));
                 });
+                fieldMap.Add(new Tuple<string, string, string>("User UID", "uid", "Text"));
             }
 
 
