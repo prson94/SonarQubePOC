@@ -1,21 +1,17 @@
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-<div *ngIf="formMode == FormMode.Default && !isLoading">
-  <header>
-    &nbsp;<d3s-tile-actions
-      [hasEdit]="hasModifyAssetPermissions()"
-      (editClick)="formMode = FormMode.Editing; formModeChange.emit(formMode)"
-    ></d3s-tile-actions>
-  </header>
-    <object-detail
-        [useAccordion]="true"
-        [objectID]="objectID"
-        [objectType]="objectType"
-        [objectUID]="object?.UID"
-        [nymTypes]="nymTypes"
-        [hasAddRelationshipsPermissions]="hasAddRelationshipsPermissions"
-        [hasModifyRelationshipsPermissions]="hasModifyRelationshipsPermissions"
-        [hasDeleteRelationshipsPermissions]="hasDeleteRelationshipsPermissions">
-    </object-detail>
+<div *ngIf="formMode == FormMode.Default && !isLoading" style="padding: 16px 11px 6px 11px">
+    <div style="height: 0">
+        &nbsp;<button igButton *ngIf="hasModifyAssetPermissions()" icon="fa-pencil" label="Edit" (click)="formMode = FormMode.Editing; formModeChange.emit(formMode)" style="float:right;z-index:1000"></button>
+    </div>
+    <ig-asset-detail [useAccordion]="true"
+                     [objectID]="objectID"
+                     [objectType]="objectType"
+                     [objectUID]="object?.UID"
+                     [nymTypes]="nymTypes"
+                     [hasAddRelationshipsPermissions]="hasAddRelationshipsPermissions"
+                     [hasModifyRelationshipsPermissions]="hasModifyRelationshipsPermissions"
+                     [hasDeleteRelationshipsPermissions]="hasDeleteRelationshipsPermissions">
+    </ig-asset-detail>
 </div>
 <d3s-dynamic-editor
   *ngIf="formMode == FormMode.Editing && !useV2Api"
