@@ -190,7 +190,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                     }
 
                     if (this.auditSidebar) {
-                        this.auditSidebar.url = `/sidebar/audit/${this.assetType.AssetTypeUID}`;
+                        this.auditSidebar.url = `/sidebar/audit/${this.assetType.uid}`;
                     }
 
                     this.secondaryNavService.showHeader(true);
