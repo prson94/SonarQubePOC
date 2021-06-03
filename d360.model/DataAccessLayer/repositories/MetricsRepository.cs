@@ -2228,6 +2228,7 @@ for json path";
 
             if (!string.IsNullOrEmpty(_simpleFilter))
             {
+                
                 var allFields = new [] {
                 "EffectiveDate",
                  "FailCount",
@@ -2239,7 +2240,7 @@ for json path";
                 "EvaluatedAssetTypePath"
                 };
 
-                parameters.Add("@simpleFilter", $"%{_simpleFilter}%");
+                parameters.Add("@simpleFilter", Company.GetEscapedFilterString(_simpleFilter,true));
                 var simpleQuery = string.Join(" or ", allFields.Select(x => $"({x} like @simpleFilter)").ToList());
 
                 var classes = AssetTypeClass.BusinessAsset.GetAsList();

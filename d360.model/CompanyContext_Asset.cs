@@ -37,9 +37,9 @@ namespace d360.model
 
         #region Engine Methods
 
-        public string GetEscapedFilterString(string filter)
+        public string GetEscapedFilterString(string filter, bool isContains = false)
         {
-            return wildcardValue(escapeForSQLLike(filter), false);
+            return wildcardValue(escapeForSQLLike(filter), isContains);
         }
 
         private string wildcardValue(string value, bool isContains = true)

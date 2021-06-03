@@ -285,7 +285,7 @@ namespace d360.model
         List<ResponsibilityTypeUpsertResult> UpsertResponsibilityTypes(ApiExecution execution, List<ResponsibilityTypeUpsertModel> import, int timeout = 3600);
         string GetIconText(string assetName);
         void SetApiExecutionProcessingStartTime(Guid ExecutionId);
-        string GetEscapedFilterString(string filter);
+        string GetEscapedFilterString(string filter, bool isContains = false);        
         Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds);
         void SendGraphAssetTypeEvent(Guid assetTypeUid);
         void SendApiGraphEvent(ApiExecutionInfo info);
