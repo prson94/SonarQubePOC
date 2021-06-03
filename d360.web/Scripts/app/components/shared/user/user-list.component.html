@@ -23,7 +23,7 @@
 
                     <th *ngFor="let column of columns"
                         [pSortableColumn]="column.sortable ? column.datafield : null"
-                        [style.width] = "columnWidth > 0 ? columnWidth + 'px' : null">
+                        [style.width] = "setStyleWidth(column.datafield)">
                         {{column.text}}
                         <d3s-sortIcon *ngIf="column.sortable" [field]="column.datafield"></d3s-sortIcon>
                     </th>
@@ -32,7 +32,7 @@
                     <th style="width: 40px" *ngIf="hasModifyAssetPermissions() && allowPasswordReset  && IsReadOnly()"></th>
                 </tr>
                 <tr [hidden]="showSimpleFilter">
-                    <th *ngFor="let column of columns"  [style.width] = "columnWidth > 0 ? columnWidth + 'px' : null">
+                    <th *ngFor="let column of columns"  [style.width] = "setStyleWidth(column.datafield)">
                         <d3s-column-filter [field]="column.datafield"></d3s-column-filter>
                     </th>
                     <th *ngIf="hasModifyAssetPermissions() && IsReadOnly()"></th>
@@ -43,7 +43,7 @@
             <ng-template pTemplate="body" let-item>
                 <tr [pSelectableRow]="item">
 
-                    <td *ngFor="let column of columns"  [style.width] = "columnWidth > 0 ? columnWidth + 'px' : null">
+                    <td *ngFor="let column of columns"  [style.width] = "setStyleWidth(column.datafield)">
                         <a *ngIf="column.datafield=='FirstName'"
                            (click)="openResource(item)">{{item.FirstName}}</a>
                         <d3s-dynamic-field-value *ngIf="column.datafield!='FirstName'" [column]="column"

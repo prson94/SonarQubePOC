@@ -52,6 +52,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     sortOrder: SortOrder = SortOrder.None;
     filters: GridFilterExpression[] = [];
     columnWidth: number = 0;
+    columnWidthOwnedItems: number = 0;
 
     get globalFilterFields(): string[] {
         let f = this.columns.map(c => c.datafield);
@@ -129,11 +130,13 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
             (result) => {
                 this.columns = result.Columns;
                 this.fields = result.Fields;
-                if (this.IsCommunityUserResposibility && this.columns && this.columns.length > 3) {
-                    this.columnWidth = 250;
+                if (this.IsCommunityUserResposibility && this.columns && this.columns.length > 2) {
+                    this.columnWidth = 200;
+                    this.columnWidthOwnedItems = 120;
                 }
                 else {
                     this.columnWidth = 0;
+                    this.columnWidthOwnedItems = 0;
                 }
                 this.getData();
             }
@@ -355,4 +358,17 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         return !this.IsCommunityUserResposibility;
     }
 
+    setStyleWidth(datafield: string) {
+        if (this.columnWidth > 0 && this.columnWidthOwnedItems > 0) {
+            if (datafield === "OwnedItemCount") {
+                return this.columnWidthOwnedItems + 'px';
+            }
+            else {
+                return this.columnWidth + 'px';
+            }
+        }
+        else {
+            return null;
+        }
+    }
 };
