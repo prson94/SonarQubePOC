@@ -39,9 +39,8 @@
                 </div>
             </div>
 
-            <div class="tree-wrapper">
+            <div class="tree-wrapper" *ngIf="!showDelete && !showEditor">
                 <p-treeTable #treeTable
-                             *ngIf="!showDelete && !showEditor"
                              [pageLinks]="3"
                              [paginator]="true"
                              [rows]="rowsPerPage"
@@ -57,7 +56,8 @@
                              [loadingIcon]="'fa fa-spinner fa-spin'"
                              [showLoader]="true"
                              (onNodeExpand)="nodeExpanded($event)"
-                             (onNodeCollapse)="nodeCollapsed($event)">
+                             (onNodeCollapse)="nodeCollapsed($event)"
+                             (onNodeSelect)="nodeSelect($event)">
                     <ng-template pTemplate="header">
                         <tr>
                             <th *ngFor="let column of columns"
