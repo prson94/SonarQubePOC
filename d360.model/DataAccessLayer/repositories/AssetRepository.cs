@@ -3139,13 +3139,19 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 select
 	                A.[UID] as [uid],
                     COALESCE(StatusColor.FormattedValue, f.FormattedValue, ft.DefaultFormattedValue) as Status,
-	                KP.KeyPath as Path
+	                KP.KeyPath as Path,
+                    ADV.DisplayValue,
+                    AT.Name as TypeName,
+                    A.Object,
+                    A.ObjectId,
+                    A.Id
                 from Asset A
                 inner join AssetType AT on AT.ID = A.AssetTypeID and AT.UID = @typeUid
                 left join FieldType ft on AT.Object = ft.Object and AT.ObjectID = ft.ObjectID and ft.FriendlyName like 'status'
                 left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID
                 left join graph.AssetNode Node on Node.Uid = a.uid and Node.AssetTypeUid = AT.[UID]
                 left join graph.AssetNodeKeyPath KP on KP.ID = Node.ID
+                left join AssetDisplayValue ADV on ADV.AssetID = A.ID
 				outer apply(
                                 select FormattedValue = 
                                 (SELECT F.FormattedValue as name,

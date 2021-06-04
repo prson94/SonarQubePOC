@@ -44,6 +44,7 @@ import { FontAwesomeHelper } from '../../../../static/font-awesome-helper';
 import { FieldsObservableService } from '../../../../services/fieldsObservable.service';
 import { AssetService } from '../../../../services/asset.service';
 import { ResponsibilityService } from '../../../../services/responsibility.service';
+import { ObjectStatisticsService } from '../../../../services/object-statistics.service';
 
 declare var window: any;
 
@@ -58,6 +59,7 @@ declare var window: any;
         FieldsObservableService,
         AssetService,
         ResponsibilityService,
+        ObjectStatisticsService,
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -205,7 +207,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         private processService: ProcessService,
         private fieldsService: FieldsObservableService,
         private assetService: AssetService,
-        private responsibilityService: ResponsibilityService
+        private responsibilityService: ResponsibilityService,
+        private objectStatisticsService: ObjectStatisticsService
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
@@ -335,7 +338,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let enabled = false;
 
         if (this.selectedDiagramAsset) {
-            enabled = (this.selectedDiagramAsset.HasOwners === true);
+            enabled = true;
         }
 
         return enabled;
@@ -1754,29 +1757,44 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.panel_Loading = true;
 
         let diagramAsset = new AssetBrowserDiagramAsset();
-        this.assetService.getAsset(assetUid)
+        this.objectStatisticsService.getSearchDetails(assetUid)
             .subscribe((asset) => {
                 diagramAsset.Url = "/asset/" + assetUid;
-                diagramAsset.Path = asset.Path;
                 diagramAsset.Uid = assetUid;
-                diagramAsset.Id = asset.AssetId;
-                forkJoin(
-                    this.assetService.getUIDetailsForAssetUID(assetUid),
-                    this.responsibilityService.getHasResponsibilities(assetUid)
-                )
-                    .subscribe(([ui, hasOwners]) => {
+                diagramAsset.Id = asset.AssetDetail.Id;
+                diagramAsset.Object = asset.AssetDetail.Object;
+                diagramAsset.ObjectId = asset.AssetDetail.ObjectId;
+                diagramAsset.DisplayValue = asset.AssetDetail.DisplayValue;
+                diagramAsset.TypeName = asset.AssetDetail.TypeName;
+                diagramAsset.Scores = [];
 
-                        diagramAsset.HasOwners = hasOwners;
-                        diagramAsset.TypeName = ui.TypeName;
-                        diagramAsset.DisplayValue = ui.DisplayValue;
-                        diagramAsset.Object = ui.Object;
-                        diagramAsset.ObjectId = ui.ObjectId;
-                        diagramAsset.Loaded = true;
-                        this.selectedDiagramAsset = diagramAsset;
-                        this.panel_Loading = false;
-                        this.cdRef.markForCheck();
+                asset.Scores.forEach((s) => {
+                    let scoreClass = '';
+                    if ((s.Value * 100) <= s.LowerThreshold) {
+                        scoreClass = 'poor';
+                    }
+                    else if ((s.Value * 100) > s.LowerThreshold && (s.Value * 100) <= s.UpperThreshold) {
+                        scoreClass = 'average';
+                    }
+                    else {
+                        scoreClass = 'good';
+                    }
+
+                    diagramAsset.Scores.push({
+                        Name: s.ScoreType === "DataQuality" ? "DQ" : "GV",
+                        LowerThreshold: s.LowerThreshold,
+                        UpperThreshold: s.UpperThreshold,
+                        Value: s.Value,
+                        ScoreClass: scoreClass
                     });
+
+                    diagramAsset.Loaded = true;
+                    this.selectedDiagramAsset = diagramAsset;
+                    this.panel_Loading = false;
+                    this.cdRef.markForCheck();
+                });
             });
+
     }
 
     /**

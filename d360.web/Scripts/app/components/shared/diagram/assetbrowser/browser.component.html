@@ -114,9 +114,8 @@
                             <div class="asset-browser-window-header">
 
                                 <div class="controls" *ngIf="panelModel.InformationVisible && selectedDiagramAsset?.Url">
-                                    <div class="score-badge-container">
-                                        <div class="score-badge">DQ 88.4%</div>
-                                        <div class="score-badge">GV 12.7%</div>
+                                    <div class="score-badge-container" >
+                                        <div *ngFor="let score of selectedDiagramAsset?.Scores" [class]="'score-badge ' + score.ScoreClass">{{score.Name}} <span class="score-value">{{score.Value | scoreDisplay:1}}</span></div>
                                     </div>
                                     <div>
                                         <button igButton icon="fa-ellipsis-v" (click)="linkMenu.toggle($event)"></button>
@@ -135,11 +134,6 @@
                                     <div class="class-name">
                                         <span *ngIf="panelModel.InformationVisible">{{selectedDiagramAsset?.TypeName}}</span>
                                     </div>
-                                </div>
-                                <div class="scores">
-                                    <span class="d3s-score-container" *ngIf="panelModel.InformationVisible && displayConfiguration.DisplayScores && selectedDiagramAsset?.Scores">
-                                        <d3s-score-badge *ngFor="let score of selectedDiagramAsset?.Scores" [score]="score"></d3s-score-badge>
-                                    </span>
                                 </div>
                                 <div class="clearfix"></div>
                                 <div class="windowtabs" *ngIf="!panelModel.AddVisible">

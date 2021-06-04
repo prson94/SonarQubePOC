@@ -255,13 +255,10 @@ export class AssetBrowserDiagramAsset {
     TypeName: string;
     Uid: string;
     DisplayValue: string;
-    Path: string;
     Url: string;
     Id: number;
     Object: string;
     ObjectId: number;
-    HasOwners: boolean = false;
-    Fields: AssetBrowserDiagramAssetField[] = [];
     Scores: AssetBrowserDiagramAssetScore[] = [];
 
     Loaded: boolean = false;
@@ -276,6 +273,7 @@ export class AssetBrowserDiagramAssetField {
 export class AssetBrowserDiagramAssetScore {
     Name: string;
     Value: number;
+    ScoreClass: string;
     LowerThreshold: number;
     UpperThreshold: number;
 }
