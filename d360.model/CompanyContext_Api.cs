@@ -11025,21 +11025,8 @@ EG.GroupUid
                     int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
                     int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
                     int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
-
-                    for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
-                    {
-                        bool runCompleted = false;
-                        int retryCount = 0;
-
-                        while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
-                        {
-                            var querySuffix = $"E.Success is null and E.ExecutionID = @ExecutionID and E.ItemNumber between @beginItemNumber and @endItemNumber";
-                            using (var trans = Connection.BeginTransaction())
-                            {
-                                #region Load valid items into table
-                                try
-                                {
-                                    Connection.Execute($@"
+                    var querySuffix = $"E.Success is null and E.ExecutionID = @ExecutionID and E.ItemNumber between @beginItemNumber and @endItemNumber";
+                    var insertSQL = $@"
                                         DROP TABLE IF EXISTS #mergeResultTable
                                         CREATE TABLE #mergeResultTable (DataProfileId INT, ItemNumber INT) 
 
@@ -11053,38 +11040,8 @@ EG.GroupUid
                                                     Asset A ON A.Uid = E.AssetUid
 		                                        WHERE {querySuffix}
                                                 ) EDP
-                                        ON (EDP.AssetId = ADP.AssetID AND EDP.profileSetDate = ADP.profileSetDate)
-                                        WHEN MATCHED AND @IsInsert = 0 THEN
-                                        UPDATE SET
-                                            ADP.[SampleCount] = EDP.[SampleCount]
-                                            ,ADP.[NullCount] = EDP.[NullCount]
-                                            ,ADP.[BlankCount] = EDP.[BlankCount]
-                                            ,ADP.[MeanValue] = EDP.[MeanValue]
-                                            ,ADP.[MinimumValue] = EDP.[MinimumValue]
-                                            ,ADP.[MaximumValue] = EDP.[MaximumValue]
-                                            ,ADP.[MinimumLength] = EDP.[MinimumLength]
-                                            ,ADP.[MaximumLength] = EDP.[MaximumLength]
-                                            ,ADP.[StandardDeviation] = EDP.[StandardDeviation]
-                                            ,ADP.[Type] = EDP.[Type]
-                                            ,ADP.[Multiline] = EDP.[Multiline]
-                                            ,ADP.[RegExp] = EDP.[RegExp]
-                                            ,ADP.[Confidence] = EDP.[Confidence]
-                                            ,ADP.[TypeQualifier] = EDP.[TypeQualifier]
-                                            ,ADP.[LogicalType] = EDP.[LogicalType]
-                                            ,ADP.[LeadingWhiteSpace] = EDP.[LeadingWhiteSpace]
-                                            ,ADP.[LeadingZeroCount] = EDP.[LeadingZeroCount]
-                                            ,ADP.[TrailingWhiteSpace] = EDP.[TrailingWhiteSpace]
-                                            ,ADP.[MatchCount] = EDP.[MatchCount]
-                                            ,ADP.[OutlierCardinality] = EDP.[OutlierCardinality]
-                                            ,ADP.[PossibleKey] = EDP.[PossibleKey]
-                                            ,ADP.[DataSignature] = EDP.[DataSignature]
-                                            ,ADP.[StructureSignature] = EDP.[StructureSignature]
-                                            ,ADP.[Cardinality] = EDP.[Cardinality]
-                                            ,ADP.[ShapeCardinality] = EDP.[ShapeCardinality]
-                                            ,ADP.[UpdatedBy] = @CurrentResourceID
-                                            ,ADP.[UpdatedOn] = GETDATE()
-
-                                        WHEN NOT MATCHED AND @IsInsert = 1 THEN
+                                        ON 1 = 0                                       
+                                        WHEN NOT MATCHED THEN
                                         INSERT ([AssetID]
                                                     ,[ProfileSetDate]
                                                     ,[SampleCount]
@@ -11148,13 +11105,56 @@ EG.GroupUid
                                                     ,GETDATE()
                                                     ,@CurrentResourceID
                                                     ,GETDATE())
-                                            OUTPUT  inserted.ID INT, EDP.ItemNumber INTO #mergeResultTable;
-                                            
-                                        if @IsInsert = 0
-                                        BEGIN
-                                            Delete ADPS from AssetDataProfileSample ADPS inner join #mergeResultTable rt on ADPS.AssetDataProfileID = rt.DataProfileID                                      
-                                        END
+                                            OUTPUT  inserted.ID INT, EDP.ItemNumber INTO #mergeResultTable;";
+                    var updateSQL = $@"
+                                        DROP TABLE IF EXISTS #mergeResultTable
+                                        CREATE TABLE #mergeResultTable (DataProfileId INT, ItemNumber INT) 
 
+                                        MERGE INTO AssetDataProfile ADP
+                                        USING (
+                                                SELECT
+                                                    A.ID as AssetId, E.*
+                                                FROM  
+                                                    api.ExecutionAssetDataProfile E
+                                                INNER JOIN
+                                                    Asset A ON A.Uid = E.AssetUid
+		                                        WHERE {querySuffix}
+                                                ) EDP
+                                        ON (EDP.AssetId = ADP.AssetID AND EDP.profileSetDate = ADP.profileSetDate)
+                                        WHEN MATCHED THEN
+                                        UPDATE SET
+                                            ADP.[SampleCount] = EDP.[SampleCount]
+                                            ,ADP.[NullCount] = EDP.[NullCount]
+                                            ,ADP.[BlankCount] = EDP.[BlankCount]
+                                            ,ADP.[MeanValue] = EDP.[MeanValue]
+                                            ,ADP.[MinimumValue] = EDP.[MinimumValue]
+                                            ,ADP.[MaximumValue] = EDP.[MaximumValue]
+                                            ,ADP.[MinimumLength] = EDP.[MinimumLength]
+                                            ,ADP.[MaximumLength] = EDP.[MaximumLength]
+                                            ,ADP.[StandardDeviation] = EDP.[StandardDeviation]
+                                            ,ADP.[Type] = EDP.[Type]
+                                            ,ADP.[Multiline] = EDP.[Multiline]
+                                            ,ADP.[RegExp] = EDP.[RegExp]
+                                            ,ADP.[Confidence] = EDP.[Confidence]
+                                            ,ADP.[TypeQualifier] = EDP.[TypeQualifier]
+                                            ,ADP.[LogicalType] = EDP.[LogicalType]
+                                            ,ADP.[LeadingWhiteSpace] = EDP.[LeadingWhiteSpace]
+                                            ,ADP.[LeadingZeroCount] = EDP.[LeadingZeroCount]
+                                            ,ADP.[TrailingWhiteSpace] = EDP.[TrailingWhiteSpace]
+                                            ,ADP.[MatchCount] = EDP.[MatchCount]
+                                            ,ADP.[OutlierCardinality] = EDP.[OutlierCardinality]
+                                            ,ADP.[PossibleKey] = EDP.[PossibleKey]
+                                            ,ADP.[DataSignature] = EDP.[DataSignature]
+                                            ,ADP.[StructureSignature] = EDP.[StructureSignature]
+                                            ,ADP.[Cardinality] = EDP.[Cardinality]
+                                            ,ADP.[ShapeCardinality] = EDP.[ShapeCardinality]
+                                            ,ADP.[UpdatedBy] = @CurrentResourceID
+                                            ,ADP.[UpdatedOn] = GETDATE()                                       
+                                        OUTPUT  inserted.ID INT, EDP.ItemNumber INTO #mergeResultTable;
+
+                                            Delete ADPS from AssetDataProfileSample ADPS inner join #mergeResultTable rt on ADPS.AssetDataProfileID = rt.DataProfileID";
+                
+                    var insertSampleSQL = $@"
                                         insert into AssetDataProfileSample 
                                                     ([AssetDataProfileID]
                                                     ,[SampleType]
@@ -11173,7 +11173,31 @@ EG.GroupUid
                                             #mergeResultTable rt ON rt.itemNumber = EDPS.itemNumber
 			                            WHERE 
                                             {querySuffix}
-                                            ", new { execution.ExecutionID, beginItemNumber, endItemNumber, isInsert, CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+                                            ";
+
+                    var sql = $@"{insertSQL}
+                                {insertSampleSQL}";
+
+                    if (!isInsert)
+                    {
+                        sql = $@"{updateSQL}
+                                {insertSampleSQL}";
+                    }
+
+                    for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
+                    {
+                        bool runCompleted = false;
+                        int retryCount = 0;
+
+                        while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+                        {
+                            
+                            using (var trans = Connection.BeginTransaction())
+                            {
+                                #region Load valid items into table
+                                try
+                                {                                   
+                                    Connection.Execute(sql, new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 
                                 #endregion                                
 
