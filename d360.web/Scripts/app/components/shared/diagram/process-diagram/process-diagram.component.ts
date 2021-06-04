@@ -87,6 +87,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     loadingRelationships = false;
     showRelationshipsConfirmation = false;
     filters: any = { globalSearch: '' };
+    searchValue: any;
+    confirmation: any;
 
 
     private newInstancesMap: any[] = [];
@@ -1158,7 +1160,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         }
     }
 
-    private importDiagram() {
+    importDiagram() {
         if (!this.hasPassedRelationshipCheck) {
             this.showRelationshipsConfirmation = true;
             this.cdRef.markForCheck();

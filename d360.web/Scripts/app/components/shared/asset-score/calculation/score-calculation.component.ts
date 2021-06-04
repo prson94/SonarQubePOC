@@ -24,7 +24,9 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
 
     Operator = Operator;
 
-    private isRuleResultsModalVisible: boolean = false;
+    summedMeasures: number = 0;
+
+    isRuleResultsModalVisible: boolean = false;
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes["selected"] && changes["selected"].currentValue != null) {

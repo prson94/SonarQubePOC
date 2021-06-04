@@ -52,7 +52,7 @@ export class AssetBrowserFilterPanelComponent extends BaseComponent implements A
     * Called by the Ancestry dropdown control when selected value is updated.
     * @returns Nothing
     */
-    private ancestryChange() {
+    public ancestryChange() {
         this.apply.emit({ Type: AssetBrowserFilterChangeEventType.Ancestry, Model: this.current });
     }
 

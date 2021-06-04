@@ -24,6 +24,9 @@ export class GalleryDatePickerComponent implements OnInit {
     sampleUsage: string = '<ig-date></ig-date>';
     form: FormGroup = null;
     val: any;
+
+    public time: string;
+
     formVal: any;
 
     today: Date = new Date();

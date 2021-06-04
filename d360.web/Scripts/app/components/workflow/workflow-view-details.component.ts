@@ -21,12 +21,12 @@ import { HeaderActions } from '../../models/header.model';
 export class WorkflowViewDetailsComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
     private workflowInstance: string;
-    private workflowId: number;
+    workflowId: number;
     private workflowUid: string;
     private details: any;
     private item: any;
-    private itemStepId: any;
-    private detailVisible: boolean;
+    itemStepId: any;
+    detailVisible: boolean;
     private workflowTypeId: number;
     constructor(
         private route: ActivatedRoute,

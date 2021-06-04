@@ -34,7 +34,7 @@ export class IconPickerComponent implements ControlValueAccessor {
 
     protected isRequired = false;
     protected categories: any = [];
-    private isLoading: boolean = true;
+    isLoading: boolean = true;
 
     constructor(private iconService: IconService) {
     }

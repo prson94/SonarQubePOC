@@ -8,9 +8,9 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 var webpackConfig = {
     mode: 'production',
     entry: {
-        'polyfills': './scripts/app/polyfills.ts',
-        'vendor': './scripts/app/vendor.ts',
-        'main': './scripts/app/main.ts',
+        'polyfills': './scripts/polyfills.ts',
+        'vendor': './scripts/vendor.ts',
+        'main': './scripts/main.ts',
     },
 
     output: {
@@ -25,7 +25,7 @@ var webpackConfig = {
         runtimeChunk: false,
         splitChunks: {
             cacheGroups: {
-                default: false,                
+                default: false,
                 vendor: {
                     test: /node_modules/,
                     chunks: 'initial',
@@ -44,10 +44,11 @@ var webpackConfig = {
             /@angular(\\|\/)core(\\|\/)fesm2015/,
             path.resolve(__dirname, '../src')
         ),
-               
-      new webpack.DefinePlugin({
-          __BUILD_DATE: JSON.stringify(new Date().toLocaleString()),
-      }),
+
+        new webpack.DefinePlugin({
+            __BUILD_DATE: JSON.stringify(new Date().toLocaleString()),
+            PRODUCTION: JSON.stringify(true),
+        }),        
         new CleanWebpackPlugin()
     ],
 
@@ -58,13 +59,13 @@ var webpackConfig = {
                 exclude: /node_modules/,
                 loader: 'raw-loader!less-loader'
             },
-          // .ts files for TypeScript
+            // .ts files for TypeScript
             {
                 test: /\.ts$/,
                 use: [
                     {
                         loader: 'ts-loader', options: {
-                            configFile: "scripts/app/tsconfig.json"
+                            configFile: "scripts/tsconfig.json"
                         }
                     },
                     { loader: 'angular2-template-loader' },
@@ -72,8 +73,8 @@ var webpackConfig = {
                 ],
                 exclude: [/\.(spec|e2e)\.ts$/],
             },
-          { test: /\.css$/, loaders: ['to-string-loader', 'css-loader'] },
-          { test: /\.html$/, loader: 'raw-loader' }
+            { test: /\.css$/, loaders: ['to-string-loader', 'css-loader'] },
+            { test: /\.html$/, loader: 'raw-loader' }
         ]
     }
 
@@ -81,15 +82,15 @@ var webpackConfig = {
 
 
 // Our Webpack Defaults
-var defaultConfig = {    
-    cache: true,    
+var defaultConfig = {
+    cache: true,
     output: {
         filename: '[name].bundle.js',
         sourceMapFilename: '[name].map',
         chunkFilename: '[id].chunk.js'
     },
 
-    resolve: {        
+    resolve: {
         extensions: ['.ts', '.js']
     },
 

@@ -33,7 +33,8 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
 
     @Input() enforceMaxMin: boolean = false;
 
-    private hasValue: boolean = false;
+    hasValue: boolean = false;
+
     value: number;
     onModelChange: Function = () => { };
     onModelTouched: Function = () => { };

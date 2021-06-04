@@ -1,4 +1,4 @@
-import { Input, EventEmitter, Output, HostListener, ChangeDetectorRef, ViewChildren, QueryList } from '@angular/core';
+import { Component, Input, EventEmitter, Output, HostListener, ChangeDetectorRef, ViewChildren, QueryList } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricAssetViewModel, MetricAssetVersionConditionViewModel, MetricAssetVersionConditionItemViewModel, ScoreTypeAllocation } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
@@ -16,6 +16,9 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 import { CommonScreenReferencesModel } from './common-screen-references-model';
 import { CurrentEnvironmentSettings } from '../../../static/environment-settings';
 
+@Component({
+    template: ''
+})
 export class BaseMeasureEditorComponent extends BaseComponent {
     @Input() model: MetricAssetViewModel = null;
     @Input() allocation: ScoreTypeAllocation;

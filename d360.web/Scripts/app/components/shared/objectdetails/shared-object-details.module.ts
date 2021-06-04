@@ -27,6 +27,7 @@ import { SharedDeleteFormModule } from '../delete.form';
 import { ObjectDetailCategoryComponent } from './object-detail-category.component';
 import { PropertyGroupModule } from '../controls/property-group/property-group.component';
 
+
 @NgModule({
     imports: [
         ButtonModule,

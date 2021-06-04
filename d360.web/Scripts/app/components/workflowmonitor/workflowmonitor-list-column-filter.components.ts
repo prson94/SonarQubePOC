@@ -2,7 +2,6 @@
 import { SelectItem } from 'primeng/api';
 import { GridFilterExpression, GridFilterColumn, GridFilterFieldType } from '../../models/grid-definition.model';
 import { FilterField, FilterFieldType, FilterExpression } from '../../models/filter-field.model';
-import { setTimeout } from 'timers';
 import { FormHelpers } from '../../static/form-helpers';
 
 @Component({

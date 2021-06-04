@@ -27,7 +27,7 @@ declare var CompanySettings;
 export class SearchResultItemComponent extends BaseComponent implements OnInit {
     @Input() result: SearchFullResult;
     private lastCalculatedDate: number;
-    private showStatus: boolean = false;
+    showStatus: boolean = false;
     showPath: boolean = false;
     private status: string;
     private path: string;

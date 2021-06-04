@@ -58,7 +58,7 @@ export enum AssetTypeClass {
     Group = 12,
     FusionQuery = 13,
     ReferenceItemType = 14,
-    DiagramAsset = 15
+    DiagramAsset = 15,
 }
 
 export enum FlowObjectType {

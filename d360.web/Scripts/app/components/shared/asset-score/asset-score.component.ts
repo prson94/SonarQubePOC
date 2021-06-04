@@ -37,14 +37,14 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     showGovernanceScores: boolean = true;
     showDQScores: boolean = false;
 
-    private pointBreakdown: PointBreakdown[] = [];
-    private selectedPoint: PointBreakdown;
+    pointBreakdown: PointBreakdown[] = [];
+    selectedPoint: PointBreakdown;
 
     private selectedMeasureUid = '';
 
     ScoreType = ScoreType;
-    private selectedScoreType = ScoreType.Governance;
-    private allocationUid: string = "";
+    selectedScoreType = ScoreType.Governance;
+    allocationUid: string = "";
     private scoreTypes: number[] = [];
     private allocationData: ScoreTypeAllocation[] = [];
     showEmptyMessage: boolean = false;

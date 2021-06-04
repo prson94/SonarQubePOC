@@ -107,7 +107,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     constructor(
         private headerActionsService: HeaderActionsService,
-        private stateService: StateService,
+        public stateService: StateService,
         private permissionsService: PermissionsService,
         private router: Router,
         private gridDefinitionService: GridDefinitionService,
@@ -566,7 +566,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     private newAdvancedFilters: Filters;
-    private advancedFiltersChanged($event) {
+    public advancedFiltersChanged($event) {
         this.newAdvancedFilters = $event;
         this.stateService.artifactTypeFilters.currentPageNumber = 0;
         if (this.dt) {
@@ -575,7 +575,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         this.getData();
     }
 
-    private onSimpleSearch($event) {
+    public onSimpleSearch($event) {
         this.getData();
     }
 }
