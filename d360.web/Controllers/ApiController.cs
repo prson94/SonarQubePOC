@@ -2447,26 +2447,31 @@ from    (
         {
             return Company.GetObjectDetail(type.ToString(), id);
         }
-
-        [Route("{type}/{id:int}/status")]
-        public string GetObjectStatus(SystemObjects type, int id)
+     
+        [Route("{type}/{id:int}/fieldName/{fieldName}")]
+        public string GetObjectFieldColorAndValue(SystemObjects type, int id, string fieldName)
         {
             var objectDetail = Company.GetObjectDetail(type.ToString(), id);
-            //check if there is a status field for this type
-            var fieldType = Company.FieldTypes.Where(x => x.Object == objectDetail.Type && x.ObjectID == objectDetail.TypeID && string.Compare(x.FriendlyName, "Status", true) == 0).FirstOrDefault();
+            //check if there is a matching field for this type
+            var fieldType = Company.FieldTypes.Where(x => x.Object == objectDetail.Type && x.ObjectID == objectDetail.TypeID && string.Compare(x.Name, fieldName, true) == 0).FirstOrDefault();
 
             if (fieldType == null) return null;
 
             var sql = "select FormattedValue from field where objecttype = @obj and objectid = @id and fieldtypeid = @fieldId";
-
-            string status = Company.Query<string>(sql, new { obj = new DbString { Value = type.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, id = id, fieldId = fieldType.ID }).FirstOrDefault();
-            if (string.IsNullOrEmpty(status))
-                status = fieldType.DefaultFormattedValue;
+            if (fieldType?.LookupObjectType == SystemObjects.ReferenceItem.ToString())
+            {
+                sql = "select FormattedValue as name from field where objecttype = @obj and objectid = @id and fieldtypeid = @fieldId FOR JSON PATH"; ;
+            }
+            string value = Company.Query<string>(sql, new { obj = new DbString { Value = type.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, id = id, fieldId = fieldType.ID }).FirstOrDefault();
+            if (string.IsNullOrEmpty(value))
+                value = fieldType.DefaultFormattedValue;
 
             if (LookupFieldHasColorItem(fieldType))
             {
-                string colorAndStatusSql = $@"(SELECT F.FormattedValue as name,
+                string colorAndValueSql = $@"(SELECT F.FormattedValue as name,
 								COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color
+                                , FD.FormattedValue as description
+                                , FPL.FormattedValue as profilelevel
                                 from Field F 
 								inner join FieldType ft on ft.ID = f.FieldTypeID
                                 cross apply STRING_SPLIT(F.Value, ',') SPF
@@ -2474,16 +2479,19 @@ from    (
                                 inner join Asset AI on AI.AssetTypeId = {objectDetail.AssetTypeID} and AI.ObjectID = f.ObjectID 
                                 cross apply dbo.GetAssetColorJsonByColor(ACf.Color) ACJ
                                 cross apply GetAssetDisplayValueByID(ACF.ID) ADV 
+                                outer apply (select FormattedValue from field FD inner join FieldType FT on FD.FieldTypeID = FT.ID where LOWER(FT.Name)='description' and FD.ObjectID = F.Value) FD
+								outer apply (select FormattedValue from field FD inner join FieldType FT on FD.FieldTypeID = FT.ID where LOWER(FT.Name)='profilelevel' and FD.ObjectID = F.Value) FPL
                                 where f.FieldTypeID = {fieldType.ID} and f.[ObjectType] = '{type.ToString()}' and f.[ObjectID] = {id}) FOR JSON PATH";
-                string colorAndStatus = Company.Query<string>(colorAndStatusSql).FirstOrDefault();
-                if (!string.IsNullOrEmpty(colorAndStatus))
+                string colorAndValue = Company.Query<string>(colorAndValueSql).FirstOrDefault();
+                if (!string.IsNullOrEmpty(colorAndValue))
                 {
-                    return colorAndStatus;
+                    return colorAndValue;
                 }
             }
-
-            return status;
+            
+            return value;
         }
+
         private bool LookupFieldHasColorItem(FieldType f)
         {
             if (f.LookupObjectType != null && f.LookupObjectID.HasValue)

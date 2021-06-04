@@ -926,7 +926,7 @@
     <Content Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree-node.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\score-badge\score-badge.component.html" />
-    <Content Include="Scripts\app\components\shared\small-widgets\status-badge\status-badge.component.html" />
+    <Content Include="Scripts\app\components\shared\small-widgets\simple-badge\simple-badge.component.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\synonyms.tile.html" />
     <Content Include="Scripts\app\components\shared\social\social-board.component.html" />
     <Content Include="Scripts\app\components\shared\social\comment-form.component.html" />
@@ -1094,9 +1094,11 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\simple-badge\simple-badge.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dayofweek-input\dayofweek-input.component.ts" />
     <Content Include="Scripts\app\components\shared\social\social-comment.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\ownership-list\ownership-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\simple-badge\simple-badge.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\social\comment-form.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\info-tooltip.component.ts" />
     <Content Include="Scripts\app\components\workflow\workflow-view-details.component.html" />
@@ -1582,8 +1584,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\score-badge\score-badge.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\score-badge\score-badge.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\status-badge\status-badge.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\status-badge\status-badge.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\survey\take-survey.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tags\d3s-tag-view.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tags\d3s-tag-view.ts" />

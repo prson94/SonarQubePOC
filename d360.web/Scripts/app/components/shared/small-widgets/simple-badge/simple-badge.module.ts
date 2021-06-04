@@ -2,7 +2,7 @@
 import { CommonModule } from '@angular/common';
 import { IgBadgeModule } from '../../../shared/controls/badge/badge.module';
 
-import { StatusBadgeComponent } from './status-badge.component';
+import { SimpleBadgeComponent } from './simple-badge.component';
 import { GovernRequestInterceptor } from '../../../../http-interceptors/govern-request.interceptor';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
@@ -12,10 +12,10 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
         IgBadgeModule
     ],
     declarations: [
-        StatusBadgeComponent
+        SimpleBadgeComponent
     ],
     exports: [
-        StatusBadgeComponent
+        SimpleBadgeComponent
     ],
     providers: [
         {
@@ -25,4 +25,4 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
         },
     ]
 })
-export class StatusBadgeModule { }
+export class SimpleBadgeModule { }
