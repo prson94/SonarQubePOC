@@ -72,6 +72,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     @ViewChild('addLineagePanel', { static: false }) addLineagePanelRef;
     @ViewChild('alertPanel', { static: false }) alertPanelRef;
     @ViewChild('infoDetailPanel', { static: false }) infoDetailPanelRef;
+    @ViewChild('settingsPanel', { static: false }) settingsPanelRef;
     @ViewChild('ownerDetailPanel', { static: false }) ownerDetailPanelRef;
     @ViewChild('diagram', { static: false }) diagramRef;
     @ViewChild('filterDetailPanel', { static: false }) filterDetailPanelRef;
@@ -304,6 +305,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             }
             if (this.ownerDetailPanelRef) {
                 this.ownerDetailPanelRef.nativeElement.style.height = innerPanelHeight;
+            }
+            if (this.settingsPanelRef) {
+                this.settingsPanelRef.nativeElement.style.height = innerPanelHeight;
             }
         });
         this.updatePredicateSelectorPosition();
@@ -1788,11 +1792,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         ScoreClass: scoreClass
                     });
 
-                    diagramAsset.Loaded = true;
-                    this.selectedDiagramAsset = diagramAsset;
-                    this.panel_Loading = false;
-                    this.cdRef.markForCheck();
+
                 });
+
+                diagramAsset.Loaded = true;
+                this.selectedDiagramAsset = diagramAsset;
+                this.panel_Loading = false;
+                this.cdRef.markForCheck();
             });
 
     }
