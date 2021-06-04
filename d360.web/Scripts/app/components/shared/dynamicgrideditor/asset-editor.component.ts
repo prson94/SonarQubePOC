@@ -125,7 +125,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     private load() {
         this.isInErrorMessage = '';
         this.isInError = false;
-        if (this.selection !== undefined && this.selection) {
+        if (this.selection) {
             this.editedItem = _.cloneDeep(this.selection);
         } else {
             this.editedItem = {};

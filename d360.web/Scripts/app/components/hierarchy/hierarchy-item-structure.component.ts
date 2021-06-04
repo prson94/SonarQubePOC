@@ -131,7 +131,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             let uriParams: any = {};
             let useUid: boolean = false;
 
-            const obs = new Observable(observer => {
+            const obs = new Observable((observer) => {
                 if (this.assetTypeUid) {
                     this.assetTypeService.getAssetTypeObjectAndID(this.assetTypeUid).subscribe((response) => {
                         this.objectTypeId = response.ObjectID;
@@ -487,7 +487,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             if (this.treeTable) {
                 uriParams._direction = this.treeTable._sortOrder === 1 ? 'ASC' : 'DESC';
             }
-            if (!this.treeTable && this.treeTable._sortField != undefined) {
+            if (this.treeTable && this.treeTable._sortField && this.treeTable._sortField !== "") {
                 var field = this.columns.filter((f) => f.datafield === this.treeTable._sortField)[0];
                 uriParams._order = field["apiName"];
             }
