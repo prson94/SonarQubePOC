@@ -37,9 +37,9 @@ export class SimpleBadgeComponent implements OnInit, OnChanges {
     load() {
         try {
             this.badgeAttributes = JSON.parse(this.badgeValue);
-            if (this.badgeAttributes.some(x=> x.hasOwnProperty('color'))) {
+            if (this.badgeAttributes.some((x) => x.hasOwnProperty('color'))) {
                 this.useDefinedColor = true;
-                this.undefinedColor = this.badgeAttributes.filter(c => c.color == 'transparent').length > 0;
+                this.undefinedColor = this.badgeAttributes.filter((c) => c.color === 'transparent').length > 0;
             } else {
                 this.useDefinedColor = false;
                 this.undefinedColor = false;
@@ -51,10 +51,13 @@ export class SimpleBadgeComponent implements OnInit, OnChanges {
     }
 
     getBadgeText() {
-        if (this.badgeAttributes && this.badgeAttributes.length > 0)
-            return this.badgeAttributes.map(c => c.name).join('/');
-        else
+        if (this.badgeAttributes && this.badgeAttributes.length > 0) {
+            return this.badgeAttributes.map((c) => c.name).join('/');
+        }
+        else {
             return this.badgeValue;
+        }
+            
     }
 
     getBadgeDescription() {
@@ -62,7 +65,7 @@ export class SimpleBadgeComponent implements OnInit, OnChanges {
 
         if (this.badgeAttributes && this.badgeAttributes.length > 0 && this.badgeAttributes[0].description) {
             if (this.badgeType.toLowerCase().trim() === 'dataclassification') {
-                title="Data Classification: "
+                title = "Data Classification: ";
             }
             title += this.getBadgeText();
             return title + "\r\n" + this.badgeAttributes[0].description;
@@ -73,8 +76,9 @@ export class SimpleBadgeComponent implements OnInit, OnChanges {
     }
 
     getBackgroundColor() {
-        if (this.useDefinedColor && !this.undefinedColor)
+        if (this.useDefinedColor && !this.undefinedColor) {
             return this.getBackgroundGradient();
+        }            
         var badgeValue = this.getBadgeText().toLowerCase().trim();
         if (!this.useDefinedColor) {
             switch (this.badgeType.toLowerCase().trim()) {
@@ -141,7 +145,9 @@ export class SimpleBadgeComponent implements OnInit, OnChanges {
                     let currentToken = this.badgeAttributes[i];
                     color = currentToken.color;
                     let name = currentToken.name;
-                    if (!firstToken) this.formattedBadge += "/";
+                    if (!firstToken) {
+                        this.formattedBadge += "/";
+                    } 
                     this.formattedBadge += name;
                     firstToken = false;
                 }
@@ -153,13 +159,14 @@ export class SimpleBadgeComponent implements OnInit, OnChanges {
 
     getBackgroundGradient() {
         if (this.badgeAttributes.length > 0) {
-            if (this.badgeAttributes.length == 1) {
+            if (this.badgeAttributes.length === 1) {
                 return this.badgeAttributes[0].color;
             }
             let split = Math.round( 100 / this.badgeAttributes.length);
-            let gradients = this.badgeAttributes.map(x => {
-                if (x) 
-                    return x.color + " " + split + "%"
+            let gradients = this.badgeAttributes.map((x) => {
+                if (x) {
+                    return x.color + " " + split + "%";
+                }                    
             });
             return "linear-gradient(100deg, " + gradients.join(",") + ")";
         }
@@ -203,14 +210,15 @@ export class SimpleBadgeComponent implements OnInit, OnChanges {
         if (color == null) {
             return true;
         }
-        if (color.substr(0, 1) == '#')
+        if (color.substr(0, 1) == '#') {
             color = this.hexToHSL(color);
+        }            
         let hsl = /^hsl\(\s*(\d{1,3})\s*,\s*(0|[1-9]\d?|100)%\s*,\s*(0|[1-9]\d?|100)%\s*\)$/i.exec(color);
         if (hsl) {
             let h = (360 + parseInt(hsl[1], 10)) % 360;
             let s = parseInt(hsl[2], 10) * 0.01;
             let l = parseInt(hsl[3], 10) * 0.01;
-            var rgb = this.hsl2rgb(h, s, l).map(x => Math.round(x * 255));
+            var rgb = this.hsl2rgb(h, s, l).map((x) => Math.round(x * 255));
             var luma = ((rgb[0] * 299) + (rgb[1] * 587) + (rgb[2] * 114)) / 1000;
             return (luma >= lumaLimit);
         }
@@ -220,10 +228,12 @@ export class SimpleBadgeComponent implements OnInit, OnChanges {
     getVariant() {
         var dark = 'custom-dark';
         var light = 'custom-light';
-        if (this.undefinedColor)
+        if (this.undefinedColor) {
             return light;
-        if (this.useDefinedColor)
+        }            
+        if (this.useDefinedColor) {
             return this.hslStringIsLight(this.getBackgroundColor(), 170) ? light : dark;
+        }            
         else {
             var badgeValue = this.getBadgeText().toLowerCase().trim();
             switch (this.badgeType.toLowerCase().trim()) {
