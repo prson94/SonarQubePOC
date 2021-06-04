@@ -283,6 +283,8 @@ namespace d360.model.DataAccessLayer
             bool includeOnlyListableFields = false;
             string populatePremissionAssetTableSQL = " ";
             string populateOwnershipLookupTableSQL = " ";
+            string selectOwnershipSQL = "";
+
             string permissionDetailSQL = " ";
             string includePermissionFields = " ";
             bool listColorsAsJSON = false;
@@ -297,6 +299,8 @@ namespace d360.model.DataAccessLayer
             bool simpleFilterOwnershipOnResource = false;
             bool simpleFilterOwnershipOnSecurityAsset = false;
             bool isForTreeGrid = false;
+
+            Dictionary<string, string> ownershipPropertiesMapping = new Dictionary<string, string>();
 
             if (assetType == null)
                 throw new Exception("Invalid assetType specified");
@@ -616,6 +620,8 @@ namespace d360.model.DataAccessLayer
             if (includeOwnershipLookup && ownershipFieldTypes.Any())
             {
                 populateOwnershipLookupTableSQL = @"
+                    declare @id int = (select top 1 id from assettype where id = @assettypeid)
+
                     drop table if exists #OwnershipLookupAssets;
                     create table #OwnershipLookupAssets (
 						AssetID bigint,
@@ -643,7 +649,7 @@ namespace d360.model.DataAccessLayer
                               ,[SecurityAssetId]
                               ,[SecurityAssetUid]
                         FROM [dbo].[ResponsibilityDetail] rd
-                        where rd.assetid <> 0 and IsVisible = 1 and rd.[AssetTypeID] = @assetTypeId
+                        where rd.assetid <> 0 and IsVisible = 1 and rd.[AssetTypeID] = @id
                         union all
                         select a.[ID] as AssetID
                              ,rd.[ResponsibilityTypeID]
@@ -658,7 +664,7 @@ namespace d360.model.DataAccessLayer
                              ,rd.[SecurityAssetUid]
                         from ResponsibilityDetail rd
                         inner join asset a on rd.assettypeid = a.assettypeid
-                        where rd.assetid = 0 and IsVisible = 1 and rd.assettypeid = @assetTypeId
+                        where rd.assetid = 0 and IsVisible = 1 and rd.assettypeid = @id
                         union all
                         select a.[ID] as AssetID
                              ,rd.[ResponsibilityTypeID]
@@ -673,10 +679,14 @@ namespace d360.model.DataAccessLayer
                              ,rd.[SecurityAssetUid]
                         from ResponsibilityDetail rd
                         inner join asset a on rd.assetid = a.id
-                        where rd.AssetTypeID = 0 and IsVisible = 1 and a.AssetTypeID = @assetTypeId;
+                        where rd.AssetTypeID = 0 and IsVisible = 1 and a.AssetTypeID = @id;
 
                     create index cix_OwnershipLookupAssetId on #OwnershipLookupAssets (AssetId);
                     ";
+
+                List<string> ownershipJoins = new List<string>();
+                List<string> ownershipColumns = new List<string>();
+                List<string> groupColumns = new List<string>();
 
                 ownershipFieldTypes.ForEach(f =>
                 {
@@ -717,9 +727,19 @@ namespace d360.model.DataAccessLayer
 	                         FOR JSON PATH)
                         ) F{f.ID} (FormattedValue) ";
 
-                    fieldColumns.Add($"F{f.ID}.FormattedValue as [{f.Name}]");
-                    fieldJoins.Add(ownershipQuery);
+                    ownershipColumns.Add($"F{f.ID}.FormattedValue as [{f.Name}]");
+                    groupColumns.Add($"F{f.ID}.FormattedValue");
+                    ownershipJoins.Add(ownershipQuery);
+                    ownershipPropertiesMapping.Add(f.Name, "F{f.ID}.FormattedValue");
                 });
+
+                selectOwnershipSQL = $@"
+                select {(string.Join(", ", ownershipColumns))} ,
+                string_agg(cast(a.id as nvarchar(max)), ',') as Assets
+                from asset a
+                {(string.Join("\n ", ownershipJoins))}
+                where A.AssetTypeID = @assetTypeID
+				group by {(string.Join(", ", groupColumns))}";
             }
 
             if (!CompanyContext.CurrentResourceIsAdmin && !useAsAdmin)
@@ -1163,11 +1183,7 @@ namespace d360.model.DataAccessLayer
             if (fieldColumns.Any())
                 fieldsSql = $",\n {string.Join(",\n", fieldColumns)}";
 
-            string populateOwnershipLookupTableCountSQL = (simpleFilterOwnershipOnResource || simpleFilterOwnershipOnSecurityAsset) ? populateOwnershipLookupTableSQL : " ";
-
             var countSql = $@"
-                {populatePremissionAssetTableSQL}
-                {populateOwnershipLookupTableCountSQL}
                 select  count(*)
                 from    Asset A 
                 {(includeAssetPathInCount ? " left join graph.AssetNodeDisplayPath Node on Node.id = a.id" : "")} 
@@ -1180,8 +1196,6 @@ namespace d360.model.DataAccessLayer
                 {whereSql}";
 
             var sql = $@"
-                {populatePremissionAssetTableSQL}
-                {populateOwnershipLookupTableSQL}
                 select
                     A.ID as AssetId,
                     A.[UID] as [AssetUid],
@@ -1219,28 +1233,44 @@ namespace d360.model.DataAccessLayer
                 {string.Join("\n", pagingSql)}
             ";
 
-            if (includeTotal)
+            if (!includeTotal)
             {
-                model.total = await CompanyContext.Database.Connection.QueryFirstOrDefaultAsync<int>(
-                        new CommandDefinition(countSql,
-                        cancellationToken: cancellationToken.Value,
-                        parameters: dbArgs,
-                        commandTimeout: ApiTimeout
-                    ));
-
-            }
-            else
-            {
+                countSql = "";
                 model.total = null;
             }
 
-            var results = await CompanyContext.Database.Connection.QueryAsync(
-                  new CommandDefinition(sql,
+            var getAllQuery = $"{populatePremissionAssetTableSQL} {populateOwnershipLookupTableSQL} {countSql} {sql} ";
+
+            if (!string.IsNullOrEmpty(selectOwnershipSQL))
+            {
+                getAllQuery += selectOwnershipSQL;
+            }
+
+            var gridReader = await CompanyContext.Database.Connection.QueryMultipleAsync(
+                  new CommandDefinition(getAllQuery,
                   cancellationToken: cancellationToken.Value,
                   parameters: dbArgs,
                   commandTimeout: ApiTimeout
-              ));
+                ));
 
+            if (includeTotal)
+            {
+                model.total = gridReader.Read<int>().FirstOrDefault();
+            }
+            var results = gridReader.Read<dynamic>().ToList();
+
+
+            List<Tuple<List<int>, dynamic>> ownershipData = new List<Tuple<List<int>, dynamic>>();
+            if (!string.IsNullOrEmpty(selectOwnershipSQL))
+            {
+                var dyOwnData = gridReader.Read<dynamic>().ToList();
+                foreach (var ow in dyOwnData)
+                {
+                    var data = (IDictionary<string, object>)ow;
+                    var assetIds = data["Assets"].ToString().Split(',').Select(x => int.Parse(x.Trim())).ToList();
+                    ownershipData.Add(new Tuple<List<int>, dynamic>(assetIds, ow));
+                }
+            }
             //Loop results once for if any applicable conversions
             if (includeRelationships || includePermissionDetails || includeSegments || (includeOwnershipLookup && ownershipFieldTypes.Any()))
             {
@@ -1294,9 +1324,13 @@ namespace d360.model.DataAccessLayer
                     if (includeOwnershipLookup && ownershipFieldTypes.Any())
                     {
                         var data = (IDictionary<string, object>)result;
+                        var oData = ownershipData.FirstOrDefault(x => x.Item1.Contains(int.Parse(data["AssetId"].ToString())))
+                            .Item2;
                         ownershipFieldTypes.ForEach(ft =>
                         {
-                            var val = (string)data[ft.Name];
+                            var ownership = (IDictionary<string, object>)oData;
+
+                            var val = (string)ownership[ft.Name];
                             if (!string.IsNullOrEmpty(val))
                             {
                                 data[ft.Name] = JsonConvert.DeserializeObject(val);
@@ -1974,7 +2008,14 @@ namespace d360.model.DataAccessLayer
                 uid as AssetUid from family_cte
                 select * from #family";
 
-            return CompanyContext.Query<Guid>(sql, new { assetUid = uids }, ApiTimeout).AsList();
+            List<Guid> parentUids = new List<Guid>();
+            var pages = uids.Count() / 2000;
+            for (int i = 0; i <= pages; i++)
+            {
+                parentUids.AddRange(CompanyContext.Query<Guid>(sql, new { assetUid = uids.Skip(i * 2000).Take(2000) }, ApiTimeout).AsList());
+            }
+
+            return parentUids;
         }
 
 
