@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.utility.AddAuditEntry-v9.3">
+  <changeSet author="kmcnamee" id="Procedure.utility.AddAuditEntry-v9.4">
   <comment>GOV-14410</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -590,6 +590,7 @@ begin
 			if @updated = 1
 			begin
 				insert into [reporting].[Global_FieldAudit] 
+				(AuditID,FieldTypeID,FieldName,Version,Value)
 				values	(
 						@auditID, 
 						@fieldTypeID, 
@@ -623,7 +624,8 @@ begin
 	declare @DependentObjectName nvarchar(250),
 			@MainObjectTypeName nvarchar(250),
 			@MainObjectName nvarchar(250),
-			@MainDescription nvarchar(max)
+			@MainDescription nvarchar(max),
+			@ConvertMainObjectTypeName nvarchar(250)
 	
 	declare @tbl table (ID int identity, FieldTypeID int, FieldName nvarchar(250), NewValue nvarchar(max), MostRecentVersion int, Updated bit)
 
@@ -1073,13 +1075,26 @@ begin
 		set @Action = 'Updated';
 	end
 
+	if @MainObjectTypeName = 'Intersect Type'
+	   begin
+			set @ConvertMainObjectTypeName = 'Relationship Type';
+	   end
+	else if @MainObjectTypeName = 'Intersect'
+	   begin
+			set @ConvertMainObjectTypeName = 'Relationship';
+	   end
+	else
+		begin
+			set @ConvertMainObjectTypeName = @MainObjectTypeName;
+		end
+	
 	if @Action = 'Created'
 	begin
-		set @MainDescription = @MainObjectTypeName + ' created'
+		set @MainDescription = @ConvertMainObjectTypeName + ' created'
 	end
 	if @Action = 'Removed'
 	begin
-		set @MainDescription = @MainObjectTypeName + ' removed'
+		set @MainDescription = @ConvertMainObjectTypeName + ' removed'
 	end
 	if @Action = 'Updated'
 	begin
@@ -1109,8 +1124,19 @@ begin
 
 	if @MainObjectName is not null and @DependentObjectName is not null
 	begin
-		set @MainDescription = coalesce(@MainDescription, @MainObject + ' ' + @Action)
-
+		if coalesce(@MainDescription, @MainObject) = 'Intersect'
+			begin
+				set @MainDescription = 'Relationship ' + @Action
+			end
+		else if coalesce(@MainDescription, @MainObject) = 'IntersectType'
+			begin
+				set @MainDescription = 'RelationshipType ' + @Action
+			end
+		else
+			begin
+				set @MainDescription = coalesce(@MainDescription, @MainObject + ' ' + @Action)
+			end
+			
 		if @Action = 'Tag Consolidate'
 		begin
 			set @MainDescription = 'Tag consolidated'
