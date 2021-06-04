@@ -10527,14 +10527,32 @@ EG.GroupUid
                         {
                             try
                             {
-                                var deleteSQL = $@"DELETE G
+                                var deleteSQL = $@"
+                                        insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
+	                                        select	distinct
+			                                        'Group', 
+			                                        G.ID,
+			                                        SUBSTRING(G.Name,1,250),
+			                                        @CurrentResourceID, 
+			                                        getutcdate(), 
+			                                        'Deleted', 
+			                                        'Group', 
+			                                        G.ID,
+			                                        'Group', 
+			                                        SUBSTRING(G.Name,1,250), 
+			                                        'This group has been removed.'
+	                                        from [api].[ExecutionDeletedGroup] EDG
+                                            inner join [Group] G on G.Uid = EDG.GroupUid
+                                            where	ExecutionID = @ExecutionID
+
+                                        DELETE G
 	                                    FROM [Group] G
 		                                inner join api.ExecutionDeletedGroup EG on EG.Success is null and EG.ExecutionID = @ExecutionID and EG.ItemNumber between @beginItemNumber and @endItemNumber
 		                                inner join Asset A on A .uid = EG.GroupUid
 		                                where A.ObjectID = G.ID";
 
                                 Connection.Execute(deleteSQL,
-                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                        new { execution.ExecutionID, CurrentResourceID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                 Connection.Execute(
                                                     $"update EG set EG.Success = 1, EG.Message = 'Deleted Successfully' from api.ExecutionDeletedGroup EG where EG.Success is null and EG.ExecutionID = @ExecutionID;",
