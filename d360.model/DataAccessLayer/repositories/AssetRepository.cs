@@ -730,6 +730,7 @@ namespace d360.model.DataAccessLayer
 
                     ownershipColumns.Add($"F{f.ID}.FormattedValue as [{f.Name}]");
                     groupColumns.Add($"F{f.ID}.FormattedValue");
+                    fieldJoins.Add(ownershipQuery);
                     ownershipJoins.Add(ownershipQuery);
                     ownershipPropertiesMapping.Add(f.Name, "F{f.ID}.FormattedValue");
                 });
