@@ -7,7 +7,6 @@ import { GovernRequestInterceptor } from "../../../http-interceptors/govern-requ
 import { RightSidebarItemComponent } from './right-sidebar-item.component';
 import { RightSidebarComponent } from './right-sidebar.component';
 import { DynamicPercentageModule } from '../small-widgets/dynamic-percentage/dynamic-percentage-module';
-import { StatusBadgeModule } from '../small-widgets/status-badge/status-badge.module';
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { TagUsageInfoModule } from '../../admin/tags/tags-usage-info.module';
 import { SharedDeleteFormModule } from '../delete.form';
@@ -16,14 +15,13 @@ import { TakeSurveyModule } from '../survey/take-survey.module';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { ScoreBadgeModule } from '../small-widgets/score-badge/score-badge.module';
 import { InfoTooltipModule } from '../tooltip/info-tooltip.component';
-
+import { SimpleBadgeModule } from '../small-widgets/simple-badge/simple-badge.module';
 
 @NgModule({
     imports: [
         CommonModule,
         FormsModule,
         DynamicPercentageModule,
-        StatusBadgeModule,
         HttpClientModule,
         SharedDynamicGridEditorModule,
         TagUsageInfoModule,
@@ -32,7 +30,8 @@ import { InfoTooltipModule } from '../tooltip/info-tooltip.component';
         TakeSurveyModule,
         PipesModule,
         ScoreBadgeModule,
-        InfoTooltipModule
+        InfoTooltipModule,
+        SimpleBadgeModule
     ],
     declarations: [
         RightSidebarItemComponent,

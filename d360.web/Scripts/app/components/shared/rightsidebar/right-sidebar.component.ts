@@ -62,7 +62,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     private menuWarningType: string = '';
     private showOnlyMainTab: boolean = false;
 
-    status: string;
+    status: string;    
     showStatus = false;
     showCertify = false;
     showHeader: boolean = false;
@@ -73,6 +73,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     disableScrollRight: boolean = false;
     showCertifyModal: boolean = false;
     assetAction: AssetAction;
+    dataClassification: string;
+    showDataClassification: boolean = false;
 
     //keep record of previous url, sometimes we dont need to clear all items (ie. asset -> asset audit page)
     private previousUrl: string = '';
@@ -197,6 +199,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
     load() {
         this.showStatus = false;
+        this.showDataClassification = false;
         this.statistics = null;
         this.showCertify = false;
         this.showHeader = false;
@@ -249,6 +252,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.currentObject = null;
                 this.statistics = null;
                 this.showStatus = false;
+                this.showDataClassification = false;
                 this.showOnlyMainTab = false;
                 this.emitChanges();
             })
@@ -268,6 +272,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasRequestCertificationWorkflow);
             } else {
                 this.showStatus = false;
+                this.showDataClassification = false;
                 this.statistics = null;
                 this.showCertify = false;
                 this.showSurvey = false;
@@ -319,7 +324,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
 
     private loadItemStats(objectID: number, objectName: string, objectType: string, objectTypeID: number, HasRequestCertificationWorkflow: boolean) {
-        this.objectStatisticsService.getObjectStatus(objectID, objectName).subscribe(
+        this.objectStatisticsService.getObjectColorAndValue(objectID, objectName, "status").subscribe(
             result => {
                 this.status = result;
                 if (this.status != undefined && this.status != null && this.status.length > 0) {
@@ -355,6 +360,25 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 }
             }
         );
+
+        this.objectStatisticsService.getObjectColorAndValue(objectID, objectName, "dataclassification").subscribe(
+            result => {
+                this.dataClassification = result;
+                try {                 
+                    let dataClassificationAttributes  = JSON.parse(this.dataClassification);
+                    if (this.dataClassification != undefined && this.dataClassification != null && dataClassificationAttributes.length > 0) {                    
+                        this.showDataClassification = true;
+                    }
+                    else {             
+                        this.showDataClassification = false;                    
+                    }                 
+                } catch (e) {
+                    this.showDataClassification = false;
+                }
+                this.ref.markForCheck();
+            }
+        );
+
         if (this.currentObject.Uid && this.currentObject.Uid != '00000000-0000-0000-0000-000000000000') {
             this.objectStatisticsService.getSearchDetails(this.currentObject.Uid).subscribe(
                 result => {

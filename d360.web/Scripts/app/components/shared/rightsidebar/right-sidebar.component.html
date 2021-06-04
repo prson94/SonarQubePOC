@@ -6,9 +6,14 @@
             <img class="d3s-asset-img" *ngIf=" checkIfImg(area.icon)" [src]="area.icon" />
         </span>
         <h1 title="{{area.title ? area.title: 'D3S'}}">{{area.title ? area.title: 'D3S'}}</h1>
-        <d3s-status-badge *ngIf="showStatus"
-                          [status]="status">
-        </d3s-status-badge>
+        <d3s-simple-badge *ngIf="showDataClassification"
+                          [badgeValue]="dataClassification" 
+                          [badgeType]="'DataClassification'">
+        </d3s-simple-badge>
+        <d3s-simple-badge *ngIf="showStatus"
+                          [badgeValue]="status"
+                          [badgeType]="'Status'">
+        </d3s-simple-badge>
         <button class="button" *ngIf="showCertify" (click)="requestCertification()"><span>Request Certification</span></button>
         <span class="grow"></span>
         <button class="button" (click)="navigateToSurvey()" *ngIf="showSurvey"><i class="fa fa-edit"></i><span>Take Survey</span></button>
