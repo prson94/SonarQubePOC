@@ -11132,7 +11132,10 @@ EG.GroupUid
                                                     ,GETDATE())
                                             OUTPUT  inserted.ID INT, EDP.ItemNumber INTO #mergeResultTable;
                                             
-                                        Delete ADPS from AssetDataProfileSample ADPS inner join #mergeResultTable rt on ADPS.AssetDataProfileID = rt.DataProfileID                                      
+                                        if @IsInsert = 0
+                                        BEGIN
+                                            Delete ADPS from AssetDataProfileSample ADPS inner join #mergeResultTable rt on ADPS.AssetDataProfileID = rt.DataProfileID                                      
+                                        END
 
                                         insert into AssetDataProfileSample 
                                                     ([AssetDataProfileID]
