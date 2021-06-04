@@ -258,6 +258,8 @@ export class AssetBrowserDiagramAsset {
     Path: string;
     Url: string;
     Id: number;
+    Object: string;
+    ObjectId: number;
     HasOwners: boolean = false;
     Fields: AssetBrowserDiagramAssetField[] = [];
     Scores: AssetBrowserDiagramAssetScore[] = [];

@@ -104,9 +104,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     searchableProps: string[] = ["text"];
 
     panel_Loading = false;
-    panel_InformationDisabled = true;
+    panel_InformationDisabled = false;
     panel_InformationHasReadAccess = false;
     panel_TabIndex = 0;
+    linkMenuItems: any[] = [
+        { title: "Open" },
+        { title: "Open in New Tab" },
+    ];
 
     panelModel: AssetBrowserPanelModel = { selectedCommand: AssetBrowserPanelCommand.None, AddVisible: false, AlertVisible: false, FiltersVisible: false, InformationVisible: false, SettingsVisible: false };
 
@@ -278,11 +282,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         })();
         const diagramSize = +this.diagramRef.nativeElement.style.height.replace('px', '');
         panelElements.forEach(el => {
-            el.style.height = (diagramSize - 75) + 'px';
-            el.style.maxHeight = (diagramSize - 75) + 'px';
+            el.style.height = diagramSize + 'px';
+            el.style.maxHeight = diagramSize + 'px';
             const panelHeaderSize = panelHeaderElement.clientHeight;
 
-            const innerPanelHeight = (diagramSize - 75 - panelHeaderSize - 50) + 'px';
+            const innerPanelHeight = (diagramSize - panelHeaderSize - 17) + 'px';
             if (this.addLineagePanelRef) {
                 this.addLineagePanelRef.nativeElement.style.height = innerPanelHeight;
             }
@@ -653,6 +657,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
 
+    private menu_ClickLinkItem(e: any) {
+        if (e.value.toLowerCase() === 'open') {
+            this.router.navigateByUrl(this.selectedDiagramAsset.Url);
+        }
+        if (e.value.toLowerCase() === 'open in new tab') {
+            window.open(this.selectedDiagramAsset.Url, "_blank");
+        }
+    }
     //#region Hiding / Unhiding
 
     private context_Hide(e, obj, direction: AssetBrowserApiHopDirection = null) {
@@ -895,12 +907,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             n.isHighlighted = false;
                         });
                         this.selectedDiagramAsset = null;
-                        this.panel_InformationDisabled = true;
                         if (this.panelModel.AlertVisible) {
                             this.selectedAssetsWithAlerts = this.assetsWithAlerts;
-                        }
-                        else if (this.panelModel.InformationVisible) {
-                            this.helper_SetVisiblePanel(AssetBrowserPanelCommand.None);
                         }
                         this.cdRef.markForCheck();
                     }
@@ -910,13 +918,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         n.isHighlighted = false;
                     });
                     this.selectedDiagramAsset = null;
-                    this.panel_InformationDisabled = true;
                     this.panel_TabIndex = 0;
                     if (this.panelModel.AlertVisible) {
                         this.selectedAssetsWithAlerts = this.assetsWithAlerts;
                     }
                     else if (this.panelModel.InformationVisible) {
-                        this.helper_SetVisiblePanel(AssetBrowserPanelCommand.None);
+                        //this.helper_SetVisiblePanel(AssetBrowserPanelCommand.None);
                     }
                     this.cdRef.markForCheck();
                 }
@@ -1508,7 +1515,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (closePanels) {
             this.helper_SetVisiblePanel(AssetBrowserPanelCommand.None);
         }
-        this.panel_InformationDisabled = true;
         this.helper_PopulateDiagram().subscribe(bComplete => {
             this.isLoading = false;
             this.helper_SetFilterWindow();
@@ -1755,31 +1761,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 diagramAsset.Uid = assetUid;
                 diagramAsset.Id = asset.AssetId;
                 forkJoin(
-                    this.fieldsService.getFieldsV2(asset.AssetTypeUid, null, null),
                     this.assetService.getUIDetailsForAssetUID(assetUid),
                     this.responsibilityService.getHasResponsibilities(assetUid)
                 )
-                    .subscribe(([fields, ui, hasOwners]) => {
-
-                        fields.forEach((fieldType) => {
-                            let typeName = Object.keys(fieldType.Type)[0];
-                            let type = fieldType.Type[typeName];
-
-                            if (type != null && this.ignoredPanelFieldTypes.indexOf(typeName) == -1) {
-                                if (type.IsDisplayable === true && (type.ShowIfEmpty === true || (type.ShowIfEmpty === false && asset[fieldType.Name] != null))) {
-                                    diagramAsset.Fields.push(
-                                        {
-                                            Name: fieldType.FriendlyName,
-                                            Type: typeName,
-                                            Value: asset[fieldType.Name] == null ? "" : asset[fieldType.Name].toString()
-                                        });
-                                }
-                            }
-                        });
+                    .subscribe(([ui, hasOwners]) => {
 
                         diagramAsset.HasOwners = hasOwners;
                         diagramAsset.TypeName = ui.TypeName;
                         diagramAsset.DisplayValue = ui.DisplayValue;
+                        diagramAsset.Object = ui.Object;
+                        diagramAsset.ObjectId = ui.ObjectId;
                         diagramAsset.Loaded = true;
                         this.selectedDiagramAsset = diagramAsset;
                         this.panel_Loading = false;
@@ -1869,19 +1860,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 break;
             case AssetBrowserPanelCommand.Information:
                 this.helper_SetVisiblePanel(e);
-                let allowInformationPopup: boolean = false;
-
-                if (this.selectedDiagramAsset) {
-                    allowInformationPopup = (this.selectedDiagramAsset.Uid != this.emptyUid);
-                }
+                let allowInformationPopup: boolean = true;
 
                 if (allowInformationPopup) {
                     if (this.selectedDiagramAsset != null) {
                         this.helper_ShowDetail(this.selectedDiagramAsset.Uid);
                     }
-                }
-                else {
-                    this.panelModel.selectedCommand = AssetBrowserPanelCommand.None;//this.panelModel = { commandToResetTo: AssetBrowserPanelCommand.None };
                 }
                 break;
             case AssetBrowserPanelCommand.Refresh:
@@ -3311,8 +3295,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     * @returns The DiagramType.
     */
     viewchange_Apply(e: DiagramType) {
-        this.helper_SetVisiblePanel(AssetBrowserPanelCommand.None);
-        this.panelModel.selectedCommand = AssetBrowserPanelCommand.None;
         this.saveFilter();
         this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT}/browser/${this.assetUid}/${DiagramType[e]}`);
     }

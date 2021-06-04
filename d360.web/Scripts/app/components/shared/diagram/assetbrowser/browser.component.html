@@ -6,7 +6,7 @@
     </div>
 
     <div class="asset-browser-body col s12">
-        <div class="tile tile-detail" style="padding: 0">
+        <div style="padding: 0; margin-bottom: 0">
             <div [hidden]="isLoading" class="asset-browser-header">
                 <div class="controls-left">
                     <div style="display: inline-flex">
@@ -77,7 +77,7 @@
                     <div>{{errorText}}</div>
                 </div>
             </div>
-            <div class="row" style="position: relative" *ngIf="displayConfiguration.DiagramType != 3">
+            <div class="row" style="position: relative;" *ngIf="displayConfiguration.DiagramType != 3">
                 <div class="col s12 diagram-container">
                     <div #relationshipBadges
                          [hidden]="!isRelationshipSelectorAvailable"
@@ -107,96 +107,130 @@
                         </ng-container>
                     </div>
 
-                    <div #diagram id="LineageDiagram" style="overflow: hidden;" class="diagram"></div>
+                    <div #diagram id="LineageDiagram" class="diagram"></div>
 
                     <div *ngIf="isWindowVisible()" class="asset-browser-window">
-                        <div class="empty-overlay" *ngIf="panelModel.InformationVisible && !panel_InformationHasReadAccess">
-                            <div class="content">
-                                <div class="icon-holder">
-                                    <i class="fa fa-ban"></i>
+                        <div class="asset-browser-window-container">
+                            <div class="asset-browser-window-header">
+
+                                <div class="controls" *ngIf="panelModel.InformationVisible && selectedDiagramAsset?.Url">
+                                    <div class="score-badge-container">
+                                        <div class="score-badge">DQ 88.4%</div>
+                                        <div class="score-badge">GV 12.7%</div>
+                                    </div>
+                                    <div>
+                                        <button igButton icon="fa-ellipsis-v" (click)="linkMenu.toggle($event)"></button>
+                                        <ig-popup-menu (onSelect)="menu_ClickLinkItem($event)" [items]="linkMenuItems" #linkMenu [tabIndex]="1"></ig-popup-menu>
+                                    </div>
                                 </div>
-                                <span>You do not have permission to view the details of the selected item</span>
+
+                                <div class="info">
+                                    <div class="asset-name">
+                                        <span *ngIf="panelModel.InformationVisible">{{selectedDiagramAsset?.DisplayValue}}</span>
+                                        <span *ngIf="panelModel.FiltersVisible">Apply Filters</span>
+                                        <span *ngIf="panelModel.AlertVisible">Active Alerts</span>
+                                        <span *ngIf="panelModel.AddVisible">Add Lineage</span>
+                                        <span *ngIf="panelModel.SettingsVisible">Settings</span>
+                                    </div>
+                                    <div class="class-name">
+                                        <span *ngIf="panelModel.InformationVisible">{{selectedDiagramAsset?.TypeName}}</span>
+                                    </div>
+                                </div>
+                                <div class="scores">
+                                    <span class="d3s-score-container" *ngIf="panelModel.InformationVisible && displayConfiguration.DisplayScores && selectedDiagramAsset?.Scores">
+                                        <d3s-score-badge *ngFor="let score of selectedDiagramAsset?.Scores" [score]="score"></d3s-score-badge>
+                                    </span>
+                                </div>
+                                <div class="clearfix"></div>
+                                <div class="windowtabs" *ngIf="!panelModel.AddVisible">
+                                    <button *ngIf="panelModel.InformationVisible" [class]="(panel_TabIndex == 0) ? 'tab-selected' : 'tab'" (click)="event_Information_DetailTabClick()">Details</button>
+                                    <button *ngIf="panelModel.InformationVisible" [class]="(panel_TabIndex == 1) ? 'tab-selected' : 'tab'" (click)="event_Information_OwnerTabClick()" [disabled]="!ownershipTabEnabled()">Ownership</button>
+
+                                    <d3s-assetbrowser-savedfilter *ngIf="panelModel.FiltersVisible" [diagramType]="displayConfiguration.DiagramType" [options]="filter_AvailableOptions" [filterModel]="displayConfiguration" (applySavedFilter)="savedfilter_Apply($event)"></d3s-assetbrowser-savedfilter>
+
+                                    <button *ngIf="panelModel.AlertVisible" class="tab-selected">Alerts</button>
+
+                                    <button *ngIf="panelModel.SettingsVisible" class="tab-selected">General</button>
+                                </div>
+                            </div>
+                            <div class="asset-browser-window-content">
+                                <section *ngIf="panelModel.AddVisible">
+                                    <div #addLineagePanel class="scroll-panel">
+                                        <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
+                                        <d3s-assetbrowser-addpanel [assetBrowserData]="diagramData" (refreshDiagram)="helper_RefreshDiagram($event)"></d3s-assetbrowser-addpanel>
+                                    </div>
+                                </section>
+
+                                <section *ngIf="panelModel.AlertVisible">
+                                    <div #alertPanel class="scroll-panel">
+                                        <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
+                                        <d3s-assetbrowser-alertpanel [assets]="selectedAssetsWithAlerts" (openDetail)="alert_OpenDetail($event)"></d3s-assetbrowser-alertpanel>
+                                    </div>
+                                </section>
+
+                                <section *ngIf="panelModel.FiltersVisible">
+                                    <div #filterDetailPanel class="scroll-panel">
+                                        <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
+                                        <d3s-assetbrowser-filterpanel [allowAncestry]="helper_LineageDiagramApplies()" [options]="filter_AvailableOptions" [current]="displayConfiguration" (apply)="filterpanel_Apply($event)"></d3s-assetbrowser-filterpanel>
+                                    </div>
+                                </section>
+
+                                <section *ngIf="panelModel.InformationVisible">
+                                    <ng-container *ngIf="panel_TabIndex == 0">
+                                        <ng-container *ngIf="selectedDiagramAsset != null">
+                                            <ng-container *ngIf="panel_InformationHasReadAccess == true">
+                                                <div #infoDetailPanel class="scroll-panel">
+                                                    <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
+                                                    <ig-asset-detail *ngIf="!panel_Loading && selectedDiagramAsset && selectedDiagramAsset.Object"
+                                                                     [objectType]="selectedDiagramAsset.Object"
+                                                                     [objectID]="selectedDiagramAsset.ObjectId"
+                                                                     [useAccordion]="true"
+                                                                     [hasAddRelationshipsPermissions]="false"
+                                                                     [hasModifyRelationshipsPermissions]="false"
+                                                                     [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
+                                                </div>
+                                            </ng-container>
+                                            <ng-container *ngIf="panel_InformationHasReadAccess == false">
+                                                <div #infoDetailPanel class="empty-overlay">
+                                                    <div class="content">
+                                                        <div class="icon-holder">
+                                                            <i class="fa fa-info-circle"></i>
+                                                        </div>
+                                                        <span>You do not have permission to view the details of the selected item</span>
+                                                    </div>
+                                                </div>
+                                            </ng-container>
+                                        </ng-container>
+                                        <ng-container *ngIf="selectedDiagramAsset == null">
+                                            <div #infoDetailPanel class="empty-overlay">
+                                                <div class="content">
+                                                    <div class="icon-holder">
+                                                        <i class="fa fa-info-circle"></i>
+                                                    </div>
+                                                    <span>Select an item from the diagram to display its properties</span>
+                                                </div>
+                                            </div>
+                                        </ng-container>
+                                    </ng-container>
+
+                                    <div #ownerDetailPanel class="scroll-panel" *ngIf="panel_TabIndex == 1">
+                                        <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
+                                        <d3s-assetbrowser-ownerpanel [asset]="selectedDiagramAsset"></d3s-assetbrowser-ownerpanel>
+                                    </div>
+                                </section>
+
+                                <section *ngIf="panelModel.SettingsVisible">
+                                    <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
+                                    <d3s-assetbrowser-settingspanel [allowAncestry]="helper_LineageDiagramApplies()" [current]="displayConfiguration" (apply)="settingspanel_Apply($event)"></d3s-assetbrowser-settingspanel>
+                                </section>
                             </div>
                         </div>
 
-
-                        <div class="asset-browser-window-header">
-                            <div class="info">
-                                <div class="class-name">
-                                    <span *ngIf="panelModel.InformationVisible">{{selectedDiagramAsset?.AssetTypeClassDisplayName}}</span>
-                                </div>
-                                <div class="asset-name">
-                                    <span *ngIf="panelModel.InformationVisible"><a [routerLink]="selectedDiagramAsset?.Url">{{selectedDiagramAsset?.DisplayValue}}</a></span>
-                                    <span *ngIf="panelModel.FiltersVisible">Apply Filters</span>
-                                    <span *ngIf="panelModel.AlertVisible">Active Alerts</span>
-                                    <span *ngIf="panelModel.AddVisible">Add Lineage</span>
-                                    <span *ngIf="panelModel.SettingsVisible">Settings</span>
-                                </div>
-                            </div>
-                            <div class="scores">
-                                <span class="d3s-score-container" *ngIf="panelModel.InformationVisible && displayConfiguration.DisplayScores && selectedDiagramAsset?.Scores">
-                                    <d3s-score-badge *ngFor="let score of selectedDiagramAsset?.Scores" [score]="score"></d3s-score-badge>
-                                </span>
-                            </div>
-                            <div class="clearfix"></div>
-                            <div class="windowtabs">
-                                <button *ngIf="panelModel.InformationVisible" [class]="(panel_TabIndex == 0) ? 'tab-selected' : 'tab'" (click)="event_Information_DetailTabClick()">Details</button>
-                                <button *ngIf="panelModel.InformationVisible" [class]="(panel_TabIndex == 1) ? 'tab-selected' : 'tab'" (click)="event_Information_OwnerTabClick()" [disabled]="!ownershipTabEnabled()">Ownership</button>
-
-                                <!--button *ngIf="panelModel.FiltersVisible" class="tab-selected">Filters</button-->
-                                <d3s-assetbrowser-savedfilter *ngIf="panelModel.FiltersVisible" [diagramType]="displayConfiguration.DiagramType" [options]="filter_AvailableOptions" [filterModel]="displayConfiguration" (applySavedFilter)="savedfilter_Apply($event)"></d3s-assetbrowser-savedfilter>
-
-                                <button *ngIf="panelModel.AlertVisible" class="tab-selected">Alerts</button>
-
-                                <button *ngIf="panelModel.AddVisible" class="tab-selected">Lineage</button>
-
-                                <button *ngIf="panelModel.SettingsVisible" class="tab-selected">General</button>
-                            </div>
-                        </div>
-                        <div class="asset-browser-window-content">
-                            <section *ngIf="panelModel.AddVisible">
-                                <div #addLineagePanel class="scroll-panel">
-                                    <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
-                                    <d3s-assetbrowser-addpanel [assetBrowserData]="diagramData" (refreshDiagram)="helper_RefreshDiagram($event)"></d3s-assetbrowser-addpanel>
-                                </div>
-                            </section>
-
-                            <section *ngIf="panelModel.AlertVisible">
-                                <div #alertPanel class="scroll-panel">
-                                    <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
-                                    <d3s-assetbrowser-alertpanel [assets]="selectedAssetsWithAlerts" (openDetail)="alert_OpenDetail($event)"></d3s-assetbrowser-alertpanel>
-                                </div>
-                            </section>
-
-                            <section *ngIf="panelModel.FiltersVisible">
-                                <div #filterDetailPanel class="scroll-panel">
-                                    <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
-                                    <d3s-assetbrowser-filterpanel [allowAncestry]="helper_LineageDiagramApplies()" [options]="filter_AvailableOptions" [current]="displayConfiguration" (apply)="filterpanel_Apply($event)"></d3s-assetbrowser-filterpanel>
-                                </div>
-                            </section>
-
-                            <section *ngIf="panelModel.InformationVisible">
-                                <div #infoDetailPanel *ngIf="panel_TabIndex == 0 && panel_InformationHasReadAccess" class="scroll-panel">
-                                    <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
-                                    <d3s-assetbrowser-infopanel [asset]="selectedDiagramAsset"></d3s-assetbrowser-infopanel>
-                                </div>
-
-                                <div #ownerDetailPanel class="scroll-panel" *ngIf="panel_TabIndex == 1">
-                                    <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
-                                    <d3s-assetbrowser-ownerpanel [asset]="selectedDiagramAsset"></d3s-assetbrowser-ownerpanel>
-                                </div>
-                            </section>
-
-                            <section *ngIf="panelModel.SettingsVisible">
-                                <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
-                                <d3s-assetbrowser-settingspanel [allowAncestry]="helper_LineageDiagramApplies()" [current]="displayConfiguration" (apply)="settingspanel_Apply($event)"></d3s-assetbrowser-settingspanel>
-                            </section>
-                        </div>
                     </div>
 
                     <d3s-assetbrowser-overview [hidden]="isLoading" #overview></d3s-assetbrowser-overview>
 
-                    <div class="asset-browser-controls-bottom" [hidden]="isLoading">
+                    <div class="asset-browser-controls-bottom" [hidden]="isLoading" [style.right]="isWindowVisible() ? '540px' : '40px'">
                         <d3s-assetbrowser-zoom [scale]="scale" (change)="zoom_Change($event)" [enabled]="!isError"></d3s-assetbrowser-zoom>
                     </div>
 
