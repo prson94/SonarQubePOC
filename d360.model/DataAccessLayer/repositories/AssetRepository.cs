@@ -299,6 +299,7 @@ namespace d360.model.DataAccessLayer
             bool simpleFilterOwnershipOnResource = false;
             bool simpleFilterOwnershipOnSecurityAsset = false;
             bool isForTreeGrid = false;
+            bool useTempTableForResults = false;
 
             Dictionary<string, string> ownershipPropertiesMapping = new Dictionary<string, string>();
 
@@ -740,6 +741,20 @@ namespace d360.model.DataAccessLayer
                 {(string.Join("\n ", ownershipJoins))}
                 where A.AssetTypeID = @assetTypeID
 				group by {(string.Join(", ", groupColumns))}";
+
+                if (!isForTreeGrid)
+                {
+                    useTempTableForResults = true;
+
+                    selectOwnershipSQL = $@"
+                    select {(string.Join(", ", ownershipColumns))} ,
+                    string_agg(cast(a.id as nvarchar(max)), ',') as Assets
+                    from asset a
+                    {(string.Join("\n ", ownershipJoins))}
+                    where A.AssetTypeID = @assetTypeID 
+                    and a.id in (select assetid from #results)
+				    group by {(string.Join(", ", groupColumns))}";
+                }
             }
 
             if (!CompanyContext.CurrentResourceIsAdmin && !useAsAdmin)
@@ -1196,6 +1211,7 @@ namespace d360.model.DataAccessLayer
                 {whereSql}";
 
             var sql = $@"
+                {(useTempTableForResults ? "drop table if exists #results;" : "")}
                 select
                     A.ID as AssetId,
                     A.[UID] as [AssetUid],
@@ -1216,6 +1232,7 @@ namespace d360.model.DataAccessLayer
                     {fieldsSql}
                     {(includePermissionDetails ? includePermissionFields : "")}
                     {hierarchyParentUidCol}
+                {(useTempTableForResults ? "into #results " : "")}
                 from Asset A
                 left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
@@ -1231,6 +1248,8 @@ namespace d360.model.DataAccessLayer
                 {(includeParent ? parentApplySQL : "")}
                 {whereSql}
                 {string.Join("\n", pagingSql)}
+
+                {(useTempTableForResults ? "select * from #results " : "")}
             ";
 
             if (!includeTotal)
