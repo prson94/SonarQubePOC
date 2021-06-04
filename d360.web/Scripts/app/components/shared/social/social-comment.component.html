@@ -42,7 +42,7 @@
     </div>
 </div>
 <div class="row reply" *ngFor="let response of comment?.Comments">
-    <div class="col s2 right-align"><img class="user" height="35" [src]="getCommentUrl(comment)" width="35"></div>
+    <div class="col s2 right-align"><img class="user" height="35" [src]="getCommentUrl(response)" width="35"></div>
     <div class="col s10">
         <div>
             <span class="user"><d3s-preview-tooltip [objectType]="'Resource'" [objectId]="response.CreatedBy">{{response.ResourceName}}</d3s-preview-tooltip></span>&nbsp;<span class="postDate">{{response.CreatedOn | date:'medium'}}</span>
