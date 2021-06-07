@@ -274,61 +274,34 @@ end
 		]]>
 	</rollback>
   </changeSet>
-<changeSet author="bquinlivan" id="Data.Initial.AssetType-v2">
+  <changeSet author="bquinlivan" id="Data.Initial.DataClassification-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-	if not exists (select 1 from AssetType where Object = 'ReferenceItemType' and ObjectID = 3)
+if not exists (select 1 from AssetType where Object = 'ReferenceItemType' and Name = 'Data Classification' and class=9)
+begin
+	declare @insertedList table(assetTypeId bigint, objectID bigint)
+	declare @assetTypeId bigint, @objectID bigint
+
+	insert into [AssetType] (Name, Class, DisplayFormat, [Object], Uid) 
+	output inserted.ID, inserted.ObjectID into @insertedList
+	values ('Data Classification', 9, '{Code}', 'ReferenceItemType', NEWID())
+
+	select top 1 @assetTypeId=assetTypeID, @objectID=objectID from @insertedList
+
+	if not exists (select 1 from FieldType where Object = 'ReferenceItemType' and assetTypeId=@assetTypeId and Name = 'Description')
 	begin
-		insert into [AssetType] (Name, Class, DisplayFormat, [Object], [ObjectID], Uid) 
-		values ('Data Classification', 9, '{Code}', 'ReferenceItemType', 3, NEWID())
+		insert into FieldType (Name, [FriendlyName], [Type], [Object], [objectid], [assetTypeId], [IsRequired], [IsListable], [IsEditable])
+		 VALUES ('Description', 'Description', 'Text', 'ReferenceItemType', @objectID, @assetTypeId, 0, 1, 1)
 	end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
+	if not exists (select 1 from FieldType where Object = 'ReferenceItemType' and assetTypeId=@assetTypeId and Name = 'ProfileLevel')
+	begin
+		insert into FieldType (Name, [FriendlyName], [Type], [Object], [objectid], [assetTypeId], [IsRequired], [IsListable], [IsEditable])
+		 VALUES ('ProfileLevel', 'Profile Level', 'Text', 'ReferenceItemType', @objectID, @assetTypeId, 0, 1, 1)
+	end		
 
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="bquinlivan" id="Data.Initial.FieldType-v2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-if not exists (select 1 from FieldType where Object = 'ReferenceItemType' and ObjectID = 3 and Name = 'Description')
-begin
-	insert into FieldType (Name, [FriendlyName], [Type], [Object], [ObjectID], [IsRequired], [IsListable], [IsEditable])
-     VALUES ('Description', 'Description', 'Text', 'ReferenceItemType', 3, 0, 1, 1)
-end
-if not exists (select 1 from FieldType where Object = 'ReferenceItemType' and ObjectID = 3 and Name = 'ProfileLevel')
-begin
-	insert into FieldType (Name, [FriendlyName], [Type], [Object], [ObjectID], [IsRequired], [IsListable], [IsEditable])
-     VALUES ('ProfileLevel', 'Profile Level', 'Text', 'ReferenceItemType', 3, 0, 1, 1)
-end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-  <changeSet author="bquinlivan" id="Data.Initial.DataClassification-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-if not exists (select 1 from asset a inner join AssetType att on a.assetTypeId = att.ID where att.Object = 'ReferenceItemType' and att.ObjectID = 3)
-begin
-	declare @assetTypeId bigint
-	Select top 1 @assetTypeID = ID from AssetType where Object = 'ReferenceItemType' and ObjectID = 3
-	
 	insert into asset (AssetTypeID, Object, CreatedOn, CreatedBy, Code, Color)	
 	values (@assetTypeId, 'ReferenceItem', GETDATE(), 0, 'Unclassified', COALESCE((select top 1 ID from Color where [name] = 'Stone'), 0))			
 	,(@assetTypeId, 'ReferenceItem', GETDATE(), 0, 'Sensitive', COALESCE((select top 1 ID from Color where [name] = 'Amber'), 0))
