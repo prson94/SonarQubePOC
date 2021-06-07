@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Function.api.ShouldAllowNewBatchCall-v5">
-   <comment>GOV-14286</comment>
+  <changeSet author="kmcnamee" id="Function.api.ShouldAllowNewBatchCall-v6.1">
+   <comment>GOV-14951</comment>
    <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -23,6 +23,9 @@ BEGIN
 	declare @runAssetDeleteCount int = 0;
 	declare @runRelationshipCount int = 0;
 	declare @runAssetTypeDeleteCount int = 0;
+	declare @runDataProfileCount int = 0;
+	declare @runDataProfileDeleteCount int = 0;
+	
 
 	-- never ran a batch api execution
 	if ( not exists (select 1 from api.execution))
@@ -51,10 +54,27 @@ BEGIN
 		return 0;
 	end
 
+	-- count of running data profile batch jobs is > 1 for past 24 hours
+	select @runDataProfileCount = count(distinct e.ExecutionID) from api.execution e inner join api.ExecutionAssetDataProfile ea on e.ExecutionID = ea.ExecutionID where e.completedOn is null and e.startedon > DATEADD(day, -1, GETDATE()) and e.ErrorMessage is null
+
+	if ( @runDataProfileCount > 1 )
+	begin
+		return 0;
+	end
+
+	
 	-- count of running asset delete batch jobs is > 1 for past 24 hours
 	select @runAssetDeleteCount = count(1) from api.execution e inner join api.ExecutionDeletedAsset ea on e.ExecutionID = ea.ExecutionID where e.completedOn is null and e.startedon > DATEADD(day, -1, GETDATE()) and e.ErrorMessage is null
 
 	if ( @runAssetDeleteCount > 1 )
+	begin
+		return 0;
+	end
+
+	-- count of running data profile delete batch jobs is > 1 for past 24 hours
+	select @runDataProfileDeleteCount = count(1) from api.execution e inner join api.ExecutionDeleteAssetDataProfile ea on e.ExecutionID = ea.ExecutionID where e.completedOn is null and e.startedon > DATEADD(day, -1, GETDATE()) and e.ErrorMessage is null
+
+	if ( @runDataProfileDeleteCount > 1 )
 	begin
 		return 0;
 	end
@@ -78,7 +98,7 @@ BEGIN
 
 
 	-- some combination of the 3 types of batch jobs running more than 1 instance already
-	if ((@runAssetCount + @runAssetDeleteCount + @runRelationshipCount + @runAssetTypeDeleteCount) > 1)
+	if ((@runAssetCount + @runAssetDeleteCount + @runRelationshipCount + @runAssetTypeDeleteCount + @runDataProfileDeleteCount + @runDataProfileCount) > 1)
 	begin
 		return 0;
 	end
@@ -157,11 +177,11 @@ BEGIN
     -- Return the result of the function
     RETURN 1;
 END
+
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
 CREATE OR ALTER FUNCTION [api].[ShouldAllowNewBatchCall]
 (
 	@executionID uniqueidentifier = null
@@ -175,20 +195,20 @@ BEGIN
 	declare @runAssetTypeDeleteCount int = 0;
 
 	-- never ran a batch api execution
-	if ( not exists (select count(1) from api.execution))
+	if ( not exists (select 1 from api.execution))
 	begin
 		return 1;
 	end
 
 	-- all jobs have completed
-	if ( not exists (select count(1) from api.execution where completedOn is null))
+	if ( not exists (select 1 from api.execution where completedOn is null))
 	begin
 		return 1;
 	end
 
 	-- all the jobs that have not completed are older than 24 hours
 	-- all jobs have completed
-	if ( not exists (select count(1) from api.execution where completedOn is null and startedon > DATEADD(day, -1, GETDATE()) ) )
+	if ( not exists (select 1 from api.execution where completedOn is null and startedon > DATEADD(day, -1, GETDATE()) ) )
 	begin
 		return 1;
 	end
