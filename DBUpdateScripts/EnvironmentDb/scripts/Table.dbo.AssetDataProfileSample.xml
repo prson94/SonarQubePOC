@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfileSample-v2">
+  <changeSet author="kmcnamee" id="Table.dbo.AssetDataProfileSample-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -34,7 +34,7 @@ BEGIN
     ALTER TABLE [dbo].[AssetDataProfileSample] ADD [Key] NVARCHAR(200) NULL
 END
 
-IF NOT EXISTS (
+IF EXISTS (
 	SELECT
 		*
 	FROM
@@ -42,9 +42,7 @@ IF NOT EXISTS (
 		INNER JOIN
 		sys.all_objects AO on FK.parent_object_id = AO.object_id     
 	where 
-		FK.[NAME] = 'FK_AssetDataProfileSample_AssetDataProfile' 
-		and 
-		delete_referential_action_desc = 'CASCADE'
+		FK.[NAME] = 'FK_AssetDataProfileSample_AssetDataProfile' 		
 )
 BEGIN
 
@@ -62,10 +60,6 @@ BEGIN
 		ALTER TABLE AssetDataProfileSample
 		DROP CONSTRAINT FK_AssetDataProfileSample_AssetDataProfile;
 	END
-	
-
-	ALTER TABLE AssetDataProfileSample
-	ADD CONSTRAINT [FK_AssetDataProfileSample_AssetDataProfile] FOREIGN KEY (AssetDataProfileID) REFERENCES AssetDataProfile(ID) ON DELETE CASCADE
 END
 
 		]]>

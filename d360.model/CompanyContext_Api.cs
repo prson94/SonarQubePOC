@@ -11765,6 +11765,9 @@ EG.GroupUid
                                 DELETE
                                 OUTPUT DADP.itemNumber, DELETED.ID into #deletedResults;
 
+                            
+                                Delete from AssetDataProfileSample where AssetDataProfileID in( select ID from #deletedResults dr where dr.ItemNumber between @beginItemNumber and @endItemNumber )
+
                                 Update E
                                 set E.DeletedCount = DR.DeletedCount
                                 from 
