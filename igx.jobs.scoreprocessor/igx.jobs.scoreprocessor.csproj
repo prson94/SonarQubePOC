@@ -413,8 +413,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ChangeTypes\ExternalMeasureResultsCreatedProcess.cs" />
-    <Compile Include="ChangeTypes\ExternalScoresCreatedProcess.cs" />
     <Compile Include="ChangeTypes\IScoreProcess.cs" />
     <Compile Include="ChangeTypes\RuleAssetRemovedProcess.cs" />
     <Compile Include="ChangeTypes\MeasureChangedProcess.cs" />
@@ -424,17 +422,33 @@
     <Compile Include="ChangeTypes\WorkflowCheckProcess.cs" />
     <Compile Include="ChangeTypes\ProcessBase.cs" />
     <Compile Include="ChangeTypes\AssetMeasuresProcess.cs" />
+    <Compile Include="Models\AllocationDataModel.cs" />
+    <Compile Include="Models\AllocationDataModelConditionItem.cs" />
+    <Compile Include="Models\AllocationDataModelConditionItemTempValue.cs" />
+    <Compile Include="Models\AllocationDataModelRollupPath.cs" />
+    <Compile Include="Models\AllocationDataModelRollupPathFilter.cs" />
+    <Compile Include="Models\AllocationDataModelRollupPathFilterValue.cs" />
+    <Compile Include="Models\AllocationDataModelRollupPathSegmentLink.cs" />
     <Compile Include="Models\AlreadyProcessedMeasureModel.cs" />
+    <Compile Include="Models\AssetAllocationPreviousResult.cs" />
     <Compile Include="Models\AssetMeasuresProcessField.cs" />
+    <Compile Include="Models\MatchingScoreItemModel.cs" />
+    <Compile Include="Models\MatchingScoreModel.cs" />
     <Compile Include="Models\MeasureRemovedScoreRequeueDataItem.cs" />
     <Compile Include="Models\AssetVersionCheckObjectType.cs" />
     <Compile Include="ExecutionUpdater.cs" />
+    <Compile Include="Models\MetConditionModel.cs" />
+    <Compile Include="Models\MetConditionsModel.cs" />
+    <Compile Include="Models\RollupPathRuleResult.cs" />
+    <Compile Include="Models\ScoreItemLink.cs" />
     <Compile Include="Models\StagingScoreItem.cs" />
     <Compile Include="Models\UniqueAssetEffectiveDateModel.cs" />
+    <Compile Include="Models\WorkflowScoreGroup.cs" />
+    <Compile Include="Models\RawWorkflowScoreAsset.cs" />
     <Compile Include="ScoringQueueProcessor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ChangeTypes\SupportingModels.cs" />
+    <Compile Include="Models\AllocationDataModelCondition.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

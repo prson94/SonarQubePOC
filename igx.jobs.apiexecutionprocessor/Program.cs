@@ -350,7 +350,7 @@ namespace igx.jobs.apiexecutionprocessor
                                 dbExecutionItem.Error = deleteAssetTypesResults.Count(i => !i.Success);
                                 log.WriteLine($"DELETE Asset Types (DB Complete): Total results: {deleteAssetTypesResults.Count}.");
 
-                                company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = 0 });
+                                company.CreateRollupPathChangedExecution();
 
                                 await SaveResultsJsonToAzure(deleteAssetTypesResults, log, "Asset Types", HttpMethod.Delete);
 
@@ -390,10 +390,7 @@ namespace igx.jobs.apiexecutionprocessor
                                 if (ruleResultUids.Count > 0)
                                 {
                                     var assetMeasures = company.GetAssetMeasuresFromRuleResults(ruleResultUids);
-                                    if (assetMeasures.Count > 0)
-                                    {
-                                        company.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, assetMeasures, dbExecutionItem.ExecutionID);
-                                    }
+                                    company.CreateMeasureChangedResultExecution(assetMeasures);
                                 }
 
                                 #endregion

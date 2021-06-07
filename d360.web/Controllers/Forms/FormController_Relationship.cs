@@ -7,6 +7,7 @@ using d360.model;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Resources;
 using System;
@@ -778,7 +779,7 @@ order by r.Name";
                 Company.UpsertIntersectType(model, lineageVersion);
                 var id = model.ID;
 
-                Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = id });
+                Company.CreateRollupPathChangedExecution(id);
 
                 return jsonSuccess("Relationship type successfully created.", id.ToString(), "add", HttpStatusCode.Created);
             }
@@ -834,14 +835,10 @@ order by r.Name";
 
                 if (impactedMeasureVersions.Count > 0)
                 {
-                    Company.SendScoreEventWithPayload(
-                        ScoreQueueChangeType.CheckTypeDependencyRemoved,
-                        new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions }
-                    );
+                    Company.CreateCheckDependencyRemovedNotificationExecution(impactedMeasureVersions);
                 }
 
-                Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = id });
-
+                Company.CreateRollupPathChangedExecution(id);
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
@@ -896,7 +893,7 @@ order by r.Name";
                 var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
 
                 Company.UpsertIntersectType(model, lineageVersion);
-                Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = id });
+                Company.CreateRollupPathChangedExecution(id);
 
                 return jsonSuccess("Relationship type  successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }

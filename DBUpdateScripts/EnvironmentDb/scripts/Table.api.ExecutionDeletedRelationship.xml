@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.api.ExecutionDeletedRelationship-v1">
+  <changeSet author="Pappas" id="Table.api.ExecutionDeletedRelationship-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -27,11 +27,29 @@ BEGIN
 		CONSTRAINT [PK_ApiExecutionDeletedRelationship] PRIMARY KEY CLUSTERED ( [ExecutionID] DESC, [Uid] ASC )
 	)
 END
+
+if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'api' and TABLE_NAME = 'ExecutionDeletedRelationship' and COLUMN_NAME = 'SubjectID')
+begin
+	ALTER TABLE api.ExecutionDeletedRelationship add SubjectID bigint null
+end
+
+if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'api' and TABLE_NAME = 'ExecutionDeletedRelationship' and COLUMN_NAME = 'ObjectID')
+begin
+	ALTER TABLE api.ExecutionDeletedRelationship add ObjectID bigint null
+end
 		]]>
     </sql>
 	<rollback>
-		<![CDATA[	
+		<![CDATA[
+if exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'api' and TABLE_NAME = 'ExecutionDeletedRelationship' and COLUMN_NAME = 'SubjectID')
+begin
+	ALTER TABLE api.ExecutionDeletedRelationship drop column SubjectID
+end
 
+if exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'api' and TABLE_NAME = 'ExecutionDeletedRelationship' and COLUMN_NAME = 'ObjectID')
+begin
+	ALTER TABLE api.ExecutionDeletedRelationship drop column ObjectID
+end
 		]]>
 	</rollback>
   </changeSet>

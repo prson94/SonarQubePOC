@@ -156,17 +156,7 @@ namespace d360.model.DataAccessLayer
             }
 
             Company.SaveChanges();
-
-            // Send queue event to scoring engine.
-            Company.SendScoreEventWithPayload(
-                ScoreQueueChangeType.MeasureRemoved,
-                new MeasureRemovedModel
-                {
-                    EffectiveEndDate = currentAssetVersion.EffectiveEndDate.Value,
-                    MetricAssetUid = currentAssetVersion.AssetUid,
-                    MetricAssetVersionUid = currentAssetVersion.Uid
-                }
-             );
+            Company.CreateMeasureRemovedNotificationExecution(currentAssetVersion);
         }
 
         public MetricAssetViewDetailModel GetMetricViewModelByUid(Guid uid, DateTime? effectiveDate)
@@ -1554,10 +1544,7 @@ delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metric
 
             if (metricAsset != null && metricAssetVersion != null && changeWillEffectScore)
             {
-                Company.SendScoreEventWithPayload(
-                    ScoreQueueChangeType.MeasureChanged,
-                    new MeasureChangedModel { EffectiveDate = model.EffectiveDate, MetricAssetUid = metricAsset.Uid, MetricAssetVersionUid = metricAssetVersion.Uid }
-                );
+                Company.CreateMeasureChangedNotificationExecution(metricAssetVersion, model.EffectiveDate);
             }
 
             return new WorkHttpStatus(isNew ? HttpStatusCode.Created : HttpStatusCode.OK, "", "");
@@ -2577,11 +2564,7 @@ for json path";
                 }
             }
 
-            return Company.SendScoreEventWithPayload(
-                ScoreQueueChangeType.MeasureChanged,
-                new MeasureChangedModel { EffectiveDate = latestVersion.EffectiveDate, MetricAssetUid = measure.Uid, MetricAssetVersionUid = latestVersion.Uid },
-                triggeredByMeasureUid: measureUid
-            );
+            return Company.CreateMeasureChangedNotificationExecution(latestVersion, latestVersion.EffectiveDate, measureUid);
         }
     }
 }

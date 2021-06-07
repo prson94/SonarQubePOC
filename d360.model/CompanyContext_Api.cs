@@ -2893,19 +2893,7 @@ drop table if exists #temprestable2;",
                         // Data Quality Scoring - send to engine to determine what scores need to be recalculated.
                         if (at.Class == AssetTypeClass.Rule)
                         {
-                            var anyActiveMeasureVersions = Query<bool>(@"
-select cast(iif(count(1) > 0, 1, 0) as bit) as [Any] 
-from metrics.RollupPathSegment Se 
-inner join metrics.AssetVersionRollupPath Ar on Ar.RollupPathUid = Se.RollupPathUid and Se.AssetTypeID = @ID 
-inner join metrics.AssetVersion Ve on Ve.Uid = Ar.AssetVersionUid and Ve.EffectiveEndDate is null", new { at.ID }).First();
-                            if (anyActiveMeasureVersions)
-                            {
-                                var assetUids = Query<Guid>("select uid from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and Success = 1", new { execution.ExecutionID }).ToList();
-                                assetUids.ForEach(uid =>
-                                {
-                                    SendScoreEventWithPayload(ScoreQueueChangeType.RuleAssetRemoved, new RuleAssetRemovedModel { AssetUid = uid });
-                                });
-                            }
+                            CreateRulesRemovedExecution(execution.ExecutionID, at.ID);
                         }
                     }
                 }
@@ -3324,10 +3312,7 @@ where	T.ExecutionID = @ExecutionID
                                             // Data Quality Scoring - send to engine to determine what scores need to be recalculated.
                                             if (at.Class == AssetTypeClass.Rule && assetUids != null)
                                             {
-                                                assetUids.ForEach(uid =>
-                                                {
-                                                    SendScoreEventWithPayload(ScoreQueueChangeType.RuleAssetRemoved, new RuleAssetRemovedModel { AssetUid = uid });
-                                                });
+                                                CreateRulesRemovedExecution(execution.ExecutionID, assetUids);
                                             }
                                         }
                                         else
@@ -4025,8 +4010,8 @@ where   ExecutionID = @ExecutionID
                                         new { execution.ExecutionID }
                                         ).ToList();
 
-                SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel(), execution.ExecutionID);
-            }
+                    CreateRollupPathChangedExecution(null, null, execution.ExecutionID);
+                }
                 finally
                 {
                     if (Database.Connection.State == ConnectionState.Open)
@@ -4351,11 +4336,7 @@ where   ExecutionID = @ExecutionID
 
                     if (impactedMeasureVersions.Count > 0)
                     {
-                        SendScoreEventWithPayload(
-                            ScoreQueueChangeType.CheckTypeDependencyRemoved,
-                            new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions },
-                            execution.ExecutionID
-                        );
+                        CreateCheckDependencyRemovedNotificationExecution(impactedMeasureVersions);
                     }
                 }
                 finally
@@ -5493,36 +5474,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                     if (Any<MetricAllocation>(i => i.AssetTypeUid == at.uid && i.ScoreType == ScoreType.Governance && !i.IsExternallyCalculated))
                     {
                         sw.Restart();
-                        var measureUids = Query<Guid>(@"select	M.Uid 
-from	metrics.Allocation A 
-		inner join metrics.Asset M on M.AllocationUid = A.Uid 
-		and A.AssetTypeUid = @AssetTypeUid 
-		and M.State = 1 and A.ScoreType = 1 and A.IsExternallyCalculated = 0 and M.IsGroup = 0
-		cross apply (
-			select	Definition
-			from	metrics.AssetVersion 
-			where	AssetUid = M.Uid
-					and EffectiveDate <= getutcdate()
-					and EffectiveEndDate is null
-					and JSON_VALUE(Definition, '$.Governance.Check') <> 'External'
-					and Definition <> '{}') V", new { AssetTypeUid = at.uid }).ToList();
-
-                        if (measureUids.Count > 0)
-                        {
-                            var measures = (
-                                            from a in results
-                                            from m in measureUids
-                                            select new ExternalMeasureResultsCreatedModel
-                                            {
-                                                EffectiveDate = DateTime.UtcNow,
-                                                AssetUid = a.uid,
-                                                MetricAssetUid = m,
-                                                Result = false
-                                            }
-                                            ).ToList();
-                            SendScoreEventWithPayload(ScoreQueueChangeType.ExternalMeasureResultsCreated, measures, execution.ExecutionID);
-                            AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
-                        }
+                        CreateImportAssetsExecution(execution.ExecutionID, at.uid);
+                        AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
                     }
                 }
             }
@@ -6206,56 +6159,10 @@ end",
                     AddMeasurement(metrics, "SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
 
 
-                    #region Send score recalculation notifications.
-
+                    // Send score recalculation notifications.
                     sw.Restart();
-                    var assetTypeHasScoringAllocation = Query<bool>(@"
-select	cast(iif(count(1)>0,1,0) as bit) 
-from	IntersectType T
-	inner join AssetType A on (A.Object = T.Subject and A.ObjectID = T.SubjectID) or (A.Object = T.Object and A.ObjectID = T.ObjectID)
-	inner join metrics.Allocation L on L.AssetTypeUid = A.Uid and L.ScoreType = 1
-where   T.ID = @ID", new { rt.ID }).Single();
-
-                    if (assetTypeHasScoringAllocation)
-                    {
-                        var measureAssets = Query<ExternalMeasureResultsCreatedModel>(@"declare @utc datetime = getutcdate()
-select	distinct
-		SA.Uid as MetricAssetUid,
-		S.Uid as AssetUid,
-		@utc as EffectiveDate,
-		cast(0 as bit) as Result
-from	api.ExecutionRelationship ER
-		inner join [Intersect] R on R.ID = ER.IntersectID and ER.ExecutionID = @ExecutionID and ER.Success = 1
-		inner join IntersectType T on T.ID = R.IntersectTypeID 
-        inner join [Predicate] P on P.ID = T.PredicateID 
-		inner join Asset S on (S.Object = R.Subject and S.ObjectID = R.SubjectID) or (S.Object = R.Object and S.ObjectID = R.ObjectID)
-		inner join AssetType ST on ST.ID = S.AssetTypeID
-		inner join metrics.Allocation SAL on SAL.AssetTypeUid = ST.Uid and SAL.ScoreType = 1
-		inner join metrics.Asset SA on SA.AllocationUid = SAL.Uid and SA.State = 1 and SA.IsGroup = 0
-		cross apply (
-			select	Definition
-			from	metrics.AssetVersion 
-			where	AssetUid = SA.Uid
-					and EffectiveDate <= getutcdate()
-					and EffectiveEndDate is null
-                    and (
-                    (JSON_VALUE(Definition, '$.Governance.Check') = 'Relation' and JSON_VALUE(Definition, '$.Governance.Relation.IntersectTypeUid') = T.Uid)
-                    or 
-                    (JSON_VALUE(Definition, '$.Governance.Check') = 'Predicate' and JSON_VALUE(Definition, '$.Governance.Predicate.PredicateUid') = P.Uid)                        
-                    )
-                    and Definition is not null 
-                    and Definition <> 'null' 
-					and Definition <> '{}'
-		) V", new { execution.ExecutionID }).ToList();
-
-                        if (measureAssets.Count > 0)
-                        {
-                            SendScoreEventWithPayload(ScoreQueueChangeType.ExternalMeasureResultsCreated, measureAssets, execution.ExecutionID);
-                            AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
-                        }
-                    }
-
-                    #endregion
+                    CreateImportRelationshipsExecution(execution.ExecutionID, rt.ID);
+                    AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
                 }
             }
             AddMeasurement(metrics, "End Method", swBegin.ElapsedMilliseconds, ++step);
@@ -6362,6 +6269,21 @@ where   T.ExecutionID = @ExecutionID;",
 
                 #endregion
 
+                #region Place Subject / Object Asset ID on Execution table for record keeping and scoring.
+
+                Connection.Execute(@"
+update	T
+set		T.SubjectID = S.ID,
+        T.ObjectID = O.ID
+from	api.ExecutionDeletedRelationship T
+        inner join [Intersect] I on I.ID = T.IntersectID
+        left join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID
+        left join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
+where   T.ExecutionID = @ExecutionID;",
+                new { execution.ExecutionID, it.uid }, commandTimeout: timeout);
+
+                #endregion
+
                 #region Permissions Validation
 
                 Connection.Execute(@"
@@ -6442,22 +6364,6 @@ from	api.ExecutionDeletedRelationship T
 
                 #endregion
 
-                #region Finally, load any child intersects
-
-                Connection.Execute(@"
-insert into api.ExecutionDeletedRelationship (ExecutionID, ItemNumber, [Uid], IntersectID, FromHierarchy, HierarchyIntersectID)
-select  S.ExecutionID,
-        S.ItemNumber,
-        T.[Uid],
-        T.ID,
-        1 as FromHierarchy,
-        S.IntersectID as HierarchyIntersectID
-from    api.ExecutionDeletedRelationship S
-        inner join [Intersect] T on T.Subject = 'Intersect' and T.SubjectID = S.IntersectID and S.ExecutionID = @ExecutionID and S.Success is null;",
-                new { execution.ExecutionID }, commandTimeout: timeout);
-
-                #endregion
-
                 generalChecksCompleted = true;
             }
             catch (Exception generalEx)
@@ -6478,8 +6384,6 @@ from    api.ExecutionDeletedRelationship S
                 int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
                 int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
                 int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
-
-                var measureAssets = new List<ExternalMeasureResultsCreatedModel>(); // For scoring
 
                 for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
                 {
@@ -6534,40 +6438,6 @@ from    [Field] T
                                 Connection.Execute(string.Format(auditSql, "A.[Object] = I.[Subject] and A.ObjectID = I.SubjectID"), new { execution.ExecutionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                 Connection.Execute(string.Format(auditSql, "A.[Object] = I.[Object] and A.ObjectID = I.ObjectID"), new { execution.ExecutionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-
-                                #endregion
-
-                                #region Track the impacted assets to re-execute scoring.
-
-                                // Send score recalculation notifications.
-                                measureAssets.AddRange(
-                                    Connection.Query<ExternalMeasureResultsCreatedModel>(@"declare @utc date = getutcdate()
-select	distinct
-	SA.Uid as MetricAssetUid,
-	S.Uid as AssetUid,
-	@utc as EffectiveDate,
-	cast(0 as bit) as Result
-from	api.ExecutionDeletedRelationship ER
-	inner join [Intersect] R on R.ID = ER.IntersectID and ER.ExecutionID = @ExecutionID and ER.ItemNumber between @beginItemNumber and @endItemNumber and ER.Success is null
-	inner join IntersectType T on T.ID = R.IntersectTypeID 
-    inner join [Predicate] P on P.ID = T.PredicateID
-	inner join Asset S on (S.Object = R.Subject and S.ObjectID = R.SubjectID) or (S.Object = R.Object and S.ObjectID = R.ObjectID)
-	inner join AssetType ST on ST.ID = S.AssetTypeID
-	inner join metrics.Allocation SAL on SAL.AssetTypeUid = ST.Uid and SAL.ScoreType = 1
-	inner join metrics.Asset SA on SA.AllocationUid = SAL.Uid and SA.State = 1 and SA.IsGroup = 0
-	cross apply (
-		select	Definition
-		from	metrics.AssetVersion 
-		where	AssetUid = SA.Uid
-				and EffectiveDate <= getutcdate()
-				and EffectiveEndDate is null
-				and (
-                    (JSON_VALUE(Definition, '$.Governance.Check') = 'Relation' and JSON_VALUE(Definition, '$.Governance.Relation.IntersectTypeUid') = T.Uid)
-                    or 
-                    (JSON_VALUE(Definition, '$.Governance.Check') = 'Predicate' and JSON_VALUE(Definition, '$.Governance.Predicate.PredicateUid') = P.Uid)                        
-                    )
-				and Definition <> '{}'
-	) V", new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans));
 
                                 #endregion
 
@@ -6640,13 +6510,10 @@ from    [Intersect] T
                 }
 
                 if (sendWorkflowEvents)
-                    SendWorkflowEvents("IntersectType", it.ID, results, ChangeType.Delete);
-
-
-                if (measureAssets.Count > 0)
                 {
-                    SendScoreEventWithPayload(ScoreQueueChangeType.ExternalMeasureResultsCreated, measureAssets, execution.ExecutionID);
+                    SendWorkflowEvents("IntersectType", it.ID, results, ChangeType.Delete);
                 }
+                CreateDeleteRelationshipsExecution(execution.ExecutionID, it.ID);
             }
 
             return results;
@@ -8189,94 +8056,67 @@ insert into #Keys WITH(TABLOCK)
 
                 rawMeasures = Connection.Query<RuleResultChangedRawModel>(@"
 select	distinct
+		ROW_NUMBER() OVER(ORDER BY Ea.Uid, Oa.Uid) as RowNumber,
 		cast(Re.EffectiveDate as date) as EffectiveDate,
-		Ma.Uid as MetricAssetUid,
-		Mver.Uid as MetricAssetVersionUid,
-		Rol.Uid as RollupPathUid,
-		Ea.Id,
-		Seg.[Position],
-		case Seg.[Position]
-			when 1 then Ea.Uid
-			else null
-		end as StartAssetUid
-into	#Combos
+		Oa.AssetTypeUid as RuleAssetTypeUid,
+		Oa.AssetTypeId as RuleAssetTypeId,
+		Oa.Uid as RuleAssetUid,
+		Ea.AssetTypeUid as EvaluatedAssetTypeUid,
+		Ea.AssetTypeId as EvaluatedAssetTypeId,
+		Ea.Uid as EvaluatedAssetUid,
+		Ev.IntersectTypeID,
+		Ev.ID as IntersectID
+into	#Results
 from	AssetResult Re,
 		AssetResultEdge Ee,
 		graph.AssetNode Ea,
 		AssetResultEdge Eo,
 		graph.AssetNode Oa,
-		metrics.RollupPathSegment Seg,
-		metrics.RollupPath Rol,
-		metrics.AssetVersionRollupPath VerRol,
-		metrics.AssetVersion Mver,
-		metrics.Asset Ma,
-		metrics.Allocation Mal,
-		AssetType T,
-		#RuleResults Rr
-where	match(Ea-(Ee)->Re<-(Eo)-Oa)
+		#RuleResults Rr,
+		graph.AssetEdge Ev
+where	match(Ea-(Ee)->Re<-(Eo)-Oa-(Ev)->Ea)
 		and Ee.Class = 2
 		and Eo.Class = 1
-		and Ma.IsGroup = 0
-		and Seg.AssetTypeID = Ea.AssetTypeID
-		and Rol.Uid = Seg.RollupPathUid
-		and VerRol.RollupPathUid = Rol.Uid
-		and Mver.Uid = VerRol.AssetVersionUid
-		and (
-			(Mver.EffectiveDate <= Re.EffectiveDate and Mver.EffectiveEndDate >= Re.EffectiveDate)
-			or (Mver.EffectiveDate <= Re.EffectiveDate and Mver.EffectiveEndDate is null)
-		)
-		and Ma.Uid = Mver.AssetUid
-		and Mal.Uid = Ma.AllocationUid
-		and Mal.ScoreType = 2
-		and Mal.IsExternallyCalculated = 0
-		and T.Uid = Mal.AssetTypeUid
+		and Ev.PredicateType = 2
 		and Re.Uid = Rr.RuleResultUid;
 
-alter table #Combos add RowNumber int identity
-alter table #Combos alter column RowNumber int; 
-
---select * from #Combos
-
 with cte as (
-	select	* 
-	from	#Combos
-	union all
-	select	C.EffectiveDate,
-			C.MetricAssetUid,
-			C.MetricAssetVersionUid, 
-			C.RollupPathUid, 
-			C.Id, 
+	select	EvaluatedAssetUid as AssetUid,
+			R.EffectiveDate,
+			L.RollupPathUid,
 			L.StartPosition as Position,
-			case L.StartPosition 
-				when 1 then SA.Uid
-				else null
-			end as StartAssetUid,
-			C.RowNumber
-	from	(
-				select	EffectiveDate,
-						MetricAssetUid, 
-						MetricAssetVersionUid,
-						RollupPathUid,
-						Id,
-						min(Position) as Position,
-						RowNumber
-				from	#Combos
-				group by EffectiveDate, MetricAssetUid, MetricAssetVersionUid, RollupPathUid, Id, RowNumber
-				having min(Position) > 1
-			) C
-			inner join Asset A on A.Id = C.Id
-			inner join [metrics].[RollupPathLink] L on L.RollupPathUid = C.RollupPathUid and L.EndPosition = C.Position
-			inner join [Intersect] I on I.Object = A.Object and I.ObjectID = A.ObjectId and I.IntersectTypeID = L.IntersectTypeID
-			inner join Asset SA on SA.Object = I.Subject and SA.ObjectId = I.SubjectId
+			L.IntersectTypeID
+	from	[metrics].[RollupPathLink] L
+			inner join #Results R on R.IntersectTypeID = L.IntersectTypeID
+	union all
+	select	S.Uid as AssetUid,
+			cte.EffectiveDate,
+			L.RollupPathUid,
+			L.StartPosition as Position,
+			L.IntersectTypeID
+	from	cte
+			inner join [metrics].[RollupPathLink] L on L.RollupPathUid = cte.RollupPathUid and L.EndPosition = cte.Position and L.StartPosition < cte.Position
+			inner join [Intersect] I on I.IntersectTypeID = L.IntersectTypeID
+			inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID
+			inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID and O.Uid = cte.AssetUid
+			inner join AssetType ST on ST.ID = S.AssetTypeID
 )
 
-select	StartAssetUid as AssetUid,
-		EffectiveDate,
-		MetricAssetUid,
-		MetricAssetVersionUid
-		from cte 
-where	StartAssetUid is not null 
-order by RowNumber", transaction: trans).ToList();
+select	distinct
+		Ma.AllocationUid,
+		Ma.Uid as MetricAssetUid,
+		Mv.Uid as MetricAssetVersionUid,
+		cte.AssetUid,
+		cte.EffectiveDate
+from	cte
+		inner join metrics.AssetVersionRollupPath Mr on Mr.RollupPathUid = cte.RollupPathUid
+		inner join metrics.AssetVersion Mv on Mv.Uid = Mr.AssetVersionUid
+			and (
+				(Mv.EffectiveDate <= cte.EffectiveDate and Mv.EffectiveEndDate >= cte.EffectiveDate)
+				or (Mv.EffectiveDate <= cte.EffectiveDate and Mv.EffectiveEndDate is null)
+			)
+		inner join metrics.Asset Ma on Ma.Uid = Mv.AssetUid
+where	Position = 1", transaction: trans).ToList();
             }
 
             var structuredMeasures = rawMeasures
@@ -8287,6 +8127,7 @@ order by RowNumber", transaction: trans).ToList();
                     EffectiveDate = m.Key.EffectiveDate,
                     Measures = m.Select(o => new AssetMeasureChildModel
                     {
+                        AllocationUid = o.AllocationUid,
                         MetricAssetUid = o.MetricAssetUid,
                         MetricAssetVersionUid = o.MetricAssetVersionUid
                     }).ToList()
@@ -8863,20 +8704,14 @@ order by RowNumber", transaction: trans).ToList();
                 }
             }
 
+            #region Scoring
             var ruleResultUids = results.Where(i => i.Success).Select(i => i.Uid.Value).ToList();
             if (ruleResultUids.Count > 0)
             {
                 var assetMeasures = GetAssetMeasuresFromRuleResults(ruleResultUids);
-                if (assetMeasures.Count > 0)
-                {
-                    var effectiveDates = assetMeasures.Select(o => o.EffectiveDate).Distinct().OrderBy(o => o).ToList();
-                    effectiveDates.ForEach(ed =>
-                    {
-                        var assetMeasuresSubset = assetMeasures.Where(m => m.EffectiveDate == ed).ToList();
-                        SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, assetMeasuresSubset, execution.ExecutionID);
-                    });
-                }
+                CreateMeasureChangedResultExecution(assetMeasures);
             }
+            #endregion Scoring
 
             return results;
         }
@@ -9335,9 +9170,9 @@ and (DAR.RunDateEnd is null or AR.RunDate <= DAR.RunDateEnd) ";
                     }
 
                     // Now that results are deleted, send the score events to re-process scores for impacted assets.
-                    if (assetMeasures != null && assetMeasures.Count > 0)
+                    if (assetMeasures != null)
                     {
-                        SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, assetMeasures, execution.ExecutionID);
+                        CreateMeasureChangedResultExecution(assetMeasures, execution.ExecutionID);
                     }
                 }
             }

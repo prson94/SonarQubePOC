@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.metrics.Score-v4">
+  <changeSet author="Pappas" id="Table.metrics.Score-v5.2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -24,6 +24,11 @@ BEGIN
 		[VersionValueHash] [varchar](50) NULL
 	)
 END
+
+if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Score' and COLUMN_NAME = 'Log')
+begin
+	alter table [metrics].Score add [Log] varchar(max) constraint DF_MetricsScore_Log default('') not null
+end
 		]]>
     </sql>
 	<rollback>
@@ -32,7 +37,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="Constraint.metrics.Score-v4">
+  <changeSet author="Pappas" id="Constraint.metrics.Score-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -58,6 +63,11 @@ if not exists (select * from [sys].[default_constraints] where [type] = 'D' and 
 begin
 	ALTER TABLE [metrics].[Score] ADD  CONSTRAINT [DF_MetricScore_Uid]  DEFAULT (newid()) FOR [Uid]
 end
+
+if not exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricsScore_Log')
+begin
+	alter table [metrics].[Score] add constraint [DF_MetricsScore_Log] DEFAULT('') FOR [Log]
+end
 		]]>
     </sql>
 	<rollback>
@@ -80,6 +90,11 @@ end
 if exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricScore')
 begin
 	ALTER TABLE [metrics].[Score] DROP CONSTRAINT PK_MetricScore WITH ( ONLINE = OFF )
+end
+
+if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_MetricsScore_Log')
+begin
+	alter table [metrics].[Score] DROP constraint [DF_MetricsScore_Log]
 end
 		]]>
 	</rollback>

@@ -32,6 +32,8 @@ namespace d360.core.entities.Metric
 
         public string VersionValueHash { get; set; }
 
+        public string Log { get; set; }
+
         public ICollection<ScoreItem> Items { get; set; }
     }
 

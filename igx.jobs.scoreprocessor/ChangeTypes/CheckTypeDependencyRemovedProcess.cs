@@ -1,9 +1,4 @@
-﻿using d360.core.entities.Metric;
-using d360.core.enums;
-using d360.core.queue;
-using igx.jobs.scoreprocessor.Models;
-using System;
-using System.Linq;
+﻿using d360.core.queue;
 using System.Threading.Tasks;
 
 namespace igx.jobs.scoreprocessor.ChangeTypes
@@ -12,15 +7,10 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
     {
         public async Task Run()
         {
-            var model = await Storage.DeserializeJsonObjectFromBlobAsync<CheckTypeDependencyRemovedModel>(Info.StorageFolder, Info.StorageFile);
-
-            if (model == null)
-            {
-                throw new ArgumentNullException("model","Cannot load score file from storage");
-            }
-
-            // We can continue processing it.
             var Db = GetCompanyContext();
+
+            ExecutionRecord = getExecution(Db.Connection);
+            var executionItems = getExecutionItems(Db.Connection, 0);
 
             string endScoreSql = @"
 create table #Scores (ScoreUid uniqueidentifier);
@@ -43,54 +33,23 @@ insert into #Scores
 declare @date date = getutcdate();
 
 update	T
-set		T.EndDate = @date
+set		T.EndDate = @date,
+        [Log] = [Log] + 'End-dated by Score Execution ' + cast(@ExecutionId as varchar) + '; '
 from	metrics.Score T
-		inner join #Scores S on S.ScoreUid = T.Uid;
+		inner join #Scores S on S.ScoreUid = T.Uid;";
 
-select ScoreUid from #Scores;";
-
-            var impactedAssetMeasureSql = @"
-select	distinct
-	    S.AssetUid,
-	    A2.Uid as MetricAssetUid,
-	    V2.Uid as MetricAssetVersionUid,
-	    I2.Value as Result
-from	metrics.AssetVersion V
-		inner join metrics.ScoreItem I on  I.AssetVersionUid = V.Uid
-		inner join metrics.ScoreItemLink L on L.ScoreItemUid = I.Uid 
-		inner join metrics.Score S on S.Uid = L.ScoreUid and S.EndDate is null
-		inner join metrics.ScoreItemLink L2 on L2.ScoreUid = S.Uid and L2.ScoreItemUid <> I.Uid
-		inner join metrics.ScoreItem I2 on I2.Uid = L2.ScoreItemUid
-		inner join metrics.AssetVersion V2 on V2.Uid = I2.AssetVersionUid and V2.State = 1
-		inner join metrics.Asset A2 on A2.State = 1 and A2.Uid = V2.AssetUid and A2.IsGroup = 0
-where   V.Uid in @VersionUids;";
-
-            // End-date asset scores where this measure is the only one that was present (a one-measure score).
-            var endedScores = await Db.QueryAsync<Guid>(endScoreSql, new { model.VersionUids });
-                
-            // Log the scores end-dates.
-            await Db.SaveScoreProcessingResultsAsync(Info.ExecutionUid, Info.ChangeType, "EndDateScores", endedScores, Info.StartedOn);
-
-            var itemsToRescoreQuery = await Db.QueryAsync<MeasureRemovedScoreRequeueDataItem>(impactedAssetMeasureSql, new { model.VersionUids });
-            var itemsToRescore = itemsToRescoreQuery.ToList();
-
-            if (itemsToRescore.Count > 0)
+			foreach (var executionItem in executionItems)
             {
-                var list = itemsToRescore.GroupBy(i => i.AssetUid)
-                    .Select(item => new AssetMeasureModel
-                    {
-                        AssetUid = item.Key,
-                        EffectiveDate = DateTime.UtcNow,
-                        Measures = item.Select(m => new AssetMeasureChildModel { 
-                                MetricAssetUid = m.MetricAssetUid, MetricAssetVersionUid = m.MetricAssetVersionUid, Result = m.Result }
-                            ).ToList()
-                    }).ToList();
-
-                if (list.Count > 0)
-                {
-                    Db.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, list, Info.ExecutionUid);
-                }
-            }
-        }
-    }
+                var model = executionItem.GetPayload<CheckTypeDependencyRemovedModel>();
+                Db.Execute(endScoreSql, new { ExecutionId = ExecutionRecord.ID, model.VersionUids });	// End-date asset scores where this measure is the only one that was present (a one-measure score).
+				Db.CreateCheckDependencyRemovedResultExecution(model.VersionUids);
+			}
+			
+			if (executionItems.Count == 0)
+			{
+				// Only delete this execution if there is nothing to do here.
+				updateExecution(Db.Connection, ExecutionRecord, true, shouldDeleteAfterCompletion: true);
+			}
+		}
+	}
 }

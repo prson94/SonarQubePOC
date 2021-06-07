@@ -1347,13 +1347,7 @@ where LI.LoadID = @loadId"
 
                         trans.Commit();
 
-                        // if any scoring measures send them after the transaction is commited otherwise this will fail as it creates a new trans.
-                        if (structuredMeasures.Count > 0)
-                        {
-                            company.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, structuredMeasures);
-                        }
-
-
+                        company.CreateMeasureChangedResultExecution(structuredMeasures);
                     }
                     catch (Exception ex)
                     {

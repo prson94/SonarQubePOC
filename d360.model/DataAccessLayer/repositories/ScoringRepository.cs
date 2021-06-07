@@ -2,6 +2,7 @@
 using d360.core.entities.Metric;
 using d360.core.enums;
 using d360.core.exceptions;
+using d360.core.queue;
 using d360.core.resources;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
@@ -641,6 +642,83 @@ end";
             }
 
             return (IQueryable<ScoreExecution>)companyContext.ScoreExecutions.OrderByDescending(i => i.StartedOn).Skip(pageSize*pageNumber).Take(pageSize);
+        }
+
+        public List<ScoreExecutionItemViewModel> GetExecutionItems(
+            long executionId, 
+            int pageSize, 
+            int pageNumber,
+            ScoreQueueChangeType? changeType = null)
+        {
+            if (pageNumber > 0)
+            {
+                pageNumber -= 1;
+            }
+            else
+            {
+                pageNumber = 0;
+            }
+
+            if (pageSize > 200 || pageSize < 0)
+            {
+                pageSize = 200;
+            }
+
+            var items = companyContext.Table<ScoreExecutionItem>();
+
+            if (changeType.HasValue)
+            {
+                items = items.Where(i => i.ExecutionID == executionId && i.ChangeType == changeType.Value);
+            }
+            else
+            {
+                items = items.Where(i => i.ExecutionID == executionId);
+            }
+
+            items = items.OrderByDescending(i => i.ChangeType).ThenBy(i => i.RowNumber);
+            items.Skip(pageSize * pageNumber).Take(pageSize);
+
+            List<ScoreExecutionItemViewModel> models = new List<ScoreExecutionItemViewModel>();
+
+            foreach (var item in items)
+            {
+                var model = new ScoreExecutionItemViewModel { 
+                    ChangeType = item.ChangeType, 
+                    Message = item.Message, 
+                    RowNumber = item.RowNumber,
+                    State = item.State
+                };
+                switch (item.ChangeType)
+                {
+                    case ScoreQueueChangeType.AssetMeasures:
+                        model.Payload = item.GetPayload<AssetMeasureModel>();
+                        break;
+                    case ScoreQueueChangeType.CheckTypeDependencyRemoved:
+                        model.Payload = item.GetPayload<CheckTypeDependencyRemovedModel>();
+                        break;
+                    case ScoreQueueChangeType.MeasureChanged:
+                        model.Payload = item.GetPayload<MeasureChangedModel>();
+                        break;
+                    case ScoreQueueChangeType.MeasureRemoved:
+                        model.Payload = item.GetPayload<MeasureRemovedModel>();
+                        break;
+                    case ScoreQueueChangeType.RollupPathChanged:
+                        model.Payload = item.GetPayload<RollupPathChangedModel>();
+                        break;
+                    case ScoreQueueChangeType.RuleAssetRemoved:
+                        model.Payload = item.GetPayload<RuleAssetRemovedModel>();
+                        break;
+                    case ScoreQueueChangeType.WorkflowCheck:
+                        model.Payload = item.GetPayload<ScoreCreatedModel>();
+                        break;
+                    default:
+                        model.Payload = "{}";
+                        break;
+                }
+                models.Add(model);
+            }
+
+            return models;
         }
     }
 }
