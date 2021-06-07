@@ -1,7 +1,7 @@
 ﻿<ng-container *ngIf="isArrayValue || fieldDataType == 'tag'; else singleValue">
     <div *ngIf="fieldDataType != 'tag'" class="ig-value ig-item-list">
         <ul *ngFor="let item of field.Values">
-            <li *ngIf="item.TooltipContext == 'Preview'" class="ig-item">
+            <li *ngIf="item.TooltipContext == 'Preview'" [class]="valueCount > 1 ? 'ig-item' : ''">
                 <d3s-preview-tooltip [objectType]="item.TooltipType" [objectId]="item.TooltipID" [contentAnchor]="'right'">
                     <a *ngIf="item.TooltipUrl && fieldDataType != 'color'" [href]="item.TooltipUrl" [innerHtml]="(valueCount > 1 ? '&bull; ' : '') + item.Value" (click)="navigate(item.TooltipUrl, $event)"></a>
                     <span *ngIf="!item.TooltipUrl && fieldDataType != 'color'" [innerHtml]="item.Value"></span>
