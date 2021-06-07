@@ -13,15 +13,15 @@
 
 
             <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-            <p-table #dt 
-                     [value]="responsibilities" 
-                     selectionMode="single" 
-                     (onRowSelect)="selectedRow = $event.data" 
-                     [metaKeySelection]="true" 
-                     [globalFilterFields]="['Responsibility','Resource','Group','Description','OverrideID']" 
-                     [paginator]="true" 
-                     [rows]="defaultInitialItemsPerPage" 
-                     [rowsPerPageOptions]="defaultPagingOptions" 
+            <p-table #dt
+                     [value]="responsibilities"
+                     selectionMode="single"
+                     (onRowSelect)="selectedRow = $event.data"
+                     [metaKeySelection]="true"
+                     [globalFilterFields]="['Responsibility','Resource','Group','Description','OverrideID']"
+                     [paginator]="true"
+                     [rows]="defaultInitialItemsPerPage"
+                     [rowsPerPageOptions]="defaultPagingOptions"
                      (sortFunction)="columnSort($event)"
                      [scrollable]="true">
                 <ng-template pTemplate="colgroup">
@@ -88,6 +88,9 @@
                             </div>
                         </td>
                     </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    No responsibilities found
                 </ng-template>
                 <ng-template pTemplate="summary">
                     <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
