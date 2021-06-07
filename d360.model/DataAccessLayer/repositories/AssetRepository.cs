@@ -22,7 +22,6 @@ using d360.core.entities.Process;
 using AngleSharp.Text;
 using System.Drawing;
 using System.Threading;
-
 namespace d360.model.DataAccessLayer
 {
     public class AssetRepository : BaseRepository, IAssetRepository
@@ -1327,6 +1326,32 @@ namespace d360.model.DataAccessLayer
                         par.Add(new KeyValuePair<string, string>("_assetUid", string.Join(",", allParents)));
                         var fammilyAssets = await GetAssets(assetType, par);
                         results = results.Union(fammilyAssets.items).ToList().ToList();
+
+                        //filtered tree grid results need to be sorted in memory too
+                        string orderBy = "";
+                        string direction = "ASC";
+
+                        if (queryParams.ToList().Any(x => x.Key.ToLower() == "_order"))
+                        {
+                            orderBy = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value;
+                        }
+
+                        if (queryParams.ToList().Any(x => x.Key.ToLower() == "_direction"))
+                        {
+                            direction = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_direction").Value;
+                        }
+
+                        if (string.IsNullOrEmpty(orderBy))
+                        {
+                            orderBy = fieldTypes.OrderByDescending(x => x.SortOrder).ThenBy(x=> x.ID).FirstOrDefault().Name;
+                        }
+
+                        results = results.OrderBy(x => ((IDictionary<string, object>)x)[orderBy]).ToList();
+
+                        if (direction == "DESC")
+                        {
+                            results = results.Reverse();
+                        }
                     }
                 }
             }
