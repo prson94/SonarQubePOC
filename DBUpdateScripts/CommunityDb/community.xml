@@ -87,7 +87,7 @@
   <include file="scripts/GOV-14442.xml"/>  <!-- Add ShowCommentsTab setting -->
   <include file="scripts/GOV-14503.xml"/>  <!-- Add Data Profile lifespan setting-->
   <include file="scripts/GOV-11730.xml"/>  <!-- Rename Fusion definitions tables-->
-  <include file="scripts/GOV-14552.xml"/>  <!-- Removing dbo.resource ApiReadOnlyAccessToken column-->
+  <!--<include file="scripts/GOV-14552.xml"/>-->  <!-- Removing dbo.resource ApiReadOnlyAccessToken column-->
   <include file="scripts/GOV-14830.xml"/>  <!-- Rename CommonQuery table-->
   <include file="scripts/GOV-14553.xml"/>  <!-- Removing dbo.resource Status column-->
 </databaseChangeLog>
