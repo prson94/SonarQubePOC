@@ -257,7 +257,7 @@ namespace igx.jobs
             })
             .ConfigureLogging((context, b) =>
             {
-#if DEBUG
+#if !DEBUG
                b.SetMinimumLevel(LogLevel.Warning); // turn off trace messages
 #endif
                 b.AddConsole();                
