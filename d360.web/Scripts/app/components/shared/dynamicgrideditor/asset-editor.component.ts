@@ -125,7 +125,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     private load() {
         this.isInErrorMessage = '';
         this.isInError = false;
-        if (this.selection !== undefined) {
+        if (this.selection) {
             this.editedItem = _.cloneDeep(this.selection);
         } else {
             this.editedItem = {};
@@ -136,7 +136,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
     getDefinition() {
         this.isLoading = true;
-        this.editorDefinitionService.getEditorDefinitionNonLegacy(this.assetTypeUid, this.assetUid)
+        this.editorDefinitionService.getAssetEditorDefinition(this.assetTypeUid, this.assetUid, this.parentAssetUid)
             .subscribe((result) => {
                 this.isLoading = false;
                 this.handleEditor(result);
@@ -477,10 +477,27 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         if (this.assetUid) {
             editorModel.Uid = this.assetUid;
         }
-        if (this.parentAssetUid) {
+
+        let parentChanged: boolean = false;
+        for (var p in this.form.value) {
+            if (this.form.value.hasOwnProperty(p)) {
+                if (p === "ParentUid") {
+                    if (this.form.value[p] === undefined && this.fields.filter(x => x.FieldName == p && x.FieldType == 'Boolean').length > 0) {
+                        editorModel.ParentUid = null;
+                        parentChanged = true;
+                    }
+                    else {
+                        editorModel.ParentUid = this.form.value[p];
+                        parentChanged = true;
+                    }
+                }
+            }
+        }
+
+        if (!parentChanged && this.parentAssetUid) {
             editorModel.ParentUid = this.parentAssetUid;
         }
-        
+
         this.assetService.saveAsset(this.assetTypeUid, editorModel).subscribe((res) => {
             this.isLoading = false;
             if (res.Success) {

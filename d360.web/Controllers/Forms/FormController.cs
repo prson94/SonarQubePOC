@@ -210,6 +210,47 @@ namespace d360.web.Controllers
         #endregion
 
         #region Dynamic Editor Field Type Information For Angular2
+
+        [
+            HttpGet, 
+            Route("dynamiceditor/assets/{assetTypeUid}"),
+            Route("dynamiceditor/assets/{assetTypeUid}/{assetUid}")
+        ]
+        public JsonResult GetUidAssetEditor(Guid assetTypeUid, Guid? assetUid = null, Guid? parentUid = null)
+        {
+            Asset parentAsset = null;
+            int? parentId = null;
+            if (parentUid.HasValue)
+            {
+                parentAsset = Company.Filter<Asset>(a => a.uid == parentUid.Value).SingleOrDefault();
+                if (parentAsset == null)
+                {
+                    return jsonException(string.Format(ActionApiMessages.AssetNotFound, parentUid.Value), HttpStatusCode.NotFound);
+                }
+                parentId = parentAsset.ObjectID;
+            }
+
+            if (assetUid.HasValue)
+            {
+                var asset = Company.Filter<Asset>(a => a.uid == assetUid.Value).SingleOrDefault();
+                if (asset == null)
+                {
+                    return jsonException(string.Format(ActionApiMessages.AssetNotFound, assetUid.Value), HttpStatusCode.NotFound);
+                }
+                return DynamicEditorEditFields(asset.Object, assetUid.Value);
+            }
+            else
+            {
+                var assetType = Company.AssetTypes.SingleOrDefault(x => x.uid == assetTypeUid);
+                if (assetType == null)
+                {
+                    return jsonException(string.Format(ActionApiMessages.AssetTypeNotFound, assetUid.Value), HttpStatusCode.NotFound);
+                }
+                return DynamicEditorAddFields(assetType.Object, null, parentId, assetType.ObjectID);
+            }
+            
+        }
+
         [HttpGet, Route("dynamiceditor/byUid/{assetTypeUid}/{assetUid}")]
         public JsonResult DynamicEditorNewV2(Guid assetTypeUid, Guid assetUid)
         {
@@ -478,6 +519,9 @@ namespace d360.web.Controllers
                 case "POLICY":
                     res = Hierarchy_AddFields(SystemObjects.PolicyType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                     break;
+                case "POLICYTYPE":
+                    res = Hierarchy_AddFields(SystemObjects.PolicyType, typeID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                    break;
                 case "PREDICATE":
                     res = Predicate_AddFields();
                     break;
@@ -507,6 +551,9 @@ namespace d360.web.Controllers
                     break;
                 case "TAXONOMY":
                     res = Hierarchy_AddFields(SystemObjects.TaxonomyType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                    break;
+                case "TAXONOMYTYPE":
+                    res = Hierarchy_AddFields(SystemObjects.TaxonomyType, typeID.GetValueOrDefault(), parentID.GetValueOrDefault());
                     break;
                 case "VERSION":
                     res = CustomAPIServiceEndpointVersion_AddFields(parentID.GetValueOrDefault());

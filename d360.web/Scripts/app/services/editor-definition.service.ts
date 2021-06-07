@@ -77,4 +77,20 @@ export class EditorDefinitionService extends BaseObservableService {
             );
     }
 
+    public getAssetEditorDefinition(assetTypeUid: string, assetUid: string, parentAssetUid: string): Observable<EditorField[]> {
+        let uri: string = `form/dynamiceditor/assets/${assetTypeUid}`;
+        if (assetUid) {
+            uri += `/${assetUid}`;
+        }
+        if (parentAssetUid) {
+            uri += `?parentUid=${parentAssetUid}`;
+        }
+        return this.http
+            .get(uri)
+            .pipe(
+                map(res => <EditorField[]>res),
+                catchError(err => this.handleError(err))
+            );
+    }
+
 }

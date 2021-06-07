@@ -2925,7 +2925,11 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 case SystemObjects.IssueType:
                     objectId = IssueTypes.FirstOrDefault(x => x.uid == objectUid).ID;
                     break;
+                case SystemObjects.ArtifactType:
+                case SystemObjects.PolicyType:
                 case SystemObjects.ReferenceItemType:
+                case SystemObjects.RuleType:
+                case SystemObjects.TaxonomyType:
                     objectId = AssetTypes.FirstOrDefault(x => x.uid == objectUid)?.ObjectID ?? 0;
                     break;
                 case SystemObjects.ResourceType:

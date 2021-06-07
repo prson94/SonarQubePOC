@@ -20,7 +20,7 @@ import { TreeTable } from 'primeng/treetable';
 import { V2ApiFilters } from '../../models/asset-search.model';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { Filters } from '../assets-grid/advanced-filtering/advanced-filtering.models';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 
 @Component({
     selector: 'd3s-hierarchy-item-structure',
@@ -129,24 +129,35 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             this.objectTypeId = +params['typeId'];
             this.assetTypeUid = params['uid'];
             let uriParams: any = {};
+            let useUid: boolean = false;
 
-            if (this.assetTypeUid) {
-                uriParams.assetTypeUid = this.assetTypeUid;
-            } else {
+            const obs = new Observable((observer) => {
+                if (this.assetTypeUid) {
+                    this.assetTypeService.getAssetTypeObjectAndID(this.assetTypeUid).subscribe((response) => {
+                        this.objectTypeId = response.ObjectID;
+                        observer.next();
+                    });
+                }
+                else {
+                    observer.next();
+                }
+            });
+            
+            obs.subscribe((r) => {
                 uriParams.obj = this.objectType;
                 uriParams.objId = this.objectTypeId;
+                uriParams.includelevels = "true";
                 this.logAction("open", this.objectType, this.objectTypeId);
-            }
-            uriParams.includelevels = "true";
 
-            this.assetTypeService.getAssetTypes(uriParams).subscribe((result) => {
-                this.assetType = result[0];
-                this.assetTypeUid = result[0].uid;
-                this.uid = this.assetTypeUid;
+                this.assetTypeService.getAssetTypes(uriParams).subscribe((result) => {
+                    this.assetType = result[0];
+                    this.assetTypeUid = result[0].uid;
+                    this.uid = this.assetTypeUid;
 
-                this.levels = result[0].Levels;
-                this.maxLevelAllowed = result[0].HierarchyMaximumDepth;
-                this.load();
+                    this.levels = result[0].Levels;
+                    this.maxLevelAllowed = result[0].HierarchyMaximumDepth;
+                    this.load();
+                });
             });
         });
     }
@@ -308,9 +319,9 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     }
 
     private save(event) {
+        this.showEditor = false;
         this.loadNodes();
         this.headerActionsService.emitFavoritesChange();
-        this.showEditor = false;
         this.isLoading = false;
     }
 
@@ -473,8 +484,10 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 isForTreeGrid: true
             };
 
-            uriParams._direction = this.treeTable._sortOrder === 1 ? 'ASC' : 'DESC';
-            if (this.treeTable._sortField != undefined) {
+            if (this.treeTable) {
+                uriParams._direction = this.treeTable._sortOrder === 1 ? 'ASC' : 'DESC';
+            }
+            if (this.treeTable && this.treeTable._sortField && this.treeTable._sortField !== "") {
                 var field = this.columns.filter((f) => f.datafield === this.treeTable._sortField)[0];
                 uriParams._order = field["apiName"];
             }
@@ -543,6 +556,9 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             this.expandedNodes.splice(idx, 1);
         }
         this.saveTreeState();
+    }
+    nodeSelect($event) {
+        this.selectedParentId = $event.node.data.ParentAssetUid;
     }
 
     saveTreeState() {
