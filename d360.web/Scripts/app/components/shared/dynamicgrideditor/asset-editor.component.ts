@@ -489,16 +489,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     else {
                         editorModel.ParentUid = this.form.value[p];
                         parentChanged = true;
-                        console.log("new parent: " + editorModel.ParentUid);
                     }
                 }
             }
         }
 
-        console.log("old parent: " + this.parentAssetUid);
         if (!parentChanged && this.parentAssetUid) {
             editorModel.ParentUid = this.parentAssetUid;
-            console.log("old parent: " + this.parentAssetUid);
         }
 
         this.assetService.saveAsset(this.assetTypeUid, editorModel).subscribe((res) => {
