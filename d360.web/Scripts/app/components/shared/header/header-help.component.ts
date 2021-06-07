@@ -89,7 +89,7 @@ export class HeaderHelpComponent implements OnInit {
     public adminGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/admin-intro.htm%3FTocPath%3DAdministration%2520guide%7C_____0";
     public whatIsNew = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#b-release-notes/whats-new.htm%3FTocPath%3DWhat";
     public community = "https://support.infogix.com/hc/en-us/community/topics/360000029388-Data3Sixty-Govern";
-    buildDate: string = '';//__BUILD_DATE;
+    buildDate: string = __BUILD_DATE;
     versionNumber: string = VersionNumber;
     isModalVisible: boolean = false;
     @ViewChild("popupBox", { static: false }) popupBox: ElementRef;
@@ -103,12 +103,12 @@ export class HeaderHelpComponent implements OnInit {
     ) { }
 
 
-    ngOnInit(): void {        
+    ngOnInit(): void {
         this.loadCustomHelp();
-    }    
+    }
 
     loadCustomHelp(): void {
-        this.customHelpResources$ = this.resourceService.getHelpResources();            
+        this.customHelpResources$ = this.resourceService.getHelpResources();
     }
 
     loadLicensingDetails(): void {
