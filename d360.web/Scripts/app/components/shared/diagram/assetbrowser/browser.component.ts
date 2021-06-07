@@ -929,9 +929,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     if (this.panelModel.AlertVisible) {
                         this.selectedAssetsWithAlerts = this.assetsWithAlerts;
                     }
-                    else if (this.panelModel.InformationVisible) {
-                        //this.helper_SetVisiblePanel(AssetBrowserPanelCommand.None);
-                    }
                     this.cdRef.markForCheck();
                 }
             }
