@@ -228,7 +228,7 @@ namespace d360.extensions.search
             _source.AddToIndex(models);
         }
 
-        private string GenerateUrl(string type, int typeId, int objectId)
+        private string GenerateUrl(string type, int typeId, int objectId, string fallback = "")
         {
             switch(type)
             {
@@ -241,7 +241,7 @@ namespace d360.extensions.search
                 case "Taxonomy":
                     return $"model/{typeId}/id/{objectId}";
                 default:
-                    return "";
+                    return fallback;
             }
         }
 
@@ -295,8 +295,9 @@ namespace d360.extensions.search
                         parameters.Add("@assetuid", AssetUid);
                     }
                     string whereCondition = string.Join(" and ", where.ToArray());
+                    string UrlMethod = assetClass == AssetTypeClass.Diagram ? "dbo.GenerateAssetUrl(a.ID)" : "''";
 
-                    sql = $@"SELECT AssetID, ItemUniqueID, Type, ID, TypeID, DisplayValue, TypeName, AssetTypeUid, Uid FROM (
+                    sql = $@"SELECT AssetID, ItemUniqueID, Type, ID, TypeID, DisplayValue, TypeName, AssetTypeUid, Uid, Url FROM (
                         SELECT
                             A.ID as AssetID,
 	                        cast(A.ID as varchar) as ItemUniqueID,
@@ -306,7 +307,8 @@ namespace d360.extensions.search
 	                        adv.DisplayValue,
 	                        att.Name as TypeName,
                             att.uid as AssetTypeUid,
-	                        a.uid as Uid
+	                        a.uid as Uid,
+                            {UrlMethod} as 'Url'
                         from
 	                        [dbo].Asset a
 	                        inner join [dbo].assettype att on a.assettypeid = att.id
@@ -326,7 +328,7 @@ namespace d360.extensions.search
                             AssetID = o.AssetID,
                             ItemUniqueID = o.ItemUniqueID,
                             AssetType = o.TypeName,
-                            RelativeUrl = GenerateUrl(o.Type, o.TypeID, o.ID),
+                            RelativeUrl = GenerateUrl(o.Type, o.TypeID, o.ID, o.Url),
                             Uid = o.Uid,
                             AssetTypeUid = o.AssetTypeUid,
                             Fields = new Dictionary<string, string>() {
