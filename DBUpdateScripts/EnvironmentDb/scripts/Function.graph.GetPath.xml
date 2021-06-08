@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Function.graph.GetPath-DependencyDrop-v2">
+  <changeSet author="Pappas" id="Function.graph.GetPath-DependencyDrop-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -24,7 +24,7 @@ drop view if exists graph.AssetNodeDisplayPath;
 	</rollback>
   </changeSet>
 
-  <changeSet author="MDonato" id="Function.graph.GetPath-v5">
+  <changeSet author="TDuric" id="Function.graph.GetPath-v6">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -54,7 +54,7 @@ begin
 				from	(
 						select	X.p.value('./@level', 'int') as L,
 								X.p.value('./@position', 'int') as P,
-								(select X.p.value('.', 'nvarchar(250)') for xml path('')) as Val
+								X.p.value('.', 'nvarchar(250)') as Val
 						from	@segments.nodes('/path/segment') X(p)
 						) O
 				group by L
@@ -95,7 +95,7 @@ begin
 				from	(
 						select	X.p.value('./@level', 'int') as L,
 								X.p.value('./@position', 'int') as P,
-								X.p.value('.', 'nvarchar(250)') as Val
+								(select X.p.value('.', 'nvarchar(250)') for xml path('')) as Val
 						from	@segments.nodes('/path/segment') X(p)
 						) O
 				group by L
