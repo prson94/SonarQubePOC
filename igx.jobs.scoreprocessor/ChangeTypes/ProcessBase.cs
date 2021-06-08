@@ -222,25 +222,14 @@ where   UpdatedOn is not null
         and LoopSecondsElapsed is not null
         and @ProcessingStartedOn > dateadd(ss, LoopSecondsElapsed * 5, UpdatedOn)", new { ProcessingStartedOn });
 
-            var currentlyRunningExecutions = company.Query<bool>(@"
-declare @running bit = 0;
-
-select  @running = cast(iif(count(1) > 0, 1, 0) as bit) 
-from    metrics.Execution
-where   Uid <> @uid
-        and Processing = 1
-
-if @running = 0
-begin
+            var rowUpdated = company.Execute(@"
     update  metrics.Execution
     set     Processing = 1,
             ProcessingStartedOn = @ProcessingStartedOn
     where   Uid = @uid
-end
+            and not exists(select 1 from metrics.Execution where Uid <> @uid and Processing = 1)", new { uid = Info.ExecutionUid, ProcessingStartedOn });
 
-select @running as IsRunning", new { uid = Info.ExecutionUid, ProcessingStartedOn }).Single();
-
-            if (currentlyRunningExecutions)
+            if (rowUpdated <= 0)
             {
                 throw new ScoresCurrentlyProcessingException();
             }
