@@ -170,10 +170,12 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                         this.secondaryNavService.showItem(this.comments);
                         this.secondaryNavService.clearCurrentObject();
                         this.headerBreadcrumbService.setCurrentObjectInfo('Resource', resourceId);
+
+                        this.pageMode = PageMode.Default;
+
                     }, 100);
                 });
 
-            this.pageMode = PageMode.Default;
         });
     }
 
