@@ -265,7 +265,7 @@ namespace igx.jobs
                 string appInsightsKey = context.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
                 if (!string.IsNullOrEmpty(appInsightsKey))
                 {     
-                    var logger = b.AddApplicationInsights(appInsightsKey);                    
+                    b.AddApplicationInsights(appInsightsKey);                    
                 }
             })
             .UseConsoleLifetime();
