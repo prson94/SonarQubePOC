@@ -36,6 +36,12 @@ namespace d360.core.entities
         public bool Processing { get; set; }
 
         [DataMember]
+        public int? LoopSecondsElapsed { get; set; }
+
+        [DataMember]
+        public DateTime? UpdatedOn { get; set; }
+
+        [DataMember]
         public Guid? TriggeredByExecutionUid { get; set; }
 
         [DataMember]
