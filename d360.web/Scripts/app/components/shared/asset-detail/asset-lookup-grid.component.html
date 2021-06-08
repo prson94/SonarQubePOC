@@ -74,7 +74,7 @@
         </ng-template>
         <ng-template pTemplate="body" let-item>
             <tr [pSelectableRow]="item">
-                <td *ngFor="let column of visibleColumns">
+                <td *ngFor="let column of visibleColumns" class="ig-lookup-grid-cell">
                     <div [ngSwitch]="column.type">
                         <span *ngSwitchCase="'date'">
                             <span *ngIf="item[column.datafield] && item[column.datafield] !== ''">{{item[column.datafield] | utcDate | date:'shortDate'}}</span>
