@@ -179,6 +179,7 @@
                                                                      [objectType]="selectedDiagramAsset.Object"
                                                                      [objectID]="selectedDiagramAsset.ObjectId"
                                                                      [useAccordion]="true"
+                                                                     [shouldBePadded]="false"
                                                                      [hasAddRelationshipsPermissions]="false"
                                                                      [hasModifyRelationshipsPermissions]="false"
                                                                      [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
@@ -226,7 +227,7 @@
 
                     <d3s-assetbrowser-overview [hidden]="isLoading" #overview></d3s-assetbrowser-overview>
 
-                    <div class="asset-browser-controls-bottom" [hidden]="isLoading" [style.right]="isWindowVisible() ? '540px' : '40px'">
+                    <div class="asset-browser-controls-bottom" [hidden]="isLoading" [style.right]="isWindowVisible() ? '455px' : '40px'">
                         <d3s-assetbrowser-zoom [scale]="scale" (change)="zoom_Change($event)" [enabled]="!isError"></d3s-assetbrowser-zoom>
                     </div>
 
