@@ -14,6 +14,14 @@
       <![CDATA[
 if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Resource' and COLUMN_NAME = 'ApiReadOnlyAccessToken')
 begin
+if exists (select sdc.name
+				from sys.default_constraints sdc
+				where object_name(sdc.parent_object_id) = 'Resource' and sdc.name = 'DF_Resource_ApiReadOnlyAccessCode'
+				)
+	begin
+		alter table [dbo].[Resource] DROP CONSTRAINT DF_Resource_ApiReadOnlyAccessCode;
+	end
+  
 	alter table [dbo].[Resource] drop column [ApiReadOnlyAccessToken]
 end
 ]]>
@@ -23,6 +31,8 @@ end
 if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Resource' and COLUMN_NAME = 'ApiReadOnlyAccessToken')
 begin
 	alter table [dbo].[Resource] add [ApiReadOnlyAccessToken] [varchar](50)
+  
+  ALTER TABLE [dbo].[Resource] ADD  CONSTRAINT [DF_Resource_ApiReadOnlyAccessCode]  DEFAULT ([dbo].[GenerateReadOnlyAccessToken]()) FOR [ApiReadOnlyAccessToken]
 end
 
 ]]>
