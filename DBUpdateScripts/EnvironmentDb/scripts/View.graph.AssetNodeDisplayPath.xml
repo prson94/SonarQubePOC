@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="View.graph.AssetNodeDisplayPath-v4">
-	<validCheckSum>7:5868adbcf7b33b790638e5775eec3029</validCheckSum>
+  <changeSet author="kmcnamee" id="View.graph.AssetNodeDisplayPath-v5">
+    <comment>GOV-14967 This is very slow to run when you bump the version here dont do so unless you really need to</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
