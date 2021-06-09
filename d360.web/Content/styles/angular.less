@@ -6946,17 +6946,21 @@ table {
 }
 
 .front-elide {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-    direction: rtl;
-    text-align: left;
-    unicode-bidi: plaintext;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  direction: rtl;
+  text-align: left;
+  unicode-bidi: plaintext;
 
-    a {
-        unicode-bidi: plaintext;
-    }
+  a {
+    unicode-bidi: plaintext;
+  }
+
+  .preview-text{
+    max-width:100%;
+  }
 }
 
 .d3s-type-dropdown {
