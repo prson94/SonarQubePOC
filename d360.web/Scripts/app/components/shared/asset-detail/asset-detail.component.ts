@@ -22,6 +22,7 @@ export class AssetDetailComponent implements OnChanges {
     @Input() hasModifyRelationshipsPermissions: boolean;
     @Input() hasDeleteRelationshipsPermissions: boolean;
     @Input() useAccordion: boolean = false;
+    @Input() shouldBePadded: boolean = true;
     assetUID: string;
     assetTypeUID: string;
     isLoading = false;
