@@ -108,7 +108,7 @@ namespace d360.model.DataAccessLayer
                                 ,ADP.[MatchCount]
                                 ,ADP.[OutlierCardinality]
 	                            ,JSON_QUERY(outlierDetail.[value]) as outlierDetail
-                                ,ADP.[PossibleKey]
+                                ,ADP.[KeyConfidence]
                                 ,ADP.[DataSignature]
                                 ,ADP.[StructureSignature]
                                 ,ADP.[Cardinality]
@@ -117,6 +117,11 @@ namespace d360.model.DataAccessLayer
 	                            ,JSON_QUERY(shapesDetail.[value]) as shapesDetail
                                 ,JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(bottomK.value, '}}]',']'), '[{{','['), '""value"":',''), '}},{{',',')) as bottomK
 								,JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(topK.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as topK
+                                ,ADP.TotalCount
+                                ,ADP.OutlierCount
+                                ,ADP.DetectionLocale
+                                ,ADP.FtaVersion
+                                ,ADP.DecimalSeparator
                             from 
                                 #assetdataprofileids ids
                                 inner join 
