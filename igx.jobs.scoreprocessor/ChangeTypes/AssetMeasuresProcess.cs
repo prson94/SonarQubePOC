@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -152,7 +153,6 @@ where   AssetTypeID in (
 
                 ExecutionRecord = getExecution(company);
                 checkIfOtherRunningExecutions(company);
-                startExecutionProcessing(company);
 
                 var fieldTypesRequest = await company.QueryAsync<FieldType>(SUPPORTING_DATA_SQL, new { ExecutionID = ExecutionRecord.ID }, commandTimeout: 900);
                 var fieldTypes = fieldTypesRequest.ToList();
@@ -215,9 +215,14 @@ where   AssetTypeID in (
                 var scoreItems = new List<StagingScoreItem>();
                 var scoreCount = 0;
 
+                var stopwatch = new Stopwatch();
+                int loopCount = 1;
+                int loopElapsedSeconds = 0;
                 var executionItems = getExecutionItems(company, 0);
                 while (executionItems.Count > 0)
                 {
+                    stopwatch.Start();
+
                     var executionItemSubset = executionItems.Select(exItem => new { Item = exItem.GetPayload<AssetMeasureModel>(), exItem.RowNumber }).ToList();
 
                     // Get all fields for this set.
@@ -615,8 +620,15 @@ where   AssetTypeID in (
 
                     // Now add scores in this set via a transaction.
                     var success = addScoresToEnvironmentDatabase(scoreItems);
+                    
+                    // Stop the stopwatch and figure out how much time elapsed, taking the average time across all loops so far.
+                    stopwatch.Stop();
+                    loopElapsedSeconds = (int)(stopwatch.Elapsed.TotalSeconds / loopCount);
+
                     if (success)
                     {
+                        ExecutionRecord.LoopSecondsElapsed = loopElapsedSeconds;
+                        ExecutionRecord.UpdatedOn = DateTime.UtcNow;
                         updateExecution(company, ExecutionRecord);
                     }
                     
@@ -627,6 +639,8 @@ where   AssetTypeID in (
                         );
                     executionItems = getExecutionItems(company, 0);
                     scoreItems.Clear();
+
+                    loopCount++;
                 }
 
                 updateExecution(company, ExecutionRecord, true);

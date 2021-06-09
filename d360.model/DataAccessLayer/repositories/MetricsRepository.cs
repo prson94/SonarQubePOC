@@ -2550,18 +2550,11 @@ for json path";
             }
 
             var startedOnLimit = DateTime.UtcNow.AddHours(-2);
-            var existingExecutions = Company
-                .Filter<ApiExecution>(e => e.Method == "SCORE" && e.StartedOn <= startedOnLimit && !e.CompletedOn.HasValue)
-                .ToList()
-                .Select(e => new { e.ExecutionID, Fields = JsonConvert.DeserializeObject<ReclaulatMeasureExecutionFields>(e.Fields ?? "{}") })
-                .ToList();
+            var existingExecutions = Company.Any<ScoreExecution>(e => !e.CompletedOn.HasValue && e.TriggeredByMeasureUid == measureUid);
 
-            if (existingExecutions.Count > 0)
+            if (existingExecutions)
             {
-                if (existingExecutions.Any(e => e.Fields.measureUid == measureUid && e.Fields.action == "recalculating"))
-                {
-                    throw new GenericException(HttpStatusCode.BadRequest, $"Measure is currently being recalculated. Please wait until we have completed this action then try again.");
-                }
+                throw new GenericException(HttpStatusCode.BadRequest, $"Measure is currently being recalculated. Please wait until we have completed this action then try again.");
             }
 
             return Company.CreateMeasureChangedNotificationExecution(latestVersion, latestVersion.EffectiveDate, measureUid);

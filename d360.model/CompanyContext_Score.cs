@@ -994,6 +994,11 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 
             var execution = createScoreExecution();
 
+            if (Connection.State != ConnectionState.Open)
+            {
+                Connection.Open();
+            }
+
             int rowsImpacted = Connection.Execute(
                 sql,
                 new
@@ -1027,6 +1032,11 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
     where   E.ExecutionID = @apiExecutionUid ";
 
             var execution = createScoreExecution();
+
+            if (Connection.State != ConnectionState.Open)
+            {
+                Connection.Open();
+            }
 
             int rowsImpacted = Connection.Execute(
                 sql,
@@ -1084,6 +1094,11 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
     where   J.Payload like '%Measures%';";
 
             var execution = createScoreExecution(apiExecutionUid);
+
+            if (Connection.State != ConnectionState.Open)
+            {
+                Connection.Open();
+            }
 
             int rowsImpacted = Connection.Execute(
                 sql, 
@@ -1158,6 +1173,11 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 
                 var execution = createScoreExecution(apiExecutionUid);
 
+                if (Connection.State != ConnectionState.Open)
+                {
+                    Connection.Open();
+                }
+
                 int rowsImpacted = Connection.Execute(
                     sql,
                     new
@@ -1230,6 +1250,11 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 
                 var execution = createScoreExecution(apiExecutionUid);
 
+                if (Connection.State != ConnectionState.Open)
+                {
+                    Connection.Open();
+                }
+
                 int rowsImpacted = Connection.Execute(
                     sql,
                     new
@@ -1300,6 +1325,11 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
                         itemsTable.Rows.Add(itemRow);
                     }
 
+                    if (Connection.State != ConnectionState.Open)
+                    {
+                        Connection.Open();
+                    }
+
                     using (var trans = Connection.BeginTransaction())
                     {
                         Connection.Execute(@"
@@ -1368,7 +1398,6 @@ when not matched then
         {
             var execution = createScoreExecution();
             var changeType = (int)ScoreQueueChangeType.AssetMeasures;
-            int rowsAffected = 0;
 
             if (Connection.State != ConnectionState.Open)
             {
@@ -1482,8 +1511,13 @@ from    (
         group by A.AssetUid
         ) J 
 where   J.Payload like '%Measures%';";
-                
-            rowsAffected = Connection.Execute(sql, new { ExecutionId = execution.Uid, execution.ID, metricAssetVersionUid, changeType }, commandTimeout: 1200);
+
+            if (Connection.State != ConnectionState.Open)
+            {
+                Connection.Open();
+            }
+
+            int rowsAffected = Connection.Execute(sql, new { ExecutionId = execution.Uid, execution.ID, metricAssetVersionUid, changeType }, commandTimeout: 1200);
 
             if (rowsAffected > 0)
             {
@@ -1565,6 +1599,11 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 
             var execution = createScoreExecution();
 
+            if (Connection.State != ConnectionState.Open)
+            {
+                Connection.Open();
+            }
+
             int rowsImpacted = Connection.Execute(
                 sql,
                 new
@@ -1635,6 +1674,11 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 			and ChangeType = @previousChangeType
 			and [State] = 1";
 
+            if (Connection.State != ConnectionState.Open)
+            {
+                Connection.Open();
+            }
+
             int rowsImpacted = Connection.Execute(
                 sql,
                 new
@@ -1693,6 +1737,11 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
     where   J.Payload like '%Measures%'";
 
                 var execution = createScoreExecution();
+
+                if (Connection.State != ConnectionState.Open)
+                {
+                    Connection.Open();
+                }
 
                 int rowsImpacted = Connection.Execute(
                     sql,

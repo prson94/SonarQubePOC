@@ -73,6 +73,10 @@ namespace igx.jobs.scoreprocessor
                     await process.Run();
                 }
             }
+            catch (ArgumentNullException)
+            {
+                log.WriteLine($"No score execution record found. Company: {scoreInfo.CompanyID}; Execution: {scoreInfo.ExecutionUid}.");
+            }
             catch (InvalidScoreMeasure ex)
             {
                 var props = new Dictionary<string, string>() {

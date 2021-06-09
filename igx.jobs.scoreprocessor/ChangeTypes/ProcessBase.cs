@@ -209,18 +209,32 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 
         protected void checkIfOtherRunningExecutions(SqlConnection company)
         {
-            // Clear old executions.
-            company.Execute("update metrics.execution set ProcessingStartedOn = null, Processing = 0 where ProcessingStartedOn < @dt", new { dt = DateTime.UtcNow.AddHours(-18) });
+            var ProcessingStartedOn = DateTime.UtcNow;
 
-            var currentlyRunningExecutions = company.Query<bool>(@"
-select  cast(iif(count(1) > 0, 1, 0) as bit) 
-from    metrics.Execution
-where   Uid <> @uid 
-        and Processing = 1", new { uid = Info.ExecutionUid }).Single();
-            if (currentlyRunningExecutions)
+            // Clear orphaned executions.
+            company.Execute(@"
+update	metrics.execution 
+set     ProcessingStartedOn = null,
+        Processing = 0,
+        Failures = Failures + 1,
+        ErrorMessage = coalesce(ErrorMessage, '') + '; Cleared Processing flag due to orphaned execution'
+where   UpdatedOn is not null
+        and LoopSecondsElapsed is not null
+        and @ProcessingStartedOn > dateadd(ss, LoopSecondsElapsed * 5, UpdatedOn)", new { ProcessingStartedOn });
+
+            var rowUpdated = company.Execute(@"
+    update  metrics.Execution
+    set     Processing = 1,
+            ProcessingStartedOn = @ProcessingStartedOn
+    where   Uid = @uid
+            and not exists(select 1 from metrics.Execution where Uid <> @uid and Processing = 1)", new { uid = Info.ExecutionUid, ProcessingStartedOn });
+
+            if (rowUpdated <= 0)
             {
                 throw new ScoresCurrentlyProcessingException();
             }
+            ExecutionRecord.Processing = true;
+            ExecutionRecord.ProcessingStartedOn = ProcessingStartedOn;
         }
 
         protected void deleteExecution(SqlConnection Db, ScoreExecution executionRecord)
@@ -245,13 +259,6 @@ where   Uid <> @uid
             return company.Query<ScoreExecutionItem>($"select * from metrics.ExecutionItem where ExecutionID = @executionId and [State] = 0 and ChangeType = @ct order by RowNumber OFFSET {offset} ROWS FETCH NEXT 500 ROWS ONLY", new { executionId = ExecutionRecord.ID, ct = (int)Info.ChangeType }).ToList();
         }
 
-        protected void startExecutionProcessing(SqlConnection company)
-        {
-            ExecutionRecord.Processing = true;
-            ExecutionRecord.ProcessingStartedOn = DateTime.UtcNow;
-            updateExecution(company, ExecutionRecord);
-        }
-
         protected void updateExecution(SqlConnection Db, ScoreExecution executionRecord)
         {
             Db.Execute(@"update T 
@@ -262,6 +269,8 @@ set     T.PercentComplete = Com.Completed / Tot.Total,
         T.CompletedOn = @CompletedOn, 
         T.ProcessingStartedOn = @ProcessingStartedOn,
         T.Processing = @Processing,
+        T.UpdatedOn = @UpdatedOn,
+        T.LoopSecondsElapsed = @LoopSecondsElapsed,
         T.TriggeredByExecutionUid = @TriggeredByExecutionUid,
         T.TriggeredByMeasureUid = @TriggeredByMeasureUid
 from    metrics.Execution T 
