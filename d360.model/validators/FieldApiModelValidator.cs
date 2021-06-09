@@ -384,10 +384,6 @@ namespace d360.model.validators
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. Counter Initial Value must be set and be a positive number.");
                     }
-                    else
-                    {
-                        field.Type.Counter.CounterInitialIndex = 1;
-                    }
 
                     var allowedTypes = new List<string>() {
                             SystemObjects.ArtifactType.ToString(),

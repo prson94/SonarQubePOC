@@ -527,7 +527,7 @@ where EA.ExecutionID = @executionId and EA.Success is null;
 
         }
 
-        private void LogFieldLookupErrors(Guid executionID, string obj, int objID, string errorPrefix, int timeout = 3600)
+        private void LogFieldLookupErrors(Guid executionID, string obj, int objID, string errorPrefix, bool lookupFieldsPassedByValue, int timeout = 3600)
         {
             string targetTable = "api.ExecutionRelationship";
             if (obj != "IntersectType") targetTable = "api.ExecutionAsset";
@@ -5571,6 +5571,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
         private void CreateWorkareaTempTables(bool useTempTableForFields, SqlTransaction trans)
         {
+            return;
             if (useTempTableForFields)
             {
                 ApiExecutionFieldTable = "#ExecutionField";

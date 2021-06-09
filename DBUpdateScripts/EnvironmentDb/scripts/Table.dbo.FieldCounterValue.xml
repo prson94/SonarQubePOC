@@ -75,6 +75,11 @@ while exists (select 1 from #fieldTypeIds)
 	begin
 		set @lastIndex = @initialIndex
 	end
+	
+	if @lastIndex is null
+	begin
+		set @lastIndex = 1
+	end
 
 	drop table if exists #indexMap
 
