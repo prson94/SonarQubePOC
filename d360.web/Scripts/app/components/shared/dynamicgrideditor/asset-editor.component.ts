@@ -500,11 +500,9 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
         this.assetService.saveAsset(this.assetTypeUid, editorModel).subscribe((res) => {
             this.isLoading = false;
+            this.showMessageForApiResult(this.messagesService, res, "Successfully " + (this.assetUid ? "updated" : "created") + " asset.");
             if (res.Success) {
                 this.saveClick.emit({ item: res, action: this.assetUid ? "update" : "new", values: values });
-            }
-            else {
-                this.showMessageForApiResult(this.messagesService, res);
             }
         });
     }
