@@ -7,7 +7,7 @@
 
     <div class="asset-browser-body col s12">
         <div style="padding: 0; margin-bottom: 0">
-            <div [hidden]="isLoading" class="asset-browser-header">
+            <div [hidden]="isLoading" [class]="isFullScreen ? 'asset-browser-header expanded' : 'asset-browser-header'">
                 <div class="controls-left">
                     <div style="display: inline-flex">
                         <d3s-assetbrowser-viewchange [current]="displayConfiguration.DiagramType" (apply)="viewchange_Apply($event)" [items]="diagramTypes?.items"></d3s-assetbrowser-viewchange>
