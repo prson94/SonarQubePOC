@@ -4,9 +4,10 @@
                       [(filterMode)]="showSimpleFilter" hasExport="true"
                       [isExportDisabled]="!canExportRecords()"
                       [exportDisabledMessage]="'Export not available for over ' + maxExportRows + ' rows'"
+                      [IsExportInProgress] ="Isexportinprogress"
                       (exportClick)="export()"></d3s-tile-actions>
 </header>
-<d3s-loading [isLoading]="(isLoading && IsReadOnly()) || isExportInProgress"></d3s-loading>
+<d3s-loading [isLoading]="isLoading && IsReadOnly()"></d3s-loading>
     <span *ngIf="!showDelete && !showEditor && !showResetPwd">
         <input type="text" [hidden]="!showSimpleFilter" pInputText size="100"
                (input)="$event.target.value;dt.filterGlobal($event.target.value, 'contains')"
