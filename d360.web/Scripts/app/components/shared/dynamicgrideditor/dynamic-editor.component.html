@@ -62,7 +62,7 @@
                 <div *ngIf="showActions && !useModelBinding" class="col s12">
                     <button pButton
                             type="submit"
-                            [disabled]="!form.valid || (hasIconFields && fore.Value == back.Value)"
+                            [disabled]="!form.valid || (hasIconFields && fore.Value == back.Value) || isSaveDisabled"
                             style="width: '150px';"
                             label="Save"></button>
                     <button pButton

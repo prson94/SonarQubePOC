@@ -26,13 +26,14 @@ export class ObjectStatisticsService extends BaseObservableService {
             map(response => <ObjectStatistics>response),
             catchError(err => this.handleError(err))
         );
-    }
+    }    
 
-    getObjectStatus(
+    getObjectColorAndValue(
         objectID: number,
-        objectType: string
+        objectType: string,
+        fieldName: string
     ): Observable<string> {
-        return this.http.get(`api/${objectType}/${objectID}/status`).pipe(
+        return this.http.get(`api/${objectType}/${objectID}/fieldName/${fieldName}`).pipe(
             map(response => <string>response),
             catchError(err => this.handleError(err))
         );

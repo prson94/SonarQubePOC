@@ -56,9 +56,10 @@ namespace d360.web.Controllers.V2
         IAssetRepository AssetRepository;
         ITagRepository tagRepository;
         IRelationshipRepository relationshipRepository;
+        IFieldsRepository fieldsRepository;
 
         public AssetsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IAssetRepository repository, ITagRepository tagRepository,
-            IRelationshipRepository relationshipRepository)
+            IRelationshipRepository relationshipRepository, IFieldsRepository fieldsRepository)
             : base(community, company)
         {
             QueueSource = queueSource;
@@ -66,6 +67,7 @@ namespace d360.web.Controllers.V2
             this.AssetRepository = repository;
             this.tagRepository = tagRepository;
             this.relationshipRepository = relationshipRepository;
+            this.fieldsRepository = fieldsRepository;
         }
 
         #endregion
@@ -132,7 +134,7 @@ namespace d360.web.Controllers.V2
                 Guid? fusionTypeGuid = Guid.Empty;
                 if (!string.IsNullOrEmpty(FusionTypeUID))
                 {
-                    if (Class == null || (Class == AssetTypeClass.FusionQuery || Class == AssetTypeClass.FusionAttribute))
+                    if (Class == null || Class == AssetTypeClass.FusionAttribute)
                     {
                         fusionTypeGuid = Guid.Parse(FusionTypeUID);
                     }
@@ -269,8 +271,11 @@ namespace d360.web.Controllers.V2
                 if (!validator.IsValidOrderDirectionGetAssets(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid order direction passed in the request"));
 
-                if (!validator.IsValidOwnersGetAssets(queryParams))
+                if (!validator.IsValidOwnersGetAssets(queryParams, "_ownedby"))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid user or group uid as owner passed in the request"));
+
+                if (!validator.IsValidOwnersGetAssets(queryParams, "_notownedby"))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid user or group uid as non owner passed in the request"));
 
                 if (!validator.IsValidGetAssets(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid asset Uid in parameters!"));
@@ -686,7 +691,7 @@ namespace d360.web.Controllers.V2
 
                 if (assetType == null) return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Type", AssetTypeErrors.NotFoundGeneric));
 
-                Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = assetType.ID });
+                Company.CreateRollupPathChangedExecution(assetTypeId: assetType.ID);
 
                 var result = new AssetTypeSuccess { Uid = assetType.uid, Message = "Asset Type is created", Success = true };
 
@@ -823,8 +828,7 @@ namespace d360.web.Controllers.V2
 
                 //update affected display values
                 Company.CreateOrUpdateTypeDisplayValuesAsync(model.ObjectID, model.Object.ToString());
-
-                Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = assetType.ID });
+                Company.CreateRollupPathChangedExecution(assetTypeId: assetType.ID);
 
                 var result = new AssetTypeSuccess { Uid = model.Uid, Message = $"{model.Name} successfully updated.", Success = true };
 
@@ -1069,6 +1073,7 @@ namespace d360.web.Controllers.V2
         ]
         public dynamic GetUIDetails(Guid assetUid)
         {
+
             return Company.Query<dynamic>($@"select Object,ObjectId,DisplayValue,lower(AssetTypeUid) as AssetTypeUid, TypeName from AssetDetail where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
         }
 
@@ -1301,6 +1306,7 @@ namespace d360.web.Controllers.V2
                 bool returnuseUidUrls = true;
                 string orderBy = string.Empty;
                 string direction = string.Empty;
+                string filters = string.Empty;
 
                 if (qparams.Any(x => x.Key.ToLower() == "usefriendlynames"))
                 {
@@ -1350,26 +1356,27 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
+                //to be removed with new filtering UI component
+                //current(sprint 5/2021) filtering uses contains on all fields, so we need to avoid value checks on numbers, decimals etc...
+                bool handleFiltersAsString = false;
+                if (qparams.Any(x => x.Key.ToLower() == "handlefiltersasstring"))
+                {
+                    bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "handlefiltersasstring").Value, out handleFiltersAsString);
+                }
+
                 if (qparams.Any(x => x.Key.ToLower() == "simplefilter"))
                 {
                     simpleFilter = $"%{qparams.FirstOrDefault(x => x.Key.ToLower() == "simplefilter").Value}%";
                 }
 
-                DataTable advFilters = null;
                 if (qparams.Any(x => x.Key.ToLower() == "filter"))
                 {
+                    List<FieldType> fields = fieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, handleFiltersAsString);
+
                     var filter = qparams.FirstOrDefault(x => x.Key.ToLower() == "filter").Value;
-                    var filterExpressionParser = new FilterExpressionParser(this.Company, FilterExpressionParseType.CustomFields, false, false, true);
-                    advFilters = filterExpressionParser.ParseAsFiltersDataTable(filter);
-                }
-                else
-                {
-                    advFilters = new DataTable();
-                    advFilters.Columns.Add("FieldType");
-                    advFilters.Columns.Add("Operator");
-                    advFilters.Columns.Add("TypeID");
-                    advFilters.Columns.Add("OptionalIdentifier");
-                    advFilters.Columns.Add("FilterValues");
+                    var filterExpressionParser = new FilterExpressionParser(this.Company, FilterExpressionParseType.ComplexLookupField, false, false, true);
+                    filterExpressionParser.LoadFieldTypes(fields, null);
+                    filters = filterExpressionParser.ParseAsFiltersDataTable(filter);
                 }
 
                 if (qparams.Any(x => x.Key.ToLower() == "_order"))
@@ -1444,7 +1451,7 @@ namespace d360.web.Controllers.V2
                 dbArgs.Add("orderBy", orderBy);
                 dbArgs.Add("orderDirection", direction);
                 dbArgs.Add("useUidUrls", returnuseUidUrls);
-                dbArgs.Add("filters", advFilters.AsTableValuedParameter("dbo.AssetFiltersTable"));
+                dbArgs.Add("filters", filters);
 
                 var reader = await Company.QueryMultipleAsync(
                         "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0,0, @pageSize, @pageNum, @simpleFilter, @orderBy, @orderDirection, @useUidUrls, @filters",
@@ -1531,7 +1538,7 @@ namespace d360.web.Controllers.V2
                 dbArgsCount.Add("pageSize", pageSize);
                 dbArgsCount.Add("pageNum", pageNum);
                 dbArgsCount.Add("simpleFilter", simpleFilter);
-                dbArgsCount.Add("filters", advFilters.AsTableValuedParameter("dbo.AssetFiltersTable"));
+                dbArgsCount.Add("filters", filters);
 
                 var count = Company.Query<int>(
                      "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, 1, 0, @pageSize, @pageNum, @simpleFilter, '','', 0, @filters",
@@ -1628,6 +1635,18 @@ namespace d360.web.Controllers.V2
                             {
                                 result.Add("name", assetType.Name);
                                 result.Add("description", assetType.Description);
+
+                                if (returnForUI)
+                                {
+                                    var definition = JsonConvert.DeserializeObject<dynamic>(string.IsNullOrEmpty(fieldType.Definition) ? "{}" : fieldType.Definition);
+                                    var showDescription = definition == null ? true : definition?.DisplayRefListDescription?.Value ?? true;
+
+                                    result.Add("isReferenceListFromRelationship", true);
+                                    result.Add("objectId", referenceItemTypeID);
+                                    result.Add("fieldTypeId", fieldType.ID);
+                                    result.Add("showDescription", showDescription);
+                                    result.Add("url", $"/reference;referenceListId={assetType.uid.ToString().ToLower()}");
+                                }
                             }
                         }
                     }
@@ -2105,8 +2124,7 @@ namespace d360.web.Controllers.V2
                 deletes.Add(new AssetTypeDelete() { Cascade = assetType.Cascade, ExecutionItemUid = Guid.NewGuid(), Uid = assetType.Uid });
 
                 var deleteAssetTypesResults = AssetRepository.DeleteSingleAssetType(deletes, type, execution);
-
-                Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = type.ID });
+                Company.CreateRollupPathChangedExecution(assetTypeId: type.ID);
 
                 return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(
@@ -3019,6 +3037,60 @@ namespace d360.web.Controllers.V2
 
                 filter = "%" + (filter ?? "") + "%";
                 var results = await Company.QueryAsync<dynamic>($@"exec [SimpleAssetSearch] @assetTypeId, @filter,@skip,@take", new { assetTypeId = assetType.ID, skip, take, filter });
+
+                return Request.CreateResponse(HttpStatusCode.OK, results);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
+        /// <summary>
+        /// Return all level names for asset type uid specified.
+        /// </summary>
+        /// <param name="assetTypeUid"></param>
+        [
+            HttpGet,
+            ApiExplorerSettings(IgnoreApi = true),
+            MapToApiVersion("2.0"),
+            Route("{assetTypeUid}/levels"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "true/false based on relationship exists on assettype.", typeof(bool)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+            ]
+        public async Task<HttpResponseMessage> GetAssetTypeLevels(Guid assetTypeUid)
+        {
+            var prefix = "Assets.GetAssetTypeLevels => ";
+            var errorMessage = "";
+
+            try
+            {
+                var query = $@"
+drop table if exists #levelNameMapping
+create table #levelNameMapping (Level int, Name nvarchar(250), Description nvarchar(4000))
+
+declare @levelCount int = (select top 1 HierarchyMaximumDepth from AssetType at where at.uid = @assetTypeUid)
+   while @levelCount > 0
+    begin
+        insert into #levelNameMapping (Level) values (@levelCount)
+
+        set @levelCount = @levelCount - 1
+    end
+
+update T
+set T.Name = ATL.Name,
+    T.Description = ATL.Description
+from #levelNameMapping T
+inner join AssetType at on at.uid = @assetTypeUid
+inner join AssetTypeLevel ATL on atl.assettypeid = at.id and atl.level = T.Level
+
+select Level, ISNULL(Name,'Level '+ cast(Level as nvarchar(10))) as Name, Description from #levelNameMapping order by [Level] asc";
+
+                var results = await Company.QueryAsync<dynamic>(query, new { assetTypeUid });
 
                 return Request.CreateResponse(HttpStatusCode.OK, results);
             }

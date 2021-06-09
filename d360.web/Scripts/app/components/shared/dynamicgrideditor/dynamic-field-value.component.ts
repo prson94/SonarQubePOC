@@ -55,8 +55,6 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
             this.fieldValue = this.item[colKey];
         }
 
-
-
         if ((this.fieldType == 'bool') && (typeof this.fieldValue === 'boolean')) {
             this.fieldValue = this.fieldValue ? "True" : "False"; // fix for bools as bools.        
         }

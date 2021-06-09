@@ -350,7 +350,7 @@ namespace igx.jobs.apiexecutionprocessor
                                 dbExecutionItem.Error = deleteAssetTypesResults.Count(i => !i.Success);
                                 log.WriteLine($"DELETE Asset Types (DB Complete): Total results: {deleteAssetTypesResults.Count}.");
 
-                                company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = 0 });
+                                company.CreateRollupPathChangedExecution();
 
                                 await SaveResultsJsonToAzure(deleteAssetTypesResults, log, "Asset Types", HttpMethod.Delete);
 
@@ -390,10 +390,7 @@ namespace igx.jobs.apiexecutionprocessor
                                 if (ruleResultUids.Count > 0)
                                 {
                                     var assetMeasures = company.GetAssetMeasuresFromRuleResults(ruleResultUids);
-                                    if (assetMeasures.Count > 0)
-                                    {
-                                        company.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, assetMeasures, dbExecutionItem.ExecutionID);
-                                    }
+                                    company.CreateMeasureChangedResultExecution(assetMeasures);
                                 }
 
                                 #endregion
@@ -433,6 +430,18 @@ namespace igx.jobs.apiexecutionprocessor
                                 log.WriteLine($"DELETE Asset Data Profile (DB Complete): Total Error: {dbExecutionItem.Error}.");
 
                                 await SaveResultsJsonToAzure(deleteDataProfileResult, log, "Asset Data Profile", HttpMethod.Delete).ConfigureAwait(false);
+                                break;
+                            case ApiExecutionAction.PostResponsibilityOverride:
+                                var postResponsibilityOverride = await storage.DeserializeJsonObjectFromBlobAsync<List<BulkResponsibilityOverridePostModel>>(Info.StorageFolder, Info.RequestFileName);
+
+                                log.WriteLine($"POST Responsibility Override (DB Start): Total raw Data Profile Records: {postResponsibilityOverride.Count}");
+                                var postResponsibilityOverrideResult = company.BulkInsertResponsibilityOverride(postResponsibilityOverride, dbExecutionItem, dbExecutionTimeout);
+                                dbExecutionItem.Processed = postResponsibilityOverrideResult.Count(i => i.Success);
+                                dbExecutionItem.Error = postResponsibilityOverrideResult.Count(i => !i.Success);
+                                log.WriteLine($"POST Responsibility Override (DB Complete): Total Processed: {dbExecutionItem.Processed}.");
+                                log.WriteLine($"POST Responsibility Override (DB Complete): Total Error: {dbExecutionItem.Error}.");
+
+                                await SaveResultsJsonToAzure(postResponsibilityOverrideResult, log, "Responsibility Override", HttpMethod.Post).ConfigureAwait(false);
                                 break;
                         }
                     }

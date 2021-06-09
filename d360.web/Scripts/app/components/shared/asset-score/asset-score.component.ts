@@ -37,14 +37,14 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     showGovernanceScores: boolean = true;
     showDQScores: boolean = false;
 
-    private pointBreakdown: PointBreakdown[] = [];
-    private selectedPoint: PointBreakdown;
+    pointBreakdown: PointBreakdown[] = [];
+    selectedPoint: PointBreakdown;
 
     private selectedMeasureUid = '';
 
     ScoreType = ScoreType;
-    private selectedScoreType = ScoreType.Governance;
-    private allocationUid: string = "";
+    selectedScoreType = ScoreType.Governance;
+    allocationUid: string = "";
     private scoreTypes: number[] = [];
     private allocationData: ScoreTypeAllocation[] = [];
     showEmptyMessage: boolean = false;
@@ -295,18 +295,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                     }
 
                     // Get sum of root measures.
-                    let rootRawWeightSum: number = 0;
-                    this.pointBreakdown.forEach(pb => {
-                        let match = pb.Conditions?.find((c) => c.Uid === pb.ConditionUid);
-                        let weight = 0;
-                        if (match) {
-                            // GOV-13832 Make sure the weight is defined on the condition, if it is not fall back to the weight on the measure.
-                            weight = (isNaN(+match.Weight) ? +pb.Weight : +match.Weight);
-                        } else {
-                            weight = +pb.Weight;
-                        }
-                        rootRawWeightSum += +weight;
-                    });
+                    let rootRawWeightSum: number = this.calculateRawWeightSumAtThisLevel(this.pointBreakdown);
 
                     this.pointBreakdown.forEach(pb => {
                         pb._groupDisplayMaxWeight = null;
@@ -314,8 +303,10 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                         pb._rawWeightSum = rootRawWeightSum;
 
                         if (pb.Measures) {
+                            // Calculate the raw weight sum under this specific group.
+                            let childrenRawWeightSum = this.calculateRawWeightSumAtThisLevel(pb.Measures);
                             pb.Measures.forEach(m => {
-                                m._rawWeightSum = pb.DisplayWeight;
+                                m._rawWeightSum = childrenRawWeightSum;// pb.DisplayWeight;
                                 m._groupDisplayWeight = pb.DisplayWeight;
                                 m._groupDisplayMaxWeight = pb.DisplayMaxWeight;
                                 m._badgeStyle = this.calculateBadgeStyle(selectedAllocation, m.DisplayWeight / m.DisplayMaxWeight);
@@ -351,6 +342,24 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                     this.cdRef.markForCheck();
                 });
         }
+    }
+
+    calculateRawWeightSumAtThisLevel(points: PointBreakdown[]) {
+        let sum: number = 0;
+
+        points.forEach(pb => {
+            let match = pb.Conditions?.find((c) => c.Uid === pb.ConditionUid);
+            let weight = 0;
+            if (match) {
+                // GOV-13832 Make sure the weight is defined on the condition, if it is not fall back to the weight on the measure.
+                weight = (isNaN(+match.Weight) ? +pb.Weight : +match.Weight);
+            } else {
+                weight = +pb.Weight;
+            }
+            sum += +weight;
+        });
+
+        return sum;
     }
 
     private setDropdownHeader() {
@@ -476,20 +485,10 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
         let s: string = "";
 
         if (isDecimal) {
-            if (val >= 1)
-                return '100%'
-            s = val + '0000';
-            s = s.replace('0.', '');
-            if (s.length > 6)
-                s = (s.substr(0, 2)) + '.' + s[2] + "%";
-            else
-                s = (s.substr(0, 2)) + "%";
-            if (s.startsWith('0'))
-                s = s.substr(1, s.length);
+            val *= 100;
         }
-        else {
-            s = val + "%";
-        }
+
+        s = (Number(Math.round(Number(`${val}e1`)) + "e-1")) + "%";
 
         return s;
     }

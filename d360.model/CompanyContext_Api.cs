@@ -531,7 +531,29 @@ where EA.ExecutionID = @executionId and EA.Success is null;
         {
             string targetTable = "api.ExecutionRelationship";
             if (obj != "IntersectType") targetTable = "api.ExecutionAsset";
-            Connection.Execute($@"
+
+            if (lookupFieldsPassedByValue)
+            {
+                Connection.Execute($@"
+update	T
+set		T.Success = 0,
+		T.[Message] = coalesce(T.[Message] + '; ', '') + '{errorPrefix} contains one or more fields with invalid lookup values: [' + S.FieldValue + ']'
+from	{targetTable} T
+		inner join	(
+					select F.* from FieldType FT
+					inner join {ApiExecutionFieldTable} F on F.FieldTypeID = ft.Id and executionid = @executionid
+					cross apply STRING_SPLIT(f.fieldvalue,',')Val
+					left join AssetType AT on AT.object = ft.lookupobjecttype + 'Type' and at.ObjectID = ft.LookupObjectID
+					left join Asset A on A.AssetTypeID = AT.ID and A.ObjectID = try_cast(val.Value as int)
+					left join AssetType RefType on RefType.Object = ft.LookupObjectType and RefType.Object = 'ReferenceItemType' and reftype.objectid =  try_cast(val.Value as int)
+					where FT.Object = @obj and FT.ObjectID = @objid and [Type] = 'Lookup' and F.FieldValue is not null and (A.Id is null and reftype.id is null) and (try_cast(val.Value as int) <> 0 or try_cast(val.Value as int) IS NULL)
+					) 
+					S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
+", new { executionID, obj = new DbString { Value = obj, Length = 50, IsAnsi = true }, objID }, commandTimeout: timeout);
+            }
+            else
+            {
+                Connection.Execute($@"
 update	T
 set		T.Success = 0,
 		T.[Message] = coalesce(T.[Message] + '; ', '') + '{errorPrefix} contains one or more fields with invalid lookup values: [' + S.Names + ']'
@@ -549,6 +571,8 @@ from	{targetTable} T
 					group by	A.ExecutionID, A.ItemNumber
 					) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
 ", new { executionID, obj = new DbString { Value = obj, Length = 50, IsAnsi = true }, objID }, commandTimeout: timeout);
+            }
+
         }
 
         private void LogRelationshipErrors(Guid executionID, string obj, int objID, string errorPrefix, int timeout = 3600, bool lookupFieldsPassedByValue = false)
@@ -2934,19 +2958,7 @@ drop table if exists #temprestable2;",
                         // Data Quality Scoring - send to engine to determine what scores need to be recalculated.
                         if (at.Class == AssetTypeClass.Rule)
                         {
-                            var anyActiveMeasureVersions = Query<bool>(@"
-select cast(iif(count(1) > 0, 1, 0) as bit) as [Any] 
-from metrics.RollupPathSegment Se 
-inner join metrics.AssetVersionRollupPath Ar on Ar.RollupPathUid = Se.RollupPathUid and Se.AssetTypeID = @ID 
-inner join metrics.AssetVersion Ve on Ve.Uid = Ar.AssetVersionUid and Ve.EffectiveEndDate is null", new { at.ID }).First();
-                            if (anyActiveMeasureVersions)
-                            {
-                                var assetUids = Query<Guid>("select uid from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and Success = 1", new { execution.ExecutionID }).ToList();
-                                assetUids.ForEach(uid =>
-                                {
-                                    SendScoreEventWithPayload(ScoreQueueChangeType.RuleAssetRemoved, new RuleAssetRemovedModel { AssetUid = uid });
-                                });
-                            }
+                            CreateRulesRemovedExecution(execution.ExecutionID, at.ID);
                         }
                     }
                 }
@@ -3365,10 +3377,7 @@ where	T.ExecutionID = @ExecutionID
                                             // Data Quality Scoring - send to engine to determine what scores need to be recalculated.
                                             if (at.Class == AssetTypeClass.Rule && assetUids != null)
                                             {
-                                                assetUids.ForEach(uid =>
-                                                {
-                                                    SendScoreEventWithPayload(ScoreQueueChangeType.RuleAssetRemoved, new RuleAssetRemovedModel { AssetUid = uid });
-                                                });
+                                                CreateRulesRemovedExecution(execution.ExecutionID, assetUids);
                                             }
                                         }
                                         else
@@ -4066,7 +4075,7 @@ where   ExecutionID = @ExecutionID
                                         new { execution.ExecutionID }
                                         ).ToList();
 
-                    SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel(), execution.ExecutionID);
+                    CreateRollupPathChangedExecution(null, null, execution.ExecutionID);
                 }
                 finally
                 {
@@ -4392,11 +4401,7 @@ where   ExecutionID = @ExecutionID
 
                     if (impactedMeasureVersions.Count > 0)
                     {
-                        SendScoreEventWithPayload(
-                            ScoreQueueChangeType.CheckTypeDependencyRemoved,
-                            new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions },
-                            execution.ExecutionID
-                        );
+                        CreateCheckDependencyRemovedNotificationExecution(impactedMeasureVersions);
                     }
                 }
                 finally
@@ -4869,7 +4874,7 @@ where   ExecutionID = @ExecutionID
 
                     if (hasLookupFieldTypes)
                     {
-                        LogFieldLookupErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout);
+                        LogFieldLookupErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", lookupFieldsPassedByValue, timeout);
                         AddMeasurement(metrics, "LogFieldLookupErrors", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
                     }
@@ -5551,36 +5556,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                     if (Any<MetricAllocation>(i => i.AssetTypeUid == at.uid && i.ScoreType == ScoreType.Governance && !i.IsExternallyCalculated))
                     {
                         sw.Restart();
-                        var measureUids = Query<Guid>(@"select	M.Uid 
-from	metrics.Allocation A 
-		inner join metrics.Asset M on M.AllocationUid = A.Uid 
-		and A.AssetTypeUid = @AssetTypeUid 
-		and M.State = 1 and A.ScoreType = 1 and A.IsExternallyCalculated = 0 and M.IsGroup = 0
-		cross apply (
-			select	Definition
-			from	metrics.AssetVersion 
-			where	AssetUid = M.Uid
-					and EffectiveDate <= getutcdate()
-					and EffectiveEndDate is null
-					and JSON_VALUE(Definition, '$.Governance.Check') <> 'External'
-					and Definition <> '{}') V", new { AssetTypeUid = at.uid }).ToList();
-
-                        if (measureUids.Count > 0)
-                        {
-                            var measures = (
-                                            from a in results
-                                            from m in measureUids
-                                            select new ExternalMeasureResultsCreatedModel
-                                            {
-                                                EffectiveDate = DateTime.UtcNow,
-                                                AssetUid = a.uid,
-                                                MetricAssetUid = m,
-                                                Result = false
-                                            }
-                                            ).ToList();
-                            SendScoreEventWithPayload(ScoreQueueChangeType.ExternalMeasureResultsCreated, measures, execution.ExecutionID);
-                            AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
-                        }
+                        CreateImportAssetsExecution(execution.ExecutionID, at.uid);
+                        AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
                     }
                 }
             }
@@ -5843,7 +5820,7 @@ from	metrics.Allocation A
                         }
                         AddMeasurement(metrics, "ResolveFieldLookupValues", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
-                        LogFieldLookupErrors(execution.ExecutionID, "IntersectType", rt.ID, "Relationship", timeout);
+                        LogFieldLookupErrors(execution.ExecutionID, "IntersectType", rt.ID, "Relationship", lookupFieldsPassedByValue, timeout);
                         AddMeasurement(metrics, "LogFieldLookupErrors", sw.ElapsedMilliseconds, ++step);
                     }
 
@@ -6264,56 +6241,10 @@ end",
                     AddMeasurement(metrics, "SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
 
 
-                    #region Send score recalculation notifications.
-
+                    // Send score recalculation notifications.
                     sw.Restart();
-                    var assetTypeHasScoringAllocation = Query<bool>(@"
-select	cast(iif(count(1)>0,1,0) as bit) 
-from	IntersectType T
-	inner join AssetType A on (A.Object = T.Subject and A.ObjectID = T.SubjectID) or (A.Object = T.Object and A.ObjectID = T.ObjectID)
-	inner join metrics.Allocation L on L.AssetTypeUid = A.Uid and L.ScoreType = 1
-where   T.ID = @ID", new { rt.ID }).Single();
-
-                    if (assetTypeHasScoringAllocation)
-                    {
-                        var measureAssets = Query<ExternalMeasureResultsCreatedModel>(@"declare @utc datetime = getutcdate()
-select	distinct
-		SA.Uid as MetricAssetUid,
-		S.Uid as AssetUid,
-		@utc as EffectiveDate,
-		cast(0 as bit) as Result
-from	api.ExecutionRelationship ER
-		inner join [Intersect] R on R.ID = ER.IntersectID and ER.ExecutionID = @ExecutionID and ER.Success = 1
-		inner join IntersectType T on T.ID = R.IntersectTypeID 
-        inner join [Predicate] P on P.ID = T.PredicateID 
-		inner join Asset S on (S.Object = R.Subject and S.ObjectID = R.SubjectID) or (S.Object = R.Object and S.ObjectID = R.ObjectID)
-		inner join AssetType ST on ST.ID = S.AssetTypeID
-		inner join metrics.Allocation SAL on SAL.AssetTypeUid = ST.Uid and SAL.ScoreType = 1
-		inner join metrics.Asset SA on SA.AllocationUid = SAL.Uid and SA.State = 1 and SA.IsGroup = 0
-		cross apply (
-			select	Definition
-			from	metrics.AssetVersion 
-			where	AssetUid = SA.Uid
-					and EffectiveDate <= getutcdate()
-					and EffectiveEndDate is null
-                    and (
-                    (JSON_VALUE(Definition, '$.Governance.Check') = 'Relation' and JSON_VALUE(Definition, '$.Governance.Relation.IntersectTypeUid') = T.Uid)
-                    or 
-                    (JSON_VALUE(Definition, '$.Governance.Check') = 'Predicate' and JSON_VALUE(Definition, '$.Governance.Predicate.PredicateUid') = P.Uid)                        
-                    )
-                    and Definition is not null 
-                    and Definition <> 'null' 
-					and Definition <> '{}'
-		) V", new { execution.ExecutionID }).ToList();
-
-                        if (measureAssets.Count > 0)
-                        {
-                            SendScoreEventWithPayload(ScoreQueueChangeType.ExternalMeasureResultsCreated, measureAssets, execution.ExecutionID);
-                            AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
-                        }
-                    }
-
-                    #endregion
+                    CreateImportRelationshipsExecution(execution.ExecutionID, rt.ID);
+                    AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
                 }
             }
             AddMeasurement(metrics, "End Method", swBegin.ElapsedMilliseconds, ++step);
@@ -6420,6 +6351,21 @@ where   T.ExecutionID = @ExecutionID;",
 
                 #endregion
 
+                #region Place Subject / Object Asset ID on Execution table for record keeping and scoring.
+
+                Connection.Execute(@"
+update	T
+set		T.SubjectID = S.ID,
+        T.ObjectID = O.ID
+from	api.ExecutionDeletedRelationship T
+        inner join [Intersect] I on I.ID = T.IntersectID
+        left join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID
+        left join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
+where   T.ExecutionID = @ExecutionID;",
+                new { execution.ExecutionID, it.uid }, commandTimeout: timeout);
+
+                #endregion
+
                 #region Permissions Validation
 
                 Connection.Execute(@"
@@ -6500,22 +6446,6 @@ from	api.ExecutionDeletedRelationship T
 
                 #endregion
 
-                #region Finally, load any child intersects
-
-                Connection.Execute(@"
-insert into api.ExecutionDeletedRelationship (ExecutionID, ItemNumber, [Uid], IntersectID, FromHierarchy, HierarchyIntersectID)
-select  S.ExecutionID,
-        S.ItemNumber,
-        T.[Uid],
-        T.ID,
-        1 as FromHierarchy,
-        S.IntersectID as HierarchyIntersectID
-from    api.ExecutionDeletedRelationship S
-        inner join [Intersect] T on T.Subject = 'Intersect' and T.SubjectID = S.IntersectID and S.ExecutionID = @ExecutionID and S.Success is null;",
-                new { execution.ExecutionID }, commandTimeout: timeout);
-
-                #endregion
-
                 generalChecksCompleted = true;
             }
             catch (Exception generalEx)
@@ -6536,8 +6466,6 @@ from    api.ExecutionDeletedRelationship S
                 int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
                 int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
                 int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
-
-                var measureAssets = new List<ExternalMeasureResultsCreatedModel>(); // For scoring
 
                 for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
                 {
@@ -6592,40 +6520,6 @@ from    [Field] T
                                 Connection.Execute(string.Format(auditSql, "A.[Object] = I.[Subject] and A.ObjectID = I.SubjectID"), new { execution.ExecutionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                 Connection.Execute(string.Format(auditSql, "A.[Object] = I.[Object] and A.ObjectID = I.ObjectID"), new { execution.ExecutionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-
-                                #endregion
-
-                                #region Track the impacted assets to re-execute scoring.
-
-                                // Send score recalculation notifications.
-                                measureAssets.AddRange(
-                                    Connection.Query<ExternalMeasureResultsCreatedModel>(@"declare @utc date = getutcdate()
-select	distinct
-	SA.Uid as MetricAssetUid,
-	S.Uid as AssetUid,
-	@utc as EffectiveDate,
-	cast(0 as bit) as Result
-from	api.ExecutionDeletedRelationship ER
-	inner join [Intersect] R on R.ID = ER.IntersectID and ER.ExecutionID = @ExecutionID and ER.ItemNumber between @beginItemNumber and @endItemNumber and ER.Success is null
-	inner join IntersectType T on T.ID = R.IntersectTypeID 
-    inner join [Predicate] P on P.ID = T.PredicateID
-	inner join Asset S on (S.Object = R.Subject and S.ObjectID = R.SubjectID) or (S.Object = R.Object and S.ObjectID = R.ObjectID)
-	inner join AssetType ST on ST.ID = S.AssetTypeID
-	inner join metrics.Allocation SAL on SAL.AssetTypeUid = ST.Uid and SAL.ScoreType = 1
-	inner join metrics.Asset SA on SA.AllocationUid = SAL.Uid and SA.State = 1 and SA.IsGroup = 0
-	cross apply (
-		select	Definition
-		from	metrics.AssetVersion 
-		where	AssetUid = SA.Uid
-				and EffectiveDate <= getutcdate()
-				and EffectiveEndDate is null
-				and (
-                    (JSON_VALUE(Definition, '$.Governance.Check') = 'Relation' and JSON_VALUE(Definition, '$.Governance.Relation.IntersectTypeUid') = T.Uid)
-                    or 
-                    (JSON_VALUE(Definition, '$.Governance.Check') = 'Predicate' and JSON_VALUE(Definition, '$.Governance.Predicate.PredicateUid') = P.Uid)                        
-                    )
-				and Definition <> '{}'
-	) V", new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans));
 
                                 #endregion
 
@@ -6698,13 +6592,10 @@ from    [Intersect] T
                 }
 
                 if (sendWorkflowEvents)
-                    SendWorkflowEvents("IntersectType", it.ID, results, ChangeType.Delete);
-
-
-                if (measureAssets.Count > 0)
                 {
-                    SendScoreEventWithPayload(ScoreQueueChangeType.ExternalMeasureResultsCreated, measureAssets, execution.ExecutionID);
+                    SendWorkflowEvents("IntersectType", it.ID, results, ChangeType.Delete);
                 }
+                CreateDeleteRelationshipsExecution(execution.ExecutionID, it.ID);
             }
 
             return results;
@@ -8066,7 +7957,7 @@ where	ExecutionID = @ExecutionID and (Name is null or Name = '');
         public void CalculateProposedKeyHashes(AssetType at, Guid executionID, int timeout = 3600, int? parentIntersectTypeId = null, SqlTransaction trans = null, string assetTable = "api.ExecutionAsset", string fieldTable = "api.ExecutionField")
         {
             string keyErrorMessage = "'Key values match another asset under a different set of key fields. '";
-            string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey varchar(32)); CREATE CLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
+            string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey varchar(32)); CREATE NONCLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
             string keyComparisonUpdateStatement = $@"
                         update  T 
                         set     T.Success = 0, 
@@ -8215,12 +8106,13 @@ insert into #Keys WITH(TABLOCK)
         {
             var ruleResults = new DataTable();
             ruleResults.Columns.Add("RuleResultUid", typeof(Guid));
-            ruleResultUids.ForEach(r =>
-            {
+            
+            foreach(var r in ruleResultUids.Distinct()) 
+            { 
                 var dr = ruleResults.NewRow();
                 dr["RuleResultUid"] = r;
                 ruleResults.Rows.Add(dr);
-            });
+            }
 
             if (Database.Connection.State != ConnectionState.Open)
                 Connection.Open();
@@ -8230,7 +8122,7 @@ insert into #Keys WITH(TABLOCK)
             {
                 Connection.Execute(@"create table #RuleResults (
                     RuleResultUid uniqueidentifier not null,
-                    PRIMARY KEY CLUSTERED (RuleResultUid)
+                    PRIMARY KEY NONCLUSTERED (RuleResultUid)
                 )", transaction: trans);
 
                 using (var bulkCopy = new SqlBulkCopy(Connection, SqlBulkCopyOptions.Default, trans))
@@ -8246,94 +8138,67 @@ insert into #Keys WITH(TABLOCK)
 
                 rawMeasures = Connection.Query<RuleResultChangedRawModel>(@"
 select	distinct
+		ROW_NUMBER() OVER(ORDER BY Ea.Uid, Oa.Uid) as RowNumber,
 		cast(Re.EffectiveDate as date) as EffectiveDate,
-		Ma.Uid as MetricAssetUid,
-		Mver.Uid as MetricAssetVersionUid,
-		Rol.Uid as RollupPathUid,
-		Ea.Id,
-		Seg.[Position],
-		case Seg.[Position]
-			when 1 then Ea.Uid
-			else null
-		end as StartAssetUid
-into	#Combos
+		Oa.AssetTypeUid as RuleAssetTypeUid,
+		Oa.AssetTypeId as RuleAssetTypeId,
+		Oa.Uid as RuleAssetUid,
+		Ea.AssetTypeUid as EvaluatedAssetTypeUid,
+		Ea.AssetTypeId as EvaluatedAssetTypeId,
+		Ea.Uid as EvaluatedAssetUid,
+		Ev.IntersectTypeID,
+		Ev.ID as IntersectID
+into	#Results
 from	AssetResult Re,
 		AssetResultEdge Ee,
 		graph.AssetNode Ea,
 		AssetResultEdge Eo,
 		graph.AssetNode Oa,
-		metrics.RollupPathSegment Seg,
-		metrics.RollupPath Rol,
-		metrics.AssetVersionRollupPath VerRol,
-		metrics.AssetVersion Mver,
-		metrics.Asset Ma,
-		metrics.Allocation Mal,
-		AssetType T,
-		#RuleResults Rr
-where	match(Ea-(Ee)->Re<-(Eo)-Oa)
+		#RuleResults Rr,
+		graph.AssetEdge Ev
+where	match(Ea-(Ee)->Re<-(Eo)-Oa-(Ev)->Ea)
 		and Ee.Class = 2
 		and Eo.Class = 1
-		and Ma.IsGroup = 0
-		and Seg.AssetTypeID = Ea.AssetTypeID
-		and Rol.Uid = Seg.RollupPathUid
-		and VerRol.RollupPathUid = Rol.Uid
-		and Mver.Uid = VerRol.AssetVersionUid
-		and (
-			(Mver.EffectiveDate <= Re.EffectiveDate and Mver.EffectiveEndDate >= Re.EffectiveDate)
-			or (Mver.EffectiveDate <= Re.EffectiveDate and Mver.EffectiveEndDate is null)
-		)
-		and Ma.Uid = Mver.AssetUid
-		and Mal.Uid = Ma.AllocationUid
-		and Mal.ScoreType = 2
-		and Mal.IsExternallyCalculated = 0
-		and T.Uid = Mal.AssetTypeUid
+		and Ev.PredicateType = 2
 		and Re.Uid = Rr.RuleResultUid;
 
-alter table #Combos add RowNumber int identity
-alter table #Combos alter column RowNumber int; 
-
---select * from #Combos
-
 with cte as (
-	select	* 
-	from	#Combos
-	union all
-	select	C.EffectiveDate,
-			C.MetricAssetUid,
-			C.MetricAssetVersionUid, 
-			C.RollupPathUid, 
-			C.Id, 
+	select	EvaluatedAssetUid as AssetUid,
+			R.EffectiveDate,
+			L.RollupPathUid,
 			L.StartPosition as Position,
-			case L.StartPosition 
-				when 1 then SA.Uid
-				else null
-			end as StartAssetUid,
-			C.RowNumber
-	from	(
-				select	EffectiveDate,
-						MetricAssetUid, 
-						MetricAssetVersionUid,
-						RollupPathUid,
-						Id,
-						min(Position) as Position,
-						RowNumber
-				from	#Combos
-				group by EffectiveDate, MetricAssetUid, MetricAssetVersionUid, RollupPathUid, Id, RowNumber
-				having min(Position) > 1
-			) C
-			inner join Asset A on A.Id = C.Id
-			inner join [metrics].[RollupPathLink] L on L.RollupPathUid = C.RollupPathUid and L.EndPosition = C.Position
-			inner join [Intersect] I on I.Object = A.Object and I.ObjectID = A.ObjectId and I.IntersectTypeID = L.IntersectTypeID
-			inner join Asset SA on SA.Object = I.Subject and SA.ObjectId = I.SubjectId
+			L.IntersectTypeID
+	from	[metrics].[RollupPathLink] L
+			inner join #Results R on R.IntersectTypeID = L.IntersectTypeID
+	union all
+	select	S.Uid as AssetUid,
+			cte.EffectiveDate,
+			L.RollupPathUid,
+			L.StartPosition as Position,
+			L.IntersectTypeID
+	from	cte
+			inner join [metrics].[RollupPathLink] L on L.RollupPathUid = cte.RollupPathUid and L.EndPosition = cte.Position and L.StartPosition < cte.Position
+			inner join [Intersect] I on I.IntersectTypeID = L.IntersectTypeID
+			inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID
+			inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID and O.Uid = cte.AssetUid
+			inner join AssetType ST on ST.ID = S.AssetTypeID
 )
 
-select	StartAssetUid as AssetUid,
-		EffectiveDate,
-		MetricAssetUid,
-		MetricAssetVersionUid
-		from cte 
-where	StartAssetUid is not null 
-order by RowNumber", transaction: trans).ToList();
+select	distinct
+		Ma.AllocationUid,
+		Ma.Uid as MetricAssetUid,
+		Mv.Uid as MetricAssetVersionUid,
+		cte.AssetUid,
+		cte.EffectiveDate
+from	cte
+		inner join metrics.AssetVersionRollupPath Mr on Mr.RollupPathUid = cte.RollupPathUid
+		inner join metrics.AssetVersion Mv on Mv.Uid = Mr.AssetVersionUid
+			and (
+				(Mv.EffectiveDate <= cte.EffectiveDate and Mv.EffectiveEndDate >= cte.EffectiveDate)
+				or (Mv.EffectiveDate <= cte.EffectiveDate and Mv.EffectiveEndDate is null)
+			)
+		inner join metrics.Asset Ma on Ma.Uid = Mv.AssetUid
+where	Position = 1", transaction: trans).ToList();
             }
 
             var structuredMeasures = rawMeasures
@@ -8344,6 +8209,7 @@ order by RowNumber", transaction: trans).ToList();
                     EffectiveDate = m.Key.EffectiveDate,
                     Measures = m.Select(o => new AssetMeasureChildModel
                     {
+                        AllocationUid = o.AllocationUid,
                         MetricAssetUid = o.MetricAssetUid,
                         MetricAssetVersionUid = o.MetricAssetVersionUid
                     }).ToList()
@@ -8920,20 +8786,14 @@ order by RowNumber", transaction: trans).ToList();
                 }
             }
 
+            #region Scoring
             var ruleResultUids = results.Where(i => i.Success).Select(i => i.Uid.Value).ToList();
             if (ruleResultUids.Count > 0)
             {
                 var assetMeasures = GetAssetMeasuresFromRuleResults(ruleResultUids);
-                if (assetMeasures.Count > 0)
-                {
-                    var effectiveDates = assetMeasures.Select(o => o.EffectiveDate).Distinct().OrderBy(o => o).ToList();
-                    effectiveDates.ForEach(ed =>
-                    {
-                        var assetMeasuresSubset = assetMeasures.Where(m => m.EffectiveDate == ed).ToList();
-                        SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, assetMeasuresSubset, execution.ExecutionID);
-                    });
-                }
+                CreateMeasureChangedResultExecution(assetMeasures);
             }
+            #endregion Scoring
 
             return results;
         }
@@ -9260,8 +9120,7 @@ order by RowNumber", transaction: trans).ToList();
 
                     var querySuffix = $"DAR.Success is null and DAR.ExecutionID = @ExecutionID and DAR.ItemNumber between @beginItemNumber and @endItemNumber";
 
-                    var updateOnSuccess = $@"update DAR set DAR.Success = 1 from api.ExecutionDeleteAssetResult DAR inner join
-	                                            #ObjectDeleteAssetEdge DAE on DAE.ExecutionItemUid = DAR.ExecutionItemUid where {querySuffix}";
+                    var updateOnSuccess = $@"update DAR set DAR.Success = 1 from api.ExecutionDeleteAssetResult DAR inner join #ObjectDeleteAssetEdge DAE on DAE.ExecutionItemUid = DAR.ExecutionItemUid where {querySuffix}";
 
                     string ruleResultWhereClause = $@"from AssetResult AR, assetResultedge ARE, graph.AssetNode AN, API.[ExecutionDeleteAssetResult] DAR 
 where 
@@ -9305,37 +9164,37 @@ and (DAR.RunDateStart is null or AR.RunDate >= DAR.RunDateStart)
 and (DAR.RunDateEnd is null or AR.RunDate <= DAR.RunDateEnd) ";
 
                     string deleteAssetResultSQL = $@"
-create table #ObjectDeleteAssetEdge ([uid] uniqueidentifier, class int, ItemNumber int, ExecutionItemUid uniqueidentifier, [Operation] varchar(10));
-CREATE NONCLUSTERED INDEX IX_TempObjectMergeAssetEdge ON #ObjectDeleteAssetEdge ( ItemNumber ASC );
+    create table #ObjectDeleteAssetEdge ([uid] uniqueidentifier, class int, ItemNumber int, ExecutionItemUid uniqueidentifier, [Operation] varchar(10));
+    CREATE NONCLUSTERED INDEX IX_TempObjectMergeAssetEdge ON #ObjectDeleteAssetEdge ( ItemNumber ASC );
 
-merge into AssetResultEdge DARE 
-using   (
-    select  ARE.$from_id as from_id,
-            ARE.$to_id as to_id, 
-            AR.Uid, 
-            ARE.Class, 
-            DAR.itemnumber, 
-            DAR.ExecutionItemUid
-    {ruleResultWhereClause} 
-            and DAR.ItemNumber between @beginItemNumber and @endItemNumber  
-    ) R on R.from_id = DARE.$from_id and R.to_id = DARE.$to_id
-WHEN MATCHED THEN DELETE 
-output R.uid, R.class, R.itemnumber, R.ExecutionItemUid, $action into #ObjectDeleteAssetEdge;
+    merge into AssetResultEdge DARE 
+    using   (
+        select  ARE.$from_id as from_id,
+                ARE.$to_id as to_id, 
+                AR.Uid, 
+                ARE.Class, 
+                DAR.itemnumber, 
+                DAR.ExecutionItemUid
+        {ruleResultWhereClause} 
+                and DAR.ItemNumber between @beginItemNumber and @endItemNumber  
+        ) R on R.from_id = DARE.$from_id and R.to_id = DARE.$to_id
+    WHEN MATCHED THEN DELETE 
+    output R.uid, R.class, R.itemnumber, R.ExecutionItemUid, $action into #ObjectDeleteAssetEdge;
 
-merge into AssetResult AR
-using   (
-	select  AR1.uid
-	from    AssetResult AR1
-	        INNER JOIN #ObjectDeleteAssetEdge MAE ON AR1.UID=MAE.Uid
-	        left join assetResultEdge ARE on ARE.$to_id = AR1.$node_id
-	where   ARE.$to_id is null
-	) R on R.Uid = AR.Uid
-WHEN MATCHED THEN DELETE;
+    merge into AssetResult AR
+    using   (
+	    select  AR1.uid
+	    from    AssetResult AR1
+	            INNER JOIN #ObjectDeleteAssetEdge MAE ON AR1.UID=MAE.Uid
+	            left join assetResultEdge ARE on ARE.$to_id = AR1.$node_id
+	    where   ARE.$to_id is null
+	    ) R on R.Uid = AR.Uid
+    WHEN MATCHED THEN DELETE;
 
-{updateOnSuccess}";
+    {updateOnSuccess}";
 
                     // Find out which items we need to update scores for.
-                    var ruleResultUids = Query<Guid>($@"select AR.Uid {ruleResultWhereClause}", new { execution.ExecutionID }).ToList();
+                    var ruleResultUids = Query<Guid>($@"select distinct AR.Uid {ruleResultWhereClause}", new { execution.ExecutionID }).ToList();
                     List<AssetMeasureModel> assetMeasures = null;
                     if (ruleResultUids.Count > 0)
                     {
@@ -9382,8 +9241,8 @@ WHEN MATCHED THEN DELETE;
                         }
 
                         results.AddRange(
-                                Query<DataQualityDeleteResponseModel>(
-                                    $"select ExecutionItemUid, Success, Message from api.ExecutionDeleteAssetResult where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+                            Query<DataQualityDeleteResponseModel>(
+                                $"select ExecutionItemUid, Success, Message from api.ExecutionDeleteAssetResult where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
                                     new { execution.ExecutionID, beginItemNumber, endItemNumber }
                                 )
                             );
@@ -9393,9 +9252,9 @@ WHEN MATCHED THEN DELETE;
                     }
 
                     // Now that results are deleted, send the score events to re-process scores for impacted assets.
-                    if (assetMeasures != null && assetMeasures.Count > 0)
+                    if (assetMeasures != null)
                     {
-                        SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, assetMeasures, execution.ExecutionID);
+                        CreateMeasureChangedResultExecution(assetMeasures, execution.ExecutionID);
                     }
                 }
             }
@@ -10586,14 +10445,32 @@ EG.GroupUid
                         {
                             try
                             {
-                                var deleteSQL = $@"DELETE G
+                                var deleteSQL = $@"
+                                        insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
+	                                        select	distinct
+			                                        'Group', 
+			                                        G.ID,
+			                                        SUBSTRING(G.Name,1,250),
+			                                        @CurrentResourceID, 
+			                                        getutcdate(), 
+			                                        'Deleted', 
+			                                        'Group', 
+			                                        G.ID,
+			                                        'Group', 
+			                                        SUBSTRING(G.Name,1,250), 
+			                                        'This group has been removed.'
+	                                        from [api].[ExecutionDeletedGroup] EDG
+                                            inner join [Group] G on G.Uid = EDG.GroupUid
+                                            where	ExecutionID = @ExecutionID
+
+                                        DELETE G
 	                                    FROM [Group] G
 		                                inner join api.ExecutionDeletedGroup EG on EG.Success is null and EG.ExecutionID = @ExecutionID and EG.ItemNumber between @beginItemNumber and @endItemNumber
 		                                inner join Asset A on A .uid = EG.GroupUid
 		                                where A.ObjectID = G.ID";
 
                                 Connection.Execute(deleteSQL,
-                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                        new { execution.ExecutionID, CurrentResourceID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                 Connection.Execute(
                                                     $"update EG set EG.Success = 1, EG.Message = 'Deleted Successfully' from api.ExecutionDeletedGroup EG where EG.Success is null and EG.ExecutionID = @ExecutionID;",
@@ -10708,13 +10585,13 @@ EG.GroupUid
                     DataProfileTable.Columns.Add("SampleCount", typeof(long));
                     DataProfileTable.Columns.Add("NullCount", typeof(long));
                     DataProfileTable.Columns.Add("BlankCount", typeof(long));
-                    DataProfileTable.Columns.Add("MeanValue", typeof(decimal));
+                    DataProfileTable.Columns.Add("MeanValue", typeof(double));
                     DataProfileTable.Columns.Add("MinimumValue", typeof(string));
 
                     DataProfileTable.Columns.Add("MaximumValue", typeof(string));
                     DataProfileTable.Columns.Add("MinimumLength", typeof(int));
                     DataProfileTable.Columns.Add("MaximumLength", typeof(int));
-                    DataProfileTable.Columns.Add("StandardDeviation", typeof(decimal));
+                    DataProfileTable.Columns.Add("StandardDeviation", typeof(double));
                     DataProfileTable.Columns.Add("Type", typeof(string));
 
                     DataProfileTable.Columns.Add("Multiline", typeof(bool));
@@ -11067,21 +10944,8 @@ EG.GroupUid
                     int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
                     int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
                     int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
-
-                    for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
-                    {
-                        bool runCompleted = false;
-                        int retryCount = 0;
-
-                        while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
-                        {
-                            var querySuffix = $"E.Success is null and E.ExecutionID = @ExecutionID and E.ItemNumber between @beginItemNumber and @endItemNumber";
-                            using (var trans = Connection.BeginTransaction())
-                            {
-                                #region Load valid items into table
-                                try
-                                {
-                                    Connection.Execute($@"
+                    var querySuffix = $"E.Success is null and E.ExecutionID = @ExecutionID and E.ItemNumber between @beginItemNumber and @endItemNumber";
+                    var insertSQL = $@"
                                         DROP TABLE IF EXISTS #mergeResultTable
                                         CREATE TABLE #mergeResultTable (DataProfileId INT, ItemNumber INT) 
 
@@ -11095,38 +10959,8 @@ EG.GroupUid
                                                     Asset A ON A.Uid = E.AssetUid
 		                                        WHERE {querySuffix}
                                                 ) EDP
-                                        ON (EDP.AssetId = ADP.AssetID AND EDP.profileSetDate = ADP.profileSetDate)
-                                        WHEN MATCHED AND @IsInsert = 0 THEN
-                                        UPDATE SET
-                                            ADP.[SampleCount] = EDP.[SampleCount]
-                                            ,ADP.[NullCount] = EDP.[NullCount]
-                                            ,ADP.[BlankCount] = EDP.[BlankCount]
-                                            ,ADP.[MeanValue] = EDP.[MeanValue]
-                                            ,ADP.[MinimumValue] = EDP.[MinimumValue]
-                                            ,ADP.[MaximumValue] = EDP.[MaximumValue]
-                                            ,ADP.[MinimumLength] = EDP.[MinimumLength]
-                                            ,ADP.[MaximumLength] = EDP.[MaximumLength]
-                                            ,ADP.[StandardDeviation] = EDP.[StandardDeviation]
-                                            ,ADP.[Type] = EDP.[Type]
-                                            ,ADP.[Multiline] = EDP.[Multiline]
-                                            ,ADP.[RegExp] = EDP.[RegExp]
-                                            ,ADP.[Confidence] = EDP.[Confidence]
-                                            ,ADP.[TypeQualifier] = EDP.[TypeQualifier]
-                                            ,ADP.[LogicalType] = EDP.[LogicalType]
-                                            ,ADP.[LeadingWhiteSpace] = EDP.[LeadingWhiteSpace]
-                                            ,ADP.[LeadingZeroCount] = EDP.[LeadingZeroCount]
-                                            ,ADP.[TrailingWhiteSpace] = EDP.[TrailingWhiteSpace]
-                                            ,ADP.[MatchCount] = EDP.[MatchCount]
-                                            ,ADP.[OutlierCardinality] = EDP.[OutlierCardinality]
-                                            ,ADP.[PossibleKey] = EDP.[PossibleKey]
-                                            ,ADP.[DataSignature] = EDP.[DataSignature]
-                                            ,ADP.[StructureSignature] = EDP.[StructureSignature]
-                                            ,ADP.[Cardinality] = EDP.[Cardinality]
-                                            ,ADP.[ShapeCardinality] = EDP.[ShapeCardinality]
-                                            ,ADP.[UpdatedBy] = @CurrentResourceID
-                                            ,ADP.[UpdatedOn] = GETDATE()
-
-                                        WHEN NOT MATCHED AND @IsInsert = 1 THEN
+                                        ON 1 = 0                                       
+                                        WHEN NOT MATCHED THEN
                                         INSERT ([AssetID]
                                                     ,[ProfileSetDate]
                                                     ,[SampleCount]
@@ -11190,10 +11024,56 @@ EG.GroupUid
                                                     ,GETDATE()
                                                     ,@CurrentResourceID
                                                     ,GETDATE())
-                                            OUTPUT  inserted.ID INT, EDP.ItemNumber INTO #mergeResultTable;
-                                            
-                                        Delete ADPS from AssetDataProfileSample ADPS inner join #mergeResultTable rt on ADPS.AssetDataProfileID = rt.DataProfileID                                      
+                                            OUTPUT  inserted.ID INT, EDP.ItemNumber INTO #mergeResultTable;";
+                    var updateSQL = $@"
+                                        DROP TABLE IF EXISTS #mergeResultTable
+                                        CREATE TABLE #mergeResultTable (DataProfileId INT, ItemNumber INT) 
 
+                                        MERGE INTO AssetDataProfile ADP
+                                        USING (
+                                                SELECT
+                                                    A.ID as AssetId, E.*
+                                                FROM  
+                                                    api.ExecutionAssetDataProfile E
+                                                INNER JOIN
+                                                    Asset A ON A.Uid = E.AssetUid
+		                                        WHERE {querySuffix}
+                                                ) EDP
+                                        ON (EDP.AssetId = ADP.AssetID AND EDP.profileSetDate = ADP.profileSetDate)
+                                        WHEN MATCHED THEN
+                                        UPDATE SET
+                                            ADP.[SampleCount] = EDP.[SampleCount]
+                                            ,ADP.[NullCount] = EDP.[NullCount]
+                                            ,ADP.[BlankCount] = EDP.[BlankCount]
+                                            ,ADP.[MeanValue] = EDP.[MeanValue]
+                                            ,ADP.[MinimumValue] = EDP.[MinimumValue]
+                                            ,ADP.[MaximumValue] = EDP.[MaximumValue]
+                                            ,ADP.[MinimumLength] = EDP.[MinimumLength]
+                                            ,ADP.[MaximumLength] = EDP.[MaximumLength]
+                                            ,ADP.[StandardDeviation] = EDP.[StandardDeviation]
+                                            ,ADP.[Type] = EDP.[Type]
+                                            ,ADP.[Multiline] = EDP.[Multiline]
+                                            ,ADP.[RegExp] = EDP.[RegExp]
+                                            ,ADP.[Confidence] = EDP.[Confidence]
+                                            ,ADP.[TypeQualifier] = EDP.[TypeQualifier]
+                                            ,ADP.[LogicalType] = EDP.[LogicalType]
+                                            ,ADP.[LeadingWhiteSpace] = EDP.[LeadingWhiteSpace]
+                                            ,ADP.[LeadingZeroCount] = EDP.[LeadingZeroCount]
+                                            ,ADP.[TrailingWhiteSpace] = EDP.[TrailingWhiteSpace]
+                                            ,ADP.[MatchCount] = EDP.[MatchCount]
+                                            ,ADP.[OutlierCardinality] = EDP.[OutlierCardinality]
+                                            ,ADP.[PossibleKey] = EDP.[PossibleKey]
+                                            ,ADP.[DataSignature] = EDP.[DataSignature]
+                                            ,ADP.[StructureSignature] = EDP.[StructureSignature]
+                                            ,ADP.[Cardinality] = EDP.[Cardinality]
+                                            ,ADP.[ShapeCardinality] = EDP.[ShapeCardinality]
+                                            ,ADP.[UpdatedBy] = @CurrentResourceID
+                                            ,ADP.[UpdatedOn] = GETDATE()                                       
+                                        OUTPUT  inserted.ID INT, EDP.ItemNumber INTO #mergeResultTable;
+
+                                            Delete ADPS from AssetDataProfileSample ADPS inner join #mergeResultTable rt on ADPS.AssetDataProfileID = rt.DataProfileID";
+                
+                    var insertSampleSQL = $@"
                                         insert into AssetDataProfileSample 
                                                     ([AssetDataProfileID]
                                                     ,[SampleType]
@@ -11212,7 +11092,31 @@ EG.GroupUid
                                             #mergeResultTable rt ON rt.itemNumber = EDPS.itemNumber
 			                            WHERE 
                                             {querySuffix}
-                                            ", new { execution.ExecutionID, beginItemNumber, endItemNumber, isInsert, CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+                                            ";
+
+                    var sql = $@"{insertSQL}
+                                {insertSampleSQL}";
+
+                    if (!isInsert)
+                    {
+                        sql = $@"{updateSQL}
+                                {insertSampleSQL}";
+                    }
+
+                    for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
+                    {
+                        bool runCompleted = false;
+                        int retryCount = 0;
+
+                        while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+                        {
+                            
+                            using (var trans = Connection.BeginTransaction())
+                            {
+                                #region Load valid items into table
+                                try
+                                {                                   
+                                    Connection.Execute(sql, new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 
                                     #endregion
 
@@ -11262,6 +11166,378 @@ EG.GroupUid
                         );
                         AddMeasurement(metrics, $"results.AddRange >> DataProfileUpsertResponse>> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
+
+                        beginItemNumber += loopSize;
+                        endItemNumber += loopSize;
+                    }
+                }
+            }
+
+            AddMeasurement(metrics, $"End of Method", swBegin.ElapsedMilliseconds, ++step);
+
+            this.AITrackMetric(client, execution, METHOD_NAME, metrics, isLog);
+
+            if (Database.Connection.State == ConnectionState.Open)
+            {
+                Connection.Close();
+            }
+                
+            return results;
+        }
+
+        public List<BulkResponsibilityOverrideResponseModel> BulkInsertResponsibilityOverride(List<BulkResponsibilityOverridePostModel> request, ApiExecution execution, int timeout = 3600)
+        {
+            var swBegin = Stopwatch.StartNew();
+            TelemetryClient client = new TelemetryClient();
+            const string METHOD_NAME = "BulkInsertResponsibilityOverride";
+            bool isLog = true; // trace info for all assets is extermely useful
+
+            DynamicParameters dbArgs = new DynamicParameters();
+            bool generalChecksCompleted = false;
+            int itemNumber = 1;
+            List<BulkResponsibilityOverrideResponseModel> results = new List<BulkResponsibilityOverrideResponseModel>();
+            CurrentExecutionLocationModel currentLocation = null;
+            var metrics = new Dictionary<string, double>();
+            var sw = Stopwatch.StartNew();
+            var step = 0;
+
+            var dups = request.Where(i => i.ExecutionItemUid.HasValue && i.ExecutionItemUid.Value != Guid.Empty).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+
+            var dupRecords = request.GroupBy(i => new { i.AssetUid, i.ResponsibilityTypeUid, i.AssignedUid }).Where(i => i.Count() > 1).Select(i => new { keyFields = i.Key, Count = i.Count() }).ToList();
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
+            AddMeasurement(metrics, "Checks for duplicates in load", sw.ElapsedMilliseconds, ++step);
+
+            sw.Restart();
+
+            if (dups.Any() || dupRecords.Any())
+            {
+
+                if (dups.Any())
+                {
+                    execution.ErrorMessage = $"Duplicate Execution Item Identifiers: {string.Join(", ", dups.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
+                }
+                else
+                {
+                    execution.ErrorMessage = $"Duplicate Records: {string.Join(", ", dupRecords.Select(i => $"AssetUid: {i.keyFields.AssetUid}, ResponsibilityTypeUid: {i.keyFields.ResponsibilityTypeUid}, AssignedUid: {i.keyFields.AssignedUid}"))}. AssetUid, ResponsibilityTypeUid, AssignedUid are key fields and the combination must be unique within a batch.";
+                }
+
+                results.AddRange(request.Select(i => new BulkResponsibilityOverrideResponseModel { ExecutionItemUid = execution.ExecutionID, Message = execution.ErrorMessage, Success = false }));
+            }
+            else
+            {
+                try
+                {
+                    currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionResponsibilityTypeRelationOverrideItem");
+
+                    AddMeasurement(metrics, "Getting execution current location", sw.ElapsedMilliseconds, ++step);
+                    sw.Restart();
+
+                    if (currentLocation.HighestItemNumberProcessed > 0)
+                    {
+                        results.AddRange(
+                            Query<BulkResponsibilityOverrideResponseModel>(
+                                $"select * from api.ExecutionResponsibilityTypeRelationOverrideItem where ExecutionID = @ExecutionID and ItemNumber <= {currentLocation.HighestItemNumberProcessed}",
+                                new { execution.ExecutionID }
+                            )
+                        );
+                    }
+
+                    #region Build data tables.
+                    var ResponsibilityTypeRelationOverrideTable = new DataTable();
+
+                    ResponsibilityTypeRelationOverrideTable.Columns.Add("ExecutionID", typeof(Guid));
+                    ResponsibilityTypeRelationOverrideTable.Columns.Add("ItemNumber", typeof(int));
+                    ResponsibilityTypeRelationOverrideTable.Columns.Add("ExecutionItemUid", typeof(Guid));
+                    ResponsibilityTypeRelationOverrideTable.Columns.Add("ResponsibilityTypeUid", typeof(Guid));
+                    ResponsibilityTypeRelationOverrideTable.Columns.Add("AssetUid", typeof(Guid));
+                    ResponsibilityTypeRelationOverrideTable.Columns.Add("SecurityAssetUid", typeof(Guid));
+                    ResponsibilityTypeRelationOverrideTable.Columns.Add("Context", typeof(string));
+                    ResponsibilityTypeRelationOverrideTable.Columns.Add("Message", typeof(string));
+                    ResponsibilityTypeRelationOverrideTable.Columns.Add("Success", typeof(bool));
+
+                    #region Populate Data Tables
+                    foreach (var item in request)
+                    {
+                        var row = ResponsibilityTypeRelationOverrideTable.NewRow();
+
+                        row["ExecutionID"] = execution.ExecutionID;
+                        row["ItemNumber"] = itemNumber;
+                        if (item.ExecutionItemUid.HasValue)
+                        {
+                            row["ExecutionItemUid"] = item.ExecutionItemUid;
+                        }
+                        else
+                        {
+                            row["ExecutionItemUid"] = DBNull.Value;
+                        }
+                        row["ResponsibilityTypeUid"] = item.ResponsibilityTypeUid;
+                        row["AssetUid"] = item.AssetUid;
+
+                        row["SecurityAssetUid"] = item.AssignedUid;
+                        row["Context"] = item.Description;
+
+                        ResponsibilityTypeRelationOverrideTable.Rows.Add(row);                        
+
+                        itemNumber++;
+                    }
+                    #endregion
+                    #region Bulk Copy
+
+                    if (Database.Connection.State != ConnectionState.Open)
+                        Connection.Open();
+
+                    using (var transaction = Connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            #region Bulk Copy Data Profile
+                            using (var bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction)
+                            {
+                                BatchSize = ResponsibilityTypeRelationOverrideTable.Rows.Count,
+                                DestinationTableName = "[api].[ExecutionResponsibilityTypeRelationOverrideItem]",
+                                BulkCopyTimeout = SqlBulkBatchTimeout
+                            })
+                            {
+                                bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                                bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                                bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                                bulkCopy.ColumnMappings.Add("ResponsibilityTypeUid", "ResponsibilityTypeUid");
+                                bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
+                                bulkCopy.ColumnMappings.Add("SecurityAssetUid", "SecurityAssetUid");
+                                bulkCopy.ColumnMappings.Add("Context", "Context");
+
+                                bulkCopy.WriteToServer(ResponsibilityTypeRelationOverrideTable);
+                            }
+                            #endregion                            
+
+                            transaction.Commit();
+
+                            AddMeasurement(metrics, "BulkCopy to api.Execution table", sw.ElapsedMilliseconds, ++step);
+                        }
+                        catch (Exception ex)
+                        {
+                            try
+                            {
+                                if (transaction != null)
+                                {
+                                    transaction.Rollback();
+                                }
+                            }
+                            catch { }
+                            
+                            throw ex;
+                        }
+
+                    }
+                    #endregion
+
+                    #endregion
+
+                    Connection.Execute($@"
+                        update	api.ExecutionResponsibilityTypeRelationOverrideItem
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'You must provide a valid ResponsibilityTypeUid.'
+                        where	ExecutionID = @ExecutionID and ([ResponsibilityTypeUid] is null or [ResponsibilityTypeUid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER));
+
+                        update	api.ExecutionResponsibilityTypeRelationOverrideItem
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'You must provide a valid AssetUid.'
+                        where	ExecutionID = @ExecutionID and ([AssetUid] is null or [AssetUid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER));
+
+                        update	api.ExecutionResponsibilityTypeRelationOverrideItem
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'You must provide a valid SecurityAssetUid.'
+                        where	ExecutionID = @ExecutionID and ([SecurityAssetUid] is null or [SecurityAssetUid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER));
+
+                        update	ERTROI
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'Asset not found based on AssetUid provided'
+                        from
+                            api.ExecutionResponsibilityTypeRelationOverrideItem ERTROI
+                            left Join
+                            Asset A on ERTROI.AssetUid = A.Uid
+                        where	ExecutionID = @ExecutionID and A.Uid is null;         
+
+                        update	ERTROI
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'ResponsibilityType not found based on ResponsibilityTypeUid provided'
+                        from
+                            api.ExecutionResponsibilityTypeRelationOverrideItem ERTROI
+                            left Join
+                            ResponsibilityType RT on ERTROI.ResponsibilityTypeUid = rt.Uid
+                        where	ExecutionID = @ExecutionID and rt.Uid is null;  
+
+                        update	ERTROI
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'SecurityAsset not found based on SecurityAssetUid provided'
+                        from
+                            api.ExecutionResponsibilityTypeRelationOverrideItem ERTROI
+                            left Join
+                            Asset SA on SA.Uid = ERTROI.SecurityAssetUid and SA.Object in ('Resource', 'Group', 'Organization')
+                        where	ExecutionID = @ExecutionID and SA.Uid is null;
+                        
+                        update	ERTROI
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'Responsibility Type not valid for Asset.'
+                        from
+							api.ExecutionResponsibilityTypeRelationOverrideItem ERTROI
+							inner join ResponsibilityType RT on RT.[uid] = ERTROI.ResponsibilityTypeUid
+							inner join Asset A on A.uid = ERTROI.AssetUid 
+							left join ResponsibilityDetail RD on RD.ResponsibilityTypeID=RT.ID and A.ID = AssetID
+                        where	ExecutionID = @ExecutionID and RD.RuleID is null;						
+
+                        update	ERTROI
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'Responsibility override already exists with AssetUid '+ convert(nvarchar(36), ERTROI.AssetUid) +' and ResponsibilityTypeUid '+ convert(nvarchar(36), ERTROI.ResponsibilityTypeUid) +' and SecurityAssetUid '+ convert(nvarchar(36), ERTROI.SecurityAssetUid)
+                        from
+                            api.ExecutionResponsibilityTypeRelationOverrideItem ERTROI
+                            inner join 
+                            Asset A on ERTROI.AssetUid = A.Uid
+                            inner join 
+                            ResponsibilityType RT on RT.Uid = ERTROI.ResponsibilityTypeUid
+                            inner join
+                            Asset SA on SA.Uid = ERTROI.SecurityAssetUid and SA.Object in ('Resource', 'Group', 'Organization')
+                            inner join
+                            ResponsibilityTypeRelationOverrideItem RTROI on RTROI.ResponsibilityTypeId = RT.ID and RTROI.AssetId = A.Id and RTROI.SecurityAssetId = SA.ObjectId
+                        where ExecutionID = @ExecutionID;",
+                                    new { execution.ExecutionID }, commandTimeout: timeout);
+
+                    AddMeasurement(metrics, "LogResponsibilityTypeRelationOverrideItemErrors", sw.ElapsedMilliseconds, ++step);
+                    sw.Restart();
+
+                    generalChecksCompleted = true;
+                }
+                catch (Exception generalEx)
+                {
+                    generalChecksCompleted = false;
+                    var msg = generalEx.GetFullExceptionData(false);
+                    execution.ErrorMessage = msg;
+                    execution.Processed = 0;
+                    execution.Error = request.Count();
+
+                    results = new List<BulkResponsibilityOverrideResponseModel>();
+                    results.AddRange(request.Select(i => new BulkResponsibilityOverrideResponseModel { ExecutionItemUid = i.ExecutionItemUid, Message = msg, Success = false }));
+                }
+
+                if (generalChecksCompleted)
+                {
+                    int loopSize = 250;
+                    int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
+                    int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
+                    int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
+
+                    for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
+                    {
+                        bool runCompleted = false;
+                        int retryCount = 0;
+
+                        while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+                        {
+                            var querySuffix = $"E.Success is null and E.ExecutionID = @ExecutionID and E.ItemNumber between @beginItemNumber and @endItemNumber";
+                            using (var trans = Connection.BeginTransaction())
+                            {
+                                #region Load valid items into table
+                                try
+                                {
+                                    Connection.Execute($@"
+                                        DROP TABLE IF EXISTS #mergeResultTable
+                                        CREATE TABLE #mergeResultTable (DataProfileId INT, ItemNumber INT) 
+
+                                        MERGE INTO ResponsibilityTypeRelationOverrideItem RTROI
+                                        USING (
+                                                SELECT
+                                                    A.ID as AssetId, 
+                                                    RT.ID as ResponsibilityTypeId, 
+                                                    CASE SA.Object
+                                                        WHEN 'Resource' THEN 'R'
+						                                WHEN 'Group' THEN 'G'
+                                                        WHEN 'Organization' THEN 'O'
+						                                END as SecurityAsset,                                            
+                                                    SA.ObjectID as SecurityAssetId, E.*
+                                                FROM  
+                                                    api.ExecutionResponsibilityTypeRelationOverrideItem E
+                                                INNER JOIN
+                                                    Asset A ON A.Uid = E.AssetUid
+                                                inner join 
+                                                    ResponsibilityType RT on RT.Uid = E.ResponsibilityTypeUid
+                                                inner join
+                                                    Asset SA on SA.Uid = E.SecurityAssetUid and SA.Object in ('Resource', 'Group', 'Organization')
+		                                        WHERE {querySuffix}
+                                                ) ERTROI
+                                        ON (ERTROI.AssetId = RTROI.AssetID AND ERTROI.ResponsibilityTypeId = RTROI.ResponsibilityTypeId and ERTROI.AssetId = RTROI.AssetID)                                        
+                                        WHEN NOT MATCHED THEN
+                                        INSERT
+                                            ([ResponsibilityTypeID]
+                                            ,[AssetID]
+                                            ,[SecurityAsset]
+                                            ,[SecurityAssetID]
+                                            ,[Context]
+                                            ,[UpdatedBy]
+                                            ,[UpdatedOn])
+                                        VALUES
+                                            (ERTROI.ResponsibilityTypeID
+                                            ,ERTROI.AssetID
+                                            ,ERTROI.SecurityAsset
+                                            ,ERTROI.SecurityAssetID
+                                            ,ERTROI.Context
+                                            ,@CurrentResourceID
+                                            ,GETDATE())                               
+                                        OUTPUT  inserted.ID INT, ERTROI.ItemNumber INTO #mergeResultTable;                                                                                   
+                                            ", new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+
+                                    #endregion
+
+                                    // Update success flag.
+                                    Connection.Execute(
+                                        $@"update E 
+                                            set Success = 1 
+                                       From api.ExecutionResponsibilityTypeRelationOverrideItem E
+                                       where {querySuffix};",
+                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+                                    trans.Commit();
+                                    runCompleted = true;
+                                }
+                                catch (Exception ex)
+                                {
+                                    try
+                                    {
+                                        if (trans != null)
+                                        {
+                                            trans.Rollback();
+                                        }
+                                    }
+                                    catch
+                                    {
+                                    }
+
+                                    retryCount++;
+
+                                    if (retryCount > API_V2_RETRY_LIMIT)
+                                    {
+                                        sw.Restart();
+                                        LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionResponsibilityTypeRelationOverrideItem", ex.GetFullExceptionData(false), timeout);
+                                        AddMeasurement(metrics, $"LogLoopExecutionError >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                        sw.Restart();
+                                    }
+                                }
+                            }
+                        }
+
+                        sw.Restart();
+                        results.AddRange(
+                            Query<BulkResponsibilityOverrideResponseModel>(
+                                $"select [ItemNumber],[AssetUid] as uid,[ExecutionItemUid],[Message],[Success] from api.ExecutionResponsibilityTypeRelationOverrideItem where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber ",
+                                new { execution.ExecutionID, beginItemNumber, endItemNumber }
+                            )
+                        );
+                        AddMeasurement(metrics, $"results.AddRange >> BulkResponsibilityOverrideResponse>> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+                        sw.Restart();
+
+                        beginItemNumber += loopSize;
+                        endItemNumber += loopSize;
                     }
                 }
             }
@@ -11277,6 +11553,7 @@ EG.GroupUid
 
             return results;
         }
+
         public List<DataProfileDeleteResponse> DeleteDataProfiles(List<AssetDataProfileDeleteModel> models, ApiExecution execution, int timeout = 3600)
         {
             var swBegin = Stopwatch.StartNew();
@@ -11572,6 +11849,9 @@ EG.GroupUid
                                 DELETE
                                 OUTPUT DADP.itemNumber, DELETED.ID into #deletedResults;
 
+                            
+                                Delete from AssetDataProfileSample where AssetDataProfileID in( select ID from #deletedResults dr where dr.ItemNumber between @beginItemNumber and @endItemNumber )
+
                                 Update E
                                 set E.DeletedCount = DR.DeletedCount
                                 from 
@@ -11642,6 +11922,9 @@ EG.GroupUid
                         );
                         AddMeasurement(metrics, $"results.AddRange >> DataProfileUpsertResponse>> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
+
+                        beginItemNumber += loopSize;
+                        endItemNumber += loopSize;
                     }
                 }
 

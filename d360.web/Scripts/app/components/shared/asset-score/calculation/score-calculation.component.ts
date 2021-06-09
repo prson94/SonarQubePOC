@@ -24,7 +24,9 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
 
     Operator = Operator;
 
-    private isRuleResultsModalVisible: boolean = false;
+    summedMeasures: number = 0;
+
+    isRuleResultsModalVisible: boolean = false;
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes["selected"] && changes["selected"].currentValue != null) {
@@ -62,7 +64,7 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
     showPassTest(): boolean {
         let show = true;
 
-        show = (this.scoreType !== ScoreType.DataQuality);
+        show = (!this.selected.IsGroup && this.scoreType !== ScoreType.DataQuality);
 
         return show;
     }
@@ -76,16 +78,20 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
         }
     }
 
-    showConditionGroups(): boolean {
-        return this.selected && (this.selected.Conditions.length > 0);
-    }
-   
     formatWeight(num: number) {
         if (num) {
             return (num * 100).toFixed(2).replace(/[.,]00$/, "") + "%";
         } else {
             return "(default)";
         }
+    }
+
+    formulaMultiplierLabel() {
+        return (!this.selected.IsGroup && this.selected._groupDisplayMaxWeight) ? "group weight" : "100%";
+    }
+
+    weightLabel() {
+        return (this.matchedCondition && !this.selected.IsGroup) ? "condition group weight" : "measure weight";
     }
 
     getOtherMatchedGroups(): string {

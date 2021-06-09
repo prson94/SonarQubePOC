@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace d360.core.entities
@@ -25,13 +26,13 @@ namespace d360.core.entities
         [DataMember]
         public string MaximumValue { get; set; }
         [DataMember]
-        public Decimal? MeanValue { get; set; }
+        public double? MeanValue { get; set; }
         [DataMember]
         public int? MinimumLength { get; set; }
         [DataMember]
         public int? MaximumLength { get; set; }
         [DataMember]
-        public Decimal? StandardDeviation { get; set; }
+        public double? StandardDeviation { get; set; }
         [DataMember]
         public bool? Multiline { get; set; }
         [DataMember]
@@ -112,9 +113,7 @@ namespace d360.core.entities
         public string maxValue { get; set; }
 
         [DataMember(Name = "mean")]
-        [Range(0, 999999999999999999.9999, ErrorMessage = "{0} must be between {1} and {2}.")]
-        [RegularExpression(@"^\d+.?\d{0,4}$", ErrorMessage = "{0} is limited to a maximum of 4 decimal places.")]
-        public Decimal? meanValue { get; set; }
+        public double? meanValue { get; set; }
 
         [DataMember]
         public int? minLength { get; set; }
@@ -123,9 +122,8 @@ namespace d360.core.entities
         public int? maxLength { get; set; }
 
         [DataMember]
-        [Range(0, 999999999999999999999999.9999, ErrorMessage = "{0} must be between {1} and {2}.")]
-        [RegularExpression(@"^\d+.?\d{0,4}$", ErrorMessage = "{0} is limited to a maximum of 4 decimal places.")]
-        public Decimal? standardDeviation { get; set; }
+        [Range(0, double.MaxValue, ErrorMessage = "{0} must be between {1} and {2}.")]
+        public double? standardDeviation { get; set; }
 
         [DataMember]
         public bool? multiline { get; set; }
@@ -134,7 +132,7 @@ namespace d360.core.entities
         public string regExp { get; set; }
 
         [DataMember]
-        [Range(0, 999999999999999999999999.9999, ErrorMessage = "{0} must be between {1} and {2}.")]
+        [Range(0, 1, ErrorMessage = "{0} must be between {1} and {2}.")]
         [RegularExpression(@"^\d+.?\d{0,4}$", ErrorMessage = "{0} is limited to a maximum of 4 decimal places.")]
         public Decimal? confidence { get; set; }
 
@@ -165,6 +163,7 @@ namespace d360.core.entities
         public int? outlierCardinality { get; set; }
 
         [DataMember]
+        [ValidateSampleAttribute(200)]
         public List<DataProfileSampleDetail> outlierDetail { get; set; }
 
         [DataMember]
@@ -179,21 +178,25 @@ namespace d360.core.entities
         public string structureSignature { get; set; }
 
         [DataMember]
+        [ValidateKListAttribute(200)]
         public List<string> bottomK { get; set; }
 
         [DataMember]
+        [ValidateKListAttribute(200)]
         public List<string> topK { get; set; }
 
         [DataMember]
         public int? cardinality { get; set; }
 
         [DataMember]
+        [ValidateSampleAttribute(200)]
         public List<DataProfileSampleDetail> cardinalityDetail { get; set; }
 
         [DataMember]
         public int? shapesCardinality { get; set; }
 
         [DataMember]
+        [ValidateSampleAttribute(200)]
         public List<DataProfileSampleDetail> shapesDetail { get; set; }                
     }
 
@@ -230,6 +233,52 @@ namespace d360.core.entities
         public bool Cascade { get; set; }
         [DataMember]
         public Guid? ExecutionItemUid { get; set; }
+    }
+
+    public class ValidateSampleAttribute : ValidationAttribute
+    {
+        public ValidateSampleAttribute(int maxlength)
+        {
+            Maxlength = maxlength;
+        }
+
+        public int Maxlength { get; }
+
+        protected override ValidationResult IsValid(object value,
+            ValidationContext validationContext)
+        {
+            var sample = (List<DataProfileSampleDetail>)value;
+
+            if (sample?.Count>0 && sample.Any(x=>x.key?.Length > 200))
+            {
+                return new ValidationResult($"{validationContext.DisplayName} keys cannot be more than {Maxlength} characters.");
+            }
+
+            return ValidationResult.Success;
+        }
+    }
+
+    public class ValidateKListAttribute : ValidationAttribute
+    {
+        public ValidateKListAttribute(int maxlength)
+        {
+            Maxlength = maxlength;
+        }
+
+        public int Maxlength { get; }
+
+        protected override ValidationResult IsValid(object value,
+            ValidationContext validationContext)
+        {
+            var list = (List<string>)value;
+
+            if (list?.Count > 0 && list.Any(x => x.Length > 200))
+            {
+                return new ValidationResult($"{validationContext.DisplayName} elements cannot be more than {Maxlength} characters.");
+            }
+
+            return ValidationResult.Success;
+        }
     }
 
 }

@@ -12,7 +12,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { LazyLoadEvent } from 'primeng/api';
 import { SubscriptionLike as ISubscription } from 'rxjs';
 import { SortOrder } from '../../../models/enums.model';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild, OnInit } from '@angular/core';
+import { Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnChanges, SimpleChange, OnDestroy, ViewChild, OnInit } from '@angular/core';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { V2ApiFilters } from '../../../models/asset-search.model';
 import { ResourceApiModel } from '../../../models/resource.model';
@@ -25,6 +25,12 @@ import { ResourceApiModel } from '../../../models/resource.model';
 })
 
 export class UserListComponent extends BaseComponent implements OnInit, OnDestroy {
+    @Input() ResponsibilityTypeUid: string;
+    @Input() IsCommunityUserResposibility: boolean = false;
+    @Input() UserListHeading: string = 'Users';
+    @Input() selected: any = null;
+    @Output() selectedChange = new EventEmitter();
+
     error: any;
     items: any[] = [];
     columns: GridColumn[] = [];
@@ -35,8 +41,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     showResetPwd: boolean = false;
 
     allowPasswordReset: boolean = false;
-
-    selected: any = null;
+    isExportInProgress: boolean = false;
     simpleFilter: string = "";
 
     totalRecords: number;
@@ -46,6 +51,8 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     sortField: string = undefined;
     sortOrder: SortOrder = SortOrder.None;
     filters: GridFilterExpression[] = [];
+    columnWidth: number = 0;
+    columnWidthOwnedItems: number = 0;
 
     get globalFilterFields(): string[] {
         let f = this.columns.map(c => c.datafield);
@@ -77,6 +84,12 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         this.load();
     }
 
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        if (changes["ResponsibilityTypeUid"] && "" + this.ResponsibilityTypeUid !== "") {
+            this.getData();
+        }
+    }
+
     ngOnDestroy(): void {
         if (this.usersSub) {
             this.usersSub.unsubscribe();
@@ -88,7 +101,14 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     public export() {
-        this.resourcesService.exportResources(this.getParams());
+        var filename = this.IsCommunityUserResposibility === true ? `Filtered List of ${this.UserListHeading} ${new Date().toDateString()}.xlsx` : "Users.xlsx";
+        this.isExportInProgress = true;
+        this.resourcesService.exportResources(this.getParams(), filename).subscribe(
+            (res) => {
+                this.isExportInProgress = false;
+                this.changeDetectorRef.markForCheck();
+            }
+        );
     }
 
     load() {
@@ -104,11 +124,20 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     getFieldsDefinition() {
-        this.gridDefinitionService.getGridDefinition(this.objectID, this.objectType).subscribe(
-            result => {
+        let params = { IsCommunityUserResposibility: this.IsCommunityUserResposibility };
+
+        this.gridDefinitionService.getGridDefinition(this.objectID, this.objectType, null, null, params).subscribe(
+            (result) => {
                 this.columns = result.Columns;
                 this.fields = result.Fields;
-
+                if (this.IsCommunityUserResposibility && this.columns && this.columns.length > 2) {
+                    this.columnWidth = 200;
+                    this.columnWidthOwnedItems = 120;
+                }
+                else {
+                    this.columnWidth = 0;
+                    this.columnWidthOwnedItems = 0;
+                }
                 this.getData();
             }
         );
@@ -185,6 +214,14 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         }
         else {
             params._filter = baseFilter;
+        }
+
+        if (this.IsCommunityUserResposibility) {
+            params['IsCommunityUserResposibility'] = this.IsCommunityUserResposibility;
+            params['ResponsibilityTypeUid'] = this.ResponsibilityTypeUid;
+        }
+        else {
+            params['IsCommunityUserResposibility'] = this.IsCommunityUserResposibility;
         }
 
         params._pageNum = this.currentPageNumber + 1;
@@ -306,5 +343,32 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
             this.showResetPwd = false;
         });
 
+    }
+
+    canExportRecords() {
+        if (this.IsCommunityUserResposibility) {
+            return this.totalRecords <= this.maxExportRows;
+        }
+        else {
+            return true;
+        }
+    }
+
+    IsReadOnly() {
+        return !this.IsCommunityUserResposibility;
+    }
+
+    setStyleWidth(datafield: string) {
+        if (this.columnWidth > 0 && this.columnWidthOwnedItems > 0) {
+            if (datafield === "OwnedItemCount") {
+                return this.columnWidthOwnedItems + 'px';
+            }
+            else {
+                return this.columnWidth + 'px';
+            }
+        }
+        else {
+            return null;
+        }
     }
 };

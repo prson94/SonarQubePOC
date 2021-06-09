@@ -1,6 +1,9 @@
-import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, AfterViewInit, HostListener } from "@angular/core";
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, OnInit, HostListener } from "@angular/core";
 import { CurrentEnvironmentSettings } from "../../../static/environment-settings";
 import { CompanySettingsService } from "../../../services/settings.service";
+import { ResourcesService } from "../../../services/resources.service";
+import { HelpResource } from "../../../models/resource.model";
+import { Observable } from "rxjs";
 declare var __BUILD_DATE: string;
 declare var VersionNumber: string;
 
@@ -9,9 +12,12 @@ declare var VersionNumber: string;
     template: ` <span #item class="header-search header-table" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)">
                     <div class="header-button"><i class="fa fa-question-circle"></i></div>
                     <div class="header-help search-child header-profile-panel">
-                       <ul>
-                            <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="userGuide">User Guide</a></div></div></li>
-                            <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="adminGuide">Admin Guide</a></div></div></li>
+                       <ul>       
+                            <ng-container *ngIf="(customHelpResources$ | async) as list">
+                                <li class="header-item" *ngFor="let help of list"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="help.Url">{{help.Name}}</a></div></div></li>                                
+                                <li class="header-item" *ngIf="list?.length == 0"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="userGuide">User Guide</a></div></div></li>
+                                <li class="header-item" *ngIf="list?.length == 0"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="adminGuide">Admin Guide</a></div></div></li>
+                            </ng-container>                            
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="whatIsNew">What's New</a></div></div></li>
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="community">Community</a></div></div></li>
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" (click)="showAbout()">About Data360 Govern</a></div></div></li>
@@ -71,11 +77,13 @@ declare var VersionNumber: string;
         `]
 })
 
-export class HeaderHelpComponent {
+export class HeaderHelpComponent implements OnInit {
     public active: boolean = false;
     private hideHandle: number = 0;
     display: boolean = false;
     isLoading: boolean = false;
+    customHelpResources: HelpResource[] = null;
+    customHelpResources$: Observable<any>;
 
     public userGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#c-user-guide/user-guide.htm%3FTocPath%3DUser%2520guide%7C_____0";
     public adminGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/admin-intro.htm%3FTocPath%3DAdministration%2520guide%7C_____0";
@@ -90,8 +98,18 @@ export class HeaderHelpComponent {
 
     constructor(
         private ref: ChangeDetectorRef,
-        private settingService: CompanySettingsService
+        private settingService: CompanySettingsService,
+        protected resourceService: ResourcesService,
     ) { }
+
+
+    ngOnInit(): void {
+        this.loadCustomHelp();
+    }
+
+    loadCustomHelp(): void {
+        this.customHelpResources$ = this.resourceService.getHelpResources();
+    }
 
     loadLicensingDetails(): void {
         this.licenceData = null;

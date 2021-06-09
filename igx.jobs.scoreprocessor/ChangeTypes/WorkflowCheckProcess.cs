@@ -1,103 +1,62 @@
-﻿using d360.core.entities;
-using d360.core.entities.Metric;
+﻿using d360.core.entities.Metric;
 using d360.core.enums;
-using d360.core.queue;
 using Dapper;
-using System;
+using igx.jobs.scoreprocessor.Models;
+using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace igx.jobs.scoreprocessor.ChangeTypes
 {
-    internal class WorkflowScoreGroup
-    {
-        public string Type { get; set; }
-        public int TypeID { get; set; }
-        public List<WorkflowScoredAsset> Assets { get; set; }
-    }
-
-    internal class RawWorkflowScoreAsset
-    {
-        public Guid AssetUid { get; set; }
-        public string Type { get; set; }
-        public int TypeID { get; set; }
-        public string Object { get; set; }
-        public int ObjectID { get; set; }
-    }
-
     public class WorkflowCheckProcess : ProcessBase, IScoreProcess
     {
         public async Task Run()
-        {            
-            var scores = await Storage.DeserializeJsonObjectFromBlobAsync<List<ScoreCreatedModel>>(Info.StorageFolder, Info.StorageFile);
-
-            if (scores == null)
-            {
-                throw new ArgumentNullException("scores","Cannot load score file from storage");
-            }
-
+        {
             var Db = GetCompanyContext();
+            ExecutionRecord = getExecution(Db.Connection);
 
-            var tbl = new DataTable();
-            tbl.Columns.Add("AssetUid", typeof(Guid));
+            var results = await Db.Connection.QueryMultipleAsync(@"
+drop table if exists #Tbl;
+create table #Tbl (
+AllocationUid uniqueidentifier not null,
+AssetUid uniqueidentifier not null,
+Object varchar(50), ObjectID int,
+[Type] varchar(50), TypeID int,
+HasScoreWorkflow bit);
 
-            foreach (var model in scores)
-            {
-                var row = tbl.NewRow();
-                row["AssetUid"] = model.AssetUid;
-                tbl.Rows.Add(row);
-            }
+insert into #Tbl
+select	JSON_VALUE(P.Measures, '$[0].AllocationUid'),
+        A.Uid,
+		A.Object,
+		A.ObjectID,
+		TA.Object as [Type],
+		TA.ObjectID  as TypeID,
+		cast(iif(W.ID is not null, 1, 0) as bit) as HasWorkflow
+from	metrics.ExecutionItem I
+		cross apply openjson(I.Payload) with (AssetUid uniqueidentifier '$.AssetUid', EffectiveDate date '$.EffectiveDate', Measures nvarchar(max) '$.Measures' as json) P
+		inner join Asset A on A.Uid = P.AssetUid
+		inner join AssetType TA on TA.ID = A.AssetTypeID
+		left join workflow.EventRegistration W on W.Object = TA.Object and W.ObjectID = TA.ObjectID and W.ChangeType = 5
+where	I.ExecutionID = @ID
+		and I.ChangeType = 0
+		and I.[State] = 1
 
-            List<WorkflowScoreGroup> groups = null;
+select	[Type], TypeID,
+	(
+	select	Object, ObjectID from #Tbl where [Type] = T.[Type] and TypeID = T.TypeID for json path
+	) as Assets
+from	#Tbl T
+group by [Type], TypeID
+for json path;
 
-            if (Db.Connection.State != ConnectionState.Open)
-                Db.Connection.Open();
+select * from metrics.Allocation where Uid in (select top 1 AllocationUid from #Tbl)", new { ExecutionRecord.ID });
 
-            MetricAllocation allocation = null;
-            if (scores.Count > 0)
-            {
-                var allocationUid = scores[0].AllocationUid;
-                allocation = Db.MetricAllocations.SingleOrDefault(al => al.Uid == allocationUid);
-            }
-
-            using (var trans = Db.Connection.BeginTransaction())
-            {
-                await Db.Connection.ExecuteAsync(@"create table #Tbl (
-                            AssetUid uniqueidentifier not null,
-                            Object varchar(50), ObjectID int,
-                            [Type] varchar(50), TypeID int,
-                            HasScoreWorkflow bit)", transaction: trans);
-
-                using (var bulkCopy = CreateBulkCopy(Db.Connection, trans, "#Tbl"))
-                {
-                    bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
-                    await bulkCopy.WriteToServerAsync(tbl);
-                }
-
-                await Db.Connection.ExecuteAsync(@"
-update  T
-set     T.Object = A.Object,
-        T.ObjectID = A.ObjectID,
-        T.[Type] = TA.Object,
-        T.TypeID = TA.ObjectID,
-        T.HasScoreWorkflow = cast(iif(W.ID is not null, 1, 0) as bit)
-from    #Tbl T
-        inner join Asset A on A.Uid = T.AssetUid
-        inner join AssetType TA on TA.ID = A.AssetTypeID
-        left join workflow.EventRegistration W on W.Object = TA.Object and W.ObjectID = TA.ObjectID and W.ChangeType = 5", transaction: trans);
-
-                groups = Db.Connection
-                    .Query<RawWorkflowScoreAsset>("select * from #Tbl where HasScoreWorkflow = 1", transaction: trans)
-                    .GroupBy(g => new WorkflowScoreGroup { Type = g.Type, TypeID = g.TypeID } )
-                    .Select(g => new WorkflowScoreGroup { 
-                        Type = g.Key.Type, 
-                        TypeID = g.Key.TypeID, 
-                        Assets = g.Select(i => new WorkflowScoredAsset { Object = i.Object, ObjectID = i.ObjectID }).ToList() 
-                    }).ToList();
-            }
-
+            var jsonStrings = results.Read<string>();
+            var allocation = results.Read<MetricAllocation>().FirstOrDefault();
+                
+            var groups = JsonConvert.DeserializeObject<List<WorkflowScoreGroup>>(string.Join("", jsonStrings));
+                
             if (groups != null)
             {
                 groups.ForEach(g =>

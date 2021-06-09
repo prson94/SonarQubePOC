@@ -150,6 +150,24 @@ namespace d360.model.DataAccessLayer
 
                     CompanyContext.Update(model.Resource);
                     CommunityContext.Update(model.CompanyResource);
+
+                    CompanyContext.Query<int>($@"insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
+	                    select	distinct
+			                    'Resource', 
+			                    res.ResourceId,
+			                    SUBSTRING(res.FirstName + ' ' +res.LastName,1,250),
+			                    @r, 
+			                    getutcdate(), 
+			                    'Deleted', 
+			                    'Resource', 
+			                    res.ResourceId,
+			                    'Resource', 
+			                    SUBSTRING(res.FirstName + ' ' +res.LastName,1,250),
+			                    'This user has been removed.'
+	                    from reporting.Global_Resource res
+	                    where res.resourceid = @resourceId",new { 
+                        r = CompanyContext.CurrentResourceID, 
+                        resourceId = model.Resource.ResourceID }).ToList();
                 }
 
                 execution.Processed = resources.Count();

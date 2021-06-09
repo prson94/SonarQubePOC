@@ -25,6 +25,8 @@ export class BaseComponent {
     public gridStateStorage: string = 'session';
     public maxExportRows = CompanySettings.MaxExcelExportRows;
 
+    readonly resourceTypeUid = '00000001-0000-0000-0000-A00000000011';
+    readonly groupTypeUid = '00000001-0000-0000-0000-B00000000012';
 
     // current object info
     uid: string;
@@ -469,6 +471,14 @@ export class BaseComponent {
         const blankUid = '00000000-0000-0000-0000-000000000000';
         let uid = this.uid;
 
+        if (this.objectType === "ResourceType") {
+            return `/${this.objectType}/${this.resourceTypeUid}`;
+        }
+
+        if (this.objectType === "GroupType") {
+            return `/${this.objectType}/${this.groupTypeUid}`;
+        }
+
         //Tag needs to be part of the URL for the header to behave
         if (this.objectType == 'Tag') {
             if (this.uid && this.uid != blankUid) {
@@ -491,6 +501,8 @@ export class BaseComponent {
                 uid = this['selectedReferenceListUid'];
             } else if (this['assetType'] && this['assetType']['AssetTypeUID']) { //HierarchyItemStructureComponent
                 uid = this['assetType']['AssetTypeUID'];
+            } else if (this['assetType'] && this['assetType']['uid']) { //HierarchyItemStructureComponent
+                uid = this['assetType']['uid'];
             } else if (this['selected']) {
                 if (this['selected']['Uid']) { //AdminIssueTypesComponent, AdminRelationshipsComponent
                     uid = this['selected']['Uid'];
@@ -841,7 +853,7 @@ export class BaseComponent {
 
             this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild, this.objectType == 'Rule', r.Items.HasGovernanceRoleUidSet, r.Items.HasProcessDiagram);
             var isType = this.IsType(r.Object);
-            this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, r.ObjectTypeId, this.objectType, this.objectID, isType, r.Items.HasWorkflow, this.uid));
+            this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, r.ObjectTypeId, this.objectType, this.objectID, isType, r.Items.HasWorkflow, this.uid, r.Items.HasRequestCertificationWorkflow));
             this.secondaryNavService.showHeader(true);
 
             this.activateComponent();
@@ -1138,8 +1150,12 @@ export class BaseComponent {
             return integerPart + res;
         }
 
-        let s = (val * 100).toFixed(2).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "")  + "%";
-        
+        let s = (val * 100).toFixed(2).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
+
         return s;
+    }
+
+    public isReferenceListType(value: string): boolean {
+        return value === "0000000a-0000-0000-0000-000000000009";
     }
 }

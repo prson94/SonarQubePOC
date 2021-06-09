@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="Table.dbo.Color-v1">
+  <changeSet author="bquinlivan" id="Table.dbo.Color-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -53,13 +53,18 @@ BEGIN
 	insert into Color ([Name], [Value]) values ('Wood','#6E4C41');
 	insert into Color ([Name], [Value]) values ('Tan','#BD9255');
 	insert into Color ([Name], [Value]) values ('Coffee','#A18880');
+	insert into Color ([Name], [Value]) values ('Ebony','#202020');
 END
 
+IF NOT EXISTS (SELECT * from Color where [Name]='Ebony')
+BEGIN
+	insert into Color ([Name], [Value]) values ('Ebony','#202020');
+END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+		Delete from Color where [Name]='Ebony'
 		]]>
 	</rollback>
   </changeSet>

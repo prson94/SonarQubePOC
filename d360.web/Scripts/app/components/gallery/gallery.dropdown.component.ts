@@ -18,6 +18,12 @@
 
 export class GalleryDropDownComponent implements OnInit {
     properties: Array<any>;
+    value: any;
+    searchValue: any;
+    diagnostic: any;
+    reqValue: any;
+    formValue: any;
+    someValue: any;
     sampleUsage: string = `<p-dropdown igDropdown
                                 igSize="small"
                                 [appendTo]="'body'"

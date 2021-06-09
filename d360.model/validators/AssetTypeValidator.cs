@@ -31,8 +31,6 @@ namespace d360.core.validators
             if (isFusionEnabled)
             {
                 SupportedClasses.Add(AssetTypeClass.FusionAttribute);
-                SupportedClasses.Add(AssetTypeClass.FusionQuery);
-
                 ParentAssetTypeClass.Add(AssetTypeClass.FusionAttribute);
             }
 
@@ -316,17 +314,25 @@ namespace d360.core.validators
             return true;
         }
 
-        public bool IsValidOwnersGetAssets(IEnumerable<KeyValuePair<string, string>> queryParams)
+        public bool IsValidOwnersGetAssets(IEnumerable<KeyValuePair<string, string>> queryParams, string paramName)
         {
-            if (queryParams.Any(x => x.Key.Trim().ToLower() == "_ownedby"))
+            if (queryParams.Any(x => x.Key.Trim().ToLower() == paramName))
             {
-                string[] owners = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_ownedby").Value.Split(',');
+                string[] owners = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == paramName).Value.Split(',');
                 foreach (var owner in owners)
                 {
                     if (!Guid.TryParse(owner, out Guid ownerguid))
+                    {
                         return false;
+                    }
+                    if (ownerguid == Guid.Empty)
+                    {
+                        return false;
+                    }
                     if (!CompanyContext.Assets.Any(a => a.uid == ownerguid && (a.Object == SystemObjects.Group.ToString() || a.Object == SystemObjects.Resource.ToString() || a.Object == SystemObjects.Organization.ToString())))
+                    {
                         return false;
+                    }
                 }
             }
 

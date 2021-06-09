@@ -1095,5 +1095,40 @@ namespace d360.web.Controllers.V2
             }
         }
 
+
+        /// <summary>
+        /// GETs all score execution items for a given execution.
+        /// </summary>
+        /// <param name="uid">The unique identifier (Uid) of the score execution.</param>
+        /// <param name="_pageNum">The page to return in results.</param>
+        /// <param name="_pageSize">The number of results to return per page. The default value is 200.</param>
+        /// <param name="changeType">The type of change you want to filter by. If left blank, then all changes under this execution will be returned..</param>
+        /// <returns>A paged list of execution items</returns>
+        [
+            HttpGet,
+            Route("executions/{uid:Guid}/items"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "A list of all execution items.", typeof(List<ScoreExecutionItemViewModel>))
+        ]
+        public async Task<IHttpActionResult> GetExecutionItems(Guid uid, int _pageSize = 200, int _pageNum = 1, core.queue.ScoreQueueChangeType? changeType = null)
+        {
+            var res = ScoringRepository.GetExecutionById(uid);
+            if (res == null)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found.")).ConfigureAwait(false);
+            }
+            var items = ScoringRepository.GetExecutionItems(res.ID, _pageSize, _pageNum, changeType);
+            return await Task.FromResult<IHttpActionResult>(
+                    ResponseMessage(
+                        Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            items
+                        )
+                    )
+                ).ConfigureAwait(false);
+        }
+
     }
 }

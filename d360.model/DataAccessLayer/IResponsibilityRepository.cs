@@ -1,4 +1,5 @@
 ﻿using d360.core.entities;
+using d360.core.queue;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,7 @@ namespace d360.model.DataAccessLayer
     {
         Task<AssetResponsibilitiesApiModel> GetResponsibilities(IEnumerable<KeyValuePair<string, string>> queryParams, string responsibilityUidFilter, string assigneeUidFilter, string assetUidFilter, string assetTypeUidFilter, int pageSize, int pageNum, int timeout);
         Task<IEnumerable<OwnershipApiModel>> GetOwnership(Guid assetUid);
+        Task<bool> HasOwnership(Guid assetUid);
         Task<ResponsibilityTypeRuleStatsViewModel> GetResponsibilityRuleStats(Guid responsibilityTypeRuleUid);
         Task<IEnumerable<ResponsibilityTypeRuleViewModel>> GetResponsibilityRules(Guid responsibilityTypeUid);
         Task<IEnumerable<ResponsibilityTypeAllocationViewModel>> GetResponsibilityTypeAllocations(Guid responsibilityTypeUid);
@@ -23,6 +25,7 @@ namespace d360.model.DataAccessLayer
         ResponsibilityTypeAllocationResponseModel AddAllocation(ResponsibilityType ResponsibiltyType, AssetType AssetType, IEnumerable<int> PermissionsBitMask);
         ResponsibilityTypeAllocationResponseModel EditAllocation(ResponsibilityType responsibility, AssetType assetType, List<int> permissions);
         Task<ResponsibilityTypeAllocationResponseModel> DeleteAllocation(ResponsibilityType responsibility, AssetType assetType, bool cascade);
+        string GetResponsibilityTypeUsedInOwnershipLookupMessage(ResponsibilityType responsibility, AssetType assetType);
         ResponsibilityType GetResponsibilityTypeByUID(Guid uid);
         bool IsValidResponsibilityForAsset(Guid responsibilityUid, Guid assetUid);
         IEnumerable<SecurityAssetModel> GetSecurityAssetModelsForResources(List<Guid> resourceUids, Guid assetUid, Guid responsibilityUid);
@@ -32,5 +35,6 @@ namespace d360.model.DataAccessLayer
         List<ResponsibilityRuleUpsertResponseModel> UpsertResponsibilityRules(Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> responsibilityRules, ApiExecution execution);
         Task<List<ResponsibilityRuleDeleteResponse>> DeleteResponsibilityRules(Guid responsibilityTypeUid, List<Guid> rulesForDeletion);
 
+        Task<ApiExecutionInfo> PostBatchResponsibilityOverride(List<BulkResponsibilityOverridePostModel> models, ApiExecution execution);
     }
 }

@@ -1,9 +1,10 @@
 ﻿export class HelpResource {
     Name: string;
     Description: string;
-    Url: string;
-    Type: number;
+    Url: string;    
     ID: number;
+    uid: string;
+    SortIndex: number;
 }
 
 export class Resource {    

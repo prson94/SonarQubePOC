@@ -44,13 +44,14 @@ export class SecondaryNavState {
 }
 
 export class SecondaryNavCurrentObject {
-    constructor(objectType: string, objectTypeID: number, objectName: string, objectID: number, isType: boolean, hasWorkFlow?: boolean, Uid?: string) {
+    constructor(objectType: string, objectTypeID: number, objectName: string, objectID: number, isType: boolean, hasWorkFlow?: boolean, Uid?: string, hasRequestCertificationWorkflow?: boolean) {
         this.objectType = objectType;
         this.objectTypeID = objectTypeID;
         this.objectName = objectName;
         this.objectID = objectID;
         this.isType = isType;
         this.hasWorkFlow = hasWorkFlow == undefined ? false : hasWorkFlow;
+        this.hasRequestCertificationWorkflow = !hasRequestCertificationWorkflow ? false : hasRequestCertificationWorkflow;
         this.Uid = Uid == undefined ? undefined : Uid;
     }
     objectType;
@@ -58,9 +59,9 @@ export class SecondaryNavCurrentObject {
     objectName;
     objectID;
     isType;
-    hasWorkFlow;
+    hasWorkFlow;    
     Uid;
-
+    hasRequestCertificationWorkflow;
 }
 
 export class DynamicButton {

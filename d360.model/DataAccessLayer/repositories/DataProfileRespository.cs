@@ -37,9 +37,7 @@ namespace d360.model.DataAccessLayer
             results.pageNum = CompanyContext.ParsePageNumber(queryParams, 1);
             results.pageSize = CompanyContext.ParsePageSize(queryParams);
             string offset = CompanyContext.ParsePageOffsetSql(results.pageNum, results.pageSize);
-            string whereConditions = $@"Where
-                                            A.ID in @assetIds
-                                            And
+            string whereConditions = $@"Where                                            
                                             ADP.ProfileSetDate between @startDate and @endDate";
 
             bool includeTotal = true;
@@ -79,7 +77,7 @@ namespace d360.model.DataAccessLayer
             }
             else
             {
-                AssetDataProfile dataprofile = CompanyContext.AssetDataProfile.OrderByDescending(x => x.ProfileSetDate).FirstOrDefault(x => x.AssetId == asset.ID);
+                AssetDataProfile dataprofile = CompanyContext.AssetDataProfile.Where(x => x.AssetId == asset.ID).OrderByDescending(x => x.ProfileSetDate).FirstOrDefault();
                 if(dataprofile != null)
                 {
                     startDate = endDate = dataprofile.ProfileSetDate;
@@ -117,32 +115,14 @@ namespace d360.model.DataAccessLayer
 	                            ,JSON_QUERY(cardinalityDetail.[value]) as cardinalityDetail
                                 ,ADP.[ShapeCardinality] as shapesCardinality
 	                            ,JSON_QUERY(shapesDetail.[value]) as shapesDetail
-                                ,JSON_QUERY(
-                                    REPLACE(
-                                        REPLACE((select CONCAT('[""', STRING_AGG(STRING_ESCAPE(cast([value] as nvarchar(36)), 'JSON'), '"",""'), '""]')
-                                                        from AssetDataProfileSample
-                                                        where
-                                                            AssetDataProfileId = ADP.ID
-                                                            and
-                                                            lower(SampleType) = 'topk'
-                                                )
-                                        , '"""",','')
-                                    ,'""""',''))  as topk
-                                ,JSON_QUERY(
-                                    REPLACE(
-                                        REPLACE((select CONCAT('[""', STRING_AGG(STRING_ESCAPE(cast([value] as nvarchar(36)), 'JSON'), '"",""'), '""]')
-                                                        from AssetDataProfileSample
-                                                        where
-                                                            AssetDataProfileId = ADP.ID
-                                                            and
-                                                            lower(SampleType) = 'bottomk'
-                                                        )
-                                        , '"""",','')
-                                    ,'""""','')) as bottomk
+                                ,JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(bottomK.value, '}}]',']'), '[{{','['), '""value"":',''), '}},{{',',')) as bottomK
+								,JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(topK.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as topK
                             from 
-	                            Asset A
+                                #assetdataprofileids ids
+                                inner join 
+                                AssetDataProfile ADP on ids.ID = ADP.ID	                            
 	                            Inner Join 
-	                            AssetDataProfile ADP on A.ID = ADP.AssetID
+	                            Asset A on A.ID = ADP.AssetID	
 	                            outer apply (
                                                 select  (
                                                         select [key], [value] as Count
@@ -175,65 +155,100 @@ namespace d360.model.DataAccessLayer
 								                            lower(SampleType) = 'shapesdetail'
                                                         for json path
                                                         ) as [value]
-                                                ) shapesDetail";
+                                                ) shapesDetail
+                                outer apply (
+                                                select  (
+                                                        select [value]
+                                                        from AssetDataProfileSample
+                                                        where   
+								                            AssetDataProfileId = ADP.ID
+                                                            and 
+								                            lower(SampleType) = 'bottomk'
+                                                        for json path
+                                                        ) as [value]
+                                                ) bottomK
+								outer apply (
+                                                select  (
+                                                        select [value]
+                                                        from AssetDataProfileSample
+                                                        where   
+								                            AssetDataProfileId = ADP.ID
+                                                            and 
+								                            lower(SampleType) = 'topk'
+                                                        for json path
+                                                        ) as [value]
+                                                ) topK";
 
-            var assetIds = new List<long>();
-            assetIds.Add(asset.ID);
-
-            if (includeChildAssets)
-            {
-                var decendentSQL = $@"drop table if exists #childIds
-                                create table #childIds (
-	                                id int
-                                )
-
-                                drop table if exists #parentIds
-                                create table #parentIds (
-	                                id int
-                                )
-
+            var decendentSQL = $@"
                                 drop table if exists #assetIds
                                 create table #assetIds (
-	                                id int
+	                                id bigint
                                 )
 
-                                insert into #parentIds (id) values (@assetId)
+                                insert into #assetIds (id) values (@assetId)
 
-                                WHILE ( (Select Count(*) from #parentIds) > 0)
+                                if(@includeChildAssets>0)
                                 BEGIN
-	                                insert into #childIDs
-	                                select AAP.Assetid from 
-		                                #parentIds P 
-		                                inner join 
-		                                [utility].[ArtifactAssetParent] AAP on P.ID = AAP.ParentAssetID
+                                    drop table if exists #childIds
+                                    create table #childIds (
+	                                    id bigint
+                                    )
 
-	                                delete from #parentIDs 
+                                    drop table if exists #parentIds
+                                    create table #parentIds (
+	                                    id bigint
+                                    )
+                                
+                                    insert into #parentIds (id) values (@assetId)
+
+                                    WHILE ((Select Count(*) from #parentIds) > 0)
+                                    BEGIN
+	                                    insert into #childIDs
+	                                    select AAP.Assetid from 
+		                                    #parentIds P 
+		                                    inner join 
+		                                    [utility].[ArtifactAssetParent] AAP on P.ID = AAP.ParentAssetID
+
+	                                    delete from #parentIDs 
 	
-	                                insert into #parentIds
-	                                select * from #childIDs
+	                                    insert into #parentIds
+	                                    select * from #childIDs
 
-	                                insert into #assetIds
-	                                select c.* from #childIDs c left join #assetIds a on c.id=a.id
-	                                where a.id is null
+	                                    insert into #assetIds
+	                                    select c.* from #childIDs c left join #assetIds a on c.id=a.id
+	                                    where a.id is null
 
-	                                delete from #childIDs
-                                END
-
-                                select * from #assetIds";
-
-                var decendants = await CompanyContext.QueryAsync<long>(decendentSQL, new { assetId = asset.ID }, ApiTimeout);
-
-                assetIds.AddRange(decendants);                    
-            }
+	                                    delete from #childIDs
+                                    END
+                                END";
+var dataProfileIdsSql = $@"
+                                drop table if exists #assetdataprofileids
+                                create table #assetdataprofileids (
+	                                id bigint
+                                )
+                                
+                                insert into #assetdataprofileids
+								select 
+									ADP.id 
+								from 
+									#assetIds A
+									inner join 
+									AssetDataProfile ADP on adp.AssetID = A.id	
+                                {whereConditions}
+								order by A.[ID]
+								 {offset}
+                                ";
 
             dbArgs.Add("@startDate", startDate.Date);
             dbArgs.Add("@endDate", endDate.Date);
-            dbArgs.Add("@assetIds", assetIds);
+            dbArgs.Add("@assetId", asset.ID);
+            dbArgs.Add("@includeChildAssets", includeChildAssets);
 
-            string sql = $@"{dataProfileSQL}
-                        {whereConditions}
-                        order by A.[ID]
-                        {offset}
+            string sql = $@"
+                        {decendentSQL}
+                        {dataProfileIdsSql}
+                        {dataProfileSQL}
+                        order by A.[ID]                        
                         for Json Path";                
 
             var jsonStrings = await CompanyContext.QueryAsync<string>(sql, dbArgs, ApiTimeout);
@@ -241,18 +256,17 @@ namespace d360.model.DataAccessLayer
 
             results.items = JsonConvert.DeserializeObject<List<DataProfileModel>>(string.IsNullOrEmpty(json) ? "[]" : json);
 
-            results.items.Where(x => x.topK.Count == 0).ToList().ForEach(x=>x.topK=null);
-            results.items.Where(x => x.bottomK.Count == 0).ToList().ForEach(x => x.bottomK = null);
-
             if (includeTotal)
             {
-                var countSQL = $@"select 
+                var countSQL = $@"
+                                {decendentSQL}
+                                select 
                                     COUNT(*)
-                                  from 
-	                                Asset A
+                                from 
+	                                #assetIds A
 	                                Inner Join 
                                     AssetDataProfile ADP on A.ID = ADP.AssetID
-                                  {whereConditions}";
+                                {whereConditions}";
                 results.total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSQL, dbArgs, ApiTimeout);
             }
             else
@@ -329,7 +343,7 @@ namespace d360.model.DataAccessLayer
                 Action = ApiExecutionAction.PostDataProfile,
             };
 
-            return await CreateApiBatchJob(executionInfo, execution, models).ConfigureAwait(false);
+            return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
         public async Task<ApiExecutionInfo> PutBatchDataProfiles(List<DataProfileUpsertModel> models, ApiExecution execution)
@@ -343,7 +357,7 @@ namespace d360.model.DataAccessLayer
                 Action = ApiExecutionAction.PutDataProfile,
             };
 
-            return await CreateApiBatchJob(executionInfo, execution, models).ConfigureAwait(false);
+            return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
         public async Task<ApiExecutionInfo> DeleteBatchDataProfiles(List<AssetDataProfileDeleteModel> models, ApiExecution execution)
@@ -357,32 +371,7 @@ namespace d360.model.DataAccessLayer
                 Action = ApiExecutionAction.DeleteDataProfile,
             };
 
-            return await CreateApiBatchJob(executionInfo, execution, models).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Common code for creating batch calls.
-        /// </summary>
-        /// <param name="executionInfo"></param>
-        /// <param name="execution"></param>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        protected async Task<ApiExecutionInfo> CreateApiBatchJob(ApiExecutionInfo executionInfo, ApiExecution execution, object data)
-        {
-            // Save to storage container.
-            await StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(data));
-
-            // Save to the database.
-            execution.ExecutionID = executionInfo.ExecutionID;
-            CompanyContext.Add(execution);
-
-            // Save to queue.
-            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
-            {
-                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
-            }
-
-            return executionInfo;
+            return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
         }
     }
 }

@@ -73,6 +73,9 @@ import { ProcessDiagramListViewComponent } from './process-diagram/process-diagr
 import { TooltipModule } from 'primeng/tooltip';
 import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
 import { SearchFieldModule } from '../controls/search-field/search-field.component';
+import { DirectivesModule } from '../../../directives/directives.module';
+import { SharedResponsibilitiesModule } from '../responsibilities/shared-responsibilities.module';
+import { AssetDetailModule } from '../asset-detail/asset-detail.module';
 
 
 @NgModule({
@@ -98,6 +101,8 @@ import { SearchFieldModule } from '../controls/search-field/search-field.compone
         SiteModalModule,
         SharedRelationshipModule,
         SharedObjectDetailsModule,
+        SharedResponsibilitiesModule,
+        AssetDetailModule,
         //prime        
         CheckboxModule,
         ContextMenuModule,
@@ -123,7 +128,8 @@ import { SearchFieldModule } from '../controls/search-field/search-field.compone
         AssetSearchModule,
         TagViewModule,
         PopupMenuModule,
-        SearchFieldModule
+        SearchFieldModule,
+        DirectivesModule
     ],
     declarations: [
         AssetBrowserAddPanelComponent,

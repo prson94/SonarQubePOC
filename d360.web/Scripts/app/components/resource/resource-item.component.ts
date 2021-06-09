@@ -43,7 +43,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     private resourceUid = "";
     private items: any[] = [];
     private resource: any;
-    private isSavingProcess : boolean =  false;
+    isSavingProcess : boolean =  false;
     private isMe = false;
     private showAllUsersAPIKey = false;
     private totNumber = 0;
@@ -101,11 +101,6 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     }
 
                     this.resourceUid = this.resource.uid;
-                    this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Resource', SiteUrlHelpers.SITE_URL_RESOURCE_ROOT));
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.resource.FirstName} ${this.resource.LastName}`));
-
-                    this.setBrowserTitle(this.titleService, `${this.resource.FirstName} ${this.resource.LastName}`);
 
                     if (this.resource.IsAdministrator || (CompanySettings != null && CompanySettings.ShowAllUsersAPIKey != null && CompanySettings.ShowAllUsersAPIKey.toString() == 'true')) {
                         this.showAllUsersAPIKey = true;
@@ -128,47 +123,59 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                         }
                     );
 
-                    this.isLoading = false;
 
-                    this.setCommonSecondaryNavTabs(
-                        false, false, false,
-                        false, false, false,
-                        false, false
-                    );
-                    this.clearSidebar();
-                    this.secondaryNavService.showHeader(true);
-                    this.secondaryNavService.setCurrentArea(this.resource.FirstName + " " + this.resource.LastName, 'fa-cog', 'Profile');
-                   
-                    this.itemsOwn = new SecondaryNavItem(
-                        'Responsibilities', 'itemOwn', ['fa-tasks'],
-                        `/sidebar/itemown/${resourceId}`, null, 15
-                    );
-                    this.secondaryNavService.showItem(this.itemsOwn);
-                    this.memberGroups = new SecondaryNavItem(
-                        'Groups', 'memberGroup', ['fa-user-circle'],
-                        `/sidebar/membergroup/${this.resource.uid}`, null, 5
-                    );
-                    this.secondaryNavService.showItem(this.memberGroups);
-                    this.itemsFollow = new SecondaryNavItem(
-                        'Following', 'itemFollow', ['fa-user-plus'],
-                        `/sidebar/itemfollow/${resourceId}`, null, 20
-                    );
-                    this.secondaryNavService.showItem(this.itemsFollow);
-                    this.hasRelations = new SecondaryNavItem(
-                        'Relationships', 'hasRelations', ['fa-retweet'],
-                        `/sidebar/relationships/resource/${resourceId}`, null, 10
-                    );
-                    this.secondaryNavService.showItem(this.hasRelations);
-                    this.comments = new SecondaryNavItem(
-                        'Comments', 'comments', ['fa-comments'],
-                        `/sidebar/comments/${this.resource.uid}/true`, null, 25
-                    );
-                    this.secondaryNavService.showItem(this.comments);
-                    this.secondaryNavService.clearCurrentObject();
-                    this.headerBreadcrumbService.setCurrentObjectInfo('Resource', resourceId);
+                    window.setTimeout(() => {
+                        this.isLoading = false;
+
+                        this.headerBreadcrumbService.clearBreadcrumbs();
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Resource', SiteUrlHelpers.SITE_URL_RESOURCE_ROOT));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.resource.FirstName} ${this.resource.LastName}`));
+
+                        this.setBrowserTitle(this.titleService, `${this.resource.FirstName} ${this.resource.LastName}`);
+
+                        this.setCommonSecondaryNavTabs(
+                            false, false, false,
+                            false, false, false,
+                            false, false
+                        );
+
+                        this.clearSidebar();
+                        this.secondaryNavService.showHeader(true);
+                        this.secondaryNavService.setCurrentArea(this.resource.FirstName + " " + this.resource.LastName, 'fa-cog', 'Profile');
+
+                        this.itemsOwn = new SecondaryNavItem(
+                            'Responsibilities', 'itemOwn', ['fa-tasks'],
+                            `/sidebar/itemown/${resourceId}`, null, 15
+                        );
+                        this.secondaryNavService.showItem(this.itemsOwn);
+                        this.memberGroups = new SecondaryNavItem(
+                            'Groups', 'memberGroup', ['fa-user-circle'],
+                            `/sidebar/membergroup/${this.resource.uid}`, null, 5
+                        );
+                        this.secondaryNavService.showItem(this.memberGroups);
+                        this.itemsFollow = new SecondaryNavItem(
+                            'Following', 'itemFollow', ['fa-user-plus'],
+                            `/sidebar/itemfollow/${resourceId}`, null, 20
+                        );
+                        this.secondaryNavService.showItem(this.itemsFollow);
+                        this.hasRelations = new SecondaryNavItem(
+                            'Relationships', 'hasRelations', ['fa-retweet'],
+                            `/sidebar/relationships/resource/${resourceId}`, null, 10
+                        );
+                        this.secondaryNavService.showItem(this.hasRelations);
+                        this.comments = new SecondaryNavItem(
+                            'Comments', 'comments', ['fa-comments'],
+                            `/sidebar/comments/${this.resource.uid}/true`, null, 25
+                        );
+                        this.secondaryNavService.showItem(this.comments);
+                        this.secondaryNavService.clearCurrentObject();
+                        this.headerBreadcrumbService.setCurrentObjectInfo('Resource', resourceId);
+
+                        this.pageMode = PageMode.Default;
+
+                    }, 100);
                 });
 
-            this.pageMode = PageMode.Default;
         });
     }
 

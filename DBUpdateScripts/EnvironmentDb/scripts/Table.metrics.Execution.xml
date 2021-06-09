@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.metrics.Execution-v1">
+  <changeSet author="Pappas" id="Table.metrics.Execution-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -27,6 +27,21 @@ BEGIN
 		CONSTRAINT [PK_MetricsExecution] PRIMARY KEY NONCLUSTERED ( [Uid] DESC )
 	)
 END
+
+if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Execution' and COLUMN_NAME = 'ID')
+begin
+	ALTER TABLE metrics.Execution add ID bigint identity not null
+end
+
+if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Execution' and COLUMN_NAME = 'UpdatedOn')
+begin
+	alter table metrics.Execution add UpdatedOn datetime null
+end
+
+if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Execution' and COLUMN_NAME = 'LoopSecondsElapsed')
+begin
+	alter table metrics.Execution add LoopSecondsElapsed int null
+end
 		]]>
     </sql>
 	<rollback>
@@ -39,7 +54,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="Constraint.metrics.Execution-Indexes-v1">
+  <changeSet author="Pappas" id="Constraint.metrics.Execution-Indexes-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -49,6 +64,11 @@ if not exists (select * from sys.indexes where name = 'CIX_MetricsExecution')
 begin
 	CREATE CLUSTERED INDEX [CIX_MetricsExecution] ON [metrics].[Execution] ( Processing DESC )
 end
+
+if not exists (select * from sys.indexes where name = 'IX_MetricsExecution_UpdatedOnLoopElapsedSeconds')
+begin
+	CREATE INDEX IX_MetricsExecution_UpdatedOnLoopElapsedSeconds ON metrics.Execution ( UpdatedOn, LoopSecondsElapsed )
+end
 		]]>
     </sql>
 	<rollback>
@@ -56,6 +76,11 @@ end
 if exists (select * from sys.indexes where name = 'CIX_MetricsExecution')
 begin
 	DROP INDEX [CIX_MetricsExecution] ON [metrics].[Execution] WITH ( ONLINE = OFF )
+end
+
+if exists (select * from sys.indexes where name = 'IX_MetricsExecution_UpdatedOnLoopElapsedSeconds')
+begin
+	DROP INDEX [IX_MetricsExecution_UpdatedOnLoopElapsedSeconds] ON [metrics].[Execution] WITH ( ONLINE = OFF )
 end
 		]]>
 	</rollback>

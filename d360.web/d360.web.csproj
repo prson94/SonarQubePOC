@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\EntityFramework.6.4.0\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.0\build\EntityFramework.props')" />
+  <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -34,7 +34,7 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <TypeScriptToolsVersion>4.0</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>4.2</TypeScriptToolsVersion>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -44,14 +44,14 @@
     </Use64BitIISExpress>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AngleSharp, Version=0.14.0.0, Culture=neutral, PublicKeyToken=e83494dcdc6d31ea, processorArchitecture=MSIL">
-      <HintPath>..\packages\AngleSharp.0.14.0\lib\net461\AngleSharp.dll</HintPath>
+    <Reference Include="AngleSharp, Version=0.15.0.0, Culture=neutral, PublicKeyToken=e83494dcdc6d31ea, processorArchitecture=MSIL">
+      <HintPath>..\packages\AngleSharp.0.15.0\lib\net472\AngleSharp.dll</HintPath>
     </Reference>
-    <Reference Include="AngleSharp.Css, Version=0.14.2.0, Culture=neutral, PublicKeyToken=e83494dcdc6d31ea, processorArchitecture=MSIL">
-      <HintPath>..\packages\AngleSharp.Css.0.14.2\lib\net472\AngleSharp.Css.dll</HintPath>
+    <Reference Include="AngleSharp.Css, Version=0.15.0.0, Culture=neutral, PublicKeyToken=e83494dcdc6d31ea, processorArchitecture=MSIL">
+      <HintPath>..\packages\AngleSharp.Css.0.15.0\lib\net472\AngleSharp.Css.dll</HintPath>
     </Reference>
-    <Reference Include="Autofac, Version=6.1.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\packages\Autofac.6.1.0\lib\netstandard2.0\Autofac.dll</HintPath>
+    <Reference Include="Autofac, Version=6.2.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.6.2.0\lib\netstandard2.0\Autofac.dll</HintPath>
     </Reference>
     <Reference Include="Autofac.Integration.Mvc, Version=6.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\packages\Autofac.Mvc5.6.0.0\lib\net472\Autofac.Integration.Mvc.dll</HintPath>
@@ -73,23 +73,23 @@
       <HintPath>..\packages\ComponentSpace.SAML2.dll</HintPath>
     </Reference>
     <Reference Include="Dapper, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Dapper.2.0.35\lib\net461\Dapper.dll</HintPath>
+      <HintPath>..\packages\Dapper.2.0.90\lib\net461\Dapper.dll</HintPath>
     </Reference>
     <Reference Include="DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\DocumentFormat.OpenXml.2.5\lib\DocumentFormat.OpenXml.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.4.0\lib\net45\EntityFramework.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.4.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="HtmlAgilityPack, Version=1.11.24.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <HintPath>..\packages\HtmlAgilityPack.1.11.24\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
     <Reference Include="HtmlSanitizer, Version=5.0.0.0, Culture=neutral, PublicKeyToken=61c49a1a9e79cc28, processorArchitecture=MSIL">
-      <HintPath>..\packages\HtmlSanitizer.5.0.310\lib\net46\HtmlSanitizer.dll</HintPath>
+      <HintPath>..\packages\HtmlSanitizer.5.0.404\lib\net46\HtmlSanitizer.dll</HintPath>
     </Reference>
     <Reference Include="IdentityModel, Version=3.7.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\IdentityModel.3.7.1\lib\net452\IdentityModel.dll</HintPath>
@@ -186,8 +186,8 @@
     <Reference Include="Microsoft.WindowsAzure.ServiceRuntime, Version=2.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <Private>False</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -243,8 +243,8 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Runtime.Caching" />
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.6.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.7.1\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Extensions, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.Extensions.4.3.1\lib\net462\System.Runtime.Extensions.dll</HintPath>
@@ -269,8 +269,8 @@
     <Reference Include="System.Spatial, Version=5.8.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Spatial.5.8.4\lib\net40\System.Spatial.dll</HintPath>
     </Reference>
-    <Reference Include="System.Text.Encoding.CodePages, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Text.Encoding.CodePages.4.7.1\lib\net461\System.Text.Encoding.CodePages.dll</HintPath>
+    <Reference Include="System.Text.Encoding.CodePages, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encoding.CodePages.5.0.0\lib\net461\System.Text.Encoding.CodePages.dll</HintPath>
     </Reference>
     <Reference Include="System.Text.Encodings.Web, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Text.Encodings.Web.4.7.1\lib\net461\System.Text.Encodings.Web.dll</HintPath>
@@ -448,7 +448,6 @@
     <Compile Include="Controllers\TaxonomyController.cs" />
     <Compile Include="Extensions\PowerBI.cs" />
     <Compile Include="Filters\AjaxValidationAntiForgeryTokenAttribute.cs" />
-    <Compile Include="Filters\CustomJSONContract.cs" />
     <Compile Include="Filters\ExceptionHandlingAttribute.cs" />
     <Compile Include="Filters\StringEnumControllerAttribute.cs" />
     <Compile Include="Filters\SwaggerContentTypesAttribute.cs" />
@@ -469,7 +468,6 @@
     <Compile Include="Models\Attributes\NonNullableParametersAttribute.cs" />
     <Compile Include="Models\ClientErrorModel.cs" />
     <Compile Include="Models\Diagram Models.cs" />
-    <Compile Include="Models\Extensions.cs" />
     <Compile Include="Models\Filter Models.cs" />
     <Compile Include="Models\Attributes\AiExceptionFilterAttribute.cs" />
     <Compile Include="Models\Attributes\AiHandleErrorAttribute.cs" />
@@ -738,6 +736,7 @@
     </EmbeddedResource>
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-700.svg" />
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.svg" />
+    <Content Include="index.html" />
     <Content Include="Scripts\app\components\admin\issuetypes\admin-issue-type-allocation-editor.component.html" />
     <Content Include="Scripts\app\components\admin\scoring\admin-metric-pass-test-details.component.html" />
     <Content Include="Scripts\app\components\admin\scoring\detail.component.html" />
@@ -768,7 +767,6 @@
     <Content Include="Scripts\app\components\assets-grid\advanced-filtering\filter-item.component.html" />
     <Content Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.component.html" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.html" />
-    <Content Include="Scripts\app\components\assets-grid\asset-grid-column-filter.component.html" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-details.component.html" />
@@ -826,6 +824,10 @@
     <Content Include="Scripts\app\components\search\search-result-item.component.html" />
     <Content Include="Scripts\app\components\search\search-results-component.html" />
     <Content Include="Scripts\app\components\search\search.component.html" />
+    <Content Include="Scripts\app\components\shared\asset-detail\asset-detail-category.component.html" />
+    <Content Include="Scripts\app\components\shared\asset-detail\asset-detail-field.component.html" />
+    <Content Include="Scripts\app\components\shared\asset-detail\asset-detail.component.html" />
+    <Content Include="Scripts\app\components\shared\asset-detail\asset-lookup-grid.component.html" />
     <Content Include="Scripts\app\components\shared\asset-score\calculation\measure-rule-results.component.html" />
     <Content Include="Scripts\app\components\shared\asset-score\definition\measure-conditions-details.component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
@@ -855,6 +857,9 @@
     <Content Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.component.less" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid.less" />
     <Content Include="Content\styles\infogix-ui\IgInputGroup.less" />
+    <Content Include="angular.json" />
+    <Content Include="Scripts\app\components\shared\asset-detail\asset-lookup-grid.component.less" />
+    <None Include="Scripts\app\components\rule\rule-results-grid.component.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
@@ -897,7 +902,9 @@
     <Content Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-editor-v2.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-field-value-v2.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-field-v2.component.html" />
+    <Content Include="Scripts\app\components\shared\dynamicgrideditor\asset-editor.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-field-value.component.html" />
+    <Content Include="Scripts\app\components\shared\dynamicgrideditor\multiselect-grid.component.html" />
     <Content Include="Scripts\app\components\shared\editor-header.component.html" />
     <Content Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.html" />
     <Content Include="Scripts\app\components\shared\menu\site-menu.component.html" />
@@ -919,7 +926,7 @@
     <Content Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree-node.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\score-badge\score-badge.component.html" />
-    <Content Include="Scripts\app\components\shared\small-widgets\status-badge\status-badge.component.html" />
+    <Content Include="Scripts\app\components\shared\small-widgets\simple-badge\simple-badge.component.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\synonyms.tile.html" />
     <Content Include="Scripts\app\components\shared\social\social-board.component.html" />
     <Content Include="Scripts\app\components\shared\social\comment-form.component.html" />
@@ -939,7 +946,6 @@
     <Content Include="Scripts\app\components\workflowmonitor\workflowmonitor-list.component.html" />
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="Scripts\app\components\admin\scoring\measure-editor-dataquality.component.html" />
-    <Content Include="Scripts\app\components\assets-grid\asset-grid-top-level-filter.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-editor.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-field.component.html" />
     <Content Include="Scripts\app\components\shared\relationship\object-relationships.component.html" />
@@ -968,6 +974,8 @@
     <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
     <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
+    <Content Include="webpack.prod.config.js" />
+    <Content Include="webpack.config.js" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-type-allocation-editor.component.ts" />
     <Content Include="Scripts\app\components\admin\rules\admin-rules.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\admin-metric-pass-test-details.component.ts" />
@@ -1019,6 +1027,7 @@
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.textarea.component.ts" />
+    <None Include="Scripts\app\components\hierarchy\hierarchy-item-structure.component.less" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy-item-structure.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy-list.component.ts" />
@@ -1030,11 +1039,17 @@
     <TypeScriptCompile Include="Scripts\app\components\search\asset-path-widget\asset-path-widget.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\asset-path-widget\asset-path-widget.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search-session.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-detail\asset-detail-category.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-detail\asset-detail-field.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-detail\asset-detail.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-detail\asset-lookup-grid.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-detail\asset-lookup-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\calculation\measure-rule-results.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\calculation\score-calculation.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\definition\measure-conditions-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\definition\score-definition.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\history\score-history.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-detail\asset-detail.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\browser-warning\browser-warning.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\badge\badge.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\badge\badge.module.ts" />
@@ -1065,9 +1080,9 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-field-value-v2.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-field-v2.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-grid-v2.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\multiselect-grid-v2.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\shared-dynamic-grid-editor-v2.module.ts" />
     <Content Include="Scripts\app\components\shared\header\header-profile.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor\asset-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\object-detail-category.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\asset-score.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\definition\score-definition.component.ts" />
@@ -1079,17 +1094,16 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\simple-badge\simple-badge.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dayofweek-input\dayofweek-input.component.ts" />
     <Content Include="Scripts\app\components\shared\social\social-comment.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\ownership-list\ownership-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\simple-badge\simple-badge.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\social\comment-form.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\info-tooltip.component.ts" />
     <Content Include="Scripts\app\components\workflow\workflow-view-details.component.html" />
     <Content Include="Scripts\dist\*.js" />
     <Content Include="Views\Shared\Unsupported.cshtml" />
-    <Content Include="webpack.aot.config.js" />
-    <Content Include="webpack.config.js" />
-    <Content Include="webpack.prod.config.js" />
     <Content Include="fonts\material-design-icons\LICENSE.txt" />
     <Content Include="fonts\material-design-icons\Material-Design-Icons.svg" />
     <Content Include="Content\styles\images\check_black.png" />
@@ -1273,7 +1287,6 @@
     <Content Include="Scripts\app\components\admin\groups\admin-groups.component.html" />
     <Content Include="Scripts\app\components\admin\settings\admin-settings.component.html" />
     <Content Include="Scripts\app\components\home\home.component.html" />
-    <Content Include="Scripts\app\tsconfig.json" />
     <None Include="Content\styles\Root.less" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
@@ -1311,12 +1324,20 @@
     <Content Include="Scripts\app\components\shared\menu\site-menu.less" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\overview.component.less" />
     <Content Include="Scripts\app\components\shared\social\social-board.less" />
+    <Content Include="Scripts\tsconfig.aot.json" />
+    <Content Include="Scripts\tsconfig.json" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
     <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
+    <TypeScriptCompile Include="Scripts\app\guards\redirect.guard.ts" />
+    <TypeScriptCompile Include="Scripts\environments\environment.prod.ts" />
+    <TypeScriptCompile Include="Scripts\environments\environment.ts" />
+    <TypeScriptCompile Include="Scripts\main.ts" />
+    <TypeScriptCompile Include="Scripts\polyfills.ts" />
+    <TypeScriptCompile Include="Scripts\vendor.ts" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App_GlobalResources\PageInfo.resx">
@@ -1539,7 +1560,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-custom-export.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-list.component.ts" />
@@ -1564,8 +1584,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\score-badge\score-badge.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\score-badge\score-badge.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\status-badge\status-badge.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\status-badge\status-badge.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\survey\take-survey.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tags\d3s-tag-view.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tags\d3s-tag-view.ts" />
@@ -1807,7 +1825,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-base.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-column-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-list.component.ts" />
@@ -1913,8 +1930,6 @@
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\delete.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-item.form.ts" />
-    <Content Include="Scripts\app\main.aot.txt" />
-    <TypeScriptCompile Include="Scripts\app\main.ts" />
     <TypeScriptCompile Include="Scripts\app\models\artifacts.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\audit.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\counts.model.ts" />
@@ -1993,7 +2008,6 @@
     <TypeScriptCompile Include="Scripts\app\pipes\model-type.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\score-display.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\technical-to-display.pipe.ts" />
-    <TypeScriptCompile Include="Scripts\app\polyfills.ts" />
     <TypeScriptCompile Include="Scripts\app\services\audit.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\authentication.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\dashboard.service.ts" />
@@ -2039,12 +2053,10 @@
     <TypeScriptCompile Include="Scripts\app\services\uri-based.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\web-analytics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\workflow.service.ts" />
-    <None Include="Scripts\app\tsconfig.aot.json" />
     <TypeScriptCompile Include="Scripts\app\static\font-awesome-helper.ts" />
     <TypeScriptCompile Include="Scripts\app\static\keyboard-key-helper.ts" />
     <TypeScriptCompile Include="Scripts\app\static\string-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\static\workflow-helpers.ts" />
-    <TypeScriptCompile Include="Scripts\app\vendor.ts" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App_GlobalResources\Core.resx">
@@ -2121,8 +2133,6 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\EntityFramework.6.4.0\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.0\build\EntityFramework.props'))" />
-    <Error Condition="!Exists('..\packages\EntityFramework.6.4.0\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.0\build\EntityFramework.targets'))" />
     <Error Condition="!Exists('..\packages\BuildWebCompiler.1.12.405\build\BuildWebCompiler.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BuildWebCompiler.1.12.405\build\BuildWebCompiler.targets'))" />
     <Error Condition="!Exists('..\packages\BuildBundlerMinifier.3.2.447\build\BuildBundlerMinifier.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BuildBundlerMinifier.3.2.447\build\BuildBundlerMinifier.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.ApplicationInsights.DependencyCollector.2.13.1\build\Microsoft.ApplicationInsights.DependencyCollector.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ApplicationInsights.DependencyCollector.2.13.1\build\Microsoft.ApplicationInsights.DependencyCollector.targets'))" />
@@ -2130,8 +2140,9 @@
     <Error Condition="!Exists('..\packages\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.2.13.1\build\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.2.13.1\build\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.ApplicationInsights.WindowsServer.2.13.1\build\Microsoft.ApplicationInsights.WindowsServer.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ApplicationInsights.WindowsServer.2.13.1\build\Microsoft.ApplicationInsights.WindowsServer.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.ApplicationInsights.Web.2.13.1\build\Microsoft.ApplicationInsights.Web.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ApplicationInsights.Web.2.13.1\build\Microsoft.ApplicationInsights.Web.targets'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.props'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.targets'))" />
   </Target>
-  <Import Project="..\packages\EntityFramework.6.4.0\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.4.0\build\EntityFramework.targets')" />
   <Import Project="..\packages\BuildWebCompiler.1.12.405\build\BuildWebCompiler.targets" Condition="Exists('..\packages\BuildWebCompiler.1.12.405\build\BuildWebCompiler.targets')" />
   <Import Project="..\packages\BuildBundlerMinifier.3.2.447\build\BuildBundlerMinifier.targets" Condition="Exists('..\packages\BuildBundlerMinifier.3.2.447\build\BuildBundlerMinifier.targets')" />
   <Import Project="..\packages\Microsoft.ApplicationInsights.DependencyCollector.2.13.1\build\Microsoft.ApplicationInsights.DependencyCollector.targets" Condition="Exists('..\packages\Microsoft.ApplicationInsights.DependencyCollector.2.13.1\build\Microsoft.ApplicationInsights.DependencyCollector.targets')" />
@@ -2139,4 +2150,5 @@
   <Import Project="..\packages\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.2.13.1\build\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.targets" Condition="Exists('..\packages\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.2.13.1\build\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.targets')" />
   <Import Project="..\packages\Microsoft.ApplicationInsights.WindowsServer.2.13.1\build\Microsoft.ApplicationInsights.WindowsServer.targets" Condition="Exists('..\packages\Microsoft.ApplicationInsights.WindowsServer.2.13.1\build\Microsoft.ApplicationInsights.WindowsServer.targets')" />
   <Import Project="..\packages\Microsoft.ApplicationInsights.Web.2.13.1\build\Microsoft.ApplicationInsights.Web.targets" Condition="Exists('..\packages\Microsoft.ApplicationInsights.Web.2.13.1\build\Microsoft.ApplicationInsights.Web.targets')" />
+  <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" />
 </Project>

@@ -28,7 +28,6 @@ import { DynamicEditorComponentV2 } from './dynamic-editor-v2.component';
 import { DynamicFieldComponentV2 } from './dynamic-field-v2.component';
 import { DynamicFieldValueComponentV2 } from './dynamic-field-value-v2.component';
 import { DynamicGridComponentV2 } from './dynamic-grid-v2.component';
-import { MultiSelectGridComponentV2 } from './multiselect-grid-v2.component';
 import { SimpleAccordionModule } from '../simple-accordion.part';
 import { DirectivesModule } from '../../../directives/directives.module';
 import { NgxJsonViewModule } from 'ng-json-view';
@@ -84,8 +83,7 @@ import { IgNumberFieldModule } from '../controls/number-picker/number-input.comp
         DynamicEditorComponentV2,
         DynamicFieldComponentV2,
         DynamicFieldValueComponentV2,
-        DynamicGridComponentV2,
-        MultiSelectGridComponentV2,
+        DynamicGridComponentV2
     ],
     exports: [
         DynamicEditorComponentV2,

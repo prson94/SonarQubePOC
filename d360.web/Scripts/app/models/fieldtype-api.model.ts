@@ -226,8 +226,10 @@ export class ComputedOwnershipLookup implements ICommonOptions {
 }
 
 export class ComputedOwnershipLookupDefinition {
+    DisplayAsList: boolean = false;
     DisplayAssignmentSource: boolean = false;
     ExpandGroupMembership: boolean = true;
+    ResponsibilityType: number = null;
 }
 
 export class ComputedRelationshipField implements ICommonOptions {
@@ -307,6 +309,7 @@ export class DefinitionField {
     SortOrder: number = 0;
     Show: boolean;
     Width: number;
+    RelationIndex: number;
 }
 
 export class Relation {
@@ -325,11 +328,16 @@ export class ComputedRelationshipReferenceList implements ICommonOptions {
     IsPrimaryFilter: boolean = false;
     ColumnOrder: number;
     Description: DisplayOnlyDescription = new DisplayOnlyDescription();
+    Definition: ComputedRelationshipReferenceListDefinition = new ComputedRelationshipReferenceListDefinition();
     IntersectTypeUid?: string;
     IsDisplayable: boolean = true;
     ShowIfEmpty: boolean = false;
     Validation: BooleanValidation = new BooleanValidation();
     Search: Search = new Search();
+}
+
+export class ComputedRelationshipReferenceListDefinition {
+    DisplayRefListDescription: boolean = true;
 }
 
 export class DateClass implements ICommonOptions {

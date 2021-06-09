@@ -52,6 +52,9 @@
                                             [virtualScroll]="field.VirtualScroll"
                                             [required]="isRequired()"
                                             [overlayLowerZIndex]="true">
+                                    <ng-template let-selitem pTemplate="selectedItem">
+                                        <div>{{getName(selitem.label)}}</div>
+                                    </ng-template>
                                 </p-dropdown>
                             </ng-container>
                             <ng-container *ngIf="field.UseColorControl">
@@ -244,7 +247,15 @@
                 <input igInput igSize="full" [formControlName]="field.FieldName + '_Url'" type="text">
                 <div>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
             </div>
-            <d3s-multiselect-grid *ngSwitchCase="'DataTableSelect'" [multiple]="field.MultiSelect" [formControlName]="field.FieldName" ngDefaultControl [field]="field"></d3s-multiselect-grid>
+            <d3s-multiselect-grid ngDefaultControl
+                                  *ngSwitchCase="'DataTableSelect'"
+                                  [multiple]="field.MultiSelect"
+                                  [formControlName]="field.FieldName"
+                                  [intersectTypeUid]="field.IntersectTypeUid"
+                                  [assetUid]="field.AssetUid"
+                                  [objectCardinality]="field.ObjectCardinality"
+                                  [targetAssetTypeUid]="field.TargetAssetTypeUid">
+            </d3s-multiselect-grid>
             <div class="errorMessage" *ngIf="!isValid">* {{errorMessage}}</div>
         </div>
     </div>

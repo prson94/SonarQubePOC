@@ -306,33 +306,22 @@ export class AdvancedFilterFieldCondition {
                         }
                     }
 
+                    var match = this.connectingOperator === "and" ? "(match all)" : "(match any)";
+
                     if (arr.length <= 5) {
-                        for (let i = 0; i < arr.length - 1; i++) {
-                            if (i !== arr.length - 2) {
-                                valueAsString += arr[i].title + ", ";
-                            }
-                            else {
-                                if (this.operator.toString() === "Equals" || this.operator.toString() === "Contains") {
-                                    valueAsString += arr[i].title + " or " + arr[i + 1].title;
-                                }
-                                else {
-                                    valueAsString += arr[i].title + " nor " + arr[i + 1].title;
-                                }
-                            }
-                        }
+                        valueAsString = arr.map((v) => v.title).join(", ");
+                        valueAsString += " " + match;
                     }
                     else {
-                        valueAsString = arr.map((v) => v.title).join(", ");
-                        var operator = this.operator.toString() === "Equals" || this.operator.toString() === "Contains" ? " or " : " nor ";
-
-                        valueAsString += operator;
+                        valueAsString = arr.slice(0, 5).map((v) => v.title).join(", ");
                         var leftover = arr.length - 5;
                         if (leftover === 1) {
-                            valueAsString += " 1 other item";
+                            valueAsString += ", 1 other item";
                         }
                         else {
-                            valueAsString += ` ${leftover} other items`;
+                            valueAsString += `, ${leftover} other items`;
                         }
+                        valueAsString += " " + match;
                     }
 
                     return valueAsString.trim();
@@ -412,6 +401,12 @@ export class AdvancedFilterFieldCondition {
 
         if (this.fieldType === "DateTime") {
             return `'${this.parseDateTimeToString(value, true)}'`;
+        }
+
+        if (this.fieldType === "Lookup" && this.field === "[Level]") {
+            if (value) {
+                return `${value}`;
+            }
         }
 
         if (this.fieldType === "Lookup") {
@@ -620,7 +615,7 @@ export class SystemFields {
     public static OwnedByFieldCode: string = "$OwnedBy";
     public static RelationshipFieldCode: string = "$Related";
 
-    public static GetSystemFieldDefinition(): FieldTypeAPIModelFieldCondition[] {
+    public static GetSystemFieldDefinition(gridType: string): FieldTypeAPIModelFieldCondition[] {
         var fields: FieldTypeAPIModelFieldCondition[] = [];
 
         fields.push({
@@ -654,9 +649,20 @@ export class SystemFields {
             IsOwnerField: true,
             IsSystemField: true
         };
-
-
         fields.push(owner);
+        
+        if (gridType === "Tree") {
+            var level: FieldTypeAPIModelFieldCondition = {
+                Category: "System Fields",
+                FriendlyName: "Level",
+                Name: "[Level]",
+                Type: new FieldType("Lookup"),
+                Operators: [],
+                Values: [],
+                IsSystemField: true
+            };
+            fields.push(level);
+        }
 
         return fields;
     }

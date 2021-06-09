@@ -5,6 +5,7 @@ using d360.core.entities.Views;
 using d360.core.enums;
 using d360.core.queue;
 using Dapper;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -443,15 +444,13 @@ order by RT.Name", new { id }).AsQueryable();
                     EffectiveDate = today,
                     Measures = m.Select(o => new AssetMeasureChildModel
                     {
+                        AllocationUid = o.AllocationUid,
                         MetricAssetUid = o.MetricAssetUid,
                         MetricAssetVersionUid = o.MetricAssetVersionUid
                     }).Distinct().ToList()
                 }).ToList();
 
-            if (structuredMeasures.Count > 0)
-            {
-                SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, structuredMeasures);
-            }
+            CreateMeasureChangedResultExecution(structuredMeasures);
 
             if (!string.IsNullOrEmpty(ruleExceptionMessages))
             {
@@ -523,8 +522,9 @@ order by RT.Name", new { id }).AsQueryable();
 
                     var ruleResults = await Connection.QueryAsync<ResponsibilityAssetMeasureProcessedResult>(@"
 select  A.Uid as AssetUid, 
-    M.Uid as MetricAssetUid,
-    V.Uid as MetricAssetVersionUid
+        M.AllocationUid,
+        M.Uid as MetricAssetUid,
+        V.Uid as MetricAssetVersionUid
 from    #changes C 
     inner join Asset A on A.ID = C.AssetID and C.ActionType in ('DELETE', 'INSERT') 
     inner join AssetType T on T.ID = A.AssetTypeID
@@ -625,6 +625,7 @@ from    #changes C
 
                     var ruleResults = await Connection.QueryAsync<ResponsibilityAssetMeasureProcessedResult>(@"
 select  A.Uid as AssetUid, 
+        M.AllocationUid,
         M.Uid as MetricAssetUid,
         V.Uid as MetricAssetVersionUid
 from    #changes C 

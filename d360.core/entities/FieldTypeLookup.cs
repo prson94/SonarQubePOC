@@ -50,6 +50,7 @@ namespace d360.core.entities
         public int SortOrder { get; set; }
         public bool Show { get; set; }
         public int? Width { get; set; } = null;
+        public int? RelationIndex { get; set; }
     }
     public class FieldTypeComplexLookupDefinitionRelation
     {
@@ -80,6 +81,7 @@ namespace d360.core.entities
         public int SortOrder { get; set; }
         public bool Show { get; set; } = true;
         public int? Width { get; set; } = null;
+        public int? RelationIndex { get; set; }
     }
     public class FieldTypeComplexLookupDefinitionRelationApiViewModel
     {
@@ -91,8 +93,9 @@ namespace d360.core.entities
 
     public class FieldTypeOwnershipLookupDefinition
     {
+        public bool DisplayAsList { get; set; }
         public bool DisplayAssignmentSource { get; set; } = true;
-
         public bool ExpandGroupMembership { get; set; } = true;
+        public int? ResponsibilityType { get; set; }
     }
 }

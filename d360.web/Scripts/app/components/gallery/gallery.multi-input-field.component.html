@@ -54,7 +54,7 @@
     <div class="gallery-section">
         <h4>Required</h4>
         <div>
-            <ig-multi-input-field [required]="true" (ngModelChange)="valueChanged($event)" ></ig-multi-input-field>
+            <ig-multi-input-field [required]="true" ></ig-multi-input-field>
         </div>
     </div>
 
@@ -68,7 +68,7 @@
     <div class="gallery-section">
         <h4>Invalid State</h4>
         <div>
-            <form [formGroup]="myForm" (ngSubmit)="onSubmit()" novalidate>
+            <form [formGroup]="myForm" novalidate>
                 <ig-multi-input-field name="multiInput" formControlName="multiInput"></ig-multi-input-field>
                 <div *ngIf="myForm.get('multiInput').invalid">
                     <div *ngIf="myForm.get('multiInput').errors.duplicates" class="ig-text-required">

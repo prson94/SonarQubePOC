@@ -134,6 +134,11 @@ export class SearchAssetDetail {
     uid: string;
     Status: string;
     Path: string[][];
+    DisplayValue: string;
+    TypeName: string;
+    Object: string;
+    ObjectId: number;
+    Id: number;
 }
 
 export class AssetScore {

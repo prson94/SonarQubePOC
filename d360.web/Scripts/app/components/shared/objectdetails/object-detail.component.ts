@@ -1,5 +1,5 @@
 import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef } from '@angular/core';
-import { DetailRow, DetailField, DetailFieldType, NymType, Category } from '../../../models/object-detail.model';
+import { DetailRow, DetailField, DetailFieldType, ComplexLookupType, NymType, Category } from '../../../models/object-detail.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetService } from '../../../services/asset.service';
@@ -127,9 +127,11 @@ export class ObjectDetailComponent implements OnChanges {
             else
                 field.Type = DetailFieldType.None;
         }
-        
-        if (field.IsComplexLookupGrid) {
-            field.Type = DetailFieldType.Lookup;
+
+        if (field.ComplexLookupType === ComplexLookupType.Grid) {
+            field.Type = DetailFieldType.LookupGrid;
+        } else if (field.ComplexLookupType === ComplexLookupType.List) {
+            field.Type = DetailFieldType.LookupList;
         }
     }
 
@@ -160,7 +162,7 @@ export class ObjectDetailComponent implements OnChanges {
             c.rows.forEach(r => {
                 let fcount = r.FirstColumnFields.length;
                 r.FirstColumnFields.forEach(f => {
-                    if (f.Type == DetailFieldType.Lookup) {
+                    if (f.Type == DetailFieldType.LookupGrid || f.Type === DetailFieldType.LookupList) {
                         if (!f.Data || !f.Data.Values || f.Data.Values.length == 0) {
                             c.hasData = true;
                         }
@@ -208,7 +210,7 @@ export class ObjectDetailComponent implements OnChanges {
         row.SecondColumnFields.forEach(s => {
             this.setDetailFieldType(s);
 
-            if (s.Type == DetailFieldType.Lookup) {
+            if (s.Type == DetailFieldType.LookupGrid || s.Type === DetailFieldType.LookupList) {
                 this.assetService.getAssetsComplexFieldValue(this.objectUID, s.FieldName)
                     .subscribe(i => {
                         s.Data = i;

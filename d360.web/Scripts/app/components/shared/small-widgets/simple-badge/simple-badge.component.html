@@ -1,0 +1,4 @@
+﻿<ig-badge *ngIf="undefinedColor"
+          [text]="getBadgeText()" [tooltipText] ="getBadgeDescription()" style="margin-right: 8px;"></ig-badge>
+<ig-badge *ngIf="!undefinedColor"
+          [text]="getBadgeText()" [backgroundColor]="getBackgroundColor()" [variant]="getVariant()" [tooltipText] ="getBadgeDescription()" style="margin-right: 8px;"></ig-badge>

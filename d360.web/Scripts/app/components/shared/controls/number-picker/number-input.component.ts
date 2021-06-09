@@ -19,7 +19,7 @@ export const NUMBER_INPUT_ACCESSOR: any = {
 export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
 
     @Input() placeholder: string;
-    @Input() step: number;
+    @Input() step: string = "any";
     @Input() max: number = 9223372036854775807;
     @Input() min: number;
     @Input() disabled: boolean = false;
@@ -31,7 +31,10 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
     @Input() ariaRequired: boolean;
     @Input() ariaInvalid: boolean;
 
-    private hasValue: boolean = false;
+    @Input() enforceMaxMin: boolean = false;
+
+    hasValue: boolean = false;
+
     value: number;
     onModelChange: Function = () => { };
     onModelTouched: Function = () => { };
@@ -42,6 +45,17 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
     writeValue(obj: any): void {
         if (obj != undefined && obj != null) {
             this.hasValue = true;
+            if (this.enforceMaxMin) {
+                var value = +this.el.nativeElement.value;
+                if (this.max && value > this.max) {
+                    value = this.max;
+                    this.el.nativeElement.value = value;
+                }
+                if (this.min && value < this.min) {
+                    value = this.min;
+                    this.el.nativeElement.value = value;
+                }
+            }
         }
         else {
             this.hasValue = false;
@@ -71,14 +85,28 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
 
     increment() {
         if (!this.disabled) {
-            this.el.nativeElement.stepUp();
-            this.writeValue(this.el.nativeElement.value);
+            if (this.step === "any") {
+                var currentValue = +this.el.nativeElement.value + 1;
+                this.el.nativeElement.value = currentValue.toString();
+                this.writeValue(this.el.nativeElement.value);
+            }
+            else {
+                this.el.nativeElement.stepUp();
+                this.writeValue(this.el.nativeElement.value);
+            }
         }
     }
     decrement() {
         if (!this.disabled) {
-            this.el.nativeElement.stepDown();
-            this.writeValue(this.el.nativeElement.value);
+            if (this.step === "any") {
+                var currentValue = +this.el.nativeElement.value - 1;
+                this.el.nativeElement.value = currentValue.toString();
+                this.writeValue(this.el.nativeElement.value);
+            }
+            else {
+                this.el.nativeElement.stepDown();
+                this.writeValue(this.el.nativeElement.value);
+            }
         }
     }
 

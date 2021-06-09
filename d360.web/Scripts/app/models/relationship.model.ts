@@ -26,6 +26,19 @@ export class RelationshipType {
     Object: RelationshipTypeEdge;
 }
 
+export class RelationshipCount {
+    IntersectTypeUid: string;
+    Count: number;
+    IsSubject: boolean;
+}
+
+export class RelationshipTypeUIModel extends RelationshipType {
+    Count: number;
+    TypeName: string;
+    AllowEditFromRelationshipEditor: boolean = true;
+    IsSubject: boolean = false;
+}
+
 export class RelationshipDetail {
     ID: number;
     LimitedChangesOnly: boolean;

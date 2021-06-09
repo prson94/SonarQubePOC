@@ -7,21 +7,13 @@ namespace d360.core.queue
 {
     public enum ScoreQueueChangeType
     {
-        AssetMeasures,
-        ExternalMeasureResultsCreated,
-        ExternalScoresCreated,
-        MeasureChanged,
-        MeasureRemoved,
-        RollupPathChanged,
-        WorkflowCheck,
-        CheckTypeDependencyRemoved,
-        RuleAssetRemoved
-    }
-
-    public enum ScoreQueueExecutionDataLocation
-    {
-        File,
-        Table
+        AssetMeasures = 0,
+        MeasureChanged = 3,
+        MeasureRemoved = 4,
+        RollupPathChanged = 5,
+        WorkflowCheck = 6,
+        CheckTypeDependencyRemoved = 7,
+        RuleAssetRemoved = 8
     }
 
     public class ScoreQueueInfo
@@ -33,8 +25,6 @@ namespace d360.core.queue
 
         public DateTime StartedOn { get; set; }
 
-        public ScoreQueueExecutionDataLocation Location { get; set; }
-        
         public ScoreQueueChangeType ChangeType { get; set; }
 
         [JsonIgnore]

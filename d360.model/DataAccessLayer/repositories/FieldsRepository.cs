@@ -9,6 +9,7 @@ using Dapper;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -231,8 +232,10 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'OwnershipLookup' then FTL.HideHeader else null end as 'Type.ComputedOwnershipLookup.HideHeader', 
 		        case when FT.Type = 'OwnershipLookup' then FTL.HideFooter else null end as 'Type.ComputedOwnershipLookup.HideFooter', 
 		        case when FT.Type = 'OwnershipLookup' then FTL.HideFilter else null end as 'Type.ComputedOwnershipLookup.HideFilter', 
+                case when FT.Type = 'OwnershipLookup' then try_cast(JSON_VALUE(FTL.Definition, '$.DisplayAsList') as bit) else null end as 'Type.ComputedOwnershipLookup.Definition.DisplayAsList',
                 case when FT.Type = 'OwnershipLookup' then try_cast(JSON_VALUE(FTL.Definition, '$.DisplayAssignmentSource') as bit) else null end as 'Type.ComputedOwnershipLookup.Definition.DisplayAssignmentSource',
 		        case when FT.Type = 'OwnershipLookup' then try_cast(JSON_VALUE(FTL.Definition, '$.ExpandGroupMembership') as bit) else null end as 'Type.ComputedOwnershipLookup.Definition.ExpandGroupMembership',
+		        case when FT.Type = 'OwnershipLookup' then try_cast(JSON_VALUE(FTL.Definition, '$.ResponsibilityType') as int) else null end as 'Type.ComputedOwnershipLookup.Definition.ResponsibilityType',
 		        case when FT.Type = 'OwnershipLookup' then FT.IsDisplayable else null end as 'Type.ComputedOwnershipLookup.IsDisplayable',
 		        case when FT.Type = 'OwnershipLookup' then FT.ShowIfEmpty else null end as 'Type.ComputedOwnershipLookup.ShowIfEmpty',
 		        case when FT.Type = 'OwnershipLookup' then FT.IsListable else null end as 'Type.ComputedOwnershipLookup.IsListable',
@@ -277,9 +280,10 @@ select	@pageSize as 'pageSize',
 				        DF.DisplayOrder,
 				        DF.SortOrder,
 				        DF.Show,
-				        DF.Width
+				        DF.Width,
+                        DF.RelationIndex
 		        from	OPENJSON(FTL.Definition) with (Fields nvarchar(max) as json) D
-				        outer apply OPENJSON(D.Fields) with (AssetTypeUid uniqueidentifier, FieldTypeID int, FieldTypeName nvarchar(250), [Filter] nvarchar(500), OverrideDisplayName nvarchar(250), DisplayOrder int, SortOrder int, Show bit, Width int) DF
+				        outer apply OPENJSON(D.Fields) with (AssetTypeUid uniqueidentifier, FieldTypeID int, FieldTypeName nvarchar(250), [Filter] nvarchar(500), OverrideDisplayName nvarchar(250), DisplayOrder int, SortOrder int, Show bit, Width int, RelationIndex int) DF
 				        left join AssetType AST on AST.Uid = DF.AssetTypeUid
 				        left join FieldType AFT on AFT.ID = DF.FieldTypeID
 		        order by DF.DisplayOrder
@@ -293,6 +297,7 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'RefListRelationship' then IT.Uid else null end as 'Type.ComputedRelationshipReferenceList.IntersectTypeUid',
 		        case when FT.Type = 'RefListRelationship' then FT.IsDisplayable else null end as 'Type.ComputedRelationshipReferenceList.IsDisplayable',
 		        case when FT.Type = 'RefListRelationship' then FT.ShowIfEmpty else null end as 'Type.ComputedRelationshipReferenceList.ShowIfEmpty',
+                case when FT.Type = 'RefListRelationship' then coalesce(JSON_VALUE(FT.Definition,'$.DisplayRefListDescription'),'true') else null end as 'Type.ComputedRelationshipReferenceList.DisplayRefListDescription',
 
 		        case when FT.Type = 'Date' then FT.ColumnOrder else null end as 'Type.Date.ColumnOrder',
 		        case when FT.Type = 'Date' then FT.ColumnWidth else null end as 'Type.Date.ColumnWidth',
@@ -672,7 +677,6 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                         AssetTypeClass.Organization,
                         AssetTypeClass.Fusion,
                         AssetTypeClass.FusionAttribute,
-                        AssetTypeClass.FusionQuery,
                         AssetTypeClass.User,
                         AssetTypeClass.ReferenceItemType
                     };
@@ -885,13 +889,9 @@ from	IntersectType I
 
                         relatedTypeList.ForEach(r =>
                         {
-                            var fieldName = $"Related Item.{r.Name}";
+                            var fieldName = $"Related Item.{r.Name} ({r.ID})";
 
-                            if (computedFields.ContainsKey(fieldName))
-                            {
-                                computedFields.Add($"{fieldName} ({r.ID})", r.ID);
-                            }
-                            else
+                            if (!computedFields.ContainsKey(fieldName))
                             {
                                 computedFields.Add(fieldName, r.ID);
                             }
@@ -975,7 +975,22 @@ from	IntersectType I
                         field.SortOrder = i.SortOrder;
                         field.Width = i.Width;
                         field.Show = i.Show;
-                        if (!definitionFields.Any(o => o.FieldTypeID == field.FieldTypeID) && field.FieldTypeID > 0)
+                        if (i.RelationIndex != null)
+                        {
+                            if(definitionRelations[i.RelationIndex ?? 0].AssetTypeUid != field.AssetTypeUid)
+                            {
+                                hasDefinitionError = true;
+                                definitionErrorMessage = $@"The definition provided for the computed relationship lookup {f.Name} is invalid. Field {i.FieldTypeName} does not match Asset Type.";
+                                return;
+                            }
+                            field.RelationIndex = i.RelationIndex;
+                        }
+                        else
+                        {
+                            field.RelationIndex = definitionRelations.FindIndex(r => r.AssetTypeUid == field.AssetTypeUid);
+                        }
+
+                        if (!definitionFields.Any(o => o.FieldTypeID == field.FieldTypeID && o.RelationIndex == field.RelationIndex) && field.FieldTypeID > 0)
                         {
                             definitionFields.Add(field);
                         }
@@ -1029,6 +1044,7 @@ from	IntersectType I
                     }
                     newFieldType.LookupObjectType = "IntersectType";
                     newFieldType.LookupObjectID = relationshipsFieldType;
+                    newFieldType.Definition = JsonConvert.SerializeObject(new { f.Type.ComputedRelationshipReferenceList.DisplayRefListDescription });
                 }
                 else if (f.Type.Date != null)
                 {
@@ -1802,10 +1818,7 @@ from	IntersectType I
 
             if (impactedMeasureVersions.Count > 0)
             {
-                Company.SendScoreEventWithPayload(
-                    ScoreQueueChangeType.CheckTypeDependencyRemoved,
-                    new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions }
-                );
+                Company.CreateCheckDependencyRemovedNotificationExecution(impactedMeasureVersions);
             }
         }
 
@@ -1840,6 +1853,122 @@ from	IntersectType I
             }
 
             return RetValueList;
+        }
+
+        public List<FieldType> GetFieldDefinitionForComplexLookupFieldType(FieldType fieldType, bool handleFiltersAsString)
+        {
+            if (fieldType.Type == "OwnershipLookup")
+            {
+                List<string> allowedFields = new List<string>
+                        {
+                            "ResourceItemUrl","SecurityAssetName","Context","ResourceUid","ResponsibilityTypeName","ResourceName","SecurityAssetUid"
+                        };
+
+                return allowedFields.Select(x =>
+                    new FieldType
+                    {
+                        Name = x,
+                        Type = DataType.Text.ToString()
+                    }).ToList();
+            }
+            else if (fieldType.Type == "RefListRelationship")
+            {
+                var fields = Company.Query<FieldType>($@"
+                        declare @referenceId int;
+
+                        set @referenceId = (select top 1 I.ObjectID from fieldtype FT
+                        inner join [Intersect] I on I.IntersectTypeID = FT.LookupObjectID
+                        where FT.[Type] = 'RefListRelationship' and FT.ID = @fieldTypeId)
+
+                        select * from FieldType where
+                        objectid = @referenceid and Object = 'ReferenceItemType'
+                        ", new { fieldTypeId = fieldType.ID }).ToList();
+
+                fields.Add(new FieldType
+                {
+                    Name = "Code",
+                    Type = DataType.Text.ToString()
+                });
+
+                if (handleFiltersAsString)
+                {
+                    fields.ForEach(x => x.Type = DataType.Text.ToString());
+                }
+
+                return fields;
+            }
+            else
+            {
+
+                var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
+                var definition = ftl.ParseComplexLookupDefinition();
+
+                var mappings = definition.GetFieldMapings();
+                var fieldTypeIds = mappings.Where(x => x.Value != null).Select(x => x.Value.FieldTypeID).Where(x => x > 0).ToList();
+                List<FieldType> fields = Company.FieldTypes.Where(x => fieldTypeIds.Contains(x.ID)).AsNoTracking().ToList();
+                foreach (var f in mappings)
+                {
+                    if (f.Value == null)
+                    {
+                        var ft = new FieldType();
+                        ft.Name = f.Key;
+                        ft.Type = DataType.Text.ToString();
+                        fields.Add(ft);
+                        continue;
+                    }
+
+                    if (f.Value.FieldTypeID > 0 && !f.Value.FieldTypeName.StartsWith("Related Item."))
+                    {
+                        var ft = fields.FirstOrDefault(x => x.ID == f.Value.FieldTypeID);
+                        ft.Name = f.Key;
+
+                    }
+                    else if (f.Value.FieldTypeName == "DisplayValue" || f.Value.FieldTypeName.Contains("_assetPath"))
+                    {
+                        var ft = new FieldType();
+                        ft.Name = f.Key;
+                        ft.FriendlyName = f.Value.FieldTypeName;
+                        ft.Type = DataType.Text.ToString();
+                        fields.Add(ft);
+                    }
+                    else if (f.Value.FieldTypeName.StartsWith("Related Item."))
+                    {
+                        var it = Company.IntersectTypes.FirstOrDefault(x => x.ID == f.Value.FieldTypeID);
+                        var ft = new FieldType();
+
+                        ft.Name = f.Key;
+                        ft.FriendlyName = f.Value.FieldTypeName;
+                        ft.Type = DataType.Relationship.ToString();
+                        ft.LookupObjectType = "IntersectType";
+                        ft.LookupObjectID = it.ID;
+                        fields.Add(ft);
+
+                        var ft2 = new FieldType();
+
+                        ft2.Name = "Related:" + it.uid;
+                        ft2.FriendlyName = f.Value.FieldTypeName;
+                        ft2.Type = DataType.Relationship.ToString();
+                        ft2.LookupObjectType = "IntersectType";
+                        ft2.LookupObjectID = it.ID;
+                        fields.Add(ft2);
+                    }
+                    else
+                    {
+                        var ft = new FieldType();
+                        ft.Name = f.Key;
+                        ft.FriendlyName = f.Value.FieldTypeName;
+                        ft.Type = DataType.Text.ToString();
+                        fields.Add(ft);
+                    }
+                }
+
+                if (handleFiltersAsString)
+                {
+                    fields.ForEach(x => x.Type = DataType.Text.ToString());
+                }
+
+                return fields;
+            }
         }
     }
 }

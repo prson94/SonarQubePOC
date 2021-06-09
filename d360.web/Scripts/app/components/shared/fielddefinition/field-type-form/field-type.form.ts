@@ -81,6 +81,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private scoreTypeOptions: SelectItem[];
     private model: FieldTypeEditorModel;
     private initialItem: FieldTypeEditorModel;
+    private isListable: boolean;
 
     private testPattern: string;
     private testPatternValidationText: string;
@@ -129,6 +130,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private maxLengthUpperNumeric = 9999999999;
 
     private disableFieldTypeSelection: boolean = false;
+    public enableListSingleResponsibilityType: boolean = false;
 
     constructor(private fieldsService: FieldsObservableService, private messagesService: MessagesObservableService, private objectDetailService: ObjectDetailService) {
         super();
@@ -422,10 +424,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.showDescription = false;
                 this.enableAllowMultipleValues = false;
                 break;
+            case "ownershiplookup":
+                this.showDescription = false;
+                this.onEnableListSingleResponsibilityType(Number.isInteger(this.model.FieldType.Type[this.currentType].Definition.ResponsibilityType))
+                break;
             case 'computedownershiplookup':
             case 'json':
             case 'jsonelement':
-            case 'ownershiplookup':
             case 'path':
                 this.showDescription = false;
                 break;
@@ -829,6 +834,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 valid = false;
         }
 
+        if (this.currentType === "OwnershipLookup") {
+            if (this.enableListSingleResponsibilityType) {
+                return this.model.FieldType.Type[this.currentType].Definition.ResponsibilityType !== null;
+            }
+        }
+
         if (!this.isValidationPatternValid()) {
             valid = false;
         }
@@ -949,7 +960,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         }
 
                         item.SortOrderList = s;
-                        this.validate("RelationItems");
                     }
                 ));
         } catch (e) {
@@ -1261,13 +1271,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             })());
         }
 
-        if (fieldname === "RelationItems" && this.currentType === "ComplexRelationLookup") {
-            let relationAssetUids = this.model.RelationItems.map((r) => r.AssetTypeUid.toLowerCase());
-
-            this.setValidation("relationItems_origin", "Relation Lookup refers back to the Asset Type this field is defined on.", relationAssetUids.some((u) => u === this.assetTypeUid.toLowerCase()));
-            this.setValidation("relationItems_circula", "Relation Lookup contains a circular reference.", relationAssetUids.some((r, idx, arr) => idx !== arr.indexOf(r)));
-        }
-
         this.errorMessage = Array.from(this.validationErrors.values()).join('\n');
     }
 
@@ -1308,7 +1311,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         //only last item can be deleted
         this.model.RelationItems.pop();
         this.relationItemCount = this.model.RelationItems.length;
-        this.validate("RelationItems");
     }
 
     private anyDisplayFieldsSelected(e: any) {
@@ -1375,13 +1377,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         switch (val) {
             case 'IsDisplayable':
-                return (['ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship'].indexOf(this.currentType) > -1);
+                return (['ComplexRelationLookup', 'RefListRelationship'].indexOf(this.currentType) > -1);
             case 'IsEditable':
                 return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Tag', 'Score', 'Counter'].indexOf(this.currentType) > -1);
             case 'IsListable':
-                if (this.currentType === "OwnershipLookup") {
-                    return ["PolicyType", "TaxonomyType"].indexOf(this.objectType) > -1;
-                }
                 return (['ComplexRelationLookup', 'RefListRelationship', 'Json', 'JSON'].indexOf(this.currentType) > -1
                     || (this.currentType == 'Relationship' && !this.isListableRelationship));
             case 'IsRequired':
@@ -1415,7 +1414,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             return;
         var definitionArray: Relation[] = [];
         var fieldsArray: DefinitionField[] = [];
-        this.model.RelationItems.forEach(x => {
+        this.model.RelationItems.forEach((x, i) => {
             let definition = {
                 IntersectTypeUid: x.IntersectTypeUid,
                 AssetTypeUid: x.AssetTypeUid,
@@ -1423,7 +1422,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 Direction: Direction[x.Direction]
             };
 
-            let mappedFields: DefinitionField[] = x.DisplayFields.filter(x => x.Show || x.Filter !== '' || x.SortOrder).map((f) => {
+            let mappedFields: DefinitionField[] = x.DisplayFields.filter(xf => xf.Show || xf.Filter !== '' || xf.SortOrder).map((f) => {
                 return {
                     AssetTypeUid: x.AssetTypeUid,
                     FieldTypeName: f.FieldTypeName,
@@ -1432,7 +1431,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     DisplayOrder: f.DisplayOrder,
                     SortOrder: f.SortOrder,
                     Show: f.Show,
-                    Width: f.Width
+                    Width: f.Width,
+                    RelationIndex: i
                 };
             });
             definitionArray.push(definition);
@@ -1468,6 +1468,27 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.FieldType.Type[this.currentType].Search.Suffix = null;
             this.model.FieldType.Type[this.currentType].Search.DisplayOrder = null;
         }
+    }
+
+    onEnableListSingleResponsibilityType(event: boolean) {
+        this.enableListSingleResponsibilityType = event;
+        if (!event) {
+            this.model.FieldType.Type[this.currentType].Definition.ResponsibilityType = null;
+        }
+    }
+
+    onDisplayAsList(event: boolean) {
+        if (event) {
+            this.model.FieldType.Type[this.currentType].Definition.DisplayAssignmentSource = false;
+            this.model.FieldType.Type[this.currentType].HideFilter = false;
+            this.model.FieldType.Type[this.currentType].HideFooter = false;
+            this.model.FieldType.Type[this.currentType].HideHeader = false;
+        }
+    }
+
+    public getSelectResponsibilityTypePlaceholder() {
+        //Using a string with space, because if empty string is returned, p-dropdown behaves like there is no placeholder
+        return this.enableListSingleResponsibilityType ? "Value Required" : " ";
     }
 
     private isValidationPatternValid() {

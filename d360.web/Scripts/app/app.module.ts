@@ -13,6 +13,7 @@ import { SiteMenuModule } from './components/shared/menu/site-menu.module';
 import { HeaderModule } from './components/shared/header/header.module';
 
 import { AdminUserGuard } from './guards/admin-user.guard';
+import { RedirectGuard } from './guards/redirect.guard';
 
 import { AuthenticationService } from './services/authentication.service';
 import { MessagesObservableService } from "./services/messages-observable.service";
@@ -99,6 +100,7 @@ export function localeInitializer(localeId: string) {
             useClass: GovernRequestInterceptor,
             multi: true
         },
+        RedirectGuard,
         AuthenticationService,
         Title,
         HeaderActionsService,

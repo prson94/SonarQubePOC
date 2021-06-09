@@ -22,6 +22,7 @@ using System.Configuration;
 using Newtonsoft.Json.Linq;
 using System.Text;
 using d360.model.helpers;
+using System.Globalization;
 
 namespace d360.model.DataAccessLayer
 {
@@ -155,17 +156,7 @@ namespace d360.model.DataAccessLayer
             }
 
             Company.SaveChanges();
-
-            // Send queue event to scoring engine.
-            Company.SendScoreEventWithPayload(
-                ScoreQueueChangeType.MeasureRemoved,
-                new MeasureRemovedModel
-                {
-                    EffectiveEndDate = currentAssetVersion.EffectiveEndDate.Value,
-                    MetricAssetUid = currentAssetVersion.AssetUid,
-                    MetricAssetVersionUid = currentAssetVersion.Uid
-                }
-             );
+            Company.CreateMeasureRemovedNotificationExecution(currentAssetVersion);
         }
 
         public MetricAssetViewDetailModel GetMetricViewModelByUid(Guid uid, DateTime? effectiveDate)
@@ -1164,8 +1155,8 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                         metricAssetVersion.MatchConditionsOnly = model.MatchConditionsOnly;
                         metricAssetVersion.Threshold = model.Threshold;
                         metricAssetVersion.Weight = model.Weight;
-                        
-                        if (metricAsset.IsGroup && model.Allocation.ScoreType == ScoreType.Governance && definitionToSave.Governance != null) 
+
+                        if (metricAsset.IsGroup && model.Allocation.ScoreType == ScoreType.Governance && definitionToSave.Governance != null)
                         {
                             // Be sure to set the definition for group, no extraneous bad data.
                             definitionToSave.Governance.External = null;
@@ -1553,10 +1544,7 @@ delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metric
 
             if (metricAsset != null && metricAssetVersion != null && changeWillEffectScore)
             {
-                Company.SendScoreEventWithPayload(
-                    ScoreQueueChangeType.MeasureChanged,
-                    new MeasureChangedModel { EffectiveDate = model.EffectiveDate, MetricAssetUid = metricAsset.Uid, MetricAssetVersionUid = metricAssetVersion.Uid }
-                );
+                Company.CreateMeasureChangedNotificationExecution(metricAssetVersion, model.EffectiveDate);
             }
 
             return new WorkHttpStatus(isNew ? HttpStatusCode.Created : HttpStatusCode.OK, "", "");
@@ -2182,7 +2170,7 @@ for json path";
             return results;
         }
 
-        public DataQualityGetResultModel GetDataQualityResults(Guid owningAssetUid, Guid? evaluatedAssetUid = null, int pageSize = 250, int pageNum = 1, string sort = null, string direction = "asc", DateTime? effectiveDateStart = null, DateTime? effectiveDateEnd = null, bool includeDuplicateFlag = false, string _filter = "")
+        public DataQualityGetResultModel GetDataQualityResults(Guid owningAssetUid, Guid? evaluatedAssetUid = null, int pageSize = 250, int pageNum = 1, string sort = null, string direction = "asc", DateTime? effectiveDateStart = null, DateTime? effectiveDateEnd = null, bool includeDuplicateFlag = false, string _filter = "", string _simpleFilter = "")
         {
             var result = new DataQualityGetResultModel();
             var parameters = new DynamicParameters();
@@ -2193,7 +2181,7 @@ for json path";
                     whereSql = "",
                     whereCteEvaluatedBySql = "",
                     whereResultCteSql = "",
-                    orderSql = "R.EffectiveDate",
+                    orderSql = "EffectiveDate",
                     pagingSql = "offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only";
 
             if (effectiveDateStart.HasValue)
@@ -2209,7 +2197,7 @@ for json path";
             if (evaluatedAssetUid.HasValue)
             {
                 whereCteEvaluatedBySql = " and AE.Uid = @evaluatedAssetUid";
-                whereSql = (string.IsNullOrEmpty(whereSql) ? "where" : "and") + " E.EvaluatedAssetUid = @evaluatedAssetUid";
+                whereSql += (string.IsNullOrEmpty(whereSql) ? "where" : "and") + " EvaluatedAssetUid = @evaluatedAssetUid";
             }
 
             if (!string.IsNullOrEmpty(_filter))
@@ -2222,7 +2210,37 @@ for json path";
                 {
                     parameters.Add(item.Key, item.Value);
                 }
-                whereSql = (string.IsNullOrEmpty(whereSql) ? " where " : " and ") + query;
+                whereSql += (string.IsNullOrEmpty(whereSql) ? " where " : " and ") + query;
+            }
+
+            if (!string.IsNullOrEmpty(_simpleFilter))
+            {
+                
+                var allFields = new [] {
+                "EffectiveDate",
+                 "FailCount",
+                 "PassCount",
+                 "PassFraction",
+                 "RunDate",
+                 "TotalCount",
+                "EvaluatedAssetDisplayPath",
+                "EvaluatedAssetTypePath"
+                };
+
+                parameters.Add("@simpleFilter", Company.GetEscapedFilterString(_simpleFilter,true));
+                var simpleQuery = string.Join(" or ", allFields.Select(x => $"({x} like @simpleFilter)").ToList());
+
+                var classes = AssetTypeClass.BusinessAsset.GetAsList();
+                var match = classes.Where(x => x.Name.ToLower(CultureInfo.InvariantCulture).Contains(_simpleFilter.ToLower(CultureInfo.InvariantCulture).Trim('\''))
+                || x.Value.ToLower(CultureInfo.InvariantCulture).Contains(_simpleFilter.ToLower(CultureInfo.InvariantCulture).Trim('\''))).ToList();
+
+                if (match.Count > 0)
+                {
+                    var query = $" or (EvaluatedAssetTypeClass in ({string.Join(",", match.Select(x => (int)x.ID))}))";
+                    simpleQuery += query;
+                }
+
+                whereSql += (string.IsNullOrEmpty(whereSql) ? " where " : " and ") + $"({simpleQuery})";
             }
 
             if (!string.IsNullOrWhiteSpace(sort))
@@ -2239,22 +2257,22 @@ for json path";
                     case "ResultUid":
                     case "RunDate":
                     case "TotalCount":
-                        orderSql = $"R.{sort}";
+                        orderSql = $"{sort}";
                         break;
                     case "EvaluatedAssetClass":
-                        orderSql = "E.EvaluatedAssetTypeClass";
+                        orderSql = "EvaluatedAssetTypeClass";
                         break;
                     case "EvaluatedAssetDisplayPath":
-                        orderSql = "E.EvaluatedAssetDisplayPath";
+                        orderSql = "EvaluatedAssetDisplayPath";
                         break;
                     case "EvaluatedAssetPath":
-                        orderSql = "E.EvaluatedAssetPath";
+                        orderSql = "EvaluatedAssetPath";
                         break;
                     case "EvaluatedAssetTypePath":
-                        orderSql = "P.[Path]";
+                        orderSql = "EvaluatedAssetTypePath";
                         break;
                     default:
-                        orderSql = "R.EffectiveDate";
+                        orderSql = "EffectiveDate";
                         break;
                 }
             }
@@ -2327,9 +2345,18 @@ for json path";
             parameters.Add("@pageNum", result.pageNum);
             parameters.Add("@pageSize", result.pageSize);
 
-            result.total = Company.Query<int>($"{cteSql} select count(1) {fromSql} {whereSql}", parameters, ApiTimeout).FirstOrDefault();
+            var countQuery = $@"{cteSql}, Results as (select {columnSql} {fromSql}) select count(1) from results {whereSql}";
 
-            result.items = Company.Query<DataQualityGetResultItem>($"{cteSql} select {columnSql} {fromSql} {whereSql} {orderSql} {pagingSql}", parameters, ApiTimeout).ToList();
+            result.total = Company.Query<int>(countQuery, parameters, ApiTimeout).FirstOrDefault();
+
+            var itemsQuery = $@"{cteSql}, 
+                    Results as (select {columnSql} {fromSql}) 
+			        select * from results
+                    {whereSql} 
+                    {orderSql} 
+                    {pagingSql}";
+
+            result.items = Company.Query<DataQualityGetResultItem>(itemsQuery, parameters, ApiTimeout).ToList();
 
             if (result.items == null)
             {
@@ -2523,25 +2550,14 @@ for json path";
             }
 
             var startedOnLimit = DateTime.UtcNow.AddHours(-2);
-            var existingExecutions = Company
-                .Filter<ApiExecution>(e => e.Method == "SCORE" && e.StartedOn <= startedOnLimit && !e.CompletedOn.HasValue)
-                .ToList()
-                .Select(e => new { e.ExecutionID, Fields = JsonConvert.DeserializeObject<ReclaulatMeasureExecutionFields>(e.Fields ?? "{}") })
-                .ToList();
+            var existingExecutions = Company.Any<ScoreExecution>(e => !e.CompletedOn.HasValue && e.TriggeredByMeasureUid == measureUid);
 
-            if (existingExecutions.Count > 0)
+            if (existingExecutions)
             {
-                if (existingExecutions.Any(e => e.Fields.measureUid == measureUid && e.Fields.action == "recalculating"))
-                {
-                    throw new GenericException(HttpStatusCode.BadRequest, $"Measure is currently being recalculated. Please wait until we have completed this action then try again.");
-                }
+                throw new GenericException(HttpStatusCode.BadRequest, $"Measure is currently being recalculated. Please wait until we have completed this action then try again.");
             }
 
-            return Company.SendScoreEventWithPayload(
-                ScoreQueueChangeType.MeasureChanged,
-                new MeasureChangedModel { EffectiveDate = latestVersion.EffectiveDate, MetricAssetUid = measure.Uid, MetricAssetVersionUid = latestVersion.Uid },
-                triggeredByMeasureUid: measureUid
-            );
+            return Company.CreateMeasureChangedNotificationExecution(latestVersion, latestVersion.EffectiveDate, measureUid);
         }
     }
 }

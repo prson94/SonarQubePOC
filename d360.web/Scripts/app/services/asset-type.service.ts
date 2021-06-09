@@ -4,7 +4,7 @@ import { Observable } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 
 import { JsonResult } from '../models/jsonresult.model';
-import { AssetTypeEditorModel, AssetTypeClass, AssetType, AssetTypeApiModel } from "../models/asset.model";
+import { AssetTypeEditorModel, AssetTypeClass, AssetType, AssetTypeApiModel, AssetTypeLevelApiModel } from "../models/asset.model";
 
 
 import { BaseObservableService } from "./baseObservable.service";
@@ -65,11 +65,20 @@ export class AssetTypeService extends BaseObservableService {
             );
     }
 
-    public getAssetTypes()
+    public getAssetTypes(params: any)
         : Observable<AssetTypeApiModel[] & ErrorResponse> {
+
+        var qString = '';
+        if (params) {
+            qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
+            if (qString) {
+                qString = '?' + qString;
+            }
+        }
+
         return this
             .http
-            .get('api/v2/assets/types')
+            .get(`api/v2/assets/types${qString}`)
             .pipe(
                 map(response => <AssetTypeApiModel[] & ErrorResponse>response),
                 catchError(err => this.handleError(err))
@@ -146,6 +155,13 @@ export class AssetTypeService extends BaseObservableService {
             );
     }
 
-
+    public getAssetTypeLevels(assetTypeUid: string): Observable<AssetTypeLevelApiModel[]> {
+        return this.http
+            .get(`api/v2/assets/${assetTypeUid}/levels`)
+            .pipe(
+                map((res) => <AssetTypeLevelApiModel[] & ErrorResponse>res),
+                catchError((err) => this.handleError(err))
+            );
+    }
     //#endregion
 }

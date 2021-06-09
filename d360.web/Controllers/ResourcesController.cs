@@ -315,16 +315,10 @@ from	FollowDetail F
         #region Json
 
         [HttpGet, Route("HelpResources")]
-        public JsonNetResult GetHelpResources()
-        {            
-            var resources = Community
-                .Filter<CompanyHelpResource>(
-                    i => i.CompanyID == Community.CurrentCompanyID,
-                    i => i.HelpResource)
-                .OrderBy(i => i.HelpResource.Type)
-                .ThenBy(i => i.SortOrder)
-                .Select(i => i.HelpResource)
-                .ToList();
+        public async Task<JsonNetResult> GetHelpResources()
+        {
+            var sql = "select ID, uid, Name, Description, Url, SortIndex from helpresource order by sortindex";
+            var resources = await Company.QueryAsync<HelpResource>(sql);
 
             return new JsonNetResult
             {
@@ -467,7 +461,7 @@ from	FollowDetail F
                     {
                         //For Tooltip data for Issues, we want multivalue fields separated out in an array of each separate value
                         //for use on the workflow monitor page 
-                        //We'll maintain the compound comma separated valuie in "Value" for compatability with other pages
+                        //We'll maintain the compound comma separated value in "Value" for compatability with other pages
                         var sql = @"select ft.objectId as IssueId,
                                f.FormattedValue as [Value],
                                ft.FriendlyName as Name,

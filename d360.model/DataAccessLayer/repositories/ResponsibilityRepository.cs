@@ -3,12 +3,15 @@ using d360.core.entities;
 using d360.core.entities.Metric;
 using d360.core.enums;
 using d360.core.queue;
+using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 using Dapper;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
@@ -16,10 +19,15 @@ namespace d360.model.DataAccessLayer
     public class ResponsibilityRepository : BaseRepository, IResponsibilityRepository
     {
         ICompanyContext Company;
-        public ResponsibilityRepository(ICompanyContext companyContext)
+        internal IStorageProvider StorageProvider;
+        internal IQueueSource QueueSource;
+
+        public ResponsibilityRepository(ICompanyContext companyContext, IStorageProvider storageProvider, IQueueSource queueSource)
             : base(companyContext)
         {
             this.Company = companyContext;
+            this.StorageProvider = storageProvider;
+            this.QueueSource = queueSource;
         }
 
         public async Task<AssetResponsibilitiesApiModel> GetResponsibilities(IEnumerable<KeyValuePair<string, string>> queryParams, string responsibilityUidFilter, string assigneeUidFilter, string assetUidFilter, string assetTypeUidFilter, int pageSize, int pageNum, int timeout)
@@ -86,6 +94,20 @@ namespace d360.model.DataAccessLayer
                 where R.AssetID = @id or (R.AssetID = 0 and R.AssetTypeId = @typeId)";
 
             return (await Company.Database.Connection.QueryAsync<OwnershipApiModel>(sql, new { id = asset.ID, typeId = asset.AssetTypeID }));
+        }
+
+        public async Task<bool> HasOwnership(Guid assetUid)
+        {
+            var asset = Company.Assets.Where(x => x.uid == assetUid).FirstOrDefault();
+
+            var sql = $@"
+                select  CASE WHEN EXISTS (
+                        select  1 
+                        from    [dbo].[ResponsibilityDetail] R
+                        where   R.AssetID = @id or (R.AssetID = 0 and R.AssetTypeId = @typeId)) THEN 1
+                        ELSE 0 END";
+
+            return (await Company.Database.Connection.QueryFirstAsync<bool>(sql, new { id = asset.ID, typeId = asset.AssetTypeID }));
         }
 
         public async Task<ResponsibilityTypeRuleStatsViewModel> GetResponsibilityRuleStats(Guid responsibilityTypeRuleUid)
@@ -222,8 +244,6 @@ namespace d360.model.DataAccessLayer
             var permissionsCriteria = "";
             DynamicParameters dbArgs = new DynamicParameters();
 
-            dbArgs.Add("assetIds", assetIDList);
-
             if (!string.IsNullOrEmpty(assigneeUidFilter))
             {
                 assigneeFilterCriteria = $" and s.[uid] = @assigneeUidFilter";
@@ -244,7 +264,32 @@ namespace d360.model.DataAccessLayer
                 dbArgs.Add("p", (int)Permission.ReadResponsibilities);
             }
 
-            var sql = $@"select 
+            StringBuilder assetIDSQL = new StringBuilder();
+            assetIDSQL.Append($@"drop table if exists #assetIds
+                                create table #assetIds (
+	                                id bigint
+                                )
+                                CREATE CLUSTERED INDEX ix_assetIds ON #assetIds ([id]);");
+
+            
+            for (int i = 0; i < assetIDList.Count(); i ++)
+            {
+                if(i % 1000 == 0)
+                {
+                    assetIDSQL.Append($@"
+                                insert into #assetIds (id) VALUES ({assetIDList.ElementAt(i)})");                    
+                }
+                else
+                {
+                    assetIDSQL.Append($",({assetIDList.ElementAt(i)})");
+                }
+                              
+            }
+
+            var sql = $@"                                                
+                        {assetIDSQL}                        
+
+                       select 
                         a.id as 'AssetID',
 	                    'rule' as 'AssigneeMethod',
 	                    rsa.SecurityAsset,
@@ -259,11 +304,12 @@ namespace d360.model.DataAccessLayer
 	                    inner join [dbo].[ResponsibilityTypeRelationRule] rr on rr.ResponsibilityTypeID = rt.id
 	                    inner join [dbo].[ResponsibilityTypeRelation] rtr on rtr.ObjectID = rr.ObjectID and rtr.ObjectType = rr.[Object]
 	                    inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rsa on rsa.RuleID = rr.id
-	                    inner join [dbo].[assettype] att on att.[object] = rr.[object] and att.objectid = rr.objectid
+	                    inner join [dbo].[assettype] att on att.[object] = rr.[object] and att.objectid = rr.objectid                        
 	                    inner join [dbo].asset a on a.AssetTypeID = att.id
+                        inner join #assetIds assetIDs on a.id = assetIDs.id
                         cross apply [dbo].[GetSecurityAssetUid](rsa.SecurityAsset,rsa.SecurityAssetID) s
                     where
-	                    rr.applytotype = 1 and a.id in @assetIds
+	                    rr.applytotype = 1
                         {responsibilityFilterCriteria} {assigneeFilterCriteria} {permissionsCriteria}
                     union
                     select 
@@ -282,10 +328,11 @@ namespace d360.model.DataAccessLayer
 	                    inner join [dbo].[ResponsibilityTypeRelation] rtr on rtr.ObjectID = rr.ObjectID and rtr.ObjectType = rr.[Object]
 	                    inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rsa on rsa.RuleID = rr.id
 	                    inner join [dbo].[ResponsibilityRuleResultAsset] ra on ra.RuleID = rr.id	
-                        inner join [dbo].[asset] a on ra.assetid = a.id
+                        inner join #assetIds assetIDs on ra.assetid = assetIDs.id
+                        inner join [dbo].[asset] a on a.id = assetIDs.id
                         cross apply [dbo].[GetSecurityAssetUid](rsa.SecurityAsset,rsa.SecurityAssetID) s
                     where
-	                    rr.applytotype = 0 and ra.assetid in @assetIds
+	                    rr.applytotype = 0
                         {responsibilityFilterCriteria} {assigneeFilterCriteria} {permissionsCriteria}
                     union
                     select 
@@ -300,11 +347,12 @@ namespace d360.model.DataAccessLayer
                         s.[Name] as 'AssigneeName'
                     from
 	                    [dbo].[ResponsibilityType] rt
-	                    inner join [dbo].[ResponsibilityTypeRelationOverrideItem] oride on oride.ResponsibilityTypeID = rt.id	    
-                        inner join [dbo].[asset] a on a.id = oride.assetid
+	                    inner join [dbo].[ResponsibilityTypeRelationOverrideItem] oride on oride.ResponsibilityTypeID = rt.id	  
+                        inner join #assetIds assetIDs on oride.assetid = assetIDs.id
+                        inner join [dbo].[asset] a on a.id = assetIDs.id
                         cross apply [dbo].[GetSecurityAssetUid](oride.SecurityAsset,oride.SecurityAssetID) s                        
                     where
-	                    oride.assetid in @assetIds {responsibilityFilterCriteria} {overrideAssigneeFilterCriteria} {permissionsCriteria}";
+	                    1=1 {responsibilityFilterCriteria} {overrideAssigneeFilterCriteria} {permissionsCriteria}";
 
             return (await Company.Database.Connection.QueryAsync<ResponsibilityApiModel>(sql, dbArgs, null, timeout));
         }
@@ -528,10 +576,7 @@ where 1=1
 
             if (impactedMeasureVersions.Count > 0)
             {
-                Company.SendScoreEventWithPayload(
-                    ScoreQueueChangeType.CheckTypeDependencyRemoved,
-                    new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions }
-                );
+                Company.CreateCheckDependencyRemovedNotificationExecution(impactedMeasureVersions);
             }
 
             return result;
@@ -666,10 +711,7 @@ where 1=1
                                 }).Distinct().ToList()
                             }).ToList();
 
-                        if (structuredMeasures.Count > 0)
-                        {
-                            Company.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, structuredMeasures);
-                        }
+                        Company.CreateMeasureChangedResultExecution(structuredMeasures);
 
                         #endregion
 
@@ -718,6 +760,26 @@ where 1=1
                     Success = false
                 };
             }
+        }
+
+        public string GetResponsibilityTypeUsedInOwnershipLookupMessage(ResponsibilityType responsibility, AssetType assetType)
+        {
+            string errorMessage = "";
+            List<string> usedByOwnershipFields = Company.Query<string>($@"SELECT ft.FriendlyName
+                    FROM [dbo].[AssetType] at
+                    INNER JOIN [dbo].[FieldType] ft on at.id = ft.AssetTypeID
+                    INNER JOIN [dbo].[fieldTypeLookup] ftl on ft.id = ftl.FieldTypeId
+                    WHERE ft.Type = '{DataType.OwnershipLookup}'
+                    AND at.id = @assetTypeId
+                    AND TRY_CAST(JSON_VALUE(FTL.Definition, '$.ResponsibilityType') AS int) = @responsibilityTypeId", new { responsibilityTypeId = responsibility.ID, assetTypeId = assetType.ID }).ToList();
+
+            if (usedByOwnershipFields.Any())
+            {
+                string fieldsMultiple = usedByOwnershipFields.Count() > 1 ? "s" : "";
+                string fields = "'" + string.Join("', '", usedByOwnershipFields.ToArray()) + "'";
+                errorMessage = $"This asset assignment is used in the field definition{fieldsMultiple} {fields}. Please update or delete this prior to deleting the asset assignment.";
+            }
+            return errorMessage;
         }
 
         public ResponsibilityType GetResponsibilityTypeByUID(Guid uid)
@@ -771,7 +833,8 @@ where 1=1
             var measureResults = Company.Query<ResponsibilityAssetMeasureProcessedResult>(@"
     select  A.Uid as AssetUid, 
             M.Uid as MetricAssetUid,
-            V.Uid as MetricAssetVersionUid
+            V.Uid as MetricAssetVersionUid,
+            M.AllocationUid
     from    Asset A 
             inner join AssetType T on T.ID = A.AssetTypeID and A.ID = @ID
             inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
@@ -792,15 +855,12 @@ where 1=1
                     EffectiveDate = today,
                     Measures = m.Select(o => new AssetMeasureChildModel
                     {
+                        AllocationUid = o.AllocationUid,
                         MetricAssetUid = o.MetricAssetUid,
                         MetricAssetVersionUid = o.MetricAssetVersionUid
                     }).Distinct().ToList()
                 }).ToList();
-
-            if (structuredMeasures.Count > 0)
-            {
-                Company.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, structuredMeasures);
-            }
+            Company.CreateMeasureChangedResultExecution(structuredMeasures);
         }
 
         public void InsertResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources, string context)
@@ -995,10 +1055,7 @@ where   Success is null", transaction: trans);
 
                     trans.Commit();
 
-                    if (structuredMeasures.Count > 0)
-                    {
-                        Company.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, structuredMeasures);
-                    }
+                    Company.CreateMeasureChangedResultExecution(structuredMeasures);
                 }
                 catch (Exception)
                 {
@@ -1017,5 +1074,19 @@ where   Success is null", transaction: trans);
             
             return returnResults;
         }
+
+        public async Task<ApiExecutionInfo> PostBatchResponsibilityOverride(List<BulkResponsibilityOverridePostModel> models, ApiExecution execution)
+        {
+            var executionInfo = new ApiExecutionInfo
+            {
+                CompanyID = Company.CurrentCompanyID,
+                CompanyDomainPrefix = Company.CurrentCompanyDomain,
+                ExecutionID = Guid.NewGuid(),
+                ResourceID = execution.ResourceID,
+                Action = ApiExecutionAction.PostResponsibilityOverride
+            };
+
+            return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
+        }        
     }
 }

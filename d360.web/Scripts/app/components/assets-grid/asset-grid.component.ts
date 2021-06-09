@@ -103,12 +103,11 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     simpleSearchTooltipHTML: string = `<p>Type to provide a search term. Matches will be found where the value of any column starts with the term or terms provided.</p><p>You can also use wildcards for more control over how the term is matched.
-*account* : Match on values which contain 'account'
-*account : Match on values which end with 'account'</p><p>All matches are case insensitive.</p>`;
+*account* : Match on values which contain 'account'</p><p>All matches are case insensitive.</p>`;
 
     constructor(
         private headerActionsService: HeaderActionsService,
-        private stateService: StateService,
+        public stateService: StateService,
         private permissionsService: PermissionsService,
         private router: Router,
         private gridDefinitionService: GridDefinitionService,
@@ -141,9 +140,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
     canExportRecords() {
         return this.totalRecords <= this.maxExportRows;
-    }
-    get showGridSimpleFilter(): boolean {
-        return this.stateService.artifactTypeFilters.showSimpleFilter;
     }
 
     onFiltersLoaded() {
@@ -570,7 +566,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     private newAdvancedFilters: Filters;
-    private advancedFiltersChanged($event) {
+    public advancedFiltersChanged($event) {
         this.newAdvancedFilters = $event;
         this.stateService.artifactTypeFilters.currentPageNumber = 0;
         if (this.dt) {
@@ -579,7 +575,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         this.getData();
     }
 
-    private onSimpleSearch($event) {
+    public onSimpleSearch($event) {
         this.getData();
     }
 }

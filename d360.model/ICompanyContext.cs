@@ -70,7 +70,8 @@ namespace d360.model
         DbSet<FusionType> FusionTypes { get; set; }
         DbSet<GlobalReportingResource> GlobalReportingResources { get; set; }
         DbSet<GraphFilter> GraphFilters { get; set; }
-        DbSet<Group> Groups { get; set; }                
+        DbSet<Group> Groups { get; set; }            
+        DbSet<HelpResource> HelpResources { get; set; }
         DbSet<IntersectDetail> IntersectDetails { get; set; }
         DbSet<Intersect> Intersects { get; set; }
         DbSet<IntersectTypeDetail> IntersectTypeDetails { get; set; }
@@ -115,6 +116,7 @@ namespace d360.model
         DbSet<Score> Scores { get; set; }
 
         DbSet<ScoreExecution> ScoreExecutions { get; set; }
+        DbSet<ScoreExecutionItem> ScoreExecutionItems { get; set; }
         DbSet<ShoppingCartItem> ShoppingCartItems { get; set; }
         DbSet<ShoppingCart> ShoppingCarts { get; set; }
         DbSet<ShoppingCartType> ShoppingCartTypes { get; set; }
@@ -171,6 +173,7 @@ namespace d360.model
         string GenerateFormResponsesEmailContent(long itemId);
         Task<List<IntersectTypeApiViewModel>> GetActiveIntersectTypesByObjectType(int id, SystemObjects type);
         List<AllocationPossibility> GetAllocationOptions();
+        Task<IEnumerable<AllowedIntersectionType>> GetAllowedIntersectionTypes(string type, int id);
         IQueryable<ResponsibilityType> GetAllowedResponsibilityTypesByAsset(long id);
         AssetDetail GetAssetDetail(long id);
         AssetDetail GetAssetDetail(string objectType, long objectId);
@@ -256,7 +259,7 @@ namespace d360.model
         bool SaveOrUpdateAsset(Asset asset, List<Field> fields, int parentId = -1);
         Task SendDigestEmails(EnvironmentLevel environmentLevel);
         void SendWorkflowEvents(string objectType, int objectTypeID, IEnumerable<IWorkflowEnabledAsset> results, core.enums.Workflow.ChangeType? changeTypeOverride = null, List<AssetFieldTypeUpdate> fieldUpdates = null, ScoreType? scoreType = null);        
-        bool TypeHasParent(SystemObjects type, int id);
+        bool TypeHasParent(SystemObjects type, int id, PredicateType parentFunctionalType = PredicateType.InterTypeHierarchy);
         new bool Update<T>(T item) where T : BaseObject;
         bool UpdateFollowStatus(SystemObjects type, int objectID, int? resourceID, bool includeChildren = false);        
         IntersectType UpsertIntersectType(IntersectType model, int lineageVersion);
@@ -283,13 +286,10 @@ namespace d360.model
         List<ResponsibilityTypeUpsertResult> UpsertResponsibilityTypes(ApiExecution execution, List<ResponsibilityTypeUpsertModel> import, int timeout = 3600);
         string GetIconText(string assetName);
         void SetApiExecutionProcessingStartTime(Guid ExecutionId);
-        string GetEscapedFilterString(string filter);
+        string GetEscapedFilterString(string filter, bool isContains = false);        
         Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds);
         void SendGraphAssetTypeEvent(Guid assetTypeUid);
         void SendApiGraphEvent(ApiExecutionInfo info);
-        Task SaveScoreProcessingResultsAsync<T>(Guid executionUid, ScoreQueueChangeType changeType, string resultFileSuffix, T item, DateTime? startedOn = null);
-        Guid SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid? triggeredByExecutionUid = null, Guid? triggeredByMeasureUid = null, TimeSpan? timespan = null);
-        Task SendContinuingScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid executionUid, DateTime startedOn);
         int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value);
         List<DataQualityResponseModel> UpsertAssetResults(List<IDataQualityUpsert> request, ApiExecution execution, int timeout = 3600, bool sendWorkflowEvents = true);
         List<DataQualityDeleteResponseModel> DeleteAssetResults(List<DataQualityDeleteModel> request, ApiExecution execution, int timeout = 3600);
@@ -316,6 +316,8 @@ namespace d360.model
 
         List<DataProfileDeleteResponse> DeleteDataProfiles(List<AssetDataProfileDeleteModel> models, ApiExecution execution, int timeout = 3600);
 
+        List<BulkResponsibilityOverrideResponseModel> BulkInsertResponsibilityOverride(List<BulkResponsibilityOverridePostModel> request, ApiExecution execution, int timeout = 3600);
+
         #region API Query Parameter Parsing
 
         void ParseAdvancedFilterQueryParameter(IEnumerable<KeyValuePair<string, string>> queryParams, List<DefaultFilter> fieldList, out DynamicParameters dbArgs, out List<string> whereStatements);
@@ -331,6 +333,86 @@ namespace d360.model
         #region Scoring
 
         /// <summary>
+        /// A Score Engine method that is called when a dependent object such as an Intersect Type, Responsibility Type or Field Type is removed from Govern, and a notification is sent to the Score Engine to determine what needs to be recalculated.
+        /// </summary>
+        void CreateCheckDependencyRemovedNotificationExecution(List<Guid> versionUids);
+
+        /// <summary>
+        /// A Score Engine method that is called when a dependent object such as an Intersect Type, Responsibility Type or Field Type is removed from Govern, and score recalculations will take place.
+        /// </summary>
+        void CreateCheckDependencyRemovedResultExecution(List<Guid> versionUids);
+        
+        /// <summary>
+        /// A Score Engine method that is called when a workflow check should occur when externally calculated scores are added to Govern.
+        /// </summary>
+        void CreateExternalScoreWorkflowCheckExecution(Guid apiExecutionUid);
+        
+        /// <summary>
+        /// A Score Engine method that is called when assets are added to Govern.
+        /// </summary>
+        void CreateImportAssetsExecution(Guid apiExecutionUid, Guid assetTypeUid);
+        
+        /// <summary>
+        /// A Score Engine method that is called when relationships are removed from Govern.
+        /// </summary>
+        void CreateDeleteRelationshipsExecution(Guid apiExecutionUid, int intersectTypeId);
+        
+        /// <summary>
+        /// A Score Engine method that is called when relationships are added to Govern.
+        /// </summary>
+        void CreateImportRelationshipsExecution(Guid apiExecutionUid, int intersectTypeId);
+
+        /// <summary>
+        /// A Score Engine method that is called when a measure is updated in Govern, and a notification is sent to the Score Engine to determine what needs to be recalculated.
+        /// </summary>
+        Guid CreateMeasureChangedNotificationExecution(MetricAssetVersion version, DateTime effectiveDate, Guid? triggeredByMeasureUid = null);
+
+        /// <summary>
+        /// A Score Engine method that is called when a measure is updated in Govern, resulting in a new version.
+        /// </summary>
+        void CreateMeasureChangedResultExecution(List<AssetMeasureModel> list, Guid? apiExecutionUid = null);
+
+        /// <summary>
+        /// A Score Engine method that is called when a measure is removed from Govern, and a notification is sent to the Score Engine to determine what needs to be recalculated.
+        /// </summary>
+        void CreateMeasureRemovedNotificationExecution(MetricAssetVersion version);
+
+        /// <summary>
+        /// A Score Engine method that is called when a measure is removed from Govern.
+        /// </summary>
+        void CreateMeasureRemovedResultExecution(Guid metricAssetVersionUid);
+
+        /// <summary>
+        /// A Score Engine method that is called when an asset type or intersect type are added or removed from Govern.
+        /// </summary>
+        void CreateRollupPathChangedExecution(int? intersectTypeId = null, int? assetTypeId = null, Guid? triggeredByApiExecutionUid = null);
+
+        /// <summary>
+        /// A Score Engine method that is called when one or more rule results are removed from Govern, and result in a score recalculation.
+        /// </summary>
+        void CreateRuleResultsRemovedExecution(Guid assetUid);
+
+        /// <summary>
+        /// A Score Engine method that is called when one or more rules are removed from Govern, and result in a score recalculation.
+        /// </summary>
+        void CreateRulesRemovedExecution(Guid apiExecutionUid, List<Guid> assetUids);
+
+        /// <summary>
+        /// A Score Engine method that is called when one or more rules are removed from Govern, and result in a score recalculation.
+        /// </summary>
+        void CreateRulesRemovedExecution(Guid apiExecutionUid, int assetTypeId);
+
+        /// <summary>
+        /// A Score Engine method that is called when a workflow check occurs after scores are processed.
+        /// </summary>
+        void CreateWorkflowCheckExecution(ScoreExecution execution, ScoreQueueChangeType previousChangeType);
+        
+        /// <summary>
+        /// A Score Engine method that is called from the Workflow system when an asset field is updated.
+        /// </summary>
+        void CreateWorkflowItemFieldUpdateExecution(AssetType assetType, Asset asset);
+
+        /// <summary>
         /// Gets the SQL statement to execute for data quality measures, depending on the type of query needed.
         /// </summary>
         /// <param name="queryType">
@@ -343,7 +425,7 @@ namespace d360.model
         /// <summary>
         /// Used where BuildDataQualityMeasureQueryModel uses QueryType = 2
         /// </summary>
-        List<AssetMeasureModel> GetDataQualityAssetEffectiveDateResultModels(DataQualityMeasureQueryModel query, Guid metricAssetUid, Guid metricAssetVersionUid, DateTime measureEffectiveDate);
+        List<AssetMeasureModel> GetDataQualityAssetEffectiveDateResultModels(DataQualityMeasureQueryModel query, Guid allocationUid, Guid metricAssetUid, Guid metricAssetVersionUid, DateTime measureEffectiveDate);
 
         /// <summary>
         /// Used where BuildDataQualityMeasureQueryModel uses QueryType = 3

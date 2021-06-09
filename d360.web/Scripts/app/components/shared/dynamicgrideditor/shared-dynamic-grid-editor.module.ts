@@ -40,6 +40,7 @@ import { SwitchModule } from '../controls/switch/switch';
 import { IgDateModule } from '../controls/date/date';
 import { IgNumberFieldModule } from '../controls/number-picker/number-input.component';
 import { OwnershipListModule } from "../small-widgets/ownership-list/ownership-list.component";
+import { AssetEditorComponent } from './asset-editor.component';
 
 @NgModule({
     imports: [
@@ -81,6 +82,7 @@ import { OwnershipListModule } from "../small-widgets/ownership-list/ownership-l
         NgxJsonViewModule
     ],
     declarations: [
+        AssetEditorComponent,
         DynamicEditorComponent,
         DynamicFieldComponent,
         DynamicFieldValueComponent,
@@ -88,6 +90,7 @@ import { OwnershipListModule } from "../small-widgets/ownership-list/ownership-l
         MultiSelectGridComponent,
     ],
     exports: [
+        AssetEditorComponent,
         DynamicEditorComponent,
         DynamicFieldValueComponent,
         DynamicGridComponent,

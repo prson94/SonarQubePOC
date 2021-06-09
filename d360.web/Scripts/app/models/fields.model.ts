@@ -43,7 +43,12 @@ export class FieldTypeEditorModel {
     LookupTokens: SelectItem[] = [];
     OwnershipLookupSettings: OwnershipLookupSettings;
     JsonElementSettings: JsonElementSettings;
+    RefListFromRelSettings: RefListFromRelSettings;
     IsPrimaryFilter: boolean;
+}
+
+export class RefListFromRelSettings {
+    DisplayRefListDescription: boolean;
 }
 
 export class JsonElementSettings {
@@ -59,8 +64,10 @@ export class OwnershipLookupSettings {
     ID: number;
     Object: string;
     ObjectID: number;
+    DisplayAsList: boolean;
     DisplayAssignmentSource: boolean;
     ExpandGroupMembership: boolean;
+    ResponsibilityType: number;
 }
 
 export class FieldType {
@@ -184,6 +191,7 @@ export class Lookups {
     Field_Relationships: SelectItem[];
     Field_CardinalRelationships: SelectItem[];
     Field_CardinalReferenceRelationships: SelectItem[];
+    FieldResponsibilityTypes: SelectItem[];
     ComplexLookupRelations: any[] = [];
     FilteredLookups: any[] = [];
     Field_FieldFromRelRelationships: any[] = [];

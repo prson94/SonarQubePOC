@@ -8,6 +8,7 @@ using Microsoft.Azure;
 using Newtonsoft.Json;
 using Azure.Storage.Blobs.Models;
 
+
 namespace d360.extensions.storage
 {
     public class AzureStorageProvider : IStorageProvider
@@ -102,12 +103,25 @@ namespace d360.extensions.storage
             return GetFileContentsAsString(folderName, fileName, Encoding.Default).Result;          
         }
 
+        public async Task GetFileStream(string folderName, string fileName, Stream sr)
+        {
+            var blob = GetBlob(folderName, fileName);
+
+            if (!(await blob.ExistsAsync().ConfigureAwait(false)))
+            {
+                throw new FileNotFoundException();                
+            }
+
+            await blob.DownloadToAsync(sr).ConfigureAwait(false);
+        }
+
         public async Task<string> GetFileContentsAsString(string folderName, string fileName, Encoding encoding)
         {
             string str = null;
             using (var stream = new MemoryStream())
             {
                 var blob = GetBlob(folderName, fileName);
+                
                 if (await blob.ExistsAsync().ConfigureAwait(false))
                 {
                     using (MemoryStream ms = new MemoryStream())

@@ -5,6 +5,7 @@ using d360.core.helpers;
 using d360.core.queue;
 using d360.extensions.storage;
 using d360.model;
+using d360.core.exceptions;
 using d360.utils.company;
 using Dapper;
 using igx.jobs.scoreprocessor.Models;
@@ -12,12 +13,14 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace igx.jobs.scoreprocessor.ChangeTypes
 {
     public abstract class ProcessBase
     {
         public ScoreQueueInfo Info { get; set; }
+        public ScoreExecution ExecutionRecord { get; set; }
         public AzureStorageProvider Storage { get; set; }
 
         string companyConnectionString = null;
@@ -204,24 +207,80 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
             };
         }
 
+        protected void checkIfOtherRunningExecutions(SqlConnection company)
+        {
+            var ProcessingStartedOn = DateTime.UtcNow;
+
+            // Clear orphaned executions.
+            company.Execute(@"
+update	metrics.execution 
+set     ProcessingStartedOn = null,
+        Processing = 0,
+        Failures = Failures + 1,
+        ErrorMessage = coalesce(ErrorMessage, '') + '; Cleared Processing flag due to orphaned execution'
+where   UpdatedOn is not null
+        and LoopSecondsElapsed is not null
+        and @ProcessingStartedOn > dateadd(ss, LoopSecondsElapsed * 5, UpdatedOn)", new { ProcessingStartedOn });
+
+            var rowUpdated = company.Execute(@"
+    update  metrics.Execution
+    set     Processing = 1,
+            ProcessingStartedOn = @ProcessingStartedOn
+    where   Uid = @uid
+            and not exists(select 1 from metrics.Execution where Uid <> @uid and Processing = 1)", new { uid = Info.ExecutionUid, ProcessingStartedOn });
+
+            if (rowUpdated <= 0)
+            {
+                throw new ScoresCurrentlyProcessingException();
+            }
+            ExecutionRecord.Processing = true;
+            ExecutionRecord.ProcessingStartedOn = ProcessingStartedOn;
+        }
+
         protected void deleteExecution(SqlConnection Db, ScoreExecution executionRecord)
         {
             Db.Execute(@"delete metrics.Execution where Uid = @Uid", executionRecord);
         }
 
+        protected ScoreExecution getExecution(SqlConnection company)
+        {
+            var executionRecord = company.Query<ScoreExecution>("select * from metrics.Execution where Uid = @uid", new { uid = Info.ExecutionUid }).SingleOrDefault();
+
+            if (executionRecord == null)
+            {
+                throw new ArgumentNullException("executionRecord", "Execution record must exist.");
+            }
+
+            return executionRecord;
+        }
+
+        protected List<ScoreExecutionItem> getExecutionItems(SqlConnection company, int offset)
+        {
+            return company.Query<ScoreExecutionItem>($"select * from metrics.ExecutionItem where ExecutionID = @executionId and [State] = 0 and ChangeType = @ct order by RowNumber OFFSET {offset} ROWS FETCH NEXT 500 ROWS ONLY", new { executionId = ExecutionRecord.ID, ct = (int)Info.ChangeType }).ToList();
+        }
+
         protected void updateExecution(SqlConnection Db, ScoreExecution executionRecord)
         {
-            Db.Execute(@"update metrics.Execution 
-set     PercentComplete = @PercentComplete,
-        Failures = @Failures, 
-        ErrorMessage = @ErrorMessage,
-        StartedOn = @StartedOn,
-        CompletedOn = @CompletedOn, 
-        ProcessingStartedOn = @ProcessingStartedOn,
-        Processing = @Processing,
-        TriggeredByExecutionUid = @TriggeredByExecutionUid,
-        TriggeredByMeasureUid = @TriggeredByMeasureUid
-where   Uid = @Uid", executionRecord);
+            Db.Execute(@"update T 
+set     T.PercentComplete = Com.Completed / Tot.Total,
+        T.Failures = @Failures, 
+        T.ErrorMessage = @ErrorMessage,
+        T.StartedOn = @StartedOn,
+        T.CompletedOn = @CompletedOn, 
+        T.ProcessingStartedOn = @ProcessingStartedOn,
+        T.Processing = @Processing,
+        T.UpdatedOn = @UpdatedOn,
+        T.LoopSecondsElapsed = @LoopSecondsElapsed,
+        T.TriggeredByExecutionUid = @TriggeredByExecutionUid,
+        T.TriggeredByMeasureUid = @TriggeredByMeasureUid
+from    metrics.Execution T 
+        cross apply (
+            select count(1) as Total from metrics.ExecutionItem where ExecutionID = T.ID
+        ) Tot
+        cross apply (
+            select count(1) as Completed from metrics.ExecutionItem where ExecutionID = T.ID and State <> 0
+        ) Com
+where   T.Uid = @Uid", executionRecord);
         }
 
         protected bool updateExecution(SqlConnection Db, ScoreExecution executionRecord, bool completed, Exception ex = null, bool shouldDeleteAfterCompletion = false)

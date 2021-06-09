@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, Input, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { AssetBrowserDiagramAsset } from '../../../../../models/lineage.model';
+import { AssetTypeClass } from "../../../../../models/asset.model";
 import { BrowserService } from '../../../../../services/browser.service';
 import { PermissionsService } from '../../../../../services/permissions.service';
 import { MessagesObservableService } from '../../../../../services/messages-observable.service';
@@ -13,6 +14,7 @@ import { MessagesObservableService } from '../../../../../services/messages-obse
 export class AssetBrowserInfoPanelComponent implements AfterViewInit {
     @Input() asset: AssetBrowserDiagramAsset;
 
+    assetTypeClass = AssetTypeClass;
     constructor(
         protected permissionsService: PermissionsService,
         protected messagesService: MessagesObservableService,

@@ -28,7 +28,7 @@ export class MultiInputField implements ControlValueAccessor {
 
     chips: string[] = [];
 
-    private currentText: string = "";
+    public currentText: string = "";
     private disabled: boolean = false;
     private isInFocus: boolean = false;
 

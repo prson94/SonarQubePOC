@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\EntityFramework.6.4.0\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.0\build\EntityFramework.props')" />
+  <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -52,13 +52,13 @@
       <HintPath>..\packages\Azure.Storage.Common.12.7.0\lib\netstandard2.0\Azure.Storage.Common.dll</HintPath>
     </Reference>
     <Reference Include="Dapper, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Dapper.2.0.35\lib\net461\Dapper.dll</HintPath>
+      <HintPath>..\packages\Dapper.2.0.90\lib\net461\Dapper.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.4.0\lib\net45\EntityFramework.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.4.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ApplicationInsights, Version=2.16.0.18277, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.ApplicationInsights.2.16.0\lib\net46\Microsoft.ApplicationInsights.dll</HintPath>
@@ -225,8 +225,8 @@
     <Reference Include="NCrontab.Signed, Version=3.2.20120.0, Culture=neutral, PublicKeyToken=5247b4370afff365, processorArchitecture=MSIL">
       <HintPath>..\packages\ncrontab.signed.3.3.0\lib\net35\NCrontab.Signed.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.AppContext, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -413,8 +413,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ChangeTypes\ExternalMeasureResultsCreatedProcess.cs" />
-    <Compile Include="ChangeTypes\ExternalScoresCreatedProcess.cs" />
     <Compile Include="ChangeTypes\IScoreProcess.cs" />
     <Compile Include="ChangeTypes\RuleAssetRemovedProcess.cs" />
     <Compile Include="ChangeTypes\MeasureChangedProcess.cs" />
@@ -424,17 +422,33 @@
     <Compile Include="ChangeTypes\WorkflowCheckProcess.cs" />
     <Compile Include="ChangeTypes\ProcessBase.cs" />
     <Compile Include="ChangeTypes\AssetMeasuresProcess.cs" />
+    <Compile Include="Models\AllocationDataModel.cs" />
+    <Compile Include="Models\AllocationDataModelConditionItem.cs" />
+    <Compile Include="Models\AllocationDataModelConditionItemTempValue.cs" />
+    <Compile Include="Models\AllocationDataModelRollupPath.cs" />
+    <Compile Include="Models\AllocationDataModelRollupPathFilter.cs" />
+    <Compile Include="Models\AllocationDataModelRollupPathFilterValue.cs" />
+    <Compile Include="Models\AllocationDataModelRollupPathSegmentLink.cs" />
     <Compile Include="Models\AlreadyProcessedMeasureModel.cs" />
+    <Compile Include="Models\AssetAllocationPreviousResult.cs" />
     <Compile Include="Models\AssetMeasuresProcessField.cs" />
+    <Compile Include="Models\MatchingScoreItemModel.cs" />
+    <Compile Include="Models\MatchingScoreModel.cs" />
     <Compile Include="Models\MeasureRemovedScoreRequeueDataItem.cs" />
     <Compile Include="Models\AssetVersionCheckObjectType.cs" />
     <Compile Include="ExecutionUpdater.cs" />
+    <Compile Include="Models\MetConditionModel.cs" />
+    <Compile Include="Models\MetConditionsModel.cs" />
+    <Compile Include="Models\RollupPathRuleResult.cs" />
+    <Compile Include="Models\ScoreItemLink.cs" />
     <Compile Include="Models\StagingScoreItem.cs" />
     <Compile Include="Models\UniqueAssetEffectiveDateModel.cs" />
+    <Compile Include="Models\WorkflowScoreGroup.cs" />
+    <Compile Include="Models\RawWorkflowScoreAsset.cs" />
     <Compile Include="ScoringQueueProcessor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ChangeTypes\SupportingModels.cs" />
+    <Compile Include="Models\AllocationDataModelCondition.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
@@ -480,16 +494,16 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.Web.WebJobs.Publish.2.0.0\build\Microsoft.Web.WebJobs.Publish.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Web.WebJobs.Publish.2.0.0\build\Microsoft.Web.WebJobs.Publish.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.VisualStudio.SlowCheetah.3.0.61\build\Microsoft.VisualStudio.SlowCheetah.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.VisualStudio.SlowCheetah.3.0.61\build\Microsoft.VisualStudio.SlowCheetah.targets'))" />
-    <Error Condition="!Exists('..\packages\EntityFramework.6.4.0\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.0\build\EntityFramework.props'))" />
-    <Error Condition="!Exists('..\packages\EntityFramework.6.4.0\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.0\build\EntityFramework.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Azure.Services.AppAuthentication.1.0.3\build\Microsoft.Azure.Services.AppAuthentication.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Azure.Services.AppAuthentication.1.0.3\build\Microsoft.Azure.Services.AppAuthentication.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Azure.DocumentDB.Core.2.10.0\build\Microsoft.Azure.DocumentDB.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Azure.DocumentDB.Core.2.10.0\build\Microsoft.Azure.DocumentDB.Core.targets'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.props'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.targets'))" />
   </Target>
   <Import Project="..\packages\Microsoft.Web.WebJobs.Publish.2.0.0\build\Microsoft.Web.WebJobs.Publish.targets" Condition="Exists('..\packages\Microsoft.Web.WebJobs.Publish.2.0.0\build\Microsoft.Web.WebJobs.Publish.targets')" />
   <Import Project="..\packages\Microsoft.VisualStudio.SlowCheetah.3.0.61\build\Microsoft.VisualStudio.SlowCheetah.targets" Condition="Exists('..\packages\Microsoft.VisualStudio.SlowCheetah.3.0.61\build\Microsoft.VisualStudio.SlowCheetah.targets')" />
-  <Import Project="..\packages\EntityFramework.6.4.0\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.4.0\build\EntityFramework.targets')" />
   <Import Project="..\packages\Microsoft.Azure.Services.AppAuthentication.1.0.3\build\Microsoft.Azure.Services.AppAuthentication.targets" Condition="Exists('..\packages\Microsoft.Azure.Services.AppAuthentication.1.0.3\build\Microsoft.Azure.Services.AppAuthentication.targets')" />
   <Import Project="..\packages\Microsoft.Azure.DocumentDB.Core.2.10.0\build\Microsoft.Azure.DocumentDB.Core.targets" Condition="Exists('..\packages\Microsoft.Azure.DocumentDB.Core.2.10.0\build\Microsoft.Azure.DocumentDB.Core.targets')" />
+  <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

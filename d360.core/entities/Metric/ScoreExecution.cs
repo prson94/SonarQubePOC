@@ -11,6 +11,9 @@ namespace d360.core.entities
         [DataMember, Key]
         public Guid Uid { get; set; }
 
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long ID { get; set; }
+
         [DataMember]
         public double PercentComplete { get; set; }
 
@@ -33,25 +36,15 @@ namespace d360.core.entities
         public bool Processing { get; set; }
 
         [DataMember]
+        public int? LoopSecondsElapsed { get; set; }
+
+        [DataMember]
+        public DateTime? UpdatedOn { get; set; }
+
+        [DataMember]
         public Guid? TriggeredByExecutionUid { get; set; }
 
         [DataMember]
         public Guid? TriggeredByMeasureUid { get; set; }
-
-        public void SetPercentageComplete(int processed, int total)
-        {
-            if (total <= 0)
-            {
-                PercentComplete = 1;
-            }
-            else 
-            {
-                PercentComplete = (float)processed / (float)total;
-                if (PercentComplete > 1)
-                {
-                    PercentComplete = 1;
-                }
-            }
-        }
     }
 }

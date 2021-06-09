@@ -65,8 +65,10 @@ import { PredicateFriendlyType } from '../../../models/predicate.model';
                                     <td>
                                         <span>{{item?.Object.Name}}<span style="color: #999;font-size:75%;"> ({{item?.Object.Class}})</span></span>
                                     </td>
-                                    <td class="RowTools">
-                                        <d3s-preview-tooltip objectType="IntersectType" [objectId]="item.Id" icon="info"></d3s-preview-tooltip>
+                                    <td>
+                                        <div class="RowTools">
+                                            <d3s-preview-tooltip objectType="IntersectType" [objectId]="item.Id" icon="info"></d3s-preview-tooltip>
+                                        </div>
                                     </td>
                                     <td>
                                         <div *ngIf="item?.Predicate.Type != 'Diagram' && item?.Predicate.Type != 'DiagramUse' && item?.Predicate.Type != 'DiagramReference'" class="RowTools">

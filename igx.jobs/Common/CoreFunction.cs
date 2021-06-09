@@ -257,7 +257,10 @@ namespace igx.jobs
             })
             .ConfigureLogging((context, b) =>
             {
-                b.AddConsole();
+#if !DEBUG
+               b.SetMinimumLevel(LogLevel.Warning); // turn off trace messages
+#endif
+                b.AddConsole();                
 
                 string appInsightsKey = context.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
                 if (!string.IsNullOrEmpty(appInsightsKey))

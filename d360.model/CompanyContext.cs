@@ -154,6 +154,8 @@ namespace d360.model
 
         public DbSet<GraphFilter> GraphFilters { get; set; }
 
+        public DbSet<HelpResource> HelpResources { get; set; }
+
         public DbSet<Intersect> Intersects { get; set; }
 
         public DbSet<IntersectDetail> IntersectDetails { get; set; }                /* VIEW */
@@ -337,6 +339,17 @@ where	T.[Class] in ({classList})").ToList();
             return list;
         }
 
+        public async Task<IEnumerable<AllowedIntersectionType>> GetAllowedIntersectionTypes(string type, int id)
+        {
+            return await Database.Connection
+                .QueryAsync<AllowedIntersectionType>("GetAllowedIntersectionTypes @SourceType, @SourceTypeID",
+                new
+                {
+                    SourceType = new Dapper.DbString { Value = type, IsAnsi = true, IsFixedLength = true, Length = 50 },
+                    SourceTypeID = id
+                }).ConfigureAwait(false);
+        }
+
         public string GetFormattedFieldLookupValue(int fieldTypeID, string fieldValue)
         {
             return
@@ -475,7 +488,9 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 
             if (intersectType == null)
             {
-                throw new ArgumentNullException("Invalid Relationship field encountered invalid or deleted relationship type encountered.");
+                var error = new Dictionary<string, object>();
+                error.Add("RelationshipError", "Invalid Relationship field encountered invalid or deleted relationship type encountered.");
+                return error;
             }
 
             int count = 0, objID = 0;
@@ -887,14 +902,14 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
             return itName != null ? itName : "Name";
         }
 
-        public bool TypeHasParent(SystemObjects type, int id)
+        public bool TypeHasParent(SystemObjects type, int id, PredicateType parentFunctionalType = PredicateType.InterTypeHierarchy)
         {
 
             var sql = @"select 1 from IntersectType I
                     inner join [Predicate] P on P.ID = I.PredicateID
                     where P.[Type] = @type and [Object] = @object and ObjectID = @objectId";
 
-            return Query<dynamic>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50, IsFixedLength = true }, objectId = id }).Any();
+            return Query<dynamic>(sql, new { type = (int)parentFunctionalType, @object = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50, IsFixedLength = true }, objectId = id }).Any();
         }
 
         public AssetDetail GetParentObject(int id, SystemObjects obj)
@@ -2910,7 +2925,11 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 case SystemObjects.IssueType:
                     objectId = IssueTypes.FirstOrDefault(x => x.uid == objectUid).ID;
                     break;
+                case SystemObjects.ArtifactType:
+                case SystemObjects.PolicyType:
                 case SystemObjects.ReferenceItemType:
+                case SystemObjects.RuleType:
+                case SystemObjects.TaxonomyType:
                     objectId = AssetTypes.FirstOrDefault(x => x.uid == objectUid)?.ObjectID ?? 0;
                     break;
                 case SystemObjects.ResourceType:
@@ -2923,10 +2942,10 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     objectId = ConnectorLabels.FirstOrDefault(x => x.uid == objectUid).ID;
                     break;
                 default:
-                    objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == objectType.ToString())?.ObjectID ?? 0;
+                    objectId = Assets.FirstOrDefault(x => x.uid == objectUid)?.ObjectID ?? 0;
                     if (objectId <= 0)
                     {
-                        throw new ArgumentNullException($"Method not implemented for object type '{objectType}'");
+                        throw new ArgumentNullException($"Asset not found based on uid '{objectUid}'");
                     }
                     break;
             }

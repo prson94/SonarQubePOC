@@ -377,8 +377,7 @@ main {
 }
 
 .panel-section ul,
-p-table .p-datatable-tbody ul,
-.p-treetable :not(.ql-editor):not(.p-dropdown-items-wrapper) > ul {
+p-table .p-datatable-tbody ul {
     list-style-type: disc;
     padding-left: 40px;
 }
@@ -1803,6 +1802,10 @@ div.home-image-title-text {
     &.rightaligned {
         display: inline-block;
         width: 100%;
+    }
+
+    .preview-text {
+        display: inline-block;
     }
 }
 
@@ -4545,7 +4548,7 @@ button.tab-scroller {
 ///
 
 ///Badge/pill components
-.d3s-status-badge {
+.d3s-simple-badge {
     height: 24px;
     border-radius: 12px;
 
@@ -4580,11 +4583,11 @@ button.tab-scroller {
     }
 }
 
-d3s-status-badge + .d3s-score-container {
+d3s-simple-badge + .d3s-score-container {
     padding-left: 24px;
 }
 
-d3s-status-badge + button.button:not(.icon):not(.bar):first-of-type {
+d3s-simple-badge + button.button:not(.icon):not(.bar):first-of-type {
     margin-left: 8px;
 }
 
@@ -6147,6 +6150,7 @@ table {
     position: relative;
     width: 12px;
     height: 12px;
+    top: 1px;
     border-radius: 50%;
     margin-right: 8px;
     border: 1px solid rgba(0, 0, 0, 0.1);
@@ -6899,7 +6903,36 @@ table {
     display: block;
     color: @ig-black;
     font-weight: bold;
-    margin-bottom: 4px;
+    margin-top: 4px;
+    line-height: 16px;
+    word-break: break-all;
+}
+
+.ig-value {
+    margin-top: 4px;
+    margin-bottom: 12px;
+    line-height: 16px;
+    word-break: break-word;
+
+    .ig-bool {
+        margin-right: 6px;
+    }
+
+    &.ig-html > p {
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+
+    &.ig-item-list {
+        ul {
+            margin: 0;
+
+            li.ig-item {
+                padding-left: 1em;
+                text-indent: -0.5em;
+            }
+        }
+    }
 }
 
 .comment-box {

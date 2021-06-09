@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -56,8 +57,7 @@ select	Al.AllocationUid,
                             from    metrics.AssetVersionConditionItemValue 
                             where   Uid = I.Uid
                             for json path
-                            ) as ValueItems
-                            --JSON_QUERY((SELECT CONCAT('[""',STRING_AGG([Value], '"",""'),'""]') FROM metrics.AssetVersionConditionItemValue where Uid = I.Uid)) as [Values]
+                            ) as ValueItems 
 					from	[metrics].[AssetVersionConditionItem] I
 					where	AssetVersionConditionUid = C.Uid
 					for json path
@@ -113,18 +113,28 @@ from	metrics.Asset A
 		inner join metrics.AssetVersion V on V.AssetUid = A.Uid and V.[State] = 1
         inner join metrics.Allocation Mal on Mal.Uid = A.AllocationUid
 		inner join (
-			select		AllocationUid, EffectiveDate
-			from		#AssetAllocations		
-			group by	AllocationUid, EffectiveDate
+            select	M.AllocationUid, P.EffectiveDate
+            from	metrics.ExecutionItem I
+		            cross apply openjson(Payload)  with ( EffectiveDate date '$.EffectiveDate', Measures nvarchar(max) '$.Measures' AS JSON ) P 
+		            cross apply openjson(P.Measures) with ( AllocationUid uniqueidentifier '$.AllocationUid' ) M 
+            where	I.ExecutionID = @ExecutionID
+		            and I.ChangeType = 0
+            group by M.AllocationUid, P.EffectiveDate
 		) Al on Al.AllocationUid = A.AllocationUid and ( (Al.EffectiveDate between V.EffectiveDate and V.EffectiveEndDate) or (Al.EffectiveDate >= V.EffectiveDate and V.EffectiveEndDate is null) )";
 
         const string SUPPORTING_DATA_SQL = @"
-select * from #AssetAllocations;
-select * from FieldType where AssetTypeID in (select AssetTypeID from #AssetAllocations group by AssetTypeID);";
+select  * 
+from    FieldType 
+where   AssetTypeID in (
+            select  A.AssetTypeId 
+            from    metrics.ExecutionItem I
+		            cross apply openjson(Payload) with ( AssetUid uniqueidentifier '$.AssetUid' ) P 
+		            inner join Asset A on A.Uid = P.AssetUid
+            where	I.ExecutionID = @ExecutionID and I.ChangeType = 0
+        );";
 
         #endregion
-
-        ScoreExecution executionRecord;
+        
         AssetVersionCheckObjectTypes assetVersionCheckObjectTypes;
 
         public AssetMeasuresProcess()
@@ -135,139 +145,24 @@ select * from FieldType where AssetTypeID in (select AssetTypeID from #AssetAllo
 
         public async Task Run()
         {
-            var assetMeasures = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetMeasureModel>>(Info.StorageFolder, Info.StorageFile);
-
-            if(assetMeasures == null)
-            {
-                throw new ArgumentNullException("assetMeasures","Cannot load score file from storage.");
-            }
-
             var Db = GetCompanyContext();
             using (var company = GetEnvironmentConnection())
             {
-                executionRecord = company.Query<ScoreExecution>("select * from metrics.Execution where Uid = @uid", new { uid = Info.ExecutionUid }).SingleOrDefault();
-
-                if (executionRecord == null)
-                {
-                    throw new ArgumentNullException("executionRecord", "Execution record must exist.");
-                }
-
-                // This means that the original execution came in via one of the external measure/score endpoints.
-                // We need to check whether any other execution is running.
-
-                var currentlyRunningExecutions = company.Query<bool>(@"
-select  cast(iif(count(1) > 0, 1, 0) as bit) 
-from    metrics.Execution
-where   Uid <> @uid 
-        and Processing = 1", new { uid = Info.ExecutionUid }).Single();
-                if (currentlyRunningExecutions)
-                {
-                    throw new ScoresCurrentlyProcessingException();
-                }
-
-                executionRecord.Processing = true;
-                executionRecord.ProcessingStartedOn = DateTime.UtcNow;
-                updateExecution(company, executionRecord);
-                
-                // Load assets to a temporary table to get the list of asset types with all associated measures for the specific effective date.
-                var assets = new DataTable();
-                assets.Columns.Add("AssetUid", typeof(Guid));
-                assets.Columns.Add("MetricAssetUid", typeof(Guid));
-                assets.Columns.Add("MetricAssetVersionUid", typeof(Guid));
-                assets.Columns.Add("EffectiveDate", typeof(DateTime));
-                assets.Columns.Add("Result", typeof(bool));
-
-                var rawAssetMeasures = from a in assetMeasures
-                             from m in a.Measures
-                             select new 
-                             {
-                                 a.AssetUid,
-                                 a.EffectiveDate,
-                                 m.MetricAssetUid,
-                                 m.MetricAssetVersionUid,
-                                 m.Result
-                             };
-                foreach (var model in rawAssetMeasures)
-                {
-                    var assetRow = assets.NewRow();
-                    assetRow["AssetUid"] = model.AssetUid;
-                    assetRow["MetricAssetUid"] = model.MetricAssetUid;
-                    if (model.MetricAssetVersionUid.HasValue) assetRow["MetricAssetVersionUid"] = model.MetricAssetVersionUid;
-                    assetRow["EffectiveDate"] = model.EffectiveDate.Date;
-                    if(model.Result.HasValue) assetRow["Result"] = model.Result;
-                    assets.Rows.Add(assetRow);
-                }
-
-                List<AllocationDataModel> allocations = null;
-                List<FieldType> fieldTypes = null;
-                List<ExternalMeasureResultsCreatedModel> models = null;
-
                 if (company.State != ConnectionState.Open)
                     company.Open();
 
-                using (var trans = company.BeginTransaction())
-                {
-                    #region Populate models with relevant details
+                ExecutionRecord = getExecution(company);
+                checkIfOtherRunningExecutions(company);
 
-                    await company.ExecuteAsync(@"create table #AssetAllocations (
-                            RowNumber int identity not null,
-                            AssetUid uniqueidentifier not null,
-                            EffectiveDate date not null,
-                            MetricAssetUid uniqueidentifier not null,
-                            Result bit null,
-                            MetricAssetVersionUid uniqueidentifier null,
-                            AllocationUid uniqueidentifier null,
-                            AssetTypeId int null
-                        )", transaction: trans);
+                var fieldTypesRequest = await company.QueryAsync<FieldType>(SUPPORTING_DATA_SQL, new { ExecutionID = ExecutionRecord.ID }, commandTimeout: 900);
+                var fieldTypes = fieldTypesRequest.ToList();
 
-                    using (var bulkCopy = CreateBulkCopy(company, trans, "#AssetAllocations"))
-                    {
-                        bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
-                        bulkCopy.ColumnMappings.Add("MetricAssetUid", "MetricAssetUid");
-                        bulkCopy.ColumnMappings.Add("MetricAssetVersionUid", "MetricAssetVersionUid");
-                        bulkCopy.ColumnMappings.Add("EffectiveDate", "EffectiveDate");
-                        bulkCopy.ColumnMappings.Add("Result", "Result");
+                // Get the full list of relevant measures based on the allocations and effective dates.
+                var allocationRequest = await company.QueryAsync<AllocationDataModel>(ALLOCATION_SQL, new { ExecutionID = ExecutionRecord.ID });
+                var allocations = allocationRequest.ToList();
 
-                        await bulkCopy.WriteToServerAsync(assets);
-                    }
-
-                    // Figure out which allocations we are dealing with.
-                    await company.ExecuteAsync(
-                        "update T " +
-                        "set T.AllocationUid = S.AllocationUid, " +
-                        "T.AssetTypeId = A.ID " +
-                        "from #AssetAllocations T " +
-                        "inner join metrics.Asset S on S.Uid = T.MetricAssetUid " +
-                        "inner join metrics.Allocation Al on Al.Uid = S.AllocationUid " +
-                        "inner join AssetType A on A.Uid = Al.AssetTypeUid",
-                        transaction: trans
-                        );
-
-                    // Figure out which measure versions we are dealing with.
-                    await company.ExecuteAsync(
-                        "update T " +
-                        "set T.MetricAssetVersionUid = S.Uid " +
-                        "from #AssetAllocations T " +
-                        "inner join metrics.AssetVersion S on S.AssetUid = T.MetricAssetUid and T.MetricAssetVersionUid is null " +
-                        "and ( (T.EffectiveDate between S.EffectiveDate and S.EffectiveEndDate) or (T.EffectiveDate >= S.EffectiveDate and S.EffectiveEndDate is null) )",
-                        transaction: trans
-                        );
-
-                    #endregion
-
-                    var supportingDataRequest = await company.QueryMultipleAsync(SUPPORTING_DATA_SQL, transaction: trans, commandTimeout: 900);
-                    models = supportingDataRequest.Read<ExternalMeasureResultsCreatedModel>().ToList();
-                    fieldTypes = supportingDataRequest.Read<FieldType>().ToList();
-
-                    // Get the full list of relevant measures based on the allocations and effective dates.
-                    var allocationRequest = await company.QueryAsync<AllocationDataModel>(ALLOCATION_SQL, transaction: trans);
-                    allocations = allocationRequest.ToList();
-
-                    trans.Commit();
-                }
-                
-                Action<MetricAssetDefinitionGovernanceViewModel, Guid, bool?> assetVersionCheckObjectTypeAction = (MetricAssetDefinitionGovernanceViewModel governance, Guid metricAssetVersionUid, bool? overrideBoolValue) => {
-                    if (assetVersionCheckObjectTypes.OkToAddToList(metricAssetVersionUid))
+                Action<Object, MetricAssetDefinitionGovernanceViewModel, Guid, bool?> assetVersionCheckObjectTypeAction = (Object locker, MetricAssetDefinitionGovernanceViewModel governance, Guid metricAssetVersionUid, bool? overrideBoolValue) => {
+                    if (assetVersionCheckObjectTypes.OkToAddToList(locker, metricAssetVersionUid))
                     {
                         var check = MetricGovernanceCheckType.External;
 
@@ -317,41 +212,18 @@ where   Uid <> @uid
 
                 var dqMeasureQueryLibrary = new List<DataQualityMeasureQueryModel>();
 
-                var uniqueAssetCombinations = models
-                    .Where(i => i.AllocationUid.HasValue)
-                    .OrderBy(i => i.EffectiveDate)
-                    .ThenBy(i => i.AssetUid)
-                    .Select(i => new UniqueAssetEffectiveDateModel
-                    {
-                        AllocationUid = i.AllocationUid.Value,
-                        AssetTypeId = i.AssetTypeId,
-                        AssetUid= i.AssetUid,
-                        EffectiveDate= i.EffectiveDate.Date
-                    })
-                    .Distinct(new UniqueAssetEffectiveDateModelComparer())
-                    .ToList();
-
                 var scoreItems = new List<StagingScoreItem>();
-                int runningTotal = uniqueAssetCombinations.Count;
-                var fullCount = runningTotal;  // This value does not change.
-                var limitBeforeSending = 250;
                 var scoreCount = 0;
 
-                while (runningTotal > 0)
+                var stopwatch = new Stopwatch();
+                int loopCount = 1;
+                int loopElapsedSeconds = 0;
+                var executionItems = getExecutionItems(company, 0);
+                while (executionItems.Count > 0)
                 {
-                    #region Pop off master list into local set
-                    var thisSet = new List<UniqueAssetEffectiveDateModel>();
-                    for (int i = 1; i <= limitBeforeSending; i++)
-                    {
-                        if (uniqueAssetCombinations.Count == 0)
-                        {
-                            // Exit loop if nothing else in master list.
-                            break; 
-                        }
-                        thisSet.Add(uniqueAssetCombinations[0].CloneThis());
-                        uniqueAssetCombinations.RemoveAt(0);
-                    }
-                    #endregion
+                    stopwatch.Start();
+
+                    var executionItemSubset = executionItems.Select(exItem => new { Item = exItem.GetPayload<AssetMeasureModel>(), exItem.RowNumber }).ToList();
 
                     // Get all fields for this set.
                     var setFields = company.Query<AssetMeasuresProcessField>(@"
@@ -363,7 +235,7 @@ where   Uid <> @uid
 	    inner join FieldType FT ON FT.AssetTypeID = A.AssetTypeID 
 	    left join Field F ON F.FieldTypeID = FT.ID AND F.ObjectType = A.Object AND F.ObjectID = A.ObjectID
 	    outer apply (
-		    select	string_agg(lower(cast(LA.Uid as nvarchar(50))), ',') as LookupValues
+		    select	string_agg(lower(cast(LA.Uid as nvarchar(max))), ',') as LookupValues
 		    from	STRING_SPLIT(COALESCE(F.Value, FT.DefaultValue),',') MV
 				    inner join Asset LA on LA.ObjectID = MV.value
 				    inner join AssetType LAT on LAT.Object = FT.LookupObjectType+'Type' and LAT.ObjectID = FT.LookupObjectID and LAT.ID = LA.AssetTypeID
@@ -373,32 +245,33 @@ where   Uid <> @uid
 	    OR FT.DefaultValue IS NOT NULL 
 	    OR FT.ShowIfEmpty = 1)
 	    and FT.Type not in ('JSON','Path','Relationship','FieldFromRelationship','ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship','Tag','Score')
-    and A.Uid in (select Uid from @assets);", new { assets = thisSet.Select(i => new { Uid = i.AssetUid }).Distinct().AsTableValuedParameter("dbo.UidTable", new List<string> { "Uid" }) }).ToList();
+    and A.Uid in (select Uid from @assets);", new { assets = executionItemSubset.Select(i => new { Uid = i.Item.AssetUid }).Distinct().AsTableValuedParameter("dbo.UidTable", new List<string> { "Uid" }) }).ToList();
 
                     object setLock = new Object();
-                    thisSet.AsParallel().ForAll(assetEffectiveDate =>
+                    executionItemSubset.AsParallel().ForAll(executionItem =>
                     {
                         lock (setLock) { 
                             scoreCount++;
                         }
 
+                        var assetUid = executionItem.Item.AssetUid;
+                        var effectiveDate = executionItem.Item.EffectiveDate;
+
                         // The local lists below keep track of score items and links to add for a specific score (asset / effective date / allocation combination).
                         var assetScoreItems = new List<StagingScoreItem>();
 
-                        var results = (from r in models
+                        var results = (
+                                        from r in executionItem.Item.Measures
                                         join m in allocations on r.MetricAssetUid equals m.MetricAssetUid
-                                        where m.AllocationUid == assetEffectiveDate.AllocationUid
-                                        where m.EffectiveDate == assetEffectiveDate.EffectiveDate
-                                        where r.AllocationUid == assetEffectiveDate.AllocationUid
-                                        where r.AssetUid == assetEffectiveDate.AssetUid
-                                        where r.EffectiveDate == assetEffectiveDate.EffectiveDate
+                                        where m.AllocationUid == r.AllocationUid
+                                        where m.EffectiveDate == effectiveDate
                                         select new
                                         {
                                             Result = r,
                                             Measure = m
                                         }).ToList();
 
-                        var assetFields = setFields.Where(f => f.Assetuid == assetEffectiveDate.AssetUid).ToList();
+                        var assetFields = setFields.Where(f => f.Assetuid == assetUid).ToList();
 
                         object resultsLock = new Object();
                         results.AsParallel().ForAll(r =>
@@ -407,9 +280,9 @@ where   Uid <> @uid
                         
                             var scoreItem = new StagingScoreItem
                             {
-                                AllocationUid = assetEffectiveDate.AllocationUid,
-                                AssetUid = assetEffectiveDate.AssetUid,
-                                EffectiveDate = assetEffectiveDate.EffectiveDate,
+                                AllocationUid = r.Result.AllocationUid,
+                                AssetUid = assetUid,
+                                EffectiveDate = effectiveDate,
                                 RawWeight = conditionValidator.SelectedWeight,
                                 MeasureUid = r.Measure.MetricAssetUid,
                                 MeasureVersionUid = r.Measure.MetricAssetVersionUid                            
@@ -421,7 +294,7 @@ where   Uid <> @uid
                                 scoreItem.OtherConditions = JsonConvert.SerializeObject(conditionValidator.ExtraneousConditions);
                                 scoreItem.IsRemoved = false;
 
-                                if (assetVersionCheckObjectTypes.ShouldContinueAnalysis(r.Measure.MetricAssetVersionUid))
+                                if (assetVersionCheckObjectTypes.ShouldContinueAnalysis(resultsLock, r.Measure.MetricAssetVersionUid))
                                 {
                                     string definitionJson = r.Measure.Definition;
                                     if (string.IsNullOrEmpty(definitionJson))
@@ -454,19 +327,23 @@ where   Uid <> @uid
                                                 }
                                                 else
                                                 {
+                                                    var iDb = GetCompanyContext();
+
                                                     var dqQueryDetail = dqMeasureQueryLibrary.FirstOrDefault(dq => dq.AssetVersionRollupPathUid == r.Measure.RollupPath.AssetVersionRollupPathUid);
                                                     if (dqQueryDetail == null)
                                                     {
-                                                        dqQueryDetail = Db.BuildDataQualityMeasureQueryModel(MetricDataQualityQueryType.MeasureResults_For_Calculation, r.Measure.RollupPath.AssetVersionRollupPathUid);
+                                                        dqQueryDetail = iDb.BuildDataQualityMeasureQueryModel(MetricDataQualityQueryType.MeasureResults_For_Calculation, r.Measure.RollupPath.AssetVersionRollupPathUid);
                                                         lock (resultsLock)
-                                                        { 
+                                                        {
                                                             dqMeasureQueryLibrary.Add(dqQueryDetail); // Add to library for future reference.
                                                         }
                                                     }
 
                                                     try
                                                     {
-                                                        var rollupPathResults = Db.GetDataQualityMeasureQueryResultModels(dqQueryDetail, r.Result.AssetUid, assetEffectiveDate.EffectiveDate);
+                                                        List<DataQualityMeasureQueryResultModel> rollupPathResults = null;
+                                                        
+                                                        rollupPathResults = iDb.GetDataQualityMeasureQueryResultModels(dqQueryDetail, assetUid, effectiveDate);
 
                                                         if (rollupPathResults.Count > 0)
                                                         {
@@ -529,6 +406,8 @@ where   Uid <> @uid
                                                         scoreItem.Value = false;
                                                         scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = true, ErrorMessage = ex.GetFullExceptionData(false) });
                                                     }
+
+                                                    iDb = null;
                                                 }
                                             }
 
@@ -548,7 +427,7 @@ where   Uid <> @uid
                                             switch (gDefinition.Check)
                                             {
                                                 case MetricGovernanceCheckType.External:
-                                                    scoreItem.Value = r.Result.Result;
+                                                    scoreItem.Value = r.Result.Result.Value;
                                                     break;
                                                 case MetricGovernanceCheckType.Field:
                                                     if (gDefinition.Field != null)
@@ -558,7 +437,7 @@ where   Uid <> @uid
                                                         bool allowMultipleValues = (assetFieldType != null) ? assetFieldType.AllowMultipleValues : false;
 
                                                         // Check the measure validity.
-                                                        assetVersionCheckObjectTypeAction(gDefinition, r.Measure.MetricAssetVersionUid, (assetFieldType != null));
+                                                        assetVersionCheckObjectTypeAction(resultsLock, gDefinition, r.Measure.MetricAssetVersionUid, (assetFieldType != null));
 
                                                         var assetFieldForFieldCheck = assetFields.FirstOrDefault(f => f.FieldTypeName == gDefinition.Field.FieldTypeName);
 
@@ -569,17 +448,17 @@ where   Uid <> @uid
                                                     if (gDefinition.Owner != null)
                                                     {
                                                         // Check the measure validity.
-                                                        assetVersionCheckObjectTypeAction(gDefinition, r.Measure.MetricAssetVersionUid, null);
+                                                        assetVersionCheckObjectTypeAction(resultsLock, gDefinition, r.Measure.MetricAssetVersionUid, null);
 
                                                         string trueValue = (gDefinition.Owner.Operator == Operator.Populated) ? "1" : "0";
                                                         string falseValue = (gDefinition.Owner.Operator == Operator.Populated) ? "0" : "1";
-                                                        scoreItem.Value = company.Query<bool>(
-                                                            $"select cast(iif(count(1) > 0, {trueValue}, {falseValue}) as bit) " +
-                                                            "from ResponsibilityDetail R " +
-                                                            "inner join ResponsibilityType T on T.ID = R.ResponsibilityTypeID and T.Uid = @ResponsibilityTypeUid " +
-                                                            "where exists ( select 1 from Asset where Uid = @AssetUid and ( (ID = R.AssetID and R.AssetID <> 0) or (AssetTypeID = R.AssetTypeID and R.AssetID = 0) ) )",
-                                                            new { gDefinition.Owner.ResponsibilityTypeUid, r.Result.AssetUid }, commandTimeout: 90
-                                                            ).Single();
+
+                                                        scoreItem.Value = calculateAssetMeasureResultFromDb(
+                                                        $"select cast(iif(count(1) > 0, {trueValue}, {falseValue}) as bit) " +
+                                                        "from ResponsibilityDetail R " +
+                                                        "inner join ResponsibilityType T on T.ID = R.ResponsibilityTypeID and T.Uid = @ResponsibilityTypeUid " +
+                                                        "where exists ( select 1 from Asset where Uid = @assetUid and ( (ID = R.AssetID and R.AssetID <> 0) or (AssetTypeID = R.AssetTypeID and R.AssetID = 0) ) )",
+                                                        new { gDefinition.Owner.ResponsibilityTypeUid, assetUid });
                                                     }
                                                     else
                                                     {
@@ -590,21 +469,21 @@ where   Uid <> @uid
                                                     if (gDefinition.Predicate != null)
                                                     {
                                                         // Check the measure validity.
-                                                        assetVersionCheckObjectTypeAction(gDefinition, r.Measure.MetricAssetVersionUid, null);
+                                                        assetVersionCheckObjectTypeAction(resultsLock, gDefinition, r.Measure.MetricAssetVersionUid, null);
 
                                                         var predicateExistenceSql = "select cast(iif(sum(bit1) > 0, 1, 0) as bit) from (" +
-                                                            "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where PredicateUid = @PredicateUid and SubjectUid = @AssetUid  " +
+                                                            "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where PredicateUid = @PredicateUid and SubjectUid = @assetUid  " +
                                                             "union all " +
-                                                            "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where PredicateUid = @PredicateUid and ObjectUid = @AssetUid " +
+                                                            "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where PredicateUid = @PredicateUid and ObjectUid = @assetUid " +
                                                             ") a";
 
                                                         switch (gDefinition.Predicate.Operator)
                                                         {
                                                             case Operator.Populated:
-                                                                scoreItem.Value = company.Query<bool>(predicateExistenceSql, new { gDefinition.Predicate.PredicateUid, r.Result.AssetUid }, commandTimeout: 90).Single();
+                                                                scoreItem.Value = calculateAssetMeasureResultFromDb(predicateExistenceSql, new { gDefinition.Predicate.PredicateUid, assetUid });
                                                                 break;
                                                             case Operator.NotPopulated:
-                                                                scoreItem.Value = !company.Query<bool>(predicateExistenceSql, new { gDefinition.Predicate.PredicateUid, r.Result.AssetUid }, commandTimeout: 90).Single();
+                                                                scoreItem.Value = !calculateAssetMeasureResultFromDb(predicateExistenceSql, new { gDefinition.Predicate.PredicateUid, assetUid });
                                                                 break;
                                                         }
                                                     }
@@ -617,7 +496,7 @@ where   Uid <> @uid
                                                     if (gDefinition.Relation != null)
                                                     {
                                                         // Check the measure validity.
-                                                        assetVersionCheckObjectTypeAction(gDefinition, r.Measure.MetricAssetVersionUid, null);
+                                                        assetVersionCheckObjectTypeAction(resultsLock, gDefinition, r.Measure.MetricAssetVersionUid, null);
 
                                                         var operatorSql = "";
                                                         var bitSql = "";
@@ -635,67 +514,68 @@ where   Uid <> @uid
                                                         switch (gDefinition.Relation.Operator)
                                                         {
                                                             case Operator.Equals:
-                                                                parameters = new { gDefinition.Relation.IntersectTypeUid, r.Result.AssetUid, ValueUid = Guid.Parse(gDefinition.Relation.Values[0]) };
+                                                                parameters = new { gDefinition.Relation.IntersectTypeUid, assetUid, ValueUid = Guid.Parse(gDefinition.Relation.Values[0]) };
                                                                 bitSql = "iif(sum(bit1) > 0, 1, 0)";
                                                                 operatorSql =
-                                                                    "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @AssetUid and ObjectUid = @ValueUid " +
+                                                                    "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @assetUid and ObjectUid = @ValueUid " +
                                                                     "union all " +
-                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @ValueUid and ObjectUid = @AssetUid ";
+                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @ValueUid and ObjectUid = @assetUid ";
                                                                 break;
                                                             case Operator.In:
                                                                 parameters = new
                                                                 {
                                                                     gDefinition.Relation.IntersectTypeUid,
-                                                                    r.Result.AssetUid,
+                                                                    assetUid,
                                                                     Uids = gDefinition.Relation.Values.Select(u => new { Uid = Guid.Parse(u) }).AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" })
                                                                 };
                                                                 bitSql = "iif(sum(bit1) > 0, 1, 0)";
                                                                 operatorSql =
-                                                                    "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = @AssetUid and I.ObjectUid = U.Uid " +
+                                                                    "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = @assetUid and I.ObjectUid = U.Uid " +
                                                                     "union all " +
-                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = U.Uid and I.ObjectUid = @AssetUid ";
+                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = U.Uid and I.ObjectUid = @assetUid ";
                                                                 break;
                                                             case Operator.NotEquals:
-                                                                parameters = new { gDefinition.Relation.IntersectTypeUid, r.Result.AssetUid, ValueUid = Guid.Parse(gDefinition.Relation.Values[0]) };
+                                                                parameters = new { gDefinition.Relation.IntersectTypeUid, assetUid, ValueUid = Guid.Parse(gDefinition.Relation.Values[0]) };
                                                                 bitSql = "iif(sum(bit1) = 0, 1, 0)";
                                                                 operatorSql =
-                                                                    "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @AssetUid and ObjectUid = @ValueUid " +
+                                                                    "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @assetUid and ObjectUid = @ValueUid " +
                                                                     "union all " +
-                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @ValueUid and ObjectUid = @AssetUid ";
+                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @ValueUid and ObjectUid = @assetUid ";
                                                                 break;
                                                             case Operator.NotIn:
                                                                 parameters = new
                                                                 {
                                                                     gDefinition.Relation.IntersectTypeUid,
-                                                                    r.Result.AssetUid,
+                                                                    assetUid,
                                                                     Uids = gDefinition.Relation.Values.Select(u => new { Uid = Guid.Parse(u) }).AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" })
                                                                 };
                                                                 bitSql = "iif(sum(bit1) = 0, 1, 0)";
                                                                 operatorSql =
-                                                                    "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = @AssetUid and I.ObjectUid = U.Uid " +
+                                                                    "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = @assetUid and I.ObjectUid = U.Uid " +
                                                                     "union all " +
-                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = U.Uid and I.ObjectUid = @AssetUid ";
+                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = U.Uid and I.ObjectUid = @assetUid ";
                                                                 break;
                                                             case Operator.NotPopulated:
-                                                                parameters = new { gDefinition.Relation.IntersectTypeUid, r.Result.AssetUid };
+                                                                parameters = new { gDefinition.Relation.IntersectTypeUid, assetUid };
                                                                 bitSql = "iif(sum(bit1) = 0, 1, 0)";
                                                                 operatorSql =
-                                                                    "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @AssetUid  " +
+                                                                    "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @assetUid  " +
                                                                     "union all " +
-                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and ObjectUid = @AssetUid ";
+                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and ObjectUid = @assetUid ";
                                                                 break;
                                                             default: // case Operator.Populated:
-                                                                parameters = new { gDefinition.Relation.IntersectTypeUid, r.Result.AssetUid };
+                                                                parameters = new { gDefinition.Relation.IntersectTypeUid, assetUid };
                                                                 bitSql = "iif(sum(bit1) > 0, 1, 0)";
                                                                 operatorSql =
-                                                                    "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @AssetUid  " +
+                                                                    "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @assetUid  " +
                                                                     "union all " +
-                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and ObjectUid = @AssetUid ";
+                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and ObjectUid = @assetUid ";
                                                                 break;
                                                         }
                                                         var relationSql = $"select cast({bitSql} as bit) from ({operatorSql}) a";
 
-                                                        scoreItem.Value = company.Query<bool>(relationSql, parameters, commandTimeout: 90).Single();
+                                                        scoreItem.Value = calculateAssetMeasureResultFromDb(relationSql, parameters);
+                                                        
                                                     }
                                                     else
                                                     {
@@ -739,27 +619,33 @@ where   Uid <> @uid
                     });
 
                     // Now add scores in this set via a transaction.
-                    
                     var success = addScoresToEnvironmentDatabase(scoreItems);
+                    
+                    // Stop the stopwatch and figure out how much time elapsed, taking the average time across all loops so far.
+                    stopwatch.Stop();
+                    loopElapsedSeconds = (int)(stopwatch.Elapsed.TotalSeconds / loopCount);
+
                     if (success)
                     {
-                        executionRecord.SetPercentageComplete(scoreCount, fullCount);
-                        updateExecution(company, executionRecord);
-                        Task.Run(() =>
-                            Db.SendContinuingScoreEventWithPayload(
-                            ScoreQueueChangeType.WorkflowCheck,
-                            scoreItems.Select(i => new ScoreCreatedModel { AllocationUid = i.AllocationUid, AssetUid = i.AssetUid, EffectiveDate = i.EffectiveDate }).Distinct().ToList(),
-                            Info.ExecutionUid,
-                            Info.StartedOn
-                            )
-                        ).GetAwaiter().GetResult();
+                        ExecutionRecord.LoopSecondsElapsed = loopElapsedSeconds;
+                        ExecutionRecord.UpdatedOn = DateTime.UtcNow;
+                        updateExecution(company, ExecutionRecord);
                     }
+                    
+                    // Update the executionItems we were just working with.
+                    company.Execute(
+                        "update metrics.ExecutionItem set [State] = 1 where ExecutionID = @ID and RowNumber in (select Id from @rows)", 
+                        new { ExecutionRecord.ID, rows = executionItemSubset.Select(i => new { Id = i.RowNumber }).Distinct().AsTableValuedParameter("dbo.Ids", new List<string> { "Id" }) }
+                        );
+                    executionItems = getExecutionItems(company, 0);
                     scoreItems.Clear();
 
-                    runningTotal = uniqueAssetCombinations.Count;
+                    loopCount++;
                 }
 
-                updateExecution(company, executionRecord, true);
+                updateExecution(company, ExecutionRecord, true);
+
+                Db.CreateWorkflowCheckExecution(ExecutionRecord, ScoreQueueChangeType.AssetMeasures); // Add workflow check.
             }
         }
 
@@ -907,16 +793,24 @@ when not matched then
     );", transaction: trans);
 
                         // Call the new procedure here.
-                        company.Execute(
-                            "metrics.ProcessAssetScores @allocationUid, @assets", 
-                            new {
-                                allocationUid = items[0].AllocationUid,
-                                assets = items.Select(i => new { i.AssetUid, i.EffectiveDate }).Distinct().AsTableValuedParameter("dbo.AssetEffectiveDate", new List<string> { "AssetUid", "EffectiveDate" }),
-                            }, 
-                            commandTimeout: 600,
-                            transaction: trans
-                        );
-
+                        var allocationUids = items.Select(item => item.AllocationUid).Distinct().ToList();
+                        allocationUids.ForEach(allocationUid =>
+                        {
+                            company.Execute(
+                                "metrics.ProcessAssetScores @allocationUid, @assets",
+                                new
+                                {
+                                    allocationUid,
+                                    assets = items
+                                                .Where(item => item.AllocationUid == allocationUid)
+                                                .Select(i => new { i.AssetUid, i.EffectiveDate })
+                                                .Distinct()
+                                                .AsTableValuedParameter("dbo.AssetEffectiveDate", new List<string> { "AssetUid", "EffectiveDate" }),
+                                },
+                                commandTimeout: 600,
+                                transaction: trans
+                            );
+                        });
 
                         trans.Commit();
 
@@ -934,9 +828,9 @@ when not matched then
                         catch
                         {
                         }
-                        if (executionRecord != null)
+                        if (ExecutionRecord != null)
                         {
-                            updateExecution(company, executionRecord, false, ex);
+                            updateExecution(company, ExecutionRecord, false, ex);
                         }
                     }
                 }
@@ -944,6 +838,18 @@ when not matched then
                 company.Close();
             }
             return success;
+        }
+
+        bool calculateAssetMeasureResultFromDb(string sql, object parameters)
+        {
+            bool result = false;
+
+            using (var company = GetEnvironmentConnection())
+            {
+                result = company.Query<bool>(sql, parameters, commandTimeout: 90).Single();
+            }
+
+            return result;
         }
     }
 }

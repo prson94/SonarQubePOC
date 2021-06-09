@@ -13,7 +13,6 @@ namespace d360.model.helpers
     {
         private ICompanyContext CompanyContext;
 
-
         private int parameterIdx { get; set; }
         private string field { get; set; }
         public string @operator { get; set; }
@@ -60,11 +59,20 @@ namespace d360.model.helpers
                 return field;
             }
         }
+
         public string ValueAsString
         {
             get
             {
                 return value.ToString();
+            }
+        }
+
+        public string EscapedValueAsString
+        {
+            get
+            {
+                return value.ToString().Replace("'", "''");
             }
         }
 
@@ -130,29 +138,46 @@ namespace d360.model.helpers
                 throw new Exception($"Operator '{@operator}' is not valid for '{filter.SqlFieldType.ToString().ToLower()}' on field {field}");
             }
 
-            CheckFieldValue(filter);
-
-            value = value.ToString().Trim('\'');
-            if (this.@operator == "ct" || this.@operator == "nct")
+            if (!this.IsNullValue)
             {
-                value = $"%{wildcardValue(escapeForSQLLike(value.ToString()))}%";
+                CheckFieldValue(filter);
+
+                value = value.ToString().Trim('\'');
+                if (this.@operator == "ct" || this.@operator == "nct")
+                {
+                    value = $"%{wildcardValue(escapeForSQLLike(value.ToString()))}%";
+                }
+
+                stringBuilder.Clear();
+
+                if (this.convertToNVarChar)
+                {
+                    filter.SqlExpression = $"CONVERT(VARCHAR,{filter.SqlExpression},120)";
+                }
+
+                stringBuilder.Append(filter.SqlExpression);
+                stringBuilder.Append(GetSQLOperator(@operator));
+                stringBuilder.Append($"@filter_{parameterIdx}");
+
+                sqlParamsRef.Add($"@filter_{parameterIdx}", value);
+
+                this.AppendNullOperatorForNotOperators(filter.SqlExpression);
+                return stringBuilder.ToString();
+            }
+            else
+            {
+                if (!(new[] { "eq", "ne" }.Contains(@operator)))
+                {
+                    throw new FormatException($"NULL value filter can be used only with 'eq' and 'ne' operator!");
+                }
+                stringBuilder.Append(filter.SqlExpression);
+                stringBuilder.Append(GetSQLNullOperator(@operator));
+
+                return stringBuilder.ToString();
             }
 
-            stringBuilder.Clear();
 
-            if (this.convertToNVarChar)
-            {
-                filter.SqlExpression = $"CONVERT(VARCHAR,{filter.SqlExpression},120)";
-            }
 
-            stringBuilder.Append(filter.SqlExpression);
-            stringBuilder.Append(GetSQLOperator(@operator));
-            stringBuilder.Append($"@filter_{parameterIdx}");
-
-            sqlParamsRef.Add($"@filter_{parameterIdx}", value);
-
-            this.AppendNullOperatorForNotOperators(filter.SqlExpression);
-            return stringBuilder.ToString();
         }
 
         private void AppendNullOperatorForNotOperators(string fieldName)
@@ -350,14 +375,17 @@ namespace d360.model.helpers
         public void LoadFieldType(FieldType ft, List<string> fieldColumns)
         {
             fieldType = ft;
-            fieldColumn = fieldColumns.FirstOrDefault(x => x.Contains($"F" + fieldType.ID));
+            if (fieldColumns != null)
+            {
+                fieldColumn = fieldColumns.FirstOrDefault(x => x.Contains($"F" + fieldType.ID));
+            }
         }
         public void LoadRelationshipData(IntersectType it, AssetType at)
         {
             this.intersectType = it;
             this.assetType = at;
         }
-        private void UpdateTokenValueForType()
+        public void UpdateTokenValueForType()
         {
             CheckFieldValue();
 
@@ -411,7 +439,10 @@ namespace d360.model.helpers
                 this.AppendNullOperatorForNotOperators(fieldSql);
             }
 
-            sqlParamsRef.Add($"@filter_{parameterIdx}", value);
+            if (sqlParamsRef != null)
+            {
+                sqlParamsRef.Add($"@filter_{parameterIdx}", value);
+            }
 
         }
 
@@ -436,7 +467,11 @@ namespace d360.model.helpers
                     int number = 0;
                     if (!int.TryParse(value.ToString(), NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out number))
                     {
-                        throw new FormatException($"Invalid numeric value for field '{field}'");
+                        //parsing of thousands seperator fails on - symbol
+                        if (!int.TryParse(value.ToString(), out number))
+                        {
+                            throw new FormatException($"Invalid numeric value for field '{field}'");
+                        }
                     }
                     value = number;
                     break;
@@ -524,6 +559,8 @@ namespace d360.model.helpers
                     value = (int)match.ID;
                     break;
                 default:
+
+
                     value = value.ToString().Trim('\'').Replace("&apos;", "'");
                     break;
             }
@@ -670,7 +707,7 @@ namespace d360.model.helpers
             }
         }
 
-        private string GetSQLOperator(string value)
+        public string GetSQLOperator(string value)
         {
             switch (value)
             {
@@ -686,7 +723,7 @@ namespace d360.model.helpers
             }
         }
 
-        private string GetSQLNullOperator(string value)
+        public string GetSQLNullOperator(string value)
         {
             switch (value)
             {

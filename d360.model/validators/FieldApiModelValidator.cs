@@ -146,14 +146,6 @@ namespace d360.model.validators
                 }
 
                 #region IsDisplayable   
-                if (field.Type.ComputedOwnershipLookup != null)
-                {
-                    if (field.Type.ComputedOwnershipLookup.IsDisplayable == false)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. IsDisplayable parameter value must be true for type Ownership Lookup.");
-                    }
-                }
-
                 if (field.Type.ComputedRelationshipLookup != null)
                 {
                     if (field.Type.ComputedRelationshipLookup.IsDisplayable == false)
@@ -368,19 +360,6 @@ namespace d360.model.validators
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"IsRequired property can not be true for JSON field types defined on this asset type!");
                         }
-                    }
-                }
-
-                if (field.Type.ComputedRelationshipLookup != null)
-                {
-                    if (field.Type.ComputedRelationshipLookup.Definition.Relations.Any(r => r.AssetTypeUid == model.AssetTypeUid))
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. Relation Lookup refers back to Asset Type the field is defined on.");
-                    }
-
-                    if (field.Type.ComputedRelationshipLookup.Definition.Relations.GroupBy(r => r.AssetTypeUid).Any(g => g.Count() > 1))
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. Relation Lookup contains a circular reference.");
                     }
                 }
 

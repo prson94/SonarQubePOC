@@ -1,6 +1,7 @@
 ﻿using d360.core.entities;
 using d360.core.entities.Metric;
 using d360.core.enums;
+using d360.core.queue;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,5 +28,6 @@ namespace d360.model.DataAccessLayer
         List<InternalScoreResultApiResponseModel> PostScoreResults(MetricAllocation allocation, ApiExecution execution, List<InternalScoreResultApiRequestModel> results);
         ScoreExecution GetExecutionById(Guid uid);
         IQueryable<ScoreExecution> GetExecutions(int pageSize, int pageNumber);
+        List<ScoreExecutionItemViewModel> GetExecutionItems(long executionId, int pageSize, int pageNumber, ScoreQueueChangeType? changeType = null);
     }
 }

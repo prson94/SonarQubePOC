@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.reporting.Global_FieldAudit-v1">
+  <changeSet author="kmcnamee" id="Table.reporting.Global_FieldAudit-v2.2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -19,9 +19,21 @@ BEGIN
 		[FieldName] [nvarchar](250) NOT NULL,
 		[Version] [int] NOT NULL,
 		[Value] [nvarchar](max) NULL,
+    [PreviousValue] [nvarchar](max) NULL,
 		CONSTRAINT [PK_ReportingFieldAudit] PRIMARY KEY CLUSTERED ( [AuditID] ASC, [FieldTypeID] ASC, [FieldName] ASC, [Version] DESC )
 	)
 END
+
+IF NOT EXISTS (
+  SELECT *
+  FROM   sys.columns
+  WHERE  object_id = OBJECT_ID(N'[reporting].[Global_FieldAudit]')
+  AND name = 'PreviousValue'
+  )
+  BEGIN
+    ALTER TABLE [reporting].[Global_FieldAudit] ADD [PreviousValue] [nvarchar](max) NULL 
+END
+
 		]]>
     </sql>
 	<rollback>

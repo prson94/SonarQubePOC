@@ -1,8 +1,8 @@
-﻿<d3s-loading [isLoading]="isGridLoading || isDataLoading"></d3s-loading>
-<div *ngIf="!isDataLoading && !isGridLoading">
-    <div *ngIf="!isDataLoading && !isGridLoading && relations.length > 0 && !shouldShowEditor() && !showDelete">
+﻿<d3s-loading [isLoading]="isGridLoading"></d3s-loading>
+<div *ngIf="!isGridLoading">
+    <div *ngIf="!shouldShowEditor() && !showDelete && count > 0">
 
-        <input type="text" [hidden]="!simpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+        <input type="text" igInput igSize="full" [hidden]="!simpleFilter" pInputText (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
         <p-table #dt
                  [value]="relations"
                  selectionMode="single"
@@ -14,6 +14,11 @@
                  [rowsPerPageOptions]="defaultPagingOptions"
                  [(selection)]="selected"
                  [scrollable]="true"
+                 [lazy]="true"
+                 [totalRecords]="totalRecords"
+                 [loading]="isDataLoading"
+                 [loadingIcon]="'fa fa-spinner fa-spin'"
+                 (onLazyLoad)="loadRelationshipLazy($event)"
                  scrollWidth="100%">
             <ng-template pTemplate="colgroup">
                 <colgroup>
@@ -50,40 +55,41 @@
                         </div>
                     </td>
                     <td>
-                        <div class="RowTools" *ngIf="hasEdit && !readOnly && item.CanEdit && showEditPencil">
+                        <div class="RowTools" *ngIf="hasEdit && !readOnly && showEditPencil">
                             <a style="cursor:pointer;" (click)="selected=item;showEditor=true;" title="Edit"><i class="fa fa-pencil"></i></a>
                         </div>
                     </td>
                     <td>
-                        <div class="RowTools" *ngIf="hasDelete && !readOnly && item.CanDelete">
+                        <div class="RowTools" *ngIf="hasDelete && !readOnly">
                             <a style="cursor:pointer;" (click)="selected=item;doDelete();" title="Remove"><i class="fa fa-trash-o"></i></a>
                         </div>
                     </td>
-                    <td *ngFor="let column of columns">                        
-                            <d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" (click)="selectObject(item)" [align]="'right'">
-                                <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>
-                            </d3s-preview-tooltip>
+                    <td *ngFor="let column of columns">
+                        <d3s-preview-tooltip [uid]="getAssetUid(item)" (click)="selectObject(item)" [align]="'right'">
+                            <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item" [useApiName]="true"></d3s-dynamic-field-value>
+                        </d3s-preview-tooltip>
                     </td>
                 </tr>
             </ng-template>
-            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+            <ng-template pTemplate="summary">
                 <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
             </ng-template>
         </p-table>
     </div>
     <d3s-dynamic-editor *ngIf="shouldShowEditor()"
-                        [objectID]="intersectTypeID"
+                        [objectTypeUid]="intersectTypeUid"
                         [objectType]="'IntersectType'"
-                        [targetType]="objectType"
-                        [targetTypeID]="objectID"
-                        [title]="targetName + ' Relationship'"
+                        [targetUid]="assetUid"
+                        [useTypeUidForDefinition]="true"
+                        [title]="relationshipName"
                         [directions]="'You will only be able to relate to assets that you have Modify Relationships permission to.'"
                         [selection]="addRelationship ? null : selected"
                         [rowID]="'ID'"
+                        [isSaveDisabled]="isSaveDisabled"
                         (saveClick)="saveRelationship($event)"
                         (closeClick)="closeEditor()"
                         [useV2ApiLink]="true"></d3s-dynamic-editor>
-    <div *ngIf="!isDataLoading && relations.length == 0 && !shouldShowEditor()">
+    <div *ngIf="count === 0 && !shouldShowEditor()">
         <h5 class="center-align" style="font-weight:bold;">No relationships exist from this object to this object type.</h5>
     </div>
     <d3s-delete-form *ngIf="showDelete"

@@ -1,13 +1,17 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange, ViewChild, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { RelationshipsService } from '../../../services/relationships.service';
-import { ObjectRelationshipCount } from '../../../models/relationship.model';
+import { RelationshipCount, RelationshipTypeUIModel } from '../../../models/relationship.model';
 import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.component';
 import { ResponsibilityTypeRelationPermission } from '../../../models/responsibility-type.model';
+import { ObjectDetailService } from '../../../services/object-detail.service';
+import { AssetService } from '../../../services/asset.service';
+import { forkJoin, Subscription } from 'rxjs';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-object-relationships',
-    providers: [RelationshipsService],
+    providers: [RelationshipsService, ObjectDetailService, AssetService],
     templateUrl: './object-relationships.component.html'
 })
 
@@ -18,8 +22,15 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     @Input() objectPermissions: ResponsibilityTypeRelationPermission[] = [];
     @Input() isModal: boolean = false;
 
-    relationshipItems: ObjectRelationshipCount[] = [];
-    selected: ObjectRelationshipCount;
+    @Input() assetTypeUid: string;
+    @Input() assetUid: string;
+
+    @Input() count: number = 0;
+
+    relationshipItems: RelationshipTypeUIModel[] = [];
+    selected: RelationshipTypeUIModel;
+
+    nonEditablePredicates: string[] = ["Inter-type Hierarchy", "Intra-type Hierarchy", "User Ownership", "Object Ownership"];
 
     readOnly: boolean = false;
     cardinalityShow: boolean = true;
@@ -29,72 +40,151 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     hideDelete: boolean = true;
     queryString: string = "";
     public hasAdd: boolean;
-    public hasFilterMode: boolean=true;
+    public hasFilterMode: boolean = true;
 
-    @ViewChild(DynamicRelationshipGridComponent, {static:false}) private relGrid: DynamicRelationshipGridComponent;
+    loadDataSubs: Subscription;
 
-    constructor(protected relationshipsService: RelationshipsService, private changeDetectorRef: ChangeDetectorRef) {
+    @ViewChild(DynamicRelationshipGridComponent, { static: false }) private relGrid: DynamicRelationshipGridComponent;
+
+    constructor(protected relationshipsService: RelationshipsService,
+        private objectDetailService: ObjectDetailService,
+        private assetService: AssetService,
+        private changeDetectorRef: ChangeDetectorRef) {
         super();
     }
 
     ngOnDestroy(): void {
-        this.relGrid.ngOnDestroy();
+        if (this.relGrid) {
+            this.relGrid.ngOnDestroy();
+        }
+        if (this.loadDataSubs) {
+            this.loadDataSubs.unsubscribe();
+        }
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        this.load();
+        this.objectDetailService.getObject(this.objectID, this.objectType).subscribe((res) => {
+            let uid: string = '';
+            if (res["Uid"]) {
+                uid = res["Uid"];
+            }
+            else {
+                uid = res.UID;
+            }
+
+            this.assetService.getUIDetailsForAssetUID(uid).subscribe((asset) => {
+                if (asset === null) {
+                    this.assetUid = uid;
+                    this.assetTypeUid = uid;
+                }
+                else {
+                    this.assetUid = uid;
+                    this.assetTypeUid = asset["AssetTypeUid"];
+                }
+                this.relationshipItems = [];
+                this.load();
+            });
+        });
     }
 
     load(): void {
-
-        if (this.objectType == null || this.objectID == null)
-            return;
-
-        this.permissions = this.objectPermissions;
-
         this.isLoading = true;
 
-        this.loadRelationshipItems();
-    }
+        if (!this.assetTypeUid || !this.assetUid) {
+            return;
+        }
 
-    loadRelationshipItems() {
-        this.relationshipsService.getRelationshipCounts(this.objectType, this.objectID)
-            .subscribe(result => {
-                this.relationshipItems = result;
-                this.selected = null;
-                for (let relation of this.relationshipItems) {
-                    if (relation.Count > 0) {
-                        this.selected = relation;
-                        break;
-                    }
+        if (this.loadDataSubs) {
+            this.loadDataSubs.unsubscribe();
+        }
+
+        var relationshipSub = this.relationshipsService.getRelationshipTypes(this.assetTypeUid);
+        var countsSub = this.relationshipsService.getRelationshipsCountsForAsset(this.assetUid);
+
+        this.loadDataSubs = forkJoin([relationshipSub, countsSub]).subscribe((res) => {
+            var allItems = res[0] as RelationshipTypeUIModel[];
+            var counts = res[1] as RelationshipCount[];
+
+            this.selected = null;
+
+            var origLength = allItems.length;
+            for (let i = 0; i < origLength; i++) {
+                allItems[i].IsSubject = allItems[i].Subject.Uid === this.assetTypeUid;
+
+                if (allItems[i].Subject.Uid === allItems[i].Object.Uid) {
+                    var copy = _.cloneDeep(allItems[i]);
+                    copy.IsSubject = !allItems[i].IsSubject;
+                    allItems.push(copy);
+                }
+            }
+
+            for (let relation of allItems) {
+                var count = counts.filter((f) => f.IntersectTypeUid === relation.Uid && f.IsSubject === relation.IsSubject);
+                if (count.length !== 0) {
+                    relation.Count = count[0].Count;
+                }
+                else {
+                    relation.Count = 0;
                 }
 
-                if (!this.selected)
-                    this.selected = (this.relationshipItems && this.relationshipItems.length > 0) ? this.relationshipItems[0] : null;
-
-                this.hasRelationships = (this.relationshipItems && this.relationshipItems.length > 0);
-
-                this.isLoading = false;
-                this.updateCardinality();
-                this.changeDetectorRef.markForCheck();
+                relation.AllowEditFromRelationshipEditor = this.nonEditablePredicates.indexOf(relation.Predicate.Type) === -1;
+                this.relationshipItems.push(relation);
             }
-        );
+
+            for (let relation of this.relationshipItems) {
+                relation.TypeName = this.getRelName(relation).toUpperCase();
+            }
+
+            this.relationshipItems = this.relationshipItems.sort((a, b) => { return a.TypeName > b.TypeName ? 1 : -1; });
+
+            for (let relation of this.relationshipItems) {
+                if (relation.Count > 0 && !this.selected) {
+                    this.selected = relation;
+                }
+            }
+
+            if (!this.selected)
+                this.selected = (this.relationshipItems && this.relationshipItems.length > 0) ? this.relationshipItems[0] : null;
+
+            this.hasRelationships = (this.relationshipItems && this.relationshipItems.length > 0);
+
+            this.isLoading = false;
+            this.updateCardinality();
+            this.changeDetectorRef.detectChanges();
+        });
+
+        this.permissions = this.objectPermissions;
     }
 
     export() {
         if (!this.selected) return;
-        this.relationshipsService.exportObjectRelationshipsToExcel(this.objectType, this.objectID, this.selected.Object, this.selected.ObjectID, this.selected.IntersectTypeID, this.queryString, false);
+        var params = {};
+        if (this.selected.IsSubject) {
+            params["subjectUid"] = this.assetUid;
+        }
+        else {
+            params["objectUid"] = this.assetUid;
+        }
+
+        this.relationshipsService.getRelationships(this.selected.Uid, params, true).subscribe();
     }
 
-    addRelationship(event) {
-        if (!this.selected) return;
-        this.selected.Count = event.count;
+    addRelationship(event: any) {
+        var uid = event.uid;
+        var isSubject = event.isSubject;
+        var item = this.relationshipItems.filter((r) => r.Uid === uid && r.IsSubject === isSubject)[0];
+
+        var count = (event.data as any[]).length;
+        item.Count = item.Count += count;
         this.updateCardinality();
     }
 
-    removeRelationship() {
-        if (!this.selected) return;
-        this.selected.Count--;
+    removeRelationship(event: any) {
+        var uid = event.uid;
+        var isSubject = event.isSubject;
+        var item = this.relationshipItems.filter((r) => r.Uid === uid && r.IsSubject === isSubject)[0];
+
+        item.Count = item.Count - 1;
         this.updateCardinality();
     }
 
@@ -111,7 +201,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
         return this.selected.Count > 0;
     }
 
-    isSelected(item: ObjectRelationshipCount): boolean {
+    isSelected(item: RelationshipTypeUIModel): boolean {
         return (this.selected && this.selected == item);
     }
 
@@ -127,13 +217,20 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     }
 
     public relationClick(rel: any) {
-
+        this.showAddRelationship = false;
         this.selected = rel;
         this.updateCardinality();
     }
     private updateCardinality() {
         if (this.selected != null) {
-            this.cardinalityShow = (this.selected.Cardinality == 2) || (this.selected.Count == 0 && this.selected.Cardinality != 2);
+
+            var cardinality = this.selected.IsSubject ? this.selected.Object.Cardinality : this.selected.Subject.Cardinality;
+
+            this.cardinalityShow = (cardinality === "Many") || (this.selected.Count === 0 && cardinality !== "Many");
+
+            this.readOnly = this.selected.Predicate.Type === "InterTypeHierarchy"
+                || this.selected.Predicate.Type === "IntraTypeHierarchy";
+
             this.hasAdd = this.cardinalityShow
                 && this.hasRelationships
                 && this.selected
@@ -145,5 +242,90 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
             this.hasAdd = this.hasRelationships && this.hasAddRelationshipsPermissions() && !this.readOnly;
         }
         this.hasFilterMode = this.hasRelationships;
+    }
+
+    getRelName(rel: RelationshipTypeUIModel) {
+        var correctSide = rel.IsSubject ? rel.Object : rel.Subject;
+        return `${correctSide.Name} [${(!rel.IsSubject ? rel.Predicate.Inverse : rel.Predicate.Name)}]`;
+    }
+
+    getIconClass(rel: RelationshipTypeUIModel) {
+        {
+            var isObject = rel.Object.Uid === this.assetTypeUid;
+            var type = isObject ? rel.Subject.Class : rel.Object.Class;
+
+            let cs: string = 'fa inactive-tool-icon ';
+
+            switch (type) {
+                case "Rule":
+                    cs += "fa-pie-chart";
+                    break;
+                case "Policy":
+                    cs += "fa-university";
+                    break;
+                case "FusionAttribute":
+                    cs += "fa-database";
+                    break;
+                case "Resource":
+                    cs += "fa-user";
+                    break;
+                case "ReferenceItemType":
+                case "Reference":
+                    cs += "fa-list";
+                    break;
+                case "Diagram":
+                    cs += "fa-share-alt";
+                    break;
+                case "BusinessAsset":
+                case "TechnicalAsset":
+                    cs += "fa-book";
+                    break;
+                default:
+                    cs += "fa-book";
+                    break;
+            }
+            return cs;
+        }
+    }
+
+    getIconTooltip(rel: RelationshipTypeUIModel) {
+        {
+            var isObject = rel.Object.Uid == this.assetTypeUid;
+            var type = isObject ? rel.Subject.Class : rel.Object.Class;
+
+            let tooltip: string = '';
+
+            switch (type) {
+                case "Rule":
+                    tooltip = "Rule";
+                    break;
+                case "Policy":
+                    tooltip = "Policy";
+                    break;
+                case "FusionAttribute":
+                    tooltip = "Fusion Attribute";
+                    break;
+                case "Resource":
+                    tooltip = "Resource";
+                    break;
+                case "ReferenceItemType":
+                case "Reference":
+                    tooltip = "Reference List";
+                    break;
+                case "Diagram":
+                    tooltip = "Diagram";
+                    break;
+                case "BusinessAsset":
+                    tooltip = "Business Asset";
+                    break;
+                case "TechnicalAsset":
+                    tooltip = "Technical Asset";
+                    break;
+                default:
+                    tooltip = "";
+                    break;
+            }
+            return tooltip;
+        }
     }
 }

@@ -53,8 +53,6 @@ export class SearchService extends BaseObservableService  {
                 exclude.push('FusionAttributes');
                 exclude.push('FusionType');
             }
-            if (+settings.LineageVersion != 3)
-                exclude.push('TechnicalAsset');
         }
         if (!showUsers) {
             exclude.push('Group');

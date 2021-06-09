@@ -12,8 +12,8 @@ const routes: Routes = [
         path: '',
         component: HierarchyComponent,
         children: [
-            { path: SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION + '/:group', component: HierarchyListComponent },
-            { path: SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION, component: HierarchyListComponent },
+            { path: 'classification/:group', component: HierarchyListComponent },
+            { path: 'classification', component: HierarchyListComponent },
             { path: ':typeId/structure', component: HierarchyItemStructureComponent },
             { path: 'structure/:uid', component: HierarchyItemStructureComponent },
             { path: ':typeId', component: HierarchyItemComponent },

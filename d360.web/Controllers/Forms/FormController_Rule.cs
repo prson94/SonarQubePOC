@@ -6,6 +6,7 @@ using d360.core.queue;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
+using Newtonsoft.Json;
 using Resources;
 using System;
 using System.Collections.Generic;
@@ -156,7 +157,7 @@ namespace d360.web.Controllers
                 var assetType = Company.Filter<AssetType>(i => i.Object == "RuleType" && i.ObjectID == a.ID).FirstOrDefault();
                 if (assetType != null)
                 {
-                    Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = assetType.ID });
+                    Company.CreateRollupPathChangedExecution(null, assetType.ID);
                     assetType = null;
                 }
 
@@ -190,7 +191,7 @@ namespace d360.web.Controllers
                 var assetType = Company.Filter<AssetType>(i => i.Object == "RuleType" && i.ObjectID == id).FirstOrDefault();
                 if (assetType != null)
                 {
-                    Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = assetType.ID });
+                    Company.CreateRollupPathChangedExecution(assetTypeId: assetType.ID);
                     assetType = null;
                 }
 
@@ -234,7 +235,7 @@ namespace d360.web.Controllers
                 var assetType = Company.Filter<AssetType>(i => i.Object == "RuleType" && i.ObjectID == model.ID).FirstOrDefault();
                 if (assetType != null)
                 {
-                    Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = assetType.ID });
+                    Company.CreateRollupPathChangedExecution(assetTypeId: assetType.ID);
                     assetType = null;
                 }
 

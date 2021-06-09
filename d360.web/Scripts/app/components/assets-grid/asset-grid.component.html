@@ -21,7 +21,7 @@
                          [infoTooltip]="simpleSearchTooltipHTML">
         </ig-search-field>
     </div>
-    <advanced-filtering [assetTypeUid]="gridObject.AssetTypeUID" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+    <advanced-filtering [loadIdentifier]="gridObject.AssetTypeUID" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
     <div class="grid-action-buttons">
         <button *ngIf="showAddButton && hasAddAssetPermissions()"
                 igButton
@@ -60,14 +60,6 @@
     }">
         <a [href]="itemUrl" target="_blank">Open in new window</a>
     </div>
-    <d3s-asset-grid-column-filter *ngIf="!showGridSimpleFilter"
-                                  [(ownerFilter)]="stateService.artifactTypeFilters.owners"
-                                  [(relationshipFilters)]="stateService.artifactTypeFilters.relationships"
-                                  [(filters)]="stateService.artifactTypeFilters.filters"
-                                  [gridObject]="gridObject"
-                                  [fields]="filtercolumns"
-                                  [objectType]="gridObject.ObjectType"
-                                  (filterChanged)="filterGridData(dt)"></d3s-asset-grid-column-filter>
     <d3s-asset-grid-custom-export *ngIf="showCustomExport && canExportRecords()"
                                   (closeClick)="showCustomExport = false"
                                   (customExportClick)="downloadCustomExcel($event)"

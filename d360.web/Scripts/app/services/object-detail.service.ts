@@ -26,9 +26,10 @@ export class ObjectDetailService extends BaseObservableService {
 
     getObjectDetail(
         objectID: number,
-        objectType: string
+        objectType: string,
+        useSingleColumn: boolean = false
     ): Observable<any> {
-        return this.http.get(`api/${objectType}/${objectID}/detail`)
+        return this.http.get(`api/${objectType}/${objectID}/detail?useSingleColumn=${useSingleColumn}`)
             .pipe(
                 map(response => <any>response),
                 catchError(err => this.handleError(err))

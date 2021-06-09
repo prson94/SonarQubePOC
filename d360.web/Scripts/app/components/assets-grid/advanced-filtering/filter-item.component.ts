@@ -21,6 +21,8 @@ import { AssetService } from "../../../services/asset.service";
 })
 export class FilterItemComponent implements OnInit, OnChanges {
     @Input() assetTypeUid: string = "";
+    @Input() loadIdentifier: string = "";
+    @Input() gridType: string = "List";
     @Input() condition: AdvancedFilterFieldCondition;
     @Input() fields: FieldTypeAPIModelFieldCondition[] = null;
     @Input() operators: OperatorModel[] = [];
@@ -66,6 +68,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
     relationshipFieldIntersectCardinality: string = "";
     relationshipFieldName: string = "";
 
+    minSQLDate = new Date(1753, 0, 1);
+    numberMax: number = null;
+    numberMin: number = null;
+   
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
     @ViewChild("multiInput", { static: false }) multiInputRef: MultiInputField;
     @ViewChild("dataTable", { static: false }) dataTable: Table;
@@ -94,25 +100,44 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
     ngOnInit() {
         this.allFieldsDropdown = [];
-        let assetFieldGroup: SelectItemGroup = { value: "asset-field", label: "Asset Fields", items: [] };
-        let systemFieldsGroup: SelectItemGroup = { value: "system-field", label: "System Fields", items: [] };
-        let relationshipGroup: SelectItemGroup = { value: "rel-field", label: "Relationships", items: [] };
-        this.allFieldsDropdown.push(assetFieldGroup);
-        this.allFieldsDropdown.push(systemFieldsGroup);
-        this.allFieldsDropdown.push(relationshipGroup);
 
-        this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
-            assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
-        });
+        if (this.isAssetType) {
+            if (this.fields && this.fields.length > 0) {
+                let assetFieldGroup: SelectItemGroup = { value: "asset-field", label: "Asset Fields", items: [] };
+                this.allFieldsDropdown.push(assetFieldGroup);
 
-        SystemFields.GetSystemFieldDefinition().forEach((f) => {
-            systemFieldsGroup.items.push({ value: f.Name, label: f.FriendlyName });
-        });
+                this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
+                    assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
+                });
+            }
 
-        SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).forEach((f) => {
-            relationshipGroup.items.push({ value: f.Name, label: f.FriendlyName });
-        });
+            var systemFields = SystemFields.GetSystemFieldDefinition(this.gridType);
+            if (systemFields.length > 0) {
+                let systemFieldsGroup: SelectItemGroup = { value: "system-field", label: "System Fields", items: [] };
+                this.allFieldsDropdown.push(systemFieldsGroup);
 
+                systemFields.forEach((f) => {
+                    systemFieldsGroup.items.push({ value: f.Name, label: f.FriendlyName });
+                });
+            }
+
+            if (SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).length > 0) {
+                let relationshipGroup: SelectItemGroup = { value: "rel-field", label: "Relationships", items: [] };
+                this.allFieldsDropdown.push(relationshipGroup);
+
+                SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).forEach((f) => {
+                    relationshipGroup.items.push({ value: f.Name, label: f.FriendlyName });
+                });
+            }
+        }
+
+        if (this.isRuleResults) {
+            let assetFieldGroup: SelectItemGroup = { value: "rule-results-field", label: "Asset Fields", items: [] };
+            this.allFieldsDropdown.push(assetFieldGroup);
+            this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
+                assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
+            });
+        }
     }
 
     filterTable($event: any) {
@@ -300,6 +325,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
             ft.Operators[1].label = "does not contain";
         }
 
+        if (this.isRuleResults) {
+            if (ft.Name !== "EvaluatedAssetClass") {
+                ft.Operators = ft.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
+            }
+        }
+
         return ft ? ft.Operators : [];
     }
 
@@ -444,7 +475,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
         var type = this.getFieldType(this.condition);
         if (type.Type) {
             if (this.condition.fieldType === "Lookup") {
-                this.loadLookupValues(params);
+                if (this.condition.field === "[Level]") {
+                    this.loadLookupValuesForLevelNames();
+                }
+                else {
+                    this.loadLookupValues(params);
+                }
             }
             if (this.condition.fieldType === "Tag") {
                 this.loadTagValues();
@@ -487,12 +523,24 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     loadLookupValues(params: any) {
+        if (this.currentField.Values && this.currentField.Values.length > 0 && !params.filter) {
+            var subData = this.currentField.Values.slice(+params.skip, +params.skip + +params.take);
+            if (!subData.some((x) => !x)) {
+                return;
+            }
+        }
+
         if (this.lazyLoadSubscription) {
             this.lazyLoadSubscription.unsubscribe();
         }
         this.isLookupValuesLoading = true;
+        var fieldTypeUid = this.currentField.AssetTypeUid;
 
-        this.lazyLoadSubscription = this.fieldsService.getLookupValues(this.currentField.AssetTypeUid, this.currentField.Name.trim(), params)
+        if (!fieldTypeUid) {
+            fieldTypeUid = "00000000-0000-0000-0000-000000000000";
+        }
+
+        this.lazyLoadSubscription = this.fieldsService.getLookupValues(fieldTypeUid, this.currentField.Name.trim(), params)
             .subscribe((res) => {
                 if (!this.currentField.Values || this.currentField.Values.length === 0) {
                     this.currentField.Values = Array.from({ length: res.count });
@@ -513,7 +561,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 this.cdRef.markForCheck();
             });
     }
-
 
     loadTagValues() {
         if (!this.currentField.Values) {
@@ -580,6 +627,13 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     loadRelationshipValues(params: any) {
+        if (this.currentField.Values && this.currentField.Values.length > 0 && !params.filter) {
+            var subData = this.currentField.Values.slice(+params.skip, +params.skip + +params.take);
+            if (!subData.some((x) => !x)) {
+                return;
+            }
+        }
+
         if (this.lazyLoadSubscription) {
             this.lazyLoadSubscription.unsubscribe();
         }
@@ -594,8 +648,9 @@ export class FilterItemComponent implements OnInit, OnChanges {
         this.lazyLoadSubscription = this.assetService
             .getAssetsLookupValues(nameAsParam.split("|")[1], params)
             .subscribe((res) => {
-                this.currentField.Values = Array.from({ length: 0 });
-
+                if (!this.currentField.Values || params.filter) {
+                    this.currentField.Values = Array.from({ length: 0 });
+                }
                 let loadedData = [];
 
                 res.forEach((str) => {
@@ -607,7 +662,36 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
 
                 this.currentField.Values = [...this.currentField.Values];
+
+                if (+params.take === res.length) {
+                    this.currentField.Values.push(null);
+                }
+
                 this.isLookupValuesLoading = false;
+                this.cdRef.markForCheck();
+            });
+    }
+
+    loadLookupValuesForLevelNames() {
+        if (this.lazyLoadSubscription) {
+            this.lazyLoadSubscription.unsubscribe();
+        }
+        this.isLookupValuesLoading = true;
+
+        this.lazyLoadSubscription = this.assetTypeService.getAssetTypeLevels(this.assetTypeUid)
+            .subscribe((res) => {
+                if (!this.currentField.Values || this.currentField.Values.length === 0) {
+                    this.currentField.Values = Array.from({ length: res.length });
+                }
+                let loadedData = [];
+
+                res.forEach((item) => {
+                    loadedData.push({ title: item.Name, value: item.Level });
+                });
+
+                this.currentField.Values = [...loadedData];
+                this.isLookupValuesLoading = false;
+
                 this.cdRef.markForCheck();
             });
     }
@@ -666,16 +750,36 @@ export class FilterItemComponent implements OnInit, OnChanges {
             }
             this.condition.markForDeletion = true;
         }
-
-        this.condition.value = this.rollbackValue1;
-        this.condition.value2 = this.rollbackValue2;
         this.condition.operator = this.rollbackOperator;
         this.currentOperator = this.rollbackOperator;
 
+        this.currentInputType = this.fieldInputType();
+
+        if (this.currentInputType.indexOf("date") !== -1) {
+            this.resetDateFields();
+        }
+        else {
+            this.condition.value = this.rollbackValue1;
+            this.condition.value2 = this.rollbackValue2;
+        }
+
         this.isSelectingValue = false;
+
 
         if (this.multiInputRef) {
             this.multiInputRef.clearTextValue();
+        }
+    }
+
+    private resetDateFields() {
+        if (this.rollbackValue1) {
+            this.condition.value = new Date(this.rollbackValue1);
+        }
+        if (this.rollbackValue2) {
+            this.condition.value2 = new Date(this.rollbackValue2);
+        }
+        else {
+            this.condition.value2 = this.rollbackValue2;
         }
     }
 
@@ -865,7 +969,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     fieldInputType() {
         if (!this.currentOperator) {
-            return;
+            return "";
         }
 
         if (this.condition.field === SystemFields.OwnedByFieldCode) {
@@ -874,6 +978,14 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
         var type = this.getTypeForCondition(this.condition);
 
+        if (type === "Number") {
+            this.numberMax = 2147483647;
+            this.numberMin = -2147483648;
+        }
+        if (type === "Decimal") {
+            this.numberMax = 9223372036854775807;
+            this.numberMin = -9223372036854775808;
+        }
         if (type === "Number" || type === "Decimal" || type === "Score") {
 
             if (this.currentOperator.toString() === "IsInBand") {
@@ -938,7 +1050,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         if (!this.doesNeedValue) {
             return false;
         }
-        if (this.currentInputType.indexOf("multi") !== -1 && this.currentInputType !== "multi-input") {
+        if (this.currentInputType && this.currentInputType.indexOf("multi") !== -1 && this.currentInputType !== "multi-input") {
             return this.isEmpty(this.condition.value) || this.isEmpty(this.condition.value2);
         }
         else {
@@ -962,8 +1074,11 @@ export class FilterItemComponent implements OnInit, OnChanges {
         var target = event.target as HTMLElement;
         if (!this.elRef.nativeElement.contains(event.target)
             && !this.isInBodyElement(target)
+            && this.condition.field
+            && this.isSelectingValue
         ) {
             this.isSelectingValue = false;
+            this.cancel();
         }
     }
 
@@ -1021,5 +1136,22 @@ export class FilterItemComponent implements OnInit, OnChanges {
             return false;
         }
         return this.nonValueOperators.indexOf(this.condition.operator.toString()) !== -1;
+    }
+
+    get isAssetType() {
+        return this.loadIdentifier.length === 36 && !this.loadIdentifier.startsWith("RuleResults");
+    }
+
+    get isRuleResults() {
+        return this.loadIdentifier.startsWith("RuleResults");
+    }
+
+    getFieldsDropdownClass(): string {
+        if (this.isRuleResults) {
+            return "ig-dropdown-hide-groups";
+        }
+        else {
+            return "ig-dropdown-grouped";
+        }
     }
 }

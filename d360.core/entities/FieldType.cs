@@ -359,6 +359,8 @@ namespace d360.core.entities
         public bool IsDisplayable { get; set; }
         [DataMember]
         public bool ShowIfEmpty { get; set; }
+        [DataMember]
+        public bool DisplayRefListDescription { get; set; }
     }
 
     public class FieldTypeDataTypeComputedScoreApiViewModel

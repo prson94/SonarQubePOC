@@ -80,9 +80,10 @@ namespace d360.web.Controllers
 		                                coalesce(LV.[Level], 1) as [Level]
                                 from	Asset A
                                         inner join AssetType T on T.ID = A.AssetTypeID and T.Object = '{hierarchy}Type' and T.ObjectID = @t
-		                                cross apply dbo.GetAssetTextPathById(A.ID, '/') P
+		                                cross apply dbo.GetAssetTextPathById(A.ID, ' / ') P
                                         cross apply dbo.GetAssetLevelById(A.ID) LV
                                 where coalesce(LV.[Level], 1) <= @currentLevel 
+                                order by P.TextPath 
                                 option (maxrecursion 100)",
     new { t = model.HierarchyTypeID, currentLevel = model.Level ?? 1 }).Select(i => new { i.Uid, i.Name }).ToList();
 

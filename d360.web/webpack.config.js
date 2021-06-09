@@ -1,4 +1,4 @@
-/// <binding />
+﻿/// <binding />
 var webpack = require('webpack');
 var path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
@@ -8,9 +8,9 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 var webpackConfig = {
     mode: 'development',
     entry: {
-        'polyfills': './scripts/app/polyfills.ts',
-        'vendor': './scripts/app/vendor.ts',
-        'main': './scripts/app/main.ts',
+        'polyfills': './scripts/polyfills.ts',
+        'vendor': './scripts/vendor.ts',
+        'main': './scripts/main.ts',
     },
     performance: {
         hints: false
@@ -47,6 +47,7 @@ var webpackConfig = {
         ),        
         new webpack.DefinePlugin({
             __BUILD_DATE: JSON.stringify(new Date().toLocaleString()),
+            PRODUCTION: JSON.stringify(false),
         }),
         new webpack.SourceMapDevToolPlugin({
             filename: '[file].map',
@@ -72,7 +73,7 @@ var webpackConfig = {
                 use: [
                     {
                         loader: 'ts-loader', options: {
-                            configFile: "scripts/app/tsconfig.json"
+                            configFile: "scripts/tsconfig.json"
                         }
                     },
                     { loader: 'angular2-template-loader' },

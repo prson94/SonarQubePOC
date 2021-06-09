@@ -11,6 +11,7 @@ namespace d360.core.entities.Metric
     {
         public Guid AssetUid { get; set; }
         public DateTime EffectiveDate { get; set; }
+        public Guid AllocationUid { get; set; }
         public Guid MetricAssetUid { get; set; }
         public Guid MetricAssetVersionUid { get; set; }
     }
@@ -24,6 +25,7 @@ namespace d360.core.entities.Metric
 
     public class AssetMeasureChildModel
     {
+        public Guid AllocationUid { get; set; }
         public Guid MetricAssetUid { get; set; }
         public Guid? MetricAssetVersionUid { get; set; }
         public bool? Result { get; set; }

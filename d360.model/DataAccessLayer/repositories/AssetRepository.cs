@@ -22,7 +22,6 @@ using d360.core.entities.Process;
 using AngleSharp.Text;
 using System.Drawing;
 using System.Threading;
-
 namespace d360.model.DataAccessLayer
 {
     public class AssetRepository : BaseRepository, IAssetRepository
@@ -41,30 +40,6 @@ namespace d360.model.DataAccessLayer
             this.Community = community;
         }
 
-        /// <summary>
-        /// Common code for creating batch calls.
-        /// </summary>
-        /// <param name="executionInfo"></param>
-        /// <param name="execution"></param>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        protected async Task<ApiExecutionInfo> CreateApiBatchJob(ApiExecutionInfo executionInfo, ApiExecution execution, object data)
-        {
-            // Save to storage container.
-            await StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(data));
-
-            // Save to the database.
-            execution.ExecutionID = executionInfo.ExecutionID;
-            CompanyContext.Add(execution);
-
-            // Save to queue.
-            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
-            {
-                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
-            }
-
-            return executionInfo;
-        }
         public Asset GetAssetByObjectId(string obj, int objId)
         {
             return CompanyContext.Filter<Asset>(i => i.Object == obj && i.ObjectID == objId).SingleOrDefault();
@@ -114,7 +89,7 @@ namespace d360.model.DataAccessLayer
                 condition = string.Format(" and A.[Class] = @class1 AND (ATQFusionType.uid = @fusionTypeUid or ATTFusionType.uid = @fusionTypeUid)");
 
             }
-
+            var levelsSql = "";
             List<string> whereStatements = new List<string>();
             if (queryParams != null)
             {
@@ -122,70 +97,121 @@ namespace d360.model.DataAccessLayer
                 {
                     bool useAsTransformation;
                     var useAsTransformationString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "useastransformation").Value;
-                    if (Boolean.TryParse(useAsTransformationString, out useAsTransformation))
+                    if (bool.TryParse(useAsTransformationString, out useAsTransformation))
                     {
 
                         condition += " and A.UseAsTransformation=@useAsTransformation ";
                         dbArgs.Add("useAsTransformation", useAsTransformation);
                     }
                     else
+                    {
                         throw new ArgumentException("Invalid value for parameter [useastransformation]", useAsTransformationString);
+                    }
                 }
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "hierarchical"))
                 {
                     bool hierarchical;
                     var hierarchicalString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "hierarchical").Value;
-                    if (Boolean.TryParse(hierarchicalString, out hierarchical))
+                    if (bool.TryParse(hierarchicalString, out hierarchical))
                     {
 
                         condition += " and A.Hierarchical=@hierarchical ";
                         dbArgs.Add("hierarchical", hierarchical);
                     }
                     else
+                    {
                         throw new ArgumentException("Invalid value for parameter [hierarchical]", hierarchicalString);
+                    }
                 }
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "autodisplaydescription"))
                 {
                     bool autoDisplayDescription;
                     var autoDisplayDescriptionString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "autodisplaydescription").Value;
-                    if (Boolean.TryParse(autoDisplayDescriptionString, out autoDisplayDescription))
+                    if (bool.TryParse(autoDisplayDescriptionString, out autoDisplayDescription))
                     {
 
                         condition += " and A.AutoDisplayDescription=@autodisplaydescription ";
                         dbArgs.Add("autoDisplayDescription", autoDisplayDescription);
                     }
                     else
+                    {
                         throw new ArgumentException("Invalid value for parameter [autoDisplayDescription]", autoDisplayDescriptionString);
+                    }
                 }
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "canownfusion"))
                 {
                     bool canOwnFusion;
                     var canOwnFusionString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "canownfusion").Value;
-                    if (Boolean.TryParse(canOwnFusionString, out canOwnFusion))
+                    if (bool.TryParse(canOwnFusionString, out canOwnFusion))
                     {
 
                         condition += " and A.CanOwnFusion=@canownfusion ";
                         dbArgs.Add("canownfusion", canOwnFusion);
                     }
                     else
+                    {
                         throw new ArgumentException("Invalid value for parameter [canOwnFusion]", canOwnFusionString);
+                    }
                 }
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "autodisplayparent"))
                 {
                     bool autoDisplayParent;
                     var autoDisplayParentString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "autodisplayparent").Value;
-                    if (Boolean.TryParse(autoDisplayParentString, out autoDisplayParent))
+                    if (bool.TryParse(autoDisplayParentString, out autoDisplayParent))
                     {
 
                         condition += " and A.AutoDisplayParent=@autoDisplayParent ";
                         dbArgs.Add("autoDisplayParent", autoDisplayParent);
                     }
                     else
+                    {
                         throw new ArgumentException("Invalid value for parameter [autoDisplayParent]", autoDisplayParentString);
+                    }
+                }
+
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "obj") && queryParams.ToList().Any(q => q.Key.ToLower() == "objid"))
+                {
+                    var obj = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "obj").Value;
+                    var objId = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "objid").Value;
+                    SystemObjects ot;
+                    if (Enum.TryParse(obj, out ot))
+                    {
+                        condition += " and A.Object=@obj ";
+                        dbArgs.Add("obj", obj);
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Invalid value for parameter [obj]", obj);
+                    }
+                    int otid;
+                    if (int.TryParse(objId, out otid))
+                    {
+                        condition += " and A.ObjectID=@objId ";
+                        dbArgs.Add("objId", otid);
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Invalid value for parameter [objId]", objId);
+                    }
+                }
+
+
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "includelevels"))
+                {
+                    bool includeLevels;
+                    var includeLevelsString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includelevels").Value;
+                    if (bool.TryParse(includeLevelsString, out includeLevels))
+                    {
+                        levelsSql = @",(select Level, Name, Description from AssetTypeLevel where AssetTypeID = A.ID order by Level for json path) as LevelsJson";
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Invalid value for parameter [includeLevels]", includeLevelsString);
+                    }
                 }
 
             }
@@ -218,6 +244,7 @@ namespace d360.model.DataAccessLayer
                                     ,A.AutoDisplayParent
                                     ,A.FlowObjectType
                                     ,A.CanEditParent
+                                    {levelsSql} 
                                     ,P.[Path]
                                     ,AT.IconBackColor as BackColor
                                     ,AT.Icon as Icon
@@ -268,6 +295,7 @@ namespace d360.model.DataAccessLayer
             bool includeOwnershipLookup = false;
             bool simpleFilterOwnershipOnResource = false;
             bool simpleFilterOwnershipOnSecurityAsset = false;
+            bool isForTreeGrid = false;
 
             if (assetType == null)
                 throw new Exception("Invalid assetType specified");
@@ -356,6 +384,11 @@ namespace d360.model.DataAccessLayer
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includeownershiplookup"))
             {
                 bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includeownershiplookup").Value, out includeOwnershipLookup);
+            }
+
+            if (queryParams.Any(x => x.Key.ToLower() == "isfortreegrid"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "isfortreegrid").Value, out isForTreeGrid);
             }
 
             //check for asset path fields now after include fields have been filtered
@@ -585,6 +618,7 @@ namespace d360.model.DataAccessLayer
                     drop table if exists #OwnershipLookupAssets;
                     create table #OwnershipLookupAssets (
 						AssetID bigint,
+                        ResponsibilityTypeID int,
                         ResponsibilityTypeName nvarchar(250),
                         ResourceName nvarchar(501),
                         SecurityAsset char(1),
@@ -597,6 +631,7 @@ namespace d360.model.DataAccessLayer
 					);
 					insert into #OwnershipLookupAssets
                         SELECT [AssetID]
+                              ,[ResponsibilityTypeID]
                               ,[ResponsibilityTypeName]
                               ,[ResourceName]
                               ,[SecurityAsset]
@@ -610,29 +645,31 @@ namespace d360.model.DataAccessLayer
                         where rd.assetid <> 0 and IsVisible = 1 and rd.[AssetTypeID] = @assetTypeId
                         union all
                         select a.[ID] as AssetID
-                              ,rd.[ResponsibilityTypeName]
-                              ,rd.[ResourceName]
-                              ,rd.[SecurityAsset]
-                              ,rd.[SecurityAssetName]
-                              ,rd.[Context]
-                              ,rd.[ResourceId]
-                              ,rd.[ResourceUid]
-                              ,rd.[SecurityAssetId]
-                              ,rd.[SecurityAssetUid]
+                             ,rd.[ResponsibilityTypeID]
+                             ,rd.[ResponsibilityTypeName]
+                             ,rd.[ResourceName]
+                             ,rd.[SecurityAsset]
+                             ,rd.[SecurityAssetName]
+                             ,rd.[Context]
+                             ,rd.[ResourceId]
+                             ,rd.[ResourceUid]
+                             ,rd.[SecurityAssetId]
+                             ,rd.[SecurityAssetUid]
                         from ResponsibilityDetail rd
                         inner join asset a on rd.assettypeid = a.assettypeid
                         where rd.assetid = 0 and IsVisible = 1 and rd.assettypeid = @assetTypeId
                         union all
                         select a.[ID] as AssetID
-                                ,rd.[ResponsibilityTypeName]
-                                ,rd.[ResourceName]
-                                ,rd.[SecurityAsset]
-                                ,rd.[SecurityAssetName]
-                                ,rd.[Context]
-                                ,rd.[ResourceId]
-                                ,rd.[ResourceUid]
-                                ,rd.[SecurityAssetId]
-                                ,rd.[SecurityAssetUid]
+                             ,rd.[ResponsibilityTypeID]
+                             ,rd.[ResponsibilityTypeName]
+                             ,rd.[ResourceName]
+                             ,rd.[SecurityAsset]
+                             ,rd.[SecurityAssetName]
+                             ,rd.[Context]
+                             ,rd.[ResourceId]
+                             ,rd.[ResourceUid]
+                             ,rd.[SecurityAssetId]
+                             ,rd.[SecurityAssetUid]
                         from ResponsibilityDetail rd
                         inner join asset a on rd.assetid = a.id
                         where rd.AssetTypeID = 0 and IsVisible = 1 and a.AssetTypeID = @assetTypeId;
@@ -644,12 +681,19 @@ namespace d360.model.DataAccessLayer
                 {
                     FieldTypeLookup lookup = CompanyContext.FieldTypeLookups.Where(ftl => ftl.FieldTypeID == f.ID).FirstOrDefault();
                     var definition = (dynamic)JsonConvert.DeserializeObject(lookup.Definition);
+                    string responsibilityIdCondition = "";
+                    bool includeResponsibilityNames = true;
+                    if (definition.ResponsibilityType != null && definition.ResponsibilityType > 0)
+                    {
+                        responsibilityIdCondition = $" and ola{f.ID}.ResponsibilityTypeID = {definition.ResponsibilityType}";
+                        includeResponsibilityNames = false;
+                    }
                     string innerOwnershipQuery = "";
                     if ((bool)definition.ExpandGroupMembership)
                     {
                         innerOwnershipQuery = $@"select ResponsibilityTypeName, ResourceName, ResourceUid, ResourceItemUrl from #OwnershipLookupAssets ola{f.ID}
                             cross apply (select  concat('resource/', cast(ResourceID as varchar)) as ResourceItemUrl) ola{f.ID}x
-			                where ola{f.ID}.assetid = a.id
+			                where ola{f.ID}.assetid = a.id {responsibilityIdCondition}
 			                group by ResponsibilityTypeName, ResourceName, ResourceUid, ResourceItemUrl";
                         simpleFilterOwnershipOnResource = true;
                     }
@@ -657,15 +701,15 @@ namespace d360.model.DataAccessLayer
                     {
                         innerOwnershipQuery = $@"select ResponsibilityTypeName, SecurityAssetName as ResourceName, SecurityAssetUid as ResourceUid, ResourceItemUrl  from #OwnershipLookupAssets ola{f.ID}
                             cross apply (select  concat(case SecurityAsset when 'R' then '/resource/' else '/group/' end, cast(SecurityAssetID as varchar)) as ResourceItemUrl) ola{f.ID}x
-                			where ola{f.ID}.assetid = a.id
+                			where ola{f.ID}.assetid = a.id {responsibilityIdCondition}
                             group by ResponsibilityTypeName, SecurityAssetName, SecurityAssetUid, ResourceItemUrl";
                         simpleFilterOwnershipOnSecurityAsset = true;
                     }
-
+                    string responsibilityNameSelect = includeResponsibilityNames ? "string_agg(ResponsibilityTypeName,', ')" : "''";
                     string ownershipQuery = $@"
                         outer apply(
                             select FormattedValue = (
-		                        select ResourceName, string_agg(ResponsibilityTypeName,', ') AS ResponsibilityTypes, ResourceUid, ResourceItemUrl
+		                        select ResourceName, {responsibilityNameSelect} AS ResponsibilityTypes, LOWER(ResourceUid) AS ResourceUid, ResourceItemUrl
 		                        from ( {innerOwnershipQuery} ) Responsibilites{f.ID}
                                 group by ResourceName, ResourceUid, ResourceItemUrl
                                 order by ResourceName
@@ -746,7 +790,12 @@ namespace d360.model.DataAccessLayer
                     }
                 }
 
-                if (!CompanyContext.TypeHasParent((SystemObjects)(Enum.Parse(typeof(SystemObjects), assetType.Object, true)), assetType.ObjectID))
+                var functionalPredicateType = PredicateType.InterTypeHierarchy;
+                if (assetType.Object == "PolicyType" || assetType.Object == "TaxonomyType")
+                {
+                    functionalPredicateType = PredicateType.IntraTypeHierarchy;
+                }
+                if (!CompanyContext.TypeHasParent((SystemObjects)(Enum.Parse(typeof(SystemObjects), assetType.Object, true)), assetType.ObjectID, functionalPredicateType))
                 {
                     includeParent = false;
                 }
@@ -932,7 +981,8 @@ namespace d360.model.DataAccessLayer
                         simpleFilters.Add(simpleFilterOwnership);
                     }
 
-                    if (includeParent)
+                    //do not use simple filter on parent value if response is used for tree grid, otherwise all child items will be matched incorrectly
+                    if (includeParent && !isForTreeGrid)
                     {
                         simpleFilters.Add($"Parent.DisplayValue like @simpleFilter");
                         includeParentInCount = true; // simple filter AND the asset has a parent which posibly impacts the count
@@ -1038,7 +1088,6 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
-
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_parentuid"))
             {
                 parentUidPopulated = true;
@@ -1123,6 +1172,7 @@ namespace d360.model.DataAccessLayer
                 {(includeAssetPathInCount ? " left join graph.AssetNodeDisplayPath Node on Node.id = a.id" : "")} 
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
+                {(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
                 {string.Join("\n", countJoins)}
                 {hierarchyParentUidSelect}
                 {(includeParentInCount ? parentApplySQL : "")}
@@ -1140,6 +1190,7 @@ namespace d360.model.DataAccessLayer
                     A.UpdatedOn,
                     {(includeCreatedByModifiedBy ? "CA.uid as CreatedByUid," : "")}                    
                     A.CreatedOn,
+                    {(isForTreeGrid ? "LVL.Level as 'Level'," : "")}
                     {(includeParent ? parentFieldSQL : "")}
                     {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
                     {(includeColor ? "ACJ.ColorJson as Color," : "")}
@@ -1158,6 +1209,7 @@ namespace d360.model.DataAccessLayer
                 {string.Join("\n", fieldJoins)}
                 {(includeSegments || hasAssetPathField || whereSql.Contains("Node.") ? " left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID" : "")} 
                 left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
+                {(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
                 {(includeColor ? "cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
                 {(includePermissionDetails ? permissionDetailSQL : "")}
                 {hierarchyParentUidSelect}
@@ -1249,6 +1301,57 @@ namespace d360.model.DataAccessLayer
                                 data[ft.Name] = JsonConvert.DeserializeObject(val);
                             }
                         });
+                    }
+                }
+            }
+
+            //if we want to include hierarchy items (parents) for tree grid
+            //used in tree grids we want to find all parents from our assets that are included in results
+            if (isForTreeGrid)
+            {
+                if (queryParams.Any(x => x.Key.ToLower() == "_simplefilter" || x.Key.ToLower() == "_filter"))
+                {
+                    List<Guid> assetUids = new List<Guid>();
+                    foreach (var item in results)
+                    {
+                        var data = (IDictionary<string, object>)item;
+                        assetUids.Add(Guid.Parse(data["AssetUid"].ToString()));
+                    }
+
+                    var allParents = GetAllParentsAssetUid(assetUids).Distinct().Where(x => !assetUids.Contains(x)).ToList();
+
+                    if (allParents.Count > 0)
+                    {
+                        var par = queryParams.Where(k => k.Key.ToLower() != "_simplefilter" && k.Key.ToLower() != "_filter" && k.Key.ToLower() != "isfortreegrid").ToList();
+                        par.Add(new KeyValuePair<string, string>("_assetUid", string.Join(",", allParents)));
+                        var fammilyAssets = await GetAssets(assetType, par);
+                        results = results.Union(fammilyAssets.items).ToList().ToList();
+
+                        //filtered tree grid results need to be sorted in memory too
+                        string orderBy = "";
+                        string direction = "ASC";
+
+                        if (queryParams.ToList().Any(x => x.Key.ToLower() == "_order"))
+                        {
+                            orderBy = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value;
+                        }
+
+                        if (queryParams.ToList().Any(x => x.Key.ToLower() == "_direction"))
+                        {
+                            direction = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_direction").Value;
+                        }
+
+                        if (string.IsNullOrEmpty(orderBy))
+                        {
+                            orderBy = fieldTypes.OrderByDescending(x => x.SortOrder).ThenBy(x=> x.ID).FirstOrDefault().Name;
+                        }
+
+                        results = results.OrderBy(x => ((IDictionary<string, object>)x)[orderBy]).ToList();
+
+                        if (direction == "DESC")
+                        {
+                            results = results.Reverse();
+                        }
                     }
                 }
             }
@@ -1366,17 +1469,17 @@ namespace d360.model.DataAccessLayer
                     var parent = CompanyContext.AssetTypes.FirstOrDefault(x => x.Object == hierarchy.Subject && x.ObjectID == hierarchy.SubjectID);
                     if (parent != null)
                     {
-                       columnName = isChildItem ? "Parent " + parent.Name + " Name" : parent.Name;
-                       ParentAssetTypeUidHeading = parent.Name + " UID";
+                        columnName = isChildItem ? "Parent " + parent.Name + " Name" : parent.Name;
+                        ParentAssetTypeUidHeading = parent.Name + " UID";
                     }
-                        
+
                 }
 
                 fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = columnName });
             }
 
             if (!isChildItem)
-            { 
+            {
                 fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
 
                 fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
@@ -1868,6 +1971,37 @@ namespace d360.model.DataAccessLayer
             return CompanyContext.Query<Guid>(sql, new { assetUid = uids }, ApiTimeout).AsList();
         }
 
+        private List<Guid> GetAllParentsAssetUid(List<Guid> uids)
+        {
+            var sql = $@"drop table if exists #family
+                create table #family(
+                 AssetUid uniqueidentifier
+                )
+                --GET ALL PARENT
+                ;with family_cte as (
+                select a2.uid,ADV.DisplayValue
+                from graph.assetnode an
+                inner join graph.AssetEdge edge2 on edge2.$to_id = an.$node_id and edge2.PredicateType = 4
+                inner join graph.AssetNode rel2 on rel2.$node_id = edge2.$from_id
+                inner join asset a2 on a2.uid = rel2.Uid
+                cross apply GetAssetDisplayValueById(a2.ID)ADV
+                where an.Uid in @assetUid
+                union all
+                select a2.uid, ADV.DisplayValue
+                from family_cte fam, graph.assetnode an
+                inner join graph.AssetEdge edge2 on edge2.$to_id = an.$node_id and edge2.PredicateType = 4
+                inner join graph.AssetNode rel2 on rel2.$node_id = edge2.$from_id
+                inner join asset a2 on a2.uid = rel2.Uid
+                cross apply GetAssetDisplayValueById(a2.ID)ADV
+                where an.Uid = fam.uid)
+                insert into #family 
+                select 
+                uid as AssetUid from family_cte
+                select * from #family";
+
+            return CompanyContext.Query<Guid>(sql, new { assetUid = uids }, ApiTimeout).AsList();
+        }
+
 
         private string extractColorNameFromJSON(string jsonString)
         {
@@ -2055,6 +2189,11 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 uid = model.Uid;
             }
 
+            if (!model.CanEditParent.HasValue)
+            {
+                model.CanEditParent = true;
+            }
+
             switch (model.Class)
             {
                 case AssetTypeClass.BusinessAsset:
@@ -2131,7 +2270,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         CreatedOn = DateTime.UtcNow,
                         Hierarchical = true,
                         UseAsTransformation = model.UseAsTransformation,
-                        Class = AssetTypeClass.Policy
+                        Class = AssetTypeClass.Policy,
+                        CanEditParent = model.CanEditParent
                     };
 
                     if (p.HierarchyMaximumDepth <= 0 || p.HierarchyMaximumDepth > 10)
@@ -2160,7 +2300,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         CreatedOn = DateTime.UtcNow,
                         Hierarchical = true,
                         UseAsTransformation = model.UseAsTransformation,
-                        Class = AssetTypeClass.Model
+                        Class = AssetTypeClass.Model,
+                        CanEditParent = model.CanEditParent
                     };
 
                     if (t.HierarchyMaximumDepth <= 0 || t.HierarchyMaximumDepth > 10)
@@ -2196,7 +2337,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         CreatedBy = resourceId,
                         CreatedOn = DateTime.UtcNow,
                         UseAsTransformation = model.UseAsTransformation,
-                        Class = AssetTypeClass.Reference
+                        Class = AssetTypeClass.Reference,
+                        CanEditParent = model.CanEditParent
                     };
                     isNamePartOfKey = false;
                     nameFriendlyName = "Long Description";
@@ -2273,7 +2415,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         CanOwnFusion = model.CanOwnFusion ?? false,
                         Parent = parentAssetType,
                         AutoDisplayParent = model.AutoDisplayParent,
-                        FlowObjectType = model.FlowObjectType
+                        FlowObjectType = model.FlowObjectType,
+                        CanEditParent = model.CanEditParent
                     };
                     CompanyContext.Add(diagram);
                     parentType = SystemObjects.TaskType;
@@ -2334,6 +2477,11 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             if (!string.IsNullOrEmpty(model?.Name ?? null))
                 model.Name = model.Name.Trim();
 
+            if (!model.CanEditParent.HasValue)
+            {
+                model.CanEditParent = true;
+            }
+
             switch (model.Class)
             {
                 case AssetTypeClass.BusinessAsset:
@@ -2393,11 +2541,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         assetType.FlowObjectType = model.FlowObjectType;
                     }
 
-
-                    if (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset)
-                    {
-                        assetType.CanEditParent = model.CanEditParent;
-                    }
+                    assetType.CanEditParent = model.CanEditParent;
 
                     #endregion
                     break;
@@ -2417,6 +2561,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
                     assetType.AutoDisplayDescription = model.AutoDisplayDescription;
                     assetType.Notes = model.Notes ?? assetType.Notes;
+                    assetType.CanEditParent = model.CanEditParent;
 
                     #endregion
                     break;
@@ -2433,6 +2578,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     assetType.Name = model.Name;
                     assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
                     assetType.Description = model.Description;
+                    assetType.CanEditParent = model.CanEditParent;
 
                     #endregion
                     break;
@@ -2601,7 +2747,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 Action = ApiExecutionAction.DeleteAssetTypes
             };
 
-            return await CreateApiBatchJob(executionInfo, execution, assetTypes);
+            return await CreateApiBatchJob(executionInfo, execution, assetTypes, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
 
@@ -2627,7 +2773,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 execution.Total = assets.Count;
             }
 
-            return await CreateApiBatchJob(executionInfo, execution, assets);
+            return await CreateApiBatchJob(executionInfo, execution, assets, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
         public async Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetUpdate> assets, ApiExecution execution, bool sendWorkflowEvents = true)
@@ -2642,7 +2788,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 SendWorkflowEvents = sendWorkflowEvents
             };
 
-            return await CreateApiBatchJob(executionInfo, execution, assets);
+            return await CreateApiBatchJob(executionInfo, execution, assets, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
         public async Task<ApiExecutionInfo> PostBulkAssets(List<AssetInsert> assets, ApiExecution execution, bool sendWorkflowEvents = true)
@@ -2657,7 +2803,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 SendWorkflowEvents = sendWorkflowEvents
             };
 
-            return await CreateApiBatchJob(executionInfo, execution, assets);
+            return await CreateApiBatchJob(executionInfo, execution, assets, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
         public Predicate GetPredicateByUID(Guid predicateGuid)
@@ -2812,6 +2958,142 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return resultsModel;
         }
 
+        public async Task<APIExecutionExternalAPIModelResult> GetConnectorStatusItems(IEnumerable<KeyValuePair<string, string>> queryParams, DateTime? _startDate, DateTime? _endDate, Guid? externalId, string component, string status)
+        {
+            string orderDirection = "asc";
+            var includeTotal = true;
+            string orderBySql = "";
+            string offsetSql = "";
+            var parameters = new DynamicParameters();
+            string whereResultCteSql = " ";
+            string StrWhereAnd = "";
+
+            if (_startDate.HasValue)
+            {
+                StrWhereAnd = string.IsNullOrEmpty(StrWhereAnd) ? " where " : " and ";
+                whereResultCteSql = StrWhereAnd + " Createdon >= @_startDate";
+                parameters.Add("@_startDate", _startDate.Value);
+            }
+
+            if (_endDate.HasValue)
+            {
+                StrWhereAnd = string.IsNullOrEmpty(StrWhereAnd) ? " where " : " and ";
+
+                whereResultCteSql += StrWhereAnd + " Createdon <= @_endDate";
+                parameters.Add("@_endDate", _endDate.Value);
+            }
+
+            if (externalId.HasValue)
+            {
+                StrWhereAnd = string.IsNullOrEmpty(StrWhereAnd) ? " where " : " and ";
+
+                whereResultCteSql += StrWhereAnd + " externalId = @externalId";
+                parameters.Add("@externalId", externalId.Value);
+            }
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                StrWhereAnd = string.IsNullOrEmpty(StrWhereAnd) ? " where " : " and ";
+
+                whereResultCteSql += StrWhereAnd + " status = @status";
+                parameters.Add("@status", status);
+            }
+
+            if (!string.IsNullOrEmpty(component))
+            {
+                StrWhereAnd = string.IsNullOrEmpty(StrWhereAnd) ? " where " : " and ";
+
+                whereResultCteSql += StrWhereAnd + " component = @component";
+                parameters.Add("@component", component);
+            }
+
+            if (queryParams.Any(x => x.Key == "_direction"))
+            {
+                string[] allowedDirections = new string[] { "asc", "desc" };
+                var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
+                if (!allowedDirections.Contains(order.Trim().ToLower()))
+                {
+                    return new APIExecutionExternalAPIModelResult
+                    {
+                        Message = "Invalid order direction passed in the request",
+                        StatusCode = HttpStatusCode.BadRequest
+                    };
+                }
+                orderDirection = allowedDirections.Contains(order.Trim().ToLower()) ? order : "asc";
+            }
+
+            if (!queryParams.Any(p => p.Key == "_order"))
+            {
+                orderBySql = $" order by [createdOn] desc, externalid asc";
+            }
+            else
+            {
+
+                var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
+                string[] validOrderByFields = { "status", "externalid", "detail", "component", "createdon" };
+                if (!validOrderByFields.Contains(orderByCol.ToLower()))
+                    return new APIExecutionExternalAPIModelResult
+                    {
+                        Message = "Invalid order passed in the request",
+                        StatusCode = HttpStatusCode.BadRequest
+                    };
+                orderBySql = $" order by {orderByCol} {orderDirection} ";
+            }
+
+            int pageNum = CompanyContext.ParsePageNumber(queryParams, 1);
+            int pageSize = CompanyContext.ParsePageSize(queryParams);
+            string offset = CompanyContext.ParsePageOffsetSql(pageNum, pageSize);
+
+            if (pageSize > 0 || pageNum > 0)
+            {
+                if (pageSize < 1) pageSize = 1;
+                if (pageNum < 1) pageNum = 1;
+
+                offsetSql = $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only ";
+            }
+
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includetotal"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includetotal").Value, out includeTotal);
+            }
+
+            var sql = $@"
+                        SELECT ee.Status
+                              ,ee.externalid
+	                          ,ee.detail
+                              ,ee.component
+                              ,ee.createdOn
+                          FROM [api].[ExecutionExternal] ee
+                          {whereResultCteSql}
+                          {orderBySql}
+                          {offsetSql}
+                        ";
+            var countSQL = $@"
+                        SELECT count(1)
+                          FROM [api].[ExecutionExternal] ee
+                          {whereResultCteSql}
+                        ";
+            var executions = await CompanyContext.QueryAsync<APIExecutionExternalAPIModel>(sql, parameters, ApiTimeout);
+
+            int? count = null;
+            if (includeTotal)
+            {
+                var countresult = await CompanyContext.QueryAsync<int>(countSQL, parameters, ApiTimeout);
+                count = countresult.FirstOrDefault();
+            }
+
+            var resultsModel = new APIExecutionExternalAPIModelResult
+            {
+                items = executions,
+                total = count,
+                pageNum = pageNum,
+                pageSize = pageSize,
+                StatusCode = HttpStatusCode.OK
+            };
+
+            return resultsModel;
+        }
+
         public void UpsertAssetStyle(int assetTypeId, string foreColor, string backColor, string icon, string objectName = "Tx")
         {
             var style = CompanyContext.GetAssetTypeStyle(assetTypeId);
@@ -2882,13 +3164,19 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 select
 	                A.[UID] as [uid],
                     COALESCE(StatusColor.FormattedValue, f.FormattedValue, ft.DefaultFormattedValue) as Status,
-	                KP.KeyPath as Path
+	                KP.KeyPath as Path,
+                    ADV.DisplayValue,
+                    AT.Name as TypeName,
+                    A.Object,
+                    A.ObjectId,
+                    A.Id
                 from Asset A
                 inner join AssetType AT on AT.ID = A.AssetTypeID and AT.UID = @typeUid
                 left join FieldType ft on AT.Object = ft.Object and AT.ObjectID = ft.ObjectID and ft.FriendlyName like 'status'
                 left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID
                 left join graph.AssetNode Node on Node.Uid = a.uid and Node.AssetTypeUid = AT.[UID]
                 left join graph.AssetNodeKeyPath KP on KP.ID = Node.ID
+                left join AssetDisplayValue ADV on ADV.AssetID = A.ID
 				outer apply(
                                 select FormattedValue = 
                                 (SELECT F.FormattedValue as name,

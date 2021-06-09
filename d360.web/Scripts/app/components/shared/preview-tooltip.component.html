@@ -8,13 +8,13 @@
        [ngClass]="['fa-' + this.icon, class ? class : '']"
        [ngStyle]="{ color: iconColor }"
        class="fa"></i>
-    <span class="preview-text">
+    <span #previewText class="preview-text">
         <ng-content></ng-content>
     </span>
     <div *ngIf="innerHtmlContent != null" [innerHtml]="innerHtmlContent"></div>
     <div #tip class="tooltip-child tooltip-panel">
         <h3 style="position: relative">
-            <a *ngIf="data && data.Url" [routerLink]="data?.Url">{{data?.DisplayName}}</a>
+            <a *ngIf="data && data.Url" (click)="navigate($event, data.Url)">{{data?.DisplayName}}</a>
             <span *ngIf="data && !data.Url && data.DisplayName"
                   style="background-color: #fff;">{{ data?.DisplayName }}</span>
             <small *ngIf="data && data.TypeName && data.DisplayName"

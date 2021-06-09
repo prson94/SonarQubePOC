@@ -49,12 +49,6 @@ namespace igx.jobs.scoreprocessor
                     case ScoreQueueChangeType.CheckTypeDependencyRemoved:
                         process = new CheckTypeDependencyRemovedProcess();
                         break;
-                    case ScoreQueueChangeType.ExternalMeasureResultsCreated:
-                        process = new ExternalMeasureResultsCreatedProcess();
-                        break;
-                    case ScoreQueueChangeType.ExternalScoresCreated:
-                        process = new ExternalScoresCreatedProcess();
-                        break;
                     case ScoreQueueChangeType.MeasureChanged:
                         process = new MeasureChangedProcess();
                         break;
@@ -78,6 +72,10 @@ namespace igx.jobs.scoreprocessor
                     process.Storage = storage;
                     await process.Run();
                 }
+            }
+            catch (ArgumentNullException)
+            {
+                log.WriteLine($"No score execution record found. Company: {scoreInfo.CompanyID}; Execution: {scoreInfo.ExecutionUid}.");
             }
             catch (InvalidScoreMeasure ex)
             {

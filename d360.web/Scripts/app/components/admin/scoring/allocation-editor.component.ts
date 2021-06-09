@@ -122,7 +122,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
         this.ddlScoreTypes.push({ value: 'DataQuality', label: 'Data Quality Score' });
     }
 
-    private hasModelChanged() {  
+    hasModelChanged() {  
         if (this.originalSelection) {
             this.modelChanged = (JSON.stringify(this.originalSelection, (k, v) => v === undefined || v === null ? "" : v) !== JSON.stringify(this.selection, (k, v) => v === undefined || v === null ? "" : v));
             if (this.isEdit) {
