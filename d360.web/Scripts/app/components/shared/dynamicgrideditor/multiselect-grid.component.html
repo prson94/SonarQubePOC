@@ -34,7 +34,7 @@
                     <p-tableCheckbox *ngIf="multiple" [value]="item"></p-tableCheckbox>
                 </td>
                 <td class="front-elide">
-                    <d3s-preview-tooltip [objectType]="getObjectTypeForTooltip(item)" [objectId]="getObjectIdForTooltip(item)">{{item.Text}}</d3s-preview-tooltip>
+                    <d3s-preview-tooltip [objectType]="getObjectTypeForTooltip(item)" [objectId]="getObjectIdForTooltip(item)"><bdi>{{item.Text}}</bdi></d3s-preview-tooltip>
                 </td>
             </tr>
         </ng-template>
