@@ -301,7 +301,7 @@ GO
 	</rollback>
   </changeSet>
 
-  <changeSet author="kmcnamee" id="Table.dbo.Asset-Asset_AfterUpdate-v6">
+  <changeSet author="TDuric" id="Table.dbo.Asset-Asset_AfterUpdate-v7">
     <comment>GOV-14944</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -364,7 +364,8 @@ AS
 			
 				UPDATE	TF
 				SET		TF.FormattedValue = TFV.FormattedValue,
-						TF.UpdatedBy = TFV.UpdatedBy
+						TF.UpdatedBy = TFV.UpdatedBy,
+						TF.UpdatedOn = getutcdate()
 				from	Field TF
 				inner join #TempFormattedValue TFV
 				on TF.FieldTypeID = TFV.FieldTypeID and TFV.[Value] = TF.[Value];
