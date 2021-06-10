@@ -823,7 +823,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         }
                         else
                         {
-                            throw new Exception("Invalid value for page size parametar!");
+                            throw new ArgumentException($"Invalid value for page size parametar!", "_pagesize");
                         }
                         break;
                     case "_pagenum":
@@ -860,7 +860,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         }
                         else
                         {
-                           throw new Exception("Invalid order passed in the request!");
+                            throw new ArgumentException($"Invalid order passed in the request!", "sortby");
                         }
                         break;
                     case "sortorder":
@@ -883,13 +883,17 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                             var order = param.Value;
                             if (!allowedDirections.Contains(order.Trim().ToLower()))
                             {
-                                throw new Exception("Invalid order direction passed in the request!");
+                                throw new ArgumentException($"Invalid order direction passed in the request!", "sortorder");
                             }
                             sortOrder = allowedDirections.Contains(order.Trim().ToLower()) ? order : "asc";
                         }
                         break;
                     case "_includetotal":
-                        var valtotal = bool.TryParse(param.Value, out includeTotal);
+                        if (!bool.TryParse(param.Value, out includeTotal))
+                        {
+                            throw new ArgumentException($"Invalid value [{param.Value}] passed in the request.", "_includetotal");
+                        }
+
                         break;
                 }
             }
