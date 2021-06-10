@@ -133,6 +133,6 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
     }
 
     get filteredConditions(): any[] {
-        return this.step.Condition.filter((c) => c['@ContextualFieldID'] == null || c['@ContextualFieldID'].indexOf('Score|') == 0);
+        return this.step.Condition.filter((c) => c['@ContextualFieldID'] == null || c['@ContextualFieldID'].indexOf('Score|') === 0);
     }
 }
