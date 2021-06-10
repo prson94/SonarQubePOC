@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfile-v9">
+  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfile-v10">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -37,11 +37,16 @@
 			[TrailingWhiteSpace] BIT NULL,
 			[MatchCount] BIGINT NULL,
 			[OutlierCardinality] INT NULL,
-			[PossibleKey] BIT NULL,
 			[DataSignature] NVARCHAR(200) NULL,
 			[StructureSignature] NVARCHAR(200) NULL,
 			[Cardinality] INT NULL,
 			[ShapeCardinality] INT NULL,
+			[TotalCount] BIGINT NULL,
+			[OutlierCount] BIGINT NULL,
+			[KeyConfidence] DECIMAL(5,4) NULL,
+			[DetectionLocale] NVARCHAR(64) NULL,
+			[FtaVersion] NVARCHAR(32) NULL,
+			[DecimalSeparator] NCHAR(1) NULL,
 			[CreatedBy] INT NOT NULL,
 			[CreatedOn] DATETIME NOT NULL,
 			[UpdatedBy] INT NOT NULL,
@@ -62,45 +67,76 @@
 		
 		CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_StructureSignature ON dbo.AssetDataProfile ([AssetID], [StructureSignature]);
 	END
-
-	IF NOT EXISTS (
-		SELECT
-			*
-		FROM
-			sys.foreign_keys FK
-			INNER JOIN
-			sys.all_objects AO on FK.parent_object_id = AO.object_id     
-		where 
-			FK.[NAME] = 'FK_AssetDataProfile_Asset' 
-			and 
-			delete_referential_action_desc = 'CASCADE'
+	
+	IF EXISTS (
+	  SELECT * 
+	  FROM   sys.columns 
+	  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+			 AND name = 'PossibleKey'
 	)
 	BEGIN
-		IF EXISTS (
-			SELECT
-				*
-			FROM
-				sys.foreign_keys FK
-				INNER JOIN
-				sys.all_objects AO on FK.parent_object_id = AO.object_id     
-			where 
-				FK.[NAME] = 'FK_AssetDataProfile_Asset' 
-		)
-		BEGIN
-			ALTER TABLE AssetDataProfile
-			DROP CONSTRAINT FK_AssetDataProfile_Asset;
-		END
-		
-
-		ALTER TABLE AssetDataProfile
-		ADD CONSTRAINT [FK_AssetDataProfile_Asset] FOREIGN KEY (AssetID) REFERENCES Asset(ID) ON DELETE CASCADE
+		ALTER TABLE [dbo].[AssetDataProfile] DROP COLUMN [PossibleKey]
 	END
 
-	ALTER TABLE AssetDataProfile
-	ALTER COLUMN StandardDeviation FLOAT
+	IF NOT EXISTS (
+	  SELECT * 
+	  FROM   sys.columns 
+	  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+			 AND name = 'TotalCount'
+	)
+	BEGIN
+		ALTER TABLE [dbo].[AssetDataProfile] ADD [TotalCount] BIGINT NULL
+	END
 
-	ALTER TABLE AssetDataProfile
-	ALTER COLUMN MeanValue FLOAT
+	IF NOT EXISTS (
+	  SELECT * 
+	  FROM   sys.columns 
+	  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+			 AND name = 'OutlierCount'
+	)
+	BEGIN
+		ALTER TABLE [dbo].[AssetDataProfile] ADD [OutlierCount] BIGINT NULL
+	END
+
+	IF NOT EXISTS (
+	  SELECT * 
+	  FROM   sys.columns 
+	  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+			 AND name = 'KeyConfidence'
+	)
+	BEGIN
+		ALTER TABLE [dbo].[AssetDataProfile] ADD [KeyConfidence] DECIMAL(5,4) NULL
+	END
+
+	IF NOT EXISTS (
+	  SELECT * 
+	  FROM   sys.columns 
+	  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+			 AND name = 'DetectionLocale'
+	)
+	BEGIN
+		ALTER TABLE [dbo].[AssetDataProfile] ADD [DetectionLocale] NVARCHAR(64) NULL
+	END
+
+	IF NOT EXISTS (
+	  SELECT * 
+	  FROM   sys.columns 
+	  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+			 AND name = 'FtaVersion'
+	)
+	BEGIN
+		ALTER TABLE [dbo].[AssetDataProfile] ADD [FtaVersion] NVARCHAR(32) NULL
+	END
+
+	IF NOT EXISTS (
+	  SELECT * 
+	  FROM   sys.columns 
+	  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+			 AND name = 'DecimalSeparator'
+	)
+	BEGIN
+		ALTER TABLE [dbo].[AssetDataProfile] ADD [DecimalSeparator] NCHAR(1) NULL
+	END
 
 		]]>
     </sql>
@@ -108,11 +144,6 @@
 	
 		<![CDATA[			
 		
-		ALTER TABLE AssetDataProfile
-		ALTER Column StandardDeviation DECIMAL(28,4)
-
-		ALTER TABLE AssetDataProfile
-		ALTER Column MeanValue DECIMAL(22,4)
 
 		]]>
 	</rollback>

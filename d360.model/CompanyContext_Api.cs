@@ -10607,12 +10607,18 @@ EG.GroupUid
 
                     DataProfileTable.Columns.Add("MatchCount", typeof(long));
                     DataProfileTable.Columns.Add("OutlierCardinality", typeof(int));
-                    DataProfileTable.Columns.Add("PossibleKey", typeof(bool));
                     DataProfileTable.Columns.Add("DataSignature", typeof(string));
 
                     DataProfileTable.Columns.Add("StructureSignature", typeof(string));
                     DataProfileTable.Columns.Add("Cardinality", typeof(int));
                     DataProfileTable.Columns.Add("ShapeCardinality", typeof(int));
+
+                    DataProfileTable.Columns.Add("TotalCount", typeof(long));
+                    DataProfileTable.Columns.Add("OutlierCount", typeof(long));
+                    DataProfileTable.Columns.Add("KeyConfidence", typeof(decimal));
+                    DataProfileTable.Columns.Add("DetectionLocale", typeof(string));
+                    DataProfileTable.Columns.Add("FtaVersion", typeof(string));
+                    DataProfileTable.Columns.Add("DecimalSeparator", typeof(string));
 
                     DataProfileSampleTable.Columns.Add("ExecutionID", typeof(Guid));
                     DataProfileSampleTable.Columns.Add("ItemNumber", typeof(int));
@@ -10663,11 +10669,17 @@ EG.GroupUid
                         row["MatchCount"] = item.matchCount ?? (object)DBNull.Value;
                         row["OutlierCardinality"] = item.outlierCardinality ?? (object)DBNull.Value;
 
-                        row["PossibleKey"] = item.possibleKey ?? (object)DBNull.Value;
                         row["DataSignature"] = item.dataSignature ?? (object)DBNull.Value;
                         row["StructureSignature"] = item.structureSignature ?? (object)DBNull.Value;
                         row["Cardinality"] = item.cardinality ?? (object)DBNull.Value;
                         row["ShapeCardinality"] = item.shapesCardinality ?? (object)DBNull.Value;
+
+                        row["TotalCount"] = item.TotalCount ?? (object)DBNull.Value;
+                        row["OutlierCount"] = item.OutlierCount ?? (object)DBNull.Value;
+                        row["KeyConfidence"] = item.KeyConfidence ?? (object)DBNull.Value;
+                        row["DetectionLocale"] = item.DetectionLocale ?? (object)DBNull.Value;
+                        row["FtaVersion"] = item.FtaVersion ?? (object)DBNull.Value;
+                        row["DecimalSeparator"] = item.DecimalSeparator ?? (object)DBNull.Value;
 
                         DataProfileTable.Rows.Add(row);
                         if (item.outlierDetail != null)
@@ -10815,12 +10827,18 @@ EG.GroupUid
                                 bulkCopy.ColumnMappings.Add("TrailingWhiteSpace", "TrailingWhiteSpace");
                                 bulkCopy.ColumnMappings.Add("MatchCount", "MatchCount");
                                 bulkCopy.ColumnMappings.Add("OutlierCardinality", "OutlierCardinality");
-                                bulkCopy.ColumnMappings.Add("PossibleKey", "PossibleKey");
 
                                 bulkCopy.ColumnMappings.Add("DataSignature", "DataSignature");
                                 bulkCopy.ColumnMappings.Add("StructureSignature", "StructureSignature");
                                 bulkCopy.ColumnMappings.Add("Cardinality", "Cardinality");
                                 bulkCopy.ColumnMappings.Add("ShapeCardinality", "ShapeCardinality");
+
+                                bulkCopy.ColumnMappings.Add("TotalCount", "TotalCount");
+                                bulkCopy.ColumnMappings.Add("OutlierCount", "OutlierCount");
+                                bulkCopy.ColumnMappings.Add("KeyConfidence", "KeyConfidence");
+                                bulkCopy.ColumnMappings.Add("DetectionLocale", "DetectionLocale");
+                                bulkCopy.ColumnMappings.Add("FtaVersion", "FtaVersion");
+                                bulkCopy.ColumnMappings.Add("DecimalSeparator", "DecimalSeparator");
 
                                 bulkCopy.WriteToServer(DataProfileTable);
                             }
@@ -10984,11 +11002,16 @@ EG.GroupUid
                                                     ,[TrailingWhiteSpace]
                                                     ,[MatchCount]
                                                     ,[OutlierCardinality]
-                                                    ,[PossibleKey]
                                                     ,[DataSignature]
                                                     ,[StructureSignature]
                                                     ,[Cardinality]
                                                     ,[ShapeCardinality]
+                                                    ,[TotalCount]
+			                                        ,[OutlierCount]
+			                                        ,[KeyConfidence]
+			                                        ,[DetectionLocale]
+			                                        ,[FtaVersion]
+			                                        ,[DecimalSeparator]
                                                     ,[CreatedBy]
                                                     ,[CreatedOn]
                                                     ,[UpdatedBy]
@@ -11016,11 +11039,16 @@ EG.GroupUid
                                                     ,EDP.TrailingWhiteSpace
                                                     ,EDP.MatchCount
                                                     ,EDP.OutlierCardinality
-                                                    ,EDP.PossibleKey
                                                     ,EDP.DataSignature
                                                     ,EDP.StructureSignature
                                                     ,EDP.Cardinality
                                                     ,EDP.ShapeCardinality
+                                                    ,EDP.TotalCount
+                                                    ,EDP.OutlierCount
+                                                    ,EDP.KeyConfidence
+                                                    ,EDP.DetectionLocale
+                                                    ,EDP.FtaVersion
+                                                    ,EDP.DecimalSeparator
                                                     ,@CurrentResourceID
                                                     ,GETDATE()
                                                     ,@CurrentResourceID
@@ -11063,11 +11091,16 @@ EG.GroupUid
                                             ,ADP.[TrailingWhiteSpace] = EDP.[TrailingWhiteSpace]
                                             ,ADP.[MatchCount] = EDP.[MatchCount]
                                             ,ADP.[OutlierCardinality] = EDP.[OutlierCardinality]
-                                            ,ADP.[PossibleKey] = EDP.[PossibleKey]
                                             ,ADP.[DataSignature] = EDP.[DataSignature]
                                             ,ADP.[StructureSignature] = EDP.[StructureSignature]
                                             ,ADP.[Cardinality] = EDP.[Cardinality]
                                             ,ADP.[ShapeCardinality] = EDP.[ShapeCardinality]
+                                            ,ADP.[TotalCount] = EDP.[TotalCount]
+                                            ,ADP.[OutlierCount] = EDP.[OutlierCount]
+                                            ,ADP.[KeyConfidence] = EDP.[KeyConfidence]
+                                            ,ADP.[DetectionLocale] = EDP.[DetectionLocale]
+                                            ,ADP.[FtaVersion] = EDP.[FtaVersion]
+                                            ,ADP.[DecimalSeparator] = EDP.[DecimalSeparator]
                                             ,ADP.[UpdatedBy] = @CurrentResourceID
                                             ,ADP.[UpdatedOn] = GETDATE()                                       
                                         OUTPUT  inserted.ID INT, EDP.ItemNumber INTO #mergeResultTable;

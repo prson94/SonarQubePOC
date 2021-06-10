@@ -1338,7 +1338,7 @@ create table #ExecutionItem (
 	ChangeType int not null,
 	RowNumber int not null,
 	Payload nvarchar(max) not null,
-	CONSTRAINT [PK_MetricsExecutionItem] PRIMARY KEY CLUSTERED ( ExecutionID DESC, ChangeType DESC, RowNumber ASC )
+	CONSTRAINT [PK_TempMetricsExecutionItem] PRIMARY KEY CLUSTERED ( ExecutionID DESC, ChangeType DESC, RowNumber ASC )
 )", transaction: trans);
                         using (var bulkCopy = Connection.CreateBulkCopy("#ExecutionItem", trans: trans))
                         {

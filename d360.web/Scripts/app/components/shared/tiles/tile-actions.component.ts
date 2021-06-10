@@ -64,6 +64,8 @@ export class TileActionsComponent implements OnInit, OnChanges {
 
     @Input() hideTooltip: boolean = false;
 
+    @Input() IsExportInProgress: boolean = false;
+
     @Output() fullScreenClick = new EventEmitter();
 
     private dateMenuItems: MenuItem[] = [];

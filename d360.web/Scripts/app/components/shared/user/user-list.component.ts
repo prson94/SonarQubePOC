@@ -41,7 +41,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     showResetPwd: boolean = false;
 
     allowPasswordReset: boolean = false;
-    isExportInProgress: boolean = false;
+    Isexportinprogress: boolean = false;
     simpleFilter: string = "";
 
     totalRecords: number;
@@ -102,10 +102,10 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
 
     public export() {
         var filename = this.IsCommunityUserResposibility === true ? `Filtered List of ${this.UserListHeading} ${new Date().toDateString()}.xlsx` : "Users.xlsx";
-        this.isExportInProgress = true;
+        this.Isexportinprogress = true;
         this.resourcesService.exportResources(this.getParams(), filename).subscribe(
             (res) => {
-                this.isExportInProgress = false;
+                this.Isexportinprogress = false;
                 this.changeDetectorRef.markForCheck();
             }
         );

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Table.api.ExecutionAssetDataProfile-v4">
+<changeSet author="bquinlivan" id="Table.api.ExecutionAssetDataProfile-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -40,12 +40,17 @@ BEGIN
 		[LeadingZeroCount] INT NULL,
 		[TrailingWhiteSpace] BIT NULL,
 		[MatchCount] BIGINT NULL,
-		[OutlierCardinality] INT NULL,
-		[PossibleKey] BIT NULL,
+		[OutlierCardinality] INT NULL,		
 		[DataSignature] NVARCHAR(200) NULL,
 		[StructureSignature] NVARCHAR(200) NULL,
 		[Cardinality] INT NULL,
-		[ShapeCardinality] INT NULL,
+		[ShapeCardinality] INT NULL,		
+		[TotalCount] BIGINT NULL,
+		[OutlierCount] BIGINT NULL,
+		[KeyConfidence] DECIMAL(5,4) NULL,
+		[DetectionLocale] NVARCHAR(64) NULL,
+		[FtaVersion] NVARCHAR(32) NULL,
+		[DecimalSeparator] NCHAR(1) NULL,		
 	 CONSTRAINT [PK_ExecutionAssetDataProfile] PRIMARY KEY CLUSTERED 
 	(
 		[ExecutionID] ASC,
@@ -58,94 +63,79 @@ IF EXISTS (
   SELECT * 
   FROM   sys.columns 
   WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
-         AND name = 'DistinctValues'
+         AND name = 'PossibleKey'
 )
 BEGIN
-    ALTER TABLE [api].[ExecutionAssetDataProfile] DROP COLUMN [DistinctValues]
+    ALTER TABLE [api].[ExecutionAssetDataProfile] DROP COLUMN [PossibleKey]
 END
 
-IF EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
-         AND name = 'JavaType'
-)
-BEGIN
-    ALTER TABLE [api].[ExecutionAssetDataProfile] DROP COLUMN [JavaType]
-END
-
-IF EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
-         AND name = 'PrimaryKey'
-)
-BEGIN
-    ALTER TABLE [api].[ExecutionAssetDataProfile] DROP COLUMN [PrimaryKey]
-END
-
-IF EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
-         AND name = 'NewType'
-)
-BEGIN
-    ALTER TABLE [api].[ExecutionAssetDataProfile] DROP COLUMN [NewType]
-END
-
-IF EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
-         AND name = 'CurrentType'
-)
-BEGIN
-    EXEC sp_rename 'api.ExecutionAssetDataProfile.CurrentType', 'Type', 'COLUMN';
-END
-
-IF EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
-         AND name = 'Validation'
-)
-BEGIN
-    EXEC sp_rename 'api.ExecutionAssetDataProfile.Validation', 'RegExp', 'COLUMN';
-END
-
-IF EXISTS (
+IF NOT EXISTS (
   SELECT * 
   FROM   sys.columns 
   WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
          AND name = 'TotalCount'
 )
 BEGIN
-    EXEC sp_rename 'api.ExecutionAssetDataProfile.TotalCount', 'SampleCount', 'COLUMN';
+    ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [TotalCount] BIGINT NULL
 END
 
-ALTER table api.ExecutionAssetDataProfile
-ALTER COLUMN [RegExp] NVARCHAR(MAX);
+IF NOT EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
+         AND name = 'OutlierCount'
+)
+BEGIN
+    ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [OutlierCount] BIGINT NULL
+END
 
-ALTER table api.ExecutionAssetDataProfile
-ALTER COLUMN [MeanValue] FLOAT;
+IF NOT EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
+         AND name = 'KeyConfidence'
+)
+BEGIN
+    ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [KeyConfidence] DECIMAL(5,4) NULL
+END
 
-ALTER table api.ExecutionAssetDataProfile
-ALTER COLUMN [StandardDeviation] FLOAT;
+IF NOT EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
+         AND name = 'DetectionLocale'
+)
+BEGIN
+    ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [DetectionLocale] NVARCHAR(64) NULL
+END
+
+IF NOT EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
+         AND name = 'FtaVersion'
+)
+BEGIN
+    ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [FtaVersion] NVARCHAR(32) NULL
+END
+
+IF NOT EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
+         AND name = 'DecimalSeparator'
+)
+BEGIN
+    ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [DecimalSeparator] NCHAR(1) NULL
+END
 
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
 
-		ALTER table api.ExecutionAssetDataProfile
-		ALTER COLUMN [MeanValue] DECIMAL(22,4);
-
-		ALTER table api.ExecutionAssetDataProfile
-		ALTER COLUMN [StandardDeviation] DECIMAL(28,4);
 
 		]]>
 	</rollback>
   </changeSet>
-
 </databaseChangeLog>

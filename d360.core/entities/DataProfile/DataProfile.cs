@@ -54,9 +54,7 @@ namespace d360.core.entities
         [DataMember]
         public long? MatchCount { get; set; }
         [DataMember]
-        public int? OutlierCardinality { get; set; }
-        [DataMember]
-        public bool? PossibleKey { get; set; }
+        public int? OutlierCardinality { get; set; }        
         [DataMember]
         public string DataSignature { get; set; }
         [DataMember]
@@ -64,7 +62,20 @@ namespace d360.core.entities
         [DataMember]
         public int? Cardinality { get; set; }
         [DataMember]
-        public int? ShapeCardinality { get; set; }
+        public int? ShapeCardinality { get; set; }        
+        [DataMember]
+        public long? TotalCount { get; set; }
+        [DataMember]
+        public long? OutlierCount { get; set; }
+        [DataMember]
+        public Decimal? KeyConfidence { get; set; }
+        [DataMember]
+        public string DetectionLocale { get; set; }
+        [DataMember]
+        public string FtaVersion { get; set; }
+        [DataMember]
+        public string DecimalSeparator { get; set; }
+
         [ForeignKey("AssetDataProfileID"), IgnoreDataMember]
         public virtual ICollection<AssetDataProfileSample> AssetDataProfileSamples { get; set; }
     }
@@ -197,7 +208,30 @@ namespace d360.core.entities
 
         [DataMember]
         [ValidateSampleAttribute(200)]
-        public List<DataProfileSampleDetail> shapesDetail { get; set; }                
+        public List<DataProfileSampleDetail> shapesDetail { get; set; }
+
+        [DataMember(Name = "totalCount")]
+        public long? TotalCount { get; set; }
+
+        [DataMember(Name = "outlierCount")]
+        public long? OutlierCount { get; set; }
+
+        [DataMember(Name = "keyConfidence")]
+        [Range(0, 1, ErrorMessage = "{0} must be between {1} and {2}.")]
+        [RegularExpression(@"^\d+.?\d{0,4}$", ErrorMessage = "{0} is limited to a maximum of 4 decimal places.")]
+        public Decimal? KeyConfidence { get; set; }
+
+        [DataMember(Name = "detectionLocale")]
+        [StringLength(64, ErrorMessage = "{0} cannot be more than {1} characters.")]
+        public string DetectionLocale { get; set; }
+
+        [DataMember(Name = "ftaVersion")]
+        [StringLength(32, ErrorMessage = "{0} cannot be more than {1} characters.")]
+        public string FtaVersion { get; set; }
+
+        [DataMember(Name = "decimalSeparator")]
+        [StringLength(1, ErrorMessage = "{0} cannot be more than {1} characters.")]
+        public string DecimalSeparator { get; set; }
     }
 
     public class DataProfileUpsertModel: DataProfileModel, IExecutionItem
