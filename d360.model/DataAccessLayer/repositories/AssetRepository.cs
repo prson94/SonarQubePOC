@@ -1404,7 +1404,7 @@ namespace d360.model.DataAccessLayer
 
                         if (direction == "DESC")
                         {
-                            results = results.Reverse();
+                            results.Reverse();
                         }
                     }
                 }
