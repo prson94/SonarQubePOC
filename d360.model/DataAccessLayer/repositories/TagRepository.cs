@@ -767,6 +767,8 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
             string whereConnector = " and ";
             string sortField = "DisplayValue";
             string sortOrder = "ASC";
+            bool includeTotal = false;
+            bool addtagasstingfilter = false;
             List<string> whereClauses = new List<string>();
             //?globalSearch = &DisplayValue = &AssetType = &TagsAsString = &sortBy = DisplayValue & sortOrder = 1
 
@@ -794,19 +796,24 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                     case "tagsasstring":
                         if (!hasGlobalSearch)
                         {
+                            addtagasstingfilter = true;
                             dbArgs.Add("tagsasstring", $"%{param.Value.ToLower()}%");
                             whereClauses.Add("LOWER(AssetTags.Tags) like @tagsasstring");
                         }
                         break;
                     case "globalsearch":
+                        addtagasstingfilter = true;
                         dbArgs.Add("globalsearch", $"%{param.Value.ToLower()}%");
-                        whereClauses.Add("LOWER(AssetTags.Tags) like @globalsearch");
-                        whereClauses.Add("LOWER(ADV.DisplayValue) like @globalsearch");
-                        whereClauses.Add("LOWER(AST.Name) like @globalsearch");
+                        whereClauses.Add(@"(LOWER(AssetTags.Tags) like @globalsearch OR
+                                            LOWER(ADV.DisplayValue) like @globalsearch OR
+                                            LOWER(AST.Name) like @globalsearch)");
 
                         AddAssetTypeParam(dbArgs, whereClauses, param.Value);
 
-                        whereConnector = " or ";
+                        break;
+                    case "assettypeuid":
+                        dbArgs.Add("assettypeuid", $"{param.Value.ToLower()}");
+                        whereClauses.Add("AST.uid = @assettypeuid");
                         break;
                     case "_pagesize":
                         int size = 0;
@@ -839,25 +846,50 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         {
                             sortField = "displayvalue";
                         }
-                        if (param.Value.ToLower() == "assettype")
+                        else if (param.Value.ToLower() == "assettype")
                         {
                             sortField = "assettype";
                         }
-                        if (param.Value.ToLower() == "tagsasstring")
+                        else if (param.Value.ToLower() == "tagsasstring")
                         {
                             sortField = "AssetTags.Tags";
                         }
-                        break;
-                    case "sortorder":
-                        int val = int.Parse(param.Value);
-                        if (val >= 0)
+                        else if (param.Value.ToLower() == "assetid")
                         {
-                            sortOrder = "ASC";
+                            sortField = "assetid";
                         }
                         else
                         {
-                            sortOrder = "DESC";
+                           throw new Exception("Invalid order passed in the request!");
                         }
+                        break;
+                    case "sortorder":
+                        int sortordervalue = 0;
+                        bool sortorderIsInt = int.TryParse(param.Value, out sortordervalue);
+                        if (sortorderIsInt)
+                        {
+                            if (sortordervalue >= 0)
+                            {
+                                sortOrder = "asc";
+                            }
+                            else
+                            {
+                                sortOrder = "desc";
+                            }
+                        }
+                        else
+                        {
+                            string[] allowedDirections = new string[] { "asc", "desc" };
+                            var order = param.Value;
+                            if (!allowedDirections.Contains(order.Trim().ToLower()))
+                            {
+                                throw new Exception("Invalid order direction passed in the request!");
+                            }
+                            sortOrder = allowedDirections.Contains(order.Trim().ToLower()) ? order : "asc";
+                        }
+                        break;
+                    case "_includetotal":
+                        var valtotal = bool.TryParse(param.Value, out includeTotal);
                         break;
                 }
             }
@@ -871,21 +903,37 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                 whereClause += $" and ({string.Join(whereConnector, whereClauses)})";
             }
 
-            //var countSql = $@"select count(*) from AssetTag AT
-            //             inner join Tag T on AT.TagId = T.ID
-            //             {whereClause}";
+            var ctestring = $@";with cte as (
+                        select AssetID, T.uid as TagUid, T.Value from AssetTag AT
 
-            //result.total = companyContext.Query<int>(countSql, dbArgs).FirstOrDefault();
+                            inner join Tag T on T.ID = at.TagID
+                        )";
+
+            if (includeTotal)
+            {
+                var countSql =  $@"{(addtagasstingfilter ? ctestring : "")} 
+                        select 
+                        count(1)
+                        from Tag T
+	                        inner join AssetTag AT on AT.TagID = T.ID
+	                        inner join Asset A ON A.ID = AT.AssetID
+	                        inner join AssetType AST ON AST.Id = A.AssetTypeId
+	                        cross apply dbo.GetAssetDisplayValueById(A.ID)ADV
+							{(addtagasstingfilter ? " cross apply (select Value,TagUid as uid from cte where AssetId = A.Id order by Value for json path)AssetTags(Tags) " : "")}
+                        {whereClause}";
+
+                result.total = companyContext.Query<int>(countSql, dbArgs).FirstOrDefault();
+            }
+
 
             var pagingSql = $"OFFSET {result.pageSize * (result.pageNum - 1)} ROWS FETCH NEXT {result.pageSize} ROWS ONLY";
-            var sql = $@";with cte as (
-                        select AssetID, T.uid as TagUid, T.Value from AssetTag AT
-	                        inner join Tag T on T.ID = at.TagID
-                        )
+            
+            var sql = $@"{ctestring}  
                         select 
                         ADV.*, 
                         A.Id as AssetID,
                         A.[Uid] as AssetUid,
+                        AST.[Uid] as AssetTypeUid,
 						CASE 
 							WHEN AST.Object = 'TaxonomyType' THEN '{CommonNames.AssetTypeClass_Model.CleanForSql()} : '
 							WHEN AST.Object = 'ArtifactType' and AST.[Class] = 1 THEN '{CommonNames.AssetTypeClass_Business.CleanForSql()} : '
