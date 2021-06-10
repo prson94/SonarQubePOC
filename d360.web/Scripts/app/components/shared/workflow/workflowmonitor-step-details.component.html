@@ -271,8 +271,8 @@
                                     <div *ngIf="showAllAnyCondition">
                                         Satisfy <strong>{{isSatisfyAll ? "all" : "any" }}</strong>
                                     </div>
-                                    <ng-container *ngFor="let condition of step.Condition">
-                                        <div *ngIf="condition['@ContextualFieldID'] == null">
+                                    <ng-container *ngFor="let condition of filteredConditions">
+                                        <div>
                                             {{condition['@FieldLabel']}} {{operatorName(condition)}} {{condition['@ValueLabel']}}
                                         </div>
                                     </ng-container>
