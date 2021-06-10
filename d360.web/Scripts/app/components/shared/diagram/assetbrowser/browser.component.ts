@@ -666,10 +666,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private menu_ClickLinkItem(e: any) {
         if (e.value.toLowerCase() === 'open') {
-            this.router.navigateByUrl(this.selectedDiagramAsset.Url);
+            this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT}/browser/${this.selectedDiagramAsset.Uid}/${DiagramType[this.displayConfiguration.DiagramType]}`);
         }
         if (e.value.toLowerCase() === 'open in new tab') {
-            window.open(this.selectedDiagramAsset.Url, "_blank");
+            window.open(`${SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT}/browser/${this.selectedDiagramAsset.Uid}/${DiagramType[this.displayConfiguration.DiagramType]}`, "_blank");
         }
     }
     //#region Hiding / Unhiding
