@@ -1337,9 +1337,9 @@ create table #ExecutionItem (
 	ExecutionID bigint not null,
 	ChangeType int not null,
 	RowNumber int not null,
-	Payload nvarchar(max) not null,
-	CONSTRAINT [PK_TempMetricsExecutionItem] PRIMARY KEY CLUSTERED ( ExecutionID DESC, ChangeType DESC, RowNumber ASC )
-)", transaction: trans);
+	Payload nvarchar(max) not null
+);
+alter table #ExecutionItem add primary key ( ExecutionID DESC, ChangeType DESC, RowNumber ASC );", transaction: trans);
                         using (var bulkCopy = Connection.CreateBulkCopy("#ExecutionItem", trans: trans))
                         {
                             bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
