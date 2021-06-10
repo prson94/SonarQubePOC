@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.Predicate-v1">
+  <changeSet author="Core" id="Table.dbo.Predicate-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -19,7 +19,6 @@ BEGIN
 		[Inverse] [nvarchar](250) NULL,
 		[Type] [int] NOT NULL,
 		[IsSystem] [bit] CONSTRAINT [DF_Predicate_IsSystem] DEFAULT (0) NOT NULL,
-		[Code] [varchar](25) CONSTRAINT [DF_Predicate_Code] DEFAULT (0) NOT NULL,
 		[UID] [uniqueidentifier] CONSTRAINT [DF_Predicate_UID] DEFAULT (newid()) NOT NULL,
 		CONSTRAINT [PK_Predicate] PRIMARY KEY CLUSTERED ( [ID] ASC )
 	)
@@ -76,32 +75,6 @@ begin
   
   ALTER TABLE [dbo].[Predicate] ADD  CONSTRAINT [DF_Predicate_Code]  DEFAULT ((0)) FOR [Code]
 end
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Core" id="Table.dbo.Predicate-Predicate_AfterInsert-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[Predicate_AfterInsert]
-   ON  [dbo].[Predicate]
-   AFTER INSERT
-AS 
-BEGIN
-	SET NOCOUNT ON;
-	update	T
-	set		T.Code = cast(S.ID as varchar(25))
-	from	[Predicate] T
-			inner join inserted S on S.ID = T.ID and S.[Code] = '0'
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>
