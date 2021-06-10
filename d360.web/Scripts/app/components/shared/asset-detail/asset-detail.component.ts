@@ -213,6 +213,10 @@ export class AssetDetailComponent implements OnChanges {
                 this.assetUID = f.Value;
             }
 
+            if ((f.FieldName || "").toUpperCase() === "ASSETTYPEUID") {
+                this.assetTypeUID = f.Value;
+            }
+
         });
         row.FirstColumnFields = row.FirstColumnFields.filter((f) => f.Type !== DetailFieldType.None);
 
@@ -230,7 +234,7 @@ export class AssetDetailComponent implements OnChanges {
                     });
             }
 
-            if (s.Name === 'UID') {
+            if ((s.FieldName || "").toUpperCase() === 'ASSETUID') {
                 this.assetUID = s.Value;
             }
 

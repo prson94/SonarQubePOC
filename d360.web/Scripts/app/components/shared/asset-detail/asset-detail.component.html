@@ -7,6 +7,7 @@
             <ng-container *ngIf="useAccordion; else noAccordion">
                 <ig-property-group *ngIf="category.loaded && category.hasData" 
                                    [expanded]="category.active" 
+                                   (expandedChange)="category.active = $event; saveState()"
                                    [title]="category.name" 
                                    [showHeaderLine]="!first" 
                                    [shouldBePadded]="shouldBePadded">
