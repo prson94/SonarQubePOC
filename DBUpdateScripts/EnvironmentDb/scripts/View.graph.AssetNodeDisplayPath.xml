@@ -68,7 +68,7 @@ drop view if exists graph.AssetNodeDisplayPath
 	</rollback>
   </changeSet>
   
-  <changeSet author="kmcnamee" id="View.graph.AssetNodeDisplayPath-v5.6">
+  <changeSet author="kmcnamee" id="View.graph.AssetNodeDisplayPath-v5.7">
     <preConditions onFail="MARK_RAN">      
 			<sqlCheck expectedResult="0">select count(1) from sys.views where name = 'AssetNodeDisplayPath'</sqlCheck>
     </preConditions>
