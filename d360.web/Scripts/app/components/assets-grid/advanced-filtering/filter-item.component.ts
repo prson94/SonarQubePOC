@@ -71,7 +71,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
     minSQLDate = new Date(1753, 0, 1);
     numberMax: number = null;
     numberMin: number = null;
-   
+
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
     @ViewChild("multiInput", { static: false }) multiInputRef: MultiInputField;
     @ViewChild("dataTable", { static: false }) dataTable: Table;
@@ -707,6 +707,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             var temp;
             switch (type) {
                 case "multi-number":
+                case "multi-counter":
                     if (parseFloat(this.condition.value) > parseFloat(this.condition.value2)) {
                         temp = this.condition.value;
                         this.condition.value = this.condition.value2;
@@ -977,6 +978,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         var type = this.getTypeForCondition(this.condition);
+        if (type === "Counter") {
+            if (this.currentOperator.toString() === "Between") {
+                return "multi-counter";
+            }
+            return "counter";
+        }
 
         if (type === "Number") {
             this.numberMax = 2147483647;
@@ -1144,6 +1151,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     get isRuleResults() {
         return this.loadIdentifier.startsWith("RuleResults");
+    }
+
+    get counterPrefix() {
+        return this.currentField?.Type?.Counter?.CounterPrefix;
     }
 
     getFieldsDropdownClass(): string {

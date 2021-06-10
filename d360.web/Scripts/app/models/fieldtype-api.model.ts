@@ -546,7 +546,7 @@ export class FieldTypeHelper {
         return allowedFieldTypes.some(x => x === this.getFieldType(field).toLowerCase());
     }
     public static isFieldForOperatorAdvancedFilters(field: FieldType): boolean {
-        let allowedFieldTypes = ['boolean', 'date', 'datetime', 'decimal', 'html', 'lookup', 'number', 'text', 'link', 'tag', 'score', 'path', 'computedrelationshipfield', 'json', 'relationship'];
+        let allowedFieldTypes = ['boolean', 'date', 'datetime', 'decimal', 'html', 'lookup', 'number', 'text', 'link', 'tag', 'score', 'path', 'computedrelationshipfield', 'json', 'relationship', 'counter'];
         return allowedFieldTypes.some(x => x === this.getFieldType(field).toLowerCase());
     }
 }
