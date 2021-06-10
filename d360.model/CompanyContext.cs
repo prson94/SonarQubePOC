@@ -286,7 +286,7 @@ namespace d360.model
             if (jsonRows.Count() == 0)
             {
                 return null;
-            }                
+            }
 
             var json = string.Concat(jsonRows);
             return JObject.Parse(json);
@@ -500,7 +500,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             bool sameSubjectObject = (intersectType.Subject == intersectType.Object && intersectType.SubjectID == intersectType.ObjectID);
             obj = isSubject ? intersectType.Object : intersectType.Subject;
             objID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
-            
+
             var cardinalityCheckSQL = "";
             if (intersectType.SubjectCardinality == Cardinality.One)
             {
@@ -508,7 +508,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                 {
                     hasCardinalityOne = true;
                 }
-                    
+
                 cardinalityCheckSQL += " and not exists (select ID from [Intersect] where IntersectTypeID = @intersectTypeID and IT.SubjectCardinality = 1 and Object = {0} and ObjectID = {1} and I.Id is null)";
             }
             if (intersectType.ObjectCardinality == Cardinality.One)
@@ -517,7 +517,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                 {
                     hasCardinalityOne = true;
                 }
-                    
+
                 cardinalityCheckSQL += " and not exists (select ID from [Intersect] where IntersectTypeID = @intersectTypeID and IT.ObjectCardinality = 1 and Subject = {0} and SubjectID = {1} and I.Id is null)";
             }
 
@@ -686,11 +686,11 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             {
                 selected = Query<dynamic>(selectedSql, new { obj = @object, objID = objectID, intersectTypeID = intersectType.ID }).ToList();
             }
-                
+
             if (!includeSelection)
             {
                 items = Query<dynamic>(sql, new { offset, rows, query, obj, objID, fieldObject = @object ?? obj, fieldObjectID = objectID ?? objID, intersectTypeID = intersectType.ID }).ToList();
-            }                
+            }
 
             var dict = new Dictionary<string, object>();
 
@@ -819,7 +819,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
             if ((model != null) && PluralCultureHelper.IsNeutralCultureEnglish())
             {
                 var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-                model.PluralizedName = pluralize.Pluralize(model.Name ?? "");                
+                model.PluralizedName = pluralize.Pluralize(model.Name ?? "");
             }
             return model;
         }
@@ -941,7 +941,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
                     inner join IntersectType T on T.ID = I.IntersectTypeID
                     inner join Asset a on a.object = i.subject and a.objectid = i.subjectid
                     where I.PredicateType = @type and I.[Object] = @obj and I.ObjectID = @objectId";
-            
+
             var parentId = Query<int>(sql, new { type = (int)predicateType, obj = new DbString { Value = obj.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, objectId = id }).FirstOrDefault();
             if (parentId < 1)
             {
@@ -1022,7 +1022,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
                         case SystemObjects.ResourceType:
                         case SystemObjects.TaxonomyType:
                             followType = FollowType.Parent;
-                            break;                        
+                            break;
                         default:
                             followType = FollowType.Single;
                             break;
@@ -1480,7 +1480,7 @@ where	I.ID is null";
         #region Token Processing Methods
 
         private string renderTemplate(string templateType, string action, SystemObjects type, int id)
-        {            
+        {
             string query = string.Format("GetRenderedTemplateBodyNg '{0}', '{1}', {2}, '{3}', '{4}', {5}", templateType, type.ToString(), id, action, string.Empty, CurrentResourceID);
             var model = Database.SqlQuery<RenderTemplateModel>(query).SingleOrDefault();
             var html = "";
@@ -1641,7 +1641,7 @@ where	I.ID is null";
         }
 
         public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90)
-        {            
+        {
             return await Database.Connection.QueryAsync<T>(sql, param, null, timeout).ConfigureAwait(false);
         }
         public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null, int timeout = 90)
@@ -1897,7 +1897,7 @@ where	I.ID is null";
                 {
                     var o = entry.Entity as FieldType;
 
-                    if(entry.State == EntityState.Added)
+                    if (entry.State == EntityState.Added)
                     {
 
                         if (Any<FieldType>(i => i.Object == o.Object && i.ObjectID == o.ObjectID && i.Name == o.Name))
@@ -1931,14 +1931,14 @@ where	I.ID is null";
                 {
                     var o = entry.Entity as FusionAttributeType;
 
-                    if(entry.State == EntityState.Added)
+                    if (entry.State == EntityState.Added)
                     {
                         if (Any<FusionAttributeType>(i => i.FusionTypeID == o.FusionTypeID && i.ParentID == o.ParentID && i.Name == o.Name))
                         {
                             throw new ArgumentException(Messages.Error_NameTaken);
                         }
                     }
-                    if(entry.State == EntityState.Modified)
+                    if (entry.State == EntityState.Modified)
                     {
                         if (Any<FusionAttributeType>(i => i.FusionTypeID == o.FusionTypeID && i.Name == o.Name && i.ParentID == o.ParentID && i.ID != o.ID))
                         {
@@ -2037,7 +2037,7 @@ where	I.ID is null";
                             throw new ConflictException("Relationship Could not be Removed", "One or more relationships reference this relationship.");
                         }
                     }
-                    
+
                 }
                 #endregion
 
@@ -2105,7 +2105,7 @@ select @err";
                 if (entry.Entity is AssetType)
                 {
                     var o = entry.Entity as AssetType;
-                    if (string.IsNullOrWhiteSpace(o.Name)) 
+                    if (string.IsNullOrWhiteSpace(o.Name))
                     {
                         throw new ArgumentException(Messages.Error_Name_Required);
                     }
@@ -2139,16 +2139,16 @@ select @err";
                     var o = entry.Entity as Report;
                     if (entry.State == EntityState.Added)
                     {
-                        if (Any<Report>(i => i.Name == o.Name)) 
-                        { 
-                            throw new ArgumentException(Messages.Error_NameTaken); 
+                        if (Any<Report>(i => i.Name == o.Name))
+                        {
+                            throw new ArgumentException(Messages.Error_NameTaken);
                         }
                     }
                     if (entry.State == EntityState.Modified)
                     {
-                        if (Any<Report>(i => i.Name == o.Name && i.ID != o.ID)) 
-                        { 
-                           throw new ArgumentException(Messages.Error_NameTaken); 
+                        if (Any<Report>(i => i.Name == o.Name && i.ID != o.ID))
+                        {
+                            throw new ArgumentException(Messages.Error_NameTaken);
                         }
                     }
                 }
@@ -2160,20 +2160,20 @@ select @err";
                     var o = entry.Entity as ResponsibilityType;
                     if (entry.State == EntityState.Added)
                     {
-                        if (Any<ResponsibilityType>(i => i.Name == o.Name)) 
+                        if (Any<ResponsibilityType>(i => i.Name == o.Name))
                         {
                             throw new ArgumentException(Messages.Error_NameTaken);
-                        } 
+                        }
                     }
                     if (entry.State == EntityState.Modified)
                     {
-                        if (Any<ResponsibilityType>(i =>i.Name == o.Name && i.ID != o.ID))
-                        { 
-                            throw new ArgumentException(Messages.Error_NameTaken); 
+                        if (Any<ResponsibilityType>(i => i.Name == o.Name && i.ID != o.ID))
+                        {
+                            throw new ArgumentException(Messages.Error_NameTaken);
                         }
 
-                    } 
-                    if(entry.State == EntityState.Deleted)
+                    }
+                    if (entry.State == EntityState.Deleted)
                     {
                         if (Any<ResponsibilityDetail>(i => i.ResponsibilityTypeID == o.ID))
                         {
@@ -2356,7 +2356,7 @@ select @err";
 
                 }
             }
- 
+
             foreach (var fieldEvent in fieldEvents)
             {
                 AddQE(events, ChangeType.Update, fieldEvent);
@@ -2400,7 +2400,7 @@ select @err";
             return homePage?.Route ?? "";
         }
 
-        
+
         #endregion
 
         #region Dynamic Field Methods
@@ -2413,12 +2413,13 @@ select @err";
             joins = "";
 
             var fieldTypeRelationType = type;
-            if(type == "Rule")
+            if (type == "Rule")
             {
                 if (ruleMeansEvent)
                 {
                     type = "Event";
-                }else
+                }
+                else
                 {
                     fieldTypeRelationType += "Type";
                 }
@@ -2440,8 +2441,8 @@ select @err";
                 }
 
                 if (includeKeyColumnOnly)
-                { 
-                    fields = fields.Where(x => x.IsPartOfKey == true).ToList(); 
+                {
+                    fields = fields.Where(x => x.IsPartOfKey == true).ToList();
                 }
             }
 
@@ -2574,9 +2575,9 @@ select @err";
                 }
                 else if (f.Type == DataType.Decimal.ToString())
                 {
-                    if (includeIdColumn) 
-                    { 
-                        columnbuilder.Append($"{name}_T.Value as [{name}ID], "); 
+                    if (includeIdColumn)
+                    {
+                        columnbuilder.Append($"{name}_T.Value as [{name}ID], ");
                     }
                     columnbuilder.Append($@"case     
     when {name}_T.FormattedValue is not null then try_cast({name}_T.FormattedValue as decimal(38,6))
@@ -2692,8 +2693,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 }
                 var assettype = AssetTypes.FirstOrDefault(x => x.Object == obj && x.ObjectID == fieldType.LookupObjectID);
                 if (assettype != null)
-                { 
-                    return Assets.Any(x => x.AssetTypeID == assettype.ID && x.Color != null); 
+                {
+                    return Assets.Any(x => x.AssetTypeID == assettype.ID && x.Color != null);
                 }
             }
             return false;
@@ -2771,7 +2772,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                         {
                             case SqlFieldType.Text:
                                 wheres.Add($"{f.SqlExpression} like @S_{f.ApiName}");
-                                dbs.Add($"@S_{f.ApiName}", value+"%");
+                                dbs.Add($"@S_{f.ApiName}", value + "%");
                                 break;
                             case SqlFieldType.Boolean:
                                 bool filterBool;
@@ -3124,6 +3125,16 @@ new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = v
         public void CreateEventsForAddedActions(List<Issue> actions)
         {
             CreateEventsForObjectsRequiringTracking(null, actions, null, null);
+        }
+
+        public string GetCounterFieldValue(int fieldTypeId, long assetId)
+        {
+            return Query<string>(@"
+                select top 1 ISNULL(FT.CounterPrefix,'') + cast(fcv.value as nvarchar(20) )
+                from fieldcountervalue fcv
+                inner join FieldType FT on FT.ID = fcv.FieldTypeId
+                where fcv.AssetId=@assetId and fcv.FieldTypeId=@fieldTypeId",
+                              new { fieldTypeId, assetId }).FirstOrDefault();
         }
     }
 }
