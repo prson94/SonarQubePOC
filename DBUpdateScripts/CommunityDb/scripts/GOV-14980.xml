@@ -1,0 +1,24 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Puneet Gupta" id="GOV-14980">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+			Declare @sqlstmt  nvarchar(2000)
+			set @sqlstmt = 'ALTER DATABASE ' + db_name() + ' SET COMPATIBILITY_LEVEL = 150'
+			EXECUTE  sp_executesql @sqlstmt
+	 ]]>
+    </sql>
+    <rollback>
+ 
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
