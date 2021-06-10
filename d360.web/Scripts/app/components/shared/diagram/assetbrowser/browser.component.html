@@ -7,7 +7,7 @@
 
     <div class="asset-browser-body col s12">
         <div style="padding: 0; margin-bottom: 0">
-            <div [hidden]="isLoading" class="asset-browser-header">
+            <div [hidden]="isLoading" [class]="isFullScreen ? 'asset-browser-header expanded' : 'asset-browser-header'">
                 <div class="controls-left">
                     <div style="display: inline-flex">
                         <d3s-assetbrowser-viewchange [current]="displayConfiguration.DiagramType" (apply)="viewchange_Apply($event)" [items]="diagramTypes?.items"></d3s-assetbrowser-viewchange>
@@ -149,7 +149,7 @@
                             </div>
                             <div class="asset-browser-window-content">
                                 <section *ngIf="panelModel.AddVisible">
-                                    <div #addLineagePanel class="scroll-panel">
+                                    <div #addLineagePanel class="scroll-panel no-tabs">
                                         <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
                                         <d3s-assetbrowser-addpanel [assetBrowserData]="diagramData" (refreshDiagram)="helper_RefreshDiagram($event)"></d3s-assetbrowser-addpanel>
                                     </div>
@@ -163,13 +163,13 @@
                                 </section>
 
                                 <section *ngIf="panelModel.FiltersVisible">
-                                    <div #filterDetailPanel class="scroll-panel">
+                                    <div #filterDetailPanel class="scroll-panel no-tabs">
                                         <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
                                         <d3s-assetbrowser-filterpanel [allowAncestry]="helper_LineageDiagramApplies()" [options]="filter_AvailableOptions" [current]="displayConfiguration" (apply)="filterpanel_Apply($event)"></d3s-assetbrowser-filterpanel>
                                     </div>
                                 </section>
 
-                                <section *ngIf="panelModel.InformationVisible">
+                                <section *ngIf="panelModel.InformationVisible" class="detail">
                                     <ng-container *ngIf="panel_TabIndex == 0">
                                         <ng-container *ngIf="selectedDiagramAsset != null">
                                             <ng-container *ngIf="panel_InformationHasReadAccess == true">
@@ -180,6 +180,7 @@
                                                                      [objectID]="selectedDiagramAsset.ObjectId"
                                                                      [useAccordion]="true"
                                                                      [shouldBePadded]="false"
+                                                                     [tooltipAlign]="'left'"
                                                                      [hasAddRelationshipsPermissions]="false"
                                                                      [hasModifyRelationshipsPermissions]="false"
                                                                      [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
@@ -215,7 +216,7 @@
                                 </section>
 
                                 <section *ngIf="panelModel.SettingsVisible">
-                                    <div #settingsPanel>
+                                    <div #settingsPanel class="scroll-panel no-tabs">
                                         <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
                                         <d3s-assetbrowser-settingspanel [allowAncestry]="helper_LineageDiagramApplies()" [current]="displayConfiguration" (apply)="settingspanel_Apply($event)"></d3s-assetbrowser-settingspanel>
                                     </div>

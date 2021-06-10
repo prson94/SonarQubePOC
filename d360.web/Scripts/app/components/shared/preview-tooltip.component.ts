@@ -170,16 +170,24 @@ export class PreviewTooltipComponent {
         if (this.contentAnchor === 'right' && this.previewText && this.previewText.nativeElement) {
             xoffset = this.previewText.nativeElement.offsetWidth + 5;
         }
+
         if (panel && !this.active) {
             this.active = true;
             panel.style.zIndex = 1000;
             panel.style.top = item.getBoundingClientRect().bottom + 'px';
-            if (this.isRightAligned()) {
+
+            if (this.align) {
                 let minwidth = getComputedStyle(panel).minWidth;
                 let panelWidth = parseInt(minwidth.substr(0, minwidth.length - 2)) || 400;
-                panel.style.left = xoffset + (item.getBoundingClientRect().right - panelWidth) + 'px';
+
+                if (this.isRightAligned()) {
+                    panel.style.left = xoffset + (item.getBoundingClientRect().right - panelWidth) + 'px';
+                } else if (this.isLeftAligned()) {
+                    panel.style.right = (window.innerWidth - item.getBoundingClientRect().x) + 5 + 'px';
+                }
             } else {
                 panel.style.left = xoffset + item.getBoundingClientRect().left + 'px';
+
             }
 
             window.setTimeout(() => {
@@ -213,7 +221,11 @@ export class PreviewTooltipComponent {
     }
 
     isRightAligned(): boolean {
-        return this.align == 'right';
+        return this.align === 'right';
+    }
+
+    isLeftAligned(): boolean {
+        return this.align === 'left';
     }
 
     public navigate(e: any, url: string) {
