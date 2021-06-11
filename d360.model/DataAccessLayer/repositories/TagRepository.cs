@@ -931,6 +931,8 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                             inner join Tag T on T.ID = at.TagID
                         )";
 
+            var pagingSql = " ";
+
             if (includeTotal)
             {
                 var countSql =  $@"{(addtagasstingfilter ? ctestring : "")} 
@@ -945,11 +947,10 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         {whereClause}";
 
                 result.total = companyContext.Query<int>(countSql, dbArgs).FirstOrDefault();
+
+                pagingSql = $"OFFSET {result.pageSize * (result.pageNum - 1)} ROWS FETCH NEXT {result.pageSize} ROWS ONLY";
             }
 
-
-            var pagingSql = $"OFFSET {result.pageSize * (result.pageNum - 1)} ROWS FETCH NEXT {result.pageSize} ROWS ONLY";
-            
             var sql = $@"{ctestring}  
                         select 
                         ADV.*, 
