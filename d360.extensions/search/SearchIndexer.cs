@@ -19,7 +19,7 @@ namespace d360.extensions.search
         private static int _indexClassAsTypesLimit = 400000;
         private SqlConnection _context;
         private int _companyID;
-        private ISearchSource _source;
+        private readonly ISearchSource _source;
         private readonly List<string> _messages;
 
         public SearchIndexer(SqlConnection context, int companyID, ISearchSource source)
@@ -221,7 +221,7 @@ namespace d360.extensions.search
                 } catch (Exception e)
                 {
                     UpdateDBLog(assettype.Class, AssetTypeUid, SearchJobStatus.Error, e.Message);
-                    throw e;
+                    throw;
                 }
                 UpdateDBLog(assettype.Class, AssetTypeUid, SearchJobStatus.Completed);
             }
