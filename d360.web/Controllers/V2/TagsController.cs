@@ -497,10 +497,9 @@ namespace d360.web.Controllers.V2
 
                 Guid AssetTypeUid = new Guid();
 
-                //make sure no tag with the same name exists
-                if (tagRepository.DoesTagExists(uid))
+                if (!tagRepository.DoesTagExists(tagUid))
                 {
-                    throw new Exception("Invalid tag specified [same tag already exists].");
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", $"Tag with uid {tagUid} not found.");
                 }
 
                 var queryParams = Request.GetQueryNameValuePairs();

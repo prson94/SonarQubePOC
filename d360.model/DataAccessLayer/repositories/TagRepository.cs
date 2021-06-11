@@ -769,6 +769,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
             string sortOrder = "ASC";
             bool includeTotal = false;
             bool addtagasstingfilter = false;
+            bool IsGlobalSearchException = false;
             List<string> whereClauses = new List<string>();
             //?globalSearch = &DisplayValue = &AssetType = &TagsAsString = &sortBy = DisplayValue & sortOrder = 1
 
@@ -784,6 +785,10 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                             dbArgs.Add("displayvalue", $"%{param.Value.ToLower()}%");
                             whereClauses.Add("LOWER(ADV.DisplayValue) like @displayvalue");
                         }
+                        else
+                        {
+                            IsGlobalSearchException = true;
+                        }
                         break;
                     case "assettype":
                         if (!hasGlobalSearch)
@@ -792,6 +797,10 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                             whereClauses.Add("LOWER(AST.Name) like @assetname");
                             AddAssetTypeParam(dbArgs, whereClauses, param.Value);
                         }
+                        else
+                        {
+                            IsGlobalSearchException = true;
+                        }
                         break;
                     case "tagsasstring":
                         if (!hasGlobalSearch)
@@ -799,6 +808,10 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                             addtagasstingfilter = true;
                             dbArgs.Add("tagsasstring", $"%{param.Value.ToLower()}%");
                             whereClauses.Add("LOWER(AssetTags.Tags) like @tagsasstring");
+                        }
+                        else
+                        {
+                            IsGlobalSearchException = true;
                         }
                         break;
                     case "globalsearch":
@@ -896,6 +909,11 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
 
                         break;
                 }
+            }
+
+            if (IsGlobalSearchException)
+            {
+                throw new ArgumentException($"Invalid parameters supplied. Parameter DisplayValue, AssetType, TagsasString not allowed to used when globalSearch parameter is present.", "globalSearch");
             }
 
             string sortClause = $"ORDER BY {sortField} {sortOrder}";
