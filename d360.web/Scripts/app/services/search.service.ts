@@ -62,7 +62,7 @@ export class SearchService extends BaseObservableService  {
         let categories: SearchType[] = SettingsHelper.getSearchTypesList().filter((t) => exclude.indexOf(t.value) === -1);
 
         return this.getVisibleCategories().pipe(
-            map((res) => categories.map(c => {
+            map((res) => categories.map((c) => {
                 c.visible = res.indexOf(c.value) >= 0;
                 return c;
             }).filter((c) => keepNotVisible || c.visible))
