@@ -179,7 +179,7 @@ namespace d360.model.workflow
                         //multiselect
                         if (!string.IsNullOrEmpty(val) && val.Contains(","))
                         {
-                            return 1;
+                            return int.MaxValue;
                         }
 
                         if (int.TryParse(val, out int res))
