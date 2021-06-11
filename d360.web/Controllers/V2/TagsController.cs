@@ -480,7 +480,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("sortorder", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("sortby", "The name of the field to order results [Allowed fields are displayvalue, assettype, tagsasstring, assetid]. By default the results are ordered by DisplayValue asc", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is false meaning the total count is not included.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("DisplayValue", "Filter by Display Value.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("AssetType", "Filter by Asset Type.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("TagsasString", "Filter by Tags as string.", DataType = "string", ParameterType = "query", Required = false),

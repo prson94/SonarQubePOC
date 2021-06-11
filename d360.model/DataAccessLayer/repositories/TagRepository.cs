@@ -981,6 +981,13 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
 
             var data = string.Join("", companyContext.Query<string>(sql, dbArgs, ApiTimeout).ToList());
 
+            if (!includeTotal)
+            {
+                result.pageNum = null;
+                result.pageSize = null;
+                result.total = null;
+            }
+
             result.items = JsonConvert.DeserializeObject<List<TagDetail>>(data);
             if (result.items == null)
             {
