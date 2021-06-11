@@ -1,0 +1,38 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="TKlok" id="Table.queue.Search-v1">
+    <comment>GOV-14596</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'queue' AND TABLE_NAME = 'Search')
+BEGIN
+	CREATE TABLE [queue].[Search](
+		[ID] [bigint] IDENTITY(1,1) NOT NULL,
+		[Class] [int] NOT NULL,
+		[AssetTypeUid] [uniqueidentifier] NULL,
+		[Status] [int] NOT NULL,
+		[Active] [bit] default(1) not null,
+		[TargetCount] [int] default (0) not null,
+		[Message]  [nvarchar](max) NULL,
+		[Start] [datetime] CONSTRAINT [DF_Search_start] DEFAULT (getutcdate()) NOT NULL,
+		[LastUpdate] [datetime] CONSTRAINT [DF_search_lastupdate] DEFAULT (getutcdate()) NOT NULL
+	)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+DROP TABLE IF EXISTS [queue].[Search]
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

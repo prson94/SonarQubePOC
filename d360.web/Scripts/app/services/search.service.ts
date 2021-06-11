@@ -1,11 +1,12 @@
 ﻿import { Injectable } from '@angular/core';
 import { SearchResultsObject, SearchQuery, SearchResultInfo } from '../models/search-result.model';
 import { HttpClient } from '@angular/common/http';
-import { catchError, map, takeUntil, shareReplay } from 'rxjs/operators';
+import { catchError, map, takeUntil, shareReplay, delay } from 'rxjs/operators';
 import { Observable, Subject, of } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 import { SettingsHelper, SearchType } from '../models/settings.model';
+import { IndexableType, IndexableStatus } from "../models/search-admin.model";
 
 @Injectable()
 export class SearchService extends BaseObservableService  {
@@ -94,5 +95,65 @@ export class SearchService extends BaseObservableService  {
     private clearCache() {
         this.reload$.next();
         this.visibleCategories$ = null;
+    }
+
+    public GetIndexableTypes(): Observable<IndexableType[]> {
+        return this.http
+            .get("search/IndexableTypes")
+            .pipe(
+                map(res => <IndexableType[]>res),
+                catchError((err) => {
+                    let errorMessage = null;
+                    if (Object.keys(err).indexOf("error") > -1) {
+                        errorMessage = err.error.message;
+                    }
+                    if (errorMessage === null || errorMessage === "") {
+                        errorMessage = "An error has occurred.";
+                    }
+                    this.messages.showError("Search Error", errorMessage);
+                    return [];
+                })
+            );
+    }
+
+    public GetIndexbleStatus(): Observable<IndexableStatus[]> {
+        return this.http
+            .get("search/IndexableStatus")
+            .pipe(
+                map(res => <IndexableStatus[]>res),
+                catchError((err) => {
+                    let errorMessage = null;
+                    if (Object.keys(err).indexOf("error") > -1) {
+                        errorMessage = err.error.message;
+                    }
+                    if (errorMessage === null || errorMessage === "") {
+                        errorMessage = "An error has occurred.";
+                    }
+                    this.messages.showError("Search Error", errorMessage);
+                    return [];
+                })
+            );
+    }
+
+    public SendRebildRequest(Class: number, assettypeuid: string) {
+        let url = `search/rebuild/${Class}/${assettypeuid}`;
+        console.log(url);
+        return this.http
+            .post(url, "")
+            .pipe(
+                delay(1000),
+                map(res => res),
+                catchError((err) => {
+                    let errorMessage = null;
+                    if (Object.keys(err).indexOf("error") > -1) {
+                        errorMessage = err.error.message;
+                    }
+                    if (errorMessage === null || errorMessage === "") {
+                        errorMessage = "An error has occurred.";
+                    }
+                    this.messages.showError("Search Error", errorMessage);
+                    return [];
+                })
+            );
     }
 }
