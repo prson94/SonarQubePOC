@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.enums;
 using d360.extensions;
+using d360.extensions.search;
 using d360.model;
 using d360.model.DataAccessLayer;
 using d360.web.Models;
@@ -95,7 +96,7 @@ namespace d360.web.Controllers
         public JsonResult Status()
         {
             var o = new SearchResultsViewModel();
-            o.Result = SearchSource.GetStatusSearch(Company.CurrentCompanyID, o.Categories);
+            o.Result = SearchSource.GetStatusSearch(Company.CurrentCompanyID, o.Categories, true);
             return Json(o, JsonRequestBehavior.AllowGet);
         }
 
@@ -146,7 +147,72 @@ namespace d360.web.Controllers
             return Json(visibleCategories, JsonRequestBehavior.AllowGet);
         }
 
-#endregion
+        [HttpGet, Route("IndexableTypes")]
+        public JsonResult GetIndexableTypes()
+        {
+            if(!Company.CurrentResourceIsAdmin)
+            {
+                return Json(new { }, JsonRequestBehavior.AllowGet);
+            }
+
+            List<IndexableType> types = Company.Query<IndexableType>("SELECT Name, Class, Uid as AssetTypeUid FROM [dbo].[AssetType] at WHERE EXISTS (SELECT 1 FROM [dbo].[Asset] a WHERE a.AssetTypeId = at.ID)").ToList();
+            types.ForEach((t) => t.ClassName = SearchIndexer.GetCategoryFromClass(t.Class));
+
+            List<IndexableType> classes = assetTypeClasses.Where(c => types.Any(at => at.Class == (int)c)).Select(c => new IndexableType { Name = c.ToString(), Class = (int)c, AssetTypeUid = Guid.Empty, ClassName = c.ToString() }).ToList();
+
+            classes.AddRange(types);
+            classes.Where((c) => c.Class == 9).ToList().ForEach((c) => c.Class = 14);
+
+            return Json(classes, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpGet, Route("IndexableStatus")]
+        public JsonResult GetIndexableStatus()
+        {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return Json(new { }, JsonRequestBehavior.AllowGet);
+            }
+
+            List<IndexableStatus> status = Company.Query<IndexableStatus>("SELECT Class, AssetTypeUid, Status, TargetCount, Start, LastUpdate FROM [queue].[Search] WHERE Active = 1").ToList();
+            status.ForEach((t) => t.ClassName = SearchIndexer.GetCategoryFromClass(t.Class));
+
+            List<IndexableCount> esStatus = SearchSource.GetStatusList(Company.CurrentCompanyID);
+            esStatus.ForEach((es) => {
+                es.Class = SearchIndexer.GetClassFromCategory(es.ClassName);
+                IndexableStatus st = status.Find((s) => s.Class == es.Class && s.AssetTypeUid == es.AssetTypeUid);
+                if(st != null)
+                {
+                    st.CurrentCount = es.CurrentCount;
+                } else
+                {
+                    status.Add(new IndexableStatus {
+                        Class = es.Class,
+                        ClassName = es.ClassName,
+                        AssetTypeUid = es.AssetTypeUid,
+                        CurrentCount = es.CurrentCount,
+                        Status = 0
+                    });
+                }
+            });
+            return Json(status, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost, Route("rebuild/{Class:int}/{assetTypeUid:Guid}")]
+        public JsonResult DoRebuild(int Class, Guid assetTypeUid)
+        {
+            if(!Company.CurrentResourceIsAdmin)
+            {
+                Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
+                return jsonException("User not authorized to perfom this action", System.Net.HttpStatusCode.Forbidden);
+            }
+
+            SearchIndexer indexer = new SearchIndexer(Company.Connection, Company.CurrentCompanyID, SearchSource);
+            indexer.QueueRebuildRequest((AssetTypeClass)Class, assetTypeUid);
+            return Json(new { }, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
 
         //Icons set based on Category/Class directly
         private static readonly Dictionary<string, string> categoryMap = new Dictionary<string, string>() {

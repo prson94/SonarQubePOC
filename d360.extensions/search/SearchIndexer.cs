@@ -9,6 +9,7 @@ using d360.core;
 using System.Collections.Concurrent;
 using MoreLinq;
 using System.Data;
+using d360.extensions.queue;
 
 namespace d360.extensions.search
 {
@@ -18,10 +19,10 @@ namespace d360.extensions.search
         private static int _indexClassAsTypesLimit = 400000;
         private SqlConnection _context;
         private int _companyID;
-        private ElasticSearchSource _source;
+        private readonly ISearchSource _source;
         private readonly List<string> _messages;
 
-        public SearchIndexer(SqlConnection context, int companyID, ElasticSearchSource source)
+        public SearchIndexer(SqlConnection context, int companyID, ISearchSource source)
         {
             _context = context;
             _companyID = companyID;
@@ -70,6 +71,46 @@ namespace d360.extensions.search
                 return "Reference";
             }
             return obj;
+        }
+
+        public static string GetCategoryFromClass(int typeClass)
+        {
+            return GetCategoryFromClass((AssetTypeClass)typeClass);
+        }
+
+        public static string GetCategoryFromClass(AssetTypeClass? typeClass)
+        {
+            switch(typeClass)
+            {
+                case AssetTypeClass.ReferenceItemType:
+                    return "Reference";
+                case AssetTypeClass.Fusion:
+                    return "Fusion Type";
+                case AssetTypeClass.FusionAttribute:
+                    return "FusionAttributes";
+                default:
+                    return typeClass.ToString();
+            }
+        }
+
+        public static int GetClassFromCategory(string category)
+        {
+            switch(category)
+            {
+                case "Reference":
+                    return (int)AssetTypeClass.ReferenceItemType;
+                case "FusionAttributes":
+                    return (int)AssetTypeClass.FusionAttribute;
+                case "Fusion Type":
+                    return (int)AssetTypeClass.Fusion;
+                default:
+                    if(Enum.TryParse(category, out AssetTypeClass assetTypeClass))
+                    {
+                        return (int)assetTypeClass;
+                    } else {
+                        return (int)AssetTypeClass.Generic;
+                    }
+            }
         }
 
         public void IndexAsset(Guid AssetUid)
@@ -158,53 +199,84 @@ namespace d360.extensions.search
 
         public void IndexAssetType(Guid AssetTypeUid, bool clearIndex = true)
         {
-            if(clearIndex)
+            if (_context.State != ConnectionState.Open)
+            {
+                _context.Open();
+            }
+
+            if (clearIndex)
+            {
                 _source.ClearIndex(_companyID, AssetTypeUid);
-    
+            }
+
             AssetClassAndName assettype = _context.QueryFirstOrDefault<AssetClassAndName>("SELECT [Class], [Name] FROM AssetType att WHERE att.uid = @AssetTypeUid", new { AssetTypeUid });
             if (assettype != null)
             {
-                //If clearIndex is not set, the method is being called from IndexAssetClass, so field query should use temp tables.
-                IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, assettype.Class, AssetTypeUid, null, !clearIndex);
-                _source.AddToIndex(models);
+                UpdateDBLog(assettype.Class, AssetTypeUid, SearchJobStatus.Processing);
+                try
+                {
+                    //If clearIndex is not set, the method is being called from IndexAssetClass, so field query should use temp tables.
+                    IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, assettype.Class, AssetTypeUid, null, !clearIndex);
+                    _source.AddToIndex(models);
+                } catch (Exception e)
+                {
+                    UpdateDBLog(assettype.Class, AssetTypeUid, SearchJobStatus.Error, e.Message);
+                    throw;
+                }
+                UpdateDBLog(assettype.Class, AssetTypeUid, SearchJobStatus.Completed);
             }
+
+            if (_context.State != ConnectionState.Closed)
+            {
+                _context.Close();
+            }
+
         }
 
         public void IndexAssetClass(AssetTypeClass assetClass)
         {
+            if (_context.State != ConnectionState.Open)
+            {
+                _context.Open();
+            }
             _source.ClearIndex(_companyID, assetClass.ToString());
             bool processByAssetType = false;
             int assettypeclass = (int)assetClass;
 
-            //Count number of assets in class (if not Fusion) to determine if the class contains a large number of assets
+            long assetCount = CreatePendingDBLog(assetClass, null);
+
+            //Use count of assets in class (if not Fusion) to determine if the class contains a large number of assets
             //and indexing by asset type is more performant.
             if (assetClass != AssetTypeClass.Fusion && assetClass != AssetTypeClass.FusionAttribute)
             {
-                long assetCount = _context.QueryFirstOrDefault<int>(@"SELECT COUNT(1) 
-                FROM [dbo].[Asset] a
-                INNER JOIN [dbo].[AssetType] at ON a.assettypeid = at.id
-                WHERE at.[Class] = @assettypeclass", new { assettypeclass });
-
                 processByAssetType = assetCount > _indexClassAsTypesLimit;
             }
 
             if(processByAssetType)
             {
+                UpdateDBLog(assetClass, null, SearchJobStatus.ProcessingAsType);
                 List<Guid> assetTypes = _context.Query<Guid>("SELECT at.uid FROM [dbo].[AssetType] at WHERE EXISTS (SELECT 1 FROM [dbo].[Asset] a WHERE a.assettypeid = at.id) AND at.class =  @assettypeclass", new { assettypeclass }).ToList();
-                assetTypes.ForEach(t => {
+                assetTypes.ForEach(t => CreatePendingDBLog(assetClass, t));
+
+                assetTypes.ForEach(t =>
+                {
                     try
                     {
                         IndexAssetType(t, false);
-                    } catch (PagedQueryException e)
+                    }
+                    catch (PagedQueryException e)
                     {
                         _messages.Add($"Failed to index AssetType {t}: {e.Message}");
-                    } catch (Exception e)
+                    }
+                    catch (Exception e)
                     {
                         _messages.Add($"Exception caught indexing AssetType {t}: {e.Message}");
                     }
                 });
-            } else
+            }
+            else
             {
+                UpdateDBLog(assetClass, null, SearchJobStatus.Processing);
                 IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, assetClass, null, null);
                 _source.AddToIndex(models);
             }
@@ -212,9 +284,15 @@ namespace d360.extensions.search
             if(_messages.Any())
             {
                 string exceptionMessage = string.Join(Environment.NewLine, _messages);
+                UpdateDBLog(assetClass, null, SearchJobStatus.Error, exceptionMessage);
                 _messages.Clear();
                 throw new SearchIndexException(exceptionMessage);
             }
+            if (_context.State != ConnectionState.Closed)
+            {
+                _context.Close();
+            }
+
         }
 
         public void IndexObjectType(string ObjectType, bool clearIndex = true)
@@ -226,6 +304,82 @@ namespace d360.extensions.search
 
             IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, ObjectType);
             _source.AddToIndex(models);
+        }
+
+        public enum SearchJobStatus
+        {
+            None,
+            Pending,
+            Processing,
+            ProcessingAsType,
+            Error,
+            Completed
+        }
+
+        public void QueueRebuildRequest(AssetTypeClass assetClass, Guid? assetTypeUid)
+        {
+            if(assetTypeUid == Guid.Empty)
+            {
+                assetTypeUid = null;
+            }
+
+            var queue = new AzureQueueSource();
+            ReindexModel model = new ReindexModel { CompanyID = _companyID, Category = assetClass.ToString() };
+            if(assetTypeUid != null)
+            {
+                model.AssetTypeUid = assetTypeUid;
+            }
+            CreatePendingDBLog(assetClass, assetTypeUid);
+
+            queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), model);
+        }
+
+        private int CreatePendingDBLog(AssetTypeClass assetClass, Guid? assetTypeUid)
+        {
+            object param = new { assetClass, assetTypeUid = assetTypeUid ?? Guid.Empty, status = SearchJobStatus.Pending };
+
+            //clean table, remove x days old records
+            _context.Execute("UPDATE [queue].[Search] SET Active=0 WHERE Active=1 and Class = @assetClass and AssetTypeUid = @AssetTypeUid", param);
+            _context.Execute("DELETE FROM [queue].[Search] WHERE LastUpdate <= DATEADD(DAY, -30, GETUTCDATE())");
+
+            //Insert record with count
+            _context.Execute(@"INSERT INTO [queue].[Search] (Class, AssetTypeUid, Status, TargetCount)
+                    SELECT @assetClass, @assetTypeUid, @status, count(1)
+                    FROM [dbo].[asset] a INNER JOIN  [dbo].[assettype] at ON a.assettypeid = at.id
+                    where at.class = @assetClass" + (assetTypeUid == null ? "" : " and at.uid = @assetTypeUid"), param);
+
+            if(assetTypeUid == null)
+            {
+                //When pending a Class/Categroy, archive all asset types under that category
+                _context.Execute("UPDATE [queue].[Search] SET Active=0 WHERE Active=1 and Class = @assetClass and AssetTypeUid <> @AssetTypeUid", param);
+            }
+
+            int count = _context.Query<int>("SELECT TargetCount FROM [queue].[Search] where Class=@assetClass and AssetTypeUid=@assetTypeUid and status=@status", param).FirstOrDefault();
+            return count;
+        }
+
+        private void UpdateDBLog(AssetTypeClass assetClass, Guid? assetTypeUid, SearchJobStatus status, string message = "")
+        {
+            //Update record
+            var param = new { assetClass, assetTypeUid = assetTypeUid ?? Guid.Empty, status, message };
+            _context.Execute(@"MERGE INTO [queue].[Search] AS tgt
+                USING
+                  (SELECT @assetClass, @assetTypeUid, @status, @message) AS src (Class, AssetTypeUid, Status, Message)
+                  ON tgt.Class = src.Class and tgt.AssetTypeUid = src.AssetTypeUid and tgt.Active=1
+                WHEN MATCHED THEN
+                  UPDATE       
+                    SET
+                        Status=src.Status,
+                        Message=src.Message,
+                        LastUpdate=getutcdate()
+                WHEN NOT MATCHED THEN
+                  INSERT (Class, AssetTypeUid, Status, Message, LastUpdate)
+                  VALUES (src.Class, src.AssetTypeUid, src.Status, src.Message, getutcdate());", param);
+
+            if (new List<SearchJobStatus> { SearchJobStatus.Processing, SearchJobStatus.ProcessingAsType }.Contains(status))
+            {
+                _context.Execute("UPDATE [queue].[Search] SET Start = getutcdate() WHERE Active=1 AND Class=@assetClass AND AssetTypeUid=@assetTypeUid", param);
+            }
         }
 
         private string GenerateUrl(string type, int typeId, int objectId, string fallback = "")
@@ -322,7 +476,7 @@ namespace d360.extensions.search
                     {
                         return new IndexObjectModel
                         {
-                            Category = assetClass.ToString(),
+                            Category = GetCategoryFromClass(assetClass),
                             CompanyID = companyID,
                             ID = o.ID,
                             AssetID = o.AssetID,
@@ -359,7 +513,7 @@ namespace d360.extensions.search
                     {
                         return new IndexObjectModel
                         {
-                            Category = GetCategoryFromObject(o.Object),
+                            Category = GetCategoryFromClass(assetClass),
                             CompanyID = companyID,
                             ID = o.ID,
                             AssetType = "Reference List",
@@ -416,7 +570,7 @@ namespace d360.extensions.search
                     {
                         return new IndexObjectModel
                         {
-                            Category = assetClass.ToString(),
+                            Category = GetCategoryFromClass(assetClass),
                             CompanyID = companyID,
                             ID = o.ID,
                             AssetID = o.AssetID,
@@ -472,7 +626,7 @@ namespace d360.extensions.search
                     {
                         return new IndexObjectModel
                         {
-                            Category = assetClass.ToString(),
+                            Category = GetCategoryFromClass(assetClass),
                             CompanyID = companyID,
                             ID = o.ID,
                             AssetID = o.AssetID,
@@ -502,7 +656,7 @@ namespace d360.extensions.search
                     {
                         return new IndexObjectModel
                         {
-                            Category = SystemObjects.FusionType.ToString(),
+                            Category = GetCategoryFromClass(assetClass),
                             CompanyID = companyID,
                             ID = o.ID,
                             AssetType = o.FusionTypeName,
@@ -532,7 +686,7 @@ namespace d360.extensions.search
                     {
                         return new IndexObjectModel
                         {
-                            Category = "FusionAttributes",
+                            Category = GetCategoryFromClass(assetClass),
                             CompanyID = companyID,
                             ID = o.ID,
                             AssetID = o.AssetID,
@@ -692,7 +846,7 @@ namespace d360.extensions.search
                     {
                         return new IndexObjectModel
                         {
-                            Category = GetCategoryFromObject(o.Object),
+                            Category = GetCategoryFromClass(AssetTypeClass.ReferenceItemType),
                             CompanyID = companyID,
                             ID = o.ID,
                             AssetType = "Reference List",
@@ -979,7 +1133,7 @@ namespace d360.extensions.search
 
     internal abstract class BasePagedQuery<T> : IPagedQuery<T> where T : IPagedQuerySqlModel
     {
-        protected readonly int PageSize = 50000;
+        protected int PageSize = 50000;
         protected long CurrentHighID;
         protected List<T> _data;
         protected SqlConnection _connection;
@@ -1098,6 +1252,7 @@ namespace d360.extensions.search
         /// <param name="param"></param>
         public TempTablePagedQuery(SqlConnection connection, string query, DynamicParameters param = null) : base(connection, param)
         {
+            PageSize = 150000;
             //generate random name for global temp table
             _tableIdentifier = "pagedQuery_" + Guid.NewGuid().ToString().Replace("-", "_");
 
@@ -1108,7 +1263,6 @@ namespace d360.extensions.search
 
             try
             {
-                //Double timeout for statement creating the temp table
                 _connection.Execute($@"
                     DROP TABLE IF EXISTS ##{_tableIdentifier};
 
@@ -1119,7 +1273,7 @@ namespace d360.extensions.search
                     CREATE UNIQUE INDEX UIX_{_tableIdentifier} ON ##{_tableIdentifier} (sortid); 
 
                     CREATE NONCLUSTERED INDEX IX_{_tableIdentifier}_AssetID ON ##{_tableIdentifier} (AssetID); 
-                ", _param, null, _defaultQueryCommandTimeout * 2);
+                ", _param, null, _defaultQueryCommandTimeout * 20); //Multiply timeout for statement creating the temp table
             }
             catch (Exception e)
             {

@@ -1,0 +1,51 @@
+﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
+
+<div class="tile tile-detail" *ngIf="!isLoading">
+    <div style="display: flex; justify-content: space-between; margin: 10px; padding-top: 10px; align-items: flex-end;">
+        <div>
+            This page shows the count of Assets in the search index by Category and Asset Type.<br />
+            It is possible to do a partial rebuild of the search index, by clicking the <b>Rebuild</b> button for the desired Category or Asset Type.<br />
+            To update the information on the page, click the <b>Refresh View</b> button.
+        </div>
+        <button igButton
+                label="Refresh View"
+                [disabled]="isUpdating"
+                icon="fa-recycle"
+                (click)="UpdateStatus()">
+        </button>
+    </div>
+    <p-treeTable [value]="indexableNodes">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Assets in Index</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-rowNode let-rowData="rowData">
+            <tr>
+                <td>
+                    <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+                    {{rowData.Name}}
+                </td>
+                <td><span *ngIf="rowData.Status != 0" pTooltip="{{(rowData.LastUpdate | date:'medium')}}" tooltipStyleClass="ig-tooltip">{{JobStatus[rowData.Status]}}</span></td>
+                <td>{{rowData.CurrentCount}}</td>
+                <td><span *ngIf="!canRebuild(rowData)">{{rowData.TargetCount}} Assets when queued</span></td>
+                <td>
+                    <div class="RowTools">
+                        <button igButton
+                                [disabled]="isUpdating || !canRebuild(rowData)"
+                                icon="fa-refresh"
+                                (click)="rebuild(rowData)"
+                                pTooltip="Rebuild index for this {{(rowData.AssetTypeUid === emptyguid) ? 'Category' : 'Asset Type'}}"
+                                tooltipStyleClass="ig-tooltip"
+                                tooltipPosition="left">
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+    </p-treeTable>
+</div>

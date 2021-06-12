@@ -29,6 +29,30 @@ namespace d360.extensions
         public float Boost { get; set; }
     }
 
+    public class IndexableType
+    {
+        public string Name { get; set; }
+        public int Class { get; set; }
+        public string ClassName { get; set; }
+        public Guid AssetTypeUid { get; set; }
+    }
+
+    public class IndexableCount
+    {
+        public string ClassName { get; set; }
+        public int Class { get; set; }
+        public Guid AssetTypeUid { get; set; }
+        public int CurrentCount { get; set; }
+    }
+
+    public class IndexableStatus : IndexableCount
+    {
+        public int Status { get; set; }
+        public int TargetCount { get; set; }
+        public DateTime Start { get; set; }
+        public DateTime LastUpdate { get; set; }
+    }
+
     public class QueryRequest
     {
         public const int SEARCH_TERM_MAX_LENGTH = 255;
@@ -300,7 +324,9 @@ namespace d360.extensions
         
         IndexResults GetSearchResults(int companyID, int resourceID, string phrase, int size, int from, string group = "");
 
-        IndexResults GetStatusSearch(int companyID, List<IndexTypeList> categories);
+        IndexResults GetStatusSearch(int companyID, List<IndexTypeList> categories, bool withTypes = false);
+
+        List<IndexableCount> GetStatusList(int companyID);
 
         /// <summary>
         /// Get list of phrases that match the starting term used by autocomplete to suggest matches
