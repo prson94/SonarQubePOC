@@ -472,13 +472,21 @@ namespace d360.web.Controllers.V2
             HttpGet,
             MapToApiVersion("2.0"),
             Route("{uid}/details"),
-            ApiExplorerSettings(IgnoreApi = true),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "The specified tag was updated, returns the properties of the created tag.", typeof(TagDetailApiModel)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
-            ]
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request is badly formatted or has failed validation.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("sortorder", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("sortby", "The name of the field to order results [Allowed fields are displayvalue, assettype, tagsasstring, assetid]. By default the results are ordered by DisplayValue asc", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is false meaning the total count is not included.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("DisplayValue", "Filter by Display Value.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("AssetType", "Filter by Asset Type.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("TagsasString", "Filter by Tags as string.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("AssetTypeUid", "Filter by Asset Type Uid.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("globalSearch", "Filter by DisplayValue or AssetType or TagsasString. When global search parameter use then filter specific parameter defined for DisplayValue, AssetType, TagsasString not consider", DataType = "string", ParameterType = "query", Required = false),
+        ]
         public IHttpActionResult GetTagDetails(string uid)
         {
 
@@ -487,13 +495,34 @@ namespace d360.web.Controllers.V2
 
                 Guid tagUid = Guid.Parse(uid);
 
-                //make sure no tag with the same name exists
-                if (tagRepository.DoesTagExists(uid))
+                Guid AssetTypeUid = new Guid();
+
+                if (!tagRepository.DoesTagExists(tagUid))
                 {
-                    throw new Exception("Invalid tag specified [same tag already exists].");
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", $"Tag with uid {tagUid} not found.");
                 }
 
                 var queryParams = Request.GetQueryNameValuePairs();
+
+                if (queryParams.Any(q => q.Key.ToLower() == "assettypeuid"))
+                {
+                    if (!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "assettypeuid").Value.ToLower(), out AssetTypeUid))
+                    {
+                        return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid asset type uid.");
+                    }
+                    if (AssetTypeUid != null && AssetTypeUid != Guid.Empty)
+                    {
+                        var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == AssetTypeUid);
+                        if (assetType == null)
+                        {
+                            return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid asset type uid.");
+                        }
+                    }
+                    else
+                    {
+                        return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid asset type uid.");
+                    }
+                }
 
                 TagDetailApiModel results = tagRepository.GetDetails(tagUid, queryParams);
 
