@@ -948,8 +948,9 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
 
                 result.total = companyContext.Query<int>(countSql, dbArgs).FirstOrDefault();
 
-                pagingSql = $"OFFSET {result.pageSize * (result.pageNum - 1)} ROWS FETCH NEXT {result.pageSize} ROWS ONLY";
             }
+
+            pagingSql = $"OFFSET {result.pageSize * (result.pageNum - 1)} ROWS FETCH NEXT {result.pageSize} ROWS ONLY";
 
             var sql = $@"{ctestring}  
                         select 
@@ -981,13 +982,6 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         for json path";
 
             var data = string.Join("", companyContext.Query<string>(sql, dbArgs, ApiTimeout).ToList());
-
-            if (!includeTotal)
-            {
-                result.pageNum = null;
-                result.pageSize = null;
-                result.total = null;
-            }
 
             result.items = JsonConvert.DeserializeObject<List<TagDetail>>(data);
             if (result.items == null)
