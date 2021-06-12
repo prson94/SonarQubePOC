@@ -931,8 +931,6 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                             inner join Tag T on T.ID = at.TagID
                         )";
 
-            var pagingSql = " ";
-
             if (includeTotal)
             {
                 var countSql =  $@"{(addtagasstingfilter ? ctestring : "")} 
@@ -950,7 +948,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
 
             }
 
-            pagingSql = $"OFFSET {result.pageSize * (result.pageNum - 1)} ROWS FETCH NEXT {result.pageSize} ROWS ONLY";
+            var pagingSql = $"OFFSET {result.pageSize * (result.pageNum - 1)} ROWS FETCH NEXT {result.pageSize} ROWS ONLY";
 
             var sql = $@"{ctestring}  
                         select 
