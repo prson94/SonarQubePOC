@@ -361,7 +361,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             }
         );
 
-        this.objectStatisticsService.getObjectColorAndValue(objectID, objectName, "dataclassification").subscribe(
+        this.objectStatisticsService.getObjectColorAndValue(objectID, objectName, "dataClassification", false).subscribe(
             result => {
                 this.dataClassification = result;
                 try {                 
