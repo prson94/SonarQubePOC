@@ -2,7 +2,7 @@
     <div *ngIf="fieldDataType != 'tag'" class="ig-value ig-item-list">
         <ul *ngFor="let item of field.Values">
             <li *ngIf="item.TooltipContext == 'Preview'" [class]="valueCount > 1 ? 'ig-item' : ''">
-                <d3s-preview-tooltip [objectType]="item.TooltipType" [objectId]="item.TooltipID" [contentAnchor]="'right'">
+                <d3s-preview-tooltip [objectType]="item.TooltipType" [objectId]="item.TooltipID"  [contentAnchor]="'right'" [align]="tooltipAlign">
                     <a *ngIf="item.TooltipUrl && fieldDataType != 'color'" [href]="item.TooltipUrl" [innerHtml]="(valueCount > 1 ? '&bull; ' : '') + item.Value" (click)="navigate(item.TooltipUrl, $event)"></a>
                     <span *ngIf="!item.TooltipUrl && fieldDataType != 'color'" [innerHtml]="item.Value"></span>
                     <d3s-color-display *ngIf="fieldDataType == 'color'" [url]="item.TooltipUrl" [colorsJSON]="item.Value"></d3s-color-display>
@@ -94,7 +94,7 @@
     </ng-container>
     <ng-container *ngIf="field.Type == DetailFieldType.Tooltip">
         <div style="padding-bottom: 9px">
-            <d3s-preview-tooltip *ngIf="field.TooltipContext == 'Preview'; else listTooltip" [objectType]="field.TooltipType" [objectId]="field.TooltipID" [contentAnchor]="'right'">
+            <d3s-preview-tooltip *ngIf="field.TooltipContext == 'Preview'; else listTooltip" [objectType]="field.TooltipType" [objectId]="field.TooltipID" [align]="tooltipAlign">
                 <a [href]="field.TooltipUrl" (click)="navigate(field.TooltipUrl, $event)">{{field.Value}}</a>
             </d3s-preview-tooltip>
             <ng-template #listTooltip>

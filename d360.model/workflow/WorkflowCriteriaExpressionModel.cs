@@ -176,6 +176,12 @@ namespace d360.model.workflow
                     return int.Parse(val);
                 case CriteriaValueDataType.Lookup:
                     {
+                        //multiselect
+                        if (!string.IsNullOrEmpty(val) && val.Contains(","))
+                        {
+                            return int.MaxValue;
+                        }
+
                         if (int.TryParse(val, out int res))
                         {
                             return res;

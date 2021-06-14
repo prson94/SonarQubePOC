@@ -5,7 +5,10 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Function.graph.GetPath-DependencyDrop-v3">
+  <changeSet author="TDuric" id="Function.graph.GetPath-DependencyDrop-v4">
+  		<preConditions onFail="MARK_RAN">      
+			<sqlCheck expectedResult="0">SELECT count(1) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = '_checkTable_GOV_14947'</sqlCheck>
+		</preConditions>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -24,7 +27,10 @@ drop view if exists graph.AssetNodeDisplayPath;
 	</rollback>
   </changeSet>
 
-  <changeSet author="TDuric" id="Function.graph.GetPath-v6">
+  <changeSet author="TDuric" id="Function.graph.GetPath-v7">
+  		<preConditions onFail="MARK_RAN">      
+			<sqlCheck expectedResult="0">SELECT count(1) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = '_checkTable_GOV_14947'</sqlCheck>
+		</preConditions>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"

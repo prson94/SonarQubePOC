@@ -1461,7 +1461,7 @@ namespace d360.extensions.search
         /**
          * Perform a search that counts total items in index and buckets categories
          */
-        public IndexResults GetStatusSearch(int companyID, List<IndexTypeList> categories)
+        public IndexResults GetStatusSearch(int companyID, List<IndexTypeList> categories, bool withTypes = false)
         {
             IndexResults result = new IndexResults();
 
@@ -1479,6 +1479,15 @@ namespace d360.extensions.search
                     Size = 30
                 }
             };
+
+            if (withTypes)
+            {
+                sReq.Aggregations["all_types"].Aggregations = new TermsAggregation("category")
+                {
+                    Field = new Nest.Field(D3S_FIELD_PREFIX + "AssetType"),
+                    Size = 2000
+                };
+            }
 
             var client = new ElasticClient(GetConnectionSettings(companyID));
             //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
@@ -1513,6 +1522,50 @@ namespace d360.extensions.search
             {
                 result.Matches = searchResults.hits.total;
             }
+
+            return result;
+        }
+
+        public List<IndexableCount> GetStatusList(int companyID)
+        {
+            List<IndexableCount> result = new List<IndexableCount>();
+
+            SearchRequest sReq = new SearchRequest
+            {
+                Query = new SimpleQueryStringQuery
+                {
+                    Query = "*"
+                },
+                From = 0,
+                Size = 0,
+                Aggregations = new TermsAggregation("all_types")
+                {
+                    Field = new Nest.Field(D3S_FIELD_PREFIX + "Category"),
+                    Size = 30,
+                    Aggregations = new TermsAggregation("category")
+                    {
+                        Field = new Nest.Field(D3S_FIELD_PREFIX + "AssetTypeUid"),
+                        Size = 2000
+                    }
+                }
+            };
+
+            var client = new ElasticClient(GetConnectionSettings(companyID));
+            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
+            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
+            var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
+
+            if (!response.Success)
+            {
+                throw new ArgumentException(response.OriginalException.Message);
+            }
+
+            var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
+
+            searchResults.aggregations.all_types?.buckets?.ForEach(b => {
+                result.Add(new IndexableCount { ClassName = b.key, AssetTypeUid = Guid.Empty, CurrentCount = b.doc_count });
+                result.AddRange(b.category?.buckets?.Select(t => new IndexableCount { ClassName = b.key, AssetTypeUid = Guid.Parse(t.key), CurrentCount = t.doc_count }));
+            });
 
             return result;
         }

@@ -9,4 +9,5 @@ import { Category } from '../../../models/object-detail.model';
 export class AssetDetailCategoryComponent {
     @Input() category: Category;
     @Input() assetUID: string;
+    @Input() tooltipAlign: string;
 }

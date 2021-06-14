@@ -131,4 +131,8 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
                  return condition['@Operator'];
          }
     }
+
+    get filteredConditions(): any[] {
+        return this.step.Condition.filter((c) => c['@ContextualFieldID'] == null || c['@ContextualFieldID'].indexOf('Score|') === 0);
+    }
 }

@@ -229,6 +229,7 @@
 	<include file="scripts/Table.metrics.ScoreItemLink.xml"/>
 	<include file="scripts/Table.metrics.StagingScoreItem.xml"/>
 	<include file="scripts/Table.queue.Task.xml"/>
+	<include file="scripts/Table.queue.Search.xml"/>
 	<include file="scripts/Table.reporting.Dates.xml"/>
 	<include file="scripts/Table.reporting.Global_Audit.xml"/>
 	<include file="scripts/Table.reporting.Global_FieldAudit.xml"/>

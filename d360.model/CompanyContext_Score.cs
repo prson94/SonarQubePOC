@@ -307,47 +307,53 @@ from    #InternalMeasures T
                     #endregion
 
                     // Send score recalculation notifications.
+                    var scoreExecutionUid = Guid.NewGuid();
                     var sql = @"
-declare @ef date = cast(getutcdate() as date)
+set nocount on;
+declare @ef date = cast(getutcdate() as date),
+        @scoreExecutionId bigint = 0,
+        @successfulRowCount int = 0;
 
-insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
-    select	{0} as ExecutionID,
-		    @changeType as ChangeType,
-		    ROW_NUMBER() OVER(ORDER BY M.AssetUid) as RowNumber,
-		    (
-            select	M.AssetUid,
-		    	    IM.EffectiveDate,
-				    (
-				    select	IM.AllocationUid,
-						    IM.MetricAssetUid,
-						    V.Uid as MetricAssetVersionUid,
-						    IM.Result
-				    from	#InternalMeasures IM
-							inner join metrics.AssetVersion V on V.AssetUid = IM.MetricAssetUid  and ( (IM.EffectiveDate between V.EffectiveDate and V.EffectiveEndDate) or (IM.EffectiveDate >= V.EffectiveDate and V.EffectiveEndDate is null) )
-					where	IM.AssetUid = M.AssetUid
-							for json path
-				    ) as Measures
-		    for json path, WITHOUT_ARRAY_WRAPPER
-		    ) as Payload,
-		    0 as [State]
-    from		#InternalMeasures M
-    where		Success = 1
-	group by	AssetUid";
+select @successfulRowCount = count(1) from #InternalMeasures where Success = 1;
 
-                    var scoreExecution = new ScoreExecution
-                    {
-                        Uid = Guid.NewGuid(),
-                        TriggeredByExecutionUid = execution.ExecutionID,
-                        StartedOn = DateTime.UtcNow,
-                        PercentComplete = 0
-                    };
-                    Add(scoreExecution);
+set nocount off;
+if @successfulRowCount > 0
+begin
+    insert into metrics.Execution (Uid, TriggeredByExecutionUid, StartedOn, PercentComplete, Failures, Processing)
+    values (@scoreExecutionUid, @ExecutionID, getutcdate(), 0, 0, 0);
+
+    select @scoreExecutionId = ID from metrics.Execution where Uid = @scoreExecutionUid;
+
+    insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
+        select	@scoreExecutionId as ExecutionID,
+		        @changeType as ChangeType,
+		        ROW_NUMBER() OVER(PARTITION BY M.AssetUid, M.EffectiveDate ORDER BY M.AssetUid, M.EffectiveDate) as RowNumber,
+		        (
+                select	M.AssetUid,
+		    	        M.EffectiveDate,
+				        (
+				        select	IM.AllocationUid,
+						        IM.MetricAssetUid,
+						        V.Uid as MetricAssetVersionUid,
+						        IM.Result
+				        from	#InternalMeasures IM
+							    inner join metrics.AssetVersion V on V.AssetUid = IM.MetricAssetUid  and ( (IM.EffectiveDate between V.EffectiveDate and V.EffectiveEndDate) or (IM.EffectiveDate >= V.EffectiveDate and V.EffectiveEndDate is null) )
+					    where	IM.AssetUid = M.AssetUid
+                                and IM.EffectiveDate = M.EffectiveDate 
+							    for json path
+				        ) as Measures
+		        for json path, WITHOUT_ARRAY_WRAPPER
+		        ) as Payload,
+		        0 as [State]
+        from		#InternalMeasures M
+        where		Success = 1
+	    group by	AssetUid, EffectiveDate;
+end;";
 
                     var changeType = ScoreQueueChangeType.AssetMeasures;
-                    sql = sql.Replace("{0}", scoreExecution.ID.ToString());
-                    int rowsImpacted = Execute(sql, new { changeType = (int)changeType }, commandTimeout: 1200, transaction: trans);
+                    int rowsImpacted = Connection.Execute(sql, new { scoreExecutionUid, execution.ExecutionID, changeType = (int)changeType }, commandTimeout: 1200, transaction: trans);
 
-                    Execute(@"
+                    Connection.Execute(@"
 update  T 
 set     T.Processed = P.[Count], 
         T.Error = E.[Count], 
@@ -355,12 +361,12 @@ set     T.Processed = P.[Count],
         T.CompletedOn = getutcdate() 
 from    api.Execution T 
         cross apply (
-            select count() as [Count] from #InternalMeasures where Success = 1
+            select count(1) as [Count] from #InternalMeasures where Success = 1
         ) P 
         cross apply (
-            select count() as [Count] from #InternalMeasures where Success = 0
+            select count(1) as [Count] from #InternalMeasures where Success = 0
         ) E 
-where   T.ExecutionID = @EecutionID", new { execution.ExecutionID }, transaction: trans);
+where   T.ExecutionID = @ExecutionID", new { execution.ExecutionID }, transaction: trans);
 
                     trans.Commit();
 
@@ -371,7 +377,7 @@ where   T.ExecutionID = @EecutionID", new { execution.ExecutionID }, transaction
                             CompanyID = CurrentCompanyID,
                             ResourceID = CurrentResourceID,
                             ChangeType = ScoreQueueChangeType.AssetMeasures,
-                            ExecutionUid = scoreExecution.Uid,
+                            ExecutionUid = scoreExecutionUid,
                             StartedOn = execution.StartedOn
                         };
                         QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
@@ -1337,9 +1343,9 @@ create table #ExecutionItem (
 	ExecutionID bigint not null,
 	ChangeType int not null,
 	RowNumber int not null,
-	Payload nvarchar(max) not null,
-	CONSTRAINT [PK_TempMetricsExecutionItem] PRIMARY KEY CLUSTERED ( ExecutionID DESC, ChangeType DESC, RowNumber ASC )
-)", transaction: trans);
+	Payload nvarchar(max) not null
+);
+alter table #ExecutionItem add primary key ( ExecutionID DESC, ChangeType DESC, RowNumber ASC );", transaction: trans);
                         using (var bulkCopy = Connection.CreateBulkCopy("#ExecutionItem", trans: trans))
                         {
                             bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");

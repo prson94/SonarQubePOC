@@ -31,9 +31,10 @@ export class ObjectStatisticsService extends BaseObservableService {
     getObjectColorAndValue(
         objectID: number,
         objectType: string,
-        fieldName: string
+        fieldName: string,
+        useFriendlyName: boolean = true
     ): Observable<string> {
-        return this.http.get(`api/${objectType}/${objectID}/fieldName/${fieldName}`).pipe(
+        return this.http.get(`api/${objectType}/${objectID}/fieldName/${fieldName}/${useFriendlyName}`).pipe(
             map(response => <string>response),
             catchError(err => this.handleError(err))
         );

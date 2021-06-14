@@ -29,8 +29,8 @@ namespace igx.jobs.indexer
             builder.ConfigureWebJobs(c =>
             {
                 c.AddAzureStorageCoreServices()
-                .AddAzureStorage()
-                .AddTimers();
+                .AddAzureStorage();
+                //.AddTimers(); //GOV-10646 No longer indexing on a schedule. Keeping schedule code in case decision is reversed.
             });
 
             using (var host = builder.Build())
@@ -162,7 +162,11 @@ namespace igx.jobs.indexer
         {
             await UpdateRebuildJobStatus(CompanyID, CompanyRebuildJobStatusState.Active);
 
-            companyConn.Open();
+            if (companyConn.State != System.Data.ConnectionState.Open)
+            {
+                companyConn.Open();
+            }
+
             List<CompanySetting> settings = CompanyConnectionUtils.GetCompanySettings(CompanyID);
             bool fusionEnabled = (settings.Any(i => i.SettingID == 70) ? bool.Parse(settings.Single(i => i.SettingID == 70).Value) : true);
 
@@ -227,6 +231,10 @@ namespace igx.jobs.indexer
             }
 
             await LogCompanyReindexComplete(CompanyID);
+            if (companyConn.State != System.Data.ConnectionState.Closed)
+            {
+                companyConn.Close();
+            }
         }
 
         #region Supporting Functions

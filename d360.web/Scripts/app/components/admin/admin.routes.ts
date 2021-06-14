@@ -32,6 +32,7 @@ const routes: Routes = [
             { path: 'exporttemplates', loadChildren: () => import('./exporttemplates/admin-export-templates.module').then((m) => m.AdminExportTemplatesModule) },
             { path: 'tags', loadChildren: () => import('./tags/admin-tags.module').then((m) => m.AdminTagsModule) },
             { path: 'diagrams', loadChildren: () => import('./diagram-asset/admin-diagram-asset.module').then((m) => m.AdminDiagramAssetModule) },
+            { path: 'search', loadChildren: () => import('./search/admin-search.module').then((m) => m.AdminSearchModule) },
         ]
     }
 ];

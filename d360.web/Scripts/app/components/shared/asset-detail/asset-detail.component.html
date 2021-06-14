@@ -7,18 +7,20 @@
             <ng-container *ngIf="useAccordion; else noAccordion">
                 <ig-property-group *ngIf="category.loaded && category.hasData" 
                                    [expanded]="category.active" 
+                                   (expandedChange)="category.active = $event; saveState()"
                                    [title]="category.name" 
                                    [showHeaderLine]="!first" 
                                    [shouldBePadded]="shouldBePadded">
                     <div readonly>
-                        <ig-asset-detail-category [category]="category" [assetUID]="assetUID"></ig-asset-detail-category>
+                        <ig-asset-detail-category [category]="category" [assetUID]="assetUID" [tooltipAlign]="tooltipAlign"></ig-asset-detail-category>
                     </div>
                 </ig-property-group>
             </ng-container>
             <ng-template #noAccordion>
                 <div style="line-height: 10px">&nbsp;</div>
                 <ig-asset-detail-category [category]="category" 
-                                          [assetUID]="assetUID"></ig-asset-detail-category>
+                                          [assetUID]="assetUID"
+                                          [tooltipAlign]="tooltipAlign"></ig-asset-detail-category>
             </ng-template>
         </div>
         <div>
@@ -47,7 +49,7 @@
                                (expandedChange)="systemPropertiesCategory.active = $event; saveState()"
                                [shouldBePadded]="shouldBePadded">
                 <div readonly>
-                    <ig-asset-detail-category [category]="systemPropertiesCategory" assetUID="assetUID"></ig-asset-detail-category>
+                    <ig-asset-detail-category [category]="systemPropertiesCategory" assetUID="assetUID" [tooltipAlign]="tooltipAlign"></ig-asset-detail-category>
                 </div>
             </ig-property-group>
         </div>

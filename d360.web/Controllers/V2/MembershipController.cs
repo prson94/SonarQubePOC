@@ -382,8 +382,8 @@ namespace d360.web.Controllers.V2
                     queries.Add("(" + string.Join(" or ", simpleFilters) + ")");
                 }
 
-                if (Community.GetCompanySettingByKey<bool>("HideData3SixtyUsers"))
-                {
+                if (Community.GetCompanySettingByKey<bool>("HideData3SixtyUsers") && !IsCurrentUser)
+                {                    
                     queries.Add("email not like '%@infogix.com'");
                 }
 

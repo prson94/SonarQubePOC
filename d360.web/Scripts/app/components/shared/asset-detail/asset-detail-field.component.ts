@@ -12,6 +12,7 @@ import { Router } from '@angular/router';
 export class AssetDetailFieldComponent {
     @Input() field: DetailField;
     @Input() assetUid: string;
+    @Input() tooltipAlign: string;
 
     readonly emptyValue: string = "---";
     readonly dateFormat: string = "d MMM yyyy";

@@ -87,7 +87,7 @@ namespace d360.core.entities
     {
         public int pageSize { get; set; }
         public int pageNum { get; set; }
-        public int total { get; set; }
+        public int? total { get; set; }
         public List<TagDetail> items { get; set; } = new List<TagDetail>();
     }
 
@@ -96,6 +96,7 @@ namespace d360.core.entities
         public string DisplayValue { get; set; }
         public int AssetID { get; set; }
         public Guid AssetUid { get; set; }
+        public Guid AssetTypeUid { get; set; }
         public string AssetType { get; set; }
         public string Object { get; set; }
         public int ObjectID { get; set; }

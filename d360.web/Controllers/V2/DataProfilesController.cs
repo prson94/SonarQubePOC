@@ -50,7 +50,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_endDate", "End date to get data profile data for. If _startDate and _endDate are not supplied the date defaults to the most recent date for the specified asset for which there is data. Otherwise the default is current date UTC.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_includeChildAssets", " If true returns the data profile results for all descendant assets of the specified asset for the same date criteria.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250. Maximum page size is 10,000", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetDataProfiles(Guid assetUid)

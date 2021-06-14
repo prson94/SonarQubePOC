@@ -2451,24 +2451,38 @@ from    (
         {
             return Company.GetObjectDetail(type.ToString(), id);
         }
-
-        [Route("{type}/{id:int}/fieldName/{fieldName}")]
-        public string GetObjectFieldColorAndValue(SystemObjects type, int id, string fieldName)
+     
+        [Route("{type}/{id:int}/fieldName/{fieldName}/{useFriendlyName}")]
+        public string GetObjectFieldColorAndValue(SystemObjects type, int id, string fieldName, bool useFriendlyName = true)
         {
             var objectDetail = Company.GetObjectDetail(type.ToString(), id);
             //check if there is a matching field for this type
-            var fieldType = Company.FieldTypes.Where(x => x.Object == objectDetail.Type && x.ObjectID == objectDetail.TypeID && string.Compare(x.Name, fieldName, true) == 0).FirstOrDefault();
+            var fieldType = Company.FieldTypes.Where(x => x.Object == objectDetail.Type && x.ObjectID == objectDetail.TypeID && ((useFriendlyName && string.Compare(x.FriendlyName, fieldName, true) == 0) || (!useFriendlyName && string.Compare(x.Name, fieldName, false) == 0))).FirstOrDefault();
 
             if (fieldType == null) return null;
 
             var sql = "select FormattedValue from field where objecttype = @obj and objectid = @id and fieldtypeid = @fieldId";
-            if (fieldType?.LookupObjectType == SystemObjects.ReferenceItem.ToString())
+            if (fieldType?.LookupObjectType == SystemObjects.ReferenceItem.ToString() && !LookupFieldHasColorItem(fieldType))
             {
-                sql = "select FormattedValue as name from field where objecttype = @obj and objectid = @id and fieldtypeid = @fieldId FOR JSON PATH"; ;
+                sql = $@"select 
+                            F.FormattedValue as name
+                            , FD.FormattedValue as description
+                            , FPL.FormattedValue as profilelevel
+                        from 
+                            field F
+                            inner join FieldType ft on ft.ID = f.FieldTypeID
+                            cross apply STRING_SPLIT(F.Value, ',') SPF
+							inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID = SPF.value     
+                            outer apply (select FormattedValue from field FD1 inner join FieldType FT1 on FD1.FieldTypeID = FT1.ID where FT1.[Type]='{DataType.Text}' and LOWER(FT1.FriendlyName)='description' and FD1.ObjectID = F.Value and FD1.AssetID=ACF.ID) FD
+							outer apply (select FormattedValue from field FD2 inner join FieldType FT2 on FD2.FieldTypeID = FT2.ID where FD2.ObjectType='{SystemObjects.ReferenceItem}' and FT2.[Type]='{DataType.Text}' and LOWER(FT2.FriendlyName)='profile level' and FD2.ObjectID = F.Value and FD2.AssetID=ACF.ID) FPL
+                        where 
+                            F.objecttype = @obj 
+                            and F.objectid = @id 
+                            and F.fieldtypeid = @fieldId FOR JSON PATH"; ;
             }
             string value = Company.Query<string>(sql, new { obj = new DbString { Value = type.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, id = id, fieldId = fieldType.ID }).FirstOrDefault();
             if (string.IsNullOrEmpty(value))
-                value = fieldType.DefaultFormattedValue;
+                value = $@"[{{""name"":""{fieldType.DefaultFormattedValue}""}}]";
 
             if (LookupFieldHasColorItem(fieldType))
             {
@@ -2483,8 +2497,8 @@ from    (
                                 inner join Asset AI on AI.AssetTypeId = {objectDetail.AssetTypeID} and AI.ObjectID = f.ObjectID 
                                 cross apply dbo.GetAssetColorJsonByColor(ACf.Color) ACJ
                                 cross apply GetAssetDisplayValueByID(ACF.ID) ADV 
-                                outer apply (select FormattedValue from field FD1 inner join FieldType FT1 on FD1.FieldTypeID = FT1.ID where FT1.[Type]='{DataType.Text}' and LOWER(FT1.Name)='description' and FD1.ObjectID = F.Value and FD1.AssetID=ACF.ID) FD
-								outer apply (select FormattedValue from field FD2 inner join FieldType FT2 on FD2.FieldTypeID = FT2.ID where FD2.ObjectType='{SystemObjects.ReferenceItem}' and FT2.[Type]='{DataType.Text}' and LOWER(FT2.Name)='profilelevel' and FD2.ObjectID = F.Value and FD2.AssetID=ACF.ID) FPL
+                                outer apply (select FormattedValue from field FD1 inner join FieldType FT1 on FD1.FieldTypeID = FT1.ID where FT1.[Type]='{DataType.Text}' and LOWER(FT1.FriendlyName)='description' and FD1.ObjectID = F.Value and FD1.AssetID=ACF.ID) FD
+								outer apply (select FormattedValue from field FD2 inner join FieldType FT2 on FD2.FieldTypeID = FT2.ID where FD2.ObjectType='{SystemObjects.ReferenceItem}' and FT2.[Type]='{DataType.Text}' and LOWER(FT2.FriendlyName)='profile level' and FD2.ObjectID = F.Value and FD2.AssetID=ACF.ID) FPL
                                 where f.FieldTypeID = {fieldType.ID} and f.[ObjectType] = '{type.ToString()}' and f.[ObjectID] = {id}) FOR JSON PATH";
                 string colorAndValue = Company.Query<string>(colorAndValueSql).FirstOrDefault();
                 if (!string.IsNullOrEmpty(colorAndValue))

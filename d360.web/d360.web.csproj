@@ -758,6 +758,7 @@
     <Content Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.component.html" />
     <Content Include="Scripts\app\components\admin\load\bulk-load-item.component.html" />
     <Content Include="Scripts\app\components\admin\load\load.form.html" />
+    <Content Include="Scripts\app\components\admin\search\admin-search.component.html" />
     <Content Include="Scripts\app\components\admin\tags\admin-tags-consolidate.component.html" />
     <Content Include="Scripts\app\components\admin\tags\admin-tags-action.component.html" />
     <Content Include="Scripts\app\components\admin\tags\admin-tags.component.html" />
@@ -989,6 +990,9 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\search\admin-search.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\search\admin-search.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\search\admin-search.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\advanced-filtering\filter-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.models.ts" />
@@ -1333,6 +1337,7 @@
       <DependentUpon>Web.config</DependentUpon>
     </None>
     <TypeScriptCompile Include="Scripts\app\guards\redirect.guard.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\search-admin.model.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.prod.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.ts" />
     <TypeScriptCompile Include="Scripts\main.ts" />

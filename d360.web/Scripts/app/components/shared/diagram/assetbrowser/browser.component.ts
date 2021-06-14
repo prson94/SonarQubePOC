@@ -289,8 +289,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             el.style.height = diagramSize + 'px';
             el.style.maxHeight = diagramSize + 'px';
             const panelHeaderSize = panelHeaderElement.clientHeight;
+            const innerPanelHeight = (diagramSize - panelHeaderSize - 1) + (this.isFullScreen ? -48 : 0) + 'px';
 
-            const innerPanelHeight = (diagramSize - panelHeaderSize - 17) + 'px';
             if (this.addLineagePanelRef) {
                 this.addLineagePanelRef.nativeElement.style.height = innerPanelHeight;
             }
@@ -341,7 +341,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private ownershipTabEnabled() {
         let enabled = false;
 
-        if (this.selectedDiagramAsset) {
+        if (this.selectedDiagramAsset && this.selectedDiagramAsset.Object !== 'Resource') {
             enabled = true;
         }
 
@@ -666,10 +666,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private menu_ClickLinkItem(e: any) {
         if (e.value.toLowerCase() === 'open') {
-            this.router.navigateByUrl(this.selectedDiagramAsset.Url);
+            this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT}/browser/${this.selectedDiagramAsset.Uid}/${DiagramType[this.displayConfiguration.DiagramType]}`);
         }
         if (e.value.toLowerCase() === 'open in new tab') {
-            window.open(this.selectedDiagramAsset.Url, "_blank");
+            window.open(`${SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT}/browser/${this.selectedDiagramAsset.Uid}/${DiagramType[this.displayConfiguration.DiagramType]}`, "_blank");
         }
     }
     //#region Hiding / Unhiding

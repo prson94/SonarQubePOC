@@ -11416,11 +11416,12 @@ EG.GroupUid
                         set		Success = 0,
 		                        [Message] = coalesce([Message] + '; ', '') + 'Responsibility Type not valid for Asset.'
                         from
-							api.ExecutionResponsibilityTypeRelationOverrideItem ERTROI
-							inner join ResponsibilityType RT on RT.[uid] = ERTROI.ResponsibilityTypeUid
-							inner join Asset A on A.uid = ERTROI.AssetUid 
-							left join ResponsibilityDetail RD on RD.ResponsibilityTypeID=RT.ID and A.ID = AssetID
-                        where	ExecutionID = @ExecutionID and RD.RuleID is null;						
+							  api.ExecutionResponsibilityTypeRelationOverrideItem ERTROI
+							  inner join ResponsibilityType RT on RT.[uid] = ERTROI.ResponsibilityTypeUid
+							  inner join Asset A on A.uid = ERTROI.AssetUid
+							  inner join assettype att on att.id = A.AssetTypeID							  
+							  left join responsibilitytyperelation rtr on rtr.responsibilitytypeid = rt.id and att.object = rtr.ObjectType and att.ObjectID = rtr.ObjectID            
+                        where	ExecutionID = @ExecutionID and rtr.ResponsibilityTypeID is null;					
 
                         update	ERTROI
                         set		Success = 0,
