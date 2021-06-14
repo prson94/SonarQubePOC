@@ -841,11 +841,20 @@ where	ExecutionID = @executionID
         public List<AssetFieldTypeUpdate> UpdateCounterFields(int assetTypeId, Guid executionID, SqlTransaction trans, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600)
         {
             Connection.Execute(
-                    $@"insert into FieldCounterValue (AssetId, AssetTypeId, FieldTypeId, [Value])
-                        select distinct ea.assetid, ft.assettypeid, ft.id, ef.FieldValue from api.ExecutionAsset ea
+                    $@"
+MERGE FieldCounterValue FCV
+USING (
+                        select distinct ea.assetid, ft.assettypeid, ft.id, ef.FieldValue, case when eval.assetid is not null then 1 else 0 end as 'exists' from api.ExecutionAsset ea
                         inner join FieldType ft on ft.AssetTypeID = @assetTypeId and ft.Type = @dataType
                         left join {ApiExecutionFieldTable} ef on ef.executionid = @executionid and ef.itemnumber = ea.itemnumber and ft.id = ef.fieldtypeid
-                        where ea.ExecutionID = @executionID and ea.Success is null and ea.ItemNumber between @beginItemNumber and @endItemNumber;"
+						left join dbo.fieldcountervalue eval on eval.assetid = ea.assetid and eval.fieldtypeid = ft.id
+                        where ea.ExecutionID = @executionID  and ea.Success is null and ea.ItemNumber between @beginItemNumber and @endItemNumber
+)D
+ON FCV.AssetId = D.AssetId and FCV.FieldTypeId = D.Id and D.FieldValue is not null
+WHEN MATCHED 
+   THEN UPDATE SET fcv.Value = D.FieldValue
+WHEN NOT MATCHED AND D.[exists] <> 1
+   THEN INSERT (AssetId, AssetTypeId, FieldTypeId, [Value]) VALUES (D.AssetId, D.AssetTypeId, D.Id, D.FieldValue);"
                     , new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID, assetTypeId, dataType = DataType.Counter.ToString() }, transaction: trans, commandTimeout: timeout);
 
             if (sendWorkflowEvents)
