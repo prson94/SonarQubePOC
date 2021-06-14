@@ -169,47 +169,47 @@ end
 		<![CDATA[
 if not exists (select 1 from [Predicate] where Name = 'stores' or Uid = 'd7ff74b8-5606-4fb9-a7ef-f42be4299dc9')
 begin
-	insert into [Predicate] (Name, Inverse, Type, IsSystem, Code, Uid) values ('stores', 'stored in', 1, 1, '1', 'd7ff74b8-5606-4fb9-a7ef-f42be4299dc9')
+	insert into [Predicate] (Name, Inverse, Type, IsSystem, Uid) values ('stores', 'stored in', 1, 1, 'd7ff74b8-5606-4fb9-a7ef-f42be4299dc9')
 end
 if not exists (select 1 from [Predicate] where Name = 'Synonym' or Uid = 'b8a4c392-6431-4cd7-a4ee-abf260d538fd')
 begin
-	insert into [Predicate] (Name, Inverse, Type, IsSystem, Code, Uid) values ('Synonym', 'Synonym', 6, 1, '2', 'b8a4c392-6431-4cd7-a4ee-abf260d538fd')
+	insert into [Predicate] (Name, Inverse, Type, IsSystem, Uid) values ('Synonym', 'Synonym', 6, 1, 'b8a4c392-6431-4cd7-a4ee-abf260d538fd')
 end
 if not exists (select 1 from [Predicate] where Name = 'licenses' or Uid = '0f718e3d-13b1-4efb-a407-258dec05b844')
 begin
-	insert into [Predicate] (Name, Inverse, Type, IsSystem, Code, Uid) values ('licenses', 'licensed by', 1, 1, '3', '0f718e3d-13b1-4efb-a407-258dec05b844')
+	insert into [Predicate] (Name, Inverse, Type, IsSystem, Uid) values ('licenses', 'licensed by', 1, 1, '0f718e3d-13b1-4efb-a407-258dec05b844')
 end
 if not exists (select 1 from [Predicate] where Name = 'type of' or Uid = '267d2361-cbe0-4c38-935e-226c222ee51d')
 begin
-	insert into [Predicate] (Name, Inverse, Type, IsSystem, Code, Uid) values ('type of', 'child type of', 3, 1, '4', '267d2361-cbe0-4c38-935e-226c222ee51d')
+	insert into [Predicate] (Name, Inverse, Type, IsSystem, Uid) values ('type of', 'child type of', 3, 1, '267d2361-cbe0-4c38-935e-226c222ee51d')
 end
 if not exists (select 1 from [Predicate] where Name = 'mapping for' or Uid = 'df813d88-7d53-482a-af7a-dc35b13001ed')
 begin
-	insert into [Predicate] (Name, Inverse, Type, IsSystem, Code, Uid) values ('mapping for', 'mapping for', 8, 1, '5', 'df813d88-7d53-482a-af7a-dc35b13001ed')
+	insert into [Predicate] (Name, Inverse, Type, IsSystem, Uid) values ('mapping for', 'mapping for', 8, 1, 'df813d88-7d53-482a-af7a-dc35b13001ed')
 end
 if not exists (select 1 from [Predicate] where Name = 'Validates' or Uid = 'c88ebecd-eed5-4c27-99be-a1eed29c13dd')
 begin
-	insert into [Predicate] (Name, Inverse, Type, IsSystem, Code, Uid) values ('Validates', 'Is Validated By', 7, 1, '44', 'c88ebecd-eed5-4c27-99be-a1eed29c13dd')
+	insert into [Predicate] (Name, Inverse, Type, IsSystem, Uid) values ('Validates', 'Is Validated By', 7, 1, 'c88ebecd-eed5-4c27-99be-a1eed29c13dd')
 end
 if not exists (select 1 from [Predicate] where Name = 'Asset Owned For' or Uid = '2a7fa12d-63aa-4595-83d0-cfa98aac2aa4')
 begin
-	insert into [Predicate] (Name, Inverse, Type, IsSystem, Code, Uid) values ('Asset Owned For', 'Asset Owned By', 7, 1, '45', '2a7fa12d-63aa-4595-83d0-cfa98aac2aa4')
+	insert into [Predicate] (Name, Inverse, Type, IsSystem, Uid) values ('Asset Owned For', 'Asset Owned By', 7, 1, '2a7fa12d-63aa-4595-83d0-cfa98aac2aa4')
 end
 if not exists (select 1 from [Predicate] where Name = 'parent category of' or Uid = '9ece0a25-a8c2-4899-9b25-61bf469f9848')
 begin
-	insert into [Predicate] (Name, Inverse, Type, IsSystem, Code, Uid) values ('parent category of', 'child category of', 4, 1, 'pcof', '9ece0a25-a8c2-4899-9b25-61bf469f9848')
+	insert into [Predicate] (Name, Inverse, Type, IsSystem, Uid) values ('parent category of', 'child category of', 4, 1, '9ece0a25-a8c2-4899-9b25-61bf469f9848')
 end
 if not exists (select 1 from [Predicate] where Name = 'Child Of' or Uid = '70add814-7a31-411c-ae63-ded52b8d128c')
 begin
-	insert into [Predicate] (Name, Inverse, Type, IsSystem, Code, Uid) values ('Parent Of', 'Child Of', 3, 1, '27', '70add814-7a31-411c-ae63-ded52b8d128c')
+	insert into [Predicate] (Name, Inverse, Type, IsSystem, Uid) values ('Parent Of', 'Child Of', 3, 1, '70add814-7a31-411c-ae63-ded52b8d128c')
 end
 if not exists (select 1 from [Predicate] where Name = 'Represents in' or Uid = '92075112-7aa7-4086-911c-30fd8ab16c8c')
 begin
-	insert into [Predicate] (Name, Inverse, Type, IsSystem, Code, Uid) values ('Represents in', 'Represented by', 13, 0, '13', '92075112-7aa7-4086-911c-30fd8ab16c8c')
+	insert into [Predicate] (Name, Inverse, Type, IsSystem, Uid) values ('Represents in', 'Represented by', 13, 0, '92075112-7aa7-4086-911c-30fd8ab16c8c')
 end
 if not exists (select 1 from [Predicate] where Name = 'Flows to' or Uid = '9cfc9ca7-a255-4b07-96af-ab65d8b2cf45')
 begin
-	insert into [Predicate] (Name, Inverse, Type, IsSystem, Code, Uid) values ('Flows to', 'Flowed from', 12, 0, '14', '9cfc9ca7-a255-4b07-96af-ab65d8b2cf45')
+	insert into [Predicate] (Name, Inverse, Type, IsSystem, Uid) values ('Flows to', 'Flowed from', 12, 0, '9cfc9ca7-a255-4b07-96af-ab65d8b2cf45')
 end
 		]]>
     </sql>
