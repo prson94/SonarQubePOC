@@ -301,7 +301,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
 
         /* Empty value at beginning of list */
         items.forEach((i) => {
-            if (i.value === undefined) {
+            if (typeof i.value === "undefined") {
                 i.value = null;
             }
             s.push({ label: i.title, value: i.value });
