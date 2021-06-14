@@ -66,7 +66,8 @@ namespace d360.core.helpers
                 DataType.RefListRelationship.ToString(),
                 DataType.Tag.ToString(),
                 DataType.Score.ToString(),
-                DataType.FieldFromRelationship.ToString()
+                DataType.FieldFromRelationship.ToString(),
+                DataType.Counter.ToString()
             };
 
             return types;
@@ -85,6 +86,7 @@ namespace d360.core.helpers
                 DataType.RefListRelationship.ToString(),
                 DataType.Tag.ToString(),
                 DataType.FieldFromRelationship.ToString(),
+                DataType.Counter.ToString()
             };
 
             return types;
@@ -101,6 +103,7 @@ namespace d360.core.helpers
                 DataType.RefListRelationship.ToString(),
                 DataType.JsonElement.ToString(),
                 DataType.Score.ToString(),
+                DataType.Counter.ToString()
             };
 
             return types;   
