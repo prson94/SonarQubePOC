@@ -2477,7 +2477,7 @@ from    (
                             and F.fieldtypeid = @fieldId FOR JSON PATH"; ;
             }
             string value = Company.Query<string>(sql, new { obj = new DbString { Value = type.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, id = id, fieldId = fieldType.ID }).FirstOrDefault();
-            if (string.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value) && !string.IsNullOrEmpty(fieldType.DefaultFormattedValue))
                 value = $@"[{{""name"":""{fieldType.DefaultFormattedValue}""}}]";
 
             if (LookupFieldHasColorItem(fieldType))
