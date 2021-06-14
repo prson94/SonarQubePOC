@@ -1676,7 +1676,6 @@ namespace d360.model.DataAccessLayer
             }
 
             var typesToAvoid = new List<string>() {
-                DataType.OwnershipLookup.ToString(),
                 DataType.ComplexRelationLookup.ToString()
             };
 
@@ -1827,7 +1826,6 @@ namespace d360.model.DataAccessLayer
                 int index = 1;
                 int level = 1;
                 var typesToAvoid = new List<string>() {
-                DataType.OwnershipLookup.ToString(),
                 DataType.ComplexRelationLookup.ToString()
             };
                 var keyFields = fields.Where(x => x.IsPartOfKey && x.ID > 0).GroupBy(x => x.ID).Select(x => x.First()).ToList();
