@@ -1,0 +1,29 @@
+<databaseChangeLog    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="TKlok" id="GOV-14666">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+	delete from [dbo].[CompanySetting] where SettingID = 59;
+	delete from [dbo].[Setting] where ID = 59;
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+	IF NOT EXISTS (SELECT 1 FROM [Setting] where ID = 59)
+	BEGIN
+		INSERT [dbo].[Setting] ([ID], [FieldName], [Name], [Description], [DefaultValue], Locked, SettingType) 
+		VALUES (59, N'WorkflowDigestEmailEnabled', N'Workflow digest email enabled', N'This setting controls if workflow digest emails are sent.', N'false', 0, 1)
+	END
+]]>
+	</rollback>
+  </changeSet>
+
+  </databaseChangeLog>
