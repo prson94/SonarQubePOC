@@ -91,5 +91,6 @@
   <include file="scripts/GOV-14830.xml"/>  <!-- Rename CommonQuery table-->
   <include file="scripts/GOV-14553.xml"/>  <!-- Removing dbo.resource Status column-->
   <include file="scripts/GOV-14980.xml"/>  <!-- Community set database compatibility level 150-->
+  <include file="scripts/GOV-14831.xml"/>  <!-- Drop backup table [dbo].[CommonQuery_backup]-->
 </databaseChangeLog>
 
