@@ -141,6 +141,7 @@ namespace d360.model
         DbSet<MetricAllocation> MetricAllocations { get; set; }
 
         DbSet<AssetDataProfile> AssetDataProfile { get; set; }
+        DbSet<AssetDataProfileSample> AssetDataProfileSample { get; set; }
 
         int ApiTimeout { get; }
         event EventHandler<AssetsPartiallyProcessedEventArgs> AssetsPartiallyProcessed;

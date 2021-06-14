@@ -82,8 +82,40 @@ namespace d360.model.DataAccessLayer
                 {
                     startDate = endDate = dataprofile.ProfileSetDate;
                 }                
-            }             
-            
+            }
+
+            var descendantsSQL = $@"with descendants as (select @assetID as AssetID)";
+
+            if (includeChildAssets)
+            {
+                descendantsSQL = $@"with descendants as (
+	                                    select @assetID as AssetID
+	                                    union all
+	                                    select 
+		                                    AAP.assetID
+	                                    from 
+		                                    descendants as d
+		                                    inner join 
+		                                    [utility].[ArtifactAssetParent] AAP on d.AssetID = AAP.ParentAssetID
+                                    )";
+            }
+                        
+            var dataProfileIdsSql = $@"
+                                    drop table if exists #assetdataprofileids
+                                    create table #assetdataprofileids (
+	                                    id bigint
+                                    );
+                                    {descendantsSQL}
+                                    insert into #assetdataprofileids
+		                            select 
+			                            ADP.id 
+		                            from 
+			                            descendants A
+			                            inner join 
+			                            AssetDataProfile ADP on adp.AssetID = A.AssetID	                                                                                
+                                    {whereConditions}
+		                            ";
+
             string dataProfileSQL = $@"select
 	                            A.[Uid] as assetUid
 	                            ,ADP.[ProfileSetDate]
@@ -116,7 +148,7 @@ namespace d360.model.DataAccessLayer
                                 ,ADP.[ShapeCardinality] as shapesCardinality
 	                            ,JSON_QUERY(shapesDetail.[value]) as shapesDetail
                                 ,JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(bottomK.value, '}}]',']'), '[{{','['), '""value"":',''), '}},{{',',')) as bottomK
-								,JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(topK.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as topK
+								,JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(topK.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as topK                                
                                 ,ADP.TotalCount
                                 ,ADP.OutlierCount
                                 ,ADP.DetectionLocale
@@ -127,37 +159,37 @@ namespace d360.model.DataAccessLayer
                                 inner join 
                                 AssetDataProfile ADP on ids.ID = ADP.ID	                            
 	                            Inner Join 
-	                            Asset A on A.ID = ADP.AssetID	
-	                            outer apply (
-                                                select  (
-                                                        select [key], [value] as Count
+	                            Asset A on A.ID = ADP.AssetID                            
+                            outer apply (            
+                            select  (
+                                    select [key], [value] as Count
                                                         from AssetDataProfileSample
-                                                        where   
-								                            AssetDataProfileId = ADP.ID
-                                                            and 
-								                            lower(SampleType) = 'outlierdetail'
+                                                        where
+                                                            AssetDataProfileId = ADP.ID
+                                                            and
+                                                            lower(SampleType) = 'outlierdetail'
                                                         for json path
                                                         ) as [value]
-                                                ) outlierDetail 
-	                            outer apply (
+                                                ) outlierDetail
+                                outer apply (
                                                 select  (
                                                         select [key], [value] as Count
                                                         from AssetDataProfileSample
-                                                        where   
-								                            AssetDataProfileId = ADP.ID
-                                                            and 
-								                            lower(SampleType) = 'cardinalitydetail'
+                                                        where
+                                                            AssetDataProfileId = ADP.ID
+                                                            and
+                                                            lower(SampleType) = 'cardinalitydetail'
                                                         for json path
                                                         ) as [value]
-                                                ) cardinalityDetail 
-	                            outer apply (
+                                                ) cardinalityDetail
+                                outer apply (
                                                 select  (
                                                         select [key], [value] as Count
                                                         from AssetDataProfileSample
-                                                        where   
-								                            AssetDataProfileId = ADP.ID
-                                                            and 
-								                            lower(SampleType) = 'shapesdetail'
+                                                        where
+                                                            AssetDataProfileId = ADP.ID
+                                                            and
+                                                            lower(SampleType) = 'shapesdetail'
                                                         for json path
                                                         ) as [value]
                                                 ) shapesDetail
@@ -165,112 +197,51 @@ namespace d360.model.DataAccessLayer
                                                 select  (
                                                         select [value]
                                                         from AssetDataProfileSample
-                                                        where   
-								                            AssetDataProfileId = ADP.ID
-                                                            and 
-								                            lower(SampleType) = 'bottomk'
+                                                        where
+                                                            AssetDataProfileId = ADP.ID
+                                                            and
+                                                            lower(SampleType) = 'bottomk'
                                                         for json path
                                                         ) as [value]
                                                 ) bottomK
-								outer apply (
+                                outer apply (
                                                 select  (
                                                         select [value]
                                                         from AssetDataProfileSample
-                                                        where   
-								                            AssetDataProfileId = ADP.ID
-                                                            and 
-								                            lower(SampleType) = 'topk'
+                                                        where
+                                                            AssetDataProfileId = ADP.ID
+                                                            and
+                                                            lower(SampleType) = 'topk'
                                                         for json path
                                                         ) as [value]
-                                                ) topK";
-
-            var decendentSQL = $@"
-                                drop table if exists #assetIds
-                                create table #assetIds (
-	                                id bigint
-                                )
-
-                                insert into #assetIds (id) values (@assetId)
-
-                                if(@includeChildAssets>0)
-                                BEGIN
-                                    drop table if exists #childIds
-                                    create table #childIds (
-	                                    id bigint
-                                    )
-
-                                    drop table if exists #parentIds
-                                    create table #parentIds (
-	                                    id bigint
-                                    )
-                                
-                                    insert into #parentIds (id) values (@assetId)
-
-                                    WHILE ((Select Count(*) from #parentIds) > 0)
-                                    BEGIN
-	                                    insert into #childIDs
-	                                    select AAP.Assetid from 
-		                                    #parentIds P 
-		                                    inner join 
-		                                    [utility].[ArtifactAssetParent] AAP on P.ID = AAP.ParentAssetID
-
-	                                    delete from #parentIDs 
-	
-	                                    insert into #parentIds
-	                                    select * from #childIDs
-
-	                                    insert into #assetIds
-	                                    select c.* from #childIDs c left join #assetIds a on c.id=a.id
-	                                    where a.id is null
-
-	                                    delete from #childIDs
-                                    END
-                                END";
-var dataProfileIdsSql = $@"
-                                drop table if exists #assetdataprofileids
-                                create table #assetdataprofileids (
-	                                id bigint
-                                )
-                                
-                                insert into #assetdataprofileids
-								select 
-									ADP.id 
-								from 
-									#assetIds A
-									inner join 
-									AssetDataProfile ADP on adp.AssetID = A.id	
-                                {whereConditions}
-								order by A.[ID]
-								 {offset}
-                                ";
+                                                ) topK ";            
 
             dbArgs.Add("@startDate", startDate.Date);
             dbArgs.Add("@endDate", endDate.Date);
             dbArgs.Add("@assetId", asset.ID);
-            dbArgs.Add("@includeChildAssets", includeChildAssets);
 
             string sql = $@"
-                        {decendentSQL}
                         {dataProfileIdsSql}
+                        order by ADP.[ID]
+			            {offset}
                         {dataProfileSQL}
-                        order by A.[ID]                        
-                        for Json Path";                
+                        for Json Path";
 
             var jsonStrings = await CompanyContext.QueryAsync<string>(sql, dbArgs, ApiTimeout);
-            var json = string.Join("", jsonStrings);            
+            var json = string.Join("", jsonStrings);
 
-            results.items = JsonConvert.DeserializeObject<List<DataProfileModel>>(string.IsNullOrEmpty(json) ? "[]" : json);
+            results.items = JsonConvert.DeserializeObject<List<DataProfileModel>>(string.IsNullOrEmpty(json) ? "[]" : json);            
 
             if (includeTotal)
             {
                 var countSQL = $@"
-                                {decendentSQL}
+                                {descendantsSQL}
                                 select 
                                     COUNT(*)
-                                from 
-	                                #assetIds A
-	                                Inner Join 
-                                    AssetDataProfile ADP on A.ID = ADP.AssetID
+                                from      
+                                    descendants A
+                                    inner join 
+                                    AssetDataProfile ADP on adp.AssetID = A.AssetID	                                    
                                 {whereConditions}";
                 results.total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSQL, dbArgs, ApiTimeout);
             }
