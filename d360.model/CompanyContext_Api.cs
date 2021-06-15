@@ -5490,7 +5490,6 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
         private void CreateWorkareaTempTables(bool useTempTableForFields, SqlTransaction trans)
         {
-            return;
             if (useTempTableForFields)
             {
                 ApiExecutionFieldTable = "#ExecutionField";
