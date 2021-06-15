@@ -161,7 +161,7 @@ end
 	</rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="Data.Initial.Predicate-v1">
+  <changeSet author="sDooley" id="Data.Initial.Predicate-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
