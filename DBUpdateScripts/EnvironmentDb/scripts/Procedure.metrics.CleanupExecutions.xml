@@ -1,0 +1,57 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Procedure.metrics.CleanupExecutions-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter procedure metrics.CleanupExecutions
+as
+begin
+	declare @completedOn datetime = dateadd(dd, -7, getutcdate()),
+			@unCompletedOn datetime = dateadd(dd, -14, getutcdate()),
+			@processingOn datetime = dateadd(dd, -2, getutcdate())
+
+	-- Removing completed data
+	delete I
+	from	metrics.ExecutionItem I
+			inner join metrics.Execution E on E.ID = I.Executionid and E.CompletedOn < @completedOn
+
+	delete 
+	from	metrics.Execution 
+	where	CompletedOn < @completedOn
+
+
+	-- Removing incomplete data
+	delete I
+	from	metrics.ExecutionItem I
+			inner join metrics.Execution E on E.ID = I.Executionid and E.StartedOn < @unCompletedOn and E.CompletedOn is null
+
+	delete 
+	from	metrics.Execution 
+	where	StartedOn < @unCompletedOn and CompletedOn is null
+
+	-- Clear any old / expired executions tha are still in a processing state.
+	update	metrics.execution 
+	set     ProcessingStartedOn = null,
+			Processing = 0,
+			Failures = Failures + 1,
+			ErrorMessage = coalesce(ErrorMessage, '') + '; Cleared Processing flag due to orphaned execution'
+	where   ProcessingStartedOn < @processingOn
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+drop procedure if exists metrics.CleanupExecutions
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

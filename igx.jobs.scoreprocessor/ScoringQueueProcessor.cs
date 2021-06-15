@@ -113,7 +113,9 @@ namespace igx.jobs.scoreprocessor
                 }
                 else
                 {
-                    throw ex;
+                    var queue = new AzureQueueSource();
+                    await queue.CreateMessageAsync(Config.GetValue<string>("ScoringQueue"), scoreInfo, new TimeSpan(0, 5, 0));
+                    queue = null;
                 }
             }
         }

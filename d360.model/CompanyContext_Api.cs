@@ -510,11 +510,12 @@ from	{targetTable} T
 		inner join	(
 					select F.* from FieldType FT
 					inner join {ApiExecutionFieldTable} F on F.FieldTypeID = ft.Id and executionid = @executionid
-					cross apply STRING_SPLIT(f.fieldvalue,',')Val
+					cross apply STRING_SPLIT(ISNULL(f.fieldvalue,''),',')Val
 					left join AssetType AT on AT.object = ft.lookupobjecttype + 'Type' and at.ObjectID = ft.LookupObjectID
-					left join Asset A on A.AssetTypeID = AT.ID and A.ObjectID = try_cast(val.Value as int)
-					left join AssetType RefType on RefType.Object = ft.LookupObjectType and RefType.Object = 'ReferenceItemType' and reftype.objectid =  try_cast(val.Value as int)
-					where FT.Object = @obj and FT.ObjectID = @objid and [Type] = 'Lookup' and F.FieldValue is not null and (A.Id is null and reftype.id is null) and (try_cast(val.Value as int) <> 0 or try_cast(val.Value as int) IS NULL)
+					left join Asset A on A.AssetTypeID = AT.ID and A.ObjectID = try_cast(CONVERT(NVARCHAR(20), val.Value) as int)
+					left join AssetType RefType on RefType.Object = ft.LookupObjectType and RefType.Object = 'ReferenceItemType' and reftype.objectid =  try_cast(CONVERT(NVARCHAR(20), val.Value) as int)
+					left join AssetType ModelType on ModelType.Object = ft.LookupObjectType and ModelType.Object = 'TaxonomyType' and ModelType.objectid =  try_cast(CONVERT(NVARCHAR(20), val.Value) as int)
+					where FT.Object = @obj and FT.ObjectID = @objid and [Type] = 'Lookup' and F.FieldValue is not null and (A.Id is null and reftype.id is null and ModelType.id is null) and (try_cast(CONVERT(NVARCHAR(20), val.Value) as int) <> 0 or try_cast(CONVERT(NVARCHAR(20), val.Value) as int) IS NULL)
 					) 
 					S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
 ", new { executionID, obj = new DbString { Value = obj, Length = 50, IsAnsi = true }, objID }, commandTimeout: timeout);
