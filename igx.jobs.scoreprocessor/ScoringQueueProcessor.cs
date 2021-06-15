@@ -35,8 +35,6 @@ namespace igx.jobs.scoreprocessor
 #else
             var scoreInfo = JsonConvert.DeserializeObject<ScoreQueueInfo>(myQueueItem);
 #endif
-            AzureStorageProvider storage = new AzureStorageProvider();
-
             try
             {
                 IScoreProcess process = null;
@@ -69,7 +67,6 @@ namespace igx.jobs.scoreprocessor
                 if (process != null)
                 {
                     process.Info = scoreInfo;
-                    process.Storage = storage;
                     await process.Run();
                 }
             }
@@ -94,7 +91,7 @@ namespace igx.jobs.scoreprocessor
             }
             catch (Exception ex)
             {
-                var execUpdater = new ExecutionUpdater { Info = scoreInfo, Storage = storage };
+                var execUpdater = new ExecutionUpdater { Info = scoreInfo };
                 var closedExecution = await execUpdater.UpdateAsync(ex);
 
                 if (closedExecution)
