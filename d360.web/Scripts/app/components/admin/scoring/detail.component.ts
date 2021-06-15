@@ -199,6 +199,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
 
                         if (items.length > 0) {
                             this.allocation = items[0];
+                            this.allocation.scoreType = ScoreType[this.allocation.scoreType.toString()];
                             this.formatScoreCalc();
                             this.metricsService.getMetricsScores(this.assetTypeUid, this.allocation.scoreType)
                                 .subscribe(f => {
