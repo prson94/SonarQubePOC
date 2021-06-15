@@ -1,11 +1,10 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.exceptions;
 using d360.core.helpers;
 using d360.core.queue;
-using d360.extensions.storage;
 using d360.model;
-using d360.core.exceptions;
 using d360.utils.company;
 using Dapper;
 using igx.jobs.scoreprocessor.Models;
@@ -13,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace igx.jobs.scoreprocessor.ChangeTypes
 {
@@ -21,7 +19,6 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
     {
         public ScoreQueueInfo Info { get; set; }
         public ScoreExecution ExecutionRecord { get; set; }
-        public AzureStorageProvider Storage { get; set; }
 
         string companyConnectionString = null;
 

@@ -14,9 +14,6 @@ namespace igx.jobs.scoreprocessor
                 c.AddAzureStorageCoreServices()
                 .AddAzureStorage(s => {
                     s.MaxDequeueCount = 5;
-#if DEBUG
-                    s.MaxPollingInterval = TimeSpan.FromSeconds(5);
-#endif
                     s.VisibilityTimeout = TimeSpan.FromMinutes(30);
                 })
                 .AddTimers();

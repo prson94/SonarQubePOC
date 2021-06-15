@@ -2,7 +2,6 @@
 using d360.core.entities;
 using d360.core.entities.Metric;
 using d360.core.enums;
-using d360.core.exceptions;
 using d360.core.queue;
 using d360.model;
 using Dapper;
@@ -11,11 +10,8 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace igx.jobs.scoreprocessor.ChangeTypes

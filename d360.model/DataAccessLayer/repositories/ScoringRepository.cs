@@ -615,14 +615,7 @@ end";
 
         public ScoreExecution GetExecutionById(Guid uid)
         {
-            var execution = companyContext.Filter<ScoreExecution>(i => i.Uid == uid).SingleOrDefault();
-
-            if (execution == null)
-            {
-                throw new ArgumentException("Execution unique identifier not found.");
-            }
-
-            return execution;
+            return companyContext.Filter<ScoreExecution>(i => i.Uid == uid).SingleOrDefault();
         }
 
         public IQueryable<ScoreExecution> GetExecutions(int pageSize, int pageNumber)

@@ -7,7 +7,6 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
     interface IScoreProcess
     {
         ScoreQueueInfo Info { get; set; }
-        AzureStorageProvider Storage { get; set; }
 
         Task Run();
     }
