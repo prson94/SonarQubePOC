@@ -977,7 +977,7 @@ from	IntersectType I
                         field.Show = i.Show;
                         if (i.RelationIndex != null)
                         {
-                            if(definitionRelations[i.RelationIndex ?? 0].AssetTypeUid != field.AssetTypeUid)
+                            if (definitionRelations[i.RelationIndex ?? 0].AssetTypeUid != field.AssetTypeUid)
                             {
                                 hasDefinitionError = true;
                                 definitionErrorMessage = $@"The definition provided for the computed relationship lookup {f.Name} is invalid. Field {i.FieldTypeName} does not match Asset Type.";
@@ -1776,6 +1776,8 @@ from	IntersectType I
             int? assetTypeID = null;
             var impactedMeasureVersions = new List<Guid>();
             bool? assetTypeHasScoringAllocation = null;
+            List<FieldType> deletedFieldTypes = new List<FieldType>();
+
             currentFieldTypes.ForEach(c =>
             {
                 assetTypeID = c.AssetTypeID;
@@ -1795,6 +1797,7 @@ from	IntersectType I
                         impactedMeasureVersions.AddRange(impacted);
                     }
                     Company.FieldTypes.Remove(c);
+                    deletedFieldTypes.Add(c);
                     fieldsRemoved = true;
                 }
             });
@@ -1802,6 +1805,11 @@ from	IntersectType I
             if (fieldsRemoved)
             {
                 Company.SaveChanges();
+
+                foreach (var counterFieldType in deletedFieldTypes.Where(x => x.Type == DataType.Counter.ToString()))
+                {
+                    Company.Connection.Execute("delete from dbo.FieldCounterValue where FieldTypeId = @fieldTypeId", new { fieldTypeId = counterFieldType.ID });
+                }
             }
             if (shouldRefreshPath)
             {

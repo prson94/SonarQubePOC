@@ -516,11 +516,12 @@ where EA.ExecutionID = @executionId and EA.Success is null;
 
 update EA
 set EA.Success = 0,
-    EA.[Message] = 'Asset with same ' + FT.Name + ' counter value already exists'
+    EA.[Message] = 'Asset with same counter value already exists. (' + FT.Name + ')'
 from api.ExecutionAsset EA
+inner join api.Execution EX on ex.executionid = @executionId
 inner join api.ExecutionField EF on EA.ItemNumber = EF.ItemNumber AND EF.ExecutionID = EA.ExecutionId
 inner join FieldType FT on FT.Id = EF.FieldTypeId and FT.[Type] = 'Counter'
-inner join FieldCounterValue FCV on FCV.FieldTypeId = FT.ID AND FCV.Value = TRY_CAST(EF.FieldValue AS INT)
+inner join FieldCounterValue FCV on FCV.FieldTypeId = FT.ID and FCV.Value = TRY_CAST(EF.FieldValue AS INT)
 where EA.ExecutionID = @executionId and EA.Success is null;
 ",
                 new { executionId }, commandTimeout: timeout);
@@ -841,22 +842,18 @@ where	ExecutionID = @executionID
         public List<AssetFieldTypeUpdate> UpdateCounterFields(int assetTypeId, Guid executionID, SqlTransaction trans, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600)
         {
             Connection.Execute(
-                    $@"
-MERGE FieldCounterValue FCV
-USING (
-                        select distinct ea.assetid, ft.assettypeid, ft.id, ef.FieldValue, case when eval.assetid is not null then 1 else 0 end as 'exists' from api.ExecutionAsset ea
+                      $@"insert into FieldCounterValue (AssetId, AssetTypeId, FieldTypeId, [Value])
+                        select distinct ea.assetid, ft.assettypeid, ft.id, ef.FieldValue 
+                            from api.ExecutionAsset ea
                         inner join FieldType ft on ft.AssetTypeID = @assetTypeId and ft.Type = @dataType
+                        inner join api.execution ex on ex.executionid = @executionid
                         left join {ApiExecutionFieldTable} ef on ef.executionid = @executionid and ef.itemnumber = ea.itemnumber and ft.id = ef.fieldtypeid
-						left join dbo.fieldcountervalue eval on eval.assetid = ea.assetid and eval.fieldtypeid = ft.id
-                        where ea.ExecutionID = @executionID  and ea.Success is null and ea.ItemNumber between @beginItemNumber and @endItemNumber
-)D
-ON FCV.AssetId = D.AssetId and FCV.FieldTypeId = D.Id and D.FieldValue is not null
-WHEN MATCHED 
-   THEN UPDATE SET fcv.Value = D.FieldValue
-WHEN NOT MATCHED AND D.[exists] <> 1
-   THEN INSERT (AssetId, AssetTypeId, FieldTypeId, [Value]) VALUES (D.AssetId, D.AssetTypeId, D.Id, D.FieldValue);"
-                    , new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID, assetTypeId, dataType = DataType.Counter.ToString() }, transaction: trans, commandTimeout: timeout);
-
+                        left join dbo.FieldCounterValue FCV on FCV.AssetId = ea.assetid and FCV.FieldTypeId = ft.id
+                        where ea.ExecutionID = @executionID 
+                                and ea.Success is null 
+                                and ea.ItemNumber between @beginItemNumber and @endItemNumber
+                                and ((ex.Method = 'PUT' and ef.FieldValue is not null and cast(ef.FieldValue as int) <> FCV.Value) or ex.Method = 'POST');"
+                      , new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID, assetTypeId, dataType = DataType.Counter.ToString() }, transaction: trans, commandTimeout: timeout);
             if (sendWorkflowEvents)
             {
                 return Connection.Query<AssetFieldTypeUpdate>($@"
@@ -3826,7 +3823,13 @@ where	T.ExecutionID = @ExecutionID
                                     		-- Delete parent/child relationships.
                                     		delete	T
                                     		from	[Intersect] T 
-                                    				where T.IntersectTypeID = @IntersectTypeId;   
+                                    				where T.IntersectTypeID = @IntersectTypeId; 
+
+                                    		-- Delete counter field values.
+                                            delete T 
+                                            from dbo.FieldCounterValue T
+                                            inner join FieldType FT ON FT.Object = @Object and FT.ObjectID = @ObjectId and [Type] = 'Counter'
+                                            where FT.Id = T.FieldTypeId
 
                                             delete	T
                                     		from	FieldType T
