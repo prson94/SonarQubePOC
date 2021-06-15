@@ -1149,7 +1149,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> BulkAddResponsibilitiesOverride(List<BulkResponsibilityOverridePostModel> models)
@@ -1158,6 +1158,11 @@ namespace d360.web.Controllers.V2
             var errorMessage = "";
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
+                }
+
                 var execution = getApiExecution(models.Count);
 
                 ApiExecutionInfo executionInfo = await ResponsibilityRepository.PostBatchResponsibilityOverride(models, execution);
