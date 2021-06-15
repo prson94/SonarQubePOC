@@ -288,6 +288,10 @@ namespace d360.extensions.search
                 _messages.Clear();
                 throw new SearchIndexException(exceptionMessage);
             }
+            else
+            {
+                UpdateDBLog(assetClass, null, SearchJobStatus.Completed);
+            }
             if (_context.State != ConnectionState.Closed)
             {
                 _context.Close();

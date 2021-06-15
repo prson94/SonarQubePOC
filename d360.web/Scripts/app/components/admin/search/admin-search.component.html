@@ -32,7 +32,7 @@
                 </td>
                 <td><span *ngIf="rowData.Status != 0" pTooltip="{{(rowData.LastUpdate | date:'medium')}}" tooltipStyleClass="ig-tooltip">{{JobStatus[rowData.Status]}}</span></td>
                 <td>{{rowData.CurrentCount}}</td>
-                <td><span *ngIf="!canRebuild(rowData)">{{rowData.TargetCount}} Assets when queued</span></td>
+                <td><span *ngIf="!canRebuild(rowData) && rowData.TargetCount > 0">{{rowData.TargetCount}} Assets when queued</span></td>
                 <td>
                     <div class="RowTools">
                         <button igButton
