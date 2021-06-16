@@ -16,6 +16,6 @@ namespace d360.model.DataAccessLayer
         WorkHttpStatus UpdateFields(FieldTypesApiEditModel model, TypeIdentifierInfoModel typeIdentifierInfoModel);
         IEnumerable<string> GetCustomFields(SystemObjects objectType, int objectId);
         bool hasResponsibilityUsingField(TypeIdentifierInfoModel typeIdentifierInfoModel, List<FieldType> fieldTypes);
-        List<FieldType> GetFieldDefinitionForComplexLookupFieldType(FieldType fieldType, bool handleFiltersAsString);
+        List<FieldType> GetFieldDefinitionForComplexLookupFieldType(FieldType fieldType, Guid assetUid, bool handleFiltersAsString);
     }
 }
