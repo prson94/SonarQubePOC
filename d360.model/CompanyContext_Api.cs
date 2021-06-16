@@ -8056,8 +8056,15 @@ insert into #Keys WITH(TABLOCK)
                 }
 
                 rawMeasures = Connection.Query<RuleResultChangedRawModel>(@"
+create table #Items (
+	AllocationUid uniqueidentifier, 
+	MetricAssetUid uniqueidentifier, 
+	MetricAssetVersionUid uniqueidentifier, 
+	AssetUid uniqueidentifier, 
+	EffectiveDate date
+);
+
 select	distinct
-		ROW_NUMBER() OVER(ORDER BY Ea.Uid, Oa.Uid) as RowNumber,
 		cast(Re.EffectiveDate as date) as EffectiveDate,
 		Oa.AssetTypeUid as RuleAssetTypeUid,
 		Oa.AssetTypeId as RuleAssetTypeId,
@@ -8081,20 +8088,53 @@ where	match(Ea-(Ee)->Re<-(Eo)-Oa-(Ev)->Ea)
 		and Ev.PredicateType = 2
 		and Re.Uid = Rr.RuleResultUid;
 
+select	R.IntersectID,
+		R.EvaluatedAssetUid,
+		R.EvaluatedAssetTypeUid,
+		R.RuleAssetUid,
+		R.RuleAssetTypeUid,
+		L.RollupPathUid,
+		L.StartPosition as Position,
+		Ma.AllocationUid,
+		Mal.AssetTypeUid as AllocationAssetTypeUid,
+		Mv.Uid as MetricAssetVersionUid,
+		Mv.AssetUid as MetricAssetUid,
+		R.EffectiveDate
+into	#Raw
+from	#Results R
+		inner join metrics.RollupPathLink L on L.IntersectTypeID = R.IntersectTypeID
+		inner join metrics.AssetVersionRollupPath Mr on Mr.RollupPathUid = L.RollupPathUid
+		inner join metrics.AssetVersion Mv on Mv.Uid = Mr.AssetVersionUid
+			and (
+				(Mv.EffectiveDate <= R.EffectiveDate and Mv.EffectiveEndDate >= R.EffectiveDate)
+				or (Mv.EffectiveDate <= R.EffectiveDate and Mv.EffectiveEndDate is null)
+			)
+		inner join metrics.Asset Ma on Ma.Uid = Mv.AssetUid
+		inner join metrics.Allocation Mal on Mal.Uid = Ma.AllocationUid;
+
 with cte as (
 	select	EvaluatedAssetUid as AssetUid,
-			R.EffectiveDate,
-			L.RollupPathUid,
-			L.StartPosition as Position,
-			L.IntersectTypeID
-	from	[metrics].[RollupPathLink] L
-			inner join #Results R on R.IntersectTypeID = L.IntersectTypeID
+			EffectiveDate,
+			RollupPathUid,
+			Position,
+			AllocationUid,
+			MetricAssetUid,
+			MetricAssetVersionUid,
+			AllocationAssetTypeUid,
+			EvaluatedAssetTypeUid as AssetTypeUid
+	from	#Raw
+	where	EvaluatedAssetTypeUid <> AllocationAssetTypeUid
+			and RuleAssetTypeUid <> AllocationAssetTypeUid
 	union all
 	select	S.Uid as AssetUid,
 			cte.EffectiveDate,
 			L.RollupPathUid,
 			L.StartPosition as Position,
-			L.IntersectTypeID
+			cte.AllocationUid,
+			cte.MetricAssetUid,
+			cte.MetricAssetVersionUid,
+			cte.AllocationAssetTypeUid,
+			ST.Uid as AssetTypeUid
 	from	cte
 			inner join [metrics].[RollupPathLink] L on L.RollupPathUid = cte.RollupPathUid and L.EndPosition = cte.Position and L.StartPosition < cte.Position
 			inner join [Intersect] I on I.IntersectTypeID = L.IntersectTypeID
@@ -8103,21 +8143,39 @@ with cte as (
 			inner join AssetType ST on ST.ID = S.AssetTypeID
 )
 
-select	distinct
-		Ma.AllocationUid,
-		Ma.Uid as MetricAssetUid,
-		Mv.Uid as MetricAssetVersionUid,
-		cte.AssetUid,
-		cte.EffectiveDate
-from	cte
-		inner join metrics.AssetVersionRollupPath Mr on Mr.RollupPathUid = cte.RollupPathUid
-		inner join metrics.AssetVersion Mv on Mv.Uid = Mr.AssetVersionUid
-			and (
-				(Mv.EffectiveDate <= cte.EffectiveDate and Mv.EffectiveEndDate >= cte.EffectiveDate)
-				or (Mv.EffectiveDate <= cte.EffectiveDate and Mv.EffectiveEndDate is null)
-			)
-		inner join metrics.Asset Ma on Ma.Uid = Mv.AssetUid
-where	Position = 1", transaction: trans).ToList();
+-- Start Path Asset Scoring
+insert into #Items
+	select	AllocationUid, 
+			MetricAssetUid,
+			MetricAssetVersionUid,
+			AssetUid,
+			EffectiveDate
+	from	cte 
+	where	Position = 1;
+
+-- Rule Asset Scoring
+insert into #Items
+	select	distinct
+			AllocationUid,
+			MetricAssetUid,
+			MetricAssetVersionUid,
+			RuleAssetUid as AssetUid,
+			EffectiveDate
+	from	#Raw
+	where	RuleAssetTypeUid = AllocationAssetTypeUid;
+
+-- Evaluated Asset Scoring
+insert into #Items
+	select	distinct
+			AllocationUid,
+			MetricAssetUid,
+			MetricAssetVersionUid,
+			EvaluatedAssetUid as AssetUid,
+			EffectiveDate
+	from	#Raw
+	where	EvaluatedAssetTypeUid = AllocationAssetTypeUid;
+
+select * from #Items", transaction: trans).ToList();
             }
 
             var structuredMeasures = rawMeasures
