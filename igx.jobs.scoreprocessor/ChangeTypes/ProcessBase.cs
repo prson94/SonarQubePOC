@@ -217,7 +217,7 @@ set     ProcessingStartedOn = null,
         ErrorMessage = coalesce(ErrorMessage, '') + '; Cleared Processing flag due to orphaned execution'
 where   UpdatedOn is not null
         and LoopSecondsElapsed is not null
-        and @ProcessingStartedOn > dateadd(ss, LoopSecondsElapsed * 5, UpdatedOn)", new { ProcessingStartedOn });
+        and @ProcessingStartedOn > dateadd(ss, LoopSecondsElapsed * 5, UpdatedOn)", new { ProcessingStartedOn }, commandTimeout: 600);
 
             var rowUpdated = company.Execute(@"
     update  metrics.Execution
