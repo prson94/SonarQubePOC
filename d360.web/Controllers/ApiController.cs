@@ -2455,7 +2455,10 @@ from    (
             //check if there is a matching field for this type
             var fieldType = Company.FieldTypes.Where(x => x.Object == objectDetail.Type && x.ObjectID == objectDetail.TypeID && ((useFriendlyName && string.Compare(x.FriendlyName, fieldName, true) == 0) || (!useFriendlyName && string.Compare(x.Name, fieldName, false) == 0))).FirstOrDefault();
 
-            if (fieldType == null) return null;
+            if (fieldType == null || (!useFriendlyName && !fieldType.Name.Equals(fieldName))) {
+                return null;
+            }
+            
 
             var sql = "select FormattedValue from field where objecttype = @obj and objectid = @id and fieldtypeid = @fieldId";
             if (fieldType?.LookupObjectType == SystemObjects.ReferenceItem.ToString() && !LookupFieldHasColorItem(fieldType))
