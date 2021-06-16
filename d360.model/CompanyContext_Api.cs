@@ -516,12 +516,13 @@ where EA.ExecutionID = @executionId and EA.Success is null;
 
 update EA
 set EA.Success = 0,
-    EA.[Message] = 'Asset with same counter value already exists. (' + FT.Name + ')'
+    EA.[Message] = 'Asset with same counter value already exists. (' + FT.Name + ' = ' + cast(fcv.value as nvarchar(50)) + ')'
 from api.ExecutionAsset EA
+left join asset a on a.uid = ea.[uid]
 inner join api.Execution EX on ex.executionid = @executionId
 inner join api.ExecutionField EF on EA.ItemNumber = EF.ItemNumber AND EF.ExecutionID = EA.ExecutionId
 inner join FieldType FT on FT.Id = EF.FieldTypeId and FT.[Type] = 'Counter'
-inner join FieldCounterValue FCV on FCV.FieldTypeId = FT.ID and FCV.Value = TRY_CAST(EF.FieldValue AS INT)
+inner join FieldCounterValue FCV on FCV.FieldTypeId = FT.ID and FCV.Value = TRY_CAST(EF.FieldValue AS INT) and a.id <> fcv.assetid
 where EA.ExecutionID = @executionId and EA.Success is null;
 ",
                 new { executionId }, commandTimeout: timeout);
@@ -792,6 +793,7 @@ where	ExecutionID = @executionID
                                         and A.ItemNumber between @beginItemNumber and @endItemNumber 
                                         and (F.Ignore = 0 or F.Ignore is null)
                                         and FT.Type != 'Relationship'
+                                        and FT.Type != 'Counter'
                                         and FieldValue is not null";
 
             // Insert can blast in field values since all the assets are new.  Update needs to update the existing values and clear any existing
@@ -852,7 +854,7 @@ where	ExecutionID = @executionID
                         where ea.ExecutionID = @executionID 
                                 and ea.Success is null 
                                 and ea.ItemNumber between @beginItemNumber and @endItemNumber
-                                and ((ex.Method = 'PUT' and ef.FieldValue is not null and cast(ef.FieldValue as int) <> FCV.Value) or ex.Method = 'POST');"
+                                and ((ex.Method = 'PUT' and ef.FieldValue is not null and cast(ef.FieldValue as int) <> isnull(FCV.Value,0)) or ex.Method = 'POST');"
                       , new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID, assetTypeId, dataType = DataType.Counter.ToString() }, transaction: trans, commandTimeout: timeout);
             if (sendWorkflowEvents)
             {
