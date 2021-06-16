@@ -1,0 +1,53 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="sDooley" id="GOV-14838-Rename_CompanyHelpResource">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+if exists(select * from INFORMATION_SCHEMA.TABLES where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'CompanyHelpResource')
+begin 
+	exec sp_rename 'dbo.CompanyHelpResource', 'CompanyHelpResource_backup';
+end
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+if exists(select * from INFORMATION_SCHEMA.TABLES where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'CompanyHelpResource_backup')
+begin 
+ 	exec sp_rename 'dbo.CompanyHelpResource_backup', 'CompanyHelpResource';
+end
+]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="sDooley" id="GOV-14838-Rename_HelpResource">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+if exists(select * from INFORMATION_SCHEMA.TABLES where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'HelpResource')
+begin 
+	exec sp_rename 'dbo.HelpResource', 'HelpResource_backup';
+end
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+if exists(select * from INFORMATION_SCHEMA.TABLES where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'HelpResource_backup')
+begin 
+ 	exec sp_rename 'dbo.HelpResource_backup', 'HelpResource';
+end
+]]>
+    </rollback>
+  </changeSet>
+
+</databaseChangeLog>
