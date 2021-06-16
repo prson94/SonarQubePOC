@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Procedure.dbo.GetComplexLookupByAsset-v48">
-  <comment>GOV-14819</comment>
+  <changeSet author="TDuric" id="Procedure.dbo.GetComplexLookupByAsset-v49">
+  <comment>GOV-15030</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -431,7 +431,7 @@ set nocount on;
 				end
 			end
 			
-			if @countOnly = 0
+			if @countOnly = 0 or @filters <> ''
 			begin
 			set @tableStatement = @tableStatement + ' ' + @joinPrefix + ' join graph.AssetNodeDisplayPath H'+@rn+'P on H'+@rn+'P.ID = H'+@rn+'.ID' +
 								  case @obj
@@ -793,7 +793,7 @@ set nocount on;
 
 			if @alias is not null and @fieldVal is not null
 			begin
-				set @filters = replace(@filters,LOWER(@alias),@fieldVal)
+				set @filters = replace(@filters,LOWER(' '+ @alias+ ' '),' '+ @fieldVal+ ' ')
 			end
 
 			delete top (1) from #tempSelectTable
@@ -1256,8 +1256,12 @@ set nocount on;
 			insert into @wheres values ('not exists (select 1 from #AssetPermission p where H1.ID = p.AssetID)')
 		end
 
-		insert into @wheres values ('not exists (select 1 from dbo.AssetTypesUserCantRead('+cast(@resourceId as varchar)+') u where u.AssetTypeID = H1.AssetTypeID)')
-
+		-- If resource can't read asset type of one or more hops, there should be no result. Add impossible condition.
+		if exists (select 1 from dbo.AssetTypesUserCantRead(@resourceId) u where u.AssetTypeID in (select AssetTypeID from @relations))
+		begin
+			insert into @wheres values ('0=1')
+		end
+		
 		insert into @orders
 			select		case 
 							when F.IsRelationLink = 1 then 'H' + F.RRN + '_A' + F.FT + '_DV.DisplayValue asc'
@@ -1349,7 +1353,7 @@ set nocount on;
 				else
 				begin
 					set @tableStatement = ' inner join graph.AssetEdge R'+@rn+' on (R'+@rn+'.$to_id = H'+@previousRn+'.$node_id or R'+@rn+'.$from_id = H'+@previousRn+'.$node_id) and R'+@rn+'.IntersectTypeID = ' + @it + 
-										  ' inner join graph.AssetNode H'+@rn+' on H'+@rn+'.ID = @assetId and ( (' + 'R'+@rn+'.$from_id = H'+@previousRn+'.$node_id and H'+@rn+'.$node_id = R'+@rn+'.$to_id' + ') or (' + 'R'+@rn+'.$to_id = H'+@previousRn+'.$node_id and H'+@rn+'.$node_id = R'+@rn+'.$from_id' + ') )'
+										  ' inner join graph.AssetNode H'+@rn+' on ( (' + 'R'+@rn+'.$from_id = H'+@previousRn+'.$node_id and H'+@rn+'.$node_id = R'+@rn+'.$to_id' + ') or (' + 'R'+@rn+'.$to_id = H'+@previousRn+'.$node_id and H'+@rn+'.$node_id = R'+@rn+'.$from_id' + ') )'
 				end
 			end
 			
