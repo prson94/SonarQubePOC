@@ -14,26 +14,26 @@
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FieldCounterValue')
 BEGIN
 	CREATE TABLE [dbo].[FieldCounterValue](
-	[AssetId] [int] NOT NULL,
-	[AssetTypeId] [int] NOT NULL,
-	[FieldTypeId] [int] NOT NULL,
-	[Value] [int] NOT NULL,
- CONSTRAINT [UQ_FieldCounterAssetMapping] UNIQUE NONCLUSTERED 
-(
-	[AssetId] ASC,
-	[FieldTypeId] ASC
-)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY],
- CONSTRAINT [UQ_FieldCounterValue] UNIQUE NONCLUSTERED 
-(
-	[FieldTypeId] ASC,
-	[Value] ASC
-)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
+		[AssetId] [int] NOT NULL,
+		[AssetTypeId] [int] NOT NULL,
+		[FieldTypeId] [int] NOT NULL,
+		[Value] [int] NOT NULL,
+	 CONSTRAINT [UQ_FieldCounterAssetMapping] UNIQUE NONCLUSTERED 
+	(
+		[AssetId] ASC,
+		[FieldTypeId] ASC
+	)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY],
+	 CONSTRAINT [UQ_FieldCounterValue] UNIQUE NONCLUSTERED 
+	(
+		[FieldTypeId] ASC,
+		[Value] ASC
+	)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+	) ON [PRIMARY]
 
-CREATE NONCLUSTERED INDEX [IX_FieldCounterValue] ON [dbo].[FieldCounterValue]
-(
-	[AssetId] ASC
-)WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+	CREATE NONCLUSTERED INDEX [IX_FieldCounterValue] ON [dbo].[FieldCounterValue]
+	(
+		[AssetId] ASC
+	)WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
 END
 		]]>
     </sql>
@@ -44,16 +44,15 @@ END
   </changeSet>
   
   
-  <changeSet author="TDuric" id="Table.dbo.FieldCounterValue_AfterInsert-v1.2">
+  <changeSet author="TDuric" id="Table.dbo.FieldCounterValue_AfterInsert-v1.3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-
-CREATE OR ALTER TRIGGER [dbo].[FieldCounterValue_AfterInsert]
+CREATE OR ALTER   TRIGGER [dbo].[FieldCounterValue_AfterInsert]
 	ON [dbo].[FieldCounterValue]
- INSTEAD OF INSERT
+ INSTEAD OF INSERT, UPDATE
 AS
 BEGIN
 
@@ -75,11 +74,12 @@ while exists (select 1 from #fieldTypeIds)
 	begin
 		set @lastIndex = @initialIndex
 	end
-	
+
 	if @lastIndex is null
 	begin
 		set @lastIndex = 1
 	end
+	
 
 	drop table if exists #indexMap
 
@@ -128,8 +128,13 @@ while exists (select 1 from #fieldTypeIds)
 	from [data]
 	inner join index_cte cte on cte.RowNumber = [data].RowNumber
 
-	insert into dbo.FieldCounterValue
 	select * from #toInsert
+
+	MERGE dbo.FieldCounterValue T
+	using (select * from #toInsert) S
+	ON T.AssetId = S.AssetId and T.FieldTypeId = S.FieldTypeId
+	WHEN MATCHED THEN UPDATE SET T.Value = S.Value
+	WHEN NOT MATCHED THEN INSERT (AssetId,AssetTypeId,FieldTypeId, Value) values (S.AssetID,S.AssetTypeId, s.FieldTypeId, s.Value);
 
 	delete top (1) from #fieldTypeIds
 	end
