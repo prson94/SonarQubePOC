@@ -248,6 +248,19 @@ where   UpdatedOn is not null
                 throw new ArgumentNullException("executionRecord", "Execution record must exist.");
             }
 
+            if (executionRecord.Failures > 5)
+            {
+                company.Execute(@"
+update  metrics.Execution 
+set     Processing = 0, 
+        ProcessingStartedOn = null, 
+        CompletedOn = getutcdate(), 
+        ErrorMessage = coalesce(ErrorMessage+'; ', '') + 'Too many failures' 
+where   Uid = @uid", new { uid = Info.ExecutionUid });
+
+                throw new ArgumentNullException("executionRecord", "Execution record has failed too many times.");
+            }
+
             return executionRecord;
         }
 
