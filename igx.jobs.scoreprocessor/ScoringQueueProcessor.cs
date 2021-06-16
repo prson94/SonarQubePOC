@@ -91,24 +91,17 @@ namespace igx.jobs.scoreprocessor
             }
             catch (Exception ex)
             {
-                var execUpdater = new ExecutionUpdater { Info = scoreInfo };
-                var closedExecution = await execUpdater.UpdateAsync(ex);
-
-                if (closedExecution)
-                {
-                    var props = new Dictionary<string, string>() {
+                var props = new Dictionary<string, string>() {
                         { "ExecutionUid", scoreInfo.ExecutionUid.ToString() },
                         { "ChangeType", scoreInfo.ChangeType.ToString() }
                     };
 
-                    CoreFunction.AITrackException(functionName, ex, scoreInfo.CompanyID, props);
+                CoreFunction.AITrackException(functionName, ex, scoreInfo.CompanyID, props);
 
-                    lock (log)
-                    {
-                        log.WriteLine($"Company [{scoreInfo.CompanyID}]: [{ex.GetFullExceptionData()}]");
-                    }
-                }
-                else
+                var execUpdater = new ExecutionUpdater { Info = scoreInfo };
+                var closedExecution = await execUpdater.UpdateAsync(ex);
+
+                if (!closedExecution)
                 {
                     var queue = new AzureQueueSource();
                     await queue.CreateMessageAsync(Config.GetValue<string>("ScoringQueue"), scoreInfo, new TimeSpan(0, 5, 0));
