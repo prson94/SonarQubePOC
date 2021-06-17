@@ -1342,16 +1342,19 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
                         Connection.Open();
                     }
 
-                    using (var trans = Connection.BeginTransaction())
-                    {
-                        Connection.Execute(@"
+                    Connection.Execute(@"
+drop table if exists #ExecutionItem;
 create table #ExecutionItem (
 	ExecutionID bigint not null,
 	ChangeType int not null,
 	RowNumber int not null,
 	Payload nvarchar(max) not null
 );
-alter table #ExecutionItem add primary key ( ExecutionID DESC, ChangeType DESC, RowNumber ASC );", transaction: trans);
+alter table #ExecutionItem add primary key ( ExecutionID DESC, ChangeType DESC, RowNumber ASC );");
+
+                    using (var trans = Connection.BeginTransaction())
+                    {
+
                         using (var bulkCopy = Connection.CreateBulkCopy("#ExecutionItem", trans: trans))
                         {
                             bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
@@ -1372,7 +1375,9 @@ update set
     T.State = 0
 when not matched then
     insert (ExecutionID, ChangeType, RowNumber, State, Payload) 
-    values (S.ExecutionID, S.ChangeType, S.RowNumber, 0, S.Payload);", transaction: trans);
+    values (S.ExecutionID, S.ChangeType, S.RowNumber, 0, S.Payload);
+
+truncate table #ExecutionItem;", transaction: trans);
 
                         trans.Commit();
                     }
