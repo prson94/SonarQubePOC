@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Procedure.dbo.GetResponsibilityTypeBreakdown-v2">
-  <comment>GOV-13455</comment>
+  <changeSet author="bquinlivan" id="Procedure.dbo.GetResponsibilityTypeBreakdown-v3">
+  <comment>GOV-8728</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -19,6 +19,7 @@ begin
 		ResponsibilityTypeID,
 		ResponsibilityTypeUID,
 		ResponsibilityTypeName as ResponsibilityType, 
+		ResponsibilityTypeName as ResponsibilityName, 
 		sum(AssetCount) as [Count] 
 	from
 	(
