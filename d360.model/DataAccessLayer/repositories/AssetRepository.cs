@@ -1216,7 +1216,8 @@ namespace d360.model.DataAccessLayer
 
             var sql = $@"
                 {(useTempTableForResults ? "drop table if exists #results;" : "")}
-                select
+                select 
+                    {(useTempTableForResults ? $"row_number() over ({pagingSql.First()}) as _rowid," : "")}
                     A.ID as AssetId,
                     A.[UID] as [AssetUid],
                     A.AssetTypeId,
@@ -1236,7 +1237,7 @@ namespace d360.model.DataAccessLayer
                     {fieldsSql}
                     {(includePermissionDetails ? includePermissionFields : "")}
                     {hierarchyParentUidCol}
-                {(useTempTableForResults ? "into #results " : "")}
+                {(useTempTableForResults ? " into #results " : "")}
                 from Asset A
                 left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
@@ -1252,8 +1253,7 @@ namespace d360.model.DataAccessLayer
                 {(includeParent ? parentApplySQL : "")}
                 {whereSql}
                 {string.Join("\n", pagingSql)}
-
-                {(useTempTableForResults ? "select * from #results " : "")}
+                {(useTempTableForResults ? "select * from #results order by _rowid " : "")}
             ";
 
             if (!includeTotal)
@@ -1295,10 +1295,16 @@ namespace d360.model.DataAccessLayer
                 }
             }
             //Loop results once for if any applicable conversions
-            if (includeRelationships || includePermissionDetails || includeSegments || (includeOwnershipLookup && ownershipFieldTypes.Any()))
+            if (useTempTableForResults || includeRelationships || includePermissionDetails || includeSegments || (includeOwnershipLookup && ownershipFieldTypes.Any()))
             {
                 foreach (var result in results)
                 {
+                    if (useTempTableForResults)
+                    {
+                        IDictionary<string, object> res = result;
+                        result.Remove("_rowid");
+                    }
+
                     if (includeRelationships)
                     {
                         result.Relationships = JsonConvert.DeserializeObject(result.Relationships);
@@ -1680,7 +1686,6 @@ namespace d360.model.DataAccessLayer
             }
 
             var typesToAvoid = new List<string>() {
-                DataType.OwnershipLookup.ToString(),
                 DataType.ComplexRelationLookup.ToString()
             };
 
@@ -1831,7 +1836,6 @@ namespace d360.model.DataAccessLayer
                 int index = 1;
                 int level = 1;
                 var typesToAvoid = new List<string>() {
-                DataType.OwnershipLookup.ToString(),
                 DataType.ComplexRelationLookup.ToString()
             };
                 var keyFields = fields.Where(x => x.IsPartOfKey && x.ID > 0).GroupBy(x => x.ID).Select(x => x.First()).ToList();

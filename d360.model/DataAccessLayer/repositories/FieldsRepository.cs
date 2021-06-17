@@ -1863,7 +1863,7 @@ from	IntersectType I
             return RetValueList;
         }
 
-        public List<FieldType> GetFieldDefinitionForComplexLookupFieldType(FieldType fieldType, bool handleFiltersAsString)
+        public List<FieldType> GetFieldDefinitionForComplexLookupFieldType(FieldType fieldType, Guid assetUid, bool handleFiltersAsString)
         {
             if (fieldType.Type == "OwnershipLookup")
             {
@@ -1882,15 +1882,27 @@ from	IntersectType I
             else if (fieldType.Type == "RefListRelationship")
             {
                 var fields = Company.Query<FieldType>($@"
-                        declare @referenceId int;
+                    declare @object nvarchar(255)
+                    declare @objectId int
+                    declare @referenceId int
 
-                        set @referenceId = (select top 1 I.ObjectID from fieldtype FT
-                        inner join [Intersect] I on I.IntersectTypeID = FT.LookupObjectID
-                        where FT.[Type] = 'RefListRelationship' and FT.ID = @fieldTypeId)
+                    select @object = Object, @objectId = ObjectId from asset where uid = @assetUid
 
-                        select * from FieldType where
-                        objectid = @referenceid and Object = 'ReferenceItemType'
-                        ", new { fieldTypeId = fieldType.ID }).ToList();
+                    ;with refs as (select I.ObjectID as Id from fieldtype FT
+	                    inner join [Intersect] I on I.IntersectTypeID = FT.LookupObjectID and I.[Subject] = @object and I.[SubjectID] = @objectid
+	                    inner join Asset A on A.uid = @assetUid
+                    where FT.[Type] = 'RefListRelationship' and FT.ID = @fieldTypeId
+                    union 
+                    select I.SubjectID as Id from fieldtype FT
+	                    inner join [Intersect] I on I.IntersectTypeID = FT.LookupObjectID and I.Object = @object and I.ObjectId = @objectid
+	                    inner join Asset A on A.uid = @assetUid
+                    where FT.[Type] = 'RefListRelationship' and FT.ID = @fieldTypeId)
+                    select @referenceId = (select top 1 Id from refs)
+
+
+                    select * from FieldType where
+                    objectid = @referenceid and Object = 'ReferenceItemType'
+                        ", new { fieldTypeId = fieldType.ID, assetUid }).ToList();
 
                 fields.Add(new FieldType
                 {

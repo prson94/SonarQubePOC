@@ -1,11 +1,10 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.exceptions;
 using d360.core.helpers;
 using d360.core.queue;
-using d360.extensions.storage;
 using d360.model;
-using d360.core.exceptions;
 using d360.utils.company;
 using Dapper;
 using igx.jobs.scoreprocessor.Models;
@@ -13,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace igx.jobs.scoreprocessor.ChangeTypes
 {
@@ -21,7 +19,6 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
     {
         public ScoreQueueInfo Info { get; set; }
         public ScoreExecution ExecutionRecord { get; set; }
-        public AzureStorageProvider Storage { get; set; }
 
         string companyConnectionString = null;
 
@@ -220,7 +217,7 @@ set     ProcessingStartedOn = null,
         ErrorMessage = coalesce(ErrorMessage, '') + '; Cleared Processing flag due to orphaned execution'
 where   UpdatedOn is not null
         and LoopSecondsElapsed is not null
-        and @ProcessingStartedOn > dateadd(ss, LoopSecondsElapsed * 5, UpdatedOn)", new { ProcessingStartedOn });
+        and @ProcessingStartedOn > dateadd(ss, LoopSecondsElapsed * 5, UpdatedOn)", new { ProcessingStartedOn }, commandTimeout: 600);
 
             var rowUpdated = company.Execute(@"
     update  metrics.Execution
@@ -249,6 +246,19 @@ where   UpdatedOn is not null
             if (executionRecord == null)
             {
                 throw new ArgumentNullException("executionRecord", "Execution record must exist.");
+            }
+
+            if (executionRecord.Failures > 5)
+            {
+                company.Execute(@"
+update  metrics.Execution 
+set     Processing = 0, 
+        ProcessingStartedOn = null, 
+        CompletedOn = getutcdate(), 
+        ErrorMessage = coalesce(ErrorMessage+'; ', '') + 'Too many failures' 
+where   Uid = @uid", new { uid = Info.ExecutionUid });
+
+                throw new ArgumentNullException("executionRecord", "Execution record has failed too many times.");
             }
 
             return executionRecord;

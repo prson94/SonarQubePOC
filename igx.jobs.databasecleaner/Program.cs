@@ -41,7 +41,7 @@ namespace igx.jobs.databasecleaner
         const string timerSettings = "0 0 4 * * *";
 #endif
 
-        public static async Task Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
+        public static async Task Run([TimerTrigger(timerSettings, RunOnStartup = true)]TimerInfo myTimer, TextWriter log)
         {
             try
             {
@@ -67,6 +67,9 @@ namespace igx.jobs.databasecleaner
 
                             //remove any old data profile records                            
                             await company.ExecuteAsync("[DeleteAssetDataProfileRecords] @dataProfileLifespan", new { dataProfileLifespan = (int)(Convert.ChangeType(dataProfileLifespan, typeof(int))) }, commandTimeout: 1800);
+
+                            //remove any old score execution data                          
+                            await company.ExecuteAsync("metrics.CleanupExecutions", commandTimeout: 1800);
 
                             //update database statistics
                             await company.ExecuteAsync("sp_updatestats", commandTimeout: 1400);

@@ -10,7 +10,7 @@
             </li>
             <li *ngIf="item.TooltipContext != 'Preview'">
                 <d3s-lookup-tooltip *ngIf="item.TooltipUrl; else noLinkTooltip" [objectType]="item.TooltipType" [objectId]="item.TooltipID" [contentAnchor]="'right'">
-                    <a *ngIf="fieldDataType != 'color'" [href]="item.TooltipUrl" (click)="navigate(item.TooltipUrl, $event)" [innerText]="item.Value"></a>
+                    <a *ngIf="fieldDataType != 'color'" [href]="item.TooltipUrl" (click)="navigate(item.TooltipUrl, $event)" [innerText]="(valueCount > 1 ? '&bull; ' : '') + item.Value"></a>
                     <d3s-color-display *ngIf="fieldDataType == 'color'" [colorsJSON]="item.Value" [url]="item.TooltipUrl"></d3s-color-display>
                 </d3s-lookup-tooltip>
             </li>

@@ -1881,12 +1881,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 break;
             case AssetBrowserPanelCommand.Information:
                 this.helper_SetVisiblePanel(e);
-                let allowInformationPopup: boolean = true;
 
-                if (allowInformationPopup) {
-                    if (this.selectedDiagramAsset != null) {
-                        this.helper_ShowDetail(this.selectedDiagramAsset.Uid);
-                    }
+                if (this.selectedDiagramAsset != null) {
+                    this.helper_ShowDetail(this.selectedDiagramAsset.Uid);
+                } else {
+                    this.cdRef.markForCheck();
+                    this.diagram.requestUpdate();
                 }
                 break;
             case AssetBrowserPanelCommand.Refresh:

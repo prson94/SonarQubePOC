@@ -54,20 +54,28 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="Constraint.metrics.Execution-Indexes-v2">
+  <changeSet author="Pappas" id="Constraint.metrics.Execution-Indexes-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+DROP INDEX IF EXISTS [CIX_MetricsExecution] ON [metrics].[Execution] WITH ( ONLINE = OFF )
+GO
+
 if not exists (select * from sys.indexes where name = 'CIX_MetricsExecution')
 begin
-	CREATE CLUSTERED INDEX [CIX_MetricsExecution] ON [metrics].[Execution] ( Processing DESC )
+	CREATE CLUSTERED INDEX [CIX_MetricsExecution] ON [metrics].[Execution] ( ID ASC )
 end
 
 if not exists (select * from sys.indexes where name = 'IX_MetricsExecution_UpdatedOnLoopElapsedSeconds')
 begin
 	CREATE INDEX IX_MetricsExecution_UpdatedOnLoopElapsedSeconds ON metrics.Execution ( UpdatedOn, LoopSecondsElapsed )
+end
+
+if not exists (select * from sys.indexes where name = 'IX_MetricsExecution_Processing')
+begin
+	CREATE NONCLUSTERED INDEX [IX_MetricsExecution_Processing] ON [metrics].[Execution] ( Processing DESC )
 end
 		]]>
     </sql>
@@ -81,6 +89,11 @@ end
 if exists (select * from sys.indexes where name = 'IX_MetricsExecution_UpdatedOnLoopElapsedSeconds')
 begin
 	DROP INDEX [IX_MetricsExecution_UpdatedOnLoopElapsedSeconds] ON [metrics].[Execution] WITH ( ONLINE = OFF )
+end
+
+if exists (select * from sys.indexes where name = 'IX_MetricsExecution_Processing')
+begin
+	DROP INDEX [IX_MetricsExecution_Processing] ON [metrics].[Execution] WITH ( ONLINE = OFF )
 end
 		]]>
 	</rollback>

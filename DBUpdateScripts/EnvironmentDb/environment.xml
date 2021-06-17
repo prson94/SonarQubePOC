@@ -483,6 +483,7 @@
 	<include file="scripts/Procedure.lineage.GetByObject.xml"/>
 	<include file="scripts/Procedure.metrics.BuildDataQualityMeasureQuery.xml"/>
 	<include file="scripts/Procedure.metrics.CalculateRollups.xml"/>
+	<include file="scripts/Procedure.metrics.CleanupExecutions.xml"/>
 	<include file="scripts/Procedure.metrics.LoadFromStaging.xml"/>
 	<include file="scripts/Procedure.metrics.ProcessAssetScores.xml"/>
 	<include file="scripts/Procedure.tile.GetObjectStatistics.xml"/>

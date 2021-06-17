@@ -254,7 +254,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                     this.scoreAllocations.forEach((s) => {
                         var field = this.fields.find(f => f.apiName == s.Name);
                         if (field) {
-                            i[field.name + '_threshold'] = this.getThreshold(i[field.name], s.LowerThreshold, s.UpperThreshold);
+                            i[field.apiName + '_threshold'] = this.getThreshold(i[field.apiName], s.LowerThreshold, s.UpperThreshold);
                         }
                     });
                 });
@@ -508,9 +508,9 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
             this.loadNodesSub = this.assetService.getAssets(this.assetTypeUid, uriParams, true).subscribe((result) => {
                 this.totalRecords += result.total;
-                this.buildScoreAllocationThresholds();
                 this.hierarchy = result.items;
                 this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1, undefined);
+                this.buildScoreAllocationThresholds();
                 this.isLoading = false;
             });
         }

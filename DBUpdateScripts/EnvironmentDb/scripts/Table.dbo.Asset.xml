@@ -301,8 +301,8 @@ GO
 	</rollback>
   </changeSet>
 
-  <changeSet author="TDuric" id="Table.dbo.Asset-Asset_AfterUpdate-v7">
-    <comment>GOV-14944</comment>
+  <changeSet author="TDuric" id="Table.dbo.Asset-Asset_AfterUpdate-v8">
+    <comment>GOV-14944-2</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -368,20 +368,7 @@ AS
 						TF.UpdatedOn = getutcdate()
 				from	Field TF
 				inner join #TempFormattedValue TFV
-				on TF.FieldTypeID = TFV.FieldTypeID and TFV.[Value] = TF.[Value];
-
-				select @UpdatedBy = max(UpdatedBy) from inserted;
-				
-				INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
-				select	distinct 'Update', 
-						TF.ObjectType, 
-						TF.ObjectID,
-						[queue].WriteIndexXml('', TF.ObjectType, TF.ObjectID, coalesce(@UpdatedBy, 0)),
-						coalesce(TF.AssetID,0) as AssetID
-				from	Field TF
-				inner join #TempFormattedValue TFV
-				on TF.FieldTypeID = TFV.FieldTypeID and TFV.[Value] = TF.[Value];
-				
+				on TF.FieldTypeID = TFV.FieldTypeID and TFV.[Value] = TF.[Value];				
 			end
       INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
         select	'Update', 

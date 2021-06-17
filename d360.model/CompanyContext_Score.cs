@@ -368,6 +368,12 @@ from    api.Execution T
         ) E 
 where   T.ExecutionID = @ExecutionID", new { execution.ExecutionID }, transaction: trans);
 
+                    results = Connection.Query<InternalScoreResultApiResponseModel>(
+                        $"select AssetUid, MetricAssetUid, EffectiveDate, Result, Success as IsSuccess, Message as ErrorMessage from #InternalMeasures",
+                        new { execution.ExecutionID },
+                        commandTimeout: 1200, transaction: trans
+                    ).ToList();
+
                     trans.Commit();
 
                     if (rowsImpacted > 0)

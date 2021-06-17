@@ -2459,7 +2459,10 @@ from    (
             //check if there is a matching field for this type
             var fieldType = Company.FieldTypes.Where(x => x.Object == objectDetail.Type && x.ObjectID == objectDetail.TypeID && ((useFriendlyName && string.Compare(x.FriendlyName, fieldName, true) == 0) || (!useFriendlyName && string.Compare(x.Name, fieldName, false) == 0))).FirstOrDefault();
 
-            if (fieldType == null) return null;
+            if (fieldType == null || (!useFriendlyName && !fieldType.Name.Equals(fieldName))) {
+                return null;
+            }
+            
 
             var sql = "select FormattedValue from field where objecttype = @obj and objectid = @id and fieldtypeid = @fieldId";
             if (fieldType?.LookupObjectType == SystemObjects.ReferenceItem.ToString() && !LookupFieldHasColorItem(fieldType))
@@ -2481,7 +2484,7 @@ from    (
                             and F.fieldtypeid = @fieldId FOR JSON PATH"; ;
             }
             string value = Company.Query<string>(sql, new { obj = new DbString { Value = type.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, id = id, fieldId = fieldType.ID }).FirstOrDefault();
-            if (string.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value) && !string.IsNullOrEmpty(fieldType.DefaultFormattedValue))
                 value = $@"[{{""name"":""{fieldType.DefaultFormattedValue}""}}]";
 
             if (LookupFieldHasColorItem(fieldType))

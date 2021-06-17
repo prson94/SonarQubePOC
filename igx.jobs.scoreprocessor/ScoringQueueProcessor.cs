@@ -35,8 +35,6 @@ namespace igx.jobs.scoreprocessor
 #else
             var scoreInfo = JsonConvert.DeserializeObject<ScoreQueueInfo>(myQueueItem);
 #endif
-            AzureStorageProvider storage = new AzureStorageProvider();
-
             try
             {
                 IScoreProcess process = null;
@@ -69,7 +67,6 @@ namespace igx.jobs.scoreprocessor
                 if (process != null)
                 {
                     process.Info = scoreInfo;
-                    process.Storage = storage;
                     await process.Run();
                 }
             }
@@ -94,26 +91,21 @@ namespace igx.jobs.scoreprocessor
             }
             catch (Exception ex)
             {
-                var execUpdater = new ExecutionUpdater { Info = scoreInfo, Storage = storage };
-                var closedExecution = await execUpdater.UpdateAsync(ex);
-
-                if (closedExecution)
-                {
-                    var props = new Dictionary<string, string>() {
+                var props = new Dictionary<string, string>() {
                         { "ExecutionUid", scoreInfo.ExecutionUid.ToString() },
                         { "ChangeType", scoreInfo.ChangeType.ToString() }
                     };
 
-                    CoreFunction.AITrackException(functionName, ex, scoreInfo.CompanyID, props);
+                CoreFunction.AITrackException(functionName, ex, scoreInfo.CompanyID, props);
 
-                    lock (log)
-                    {
-                        log.WriteLine($"Company [{scoreInfo.CompanyID}]: [{ex.GetFullExceptionData()}]");
-                    }
-                }
-                else
+                var execUpdater = new ExecutionUpdater { Info = scoreInfo };
+                var closedExecution = await execUpdater.UpdateAsync(ex);
+
+                if (!closedExecution)
                 {
-                    throw ex;
+                    var queue = new AzureQueueSource();
+                    await queue.CreateMessageAsync(Config.GetValue<string>("ScoringQueue"), scoreInfo, new TimeSpan(0, 5, 0));
+                    queue = null;
                 }
             }
         }

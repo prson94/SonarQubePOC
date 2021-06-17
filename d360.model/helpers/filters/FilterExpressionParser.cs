@@ -355,7 +355,7 @@ namespace d360.model.helpers
                 if (ftRelationship != null)
                 {
                     string relField = ftQueryName.Replace("_IntersectTypeUid", "_Uid");
-                    return $"({ftQueryName} = '{intersectTypeUid}' and {relField} = '{intersectUid}')";
+                    return $"( {ftQueryName} = '{intersectTypeUid}' and {relField} = '{intersectUid}')";
                 }
             }
             else
@@ -373,7 +373,7 @@ namespace d360.model.helpers
                 if (!token.IsNullValue)
                 {
                     token.UpdateTokenValueForType();
-                    return $"({token.Field} {token.GetSQLOperator(token.@operator)} '{token.EscapedValueAsString}')";
+                    return $"( {token.Field} {token.GetSQLOperator(token.@operator)} '{token.EscapedValueAsString}')";
                 }
                 else
                 {
@@ -382,7 +382,7 @@ namespace d360.model.helpers
                         throw new FormatException($"NULL value filter can be used only with 'eq' and 'ne' operator!");
                     }
 
-                    return $"({token.Field} { token.GetSQLNullOperator(token.@operator)})";
+                    return $"( {token.Field} { token.GetSQLNullOperator(token.@operator)})";
                 }
 
             }

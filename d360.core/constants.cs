@@ -29,8 +29,8 @@ namespace d360.core
         public const string COMPANY = "Infogix, Inc.";
         public const string PRODUCT = "Data360 Govern";
         public const string COPYRIGHT = "Copyright © Infogix, Inc. 2021";
-        public const string PRODUCT_VERSION = "2021.06.18.*";
-        public const string PRODUCT_VERSION_NOREVISION = "2021.06.18";
+        public const string PRODUCT_VERSION = "2021.07.23.*";
+        public const string PRODUCT_VERSION_NOREVISION = "2021.07.23";
 
     }
 }
