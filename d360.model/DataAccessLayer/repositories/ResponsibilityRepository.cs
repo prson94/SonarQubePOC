@@ -667,6 +667,9 @@ where 1=1
             {
                 //find the responsibility type
                 var rtr = Company.Filter<ResponsibilityTypeRelation>(x => x.ObjectID == assetType.ObjectID && x.ObjectType == assetType.Object && x.ResponsibilityTypeID == responsibility.ID).FirstOrDefault();
+                
+                // Scoring - get asset measures that are impacted
+                var structuredMeasures = Company.GetMeasureModelsBasedOnResponsibilityAllocation(assetType, responsibility);
 
                 //check is there responsibility rules for this responsibility type
                 var ruleUids = Company.Filter<ResponsibilityTypeRelationRule>(i => i.ResponsibilityTypeID == responsibility.ID && i.Object == assetType.Object && i.ObjectID == assetType.ObjectID).Select(i => i.UID.Value).ToList();
@@ -678,50 +681,16 @@ where 1=1
                         //delete rules
                         await DeleteResponsibilityRules(responsibility.UID, ruleUids);
 
-                        #region get asset measures that are impacted
-
-                        var today = DateTime.UtcNow.Date;
-                        var measureResults = Company.Query<ResponsibilityAssetMeasureProcessedResult>(@"
-    select  A.Uid as AssetUid, 
-            M.Uid as MetricAssetUid,
-            V.Uid as MetricAssetVersionUid
-    from    ResponsibilityTypeRelationOverrideItem O 
-            inner join Asset A on A.ID = O.AssetID and O.ResponsibilityTypeID = @ResponsibilityTypeID
-            inner join AssetType T on T.ID = A.AssetTypeID and T.ID = @ID
-            inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
-            inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
-            inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
-                and ( 
-                    (@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or 
-                    (@today >= V.EffectiveDate and V.EffectiveEndDate is null) 
-                    ) 
-                and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
-                and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = @ResponsibilityTypeUid
-		        and V.Definition <> '{}'", new { assetType.ID, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTypeID = responsibility.ID, today });
-
-                        var structuredMeasures = measureResults.GroupBy(m => new { m.AssetUid })
-                            .Select(m => new AssetMeasureModel
-                            {
-                                AssetUid = m.Key.AssetUid,
-                                EffectiveDate = today,
-                                Measures = m.Select(o => new AssetMeasureChildModel
-                                {
-                                    MetricAssetUid = o.MetricAssetUid,
-                                    MetricAssetVersionUid = o.MetricAssetVersionUid
-                                }).Distinct().ToList()
-                            }).ToList();
-
-                        Company.CreateMeasureChangedResultExecution(structuredMeasures);
-
-                        #endregion
-
                         Company.Execute(
                             "delete T from ResponsibilityTypeRelationOverrideItem T inner join Asset A on A.AssetTypeID = @AssetTypeID and A.ID = T.AssetID and T.ResponsibilityTypeID = @ResponsibilityTypeID",
                             new { AssetTypeID = assetType.ID, ResponsibilityTypeID = responsibility.ID }
                         );
 
                         Company.Delete(rtr);
-                        
+
+                        // If you made it this far, then send to scoring engine.
+                        Company.CreateMeasureChangedResultExecution(structuredMeasures);
+
                         return new ResponsibilityTypeAllocationResponseModel()
                         {
                             AssetTypeUid = assetType.uid,
@@ -743,6 +712,10 @@ where 1=1
                 {
                     Company.ResponsibilityTypeRelations.Remove(rtr);
                     Company.SaveChanges();
+
+                    // If you made it this far, then send to scoring engine.
+                    Company.CreateMeasureChangedResultExecution(structuredMeasures);
+
                     return new ResponsibilityTypeAllocationResponseModel()
                     {
                         AssetTypeUid = assetType.uid,

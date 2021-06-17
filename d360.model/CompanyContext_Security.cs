@@ -332,6 +332,23 @@ order by RT.Name", new { id }).AsQueryable();
 
         public void RemoveResponsibilityTypeRelation(ResponsibilityTypeRelation relation)
         {
+            List<AssetMeasureModel> structuredMeasures = null;
+            
+            try
+            {
+                var assetType = Filter<AssetType>(a => a.Object == relation.ObjectType && a.ObjectID == relation.ObjectID).SingleOrDefault();
+                var responsibility = Filter<ResponsibilityType>(a => a.ID == relation.ResponsibilityTypeID).SingleOrDefault();
+                
+                if (assetType != null && responsibility != null)
+                {
+                    // Scoring - get asset measures that are impacted
+                    structuredMeasures = GetMeasureModelsBasedOnResponsibilityAllocation(assetType, responsibility);
+                }
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
             using (var trans = Database.BeginTransaction())
             {
                 try
@@ -358,7 +375,7 @@ order by RT.Name", new { id }).AsQueryable();
     delete	ResponsibilityTypeRelation
     where	ResponsibilityTypeID = @ResponsibilityTypeID
 		    and ObjectType = @ObjectType 
-		    and ObjectID = @ObjectID;", 
+		    and ObjectID = @ObjectID;",
             new SqlParameter("@ResponsibilityTypeID", relation.ResponsibilityTypeID),
             new SqlParameter("@ObjectType", relation.ObjectType),
             new SqlParameter("@ObjectID", relation.ObjectID)
@@ -366,7 +383,7 @@ order by RT.Name", new { id }).AsQueryable();
                     trans.Commit();
                 }
                 catch
-                {
+                { 
                     try
                     {
                         if (trans != null)
@@ -377,8 +394,14 @@ order by RT.Name", new { id }).AsQueryable();
                     catch
                     {
                     }
-                    throw;
+                    throw;                    
                 }
+            }
+
+            // If you made it this far, then send to scoring engine.
+            if (structuredMeasures != null)
+            {
+                CreateMeasureChangedResultExecution(structuredMeasures);
             }
         }
 

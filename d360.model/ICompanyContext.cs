@@ -433,6 +433,14 @@ namespace d360.model
         /// </summary>
         List<DataQualityMeasureQueryResultModel> GetDataQualityMeasureQueryResultModels(DataQualityMeasureQueryModel query, Guid assetUid, DateTime? maxDate);
 
+        /// <summary>
+        /// Gets impacted asset/measures that require rescoring based on this responsibility type allocation.
+        /// </summary>
+        /// <param name="assetType">The asset type.</param>
+        /// <param name="responsibility">The responsibility type.</param>
+        /// <returns>A list of AssetMeasureModel items to send to the scoring engine.</returns>
+        List<AssetMeasureModel> GetMeasureModelsBasedOnResponsibilityAllocation(AssetType assetType, ResponsibilityType responsibility);
+
         #endregion
     }
 }
