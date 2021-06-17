@@ -60,11 +60,6 @@ export class SiteUrlHelpers {
     static SITE_URL_WORKFLOW_LIST_V2 = 'workflowlistnew';
     static SITE_URL_WORKFLOW_FORM = 'form';
 
-    //fusion child routes
-    static SITE_URL_FUSION_BY_FUSIONATTRIBUTEID = 'fusionattribute';
-    static SITE_URL_FUSION_LIST = '';
-    static SITE_URL_FUSION_ATTRIBUTE_DETAILS = 'details';
-
     //admin child routes
     static SITE_URL_ADMIN_BULK_LOAD = `load`;
     static SITE_URL_ADMIN_FUSION = `fusion`;
@@ -163,12 +158,6 @@ export class SiteUrlHelpers {
                 return `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${parentId}/${objectId}`;
             case 'COMMENTS':
                 return `${SiteUrlHelpers.SITE_URL_COMMENTS_ROOT}/${objectId}/${objectName}`;
-            case 'FUSIONTYPE':
-                return `${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${objectId}`;
-            case 'FUSIONTYPEWITHFUSIONATTRIBUTETYPE':
-                return `${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${parentId};fusionAttributeTypeId=${objectId}`;
-            case 'FUSIONATTRIBUTE':
-                return `${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${SiteUrlHelpers.SITE_URL_FUSION_BY_FUSIONATTRIBUTEID}/${parentId}/${objectId}`;
             case 'GROUP':
                 return `${SiteUrlHelpers.SITE_URL_GROUP_ROOT}/${objectId}`;
             case 'RESOURCE':
@@ -206,20 +195,6 @@ export class SiteUrlHelpers {
             return url.replace('#/resources', SiteUrlHelpers.SITE_URL_RESOURCE_ROOT);
         else if (url.startsWith('#/groups'))
             return url.replace('#/groups', SiteUrlHelpers.SITE_URL_GROUP_ROOT);
-        else if (url.startsWith('#/fusion/item')) {
-            var parts = url.split('/');
-            if (parts.length == 5) {
-                return `${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${SiteUrlHelpers.SITE_URL_FUSION_BY_FUSIONATTRIBUTEID}/${parts[3]}/${parts[4]}`;
-            }
-            console.log('[ERROR] - INVALID FORMAT FOR FUSION ATTRIBUTE URL', url);
-        }
-        else if (url.startsWith('#/fusion/')) {
-            var parts = url.split('/');
-            if (parts.length == 4) {
-                return `${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${SiteUrlHelpers.SITE_URL_FUSION_LIST}${parts[3]}`;
-            }
-            console.log('[ERROR] - INVALID FORMAT FOR FUSION TYPE URL', url);
-        }
         else if (url.startsWith('#/catalogs')) {
             var parts = url.split('/');
             if (parts.length == 4) {

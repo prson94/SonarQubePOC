@@ -16,7 +16,6 @@ import { TilesModule  } from '../tiles/tiles.module';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
-import { SharedFusionAttributeItemDetailsModule } from '../fusion-attribute-item-details.component';
 import { SharedObjectDetailsModule } from '../objectdetails/shared-object-details.module';
 
 import { ObjectRelationshipsComponent } from './object-relationships.component';
@@ -36,7 +35,6 @@ import { RelationshipsModalComponent } from './relationships-modal.component';
         CoreModule,
         PipesModule,
         SharedDynamicGridEditorModule,
-        SharedFusionAttributeItemDetailsModule,
         SharedGridPagingInfoModule,    
         SharedObjectDetailsModule,    
         TilesModule,

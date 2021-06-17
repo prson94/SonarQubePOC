@@ -288,23 +288,6 @@ namespace d360.core.entities
         public int TypeID { get; set; }
     }
 
-    [DataContract(Namespace = NAMESPACE)]
-    public class FusionStatisticTileModel : BaseObject
-    {
-        [DataMember]
-        public int AgentErrors { get; set; }
-
-        [DataMember]
-        public int AgentExecutions { get; set; }
-
-        [DataMember]
-        public int FusionExecutions { get; set; }
-
-        [DataMember]
-        public int FusionErrors { get; set; }
-
-    }
-
     public class RelationshipDirectionFieldInfo
     {
         public bool IsSubject { get; set; }

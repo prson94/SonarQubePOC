@@ -1294,18 +1294,6 @@ where   h.ID <> @t order by h.[Level] desc;
             return Company.GetById<Fusion>(id, i => i.FusionType);
         }
 
-        [Route("fusion/{fusionAttributeID:int}/configurations/fromFusionAttribute")]
-        public HttpResponseMessage GetFusionConfigurationFromFusionAttribute(int fusionAttributeID)
-        {
-            return Request.CreateResponse(
-                HttpStatusCode.OK,
-                Company.Query<dynamic>(
-                    QueryConstants.FusionConfigurationFromFusionAttributeItem,
-                    new { id = fusionAttributeID }
-                )
-            );
-        }
-
         #endregion
 
         #region Groups
@@ -4234,13 +4222,6 @@ where v.id = {0}", id)).FirstOrDefault();
         public ObjectStatisticTileModel GetTileObjectStatistics(SystemObjects type, int id)
         {
             return Company.GetObjectStatistics(type, id);
-        }
-
-        [Route("fusion/statistics")]
-        public FusionStatisticTileModel GetFusionStatistics(int daysToLookBack)
-        {
-            if (daysToLookBack <= 0) daysToLookBack = 5000;
-            return Company.Query<FusionStatisticTileModel>(QueryConstants.FusionStatisticsItem, new { days = (daysToLookBack * -1) }).FirstOrDefault();
         }
 
         [Route("{type}/{id:int}/fields")]
