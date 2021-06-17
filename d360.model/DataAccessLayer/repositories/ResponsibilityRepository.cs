@@ -969,6 +969,7 @@ create table #results
 create table #measureResults
 (
     AssetUid uniqueidentifier, 
+    AllocationUid uniqueidentifier, 
     MetricAssetUid uniqueidentifier, 
     MetricAssetVersionUid uniqueidentifier 
 );", transaction: trans);
@@ -1000,6 +1001,7 @@ where   rtrr.responsibilitytypeid <> rt.id;",
                     await Company.Connection.ExecuteAsync(@"
 insert into #measureResults
     select  A.AssetUid, 
+            M.AllocationUid,
             M.Uid as MetricAssetUid,
             V.Uid as MetricAssetVersionUid
     from    #results Ru
@@ -1048,6 +1050,7 @@ where   Success is null", transaction: trans);
                                 EffectiveDate = today,
                                 Measures = m.Select(o => new AssetMeasureChildModel
                                 {
+                                    AllocationUid = o.AllocationUid,
                                     MetricAssetUid = o.MetricAssetUid,
                                     MetricAssetVersionUid = o.MetricAssetVersionUid
                                 }).Distinct().ToList()
@@ -1057,7 +1060,7 @@ where   Success is null", transaction: trans);
 
                     Company.CreateMeasureChangedResultExecution(structuredMeasures);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     try
                     {
