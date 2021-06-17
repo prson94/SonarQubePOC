@@ -441,6 +441,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 break;
             case 'counter':
                 this.model.FieldType.Type.Counter.ShowIfEmpty = true;
+                this.showDescription = false;
                 break;
             default:
                 break;
@@ -1400,7 +1401,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'AllowMultipleValues':
                 return (['Lookup'].indexOf(this.currentType) == -1);
             case 'ShowIfEmpty':
-                return (['Path', 'Tag', 'Counter'].indexOf(this.currentType) > -1 || (this.currentType == 'Score' && !this.model.FieldType.Type['Score'].IsDisplayable));
+                return (['Path', 'Tag'].indexOf(this.currentType) > -1 || (this.currentType == 'Score' && !this.model.FieldType.Type['Score'].IsDisplayable));
             case 'SearchAddToResult':
                 return (['Path', 'Html', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'ComplexRelationLookup', 'RefListRelationship', 'Score', 'Tag'].indexOf(this.currentType) > -1);
             default:
