@@ -3221,7 +3221,7 @@ namespace d360.model
             {
                 if (DateTime.TryParse(FormattedValue, out dateValue))
                 {
-                    string formattedDate = dateValue.ToString("dd MMM yyyyTHH:mm:ss");
+                    string formattedDate = dateValue.ToString("dd MMM yyyy HH:mm:ss");
                     fieldValue = formattedDate;
                 }
                 else
