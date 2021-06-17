@@ -79,7 +79,7 @@
                     </div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'score'">
-                    <span class="ig-colorfield-item grid" style="display: inline-flex !important;">
+                    <span class="ig-value ig-colorfield-item detail" style="display: inline-flex !important;">
                         <span class="ig-colorfield-swatch" [ngClass]="'score-' + json?.Threshold"></span>
                         <span class="ig-colorfield-item-label">
                             {{json?.name}}
@@ -112,18 +112,22 @@
         </div>
     </ng-container>
     <ng-container *ngIf="field.Type == DetailFieldType.LookupGrid">
-        <ig-asset-lookup-grid    [data]="field.Data"
-                                 [hideHeader]="field.HideHeader"
-                                 [hideFooter]="field.HideFooter"
-                                 [hideFilter]="field.HideFilter"
-                                 [field]="field"
-                                 [assetUid]="assetUid">
-        </ig-asset-lookup-grid>
+        <div class="ig-value">
+            <ig-asset-lookup-grid [data]="field.Data"
+                                  [hideHeader]="field.HideHeader"
+                                  [hideFooter]="field.HideFooter"
+                                  [hideFilter]="field.HideFilter"
+                                  [field]="field"
+                                  [assetUid]="assetUid">
+            </ig-asset-lookup-grid>
+        </div>
     </ng-container>
     <ng-container *ngIf="field.Type == DetailFieldType.LookupList">
-        <ig-asset-lookup-list [data]="field.Data"
-                              [field]="field"
-                              [assetUid]="assetUid">
-        </ig-asset-lookup-list>
+        <div class="ig-value">
+            <ig-asset-lookup-list [data]="field.Data"
+                                  [field]="field"
+                                  [assetUid]="assetUid">
+            </ig-asset-lookup-list>
+        </div>
     </ng-container>
 </ng-template>
