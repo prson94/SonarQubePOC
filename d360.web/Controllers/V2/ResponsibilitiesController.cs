@@ -1478,5 +1478,35 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Gets the breakdown of responsibilities
+        /// </summary>
+        /// <returns>An Array of responsibility type breakdowns.</returns>
+        [
+            HttpGet,
+            Route("breakdown"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "An Array of responsibility type breakdowns.", typeof(List<ResponsibilityBreakdownResponse>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> GetResponsibilityTypeBreakdown()
+        {
+            var prefix = "Relationships.GetResponsibilityTypeBreakdown => ";
+            try
+            {
+                var results = await Company.QueryAsync<ResponsibilityBreakdownResponse>(@"exec [dbo].[GetResponsibilityTypeBreakdown]");
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error", errorMessage));
+            }
+            
+        }
+
     }
 }
