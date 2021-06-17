@@ -397,7 +397,7 @@ namespace d360.model.validators
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. Counter Initial Value must be between 1 and 9999999.");
                     }
 
-                    var allowedTypes = new List<string>() {
+                    var allowedTypes = new List<string> {
                             SystemObjects.ArtifactType.ToString(),
                             SystemObjects.PolicyType.ToString(),
                             SystemObjects.RuleType.ToString(),
