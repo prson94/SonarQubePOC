@@ -45,7 +45,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     private resource: any;
     isSavingProcess : boolean =  false;
     private isMe = false;
-    private showAllUsersAPIKey = false;
+    showAllUsersAPIKey = false;
     private totNumber = 0;
     private days = 90;
     private resourceType = ' ';
