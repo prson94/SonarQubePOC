@@ -287,13 +287,13 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     }
 
     isDataQualityScoreType() {
-        return this.allocation.scoreType == ScoreType.DataQuality && !this.allocation.isExternallyCalculated;
+        return (this.allocation.scoreType == ScoreType.DataQuality || ScoreType[this.allocation.scoreType.toString()] == ScoreType.DataQuality) && !this.allocation.isExternallyCalculated;
     }
     isExternalScoreType() {
         return this.allocation.isExternallyCalculated;
     }
     isGovernanceScoreType() {
-        return this.allocation.scoreType == ScoreType.Governance && !this.allocation.isExternallyCalculated;
+        return (this.allocation.scoreType == ScoreType.Governance || ScoreType[this.allocation.scoreType.toString()] == ScoreType.Governance) && !this.allocation.isExternallyCalculated;
     }
 
     showRulePathsError() {
