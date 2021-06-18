@@ -345,9 +345,9 @@ order by RT.Name", new { id }).AsQueryable();
                     structuredMeasures = GetMeasureModelsBasedOnResponsibilityAllocation(assetType, responsibility);
                 }
             }
-            catch(Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
             using (var trans = Database.BeginTransaction())
             {
