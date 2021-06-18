@@ -67,7 +67,6 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
     ngOnInit() {
         this.assetService.getUIDetailsForAssetUID(this.assetUid)
             .subscribe((ad) => {
-
                 this.relationshipService.getRelationshipTypes(ad.AssetTypeUid).subscribe((rel) => {
                     this.relationshipType = rel.filter((r) => r.Uid === this.intersectTypeUid)[0];
                     this.isSubject = this.relationshipType.Subject.Uid === ad.AssetTypeUid;
