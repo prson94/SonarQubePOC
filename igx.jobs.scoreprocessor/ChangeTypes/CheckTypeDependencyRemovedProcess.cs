@@ -1,4 +1,5 @@
 ﻿using d360.core.queue;
+using Dapper;
 using System.Threading.Tasks;
 
 namespace igx.jobs.scoreprocessor.ChangeTypes
@@ -12,8 +13,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
             ExecutionRecord = getExecution(Db.Connection);
             var executionItems = getExecutionItems(Db.Connection, 0);
 
-            string endScoreSql = @"
-create table #Scores (ScoreUid uniqueidentifier);
+            string endScoreSql = @"create table #Scores (ScoreUid uniqueidentifier);
 
 insert into #Scores
 	select	distinct
@@ -41,7 +41,11 @@ from	metrics.Score T
 			foreach (var executionItem in executionItems)
             {
                 var model = executionItem.GetPayload<CheckTypeDependencyRemovedModel>();
-                Db.Execute(endScoreSql, new { ExecutionId = ExecutionRecord.ID, model.VersionUids });	// End-date asset scores where this measure is the only one that was present (a one-measure score).
+				if (Db.Database.Connection.State != System.Data.ConnectionState.Open)
+				{ 
+					Db.Database.Connection.Open();
+				}
+				Db.Database.Connection.Execute(endScoreSql, new { ExecutionId = ExecutionRecord.ID, model.VersionUids });	// End-date asset scores where this measure is the only one that was present (a one-measure score).
 				Db.CreateCheckDependencyRemovedResultExecution(model.VersionUids);
 			}
 			
