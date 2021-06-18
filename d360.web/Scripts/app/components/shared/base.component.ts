@@ -1156,6 +1156,9 @@ export class BaseComponent {
     }
 
     public isReferenceListType(value: string): boolean {
-        return value === "0000000a-0000-0000-0000-000000000009";
+        return value.toLowerCase() === this.referenceListUid.toLowerCase();
+    }
+    public get referenceListUid(): string {
+        return "0000000a-0000-0000-0000-000000000009";
     }
 }
