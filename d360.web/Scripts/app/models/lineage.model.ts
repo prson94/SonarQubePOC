@@ -260,7 +260,7 @@ export class AssetBrowserDiagramAsset {
     Object: string;
     ObjectId: number;
     Scores: AssetBrowserDiagramAssetScore[] = [];
-
+    Fields: any[] = [];
     Loaded: boolean = false;
 }
 
