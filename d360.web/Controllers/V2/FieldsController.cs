@@ -687,7 +687,7 @@ namespace d360.web.Controllers.V2
                 List<dynamic> Field_ResponsibilityTypes = null;
                 if (AssetTypeUid != null)
                 {
-                    Field_ResponsibilityTypes = Company.Query<dynamic>(@"SELECT rt.name AS title, rt.id AS value
+                    Field_ResponsibilityTypes = Company.Query<dynamic>(@"SELECT rt.name AS title, rt.uid AS value
                     FROM ResponsibilityType rt
                     INNER JOIN ResponsibilityTypeRelation rtr ON rtr.ResponsibilityTypeID = rt.ID
                     INNER JOIN AssetType at ON rtr.ObjectType = at.Object AND rtr.ObjectID = at.ObjectID

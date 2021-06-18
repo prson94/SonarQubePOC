@@ -225,7 +225,7 @@ export class ComputedOwnershipLookupDefinition {
     DisplayAsList: boolean = false;
     DisplayAssignmentSource: boolean = false;
     ExpandGroupMembership: boolean = true;
-    ResponsibilityType: number = null;
+    ResponsibilityTypeUid: string = null;
 }
 
 export class ComputedRelationshipField implements ICommonOptions {
