@@ -112,10 +112,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     }, 200);
 
     ngOnInit() {
-        this.delayedReload();
-        if (this.allocation) {
-            this.allocation.scoreType = ScoreType[this.allocation.scoreType + ''];
-        }
+        this.delayedReload();        
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
