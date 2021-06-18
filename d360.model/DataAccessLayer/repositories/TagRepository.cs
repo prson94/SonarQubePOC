@@ -873,7 +873,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         }
                         else
                         {
-                            throw new ArgumentException($"Invalid order passed in the request!", "sortby");
+                            throw new ArgumentException($"Invalid sortby value provided in the request.");
                         }
                         break;
                     case "sortorder":
@@ -896,7 +896,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                             var order = param.Value;
                             if (!allowedDirections.Contains(order.Trim().ToLower()))
                             {
-                                throw new ArgumentException($"Invalid order direction passed in the request!", "sortorder");
+                                throw new ArgumentException($"Invalid sort order value provided in the request.");
                             }
                             sortOrder = allowedDirections.Contains(order.Trim().ToLower()) ? order : "asc";
                         }
@@ -904,7 +904,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                     case "_includetotal":
                         if (!bool.TryParse(param.Value, out includeTotal))
                         {
-                            throw new ArgumentException($"Invalid value [{param.Value}] passed in the request.", "_includetotal");
+                            throw new ArgumentException($"Invalid value [{param.Value}] provided for _includetotal parametar in the request.");
                         }
 
                         break;
