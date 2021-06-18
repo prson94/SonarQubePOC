@@ -833,8 +833,6 @@
     <Content Include="Scripts\app\components\shared\asset-score\definition\measure-conditions-details.component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
     <Content Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.html" />
-    <Content Include="Scripts\app\components\shared\browser-warning\browser-warning.component.html" />
-    <Content Include="Scripts\app\components\shared\browser-warning\browser-warning.component.less" />
     <Content Include="Content\styles\infogix-ui\IgTooltip.less" />
     <Content Include="Content\styles\infogix-ui\IgAutocomplete.less" />
     <Content Include="Content\styles\infogix-ui\IgTextArea.less" />
@@ -1054,7 +1052,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\definition\score-definition.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\history\score-history.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-detail\asset-detail.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\browser-warning\browser-warning.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\badge\badge.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\badge\badge.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\date\date.ts" />
@@ -1791,7 +1788,6 @@
     <TypeScriptCompile Include="Scripts\app\models\lineage.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\metrics.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\organization.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\qualifier.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\shopping-cart.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\shortcuts.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\connectorLabel.model.ts" />
@@ -1957,7 +1953,6 @@
     <TypeScriptCompile Include="Scripts\app\models\score.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\site-menu.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\social.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\statistic.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\artifact-type.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\breadcrumb.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\editor-field.model.ts" />
