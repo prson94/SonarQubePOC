@@ -200,7 +200,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     if (Guid.TryParse(subjectUidString, out subjectUid))
                     {
                         dbArgs.Add("@subjectuid", subjectUid);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (S.Uid = @subjectuid)";
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (S.Uid = @subjectuid or (S.Uid is null and st2.uid = @subjectuid))";
                     }
                 }
                 if (queryParamsList.Any(q => q.Key.ToLower() == "objectuid"))
@@ -209,7 +209,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     if (Guid.TryParse(objectUidString, out objectUid))
                     {
                         dbArgs.Add("@objectuid", objectUid);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (O.Uid = @objectuid)";
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (O.Uid = @objectuid or (O.Uid is null and ot2.uid = @objectuid))";
                     }
                 }
                 if (queryParamsList.Any(q => q.Key.ToLower() == "_pagenum"))
