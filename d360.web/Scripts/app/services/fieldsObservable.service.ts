@@ -55,17 +55,6 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getRuleResultFields(): FieldTypeAPIModelField[] {
-        let arr: FieldTypeAPIModelField[] = [];
-        arr.push({
-            Category: "",
-            FriendlyName: "Friendly name",
-            Name: "Some name",
-            Type: new FieldType("Boolean")
-        });
-        return arr;
-    }
-
     putFieldsV2(
         model: FieldTypeAPIModel
     ): any {
@@ -87,6 +76,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
                 catchError(err => this.handleError(err))
             );
     }
+
+    getComplexField
 
     getFieldTypeEditor(name: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<FieldTypeAPIModelField> {
         let url = "";

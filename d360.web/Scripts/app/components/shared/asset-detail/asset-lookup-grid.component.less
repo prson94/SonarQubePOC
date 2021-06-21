@@ -51,3 +51,41 @@
     word-break: break-word;
     word-wrap: break-word;
 }
+
+.grid-actions-header {
+  display: inline-flex;
+  padding: 16px 10px;
+  width: 100%;
+
+  .grid-action-buttons {
+    min-width: 90px;
+
+    div {
+      display: inline-block;
+    }
+
+    button {
+      margin-left: 8px;
+    }
+  }
+
+  &.hidden {
+    display: none;
+  }
+
+  .simple-search {
+    width: 200px;
+  }
+}
+
+.asset-grid-wrapper {
+  padding: 0 6px;
+}
+
+.debug-code {
+  border: 1px solid #eaeaea;
+  border-radius: 4px;
+  margin: 11px;
+  padding: 4px;
+  background: #f8ffe3;
+}

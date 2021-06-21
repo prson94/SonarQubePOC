@@ -243,6 +243,7 @@ export class AdvancedFilteringComponent implements OnChanges {
             tempFields.push(fModel);
         });
 
+
         tempFields.forEach((f) => {
             f.Operators = [];
 
@@ -446,6 +447,10 @@ export class AdvancedFilteringComponent implements OnChanges {
         return this.loadIdentifier.startsWith("RuleResults");
     }
 
+    get isComplexField() {
+        return this.loadIdentifier.startsWith("ComplexField");
+    }
+
 
     getFieldsObs(): Observable<FieldTypeAPIModelField[]> {
         if (this.isAssetType) {
@@ -486,13 +491,23 @@ export class AdvancedFilteringComponent implements OnChanges {
             var staticObs = of(fields);
             return staticObs;
         }
+        else if (this.isComplexField) {
+            console.log(this.loadIdentifier);
+
+            var fields: FieldTypeAPIModelField[] = [];
+            fields.push({
+                Name: "EvaluatedAssetClass", FriendlyName: "Asset Class", Type: new FieldType("Lookup"), Category: ""
+            });
+            var staticObs = of(fields);
+            return staticObs;
+        }
     }
 
     getScoreAllocationObs(): Observable<ScoreTypeAllocation[]> {
         if (this.isAssetType) {
             return this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid);
         }
-        else if (this.isRuleResults) {
+        else if (this.isRuleResults || this.isComplexField) {
             var staticObs = of([]);
             return staticObs;
         }
@@ -502,7 +517,7 @@ export class AdvancedFilteringComponent implements OnChanges {
         if (this.isAssetType) {
             return this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid);
         }
-        else if (this.isRuleResults) {
+        else if (this.isRuleResults || this.isComplexField) {
             var staticObs = of([]);
             return staticObs;
         }

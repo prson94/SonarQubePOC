@@ -6,6 +6,7 @@ import { BaseComponent } from "../base.component";
 import { DetailField } from "../../../models/object-detail.model";
 import { AssetService } from "../../../services/asset.service";
 import { Subscription } from "rxjs";
+import { Filters } from "../../assets-grid/advanced-filtering/advanced-filtering.models";
 
 declare var CurrentResourceID;
 
@@ -37,6 +38,11 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     loadSubscription: Subscription;
     currentFilters: any;
 
+    simpleSearchTooltipHTML: string = `<p>Type to provide a search term. Matches will be found where the value of any column starts with the term or terms provided.</p><p>You can also use wildcards for more control over how the term is matched.
+*account* : Match on values which contain 'account'</p><p>All matches are case insensitive.</p>`;
+
+    simpleTextFilter: string;
+
     get globalFilterFields(): string[] {
         return this.visibleColumns.map((c) => c.datafield);
     }
@@ -63,7 +69,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         this.isComplex = (this.data.Fields.find((f) => f.name === 'Url') == null);
 
         if (this.isReferenceListFromRelationship) {
-            this.lookupField = (this.data as any);  
+            this.lookupField = (this.data as any);
 
             let show = localStorage.getItem(`lookup_description_${CurrentResourceID}_${this.lookupField.fieldTypeId}`);
             if (show == null) {
@@ -92,11 +98,11 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
 
         this.data.Columns.filter((c) => c.type === 'hidden')
             .forEach((c) => {
-            let i = this.data.Columns.find((i) => i.datafield === c.text);
-            if (i) {
-                i.type = 'preview';
-            }
-        });
+                let i = this.data.Columns.find((i) => i.datafield === c.text);
+                if (i) {
+                    i.type = 'preview';
+                }
+            });
 
         this.visibleColumns = this.data.Columns.filter((c) => c.type !== 'hidden');
 
@@ -165,26 +171,21 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
             }
         }
 
-        if (event.filters) {
-            if (event.filters['global']) {
-                params['simpleFilter'] = event.filters.global.value;
-            }
-
-            var keys = Object.keys(event.filters).filter((x) => x !== 'global');
-            var advFilters: string[] = [];
-
-            keys.forEach((key) => {
-                let cleanValue = (event.filters[key].value as string).replace(/'/g, "&apos;");
-                var q = key + ' ct ' + `'${encodeURIComponent(cleanValue)}'`;
-                advFilters.push(q);
-            });
-
-            if (advFilters.length > 0) {
-                delete params['simpleFilter'];
-                params['filter'] = advFilters.join(" and ");
-            }
+        if (this.simpleTextFilter) {
+            params['simpleFilter'] = this.simpleTextFilter;
+        }
+        else {
+            delete params['simpleFilter'];
         }
 
+        if (this.newAdvancedFilters && this.newAdvancedFilters.filter) {
+            params['filter'] = this.newAdvancedFilters.filter;
+        }
+        else {
+            delete params['filter'];
+        }
+
+        this.eventData = event;
 
         if (this.loadSubscription) {
             this.loadSubscription.unsubscribe();
@@ -233,5 +234,20 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     toggleShowDescription() {
         this.showDescription = !this.showDescription;
         localStorage.setItem(`lookup_description_${CurrentResourceID}_${this.lookupField.fieldTypeId}`, this.showDescription.toString());
+    }
+
+    onFiltersLoaded() {
+
+    }
+
+    newAdvancedFilters: Filters;
+    eventData: any;
+    public advancedFiltersChanged($event) {
+        this.newAdvancedFilters = $event;
+        this.loadData(this.eventData);
+    }
+
+    private get filtersLoadIdentifier() {
+        return "ComplexFields" + this.assetUid + "|" + this.field.FieldName;
     }
 }

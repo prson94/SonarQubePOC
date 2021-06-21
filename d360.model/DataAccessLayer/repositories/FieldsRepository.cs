@@ -1799,7 +1799,7 @@ from	IntersectType I
             return RetValueList;
         }
 
-        public List<FieldType> GetFieldDefinitionForComplexLookupFieldType(FieldType fieldType, Guid assetUid, bool handleFiltersAsString)
+        public List<FieldType> GetFieldDefinitionForComplexLookupFieldType(FieldType fieldType, Guid assetUid)
         {
             if (fieldType.Type == "OwnershipLookup")
             {
@@ -1845,11 +1845,6 @@ from	IntersectType I
                     Name = "Code",
                     Type = DataType.Text.ToString()
                 });
-
-                if (handleFiltersAsString)
-                {
-                    fields.ForEach(x => x.Type = DataType.Text.ToString());
-                }
 
                 return fields;
             }
@@ -1916,11 +1911,6 @@ from	IntersectType I
                         ft.Type = DataType.Text.ToString();
                         fields.Add(ft);
                     }
-                }
-
-                if (handleFiltersAsString)
-                {
-                    fields.ForEach(x => x.Type = DataType.Text.ToString());
                 }
 
                 return fields;

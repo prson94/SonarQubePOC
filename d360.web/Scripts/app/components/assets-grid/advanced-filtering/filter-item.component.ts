@@ -138,6 +138,13 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
             });
         }
+        if (this.isComplexField) {
+            let assetFieldGroup: SelectItemGroup = { value: "rule-results-field", label: "Asset Fields", items: [] };
+            this.allFieldsDropdown.push(assetFieldGroup);
+            this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
+                assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
+            });
+        }
     }
 
     filterTable($event: any) {
@@ -325,7 +332,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             ft.Operators[1].label = "does not contain";
         }
 
-        if (this.isRuleResults) {
+        if (this.isRuleResults || this.isComplexField) {
             if (ft.Name !== "EvaluatedAssetClass") {
                 ft.Operators = ft.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
             }
@@ -350,6 +357,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     updateFilter() {
+        debugger;
         this.rollbackValue1 = this.condition.value;
         if (this.condition.value) {
             this.rollbackValue1 = JSON.parse(JSON.stringify(this.condition.value));
@@ -1144,6 +1152,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
     get isRuleResults() {
         return this.loadIdentifier.startsWith("RuleResults");
+    }
+
+    get isComplexField() {
+        return this.loadIdentifier.startsWith("ComplexField");
     }
 
     getFieldsDropdownClass(): string {
