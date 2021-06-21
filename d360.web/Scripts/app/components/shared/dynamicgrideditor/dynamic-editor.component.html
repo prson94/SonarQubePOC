@@ -19,7 +19,7 @@
                 <ng-template ngFor
                                 let-category
                                 [ngForOf]="categories">
-                    <simple-accordion *ngIf="category.name"
+                    <simple-accordion *ngIf="useAccordion(category)"
                                         [header]="category.name"
                                         [active]="true">
                         <div class="row"
@@ -38,7 +38,7 @@
                             </div>
                         </div>
                     </simple-accordion>
-                    <span *ngIf="!category.name">
+                    <span *ngIf="!useAccordion(category)">
                         <div class="row"
                                 *ngFor="let row of category.rows">
                             <div *ngFor="let field of row.Fields"
