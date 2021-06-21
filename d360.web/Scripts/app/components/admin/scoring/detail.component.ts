@@ -90,7 +90,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
             this.metricsService.getAllocationByUid(this.allocationUid).subscribe(res => {
                 this.allocation = res;
                 this.allocation.scoreType = ScoreType[this.allocation.scoreType.toString()];
-                if (res.scoreType.toString() == "DataQuality") {
+                if (this.allocation.scoreType == 2 || res.scoreType.toString() == "DataQuality") {
                     this.metricsService.getRuleResultPathOptions(this.assetTypeUid, res.scoreType).subscribe(options => {
                         options.forEach(p => {
                             let processedUids: string[] = [];
