@@ -16,11 +16,7 @@
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
-          "options": {
-            "customWebpackConfig": {
-              "path": "./custom-webpack.config.js",
-              "replaceDuplicatePlugins": true
-            },
+          "options": {            
             "deployUrl": "/scripts/dist/",
             "outputPath": "scripts/dist",
             "index": "index.html",
