@@ -110,13 +110,16 @@
     }
 </head>
 <body>
+
     <d3s-app><div class="ng-loading"><div class="ng-loading-wrap"><div class="ng-loading-image">&nbsp;</div>Loading...</div></div></d3s-app>
     <input id="antiForgeryToken" type="hidden" value="@GetAntiForgeryToken()" />
 
-    <!--<script src="/scripts/dist/runtime.js" defer></script>--> <!-- the following is needed for ng build-->
+    <!--<script src="/scripts/dist/angular.js" defer></script>--> <!--if we need to use hashing this needs to be used but makes debuging a pain-->
+
+    <script src="/scripts/dist/runtime.js" defer></script>
     <script src="/scripts/dist/polyfills-es5.js" nomodule defer></script>
-    <script src="/scripts/dist/polyfills.bundle.js" defer></script>
-    <script src="/scripts/dist/vendor.bundle.js" defer></script>
-    <script src="/scripts/dist/main.bundle.js" defer></script>
+    <script src="/scripts/dist/polyfills.js" defer></script>
+    <script src="/scripts/dist/vendor.js" defer></script>
+    <script src="/scripts/dist/main.js" defer></script>
 </body>
 </html>
