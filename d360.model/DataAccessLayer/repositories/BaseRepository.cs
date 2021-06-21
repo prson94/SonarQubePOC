@@ -420,7 +420,9 @@ namespace d360.model.DataAccessLayer.repositories
                  }
                  else if (f.Type == "Counter")
                  {
-                     fieldJoins.Add($"outer apply dbo.GetFormattedCounterFieldValue(A.ID, {f.ID}) {tableAlias}");
+                     fieldJoins.Add($@"outer apply (select top 1 [Value] as 'FormattedValue'
+                            from dbo.FieldCounterValue
+                            where AssetId = A.Id and FieldTypeId = {f.ID}){tableAlias}");
                  }
                  else if (f.Type == "Tag")
                  {
