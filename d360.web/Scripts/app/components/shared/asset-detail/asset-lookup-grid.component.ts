@@ -248,6 +248,6 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     }
 
     private get filtersLoadIdentifier() {
-        return "ComplexFields" + this.assetUid + "|" + this.field.FieldName;
+        return "ComplexField" + this.assetUid + "|" + this.field.FieldName;
     }
 }

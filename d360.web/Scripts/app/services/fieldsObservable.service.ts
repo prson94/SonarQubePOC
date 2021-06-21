@@ -212,7 +212,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
                         i.forEach((j) => {
                             l.IntersectTypes.push({ value: j.value, label: j.label, id: null });
                         });
-                                                
+
                         l.Field_Relationships = this.ftItemToSelectItem(r.Field_Relationships);
                         l.Field_CardinalRelationships = this.ftItemToSelectItem(r.Field_CardinalRelationships);
                         l.Field_CardinalReferenceRelationships = this.ftItemToSelectItem(r.Field_CardinalReferenceRelationships);
@@ -517,6 +517,25 @@ export class FieldsObservableService extends BaseObservableService implements IF
         }
 
         let url = `api/v2/fields/${assetTypeUid}/lookupvalues/${fieldName}` + qString;
+
+        return this
+            .http
+            .get(url)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    getLookupValuesForComplexField(assetUid: string, fieldName: string, filterName: string, params: any): Observable<any> {
+        var qString = '';
+        if (params) {
+            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            if (qString)
+                qString = '?' + qString;
+        }
+
+        let url = `api/v2/fields/${assetUid}/complexLookupvalues/${fieldName}/filter/${filterName}` + qString;
 
         return this
             .http

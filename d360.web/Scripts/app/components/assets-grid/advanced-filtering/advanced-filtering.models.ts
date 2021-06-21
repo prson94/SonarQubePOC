@@ -650,7 +650,7 @@ export class SystemFields {
             IsSystemField: true
         };
         fields.push(owner);
-        
+
         if (gridType === "Tree") {
             var level: FieldTypeAPIModelFieldCondition = {
                 Category: "System Fields",
@@ -709,4 +709,9 @@ export class SystemFields {
         });
         return fields.sort((a, b) => { return a.FriendlyName > b.FriendlyName ? 1 : -1; });
     }
+}
+
+export class ComplexFieldDefinition {
+    AssetUid: string = '';
+    FieldApiName: string = '';
 }

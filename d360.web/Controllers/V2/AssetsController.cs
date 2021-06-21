@@ -1710,37 +1710,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Asset Type with uid '{assetTypeUid}' does not exist!"));
                 }
 
-                var sql = $@"
-            ; with owners as (select distinct
-                    responsibilityTypeId,
-		            securityAssetid,
-	                '[' + ResponsibilityTypeName + '] - ' + SecurityAssetName as 'Name', 
-                    case 
-                        when SecurityAsset = 'R' then 'Resource'
-						when SecurityAsset = 'O' then 'Organization'
-                        when SecurityAsset = 'G' then 'Group'
-                        else [Type]
-                    end as [Type]
-
-                            from ResponsibilityDetail
-            where TypeID = @id
-                    and[Type] = @Object
-                    and IsVisible = 1)
-            select Res.SecurityAssetUid as Uid, o.Name, o.Type
-            from owners o
-            cross apply(
-            select top 1 * from
-            ResponsibilityDetail rd where rd.ResponsibilityTypeID = o.responsibilityTypeId
-
-                                                and rd.SecurityAssetID = o.SecurityAssetID and rd.TypeID = @id and rd.[Type] = @Object
-            )Res
-            order by o.[Name]
-";
-
-                var results = Company.Query<dynamic>(
-             sql
-             , new { id = assetType.ObjectID, assetType.Object }
-             , ApiTimeout);
+                IEnumerable<dynamic> results = AssetRepository.GetPossibleOwnersForAssetType(assetType);
 
                 return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }

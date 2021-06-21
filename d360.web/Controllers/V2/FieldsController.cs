@@ -45,13 +45,15 @@ namespace d360.web.Controllers.V2
         IQueueSource QueueSource;
         IStorageProvider Storage;
         IFieldsRepository FieldsRepository;
+        IAssetRepository AssetRepository;
 
-        public FieldsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IFieldsRepository fieldsRepository)
+        public FieldsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IFieldsRepository fieldsRepository, IAssetRepository assetRepository)
             : base(community, company)
         {
             QueueSource = queueSource;
             Storage = storage;
             FieldsRepository = fieldsRepository;
+            AssetRepository = assetRepository;
         }
 
         #endregion
@@ -2026,9 +2028,9 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
 
 
         /// <summary>
-        /// Retrieves details about assets being watched for a given asset type.
+        /// Retrieves lookup values for an asset type and field name
         /// </summary>
-        /// <returns>Returns a list of watched asset details</returns>        
+        /// <returns>Returns a list of lookup values</returns>        
         /// <param name="assetTypeUid">Uid of the asset type</param>
         /// <param name="fieldName">Field name</param>
         [HttpGet,
@@ -2116,6 +2118,168 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 });
 
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves lookup values for an asset type and field name
+        /// </summary>
+        /// <returns>Returns a list of lookup values</returns>        
+        /// <param name="assetUid">Uid of the asset type</param>
+        /// <param name="fieldName">Field name</param>
+        /// <param name="filterName">Field name</param>
+        [HttpGet,
+         Route("{assetUid:Guid}/complexLookupvalues/{fieldName}/filter/{filterName}"),
+         SwaggerResponse(HttpStatusCode.OK, "A list of filter values for a given asset type and field name.", typeof(List<string>)),
+         SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse)),
+         SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+         ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<IHttpActionResult> GetFilterValuesForComplexFields(Guid assetUid, string fieldName, string filterName, int? skip = null, int? take = 0, string filter = null)
+        {
+            var prefix = "Fields.GetFilterValuesForComplexFields => ";
+            try
+            {
+                var asset = AssetRepository.GetAssetByUID(assetUid);
+                var assetType = AssetRepository.GetArtifactTypeByID(asset.AssetTypeID);
+                var dbArgs = new DynamicParameters();
+
+                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetType.ID && x.Name == fieldName);
+                if (fieldType.Type == DataType.OwnershipLookup.ToString())
+                {
+                    if (filterName == "ResponsibilityTypeName")
+                    {
+
+                        var itemsQuery = $@"
+                            select count(*) from ResponsibilityType rt
+                            inner join ResponsibilityTypeRelation RTR on RTR.ResponsibilityTypeID = RT.ID
+                            inner join AssetType at on at.Object = RTR.ObjectType  and at.objectid = rtr.objectid
+                            where at.uid = @assetTypeUid  
+                            
+                            select rt.Name as 'value', rt.Name as 'title' from ResponsibilityType rt
+                            inner join ResponsibilityTypeRelation RTR on RTR.ResponsibilityTypeID = RT.ID
+                            inner join AssetType at on at.Object = RTR.ObjectType  and at.objectid = rtr.objectid
+                            where at.uid = @assetTypeUid";
+
+                        dbArgs.Add("assetTypeUid", assetType.uid);
+
+                        var gridReader = await Company.Database.Connection.QueryMultipleAsync(
+                              new CommandDefinition(itemsQuery,
+                              parameters: dbArgs,
+                              commandTimeout: 60
+                            ));
+
+                        var data = new
+                        {
+                            count = gridReader.Read<int>().FirstOrDefault(),
+                            items = gridReader.Read<dynamic>().ToList()
+                        };
+
+                        return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, data)));
+                    }
+                    if (filterName == "ResourceName")
+                    {
+
+                        dbArgs.Add("assettypeid", assetType.ID);
+                        dbArgs.Add("assetId", asset.ID);
+
+                        var possibleOwnersSql = @"declare @id int = (select top 1 id from assettype where id = @assettypeid)
+
+                    drop table if exists #OwnershipLookupAssets;
+                    create table #OwnershipLookupAssets (
+						AssetID bigint,
+                        ResponsibilityTypeID int,
+                        ResponsibilityTypeName nvarchar(250),
+                        ResourceName nvarchar(501),
+                        SecurityAsset char(1),
+                        SecurityAssetName nvarchar(501),
+                        Context nvarchar(max),
+                        ResourceId int,
+                        ResourceUid uniqueidentifier,
+                        SecurityAssetId int,
+                        SecurityAssetUid uniqueidentifier
+					);
+					insert into #OwnershipLookupAssets
+                        SELECT [AssetID]
+                              ,[ResponsibilityTypeID]
+                              ,[ResponsibilityTypeName]
+                              ,[ResourceName]
+                              ,[SecurityAsset]
+                              ,[SecurityAssetName]
+                              ,[Context]
+                              ,[ResourceId]
+                              ,[ResourceUid]
+                              ,[SecurityAssetId]
+                              ,[SecurityAssetUid]
+                        FROM [dbo].[ResponsibilityDetail] rd
+                        where rd.assetid <> 0 and IsVisible = 1 and rd.[AssetTypeID] = @id and rd.AssetID = @assetId
+                        union all
+                        select a.[ID] as AssetID
+                             ,rd.[ResponsibilityTypeID]
+                             ,rd.[ResponsibilityTypeName]
+                             ,rd.[ResourceName]
+                             ,rd.[SecurityAsset]
+                             ,rd.[SecurityAssetName]
+                             ,rd.[Context]
+                             ,rd.[ResourceId]
+                             ,rd.[ResourceUid]
+                             ,rd.[SecurityAssetId]
+                             ,rd.[SecurityAssetUid]
+                        from ResponsibilityDetail rd
+                        inner join asset a on rd.assettypeid = a.assettypeid
+                        where rd.assetid = 0 and IsVisible = 1 and rd.assettypeid = @id and a.id = @assetId
+                        union all
+                        select a.[ID] as AssetID
+                             ,rd.[ResponsibilityTypeID]
+                             ,rd.[ResponsibilityTypeName]
+                             ,rd.[ResourceName]
+                             ,rd.[SecurityAsset]
+                             ,rd.[SecurityAssetName]
+                             ,rd.[Context]
+                             ,rd.[ResourceId]
+                             ,rd.[ResourceUid]
+                             ,rd.[SecurityAssetId]
+                             ,rd.[SecurityAssetUid]
+                        from ResponsibilityDetail rd
+                        inner join asset a on rd.assetid = a.id
+                        where rd.AssetTypeID = 0 and IsVisible = 1 and a.AssetTypeID = @id and a.id = @assetId;
+
+                    create index cix_OwnershipLookupAssetId on #OwnershipLookupAssets (AssetId);
+
+                        select count(*) from #OwnershipLookupAssets
+
+                        select '[' + ResponsibilityTypeName + '] - ' + ResourceName as 'title', 
+                        ResourceName as 'value'
+                        from #OwnershipLookupAssets";
+
+                        var gridReader = await Company.Database.Connection.QueryMultipleAsync(
+                          new CommandDefinition(possibleOwnersSql,
+                          parameters: dbArgs,
+                          commandTimeout: 60
+                        ));
+
+                        var data = new
+                        {
+                            count = gridReader.Read<int>().FirstOrDefault(),
+                            items = gridReader.Read<dynamic>().ToList()
+                        };
+
+                        return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, data)));
+                    }
+                }
+
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new List<string>())));
+
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix
+    }
+});
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage)));
             }
         }
     }

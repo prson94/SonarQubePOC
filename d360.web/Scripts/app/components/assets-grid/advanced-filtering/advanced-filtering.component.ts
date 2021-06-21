@@ -5,7 +5,7 @@ import { FieldsObservableService } from "../../../services/fieldsObservable.serv
 import { CompanySettingsService } from "../../../services/settings.service";
 import { FieldType, FieldTypeAPIModelField, FieldTypeHelper } from "../../../models/fieldtype-api.model";
 import { forkJoin, Observable, of } from "rxjs";
-import { AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, FieldTypeAPIModelFieldCondition, Filters, SystemFields } from "./advanced-filtering.models";
+import { AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, ComplexFieldDefinition, FieldTypeAPIModelFieldCondition, Filters, SystemFields } from "./advanced-filtering.models";
 import { DatePipe } from "@angular/common";
 import { AllocationService } from "../../../services/allocations.service";
 import { ScoreTypeAllocation } from "../../../models/metrics.model";
@@ -451,7 +451,6 @@ export class AdvancedFilteringComponent implements OnChanges {
         return this.loadIdentifier.startsWith("ComplexField");
     }
 
-
     getFieldsObs(): Observable<FieldTypeAPIModelField[]> {
         if (this.isAssetType) {
             return this.fieldsService.getFieldsV2(this.assetTypeUid, null, null);
@@ -492,11 +491,15 @@ export class AdvancedFilteringComponent implements OnChanges {
             return staticObs;
         }
         else if (this.isComplexField) {
-            console.log(this.loadIdentifier);
-
             var fields: FieldTypeAPIModelField[] = [];
             fields.push({
-                Name: "EvaluatedAssetClass", FriendlyName: "Asset Class", Type: new FieldType("Lookup"), Category: ""
+                Name: "ResponsibilityTypeName", FriendlyName: "Responsibility", Type: new FieldType("Lookup"), Category: ""
+            });
+            fields.push({
+                Name: "ResourceName ", FriendlyName: "Assigned User/Group", Type: new FieldType("Lookup"), Category: ""
+            });
+            fields.push({
+                Name: "Context", FriendlyName: "Context", Type: new FieldType("Html"), Category: ""
             });
             var staticObs = of(fields);
             return staticObs;

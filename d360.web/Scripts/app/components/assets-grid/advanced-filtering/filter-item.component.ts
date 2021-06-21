@@ -3,7 +3,7 @@ import { LazyLoadEvent, SelectItem, SelectItemGroup } from "primeng/api";
 import * as _ from "lodash";
 import { FieldTypeAPIModelFieldCondition } from "../../../models/field-condition-grid.models";
 import { OperatorModel } from "../../../models/operator.model";
-import { AdvancedFilterFieldCondition, SystemFields } from "./advanced-filtering.models";
+import { AdvancedFilterFieldCondition, ComplexFieldDefinition, SystemFields } from "./advanced-filtering.models";
 import { FieldsObservableService } from "../../../services/fieldsObservable.service";
 import { AssetTypeService } from "../../../services/asset-type.service";
 import { TagService } from "../../../services/tag.service";
@@ -71,7 +71,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
     minSQLDate = new Date(1753, 0, 1);
     numberMax: number = null;
     numberMin: number = null;
-   
+
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
     @ViewChild("multiInput", { static: false }) multiInputRef: MultiInputField;
     @ViewChild("dataTable", { static: false }) dataTable: Table;
@@ -357,7 +357,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     updateFilter() {
-        debugger;
         this.rollbackValue1 = this.condition.value;
         if (this.condition.value) {
             this.rollbackValue1 = JSON.parse(JSON.stringify(this.condition.value));
@@ -486,6 +485,9 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 if (this.condition.field === "[Level]") {
                     this.loadLookupValuesForLevelNames();
                 }
+                else if (this.isComplexField) {
+                    this.loadLookupValuesForComplexFields(params);
+                }
                 else {
                     this.loadLookupValues(params);
                 }
@@ -558,6 +560,43 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
                 res.items.forEach((str) => {
                     loadedData.push({ title: str, value: str });
+                });
+
+                Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
+
+                this.currentField.Values = [...this.currentField.Values];
+
+                this.isLookupValuesLoading = false;
+
+                this.cdRef.markForCheck();
+            });
+    }
+
+    loadLookupValuesForComplexFields(params: any) {
+        if (this.currentField.Values && this.currentField.Values.length > 0 && !params.filter) {
+            var subData = this.currentField.Values.slice(+params.skip, +params.skip + +params.take);
+            if (!subData.some((x) => !x)) {
+                return;
+            }
+        }
+
+        if (this.lazyLoadSubscription) {
+            this.lazyLoadSubscription.unsubscribe();
+        }
+        this.isLookupValuesLoading = true;
+
+        var definition = this.complexFieldDefinition;
+
+        this.lazyLoadSubscription = this.fieldsService.getLookupValuesForComplexField(definition.AssetUid, definition.FieldApiName, this.currentField.Name.trim(), params)
+            .subscribe((res) => {
+                if (!this.currentField.Values || this.currentField.Values.length === 0) {
+                    this.currentField.Values = Array.from({ length: res.count });
+                }
+
+                let loadedData = [];
+
+                res.items.forEach((str) => {
+                    loadedData.push({ title: str.title, value: str.value });
                 });
 
                 Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
@@ -1158,8 +1197,18 @@ export class FilterItemComponent implements OnInit, OnChanges {
         return this.loadIdentifier.startsWith("ComplexField");
     }
 
+    get complexFieldDefinition(): ComplexFieldDefinition {
+        let res = new ComplexFieldDefinition();
+        if (this.isComplexField) {
+            var data = this.loadIdentifier.replace("ComplexField", "").replace("ComplexField", "").split("|");
+            res.AssetUid = data[0];
+            res.FieldApiName = data[1];
+        }
+        return res;
+    }
+
     getFieldsDropdownClass(): string {
-        if (this.isRuleResults) {
+        if (this.isRuleResults || this.isComplexField) {
             return "ig-dropdown-hide-groups";
         }
         else {
