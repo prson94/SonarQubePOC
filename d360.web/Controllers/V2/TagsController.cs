@@ -504,6 +504,13 @@ namespace d360.web.Controllers.V2
 
                 var queryParams = Request.GetQueryNameValuePairs();
 
+                string isValid = isPageSizeAndNumValid(queryParams);
+
+                if (!string.IsNullOrEmpty(isValid))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid);
+                }
+
                 if (queryParams.Any(q => q.Key.ToLower() == "assettypeuid"))
                 {
                     if (!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "assettypeuid").Value.ToLower(), out AssetTypeUid))
