@@ -1,9 +1,0 @@
-﻿<div class="col l12 m12 s12" >
-    <d3s-fusion-attribute-summary [initialFusionAttributeId]="initialFusionAttributeId" [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;"></d3s-fusion-attribute-summary>
-    <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
-        <d3s-object-definition-tile [objectPermissions]="[]" [objectID]="selectedFusionAttribute?.ID" [objectType]="'FusionAttribute'" [nymTypes]="selectedFusionAttribute?.NymTypes"></d3s-object-definition-tile>
-    </div>
-    <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
-        <d3s-object-relationships [objectPermissions]="permissions" [objectType]="'FusionAttribute'" [objectID]="selectedFusionAttribute?.ID" objectName=""></d3s-object-relationships>
-    </div>
-</div>

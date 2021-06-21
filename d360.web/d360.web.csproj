@@ -426,9 +426,6 @@
     <Compile Include="Controllers\AuthenticationController.cs" />
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\Forms\FormController.cs" />
-    <Compile Include="Controllers\FusionController.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Controllers\DiagramsController.cs" />
     <Compile Include="Controllers\ReportsController.cs" />
     <Compile Include="Controllers\QueriesController.cs" />
@@ -770,14 +767,6 @@
     <Content Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.html" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
-    <Content Include="Scripts\app\components\fusion\fusion-attribute-details.component.html" />
-    <Content Include="Scripts\app\components\fusion\fusion-attribute.component.html" />
-    <Content Include="Scripts\app\components\fusion\fusion-agent-errors.component.html" />
-    <Content Include="Scripts\app\components\fusion\fusion-agent-history.component.html" />
-    <Content Include="Scripts\app\components\fusion\fusion-configurations.component.html" />
-    <Content Include="Scripts\app\components\fusion\fusion-history.component.html" />
-    <Content Include="Scripts\app\components\fusion\fusion-item.component.html" />
-    <Content Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.input-group.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.multi-input-field.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.radio-button.component.html" />
@@ -1439,8 +1428,6 @@
     <TypeScriptCompile Include="Scripts\app\components\asset\asset.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\asset\asset.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\asset\asset.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-workflow-version.component.ts" />
     <Content Include="Scripts\app\components\shared\controls\switch\switch.html" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference-item-list.component.ts" />
@@ -1562,7 +1549,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-custom-export.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-form-history.component.ts" />
@@ -1638,7 +1624,6 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\followers\followers.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\followers\followers.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\followers\followers.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\itemown\itemown.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\itemown\itemown.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\itemown\itemown.routes.ts" />
@@ -1814,7 +1799,6 @@
     <TypeScriptCompile Include="Scripts\app\services\cascade.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\cookie.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\custom-api.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference-item-type-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference.module.ts" />
@@ -1836,11 +1820,6 @@
     <TypeScriptCompile Include="Scripts\app\components\community\community.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\groups\group.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\responsibilities\responsibility-type.form.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-agent-errors.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-agent-history.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-execution-errors.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-execution-results.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-process-errors.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group-responsibility.component.ts" />
@@ -1848,18 +1827,6 @@
     <TypeScriptCompile Include="Scripts\app\components\group\group.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-groups.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\fusion-attribute-item-details.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-summary-filters.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-summary.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-configurations.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-execution-history.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-item.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-statistics.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-structure-tree.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-breadcrumb-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-breadcrumb.component.ts" />
@@ -1939,7 +1906,6 @@
     <TypeScriptCompile Include="Scripts\app\models\favorite.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\filter-field.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\follower.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\fusion-attribute.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\fusion.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\message-bar-item.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\model.model.ts" />
@@ -2013,7 +1979,6 @@
     <TypeScriptCompile Include="Scripts\app\services\dashboard.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\favorites.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\follower.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\fusion-attribute.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fusion.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\models.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\object-statistics.service.ts" />
