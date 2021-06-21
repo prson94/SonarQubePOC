@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { JsonResult } from '../models/jsonresult.model';
-import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreTypeAllocation, ScoreType } from '../models/metrics.model';
-import { AssetTypeMetricModel } from '../models/asset.model';
+import { ScoreTypeAllocation, ScoreType } from '../models/metrics.model';
 import { Observable } from 'rxjs';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
@@ -10,7 +8,9 @@ import { map, catchError } from 'rxjs/operators';
 
 
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class AllocationService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }

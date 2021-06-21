@@ -8,7 +8,9 @@ import { EditorField } from '../models/editor-field.model';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from "./baseObservable.service";
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class EditorDefinitionService extends BaseObservableService {
     constructor(
         private http: HttpClient,

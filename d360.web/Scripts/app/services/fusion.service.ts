@@ -16,7 +16,9 @@ import { FormHelper } from "../models/form.model";
 import { TreeNode } from 'primeng/api';
 import { AssetTypeStyle } from '../models/asset-type-style.model';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class FusionService extends BaseObservableService {
     constructor(
         private http: HttpClient,

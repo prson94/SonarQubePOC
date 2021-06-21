@@ -8,7 +8,9 @@ import { MessagesObservableService } from './messages-observable.service';
 import { SettingsHelper, SearchType } from '../models/settings.model';
 import { IndexableType, IndexableStatus } from "../models/search-admin.model";
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class SearchService extends BaseObservableService  {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }

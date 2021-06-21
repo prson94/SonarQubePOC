@@ -1,21 +1,19 @@
 ﻿import { Injectable } from '@angular/core';
 import { TreeNode } from 'primeng/api';
 import {
-    AssetTypeClass
-} from '../models/asset.model';
-import {
     ArtifactTypeEditorModel,
     ArtifactType
 } from '../models/artifact-type.model';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
-import { JsonResult } from '../models/jsonresult.model';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class ArtifactTypeService extends BaseObservableService {
 
     constructor(

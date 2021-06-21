@@ -21,7 +21,9 @@ import { Observable } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class ResponsibilityTypeService extends BaseObservableService implements IResponsibilityTypeService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }

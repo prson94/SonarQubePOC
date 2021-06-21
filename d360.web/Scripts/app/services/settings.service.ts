@@ -10,7 +10,9 @@ import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from "./messages-observable.service";
 import { OperatorModel } from "../models/operator.model";
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class CompanySettingsService extends BaseObservableService implements ICompanySettingsService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }

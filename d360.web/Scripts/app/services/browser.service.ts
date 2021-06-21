@@ -28,7 +28,9 @@ import { AssetTypeClass } from '../models/asset.model';
 import { IconProperties } from '../models/icon-properties.model';
 import { ApiResult } from '../models/apiresult.model';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class BrowserService extends BaseObservableService {
     private iconProperties: IconProperties[] = [];
 

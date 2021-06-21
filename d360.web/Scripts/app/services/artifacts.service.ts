@@ -11,7 +11,9 @@ import { BaseObservableService } from './baseObservable.service';
 import { ApiResult } from "../models/apiresult.model";
 import { Router } from "@angular/router";
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class ArtifactService extends BaseObservableService {
 
     constructor(

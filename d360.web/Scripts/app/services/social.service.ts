@@ -8,7 +8,9 @@ import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from "./messages-observable.service";
 import { Router } from "@angular/router";
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class SocialService extends BaseObservableService  {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService, private router: Router) { super(messagesService); }
