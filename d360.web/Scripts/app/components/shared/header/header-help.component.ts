@@ -4,8 +4,7 @@ import { CompanySettingsService } from "../../../services/settings.service";
 import { ResourcesService } from "../../../services/resources.service";
 import { HelpResource } from "../../../models/resource.model";
 import { Observable } from "rxjs";
-declare var __BUILD_DATE: string;
-declare var VersionNumber: string;
+import { environment } from '../../../../environments/environment';
 
 @Component({
     selector: 'd3s-header-help',
@@ -34,8 +33,8 @@ declare var VersionNumber: string;
                                 <img class="about-image" src="../../../../../Content/images/aboutLogo.png"/>
                                 <div class="about-info">
                                     <ul>
-                                        <li><b>Build Version:</b> {{this.versionNumber}}</li>
-                                        <li><b>Build Date:</b> {{this.buildDate | date:'short'}}</li>
+                                        <li><b>Build Version:</b> {{environment.version}}</li>
+                                        <li><b>Build Date:</b> {{environment.timeStamp | date:'short'}}</li>
                                         <li><b>Support:</b> <a href="http://support.infogix.com" target="_blank">http://support.infogix.com</a></li>
                                         <li><a class="thirdPartyLicence" href="/Content/thirdpartylicenses.html" target="_blank">Third Party Licenses</a></li>
                                         <li><b>Usage information:</b> <br/></li>
@@ -47,7 +46,7 @@ declare var VersionNumber: string;
                                         </ul>
                                         <d3s-loading [isLoading]="isLoading"></d3s-loading>
                                     </ul>
-                                    <p>© 2005-{{this.buildDate | date:'yyyy'}} Infogix. All rights reserved.</p>
+                                    <p>© 2005-{{environment.timeStamp | date:'yyyy'}} Infogix. All rights reserved.</p>
                                     <p>Confidential - Limited distribution to authorized persons only, pursuant to the terms of Infogix Inc. license agreement. This software is protected as an unpublished work and constitutes a trade secret of Infogix Inc.</p>
                                 </div>
                             </div>
@@ -83,13 +82,14 @@ export class HeaderHelpComponent implements OnInit {
     isLoading: boolean = false;
     customHelpResources: HelpResource[] = null;
     customHelpResources$: Observable<any>;
+    environment= environment;
+    
 
     public userGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#c-user-guide/user-guide.htm%3FTocPath%3DUser%2520guide%7C_____0";
     public adminGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/admin-intro.htm%3FTocPath%3DAdministration%2520guide%7C_____0";
     public whatIsNew = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#b-release-notes/whats-new.htm%3FTocPath%3DWhat";
     public community = "https://support.infogix.com/hc/en-us/community/topics/360000029388-Data3Sixty-Govern";
-    buildDate: string = __BUILD_DATE;
-    versionNumber: string = VersionNumber;
+    
     isModalVisible: boolean = false;
     @ViewChild("popupBox", { static: false }) popupBox: ElementRef;
 
