@@ -69,19 +69,5 @@
       "renameLocals": false
     },
     "sourceMap": false
-  },
-  {
-    "outputFileName": "scripts/dist/poly.js",
-    "inputFiles": [
-      "scripts/dist/runtime*",
-      "scripts/dist/polyfills*",
-      "scripts/dist/vendor*",
-      "scripts/dist/main*"
-    ],
-    "minify": {
-      "enabled": false,
-      "renameLocals": false
-    },
-    "sourceMap": false
   }
 ]
