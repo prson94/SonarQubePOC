@@ -109,6 +109,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     panel_Loading = false;
     panel_InformationDisabled = false;
     panel_InformationHasReadAccess = false;
+    panel_OwnershipHasReadAccess = false;
     panel_TabIndex = 0;
     linkMenuItems: any[] = [
         { title: "Open" },
@@ -887,6 +888,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     if (uid !== '' && uid != this.emptyUid) {
                         this.panel_InformationDisabled = false;
                         this.panel_InformationHasReadAccess = data.hasAssetReadAccess;
+                        this.panel_OwnershipHasReadAccess = data.hasResponsibilityReadAccess;
 
                         if (this.selectedDiagramAsset == null || this.selectedDiagramAsset.Uid != uid) {
                             if (this.panelModel.AlertVisible) {
@@ -896,6 +898,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             else {
                                 this.selectedDiagramAsset = new AssetBrowserDiagramAsset();
                                 this.selectedDiagramAsset.Uid = uid;
+                                this.selectedDiagramAsset.Id = data.assetId;
                                 if (this.panelModel.InformationVisible) {
                                     if (this.panel_InformationDisabled) {
                                         this.helper_SetVisiblePanel(AssetBrowserPanelCommand.None);

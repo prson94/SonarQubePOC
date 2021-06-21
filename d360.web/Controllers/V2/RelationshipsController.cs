@@ -495,7 +495,11 @@ namespace d360.web.Controllers.V2
                     {
                         if (!AssetRepository.DoesAssetExists(SubjectUid))
                         {
-                            return ReturnApiError(HttpStatusCode.NotFound, $"Subject with Uid [{SubjectUid}] could not be found.");
+                            var assetType = AssetRepository.GetAssetTypeByUID(SubjectUid);
+                            if (assetType == null || assetType.Class != AssetTypeClass.Reference)
+                            {
+                                return ReturnApiError(HttpStatusCode.NotFound, $"Subject with Uid [{SubjectUid}] could not be found.");
+                            }
                         }
                     }
                 }
@@ -513,7 +517,11 @@ namespace d360.web.Controllers.V2
                     {
                         if (!AssetRepository.DoesAssetExists(ObjectUid))
                         {
-                            return ReturnApiError(HttpStatusCode.NotFound, $"Object with Uid [{ObjectUid}] could not be found.");
+                            var assetType = AssetRepository.GetAssetTypeByUID(ObjectUid);
+                            if (assetType == null || assetType.Class != AssetTypeClass.Reference)
+                            {
+                                return ReturnApiError(HttpStatusCode.NotFound, $"Object with Uid [{ObjectUid}] could not be found.");
+                            }
                         }
                     }
                 }
@@ -1527,6 +1535,32 @@ namespace d360.web.Controllers.V2
                 var asset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
                 if (asset == null || !Company.HasAssetPermission(asset.ID, Permission.ReadRelationships))
                 {
+                    var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetUid);
+                    if (assetType != null)
+                    {
+                        var refTypeCountSQL = @"drop table if exists #relationshipCountMap
+                                create table #relationshipCountMap(IntersectTypeUid uniqueidentifier, IsSubject bit,Count int)
+
+                                insert into #relationshipCountMap
+                                select lower(it.uid), 0, count(*) from [Intersect] I
+                                inner join IntersectType IT on IT.ID = I.IntersectTypeID
+                                where I.Object = @object and I.ObjectID = @objectId
+                                group by it.uid
+
+                                insert into #relationshipCountMap
+                                select lower(it.uid), 1, count(*) from [Intersect] I
+                                inner join IntersectType IT on IT.ID = I.IntersectTypeID
+                                where I.subject = @object and I.subjectid = @objectId
+                                group by it.uid
+                                select * from #relationshipCountMap";
+
+                        var refListData = await Company.QueryAsync<RelationshipCountModel>(refTypeCountSQL, new { assetType.Object, assetType.ObjectID });
+                        return Request.CreateResponse(HttpStatusCode.OK, refListData);
+
+                    }
+
+
+
                     return Request.CreateResponse(HttpStatusCode.OK, new List<string>());
                 }
 

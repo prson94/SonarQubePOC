@@ -1,7 +1,7 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange, ViewChild, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { RelationshipsService } from '../../../services/relationships.service';
-import { RelationshipCount, RelationshipTypeUIModel } from '../../../models/relationship.model';
+import { RelationshipCount, RelationshipType, RelationshipTypeUIModel } from '../../../models/relationship.model';
 import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.component';
 import { ResponsibilityTypeRelationPermission } from '../../../models/responsibility-type.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
@@ -97,63 +97,72 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
         if (this.loadDataSubs) {
             this.loadDataSubs.unsubscribe();
         }
-
         var relationshipSub = this.relationshipsService.getRelationshipTypes(this.assetTypeUid);
+
+        if (this.objectType === "ReferenceItemType") {
+            var relationshipSub = this.relationshipsService.getRelationshipTypes(this.referenceListUid);
+        }
+
         var countsSub = this.relationshipsService.getRelationshipsCountsForAsset(this.assetUid);
 
         this.loadDataSubs = forkJoin([relationshipSub, countsSub]).subscribe((res) => {
             var allItems = res[0] as RelationshipTypeUIModel[];
             var counts = res[1] as RelationshipCount[];
 
-            this.selected = null;
-
-            var origLength = allItems.length;
-            for (let i = 0; i < origLength; i++) {
-                allItems[i].IsSubject = allItems[i].Subject.Uid === this.assetTypeUid;
-
-                if (allItems[i].Subject.Uid === allItems[i].Object.Uid) {
-                    var copy = _.cloneDeep(allItems[i]);
-                    copy.IsSubject = !allItems[i].IsSubject;
-                    allItems.push(copy);
-                }
-            }
-
-            for (let relation of allItems) {
-                var count = counts.filter((f) => f.IntersectTypeUid === relation.Uid && f.IsSubject === relation.IsSubject);
-                if (count.length !== 0) {
-                    relation.Count = count[0].Count;
-                }
-                else {
-                    relation.Count = 0;
-                }
-
-                relation.AllowEditFromRelationshipEditor = this.nonEditablePredicates.indexOf(relation.Predicate.Type) === -1;
-                this.relationshipItems.push(relation);
-            }
-
-            for (let relation of this.relationshipItems) {
-                relation.TypeName = this.getRelName(relation).toUpperCase();
-            }
-
-            this.relationshipItems = this.relationshipItems.sort((a, b) => { return a.TypeName > b.TypeName ? 1 : -1; });
-
-            for (let relation of this.relationshipItems) {
-                if (relation.Count > 0 && !this.selected) {
-                    this.selected = relation;
-                }
-            }
-
-            if (!this.selected)
-                this.selected = (this.relationshipItems && this.relationshipItems.length > 0) ? this.relationshipItems[0] : null;
-
-            this.hasRelationships = (this.relationshipItems && this.relationshipItems.length > 0);
-
-            this.isLoading = false;
-            this.updateCardinality();
-            this.changeDetectorRef.detectChanges();
+            this.ProcessRelationshipTypesResponse(allItems, counts);
         });
 
         this.permissions = this.objectPermissions;
+    }
+
+    private ProcessRelationshipTypesResponse(allItems: RelationshipTypeUIModel[], counts: RelationshipCount[]) {
+
+        this.selected = null;
+
+        var origLength = allItems.length;
+        for (let i = 0; i < origLength; i++) {
+            allItems[i].IsSubject = allItems[i].Subject.Uid === this.assetTypeUid;
+
+            if (allItems[i].Subject.Uid === allItems[i].Object.Uid) {
+                var copy = _.cloneDeep(allItems[i]);
+                copy.IsSubject = !allItems[i].IsSubject;
+                allItems.push(copy);
+            }
+        }
+
+        for (let relation of allItems) {
+            var count = counts.filter((f) => f.IntersectTypeUid === relation.Uid && f.IsSubject === relation.IsSubject);
+            if (count.length !== 0) {
+                relation.Count = count[0].Count;
+            }
+            else {
+                relation.Count = 0;
+            }
+
+            relation.AllowEditFromRelationshipEditor = this.nonEditablePredicates.indexOf(relation.Predicate.Type) === -1;
+            this.relationshipItems.push(relation);
+        }
+
+        for (let relation of this.relationshipItems) {
+            relation.TypeName = this.getRelName(relation).toUpperCase();
+        }
+
+        this.relationshipItems = this.relationshipItems.sort((a, b) => { return a.TypeName > b.TypeName ? 1 : -1; });
+
+        for (let relation of this.relationshipItems) {
+            if (relation.Count > 0 && !this.selected) {
+                this.selected = relation;
+            }
+        }
+
+        if (!this.selected)
+            this.selected = (this.relationshipItems && this.relationshipItems.length > 0) ? this.relationshipItems[0] : null;
+
+        this.hasRelationships = (this.relationshipItems && this.relationshipItems.length > 0);
+
+        this.isLoading = false;
+        this.updateCardinality();
+        this.changeDetectorRef.detectChanges();
     }
 
     export() {
@@ -250,42 +259,47 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     }
 
     getIconClass(rel: RelationshipTypeUIModel) {
-        {
-            var isObject = rel.Object.Uid === this.assetTypeUid;
-            var type = isObject ? rel.Subject.Class : rel.Object.Class;
-
-            let cs: string = 'fa inactive-tool-icon ';
-
-            switch (type) {
-                case "Rule":
-                    cs += "fa-pie-chart";
-                    break;
-                case "Policy":
-                    cs += "fa-university";
-                    break;
-                case "FusionAttribute":
-                    cs += "fa-database";
-                    break;
-                case "Resource":
-                    cs += "fa-user";
-                    break;
-                case "ReferenceItemType":
-                case "Reference":
-                    cs += "fa-list";
-                    break;
-                case "Diagram":
-                    cs += "fa-share-alt";
-                    break;
-                case "BusinessAsset":
-                case "TechnicalAsset":
-                    cs += "fa-book";
-                    break;
-                default:
-                    cs += "fa-book";
-                    break;
-            }
-            return cs;
+        var isObject = rel.Object.Uid === this.assetTypeUid;
+        if (this.objectType === "ReferenceItemType" && this.isReferenceListType(rel.Object.Uid)) {
+            isObject = true;
         }
+        if (this.objectType === "ReferenceItemType" && this.isReferenceListType(rel.Subject.Uid)) {
+            isObject = false;
+        }
+
+        var type = isObject ? rel.Subject.Class : rel.Object.Class;
+
+        let cs: string = 'fa inactive-tool-icon ';
+
+        switch (type) {
+            case "Rule":
+                cs += "fa-pie-chart";
+                break;
+            case "Policy":
+                cs += "fa-university";
+                break;
+            case "FusionAttribute":
+                cs += "fa-database";
+                break;
+            case "Resource":
+                cs += "fa-user";
+                break;
+            case "ReferenceItemType":
+            case "Reference":
+                cs += "fa-list";
+                break;
+            case "Diagram":
+                cs += "fa-share-alt";
+                break;
+            case "BusinessAsset":
+            case "TechnicalAsset":
+                cs += "fa-book";
+                break;
+            default:
+                cs += "fa-book";
+                break;
+        }
+        return cs;
     }
 
     getIconTooltip(rel: RelationshipTypeUIModel) {

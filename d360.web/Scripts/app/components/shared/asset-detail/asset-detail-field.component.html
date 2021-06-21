@@ -5,13 +5,13 @@
                 <d3s-preview-tooltip [objectType]="item.TooltipType" [objectId]="item.TooltipID"  [contentAnchor]="'right'" [align]="tooltipAlign">
                     <a *ngIf="item.TooltipUrl && fieldDataType != 'color'" [href]="item.TooltipUrl" [innerHtml]="(valueCount > 1 ? '&bull; ' : '') + item.Value" (click)="navigate(item.TooltipUrl, $event)"></a>
                     <span *ngIf="!item.TooltipUrl && fieldDataType != 'color'" [innerHtml]="item.Value"></span>
-                    <d3s-color-display *ngIf="fieldDataType == 'color'" [url]="item.TooltipUrl" [colorsJSON]="item.Value"></d3s-color-display>
+                    <d3s-color-display *ngIf="fieldDataType == 'color'" [url]="item.TooltipUrl" [colorsJSON]="item.Value"  styleClass="detail"></d3s-color-display>
                 </d3s-preview-tooltip>
             </li>
             <li *ngIf="item.TooltipContext != 'Preview'">
                 <d3s-lookup-tooltip *ngIf="item.TooltipUrl; else noLinkTooltip" [objectType]="item.TooltipType" [objectId]="item.TooltipID" [contentAnchor]="'right'">
                     <a *ngIf="fieldDataType != 'color'" [href]="item.TooltipUrl" (click)="navigate(item.TooltipUrl, $event)" [innerText]="(valueCount > 1 ? '&bull; ' : '') + item.Value"></a>
-                    <d3s-color-display *ngIf="fieldDataType == 'color'" [colorsJSON]="item.Value" [url]="item.TooltipUrl"></d3s-color-display>
+                    <d3s-color-display *ngIf="fieldDataType == 'color'" [colorsJSON]="item.Value" [url]="item.TooltipUrl" styleClass="detail"></d3s-color-display>
                 </d3s-lookup-tooltip>
             </li>
         </ul>
@@ -75,11 +75,11 @@
                 </ng-container>
                 <ng-container *ngSwitchCase="'color'">
                     <div class="ig-value">
-                        <d3s-color-display [colorsJSON]="field.Value"></d3s-color-display>
+                        <d3s-color-display [colorsJSON]="field.Value"  styleClass="detail"></d3s-color-display>
                     </div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'score'">
-                    <span class="ig-colorfield-item grid" style="display: inline-flex !important;">
+                    <span class="ig-value ig-colorfield-item detail" style="display: inline-flex !important;">
                         <span class="ig-colorfield-swatch" [ngClass]="'score-' + json?.Threshold"></span>
                         <span class="ig-colorfield-item-label">
                             {{json?.name}}
@@ -100,30 +100,34 @@
             <ng-template #listTooltip>
                 <d3s-lookup-tooltip *ngIf="field.TooltipUrl; else noLinkTooltip" [objectType]="field.TooltipType" [objectId]="field.TooltipID">
                     <a *ngIf="fieldDataType != 'color'" [href]="field.TooltipUrl" (click)="navigate(field.TooltipUrl, $event)" [innerText]="field.Value"></a>
-                    <d3s-color-display *ngIf="fieldDataType == 'color'" [url]="field.TooltipUrl" [colorsJSON]="field.Value"></d3s-color-display>
+                    <d3s-color-display *ngIf="fieldDataType == 'color'" [url]="field.TooltipUrl" [colorsJSON]="field.Value"  styleClass="detail"></d3s-color-display>
                 </d3s-lookup-tooltip>
                 <ng-template #noLinkTooltip>
                     <d3s-lookup-tooltip [objectType]="field.TooltipType" [objectId]="field.TooltipID">
                         <span *ngIf="fieldDataType != 'color'" [innerText]="field.Value"></span>
-                        <d3s-color-display *ngIf="fieldDataType == 'color'" [colorsJSON]="field.Value"></d3s-color-display>
+                        <d3s-color-display *ngIf="fieldDataType == 'color'" [colorsJSON]="field.Value"  styleClass="detail"></d3s-color-display>
                     </d3s-lookup-tooltip>
                 </ng-template>
             </ng-template>
         </div>
     </ng-container>
     <ng-container *ngIf="field.Type == DetailFieldType.LookupGrid">
-        <ig-asset-lookup-grid    [data]="field.Data"
-                                 [hideHeader]="field.HideHeader"
-                                 [hideFooter]="field.HideFooter"
-                                 [hideFilter]="field.HideFilter"
-                                 [field]="field"
-                                 [assetUid]="assetUid">
-        </ig-asset-lookup-grid>
+        <div class="ig-value">
+            <ig-asset-lookup-grid [data]="field.Data"
+                                  [hideHeader]="field.HideHeader"
+                                  [hideFooter]="field.HideFooter"
+                                  [hideFilter]="field.HideFilter"
+                                  [field]="field"
+                                  [assetUid]="assetUid">
+            </ig-asset-lookup-grid>
+        </div>
     </ng-container>
     <ng-container *ngIf="field.Type == DetailFieldType.LookupList">
-        <ig-asset-lookup-list [data]="field.Data"
-                              [field]="field"
-                              [assetUid]="assetUid">
-        </ig-asset-lookup-list>
+        <div class="ig-value">
+            <ig-asset-lookup-list [data]="field.Data"
+                                  [field]="field"
+                                  [assetUid]="assetUid">
+            </ig-asset-lookup-list>
+        </div>
     </ng-container>
 </ng-template>

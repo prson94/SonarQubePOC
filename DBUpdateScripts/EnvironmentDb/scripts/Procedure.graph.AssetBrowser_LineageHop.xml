@@ -5,13 +5,455 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_LineageHop-v7">
-    <comment>GOV-14051</comment>
+  <changeSet author="MDonato" id="Procedure.graph.AssetBrowser_LineageHop-v8">
+    <comment>GOV-15023</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+CREATE OR ALTER procedure [graph].[AssetBrowser_LineageHop]
+	@ancestry int, -- 1 = all, 2 = direct-parent
+	@hierarchyKey varchar(50),
+	@assets dbo.AssetBrowserImpactTable readonly,
+	@preloadedIntersects dbo.Ids readonly,
+	@direction char(1) = 'F', -- (F)orward, (B)ackward
+	@resourceId int,
+	@isAdmin bit,
+	@includeNonLeaf bit = 1,
+	@includeDescendantAssets bit = 1
+as
+begin
+	set nocount on;
+	declare @offLimitImpactFunctionalTypes table (ID int)
+	insert into @offLimitImpactFunctionalTypes (ID) values (1),(3),(4),(12),(13),(15)
+
+	drop table if exists #preloadedIntersectIds;
+	create table #preloadedIntersectIds (Id bigint);
+	create clustered index CIX_Temp_preloadedIntersectIds on #preloadedIntersectIds (Id);
+	insert into #preloadedIntersectIds
+		select Id from @preloadedIntersects
+
+	drop table if exists #ids;
+	create table #ids ([Key] varchar(50), ID bigint);
+
+	drop table if exists #hops;
+	create table #hops (IntersectID bigint, IntersectUid uniqueidentifier, SubjectID bigint, [from] varchar(50), ObjectId bigint, [to] varchar(50), PredicateID int, Hop int);
+	create nonclustered index IX_TempHops_IntersectID on #hops (IntersectID asc);
+
+	insert into #ids ([Key], ID)
+		select O.[Key], A.ID from @assets O inner join Asset A on A.Uid = O.Uid;
+
+	declare @salt varchar(25) = graph.Hop_GenerateSalt()
+
+	-- Relationships
+	if @direction = 'B'
+	begin
+		insert into #hops (IntersectID, IntersectUid, SubjectID, [from], ObjectId, [to], PredicateID)
+			select	E.ID,
+					E.Uid,
+					S.ID,
+					utility.GetHash(@salt + '|' + cast(S.ID as varchar)),
+					T.ID,
+					I.[Key],
+					E.PredicateID
+			from	graph.AssetNode S,
+					graph.AssetEdge E,
+					graph.AssetNode T,
+					#ids I
+			where	MATCH(S-(E)->T)
+					and E.PredicateType in (1,12,13)
+					and T.ID = I.ID
+					and E.ID not in (select Id from #preloadedIntersectIds);
+	end
+	else
+	begin 
+		insert into #hops (IntersectID, IntersectUid, SubjectID, [from], ObjectId, [to], PredicateID)
+			select	E.ID,
+					E.Uid,
+					S.ID,
+					I.[Key],
+					T.ID,
+					utility.GetHash(@salt + '|' + cast(T.ID as varchar)),
+					E.PredicateID
+			from	graph.AssetNode S,
+					graph.AssetEdge E,
+					graph.AssetNode T,
+					#ids I
+			where	MATCH(S-(E)->T)
+					and E.PredicateType in (1,12,13)
+					and S.ID = I.ID
+					and E.ID not in (select Id from #preloadedIntersectIds);
+	end
+
+	drop table if exists #hopAssets
+	create table #hopAssets (ID bigint, [Key] varchar(32))
+	insert into #hopAssets
+		select	H.SubjectID, H.[from]
+		from	#hops H
+				left join #ids I on I.[Key] = H.[from]	-- Do not other loading the incoming assets we want to reveal from.
+		where	I.[Key] is null
+		group by H.SubjectID, H.[from]
+
+	insert into #hopAssets
+		select	H.ObjectID, H.[to]
+		from	#hops H
+				left join #ids I on I.[Key] = H.[to]	-- Do not other loading the incoming assets we want to reveal from.
+		where	I.[Key] is null
+		group by H.ObjectID, H.[to];
+
+	drop table if exists #hierarchies
+	create table #hierarchies (
+								Uid uniqueidentifier, ID bigint, ParentID bigint, AssetTypeID int, [Key] varchar(50), [ParentKey] varchar(50),
+								UseAsTransformation bit default(0), IsSubjectInTransformation bit default(0), IsLeaf bit default(0),
+								HasAssetReadAccess bit default(1) not null,
+								HasResponsibilityReadAccess bit default(1) not null,
+								Back varchar(25), BackAmount decimal(2,1), HierarchyKey varchar(50)
+							  );
+	create clustered index cix_TempHierarchies on #hierarchies (HierarchyKey);
+	create nonclustered index ix_TempHierarchies_ID on #hierarchies (ID);
+	create nonclustered index ix_TempHierarchies_ParentID on #hierarchies (ParentID);
+
+	if @ancestry = 1
+	begin
+		with h as (
+			select	A.Uid,
+					A.ID,
+					A.AssetTypeID,
+					I.Object,
+					I.ObjectID,
+					P.ID ParentID,
+					I.Subject as ParentObject,
+					I.SubjectID as ParentObjectID
+			from	Asset A
+					inner join #hopAssets L on L.ID = A.ID
+					left join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
+					left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+			union all
+			select	A.Uid,
+					A.ID,
+					A.AssetTypeID,
+					A.Object,
+					A.ObjectID,
+					I.ParentID,
+					I.Subject as ParentObject,
+					I.SubjectID as ParentObjectID
+			from	h
+					inner join Asset A on h.ParentObject = A.Object and h.ParentObjectID = A.ObjectID
+					outer apply (
+						select	P.ID as ParentID,
+								I.Subject,
+								I.SubjectID
+						from	PredicateIntersect I 
+								inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+						where	I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
+					) I
+		)
+
+		insert into #hierarchies (Uid, ID, ParentID, AssetTypeID)
+			select distinct Uid, ID, ParentID, AssetTypeID from h;
+
+		-- GOV-13214 - Get children that may not be involved in lineage --------------------------------------
+		if @includeDescendantAssets = 1
+		begin
+			with h as (
+				select	C.Uid,
+						C.ID,
+						C.AssetTypeID,
+						I.Object,
+						I.ObjectID,
+						A.ID ParentID,
+						I.Subject as ParentObject,
+						I.SubjectID as ParentObjectID
+				from	Asset A
+						inner join #hopAssets L on L.ID = A.ID
+						inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
+						inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
+				union all
+				select	C.Uid,
+						C.ID,
+						C.AssetTypeID,
+						C.Object,
+						C.ObjectID,
+						A.ID as ParentID,
+						I.Subject as ParentObject,
+						I.SubjectID as ParentObjectID
+				from	h
+						inner join Asset A on h.Object = A.Object and h.ObjectID = A.ObjectID
+						inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
+						inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
+			)
+
+			insert into #hierarchies (Uid, ID, ParentID, AssetTypeID)
+				select	distinct 
+						h.Uid, h.ID, h.ParentID, h.AssetTypeID
+				from	h
+						left join #hierarchies e on e.Uid = h.Uid
+				where	e.Uid is null
+		end
+		------------------------------------------------------------------------------------------------------
+
+	end
+	else 
+	begin
+		insert into #hierarchies (Uid, ID, ParentID, AssetTypeID)
+			select	A.Uid,
+					A.ID,
+					P.ID ParentID,
+					A.AssetTypeID
+			from	Asset A
+					inner join #hopAssets L on L.ID = A.ID
+					left join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
+					left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+		
+		insert into #hierarchies (Uid, ID, AssetTypeID)
+			select	P.Uid,
+					P.ID,
+					P.AssetTypeID
+			from	#hierarchies h
+					inner join Asset C on C.ID = h.ID
+					inner join Asset P on P.ID = h.ParentID
+					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = P.Object and I.SubjectID = P.ObjectID and I.Object = C.Object and I.ObjectID = C.ObjectID
+	end
+
+	update	H
+	set		H.[Key] = utility.GetHash(@salt + '|' + cast(H.ID as varchar)),
+			H.[ParentKey] = case when H.ParentID is null then null else utility.GetHash(@salt + '|' + cast(H.ParentID as varchar)) end
+	from	#hierarchies H;
+
+	update	H
+	set		HasAssetReadAccess = case when P.PermissionsBitMask & 1 = 1 then 1 else 0 end,
+			HasResponsibilityReadAccess = case when P.PermissionsBitMask & 32 = 32 then 1 else 0 end 
+	from	#hierarchies H
+			cross apply dbo.UserAssetPermissions(@resourceId,H.AssetTypeID) P 
+	where	P.AssetID = H.ID;
+
+
+	insert into #hierarchies (AssetTypeID, [Key], Uid)
+		select		O.AssetTypeID,
+					utility.GetHash(@salt + '|' + cast(O.AssetTypeID as varchar)),
+					CAST(0x0 AS UNIQUEIDENTIFIER)
+		from		#hierarchies O
+					left join #hierarchies C on C.ParentID = O.ID
+		where		C.ID is null and O.ParentID is null
+		group by	O.AssetTypeID
+
+	-- Update parent key for single-level assets with key for asset type records added above.
+	update	O
+	set		O.ParentKey = utility.GetHash(@salt + '|' + cast(O.AssetTypeID as varchar))
+	from	#hierarchies O
+			left join #hierarchies C on C.ParentID = O.ID
+	where	C.ID is null and O.ParentID is null and O.ID is not null;
+
+
+	update	T
+	set		T.UseAsTransformation = S.UseAsTransformation,
+			T.IsSubjectInTransformation = CASE 
+											WHEN ATO.Cnt = 0 THEN 0 
+											ELSE 1
+										END
+	from	#hierarchies T 
+			inner join AssetType S on S.ID = T.AssetTypeID
+			cross apply (
+						select	count(*) 
+						from	IntersectType IT
+								left join AssetType ATO on ATO.Object = IT.Object and ATO.ObjectID = IT.ObjectID and ATO.UseAsTransformation = 1
+						where	IT.Subject = S.Object and IT.SubjectID = S.ObjectID
+						) ATO(Cnt);
+
+	update	T
+	set		T.IsLeaf = iif(C.ID is null, 1, 0)
+	from	#hierarchies T
+			left join #hierarchies C on C.ParentKey = T.[Key];
+
+	-- Now calculate backAmount.
+	with ba as (
+		select	H.[Key],
+				H.[ParentKey],
+				S.IconBackColor as Back,
+				cast(0 as decimal(2,1)) as BackAmount,
+				H.[Key] as HierarchyKey
+		from	#hierarchies H
+				inner join AssetTypeStyle S on S.ID = H.AssetTypeID
+		where	H.[ParentKey] is null
+		union all
+		select	H.[Key],
+				H.[ParentKey],
+				P.Back,
+				case 
+					when P.BackAmount = 0.8 then P.BackAmount
+					else cast(P.BackAmount+0.2 as decimal(2,1))
+				end as BackAmount,
+				P.HierarchyKey
+		from	#hierarchies H
+				inner join ba P on P.[Key] = H.ParentKey
+	)
+
+	update	H
+	set		H.BackAmount = ba.BackAmount,
+			H.Back = ba.Back,
+			H.HierarchyKey = ba.HierarchyKey
+	from	#hierarchies H
+			inner join ba on ba.[Key] = H.[Key];
+
+	select		distinct
+				H.hierarchyKey,
+				cast(0 as bit) as focal,
+				H.IsLeaf as leaf,
+				H.[key],
+				H.parentKey as [group],
+				H.Uid as assetUid,
+				H.Id as assetId,
+				H.assetTypeId,
+				T.Uid as assetTypeUid,
+				H.backAmount,
+				H.back,
+				coalesce(S.icon, 'fa-book') as icon,
+				T.Class as class,
+				coalesce(DV.DisplayValue, T.Name) as [text],
+				(
+				select	count(1) as ActionCount
+				from	Issue I
+						inner join Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
+				where	I.CompletedOn is null
+						and exists (select 1 from workflow.Item where Object = 'Issue' and ObjectID = I.ID)
+						and A.ID = H.ID
+				) as actionCount, 
+				coalesce(H.useAsTransformation, 0) as useAsTransformation,
+				H.hasAssetReadAccess,
+				H.hasResponsibilityReadAccess,
+				coalesce(H.isSubjectInTransformation, 0) as isSubjectInTransformation
+	from		#hierarchies H
+				left join AssetDisplayValue DV on DV.AssetID = H.ID
+				inner join AssetType T on T.ID = H.AssetTypeID
+				inner join AssetTypeStyle S on S.ID = T.ID
+	order by	H.hierarchyKey
+
+	select		iif(@direction = 'B', S.hierarchyKey, @hierarchyKey) as [from],
+				iif(@direction = 'B', @hierarchyKey, T.hierarchyKey) as [to],
+				'#cccccc' as [back],
+				H.predicateId,
+				P.Uid as predicateUid,
+				P.Name as [text],
+				P.[Type] as predicateType,
+				(
+				select	Hi.intersectId as id,
+						Hi.[from],
+						Hi.[to]
+				from	#hops Hi
+						left join #hierarchies Si on Si.[key] = Hi.[from] and Si.hierarchyKey = S.hierarchyKey
+						left join #hierarchies Ti on Ti.[key] = Hi.[to] and Ti.hierarchyKey = T.hierarchyKey
+				for json path
+				) as linksJson
+	from		#hops H
+				left join #hierarchies S on S.[key] = H.[from]
+				left join #hierarchies T on T.[key] = H.[to]
+				inner join [Predicate] P on P.ID = H.PredicateID
+	group by	S.hierarchyKey, T.hierarchyKey, H.predicateId, P.Uid, P.Name, P.Type;
+
+	select	H.hierarchyKey,
+			(
+			select	H.hierarchyKey + '-O-' + cast(responsibilityTypeId as varchar) as [key],
+					ResponsibilityTypeName as responsibilityType, 
+					responsibilityTypeId,
+					count(1) as [count], 
+					cast(0 as bit) as expanded
+			from	(
+					select		Ro.ResponsibilityTypeName, Ro.ResponsibilityTypeID, Ro.ResourceID
+					from		ResponsibilityDetail Ro
+								inner join #hierarchies Ho on Ho.hierarchyKey = H.hierarchyKey
+											and (
+													Ho.ID = Ro.AssetID 
+													or (Ro.AssetID = 0 and Ho.AssetTypeID = Ro.AssetTypeID)
+												) 
+											and Ro.IsVisible = 1
+											and ( (@includeNonLeaf = 0 and Ho.IsLeaf = 1) or (@includeNonLeaf = 1) )
+					group by	Ro.ResponsibilityTypeName, Ro.ResponsibilityTypeID, Ro.ResourceID
+					) O
+			group by ResponsibilityTypeName, ResponsibilityTypeID order by ResponsibilityTypeName
+			for json path
+			) as ownersJson,
+			(
+			select	[predicate], 
+					ID as predicateId, 
+					Uid as predicateUid, 
+					direction, 
+					count(1) as [count], 
+					cast(0 as bit) as expanded
+			from	(
+					select	Hr.hierarchyKey + '-R-' + cast(E.PredicateID as varchar) as [key],
+							(select top 1 Name from Predicate where ID = E.PredicateID) as [Predicate],		-- Improves performance 10x
+							E.PredicateID as ID, 
+							E.PredicateUid as Uid, 
+							1 as Direction
+					from	graph.AssetNode S,
+							graph.AssetEdge E,
+							graph.AssetNode T,
+							#hierarchies Hr
+					where	MATCH(S-(E)->T)
+							and E.PredicateType not in (select ID from @offLimitImpactFunctionalTypes)
+							and Hr.hierarchyKey = H.hierarchyKey and Hr.ID = S.ID
+							and ( (@includeNonLeaf = 0 and Hr.IsLeaf = 1) or (@includeNonLeaf = 1) )
+					union all
+					select	Hr.hierarchyKey + '-R-' + cast(E.PredicateID as varchar) as [key],
+							(select top 1 Inverse from Predicate where ID = E.PredicateID) as [Predicate],  -- Improves performance 10x
+							E.PredicateID as ID, 
+							E.PredicateUid as Uid, 
+							2 as Direction
+					from	graph.AssetNode S,
+							graph.AssetEdge E,
+							graph.AssetNode T,
+							#hierarchies Hr
+					where	MATCH(S-(E)->T)
+							and E.PredicateType not in (select ID from @offLimitImpactFunctionalTypes)
+							and Hr.hierarchyKey = H.hierarchyKey and Hr.ID = T.ID
+							and ( (@includeNonLeaf = 0 and Hr.IsLeaf = 1) or (@includeNonLeaf = 1) )
+					) O
+			group by [Predicate], ID, Uid, Direction
+			for json path
+			) as relationsJson
+	from	#hierarchies H
+	group by H.hierarchyKey
+
+	if (@direction = 'B')
+	begin
+		select	H.hierarchyKey,
+				H.hierarchyKey+'_Reveal' as [from],
+				H.hierarchyKey as [to],
+				2 as direction
+		from	graph.AssetNode S,
+				graph.AssetEdge E,
+				graph.AssetNode T,
+				#hierarchies H
+		where	MATCH(S-(E)->T)
+				and E.ID not in (select IntersectID from #hops)
+				and E.PredicateType in (1,12,13)
+				and T.ID = H.ID
+				and E.ID not in (select Id from #preloadedIntersectIds)
+		group by H.hierarchyKey
+	end
+	else
+	begin
+		select	H.hierarchyKey,
+				H.hierarchyKey as [from],
+				H.hierarchyKey+'_Reveal' as [to],
+				1 as direction
+		from	graph.AssetNode S,
+				graph.AssetEdge E,
+				graph.AssetNode T,
+				#hierarchies H
+		where	MATCH(S-(E)->T)
+				and E.ID not in (select IntersectID from #hops)
+				and E.PredicateType in (1,12,13)
+				and S.ID = H.ID
+				and E.ID not in (select Id from #preloadedIntersectIds)
+		group by H.hierarchyKey
+	end
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [graph].[AssetBrowser_LineageHop]
 	@ancestry int, -- 1 = all, 2 = direct-parent
 	@hierarchyKey varchar(50),
@@ -192,401 +634,6 @@ begin
 		end
 		------------------------------------------------------------------------------------------------------
 
-	end
-	else 
-	begin
-		insert into #hierarchies (Uid, ID, ParentID, AssetTypeID)
-			select	A.Uid,
-					A.ID,
-					P.ID ParentID,
-					A.AssetTypeID
-			from	Asset A
-					inner join #hopAssets L on L.ID = A.ID
-					left join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
-					left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
-		
-		insert into #hierarchies (Uid, ID, AssetTypeID)
-			select	P.Uid,
-					P.ID,
-					P.AssetTypeID
-			from	#hierarchies h
-					inner join Asset C on C.ID = h.ID
-					inner join Asset P on P.ID = h.ParentID
-					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = P.Object and I.SubjectID = P.ObjectID and I.Object = C.Object and I.ObjectID = C.ObjectID
-	end
-
-	update	H
-	set		H.[Key] = utility.GetHash(@salt + '|' + cast(H.ID as varchar)),
-			H.[ParentKey] = case when H.ParentID is null then null else utility.GetHash(@salt + '|' + cast(H.ParentID as varchar)) end
-	from	#hierarchies H;
-
-	update	H
-	set		HasAssetReadAccess = 0
-	from	#hierarchies H
-			cross apply dbo.UserAssetPermissions(@resourceId,H.AssetTypeID) P 
-	where	P.AssetID = H.ID and P.PermissionsBitMask & 1 = 0;
-
-	insert into #hierarchies (AssetTypeID, [Key], Uid)
-		select		O.AssetTypeID,
-					utility.GetHash(@salt + '|' + cast(O.AssetTypeID as varchar)),
-					CAST(0x0 AS UNIQUEIDENTIFIER)
-		from		#hierarchies O
-					left join #hierarchies C on C.ParentID = O.ID
-		where		C.ID is null and O.ParentID is null
-		group by	O.AssetTypeID
-
-	-- Update parent key for single-level assets with key for asset type records added above.
-	update	O
-	set		O.ParentKey = utility.GetHash(@salt + '|' + cast(O.AssetTypeID as varchar))
-	from	#hierarchies O
-			left join #hierarchies C on C.ParentID = O.ID
-	where	C.ID is null and O.ParentID is null and O.ID is not null;
-
-
-	update	T
-	set		T.UseAsTransformation = S.UseAsTransformation,
-			T.IsSubjectInTransformation = CASE 
-											WHEN ATO.Cnt = 0 THEN 0 
-											ELSE 1
-										END
-	from	#hierarchies T 
-			inner join AssetType S on S.ID = T.AssetTypeID
-			cross apply (
-						select	count(*) 
-						from	IntersectType IT
-								left join AssetType ATO on ATO.Object = IT.Object and ATO.ObjectID = IT.ObjectID and ATO.UseAsTransformation = 1
-						where	IT.Subject = S.Object and IT.SubjectID = S.ObjectID
-						) ATO(Cnt);
-
-	update	T
-	set		T.IsLeaf = iif(C.ID is null, 1, 0)
-	from	#hierarchies T
-			left join #hierarchies C on C.ParentKey = T.[Key];
-
-	-- Now calculate backAmount.
-	with ba as (
-		select	H.[Key],
-				H.[ParentKey],
-				S.IconBackColor as Back,
-				cast(0 as decimal(2,1)) as BackAmount,
-				H.[Key] as HierarchyKey
-		from	#hierarchies H
-				inner join AssetTypeStyle S on S.ID = H.AssetTypeID
-		where	H.[ParentKey] is null
-		union all
-		select	H.[Key],
-				H.[ParentKey],
-				P.Back,
-				case 
-					when P.BackAmount = 0.8 then P.BackAmount
-					else cast(P.BackAmount+0.2 as decimal(2,1))
-				end as BackAmount,
-				P.HierarchyKey
-		from	#hierarchies H
-				inner join ba P on P.[Key] = H.ParentKey
-	)
-
-	update	H
-	set		H.BackAmount = ba.BackAmount,
-			H.Back = ba.Back,
-			H.HierarchyKey = ba.HierarchyKey
-	from	#hierarchies H
-			inner join ba on ba.[Key] = H.[Key];
-
-	select		distinct
-				H.hierarchyKey,
-				cast(0 as bit) as focal,
-				H.IsLeaf as leaf,
-				H.[key],
-				H.parentKey as [group],
-				H.Uid as assetUid,
-				H.assetTypeId,
-				T.Uid as assetTypeUid,
-				H.backAmount,
-				H.back,
-				coalesce(S.icon, 'fa-book') as icon,
-				T.Class as class,
-				coalesce(DV.DisplayValue, T.Name) as [text],
-				(
-				select	count(1) as ActionCount
-				from	Issue I
-						inner join Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
-				where	I.CompletedOn is null
-						and exists (select 1 from workflow.Item where Object = 'Issue' and ObjectID = I.ID)
-						and A.ID = H.ID
-				) as actionCount, 
-				coalesce(H.useAsTransformation, 0) as useAsTransformation,
-				H.hasAssetReadAccess,
-				coalesce(H.isSubjectInTransformation, 0) as isSubjectInTransformation
-	from		#hierarchies H
-				left join AssetDisplayValue DV on DV.AssetID = H.ID
-				inner join AssetType T on T.ID = H.AssetTypeID
-				inner join AssetTypeStyle S on S.ID = T.ID
-	order by	H.hierarchyKey
-
-	select		iif(@direction = 'B', S.hierarchyKey, @hierarchyKey) as [from],
-				iif(@direction = 'B', @hierarchyKey, T.hierarchyKey) as [to],
-				'#cccccc' as [back],
-				H.predicateId,
-				P.Uid as predicateUid,
-				P.Name as [text],
-				P.[Type] as predicateType,
-				(
-				select	Hi.intersectId as id,
-						Hi.[from],
-						Hi.[to]
-				from	#hops Hi
-						left join #hierarchies Si on Si.[key] = Hi.[from] and Si.hierarchyKey = S.hierarchyKey
-						left join #hierarchies Ti on Ti.[key] = Hi.[to] and Ti.hierarchyKey = T.hierarchyKey
-				for json path
-				) as linksJson
-	from		#hops H
-				left join #hierarchies S on S.[key] = H.[from]
-				left join #hierarchies T on T.[key] = H.[to]
-				inner join [Predicate] P on P.ID = H.PredicateID
-	group by	S.hierarchyKey, T.hierarchyKey, H.predicateId, P.Uid, P.Name, P.Type;
-
-	select	H.hierarchyKey,
-			(
-			select	H.hierarchyKey + '-O-' + cast(responsibilityTypeId as varchar) as [key],
-					ResponsibilityTypeName as responsibilityType, 
-					responsibilityTypeId,
-					count(1) as [count], 
-					cast(0 as bit) as expanded
-			from	(
-					select		Ro.ResponsibilityTypeName, Ro.ResponsibilityTypeID, Ro.ResourceID
-					from		ResponsibilityDetail Ro
-								inner join #hierarchies Ho on Ho.hierarchyKey = H.hierarchyKey
-											and (
-													Ho.ID = Ro.AssetID 
-													or (Ro.AssetID = 0 and Ho.AssetTypeID = Ro.AssetTypeID)
-												) 
-											and Ro.IsVisible = 1
-											and ( (@includeNonLeaf = 0 and Ho.IsLeaf = 1) or (@includeNonLeaf = 1) )
-					group by	Ro.ResponsibilityTypeName, Ro.ResponsibilityTypeID, Ro.ResourceID
-					) O
-			group by ResponsibilityTypeName, ResponsibilityTypeID order by ResponsibilityTypeName
-			for json path
-			) as ownersJson,
-			(
-			select	[predicate], 
-					ID as predicateId, 
-					Uid as predicateUid, 
-					direction, 
-					count(1) as [count], 
-					cast(0 as bit) as expanded
-			from	(
-					select	Hr.hierarchyKey + '-R-' + cast(E.PredicateID as varchar) as [key],
-							(select top 1 Name from Predicate where ID = E.PredicateID) as [Predicate],		-- Improves performance 10x
-							E.PredicateID as ID, 
-							E.PredicateUid as Uid, 
-							1 as Direction
-					from	graph.AssetNode S,
-							graph.AssetEdge E,
-							graph.AssetNode T,
-							#hierarchies Hr
-					where	MATCH(S-(E)->T)
-							and E.PredicateType not in (select ID from @offLimitImpactFunctionalTypes)
-							and Hr.hierarchyKey = H.hierarchyKey and Hr.ID = S.ID
-							and ( (@includeNonLeaf = 0 and Hr.IsLeaf = 1) or (@includeNonLeaf = 1) )
-					union all
-					select	Hr.hierarchyKey + '-R-' + cast(E.PredicateID as varchar) as [key],
-							(select top 1 Inverse from Predicate where ID = E.PredicateID) as [Predicate],  -- Improves performance 10x
-							E.PredicateID as ID, 
-							E.PredicateUid as Uid, 
-							2 as Direction
-					from	graph.AssetNode S,
-							graph.AssetEdge E,
-							graph.AssetNode T,
-							#hierarchies Hr
-					where	MATCH(S-(E)->T)
-							and E.PredicateType not in (select ID from @offLimitImpactFunctionalTypes)
-							and Hr.hierarchyKey = H.hierarchyKey and Hr.ID = T.ID
-							and ( (@includeNonLeaf = 0 and Hr.IsLeaf = 1) or (@includeNonLeaf = 1) )
-					) O
-			group by [Predicate], ID, Uid, Direction
-			for json path
-			) as relationsJson
-	from	#hierarchies H
-	group by H.hierarchyKey
-
-	if (@direction = 'B')
-	begin
-		select	H.hierarchyKey,
-				H.hierarchyKey+'_Reveal' as [from],
-				H.hierarchyKey as [to],
-				2 as direction
-		from	graph.AssetNode S,
-				graph.AssetEdge E,
-				graph.AssetNode T,
-				#hierarchies H
-		where	MATCH(S-(E)->T)
-				and E.ID not in (select IntersectID from #hops)
-				and E.PredicateType in (1,12,13)
-				and T.ID = H.ID
-				and E.ID not in (select Id from #preloadedIntersectIds)
-		group by H.hierarchyKey
-	end
-	else
-	begin
-		select	H.hierarchyKey,
-				H.hierarchyKey as [from],
-				H.hierarchyKey+'_Reveal' as [to],
-				1 as direction
-		from	graph.AssetNode S,
-				graph.AssetEdge E,
-				graph.AssetNode T,
-				#hierarchies H
-		where	MATCH(S-(E)->T)
-				and E.ID not in (select IntersectID from #hops)
-				and E.PredicateType in (1,12,13)
-				and S.ID = H.ID
-				and E.ID not in (select Id from #preloadedIntersectIds)
-		group by H.hierarchyKey
-	end
-end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-CREATE OR ALTER procedure [graph].[AssetBrowser_LineageHop]
-	@ancestry int, -- 1 = all, 2 = direct-parent
-	@hierarchyKey varchar(50),
-	@assets dbo.AssetBrowserImpactTable readonly,
-	@preloadedIntersects dbo.Ids readonly,
-	@direction char(1) = 'F', -- (F)orward, (B)ackward
-	@resourceId int,
-	@isAdmin bit,
-	@includeNonLeaf bit = 1
-as
-begin
-	set nocount on;
-	declare @offLimitImpactFunctionalTypes table (ID int)
-	insert into @offLimitImpactFunctionalTypes (ID) values (1),(3),(4),(12),(13),(15)
-
-	drop table if exists #preloadedIntersectIds;
-	create table #preloadedIntersectIds (Id bigint);
-	create clustered index CIX_Temp_preloadedIntersectIds on #preloadedIntersectIds (Id);
-	insert into #preloadedIntersectIds
-		select Id from @preloadedIntersects
-
-	drop table if exists #ids;
-	create table #ids ([Key] varchar(50), ID bigint);
-
-	drop table if exists #hops;
-	create table #hops (IntersectID bigint, IntersectUid uniqueidentifier, SubjectID bigint, [from] varchar(50), ObjectId bigint, [to] varchar(50), PredicateID int, Hop int);
-	create nonclustered index IX_TempHops_IntersectID on #hops (IntersectID asc);
-
-	insert into #ids ([Key], ID)
-		select O.[Key], A.ID from @assets O inner join Asset A on A.Uid = O.Uid;
-
-	declare @salt varchar(25) = graph.Hop_GenerateSalt()
-
-	-- Relationships
-	if @direction = 'B'
-	begin
-		insert into #hops (IntersectID, IntersectUid, SubjectID, [from], ObjectId, [to], PredicateID)
-			select	E.ID,
-					E.Uid,
-					S.ID,
-					utility.GetHash(@salt + '|' + cast(S.ID as varchar)),
-					T.ID,
-					I.[Key],
-					E.PredicateID
-			from	graph.AssetNode S,
-					graph.AssetEdge E,
-					graph.AssetNode T,
-					#ids I
-			where	MATCH(S-(E)->T)
-					and E.PredicateType in (1,12,13)
-					and T.ID = I.ID
-					and E.ID not in (select Id from #preloadedIntersectIds);
-	end
-	else
-	begin 
-		insert into #hops (IntersectID, IntersectUid, SubjectID, [from], ObjectId, [to], PredicateID)
-			select	E.ID,
-					E.Uid,
-					S.ID,
-					I.[Key],
-					T.ID,
-					utility.GetHash(@salt + '|' + cast(T.ID as varchar)),
-					E.PredicateID
-			from	graph.AssetNode S,
-					graph.AssetEdge E,
-					graph.AssetNode T,
-					#ids I
-			where	MATCH(S-(E)->T)
-					and E.PredicateType in (1,12,13)
-					and S.ID = I.ID
-					and E.ID not in (select Id from #preloadedIntersectIds);
-	end
-
-	drop table if exists #hopAssets
-	create table #hopAssets (ID bigint, [Key] varchar(32))
-	insert into #hopAssets
-		select	H.SubjectID, H.[from]
-		from	#hops H
-				left join #ids I on I.[Key] = H.[from]	-- Do not other loading the incoming assets we want to reveal from.
-		where	I.[Key] is null
-		group by H.SubjectID, H.[from]
-
-	insert into #hopAssets
-		select	H.ObjectID, H.[to]
-		from	#hops H
-				left join #ids I on I.[Key] = H.[to]	-- Do not other loading the incoming assets we want to reveal from.
-		where	I.[Key] is null
-		group by H.ObjectID, H.[to];
-
-	drop table if exists #hierarchies
-	create table #hierarchies (
-								Uid uniqueidentifier, ID bigint, ParentID bigint, AssetTypeID int, [Key] varchar(50), [ParentKey] varchar(50),
-								UseAsTransformation bit default(0), IsSubjectInTransformation bit default(0), IsLeaf bit default(0),
-								HasAssetReadAccess bit default(1) not null,
-								Back varchar(25), BackAmount decimal(2,1), HierarchyKey varchar(50)
-							  );
-	create clustered index cix_TempHierarchies on #hierarchies (HierarchyKey);
-	create nonclustered index ix_TempHierarchies_ID on #hierarchies (ID);
-	create nonclustered index ix_TempHierarchies_ParentID on #hierarchies (ParentID);
-
-	if @ancestry = 1
-	begin
-		with h as (
-			select	A.Uid,
-					A.ID,
-					A.AssetTypeID,
-					I.Object,
-					I.ObjectID,
-					P.ID ParentID,
-					I.Subject as ParentObject,
-					I.SubjectID as ParentObjectID
-			from	Asset A
-					inner join #hopAssets L on L.ID = A.ID
-					left join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
-					left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
-			union all
-			select	A.Uid,
-					A.ID,
-					A.AssetTypeID,
-					A.Object,
-					A.ObjectID,
-					I.ParentID,
-					I.Subject as ParentObject,
-					I.SubjectID as ParentObjectID
-			from	h
-					inner join Asset A on h.ParentObject = A.Object and h.ParentObjectID = A.ObjectID
-					outer apply (
-						select	P.ID as ParentID,
-								I.Subject,
-								I.SubjectID
-						from	PredicateIntersect I 
-								inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
-						where	I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
-					) I
-		)
-
-		insert into #hierarchies (Uid, ID, ParentID, AssetTypeID)
-			select distinct Uid, ID, ParentID, AssetTypeID from h;
 	end
 	else 
 	begin

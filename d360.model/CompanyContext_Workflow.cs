@@ -2621,7 +2621,17 @@ namespace d360.model
 
                         if (field != null)
                         {
-                            issueInfo += $"<br><b>{fieldType.FriendlyName}</b>: {field.FormattedValue}";
+                            var type = fieldType.Type;
+                            string ConvertFormattedValue;
+                            if (type == "Date" || type == "DateTime")
+                            {
+                                ConvertFormattedValue = GetDisplayDateTimeValue(type, field.FormattedValue);
+                            }
+                            else
+                            {
+                                ConvertFormattedValue = field.FormattedValue;
+                            }
+                            issueInfo += $"<br><b>{fieldType.FriendlyName}</b>: {ConvertFormattedValue}";
                         }
                     }
                 }
@@ -3177,6 +3187,51 @@ namespace d360.model
             return await Database.Connection.QueryFirstOrDefaultAsync<string>("[utility].[GetAssignedResponsibilityNameForWorkflow] @id, @stepId, @itemId", new { id = typeId, @stepId = stepId, @itemId = itemId });
         }
 
+        private string GetDisplayDateTimeValue(string type, string FormattedValue)
+        {
+            DateTime dateValue;
+            string fieldValue;
+
+            if (type == "Date")
+            {
+                if (DateTime.TryParseExact(FormattedValue, "M/d/yyyy h:mm:ss tt", CultureInfo.CurrentCulture, DateTimeStyles.None, out dateValue))
+                {
+                    string formattedDate = dateValue.ToString("dd MMM yyyy");
+                    fieldValue = formattedDate;
+                }
+                else if (DateTime.TryParseExact(FormattedValue, "MM/dd/yyyy HH:mm:ss", null, DateTimeStyles.None, out dateValue))
+                {
+                    string formattedDate = dateValue.ToString("dd MMM yyyy");
+                    fieldValue = formattedDate;
+                }
+                else if (DateTime.TryParseExact(FormattedValue, "M/d/yyyy", null, DateTimeStyles.None, out dateValue))
+                {
+                    string formattedDate = dateValue.ToString("dd MMM yyyy");
+                    fieldValue = formattedDate;
+                }
+                else if (DateTime.TryParseExact(FormattedValue, "MM/dd/yyyy", null, DateTimeStyles.None, out dateValue))
+                {
+                    string formattedDate = dateValue.ToString("dd MMM yyyy");
+                    fieldValue = formattedDate;
+                }
+                else
+                    fieldValue = FormattedValue;
+            }
+            else if (type == "DateTime")
+            {
+                if (DateTime.TryParse(FormattedValue, out dateValue))
+                {
+                    string formattedDate = dateValue.ToString("dd MMM yyyy HH:mm:ss");
+                    fieldValue = formattedDate;
+                }
+                else
+                    fieldValue = FormattedValue;
+            }
+            else
+                fieldValue = FormattedValue;
+
+            return fieldValue;
+        }
         #endregion
     }
 

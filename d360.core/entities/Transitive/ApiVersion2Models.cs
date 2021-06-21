@@ -984,4 +984,15 @@ namespace d360.core.entities
         [DataMember(Name = "success")]
         public bool Success { get; set; }
     }
+
+    [DataContract]
+    public class ResponsibilityBreakdownResponse
+    {
+        [DataMember]
+        public Guid? ResponsibilityTypeUid { get; set; }
+        [DataMember]
+        public string ResponsibilityName { get; set; }
+        [DataMember]
+        public int Count { get; set; }
+    }
 }

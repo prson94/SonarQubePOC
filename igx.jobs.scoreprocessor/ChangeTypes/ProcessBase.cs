@@ -215,16 +215,20 @@ set     ProcessingStartedOn = null,
         Processing = 0,
         Failures = Failures + 1,
         ErrorMessage = coalesce(ErrorMessage, '') + '; Cleared Processing flag due to orphaned execution'
-where   UpdatedOn is not null
-        and LoopSecondsElapsed is not null
-        and @ProcessingStartedOn > dateadd(ss, LoopSecondsElapsed * 5, UpdatedOn)", new { ProcessingStartedOn }, commandTimeout: 600);
+where   Processing = 1 
+        and CompletedOn is null 
+        and Failures < 10
+        and (
+                ( UpdatedOn is not null and LoopSecondsElapsed is not null and @ProcessingStartedOn > dateadd(ss, LoopSecondsElapsed * 5, UpdatedOn) )
+                or ( dateadd(dd, -1, ProcessingStartedOn) < @ProcessingStartedOn )
+            )", new { ProcessingStartedOn }, commandTimeout: 600);
 
             var rowUpdated = company.Execute(@"
     update  metrics.Execution
     set     Processing = 1,
             ProcessingStartedOn = @ProcessingStartedOn
     where   Uid = @uid
-            and not exists(select 1 from metrics.Execution where Uid <> @uid and Processing = 1)", new { uid = Info.ExecutionUid, ProcessingStartedOn });
+            and not exists(select 1 from metrics.Execution where Uid <> @uid and Processing = 1 and CompletedOn is null and Failures < 10)", new { uid = Info.ExecutionUid, ProcessingStartedOn });
 
             if (rowUpdated <= 0)
             {

@@ -119,6 +119,7 @@ namespace d360.web.Models
         public string key { get; set; }
         public string group { get; set; }
         public Guid? assetUid { get; set; }
+        public int assetId { get; set; }
         public int assetTypeId { get; set; }
         public Guid assetTypeUid { get; set; }
         public decimal backAmount { get; set; }
@@ -129,6 +130,7 @@ namespace d360.web.Models
 
         public int actionCount { get; set; }
         public bool useAsTransformation { get; set; }
+        public bool hasResponsibilityReadAccess { get; set; }
         public bool hasAssetReadAccess { get; set; }
         public bool isSubjectInTransformation { get; set; }
     }

@@ -5,21 +5,62 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.MapItem-v2">
+  <changeSet author="Puneet Gupta" id="Table.dbo.MapItem_backup-DropTable-v3">
+  <comment>GOV-14256</comment>  
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapItem')
-BEGIN
-	EXEC sp_rename 'dbo.MapItem', 'MapItem_backup'
-END
+		IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapItem_backup')
+		BEGIN
+			IF EXISTS (select * 
+					   from sys.foreign_keys where name = 'FK_MapItemMap_MapItem' 
+					   and object_name(parent_object_id) = 'MapItemMap_backup' and schema_name(schema_id) = 'dbo'
+					   )
+			BEGIN	
+				ALTER TABLE [dbo].[MapItemMap_backup] DROP CONSTRAINT [FK_MapItemMap_MapItem]
+			END
+			
+			IF EXISTS (select * 
+					   from sys.foreign_keys where name = 'FK_MapSequence_MapItem' 
+					   and object_name(parent_object_id) = 'MapSequence_backup' and schema_name(schema_id) = 'dbo'
+					   )
+			BEGIN	
+				ALTER TABLE [dbo].[MapSequence_backup] DROP CONSTRAINT [FK_MapSequence_MapItem]
+			END
+			
+			drop table [dbo].[MapItem_backup];
+		END
+
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapItem_backup')
+BEGIN
+	CREATE TABLE [dbo].[MapItem_backup](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[SourceIntersectID] [int] NOT NULL,
+		[TargetIntersectID] [int] NULL,
+		[CreatedBy] [int] NOT NULL,
+		[CreatedOn] [datetime] NOT NULL,
+		[UpdatedBy] [int] NOT NULL,
+		[UpdatedOn] [datetime] NOT NULL,
+		[Owner] [varchar](100) NULL,
+		CONSTRAINT [PK_MapItem] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+	)
+END
 
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_MapItem_SourceIntersectID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_MapItem_SourceIntersectID] ON [dbo].[MapItem_backup] ( [SourceIntersectID] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_MapItem_TargetIntersectID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_MapItem_TargetIntersectID] ON [dbo].[MapItem_backup] ( [TargetIntersectID] ASC )
+END
 		]]>
 	</rollback>
   </changeSet>

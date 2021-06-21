@@ -1342,16 +1342,19 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
                         Connection.Open();
                     }
 
-                    using (var trans = Connection.BeginTransaction())
-                    {
-                        Connection.Execute(@"
+                    Connection.Execute(@"
+drop table if exists #ExecutionItem;
 create table #ExecutionItem (
 	ExecutionID bigint not null,
 	ChangeType int not null,
 	RowNumber int not null,
 	Payload nvarchar(max) not null
 );
-alter table #ExecutionItem add primary key ( ExecutionID DESC, ChangeType DESC, RowNumber ASC );", transaction: trans);
+alter table #ExecutionItem add primary key ( ExecutionID DESC, ChangeType DESC, RowNumber ASC );");
+
+                    using (var trans = Connection.BeginTransaction())
+                    {
+
                         using (var bulkCopy = Connection.CreateBulkCopy("#ExecutionItem", trans: trans))
                         {
                             bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
@@ -1372,7 +1375,9 @@ update set
     T.State = 0
 when not matched then
     insert (ExecutionID, ChangeType, RowNumber, State, Payload) 
-    values (S.ExecutionID, S.ChangeType, S.RowNumber, 0, S.Payload);", transaction: trans);
+    values (S.ExecutionID, S.ChangeType, S.RowNumber, 0, S.Payload);
+
+truncate table #ExecutionItem;", transaction: trans);
 
                         trans.Commit();
                     }
@@ -1770,6 +1775,43 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
                     sendScoreQueueMessage(execution);
                 }
             }
+        }
+
+        public List<AssetMeasureModel> GetMeasureModelsBasedOnResponsibilityAllocation(AssetType assetType, ResponsibilityType responsibility)
+        {
+            var today = DateTime.UtcNow.Date;
+            var measureResults = Query<ResponsibilityAssetMeasureProcessedResult>(@"
+    select  A.Uid as AssetUid, 
+            M.AllocationUid,
+            M.Uid as MetricAssetUid,
+            V.Uid as MetricAssetVersionUid
+    from    ResponsibilityDetail O 
+            inner join Asset A on ((A.ID = O.AssetID) or O.AssetID = 0 and O.AssetTypeID = A.AssetTypeID) and O.ResponsibilityTypeID = @ResponsibilityTypeID
+            inner join AssetType T on T.ID = A.AssetTypeID and T.ID = @ID
+            inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
+            inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
+            inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
+                and ( 
+                    (@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or 
+                    (@today >= V.EffectiveDate and V.EffectiveEndDate is null) 
+                    ) 
+                and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
+                and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = @ResponsibilityTypeUid
+		        and V.Definition <> '{}' 
+    group by A.Uid, M.AllocationUid, M.Uid, V.Uid", new { assetType.ID, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTypeID = responsibility.ID, today });
+
+            return measureResults.GroupBy(m => new { m.AssetUid })
+                .Select(m => new AssetMeasureModel
+                {
+                    AssetUid = m.Key.AssetUid,
+                    EffectiveDate = today,
+                    Measures = m.Select(o => new AssetMeasureChildModel
+                    {
+                        AllocationUid = o.AllocationUid,
+                        MetricAssetUid = o.MetricAssetUid,
+                        MetricAssetVersionUid = o.MetricAssetVersionUid
+                    }).Distinct().ToList()
+                }).ToList();
         }
 
         #region helpers

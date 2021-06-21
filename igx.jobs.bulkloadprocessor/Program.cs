@@ -1311,7 +1311,8 @@ where LI.LoadID = @loadId"
                         var measureResults = await connection.QueryAsync<ResponsibilityAssetMeasureProcessedResult>(@"
     select  A.Uid as AssetUid, 
             M.Uid as MetricAssetUid,
-            V.Uid as MetricAssetVersionUid
+            V.Uid as MetricAssetVersionUid,
+            M.AllocationUid
     from    #ResponsibilityTypeOverride O 
 			inner join ResponsibilityType RT on RT.ID = O.ResponsibilityTypeID
             inner join Asset A on A.ID = O.AssetID
@@ -1337,6 +1338,7 @@ where LI.LoadID = @loadId"
                                 EffectiveDate = today,
                                 Measures = m.Select(o => new AssetMeasureChildModel
                                 {
+                                    AllocationUid = o.AllocationUid,
                                     MetricAssetUid = o.MetricAssetUid,
                                     MetricAssetVersionUid = o.MetricAssetVersionUid
                                 }).Distinct().ToList()

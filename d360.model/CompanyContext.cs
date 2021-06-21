@@ -490,7 +490,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             if (intersectType == null)
             {
                 var error = new Dictionary<string, object>();
-                error.Add("RelationshipError", "Invalid Relationship field encountered invalid or deleted relationship type encountered.");
+                error.Add("RelationshipError", "Invalid or deleted relationship type encountered on Relationship field " + ft.FriendlyName + ".");
                 return error;
             }
 

@@ -5,21 +5,38 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.MapRuleItemMapItem-v2">
+  <changeSet author="Puneet Gupta" id="Table.dbo.MapRuleItemMapItem-DropTable-v3">
+  <comment>GOV-14256</comment>  
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapRuleItemMapItem')
-BEGIN
-	EXEC sp_rename 'dbo.MapRuleItemMapItem', 'MapRuleItemMapItem_backup'
-END
+		IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapRuleItemMapItem_backup')
+		BEGIN
+			IF EXISTS (select * 
+					   from sys.foreign_keys where name = 'FK_MapSequenceContext_MapSequence' 
+					   and object_name(parent_object_id) = 'MapSequenceContext_backup' and schema_name(schema_id) = 'dbo'
+					   )
+			BEGIN	
+				ALTER TABLE [dbo].[MapSequenceContext_backup] DROP CONSTRAINT [FK_MapSequenceContext_MapSequence]
+			END
+
+			drop table [dbo].[MapRuleItemMapItem_backup];
+		END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapRuleItemMapItem_backup')
+BEGIN
+	CREATE TABLE [dbo].[MapRuleItemMapItem_backup](
+		[MapRuleItemID] [int] NOT NULL,
+		[MapItemID] [int] NOT NULL,
+		[Owner] [varchar](100) NULL,
+		CONSTRAINT [PK_MapRuleItemMapItem] PRIMARY KEY CLUSTERED ( [MapRuleItemID] ASC, [MapItemID] ASC )
+	)
+END
 		]]>
 	</rollback>
   </changeSet>

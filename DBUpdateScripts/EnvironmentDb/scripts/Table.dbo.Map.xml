@@ -5,21 +5,51 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.Map-v2">
+  <changeSet author="Puneet Gupta" id="Table.dbo.Map-DropTable-v3">
+  <comment>GOV-14256</comment>  
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Map')
-BEGIN
-	EXEC sp_rename 'dbo.Map', 'Map_backup'
-END
+		IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Map_backup')
+		BEGIN
+			IF EXISTS (select * 
+					   from sys.foreign_keys where name = 'FK_MapItemMap_Map' 
+					   and object_name(parent_object_id) = 'MapItemMap_backup' and schema_name(schema_id) = 'dbo'
+					   )
+			BEGIN	
+				ALTER TABLE [dbo].[MapItemMap_backup] DROP CONSTRAINT [FK_MapItemMap_Map]
+			END
+			
+			IF EXISTS (select * 
+					   from sys.foreign_keys where name = 'FK_MapRuleMap_Map' 
+					   and object_name(parent_object_id) = 'MapRuleMap_backup' and schema_name(schema_id) = 'dbo'
+					   )
+			BEGIN	
+				ALTER TABLE [dbo].[MapRuleMap_backup] DROP CONSTRAINT [FK_MapRuleMap_Map]
+			END
+			
+			drop table [dbo].[Map_backup];
+		END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Map_backup')
+BEGIN
+CREATE TABLE [dbo].[Map_backup](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[Transformation] [nvarchar](4000) NULL,
+		[CreatedBy] [int] CONSTRAINT [DF_Map_CreatedBy] DEFAULT (0) NOT NULL,
+		[CreatedOn] [datetime] CONSTRAINT [DF_Map_CreatedOn] DEFAULT (getutcdate()) NOT NULL,
+		[UpdatedBy] [int] CONSTRAINT [DF_Map_UpdatedBy] DEFAULT (0) NOT NULL,
+		[UpdatedOn] [datetime] CONSTRAINT [DF_Map_UpdatedOn] DEFAULT (getutcdate()) NOT NULL,
+		[MapTypeID] [int] CONSTRAINT [DF_Map_MapTypeID] DEFAULT (1) NOT NULL,
+		[Name] [nvarchar](2500) NULL,
+		CONSTRAINT [PK_Map] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+	)
+END
 		]]>
 	</rollback>
   </changeSet>

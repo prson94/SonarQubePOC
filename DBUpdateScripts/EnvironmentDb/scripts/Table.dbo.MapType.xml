@@ -5,21 +5,43 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.MapType-v2">
+  <changeSet author="Puneet Gupta" id="Table.dbo.MapType-DropTable-v3">
+  <comment>GOV-14256</comment>  
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapType')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapType_backup')
 BEGIN
-	EXEC sp_rename 'dbo.MapType', 'MapType_backup'
+	IF EXISTS (select * 
+			   from sys.foreign_keys where name = 'FK_Map_MapType' 
+			   and object_name(parent_object_id) = 'Map_backup' and schema_name(schema_id) = 'dbo'
+			   )
+	BEGIN	
+		ALTER TABLE [dbo].[Map_backup] DROP CONSTRAINT [FK_Map_MapType]
+	END
+	
+	drop table [dbo].[MapType_backup];
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapType_backup')
+BEGIN
+	CREATE TABLE [dbo].[MapType](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[MapClass] [int] CONSTRAINT [DF_MapType_MapClass] DEFAULT (1) NOT NULL,
+		[Name] [nvarchar](250) NOT NULL,
+		[Description] [nvarchar](max) NULL,
+		[CreatedOn] [datetime] CONSTRAINT [DF_MapType_CreatedOn] DEFAULT (getutcdate()) NULL,
+		[CreatedBy] [int] NULL,
+		[UpdatedOn] [datetime] CONSTRAINT [DF_MapType_UpdatedOn] DEFAULT (getutcdate()) NULL,
+		[UpdatedBy] [int] NULL,
+		CONSTRAINT [PK_MapType] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
 		]]>
 	</rollback>
   </changeSet>
