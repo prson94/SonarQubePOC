@@ -537,7 +537,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception e)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while creating tag", e.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while getting tag details", e.Message);
             }
 
 
