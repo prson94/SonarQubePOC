@@ -426,7 +426,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 break;
             case "ownershiplookup":
                 this.showDescription = false;
-                this.onEnableListSingleResponsibilityType(Number.isInteger(this.model.FieldType.Type[this.currentType].Definition.ResponsibilityType))
+                this.onEnableListSingleResponsibilityType(this.model.FieldType.Type[this.currentType].Definition.ResponsibilityTypeUid?.length > 1)
                 break;
             case 'computedownershiplookup':
             case 'json':
@@ -833,7 +833,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         if (this.currentType === "OwnershipLookup") {
             if (this.enableListSingleResponsibilityType) {
-                return this.model.FieldType.Type[this.currentType].Definition.ResponsibilityType !== null;
+                return this.model.FieldType.Type[this.currentType].Definition.ResponsibilityTypeUid !== null;
             }
         }
 
@@ -1470,7 +1470,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     onEnableListSingleResponsibilityType(event: boolean) {
         this.enableListSingleResponsibilityType = event;
         if (!event) {
-            this.model.FieldType.Type[this.currentType].Definition.ResponsibilityType = null;
+            this.model.FieldType.Type[this.currentType].Definition.ResponsibilityTypeUid = null;
         }
     }
 

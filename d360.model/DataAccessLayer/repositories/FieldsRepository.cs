@@ -235,7 +235,7 @@ select	@pageSize as 'pageSize',
                 case when FT.Type = 'OwnershipLookup' then try_cast(JSON_VALUE(FTL.Definition, '$.DisplayAsList') as bit) else null end as 'Type.ComputedOwnershipLookup.Definition.DisplayAsList',
                 case when FT.Type = 'OwnershipLookup' then try_cast(JSON_VALUE(FTL.Definition, '$.DisplayAssignmentSource') as bit) else null end as 'Type.ComputedOwnershipLookup.Definition.DisplayAssignmentSource',
 		        case when FT.Type = 'OwnershipLookup' then try_cast(JSON_VALUE(FTL.Definition, '$.ExpandGroupMembership') as bit) else null end as 'Type.ComputedOwnershipLookup.Definition.ExpandGroupMembership',
-		        case when FT.Type = 'OwnershipLookup' then try_cast(JSON_VALUE(FTL.Definition, '$.ResponsibilityType') as int) else null end as 'Type.ComputedOwnershipLookup.Definition.ResponsibilityType',
+		        case when FT.Type = 'OwnershipLookup' then (select uid FROM ResponsibilityType where id = try_cast(JSON_VALUE(FTL.Definition, '$.ResponsibilityType') as int)) else null end as 'Type.ComputedOwnershipLookup.Definition.ResponsibilityTypeUid',
 		        case when FT.Type = 'OwnershipLookup' then FT.IsDisplayable else null end as 'Type.ComputedOwnershipLookup.IsDisplayable',
 		        case when FT.Type = 'OwnershipLookup' then FT.ShowIfEmpty else null end as 'Type.ComputedOwnershipLookup.ShowIfEmpty',
 		        case when FT.Type = 'OwnershipLookup' then FT.IsListable else null end as 'Type.ComputedOwnershipLookup.IsListable',
@@ -715,13 +715,23 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                     newFieldType.SortOrder = f.Type.ComputedOwnershipLookup.SortOrder;
                     newFieldType.ColumnWidth = f.Type.ComputedOwnershipLookup.ColumnWidth;
 
+                    if(f.Type.ComputedOwnershipLookup.Definition.ResponsibilityTypeUid != null)
+                    {
+                        int relationshipsTypeId = Company.Query<int>(@"SELECT id FROM [dbo].[ResponsibilityType] WHERE uid = @uid", new
+                        {
+                            uid = f.Type.ComputedOwnershipLookup.Definition.ResponsibilityTypeUid
+                        }).FirstOrDefault();
+                        f.Type.ComputedOwnershipLookup.Definition.ResponsibilityType = relationshipsTypeId;
+                        f.Type.ComputedOwnershipLookup.Definition.ResponsibilityTypeUid = null;
+                    }
+
                     newFieldType.FieldTypeLookup = new FieldTypeLookup
                     {
                         HideFilter = f.Type.ComputedOwnershipLookup.HideFilter,
                         HideFooter = f.Type.ComputedOwnershipLookup.HideFooter,
                         HideHeader = f.Type.ComputedOwnershipLookup.HideHeader,
                         LookupType = 0,
-                        Definition = JsonConvert.SerializeObject(f.Type.ComputedOwnershipLookup.Definition)
+                        Definition = JsonConvert.SerializeObject(f.Type.ComputedOwnershipLookup.Definition, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore })
                     };
                 }
                 else if (f.Type.ComputedRelationshipField != null)
