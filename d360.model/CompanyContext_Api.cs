@@ -371,6 +371,7 @@ where	ExecutionID = @executionID
             left join Field EF on EF.FieldTypeID = FT.ID and EF.AssetID = A.AssetID
             left join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID
             where A.executionid = @executionID 
+            and ft.type <> 'Counter'
             and (trim(EF.FormattedValue) is null or EF.FormattedValue = char(0))
             and (trim(F.FieldValue) is null or trim(F.FieldValue) = char(0))
             group by A.executionid,a.itemnumber;
@@ -4588,7 +4589,7 @@ where   ExecutionID = @ExecutionID
                     // Get field types.
                     fieldTypes = Query<FieldType>("select * from FieldType where Object = @Object and ObjectID = @ObjectID", new { @Object = new DbString { Value = at.Object, IsFixedLength = true, Length = 50, IsAnsi = true }, at.ObjectID }).ToList();
                     jsonFieldTypes = fieldTypes.Where(f => f.Type == DataType.JSON.ToString()).ToList();
-                    requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue)).Select(f => f.Name).ToList();
+                    requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue) && f.Type != DataType.Counter.ToString()).Select(f => f.Name).ToList();
                     hasLookupFieldTypes = fieldTypes.Any(f => f.Type == DataType.Lookup.ToString());
                     hasRelationshipFieldTypes = fieldTypes.Any(f => f.Type == DataType.Relationship.ToString());
                     hasCounterField = fieldTypes.Any(x => x.Type == DataType.Counter.ToString());
@@ -5704,7 +5705,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                     sw.Restart();
                     var fieldTypes = Query<FieldType>("select * from FieldType where Object = 'IntersectType' and ObjectID = @ID", new { rt.ID }).ToList();
                     AddMeasurement(metrics, "Get field types", sw.ElapsedMilliseconds, ++step);
-                    var requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue)).Select(f => f.Name).ToList();
+                    var requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue) && f.Type != DataType.Counter.ToString()).Select(f => f.Name).ToList();
                     relationshipTypeHasFieldTypes = fieldTypes.Any();
                     relationshipTypeHasLookupFieldTypes = fieldTypes.Any(f => f.Type == DataType.Lookup.ToString());
 

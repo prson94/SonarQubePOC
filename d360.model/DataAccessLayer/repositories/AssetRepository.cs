@@ -3572,7 +3572,7 @@ where	O.RowNum = 1";
                             assetType.ObjectID,
                             true,
                             fieldTypes,
-                            fieldTypes.Where(x => x.IsRequired == true || x.IsPartOfKey).Select(x => x.Name).ToList(),
+                            fieldTypes.Where(x => (x.IsRequired == true || x.IsPartOfKey) && x.Type != DataType.Counter.ToString()).Select(x => x.Name).ToList(),
                             asset.Fields,
                             Guid.Empty, 0,
                             null,
