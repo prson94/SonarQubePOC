@@ -501,6 +501,7 @@ export class AdvancedFilteringComponent implements OnChanges {
             fields.push({
                 Name: "Context", FriendlyName: "Context", Type: new FieldType("Html"), Category: ""
             });
+            console.log(this);
             var staticObs = of(fields);
             return staticObs;
         }

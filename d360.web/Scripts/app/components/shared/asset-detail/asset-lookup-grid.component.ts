@@ -107,7 +107,6 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         this.visibleColumns = this.data.Columns.filter((c) => c.type !== 'hidden');
 
         this.isColumnsLoaded = true;
-
     }
 
     private formatAsNumber(val): string {
