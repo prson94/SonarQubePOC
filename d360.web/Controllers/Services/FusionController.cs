@@ -45,38 +45,6 @@ namespace d360.web.Controllers.Services
 
         #endregion
 
-        [Route("")]
-        public IQueryable<FusionType> GetTypes()
-        {
-            return Company.Query<FusionType>("select A.ID as AssetTypeID, A.uid as uid, T.* from FusionType T inner join AssetType A on A.Object = 'FusionType' and A.ObjectID = T.ID").AsQueryable();
-        }
-
-        [Route("{id:int}/attributetypes")]
-        public IQueryable<FusionAttributeType> GetFusionAttributeTypes(int id)
-        {
-            return Company.Query<FusionAttributeType>(@"
-with C as
-(
-	select FR.* from FusionAttributeType FR where ParentID is null and FR.FusionTypeID = @id
-	union all
-	select F.* from FusionAttributeType F
-	inner join C on C.ID = F.ParentID
-)
-select 
-	C.ID,
-	C.ParentID,
-	C.[Name],
-	C.FusionTypeID,
-	C.ScanEnabled,
-	C.UpdatedBy,
-	C.UpdatedOn,
-	T.ID as AssetTypeID,
-    T.uid as uid
-from C
-inner join AssetType T on T.[Object] = 'FusionAttributeType' and T.ObjectID = C.ID
-order by C.ParentID, C.[Name]", new { id }).AsQueryable();
-        }
-
         [Route("attributetypes")]
         public IQueryable<dynamic> GetFusionAttributeTypes()
         {
@@ -88,62 +56,6 @@ order by C.ParentID, C.[Name]", new { id }).AsQueryable();
                 TextPath = i.TextPath,
                 Name = i.Name
             }).AsQueryable();
-        }
-
-        /// <summary>
-        /// Get all available fusion configurations for a specific type.  These configurations provide required connection and security credentials to connect to the underlying source.
-        /// </summary>
-        /// <returns>A list of available fusion configurations.</returns>
-        [Route("{id:int}/configurations")]
-        public HttpResponseMessage GetConfigurationsByType(int id, bool useFieldName = true)
-        {
-            const int markitFusionTypeId = 13;
-            const string markitLineageSettingKey = "UseNewMarkitLineageGeneration";
-
-            var showLineageButton = "cast(0 as bit) as ShowLineageButton,\n";
-            var joins = "";
-            var columns = "";
-
-            getDynamicFieldJoinStatements(id, "Fusion", out joins, out columns, true, useFieldName);
-
-            if (id == markitFusionTypeId)
-            {
-                if (Community.GetCompanySettings().TryGetValue(markitLineageSettingKey, out string val))
-                {
-                    if (val.Trim().ToLower() == "true")
-                    {
-                        showLineageButton = "cast(1 as bit) as ShowLineageButton,\n";
-                    }
-                }
-            }
-
-            columns += showLineageButton;
-
-
-            var querySql = string.Format(@"select	A.ID,
-		A.Name,
-		A.Description,
-        A.FusionTypeID,
-		T.Name as FusionType,
-        substring(
-        (
-            select	',' + ASST.Name + ':' + D.DisplayValue  AS [text()]
-            from	FusionOwner [FO]
-					inner join Asset ASS on ASS.ID = [FO].AssetID and [FO].FusionID = A.ID 
-					inner join AssetType ASST on ASS.AssetTypeID = ASST.ID
-					cross apply GetAssetDisplayValueById(ASS.ID) D
-            ORDER BY D.DisplayValue
-            For XML PATH ('')
-        ), 2, 1000) as Owners,
-        {0}
-		A.Enabled
-from	Fusion A {1} 
-left join FusionType T on T.ID = A.FusionTypeID
-where A.FusionTypeID = @id", columns, joins);
-
-            var sql = string.Format(@"select * from ({0}) A", querySql);
-
-            return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(sql, new { id = id }));
         }
 
         /// <summary>

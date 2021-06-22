@@ -25,7 +25,7 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
     <TargetFrameworkProfile />
-    <IISExpressSSLPort>
+	<IISExpressSSLPort>
     </IISExpressSSLPort>
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
@@ -1246,13 +1246,11 @@
     <Content Include="Content\styles\infogix-ui\infogix-ui.less" />
     <Content Include="Content\styles\infogix-ui\IgInput.less" />
     <None Include="Content\styles\Tooltip.less" />
-    <Content Include="Scripts\app\components\admin\fusion\admin-fusion.component.html" />
     <Content Include="Scripts\app\components\admin\load\admin-load.component.html" />
     <Content Include="Scripts\app\components\admin\resources\admin-resources.component.html" />
     <Content Include="Scripts\app\components\admin\groups\group.form.html" />
     <Content Include="Scripts\app\components\admin\responsibilities\responsibility-type.form.html" />
     <Content Include="Scripts\app\components\resource\resource-item.component.html" />
-    <Content Include="Scripts\app\components\admin\fusion\fusion-attributes.tile.html" />
     <Content Include="Scripts\app\components\shared\group-members.component.html" />
     <Content Include="node-test.html" />
     <Content Include="packages.config">
@@ -1266,7 +1264,6 @@
     <Content Include="fonts\fontawesome-webfont.ttf" />
     <Content Include="fonts\fontawesome-webfont.eot" />
     <EmbeddedResource Include="d3s-signing.pfx" />
-    <Content Include="Scripts\app\components\admin\fusion\fusion-configuration.tile.html" />
     <Content Include="Scripts\app\components\admin\artifacts\admin-artifacts.component.html" />
     <Content Include="Scripts\app\components\admin\responsibilities\admin-governance.component.html" />
     <Content Include="Scripts\app\components\shared\delete.form.html" />
@@ -1472,7 +1469,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\customizations\admin-customizations.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customizations\admin-customizations.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-dashboards-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\fusion\admin-fusion.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-types.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-types.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-types.routes.ts" />
@@ -1480,8 +1476,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\admin-scoring.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-dashboards.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-dashboards.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\fusion\admin-fusion.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\fusion\admin-fusion.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\groups\admin-groups.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\groups\admin-groups.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.module.ts" />
@@ -1884,8 +1878,6 @@
     <TypeScriptCompile Include="Scripts\app\components\home\board-tile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-responsibility-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-definition.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-attributes.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-configuration.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\hierarchies\admin-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\group-members.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\object-relationships.component.ts" />
@@ -1906,7 +1898,6 @@
     <TypeScriptCompile Include="Scripts\app\models\favorite.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\filter-field.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\follower.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\fusion.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\message-bar-item.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\model.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\object-statistics.model.ts" />
@@ -1979,7 +1970,6 @@
     <TypeScriptCompile Include="Scripts\app\services\dashboard.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\favorites.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\follower.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\fusion.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\models.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\object-statistics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\permissions.service.ts" />
