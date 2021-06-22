@@ -2026,7 +2026,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
 
         #endregion
 
-
+        #region Advanced filtering APIs
         /// <summary>
         /// Retrieves lookup values for an asset type and field name
         /// </summary>
@@ -2265,6 +2265,53 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
 
                         return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, data)));
                     }
+
+                    if (filterName == "SecurityAssetName")
+                    {
+                        var viaResources = $@"
+            ; with owners as (select distinct
+                    responsibilityTypeId,
+		            securityAssetid,
+	                '[' + ResponsibilityTypeName + '] - ' + SecurityAssetName as 'Name', 
+                    case 
+                        when SecurityAsset = 'R' then 'Resource'
+                        when SecurityAsset = 'O' then 'Organization'
+                        when SecurityAsset = 'G' then 'Group'
+                        else[Type]
+                            end as [Type],
+                    SecurityAssetName
+                            from ResponsibilityDetail
+            where TypeID = @id
+                    and[Type] = @Object and SecurityAsset <> 'R'
+                    and IsVisible = 1)
+            select o.Name as 'title', o.SecurityAssetName as 'value'
+            from owners o
+            cross apply(
+            select top 1 * from
+            ResponsibilityDetail rd where rd.ResponsibilityTypeID = o.responsibilityTypeId
+
+                                                and rd.SecurityAssetID = o.SecurityAssetID and rd.TypeID = @id and rd.[Type] = @Object
+            )Res
+            order by o.[Name]
+                        ";
+
+                        dbArgs.Add("id", assetType.ObjectID);
+                        dbArgs.Add("Object", assetType.Object);
+                        var gridReader = await Company.Database.Connection.QueryMultipleAsync(
+                          new CommandDefinition(viaResources,
+                          parameters: dbArgs,
+                          commandTimeout: 60
+                        ));
+                        var readItems = gridReader.Read<dynamic>().ToList();
+
+                        var data = new
+                        {
+                            count = readItems.Count,
+                            items = readItems
+                        };
+
+                        return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, data)));
+                    }
                 }
 
 
@@ -2275,12 +2322,64 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
             {
                 var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix
-    }
-});
-
+                    { "Endpoint Method", prefix}});
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage)));
             }
         }
+
+
+        /// <summary>
+        /// Retrieves complex lookup field types for an asset and field name
+        /// </summary>
+        /// <returns>Returns a list of field types</returns>        
+        /// <param name="assetUid">Uid of the asset</param>
+        /// <param name="fieldName">Field name</param>
+        [HttpGet,
+            Route("{assetUid:Guid}/complexlookupfields/{fieldName}"),
+             SwaggerResponse(HttpStatusCode.OK, "A list of filter values for a given asset uid and field name.", typeof(List<FieldTypesApiViewModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+            ]
+        public HttpResponseMessage GetComplexLookupFields(Guid assetUid, string fieldName)
+        {
+
+            var prefix = "Fields.GetFilterVales => ";
+            try
+            {
+                FieldTypesApiViewModel response = new FieldTypesApiViewModel();
+                response.items = new List<FieldTypeApiViewModel>();
+
+                var asset = AssetRepository.GetAssetByUID(assetUid);
+                var assetType = AssetRepository.GetArtifactTypeByID(asset.AssetTypeID);
+                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetType.ID && x.Name == fieldName);
+                if (fieldType.Type == DataType.OwnershipLookup.ToString())
+                {
+                    var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
+                    var definition = ftl.ParseOwnershipLookupDefinition();
+
+                    response.items.Add(new FieldTypeApiViewModel() { Name = "ResponsibilityTypeName", FriendlyName = "Responsibility", Type = new FieldTypeDataTypeApiViewModel() { Lookup = new FieldTypeDataTypeLookupApiViewModel() { List = new FieldTypeDataTypeLookupApiViewModel_List() } }, Category = "" });
+                    response.items.Add(new FieldTypeApiViewModel() { Name = "ResourceName", FriendlyName = "Assigned User/Group", Type = new FieldTypeDataTypeApiViewModel() { Lookup = new FieldTypeDataTypeLookupApiViewModel() { List = new FieldTypeDataTypeLookupApiViewModel_List() } }, Category = "" });
+                    if (definition.DisplayAssignmentSource)
+                    {
+                        response.items.Add(new FieldTypeApiViewModel() { Name = "SecurityAssetName", FriendlyName = "Via", Type = new FieldTypeDataTypeApiViewModel() { Lookup = new FieldTypeDataTypeLookupApiViewModel() { List = new FieldTypeDataTypeLookupApiViewModel_List() } }, Category = "" });
+                    }
+                    response.items.Add(new FieldTypeApiViewModel() { Name = "Context", FriendlyName = "Context", Type = new FieldTypeDataTypeApiViewModel() { Html = new FieldTypeDataTypeHtmlApiViewModel() }, Category = "" });
+                }
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
+        #endregion
     }
 }

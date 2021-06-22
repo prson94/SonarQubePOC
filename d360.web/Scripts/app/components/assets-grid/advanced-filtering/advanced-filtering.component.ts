@@ -157,6 +157,7 @@ export class AdvancedFilteringComponent implements OnChanges {
             let res = response[1] as FieldTypeAPIModelField[];
             this.allocations = response[2];
             this.relationshipTypes = response[3];
+            console.log(res);
 
             if (res.some((f) => f.Type.ComputedRelationshipField)) {
                 try {
@@ -451,6 +452,16 @@ export class AdvancedFilteringComponent implements OnChanges {
         return this.loadIdentifier.startsWith("ComplexField");
     }
 
+    get complexFieldDefinition(): ComplexFieldDefinition {
+        let res = new ComplexFieldDefinition();
+        if (this.isComplexField) {
+            var data = this.loadIdentifier.replace("ComplexField", "").replace("ComplexField", "").split("|");
+            res.AssetUid = data[0];
+            res.FieldApiName = data[1];
+        }
+        return res;
+    }
+
     getFieldsObs(): Observable<FieldTypeAPIModelField[]> {
         if (this.isAssetType) {
             return this.fieldsService.getFieldsV2(this.assetTypeUid, null, null);
@@ -491,19 +502,8 @@ export class AdvancedFilteringComponent implements OnChanges {
             return staticObs;
         }
         else if (this.isComplexField) {
-            var fields: FieldTypeAPIModelField[] = [];
-            fields.push({
-                Name: "ResponsibilityTypeName", FriendlyName: "Responsibility", Type: new FieldType("Lookup"), Category: ""
-            });
-            fields.push({
-                Name: "ResourceName ", FriendlyName: "Assigned User/Group", Type: new FieldType("Lookup"), Category: ""
-            });
-            fields.push({
-                Name: "Context", FriendlyName: "Context", Type: new FieldType("Html"), Category: ""
-            });
-            console.log(this);
-            var staticObs = of(fields);
-            return staticObs;
+            var definition = this.complexFieldDefinition;
+            return this.fieldsService.getComplexFieldFieldTypes(definition.AssetUid, definition.FieldApiName);
         }
     }
 

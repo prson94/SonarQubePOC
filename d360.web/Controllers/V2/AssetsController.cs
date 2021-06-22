@@ -1372,7 +1372,7 @@ namespace d360.web.Controllers.V2
                 if (qparams.Any(x => x.Key.ToLower() == "filter"))
                 {
                     List<FieldType> fields = fieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid);
-
+                     
                     var filter = qparams.FirstOrDefault(x => x.Key.ToLower() == "filter").Value;
                     var filterExpressionParser = new FilterExpressionParser(this.Company, FilterExpressionParseType.ComplexLookupField, false, false, true);
                     filterExpressionParser.LoadFieldTypes(fields, null);

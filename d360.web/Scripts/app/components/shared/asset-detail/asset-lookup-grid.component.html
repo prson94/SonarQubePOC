@@ -14,15 +14,6 @@
     </div>
 </div>
 <div class="ig-lookup-grid-filter-container">
-    <!--<div [hidden]="!showSimpleFilter || hideFilter" class="ig-lookup-grid-simple-filter-container">
-        <input igInput type="text" size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="ig-lookup-grid-simple-filter">
-        <span class="ig-lookup-grid-filter-search-icon"><i class="fa fa-search"></i></span>
-    </div>
-    <div *ngIf="!showSimpleFilter || hideFilter" class="ig-lookup-grid-filter-placeholder">&nbsp;</div>
-    <div class="ig-lookup-grid-button-container">
-
-    </div>-->
-
     <div class="grid-actions-header">
         <div class="simple-search">
             <ig-search-field mode="Keypress"
@@ -41,16 +32,7 @@
                     pTooltip="Export to Excel"
                     tooltipPosition="top"
                     tooltipStyleClass="ig-tooltip"></button>
-            <button igButton
-                    *ngIf="!hideFilter && !hideHeader"
-                    class="ig-lookup-grid-button"
-                    icon="fa-filter"
-                    (click)="showSimpleFilter = !showSimpleFilter"
-                    pTooltip="Filter Mode"
-                    tooltipPosition="left"
-                    tooltipStyleClass="ig-tooltip"></button>
         </div>
-        <br />
     </div>
 </div>
 <div>

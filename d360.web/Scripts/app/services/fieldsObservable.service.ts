@@ -546,6 +546,19 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
 
     }
+
+    getComplexFieldFieldTypes(assetUid: string, fieldName: string): Observable<FieldTypeAPIModelField[]> {
+        let url = `api/v2/fields/${assetUid}/complexlookupfields/${fieldName}`;
+
+        return this
+            .http
+            .get(url)
+            .pipe(
+                map(response => <FieldTypeAPIModelField[]>response["items"]),
+                catchError(err => this.handleError(err))
+            );
+
+    }
 }
 
 class FtItem {
