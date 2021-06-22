@@ -711,36 +711,6 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 
         #region Fusion
 
-        public Dictionary<string, object> GetFusionAsDictionary(int id)
-        {
-            var item = GetById<Fusion>(id);
-            var sType = SystemObjects.Fusion.ToString();
-            var fields = Filter<FieldWithRelation>(i => i.ObjectType == sType && i.ObjectID == item.ID && i.IsListable).ToList();
-
-            var model = new Dictionary<string, object>();
-            model.Add("ID", item.ID);
-            model.Add("FusionTypeID", item.FusionTypeID);
-            model.Add("Name", item.Name);
-            model.Add("Enabled", item.Enabled);
-            model.Add("Manual", item.Manual);
-            if (item.ForceRefresh.HasValue)
-            {
-                if (item.ForceRefresh.Value)
-                {
-                    model.Add("ForceRefresh", item.ForceRefresh.Value);
-                }
-            }
-            foreach (var n in fields.Where(f => f.ObjectID == item.ID).OrderBy(f => f.SortOrder))
-            {
-                model.Add(n.Name, n.FormattedValue);
-            }
-
-            bool hasDashboards = Filter<Report>(x => x.ObjectType == "FusionType" && x.ObjectID == item.FusionTypeID && x.ReportType == "powerbi").Any();
-            model.Add("HasDashboards", hasDashboards);
-
-            return model;
-        }
-
         public List<FusionOwnerOption> GetFusionOwnerOptions()
         {
             return Database.Connection.Query<FusionOwnerOption>(@"
