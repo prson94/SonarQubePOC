@@ -2322,38 +2322,11 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     }
                     #endregion
                     break;
-                case AssetTypeClass.Policy:
-                    #region                    
-                    var p = new AssetType
-                    {
-                        uid = uid,
-                        Name = model.Name,
-                        DisplayFormat = model.DisplayFormat,
-                        Description = model.Description,
-                        HierarchyMaximumDepth = model.Hierarchy.MaximumDepth,
-                        Object = SystemObjects.PolicyType.ToString(),
-                        State = State.Active,
-                        UpdatedBy = resourceId,
-                        UpdatedOn = DateTime.UtcNow,
-                        CreatedBy = resourceId,
-                        CreatedOn = DateTime.UtcNow,
-                        Hierarchical = true,
-                        UseAsTransformation = model.UseAsTransformation,
-                        Class = AssetTypeClass.Policy,
-                        CanEditParent = model.CanEditParent
-                    };
-
-                    if (p.HierarchyMaximumDepth <= 0 || p.HierarchyMaximumDepth > 10)
-                        return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", AssetTypeErrors.InvalidPolicyDepth);
-
-                    CompanyContext.Add(p);
-                    parentType = SystemObjects.PolicyType;
-                    model.ObjectID = p.ObjectID;
-                    model.Object = SystemObjects.PolicyType.ToString();
-                    #endregion
-                    break;
                 case AssetTypeClass.Model:
+                case AssetTypeClass.Policy:
                     #region
+
+                    var objectType = model.Class == AssetTypeClass.Model ? SystemObjects.TaxonomyType : SystemObjects.PolicyType;
                     var t = new AssetType
                     {
                         uid = uid,
@@ -2361,7 +2334,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         DisplayFormat = model.DisplayFormat,
                         Description = model.Description,
                         HierarchyMaximumDepth = model.Hierarchy.MaximumDepth,
-                        Object = SystemObjects.TaxonomyType.ToString(),
+                        Object = objectType.ToString(),
                         State = State.Active,
                         UpdatedBy = resourceId,
                         UpdatedOn = DateTime.UtcNow,
@@ -2369,13 +2342,12 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         CreatedOn = DateTime.UtcNow,
                         Hierarchical = true,
                         UseAsTransformation = model.UseAsTransformation,
-                        Class = AssetTypeClass.Model,
+                        Class = model.Class,
                         CanEditParent = model.CanEditParent
                     };
 
                     if (t.HierarchyMaximumDepth <= 0 || t.HierarchyMaximumDepth > 10)
                         return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", AssetTypeErrors.InvalidModelDepth);
-
 
                     CompanyContext.Add(t);
 
@@ -2385,9 +2357,9 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     }
                     CompanyContext.SaveChanges();
 
-                    parentType = SystemObjects.TaxonomyType;
+                    parentType = objectType;
                     model.ObjectID = t.ObjectID;
-                    model.Object = SystemObjects.TaxonomyType.ToString();
+                    model.Object = objectType.ToString();
                     #endregion
                     break;
                 case AssetTypeClass.Reference:
