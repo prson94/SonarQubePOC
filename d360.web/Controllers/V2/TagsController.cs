@@ -188,6 +188,8 @@ namespace d360.web.Controllers.V2
             {
                 TagValidator.ValidateForPost(model);
 
+                model.Value = model.Value.Trim();
+
                 //make sure no tag with the same name exists
                 if (tagRepository.DoesTagExists(model.Value))
                 {
@@ -234,7 +236,7 @@ namespace d360.web.Controllers.V2
             TagApiModel result = new TagApiModel();
             try
             {
-
+                model.Value = model.Value.Trim();
                 TagValidator.ValidateForPut(tagUid, model);
 
                 var existingTag = tagRepository.GetTagByUid(tagUid);
