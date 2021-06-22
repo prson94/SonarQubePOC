@@ -904,7 +904,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                     case "_includetotal":
                         if (!bool.TryParse(param.Value, out includeTotal))
                         {
-                            throw new ArgumentException($"Invalid value [{param.Value}] provided for _includetotal parametar in the request.");
+                            throw new ArgumentException($"Invalid value [{param.Value}] provided for _includetotal parameter in the request.");
                         }
 
                         break;
