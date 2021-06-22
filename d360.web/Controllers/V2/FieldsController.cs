@@ -2369,6 +2369,32 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 if (fieldType.Type == DataType.RefListRelationship.ToString())
                 {
                     var fields = FieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid);
+                    foreach (var f in fields)
+                    {
+                        var c = new FieldTypeApiViewModel()
+                        {
+                            Name = f.Name,
+                            FriendlyName = f.FriendlyName,
+                            Category = ""
+                        };
+
+                        c.Type = new FieldTypeDataTypeApiViewModel();
+                        if (f.Type == DataType.Lookup.ToString())
+                        {
+
+                            c.Type.Lookup = new FieldTypeDataTypeLookupApiViewModel()
+                            {
+                                List = new FieldTypeDataTypeLookupApiViewModel_List() { }
+                            };
+                        }
+
+                        if (f.Type == DataType.Boolean.ToString())
+                        {
+                            c.Type.Boolean = new FieldTypeDataTypeBooleanApiViewModel();
+                        }
+
+                        response.items.Add(c);
+                    }
                 }
                 return Request.CreateResponse(HttpStatusCode.OK, response);
 
@@ -2377,8 +2403,9 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
             {
                 var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix }
-                });
+                    { "Endpoint Method", prefix
+    }
+});
 
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
