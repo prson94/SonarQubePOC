@@ -847,12 +847,15 @@ namespace d360.model.DataAccessLayer
                     var tempArgs = new DynamicParameters();
                     List<string> tempJoins = new List<string>();
                     List<string> tempFieldColumns = new List<string>();
+                    List<Tuple<int, string>> originalTypeMappings = new List<Tuple<int, string>>();
 
+                    //handle field types in case "Field from relationship"
                     foreach (var ft in allFieldTypes.Where(x => x.LookupObjectFieldTypeID > 0))
                     {
                         var origFieldType = CompanyContext.FieldTypes.FirstOrDefault(x => x.ID == ft.LookupObjectFieldTypeID);
                         if (origFieldType != null)
                         {
+                            originalTypeMappings.Add(new Tuple<int, string>(ft.ID, ft.Type));
                             ft.Type = origFieldType.Type;
                         }
                     }
@@ -880,6 +883,15 @@ namespace d360.model.DataAccessLayer
 
                     if (includeOnlyListableFields || includeFieldsList.Any())
                     {
+                        if (originalTypeMappings.Count > 0)
+                        {
+                            foreach (var item in originalTypeMappings)
+                            {
+                                var ft = allFieldTypes.FirstOrDefault(x => x.ID == item.Item1);
+                                ft.Type = item.Item2;
+                            }
+                        }
+
                         tempArgs = new DynamicParameters();
                         tempJoins.Clear();
                         tempFieldColumns.Clear();
@@ -1403,7 +1415,7 @@ namespace d360.model.DataAccessLayer
 
                         if (string.IsNullOrEmpty(orderBy))
                         {
-                            orderBy = fieldTypes.OrderByDescending(x => x.SortOrder).ThenBy(x=> x.ID).FirstOrDefault().Name;
+                            orderBy = fieldTypes.OrderByDescending(x => x.SortOrder).ThenBy(x => x.ID).FirstOrDefault().Name;
                         }
 
                         results = results.OrderBy(x => ((IDictionary<string, object>)x)[orderBy]).ToList();
