@@ -380,6 +380,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     }
 
     get assetTypeTitle(): string {
+        if (this.levels == null) return '(Level Unknown Item)';
+
         if (!this.selected) {
             let thisLevel = this.levels.filter(x => x.Level == this.selectedLevel + 1);
 
