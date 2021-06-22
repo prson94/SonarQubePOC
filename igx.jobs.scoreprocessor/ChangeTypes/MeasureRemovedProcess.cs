@@ -33,6 +33,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 				if (measureChangedModel.EffectiveEndDate.Date <= DateTime.UtcNow.Date)
 				{			
 					Db.CreateMeasureRemovedResultExecution(measureChangedModel.MetricAssetVersionUid);
+					updateExecutionMarkingItemsAsComplete(Db.Connection, ExecutionRecord);
 				}
 				else
 				{

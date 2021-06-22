@@ -273,6 +273,24 @@ where   Uid = @uid", new { uid = Info.ExecutionUid });
             return company.Query<ScoreExecutionItem>($"select * from metrics.ExecutionItem where ExecutionID = @executionId and [State] = 0 and ChangeType = @ct order by RowNumber OFFSET {offset} ROWS FETCH NEXT 500 ROWS ONLY", new { executionId = ExecutionRecord.ID, ct = (int)Info.ChangeType }).ToList();
         }
 
+        protected void updateExecutionMarkingItemsAsComplete(SqlConnection Db, ScoreExecution executionRecord)
+        {
+            Db.Execute(@"
+update  metrics.ExecutionItem
+set     State = 1
+where   ExecutionID = @ID;
+
+update  metrics.Execution 
+set     PercentComplete = 1,
+        Failures = @Failures, 
+        ErrorMessage = @ErrorMessage,
+        CompletedOn = getutcdate(), 
+        ProcessingStartedOn = null,
+        Processing = 0,
+        UpdatedOn = getutcdate()
+where   Uid = @Uid;", executionRecord, commandTimeout: 180);
+        }
+
         protected void updateExecution(SqlConnection Db, ScoreExecution executionRecord)
         {
             Db.Execute(@"update T 
