@@ -15,7 +15,6 @@ const routes: Routes = [
     { path: "community", loadChildren: () => import("./components/community/community.module").then((m) => m.CommunityModule) },
     { path: "help", loadChildren: () => import("./components/help/help.module").then((m) => m.HelpModule) },
     { path: "admin", loadChildren: () => import("./components/admin/admin.module").then((m) => m.AdminModule) },
-    { path: "fusion", loadChildren: () => import("./components/fusion/fusion.module").then((m) => m.FusionModule) },
     { path: "monitor", loadChildren: () => import("./components/monitor/monitor.module").then((m) => m.MonitorModule) },
     { path: "quality/rule", loadChildren: () => import("./components/rule/rule.module").then((m) => m.RuleModule) },
     { path: "tag", loadChildren: () => import("./components/tag/tag.module").then((m) => m.TagModule) },

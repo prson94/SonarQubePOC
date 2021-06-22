@@ -164,7 +164,7 @@ namespace d360.extensions.search
             CREATE NONCLUSTERED INDEX IX_searcindexbatch_{batchUid} ON {batchTableName} (AssetID);
             ");
 
-            IEnumerable<AssetTypeClass> types = _context.Query<AssetTypeClass>($"SELECT DISTINCT Class FROM {batchTableName}");
+            IEnumerable<AssetTypeClass> types = _context.Query<AssetTypeClass>($"SELECT DISTINCT Class FROM {batchTableName} WHERE Class IS NOT NULL");
             types.ForEach(t =>
             {
                 IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, t, null, null, false, batchTableName);

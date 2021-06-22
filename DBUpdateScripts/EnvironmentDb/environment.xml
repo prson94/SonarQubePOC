@@ -109,8 +109,7 @@
 	<include file="scripts/Table.dbo.IntersectType.xml"/>
 	<include file="scripts/Table.dbo.Intersect.xml"/>
 	<include file="scripts/Table.dbo.IssueType.xml"/>
-	<include file="scripts/Table.dbo.IssueTypeRelation.xml"/>
-	<include file="scripts/Table.dbo.IssueTypeRelationResponsibility.xml"/>
+	<include file="scripts/Table.dbo.IssueTypeRelation.xml"/>	
 	<include file="scripts/Table.dbo.Issue.xml"/>
 	<include file="scripts/Table.dbo.Load.xml"/>
 	<include file="scripts/Table.dbo.LoadColumn.xml"/>
@@ -146,6 +145,7 @@
 	<include file="scripts/Table.dbo.ResourceGroup.xml"/>
 	<include file="scripts/Table.dbo.ResourcePasswordReset.xml"/>
 	<include file="scripts/Table.dbo.ResponsibilityType.xml"/>
+  <include file="scripts/Table.dbo.IssueTypeRelationResponsibility.xml"/> <!-- needs to be after responsibility type table due to FK-->
 	<include file="scripts/Table.dbo.ResponsibilityTypeRelation.xml"/>
 	<include file="scripts/Table.dbo.ResponsibilityTypeRelationOverrideItem.xml"/>
 	<include file="scripts/Table.dbo.ResponsibilityTypeRelationRule.xml"/>

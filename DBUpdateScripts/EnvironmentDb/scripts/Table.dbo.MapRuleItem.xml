@@ -5,21 +5,53 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.MapRuleItem-v2.1">
+  <changeSet author="Puneet Gupta" id="Table.dbo.MapRuleItem-DropTable-v3">
+  <comment>GOV-14256</comment>  
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapRuleItem')
-BEGIN
-	EXEC sp_rename 'dbo.MapRuleItem', 'MapRuleItem_backup'
-END
+		IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapRuleItem_backup')
+		BEGIN
+			IF EXISTS (select * 
+					   from sys.foreign_keys where name = 'FK_MapRuleItemMap_MapRuleItem' 
+					   and object_name(parent_object_id) = 'MapRuleItemMapRule_backup' and schema_name(schema_id) = 'dbo'
+					   )
+			BEGIN	
+				ALTER TABLE [dbo].[MapRuleItemMapRule_backup] DROP CONSTRAINT [FK_MapRuleItemMap_MapRuleItem]
+			END
+			
+			drop table [dbo].[MapRuleItem_backup];
+		END
+
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapRuleItem_backup')
+BEGIN
+	CREATE TABLE [dbo].[MapRuleItem_backup](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[SourceOwner] [varchar](50) NULL,
+		[SourceOwnerID] [int] NULL,
+		[SourceFusionAttributeID] [int] NOT NULL,
+		[TargetOwner] [varchar](50) NULL,
+		[TargetOwnerID] [int] NULL,
+		[TargetFusionAttributeID] [int] NULL,
+		[CreatedBy] [int] NOT NULL,
+		[CreatedOn] [datetime] NOT NULL,
+		[UpdatedBy] [int] NOT NULL,
+		[UpdatedOn] [datetime] NOT NULL,
+		[Owner] [varchar](100) NULL,
+		CONSTRAINT [PK_MapRuleItem] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+	)
+END
 
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_MapRuleItem_SourceFusionAttributeID_TargetFusionAttributeID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_MapRuleItem_SourceFusionAttributeID_TargetFusionAttributeID] ON [dbo].[MapRuleItem_backup] ( [SourceFusionAttributeID] ASC, [TargetFusionAttributeID] ASC )
+END
 		]]>
 	</rollback>
   </changeSet>

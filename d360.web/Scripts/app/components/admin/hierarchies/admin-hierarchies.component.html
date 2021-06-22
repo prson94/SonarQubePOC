@@ -10,7 +10,7 @@
                          [assetTypeUid]="selected?.uid" 
                          [useUid]="true"
                          [method]="'callback'"
-                         [prompt]="'Are you sure you want to delete the model [' + [selected?.Name] + ']?'"
+                         [prompt]="'Are you sure you want to delete the ' + ( assetTypeClass == AssetTypeClass.Model ? 'model':'policy') +' [' + [selected?.Name] + ']?'"
                          (onCancel)="showDelete=false;"></d3s-delete-form>
     </div>
 </div>

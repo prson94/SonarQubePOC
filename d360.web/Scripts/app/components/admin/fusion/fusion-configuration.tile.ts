@@ -1,6 +1,6 @@
 ﻿import {Input, Output, Component, OnChanges, SimpleChange} from '@angular/core';
 import {Router} from '@angular/router';
-import {FusionConfiguration, FusionType} from '../../../models/fusion.model';
+import {FusionType} from '../../../models/fusion.model';
 import {FusionService} from '../../../services/fusion.service';
 import {GridColumn} from '../../../models/grid-definition.model';
 import {BaseComponent} from '../../shared/base.component';

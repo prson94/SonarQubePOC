@@ -9,7 +9,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 
 import { Subject } from "rxjs";
-import { debounceTime, distinctUntilChanged } from "rxjs/internal/operators";
+import { debounceTime, distinctUntilChanged } from "rxjs/operators";
 
 export const SEARCH_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,

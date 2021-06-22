@@ -711,4 +711,15 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             }
         });
     }
+
+    useAccordion(category: any): boolean {
+        if (category == null || !category.name) {
+            return false;
+        }
+        if (category.name === this.defaultCategory) {
+            return false;
+        }
+
+        return true;
+    }
 }
