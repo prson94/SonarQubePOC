@@ -87,251 +87,260 @@ namespace d360.model.DataAccessLayer.repositories
         #endregion
         protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string objectSql = "A.[Object]", string objectIdSql = "A.[ObjectId]", bool listColorsAsJSON = false)
         {
-            fieldTypes.OrderBy(x=> x.ID).ToList().ForEach(f =>
-            {
-                var defaultVal = f.DefaultFormattedValue;
-                var joinPrefix = "left";
-                var tableAlias = $"F{f.ID}";
-                var columnName = f.Name;
-                var valueColumn = "FormattedValue";
-                var fieldDataType = getFieldDataType(f);
-                var hasColor = CompanyContext.LookupFieldHasColorItem(f);
-                FieldTypeDefinition_JsonElement jsonElementDefinition = null;
-                
-                if (f.Type == "JsonElement")
-                {
-                    jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(f.Definition);
-                }
+            fieldTypes.OrderBy(x => x.ID).ToList().ForEach(f =>
+             {
+                 var defaultVal = f.DefaultFormattedValue;
+                 var joinPrefix = "left";
+                 var tableAlias = $"F{f.ID}";
+                 var columnName = f.Name;
+                 var valueColumn = "FormattedValue";
+                 var fieldDataType = getFieldDataType(f);
+                 var hasColor = CompanyContext.LookupFieldHasColorItem(f);
+                 FieldTypeDefinition_JsonElement jsonElementDefinition = null;
 
-                if (f.Type == "Link")
-                { 
-                    valueColumn = "Value";
-                    defaultVal = f.DefaultValue;
-                }
+                 if (f.Type == "JsonElement")
+                 {
+                     jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(f.Definition);
+                 }
+
+                 if (f.Type == "Link")
+                 {
+                     valueColumn = "Value";
+                     defaultVal = f.DefaultValue;
+                 }
 
 
-                if (f.Type == "Score")
-                {
-                    joinPrefix = "outer";
-                }
+                 if (f.Type == "Score")
+                 {
+                     joinPrefix = "outer";
+                 }
 
-                FieldType relatedField = null;
-                if (f.Type == "FieldFromRelationship")
-                {
-                    if (!f.LookupObjectFieldTypeID.HasValue || !f.LookupObjectID.HasValue)
-                    {
-                        return;
-                    }
+                 FieldType relatedField = null;
+                 if (f.Type == "FieldFromRelationship")
+                 {
+                     if (!f.LookupObjectFieldTypeID.HasValue || !f.LookupObjectID.HasValue)
+                     {
+                         return;
+                     }
 
-                    relatedField = CompanyContext.GetById<FieldType>((int)f.LookupObjectFieldTypeID);
-                    if (relatedField == null)
-                    {
-                        return;
-                    }
+                     relatedField = CompanyContext.GetById<FieldType>((int)f.LookupObjectFieldTypeID);
+                     if (relatedField == null)
+                     {
+                         return;
+                     }
 
-                }
+                 }
 
-                if (f.IsRequired && string.IsNullOrEmpty(f.DefaultValue))
-                {
-                    joinPrefix = "left";
-                    if (!string.IsNullOrEmpty(fieldDataType))
-                    {
-                        if (fieldDataType == "bit")
-                        {
-                            fieldColumns.Add($"try_cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
-                        }
-                        else
-                        {
-                            fieldColumns.Add($"try_cast({tableAlias}.{valueColumn} as {fieldDataType}) as [{columnName}]");
-                        }
-                    }
-                    else if (f.Type == "Lookup" && f.AllowAllValue)
-                    {
-                        fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
-                        dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
-                    }
-                    else if (f.Type == "Lookup" && listColorsAsJSON)
-                    {
-                        fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
-                    }
-                    else if (f.Type == "Path")
-                    {
-                        fieldColumns.Add($"Node.DisplayPath as [{columnName}]");
-                    }
-                    else if (f.Type == "Score")
-                    {
-                        fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
-                    }
-                    else
-                    {
-                        fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
-                    }
-                }
-                else
-                {
-                    if (!string.IsNullOrEmpty(f.DefaultValue))
-                    {
-                        if (!string.IsNullOrEmpty(fieldDataType))
-                        {
-                            if (fieldDataType == "bit")
-                            {
-                                fieldColumns.Add($"try_cast(case when coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
-                            }
-                            else
-                            {
-                                fieldColumns.Add($"coalesce(try_cast({tableAlias}.{valueColumn} as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
-                            }
-                        }
-                        else if (f.Type == "Lookup" && f.AllowAllValue)
-                        {
+                 if (f.IsRequired && string.IsNullOrEmpty(f.DefaultValue))
+                 {
+                     joinPrefix = "left";
+                     if (!string.IsNullOrEmpty(fieldDataType))
+                     {
+                         if (fieldDataType == "bit")
+                         {
+                             fieldColumns.Add($"try_cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
+                         }
+                         else
+                         {
+                             fieldColumns.Add($"try_cast({tableAlias}.{valueColumn} as {fieldDataType}) as [{columnName}]");
+                         }
+                     }
+                     else if (f.Type == "Lookup" && f.AllowAllValue)
+                     {
+                         fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
+                         dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
+                     }
+                     else if (f.Type == "Lookup" && listColorsAsJSON)
+                     {
+                         fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
+                     }
+                     else if (f.Type == "Path")
+                     {
+                         fieldColumns.Add($"Node.DisplayPath as [{columnName}]");
+                     }
+                     else if (f.Type == "Score")
+                     {
+                         fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
+                     }
+                     else if (f.Type == "Counter")
+                     {
+                         fieldColumns.Add($"('{f.CounterPrefix}' + CAST({tableAlias}.{valueColumn} as nvarchar(max))) as [{columnName}]");
+                     }
+                     else
+                     {
+                         fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
+                     }
+                 }
+                 else
+                 {
+                     if (!string.IsNullOrEmpty(f.DefaultValue))
+                     {
+                         if (!string.IsNullOrEmpty(fieldDataType))
+                         {
+                             if (fieldDataType == "bit")
+                             {
+                                 fieldColumns.Add($"try_cast(case when coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
+                             }
+                             else
+                             {
+                                 fieldColumns.Add($"coalesce(try_cast({tableAlias}.{valueColumn} as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
+                             }
+                         }
+                         else if (f.Type == "Lookup" && f.AllowAllValue)
+                         {
 
-                            fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) end as [{columnName}]");
-                            dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
-                        }
-                        else if (f.Type == "Path")
-                        {
-                            fieldColumns.Add($"Node.DisplayPath as [{columnName}]");
-                        }
-                        else if (f.Type == "Score")
-                        {
-                            fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
-                        }
-                        else if (f.Type == "Lookup" && listColorsAsJSON && hasColor)
-                        {
-                            fieldColumns.Add($"coalesce({tableAlias}.{valueColumn}, defaultColorValue{tableAlias}.color, @defaultValue{tableAlias}) as [{columnName}]");
-                        }
-                        else
-                        {
-                            fieldColumns.Add($"coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) as [{columnName}]");
-                        }
+                             fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) end as [{columnName}]");
+                             dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
+                         }
+                         else if (f.Type == "Path")
+                         {
+                             fieldColumns.Add($"Node.DisplayPath as [{columnName}]");
+                         }
+                         else if (f.Type == "Score")
+                         {
+                             fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
+                         }
+                         else if (f.Type == "Lookup" && listColorsAsJSON && hasColor)
+                         {
+                             fieldColumns.Add($"coalesce({tableAlias}.{valueColumn}, defaultColorValue{tableAlias}.color, @defaultValue{tableAlias}) as [{columnName}]");
+                         }
+                         else
+                         {
+                             fieldColumns.Add($"coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) as [{columnName}]");
+                         }
 
-                        dbArgs.Add($"@defaultValue{tableAlias}", defaultVal);
-                    }
-                    else
-                    {
-                        if (!string.IsNullOrEmpty(fieldDataType))
-                        {
-                            if (fieldDataType == "bit")
-                            {
-                                fieldColumns.Add($"try_cast(case when {tableAlias}.{valueColumn} is null then null when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
-                            }
-                            else
-                            {
-                                fieldColumns.Add($"try_cast(case when LEN(ISNULL({tableAlias}.{valueColumn}, '')) < 1 then null else {tableAlias}.{valueColumn} end as {fieldDataType}) as [{columnName}]");
-                            }
-                        }
-                        else if (f.Type == "JsonElement")
-                        {
-                            if (jsonElementDefinition.DataType == "decimal")
-                            {
-                                jsonElementDefinition.DataType = "float";
-                            }
-                            fieldColumns.Add($"try_cast(FJP{f.ID}.[Value] as {jsonElementDefinition.DataType}) as [{columnName}]");
-                        }
-                        else if (f.Type == "Lookup" && f.AllowAllValue)
-                        {
-                            fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
-                            dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
-                        }
-                        else if (f.Type == "Path")
-                        {
-                            fieldColumns.Add($"Node.DisplayPath as [{columnName}]");
-                        }
-                        else if (f.Type == "Score")
-                        {
-                            fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
-                        }
-                        else if(f.Type == "Link")
-                        {
-                            fieldColumns.Add($"NULLIF({tableAlias}.{valueColumn},'|') as [{columnName}]");
-                        }
-                        else if (f.Type == "ComplexRelationLookup" || f.Type == "OwnershipLookup")
-                        {
-                            fieldColumns.Add($"{tableAlias}.Definition as [{columnName}]");
-                        }
-                        else
-                        {
-                            fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
-                        }
-                    }
-                }
+                         dbArgs.Add($"@defaultValue{tableAlias}", defaultVal);
+                     }
+                     else
+                     {
+                         if (!string.IsNullOrEmpty(fieldDataType))
+                         {
+                             if (fieldDataType == "bit")
+                             {
+                                 fieldColumns.Add($"try_cast(case when {tableAlias}.{valueColumn} is null then null when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
+                             }
+                             else
+                             {
+                                 fieldColumns.Add($"try_cast(case when LEN(ISNULL({tableAlias}.{valueColumn}, '')) < 1 then null else {tableAlias}.{valueColumn} end as {fieldDataType}) as [{columnName}]");
+                             }
+                         }
+                         else if (f.Type == "JsonElement")
+                         {
+                             if (jsonElementDefinition.DataType == "decimal")
+                             {
+                                 jsonElementDefinition.DataType = "float";
+                             }
+                             fieldColumns.Add($"try_cast(FJP{f.ID}.[Value] as {jsonElementDefinition.DataType}) as [{columnName}]");
+                         }
+                         else if (f.Type == "Lookup" && f.AllowAllValue)
+                         {
+                             fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
+                             dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
+                         }
+                         else if (f.Type == "Path")
+                         {
+                             fieldColumns.Add($"Node.DisplayPath as [{columnName}]");
+                         }
+                         else if (f.Type == "Score")
+                         {
+                             fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
+                         }
+                         else if (f.Type == "Counter")
+                         {
+                             fieldColumns.Add($"('{f.CounterPrefix}' + CAST({tableAlias}.{valueColumn} as nvarchar(max))) as [{columnName}]");
+                         }
+                         else if (f.Type == "Link")
+                         {
+                             fieldColumns.Add($"NULLIF({tableAlias}.{valueColumn},'|') as [{columnName}]");
+                         }
+                         else if (f.Type == "ComplexRelationLookup" || f.Type == "OwnershipLookup")
+                         {
+                             fieldColumns.Add($"{tableAlias}.Definition as [{columnName}]");
+                         }
+                         else
+                         {
+                             fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
+                         }
+                     }
+                 }
 
-                if (f.Type == "FieldFromRelationship")
-                {
-                    bool hasReferenceList = false;
-                    string targetType;
-                    var filtercond = GetSplitFilterCriteriaRelationship(f.LookupObjectID.GetValueOrDefault(), f.Object, f.ObjectID, out hasReferenceList, out targetType);
+                 if (f.Type == "FieldFromRelationship")
+                 {
+                     bool hasReferenceList = false;
+                     string targetType;
+                     var filtercond = GetSplitFilterCriteriaRelationship(f.LookupObjectID.GetValueOrDefault(), f.Object, f.ObjectID, out hasReferenceList, out targetType);
 
-                    var assetIdBackwardQuery = $@"select O.Id as TargetAssetId from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O where MATCH(S<-(E)-O) AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id";
-                    var assetIdForwardQuery = $@"select O.Id as TargetAssetId from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O where MATCH(S-(E)->O) AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id";
-                    var assetIdFinalQuery = "";
+                     var assetIdBackwardQuery = $@"select O.Id as TargetAssetId from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O where MATCH(S<-(E)-O) AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id";
+                     var assetIdForwardQuery = $@"select O.Id as TargetAssetId from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O where MATCH(S-(E)->O) AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id";
+                     var assetIdFinalQuery = "";
 
-                    switch (filtercond)
-                    {
-                        case SplitFilterCriteriaRelationship.Object:
-                            assetIdFinalQuery = assetIdBackwardQuery;
-                            break;
-                        case SplitFilterCriteriaRelationship.Subject:
-                            assetIdFinalQuery = assetIdForwardQuery;
-                            break;
-                        default:
-                            assetIdFinalQuery = assetIdBackwardQuery + " union " + assetIdForwardQuery;
-                            break;
-                    }
+                     switch (filtercond)
+                     {
+                         case SplitFilterCriteriaRelationship.Object:
+                             assetIdFinalQuery = assetIdBackwardQuery;
+                             break;
+                         case SplitFilterCriteriaRelationship.Subject:
+                             assetIdFinalQuery = assetIdForwardQuery;
+                             break;
+                         default:
+                             assetIdFinalQuery = assetIdBackwardQuery + " union " + assetIdForwardQuery;
+                             break;
+                     }
 
-                    if (relatedField.Type == "Path")
-                    {
-                        fieldJoins.Add($@"outer apply (
+                     if (relatedField.Type == "Path")
+                     {
+                         fieldJoins.Add($@"outer apply (
                             select  STRING_AGG(DisplayPath,'{RELATIONSHIP_DELIMITER}') as FormattedValue 
                             from    graph.AssetNodeDisplayPath 
 					        where   ID IN ({assetIdFinalQuery})
                             having  string_agg(DisplayPath,'{RELATIONSHIP_DELIMITER}') is not null
                         ) {tableAlias}");
-                    }
-                    else {
-                        fieldJoins.Add($@"outer apply (
+                     }
+                     else
+                     {
+                         fieldJoins.Add($@"outer apply (
                             select  STRING_AGG(FormattedValue,'{RELATIONSHIP_DELIMITER}') as FormattedValue 
                             from    Field 
 					        where   FieldTypeID = {f.LookupObjectFieldTypeID} and AssetID IN ({assetIdFinalQuery})
 					                and FormattedValue is not null
 					        having  string_agg(FormattedValue,'{RELATIONSHIP_DELIMITER}') is not null
                         ) {tableAlias}");
-                    }
-                }
-                else if (f.Type == "Relationship")
-                {
-                    bool hasReferenceList = false;
-                    string targetType;
-                    var filtercond = GetSplitFilterCriteriaRelationship(f.LookupObjectID.GetValueOrDefault(), f.Object, f.ObjectID, out hasReferenceList, out targetType);
+                     }
+                 }
+                 else if (f.Type == "Relationship")
+                 {
+                     bool hasReferenceList = false;
+                     string targetType;
+                     var filtercond = GetSplitFilterCriteriaRelationship(f.LookupObjectID.GetValueOrDefault(), f.Object, f.ObjectID, out hasReferenceList, out targetType);
 
-                    // Models / Policy relationships should return the textpath not just the display name of the bottom level item.
-                    bool isModelOrPolicy = (targetType == SystemObjects.PolicyType.ToString() || targetType == SystemObjects.TaxonomyType.ToString());
+                     // Models / Policy relationships should return the textpath not just the display name of the bottom level item.
+                     bool isModelOrPolicy = (targetType == SystemObjects.PolicyType.ToString() || targetType == SystemObjects.TaxonomyType.ToString());
 
-                    if (hasReferenceList)
-                    {
-                        if (filtercond == SplitFilterCriteriaRelationship.Object)
-                        {
-                            fieldJoins.Add($@"outer apply (
+                     if (hasReferenceList)
+                     {
+                         if (filtercond == SplitFilterCriteriaRelationship.Object)
+                         {
+                             fieldJoins.Add($@"outer apply (
                                 select  STRING_AGG(S.Name,'{RELATIONSHIP_DELIMITER}') as FormattedValue from FieldType FT
 	                                inner join [Intersect] I on I.IntersectTypeId = FT.LookupObjectID 
 	                                left join AssetType S on S.Object = I.Subject and S.ObjectID = I.SubjectID and I.Object = A.Object and I.ObjectID = A.ObjectID
 	                                where FT.Id = {f.ID}
 	                                having STRING_AGG(S.Name,'{RELATIONSHIP_DELIMITER}') is not null
                                 ) {tableAlias}");
-                        }
-                        else if (filtercond == SplitFilterCriteriaRelationship.Subject)
-                        {
-                            fieldJoins.Add($@"outer apply (
+                         }
+                         else if (filtercond == SplitFilterCriteriaRelationship.Subject)
+                         {
+                             fieldJoins.Add($@"outer apply (
                                 select  STRING_AGG(O.Name,'{RELATIONSHIP_DELIMITER}') as FormattedValue from FieldType FT
 	                                inner join [Intersect] I on I.IntersectTypeId = FT.LookupObjectID 
 	                                left join AssetType O on O.Object = I.Object and O.ObjectID = I.ObjectID and I.Subject = A.Object and I.SubjectID = A.ObjectID
 	                                where FT.Id = {f.ID}
 	                                having STRING_AGG(O.Name,'{RELATIONSHIP_DELIMITER}') is not null
                                 ) {tableAlias}");
-                        }
-                        else
-                        {
-                            fieldJoins.Add($@"outer apply (
+                         }
+                         else
+                         {
+                             fieldJoins.Add($@"outer apply (
                                 select  STRING_AGG(ISNULL(S.Name, O.Name),'{RELATIONSHIP_DELIMITER}') as FormattedValue from FieldType FT
 	                                inner join [Intersect] I on I.IntersectTypeId = FT.LookupObjectID 
 	                                left join AssetType S on S.Object = I.Subject and S.ObjectID = I.SubjectID and I.Object = A.Object and I.ObjectID = A.ObjectID
@@ -339,26 +348,26 @@ namespace d360.model.DataAccessLayer.repositories
 	                                where FT.Id = {f.ID}
 	                                having STRING_AGG(ISNULL(S.Name, O.Name),'{RELATIONSHIP_DELIMITER}') is not null
                                 ) {tableAlias}");
-                        }
-                    }
-                    else
-                    {
+                         }
+                     }
+                     else
+                     {
 
-                        if (filtercond == SplitFilterCriteriaRelationship.Object)
-                        {
-                            fieldJoins.Add($@"outer apply (
-                            select STRING_AGG({(isModelOrPolicy ? "ATV.TextPath":"AD.DisplayValue")},'{RELATIONSHIP_DELIMITER}') as FormattedValue from AssetDetail AD
-                            {(isModelOrPolicy ? " cross apply [dbo].[GetAssetTextPathById](AD.ID,'/') ATV " : "" )}
+                         if (filtercond == SplitFilterCriteriaRelationship.Object)
+                         {
+                             fieldJoins.Add($@"outer apply (
+                            select STRING_AGG({(isModelOrPolicy ? "ATV.TextPath" : "AD.DisplayValue")},'{RELATIONSHIP_DELIMITER}') as FormattedValue from AssetDetail AD
+                            {(isModelOrPolicy ? " cross apply [dbo].[GetAssetTextPathById](AD.ID,'/') ATV " : "")}
                             where AD.ID in (        
                             SELECT        O.Id as TargetAssetId
                             FROM            graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
                             WHERE        MATCH(S <- (E) - O)  AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id)
                             having string_agg(AD.DisplayValue,'{RELATIONSHIP_DELIMITER}') is not null
                             ) {tableAlias}");
-                        }
-                        else if (filtercond == SplitFilterCriteriaRelationship.Subject)
-                        {
-                            fieldJoins.Add($@"outer apply (
+                         }
+                         else if (filtercond == SplitFilterCriteriaRelationship.Subject)
+                         {
+                             fieldJoins.Add($@"outer apply (
                             select STRING_AGG({(isModelOrPolicy ? "ATV.TextPath" : "AD.DisplayValue")},'{RELATIONSHIP_DELIMITER}') as FormattedValue from AssetDetail AD
                             {(isModelOrPolicy ? " cross apply [dbo].[GetAssetTextPathById](AD.ID,'/') ATV " : "")}
                             where AD.ID in ( 
@@ -367,11 +376,11 @@ namespace d360.model.DataAccessLayer.repositories
                             WHERE        MATCH(S - (E) -> O)  AND E.IntersectTypeID = {f.LookupObjectID} and S.Id = A.Id)
                             having string_agg(AD.DisplayValue,'{RELATIONSHIP_DELIMITER}') is not null
                             ) {tableAlias}");
-                        }
-                        else
-                        {
+                         }
+                         else
+                         {
 
-                            fieldJoins.Add($@"outer apply (
+                             fieldJoins.Add($@"outer apply (
                             select STRING_AGG({(isModelOrPolicy ? "ATV.TextPath" : "AD.DisplayValue")},'{RELATIONSHIP_DELIMITER}') as FormattedValue from AssetDetail AD
                             {(isModelOrPolicy ? " cross apply [dbo].[GetAssetTextPathById](AD.ID,'/') ATV " : "")}
                             where AD.ID in (SELECT        O.Id as TargetAssetId
@@ -383,12 +392,12 @@ namespace d360.model.DataAccessLayer.repositories
                             WHERE        MATCH(S <- (E) - O)  AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id)
                             having string_agg(AD.DisplayValue,'{RELATIONSHIP_DELIMITER}') is not null
                             ) {tableAlias}");
-                        }
-                    }
-                }
-                else if (f.Type == "RefListRelationship")
-                {
-                    fieldJoins.Add($@"outer apply (
+                         }
+                     }
+                 }
+                 else if (f.Type == "RefListRelationship")
+                 {
+                     fieldJoins.Add($@"outer apply (
                         select string_agg([Name],'{RELATIONSHIP_DELIMITER}') as FormattedValue
                         from (
                         select SubjectName as [Name] from IntersectDetail I where I.IntersectTypeID = {f.LookupObjectID} and I.[Object] = A.[Object] and I.ObjectID = A.ObjectID
@@ -396,47 +405,53 @@ namespace d360.model.DataAccessLayer.repositories
                         select ObjectName as [Name] from IntersectDetail I where I.IntersectTypeID = {f.LookupObjectID} and I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID
                         ) Names
                     ) {tableAlias}");
-                }
-                else if (f.Type == "JsonElement")
-                {
-                    fieldJoins.Add($@"
+                 }
+                 else if (f.Type == "JsonElement")
+                 {
+                     fieldJoins.Add($@"
                         {joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {jsonElementDefinition.FieldTypeID} and {tableAlias}.[ObjectType] = A.[Object] and {tableAlias}.[ObjectID] = A.[ObjectID]
                         {joinPrefix} join FieldJsonProperty FJP{f.ID} on FJP{f.ID}.FieldID = {tableAlias}.ID and FJP{f.ID}.[Path] = @jsonPath{f.ID}
                     ");
-                    dbArgs.Add($"@jsonPath{f.ID}", jsonElementDefinition.Path);
-                }
-                else if (f.Type == "Score")
-                {
-                    fieldJoins.Add($"{joinPrefix} apply dbo.GetAssetScoreById(A.ID, {f.ScoreType}) {tableAlias}");
-                }
-                else if (f.Type == "Tag")
-                {
-                    fieldJoins.Add($@"outer apply(
+                     dbArgs.Add($"@jsonPath{f.ID}", jsonElementDefinition.Path);
+                 }
+                 else if (f.Type == "Score")
+                 {
+                     fieldJoins.Add($"{joinPrefix} apply dbo.GetAssetScoreById(A.ID, {f.ScoreType}) {tableAlias}");
+                 }
+                 else if (f.Type == "Counter")
+                 {
+                     fieldJoins.Add($@"outer apply (select top 1 [Value] as 'FormattedValue'
+                            from dbo.FieldCounterValue
+                            where AssetId = A.Id and FieldTypeId = {f.ID}){tableAlias}");
+                 }
+                 else if (f.Type == "Tag")
+                 {
+                     fieldJoins.Add($@"outer apply(
                         select FormattedValue = STUFF((
                             select '|' + T.Value from AssetTag AT
                                 inner join Tag T on AT.TagID = T.ID
                                 where AT.AssetID = A.ID
                             for xml path (''), TYPE).value('.','NVARCHAR(MAX)'), 1, 1, '')
                          ){tableAlias}(FormattedValue) ");
-                }
-                else if(f.Type =="Lookup" && listColorsAsJSON && hasColor)
-                {
-                    string lookupValueJoinCriteria;
-                    string displayName;
+                 }
+                 else if (f.Type == "Lookup" && listColorsAsJSON && hasColor)
+                 {
+                     string lookupValueJoinCriteria;
+                     string displayName;
 
-                    if (f.AllowMultipleValues)
-                    {
-                        displayName = $@"ADV{tableAlias}.DisplayValue";
-                        lookupValueJoinCriteria = $"cross apply GetAssetDisplayValueByID(ACF{tableAlias}.ID) ADV{tableAlias} cross apply STRING_SPLIT(F{tableAlias}.Value, ',') SPF{tableAlias} where ACF{tableAlias}.Object = FT{tableAlias}.LookupObjectType and ACF{tableAlias}.ObjectID = SPF{tableAlias}.value ";
-                    }
-                    else
-                    {
-                        displayName = $@"F{tableAlias}.formattedValue";                        
-                        lookupValueJoinCriteria = $" where ACF{tableAlias}.Object = FT{tableAlias}.LookupObjectType and ACF{tableAlias}.[ObjectID] = try_cast(F{tableAlias}.[Value] as int)";
-                    }
+                     if (f.AllowMultipleValues)
+                     {
+                         displayName = $@"ADV{tableAlias}.DisplayValue";
+                         lookupValueJoinCriteria = $"cross apply GetAssetDisplayValueByID(ACF{tableAlias}.ID) ADV{tableAlias} cross apply STRING_SPLIT(F{tableAlias}.Value, ',') SPF{tableAlias} where ACF{tableAlias}.Object = FT{tableAlias}.LookupObjectType and ACF{tableAlias}.ObjectID = SPF{tableAlias}.value ";
+                     }
+                     else
+                     {
+                         displayName = $@"F{tableAlias}.formattedValue";
+                         lookupValueJoinCriteria = $" where ACF{tableAlias}.Object = FT{tableAlias}.LookupObjectType and ACF{tableAlias}.[ObjectID] = try_cast(F{tableAlias}.[Value] as int)";
+                     }
 
 
-                    string sql = $@"
+                     string sql = $@"
                                 left join Field F{tableAlias} on F{tableAlias}.FieldTypeID = {f.ID} and F{tableAlias}.ObjectType = {objectSql} and F{tableAlias}.ObjectID = {objectIdSql}
                                 left join FieldType FT{tableAlias} on FT{tableAlias}.ID = F{tableAlias}.FieldTypeID
                                 outer apply(
@@ -448,13 +463,13 @@ namespace d360.model.DataAccessLayer.repositories
                                 {lookupValueJoinCriteria} FOR JSON PATH),
                                 [Value] = F{tableAlias}.[Value]
                             ){tableAlias}(FormattedValue, [Value]) ";
-                    fieldJoins.Add(sql);
+                     fieldJoins.Add(sql);
 
-                    if (!string.IsNullOrEmpty(f.DefaultValue))
-                    {
+                     if (!string.IsNullOrEmpty(f.DefaultValue))
+                     {
 
-                        string type = f.LookupObjectType == "ReferenceItem" ? f.LookupObjectType + "Type" : f.LookupObjectType;
-                        string defaultSql = $@"
+                         string type = f.LookupObjectType == "ReferenceItem" ? f.LookupObjectType + "Type" : f.LookupObjectType;
+                         string defaultSql = $@"
                             outer apply(
                             select FormattedValue = 
                             (SELECT COALESCE(JSON_VALUE(DFColor{tableAlias}.ColorJSON,'$.Value'), 'transparent') as color, 
@@ -463,18 +478,18 @@ namespace d360.model.DataAccessLayer.repositories
 					                            cross apply dbo.GetAssetColorJsonByColor(A.Color) DFColor{tableAlias}
 					                            WHERE AT.Object = '{type}' and AT.ObjectID = {f.LookupObjectID} and A.ObjectID = {f.DefaultValue} FOR JSON PATH)
                             ) defaultColorValue{tableAlias}(color)";
-                        fieldJoins.Add(defaultSql);
-                    }
-                }
-                else if (f.Type == "ComplexRelationLookup" || f.Type == "OwnershipLookup")
-                {
-                    fieldJoins.Add($"{joinPrefix} join FieldTypeLookup {tableAlias} on {tableAlias}.FieldTypeID = {f.ID}");
-                }
-                else
-                {
-                    fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql}");
-                }
-            });
+                         fieldJoins.Add(defaultSql);
+                     }
+                 }
+                 else if (f.Type == "ComplexRelationLookup" || f.Type == "OwnershipLookup")
+                 {
+                     fieldJoins.Add($"{joinPrefix} join FieldTypeLookup {tableAlias} on {tableAlias}.FieldTypeID = {f.ID}");
+                 }
+                 else
+                 {
+                     fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql}");
+                 }
+             });
         }
 
         protected void getQueryParamsSql(AssetsApiViewModel model, AssetType assetType, List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> whereStatements, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -489,7 +504,7 @@ namespace d360.model.DataAccessLayer.repositories
 
                 if (queryParams.Any(x => x.Key == "_direction"))
                 {
-                    var allowedDirections = new [] { "asc", "desc" };
+                    var allowedDirections = new[] { "asc", "desc" };
                     var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
 
                     orderDirection = allowedDirections.Contains(order.Trim().ToLower()) ? order : "";

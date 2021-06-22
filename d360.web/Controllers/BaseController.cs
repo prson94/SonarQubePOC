@@ -488,6 +488,7 @@ namespace d360.web.Controllers
             DataType.Tag.ToString(),
             DataType.JSON.ToString(),
             DataType.Score.ToString(),
+            DataType.Counter.ToString()
         };
 
         public BaseController(ICommunityContext community, ICompanyContext company)

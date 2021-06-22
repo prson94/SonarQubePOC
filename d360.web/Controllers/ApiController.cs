@@ -74,6 +74,10 @@ namespace d360.web.Controllers
                 }
 
             }
+            else if (ft.Type == DataType.Counter.ToString())
+            {
+                value = formattedValue = Company.GetCounterFieldValue(ft.ID, details.AssetID.Value);
+            }
             else
             {
                 if (!string.IsNullOrEmpty(ft.DefaultFormattedValue))
@@ -603,7 +607,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
             {
                 width = (int)dynamicFieldWidth;
             }
-            var gc = new GridColumn { text = item.FriendlyName, datafield = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat, columnWidth = width, parentFieldTypeID = item.ParentFieldTypeID, canHaveMultipleFilters = canHaveMultipleFilterItems, apiName = item.Name, fieldType = item.Type};
+            var gc = new GridColumn { text = item.FriendlyName, datafield = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat, columnWidth = width, parentFieldTypeID = item.ParentFieldTypeID, canHaveMultipleFilters = canHaveMultipleFilterItems, apiName = item.Name, fieldType = item.Type };
             if (!string.IsNullOrEmpty(item.Category))
             {
                 gc.columngroup = item.Category.Replace(" ", "");
@@ -686,7 +690,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
 
         GridField getGridFieldForColumn(FieldType item, bool useNameAsDataField = false)
         {
-            return new GridField { name = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", type = getGridFieldTypeForColumn(item), apiName = item.Name};
+            return new GridField { name = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", type = getGridFieldTypeForColumn(item), apiName = item.Name };
         }
 
         void parseDynamicColumnsAndFields(List<FieldType> items, List<GridColumn> columns, List<GridField> fields, decimal dynamicFieldWidth, bool serverPaged = false)
@@ -849,7 +853,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     columns.Add(
                             new GridColumn { text = "Asset Path", datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
                     );
-                    
+
 
                     remainingWidth = 80;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
@@ -863,7 +867,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     fields.Add(new GridField { name = "TypeID", type = "number" });
                     fields.Add(new GridField { name = "Type", type = "string" });
                     fields.Add(new GridField { name = "TypeName", type = "string" });
-                    fields.Add(new GridField { name = "Url", type = "string" });                    
+                    fields.Add(new GridField { name = "Url", type = "string" });
                     break;
                 #endregion                
                 case SystemObjects.TaxonomyType:
@@ -1438,7 +1442,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     if (ft.Type == DataType.OwnershipLookup.ToString() && !string.IsNullOrWhiteSpace(lookup.Definition))
                     {
                         FieldTypeOwnershipLookupDefinition lookupdefinition = JsonConvert.DeserializeObject<FieldTypeOwnershipLookupDefinition>(lookup.Definition);
-                        if(lookupdefinition.DisplayAsList == true)
+                        if (lookupdefinition.DisplayAsList == true)
                         {
                             isGrid = false;
                         }
@@ -2493,7 +2497,7 @@ from    (
                     return colorAndValue;
                 }
             }
-            
+
             return value;
         }
 
@@ -3294,10 +3298,10 @@ from    (
                             }
                             });
                         }
-                        else if(load.Action == "Promotion") // if bulk load promote display current status of the job
+                        else if (load.Action == "Promotion") // if bulk load promote display current status of the job
                         {
-                            var currentStatus = GetPromotionStatusMessage(load);                            
-                            
+                            var currentStatus = GetPromotionStatusMessage(load);
+
                             model.rows.Add(new DetailReadOnlyRowModel
                             {
                                 columns = 1,
@@ -3307,7 +3311,7 @@ from    (
                             }
                             });
                         }
-                    }                    
+                    }
                     break;
                 #endregion
                 case SystemObjects.Policy:
@@ -4183,7 +4187,7 @@ where v.id = {0}", id)).FirstOrDefault();
                     {
                         var post = Company.ApiExecutions.FirstOrDefault(x => x.ExecutionID == loadInfo.PostExecutionID.Value);
 
-                        if(post != null && post.ProcessingStartedOn.HasValue)
+                        if (post != null && post.ProcessingStartedOn.HasValue)
                         {
                             status = "Submitted requests processing data...";
                         }
@@ -4577,7 +4581,7 @@ select	I.[Uid],
         case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end as Object,
 		case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end as ObjectID,
         IA.uid as ObjectUid,
-		{(isTargetReferenceItemType ? "P.TextPath as Name," :"P.DisplayPath as Name,")}        
+		{(isTargetReferenceItemType ? "P.TextPath as Name," : "P.DisplayPath as Name,")}        
 		IT.Object Type,
 		IT.ObjectID TypeID,
 		AST.Name as TypeName,

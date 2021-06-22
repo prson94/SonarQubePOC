@@ -780,7 +780,7 @@ namespace d360.model.DataAccessLayer
                         {
                             bool success;
                             string message;
-                            var requiredFieldNames = fieldTypes.Where(f => f.IsRequired).Select(f => f.Name).ToList();
+                            var requiredFieldNames = fieldTypes.Where(f => f.IsRequired && f.Type != DataType.Counter.ToString()).Select(f => f.Name).ToList();
 
                             CompanyContext.ValidateFields("ResourceType",
                                ResourceTypeID,

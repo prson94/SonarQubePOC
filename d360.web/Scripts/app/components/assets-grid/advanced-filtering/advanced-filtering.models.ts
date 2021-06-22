@@ -272,6 +272,10 @@ export class AdvancedFilterFieldCondition {
                 value = this.value;
             }
 
+            if (this.fieldType === "Counter") {
+                return this.type.Type.Counter.CounterPrefix + value;
+            }
+
             if (this.fieldType === "Number" || this.fieldType === "Decimal") {
                 return +value;
             }
@@ -650,7 +654,7 @@ export class SystemFields {
             IsSystemField: true
         };
         fields.push(owner);
-        
+
         if (gridType === "Tree") {
             var level: FieldTypeAPIModelFieldCondition = {
                 Category: "System Fields",

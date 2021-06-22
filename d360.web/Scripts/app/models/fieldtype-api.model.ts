@@ -80,6 +80,9 @@ export class FieldType {
             case 'Score':
                 this.Score = new Score();
                 break;
+            case 'Counter':
+                this.Counter = new Counter();
+                break;
             default:
                 this.Empty = new Empty();
         }
@@ -120,6 +123,7 @@ export class FieldType {
     Text: Text;
     Tag: Tag;
     Score: Score;
+    Counter: Counter;
     Empty: Empty;
 }
 
@@ -268,6 +272,26 @@ export class ComputedRelationshipLookup implements ICommonOptions {
     HideFilter: boolean;
     HideFooter: boolean;
     HideHeader: boolean;
+    Search: Search = new Search();
+}
+
+export class Counter implements ICommonOptions {
+    Validation: BooleanValidation = new BooleanValidation();
+    ColumnWidth: number = null;
+    SortOrder: number = 0;
+    IsEditable: boolean = false;
+    IsListable: boolean = false;
+    IsPartOfKey: boolean = false;
+    IsPrimaryFilter: boolean = false;
+    ColumnOrder: number;
+    Description: DisplayOnlyDescription = new DisplayOnlyDescription();
+    IsDisplayable: boolean = true;
+    ShowIfEmpty: boolean = false;
+    HideFilter: boolean;
+    HideFooter: boolean;
+    HideHeader: boolean;
+    CounterPrefix: string;
+    CounterInitialIndex: number;
     Search: Search = new Search();
 }
 
@@ -522,7 +546,7 @@ export class FieldTypeHelper {
         return allowedFieldTypes.some(x => x === this.getFieldType(field).toLowerCase());
     }
     public static isFieldForOperatorAdvancedFilters(field: FieldType): boolean {
-        let allowedFieldTypes = ['boolean', 'date', 'datetime', 'decimal', 'html', 'lookup', 'number', 'text', 'link', 'tag', 'score', 'path', 'computedrelationshipfield', 'json', 'relationship'];
+        let allowedFieldTypes = ['boolean', 'date', 'datetime', 'decimal', 'html', 'lookup', 'number', 'text', 'link', 'tag', 'score', 'path', 'computedrelationshipfield', 'json', 'relationship', 'counter'];
         return allowedFieldTypes.some(x => x === this.getFieldType(field).toLowerCase());
     }
 }

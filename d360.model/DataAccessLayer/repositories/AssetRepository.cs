@@ -994,6 +994,10 @@ namespace d360.model.DataAccessLayer
                         {
                             simpleFilters.Add($"JSON_VALUE(F{ft.ID}.FormattedValue, '$[0].name') like @simpleFilter");
                         }
+                        else if (ft.Type == DataType.Counter.ToString())
+                        {
+                            simpleFilters.Add($"('{ft.CounterPrefix}' + CAST(F{ft.ID}.FormattedValue as nvarchar(max))) like @simpleFilter");
+                        }
                         else
                         {
                             simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
@@ -3568,7 +3572,7 @@ where	O.RowNum = 1";
                             assetType.ObjectID,
                             true,
                             fieldTypes,
-                            fieldTypes.Where(x => x.IsRequired == true || x.IsPartOfKey).Select(x => x.Name).ToList(),
+                            fieldTypes.Where(x => (x.IsRequired == true || x.IsPartOfKey) && x.Type != DataType.Counter.ToString()).Select(x => x.Name).ToList(),
                             asset.Fields,
                             Guid.Empty, 0,
                             null,

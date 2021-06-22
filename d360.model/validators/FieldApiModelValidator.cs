@@ -363,6 +363,52 @@ namespace d360.model.validators
                     }
                 }
 
+                if (field.Type.Counter != null)
+                {
+                    if (field.Type.Counter.IsEditable == true)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. IsEditable cannot be true for this field type.");
+                    }
+
+                    if (!string.IsNullOrEmpty(field.Type.Counter.CounterPrefix))
+                    {
+                        var value = field.Type.Counter.CounterPrefix.Trim();
+                        field.Type.Counter.CounterPrefix = value;
+
+                        if (value.Length > 10)
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. Counter Prefix cannot be longer than 10 characters.");
+                        }
+
+                        var match = Regex.Matches(value, "[a-zA-Z0-9-_]");
+                        if (match.Count != value.Length)
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. Counter Prefix must be consisted of alphanumericals and/or symbols _ or -.");
+                        }
+
+                        if (!Regex.IsMatch(value[0].ToString(), "[a-zA-Z]"))
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. Counter Prefix must start with a character.");
+                        }
+                    }
+
+                    if (field.Type.Counter.CounterInitialIndex.HasValue && (field.Type.Counter.CounterInitialIndex.Value <= 0 || field.Type.Counter.CounterInitialIndex.Value > 9999999))
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. Counter Initial Value must be between 1 and 9999999.");
+                    }
+
+                    var allowedTypes = new List<string> {
+                            SystemObjects.ArtifactType.ToString(),
+                            SystemObjects.PolicyType.ToString(),
+                            SystemObjects.RuleType.ToString(),
+                            SystemObjects.TaxonomyType.ToString()
+                        };
+                    if (assetTypeIdentifierInfoModel == null || !allowedTypes.Contains(assetTypeIdentifierInfoModel.Object))
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"This asset type may not have a Counter field type!");
+                    }
+                }
+
                 //Diagram asset type validators
                 if (assetTypeIdentifierInfoModel != null && assetTypeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
                 {

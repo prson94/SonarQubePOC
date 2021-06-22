@@ -184,6 +184,36 @@ end
 	  ]]>
     </rollback>
   </changeSet>
+  
+    <changeSet author="TDuric" id="Table.dbo.FieldType-v5">
+    <comment>GOV-13562</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+		IF COL_LENGTH('[dbo].[FieldType]', 'CounterPrefix') IS NULL
+		BEGIN
+			alter table dbo.FieldType
+			add [CounterPrefix] nvarchar(10)
+
+			alter table dbo.FieldType
+			add [CounterInitialIndex] int
+		END
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+		IF COL_LENGTH('[dbo].[FieldType]', 'CounterPrefix') IS NOT NULL
+		BEGIN
+			DROP COLUMN IF EXISTS
+				CounterPrefix,
+				CounterInitialIndex
+		END
+	  ]]>
+    </rollback>
+  </changeSet>
+
 
   <changeSet author="Core" id="Table.dbo.Field-FieldType_AfterInsert-v1">
     <sql dbms="mssql"

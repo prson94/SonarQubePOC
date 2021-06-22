@@ -92,6 +92,7 @@
 	<include file="scripts/Table.dbo.Field.xml"/>
 	<include file="scripts/Table.dbo.FieldJsonProperty.xml"/>
 	<include file="scripts/Table.dbo.FieldValue.xml"/>
+	<include file="scripts/Table.dbo.FieldCounterValue.xml"/>
 	<include file="scripts/Table.dbo.Follow.xml"/>
 	<include file="scripts/Table.dbo.FusionType.xml"/>
 	<include file="scripts/Table.dbo.FusionAttributeType.xml"/>

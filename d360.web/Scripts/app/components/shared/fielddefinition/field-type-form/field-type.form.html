@@ -963,6 +963,42 @@
             </div>
         </simple-accordion>
 
+        <simple-accordion header="Value Selection"
+                          active="false"
+                          *ngIf="currentType === 'Counter'">
+            <div class="row">
+                <div class="col s6">
+                    <div class="FieldName">
+                        Counter Prefix
+                    </div>
+                    <input pInputText
+                           type="text"
+                           [(ngModel)]="model.FieldType.Type[currentType].CounterPrefix"
+                           style="width: 98%; display: block;"
+                           [ngModelOptions]="{standalone: true}"
+                           (change)="validate('CounterPrefix')" />
+
+                    <div class="form-instructions">
+                        You can provide a prefix to be displayed in front of the counter. For example, with a prefix 'DQ-' the counter would display as DQ-1, DQ-2, etc.
+                    </div>
+                </div>
+                <div class="col s6">
+                    <div class="FieldName">
+                        Counter Initial Value
+                    </div>
+                    <input pInputText
+                           type="number"
+                           [(ngModel)]="model.FieldType.Type[currentType].CounterInitialIndex"
+                           style="width: 98%; display: block;"
+                           [ngModelOptions]="{standalone: true}"
+                           (change)="validate('CounterInitialIndex')" />
+                    <div class="form-instructions">
+                        The initial value will be the value of the counter for the first added asset after the counter field type is defined. It must be greater than the number of existing assets.
+                    </div>
+                </div>
+            </div>
+        </simple-accordion>
+
         <simple-accordion header="Search Results"
                           active="false"
                           *ngIf="showAddToSearch && model?.FieldType?.Type[currentType]?.Search?.AddToResult">
