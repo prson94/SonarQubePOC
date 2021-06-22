@@ -135,4 +135,16 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
     get filteredConditions(): any[] {
         return this.step.Condition.filter((c) => c['@ContextualFieldID'] == null || c['@ContextualFieldID'].indexOf('Score|') === 0);
     }
+
+    get reassignmentFieldName(): string {
+        if (this.reassignment) {
+            if (this.reassignment.ReassignType === 'Object') {
+                return 'Action was reassigned to another object';
+            } else if (this.reassignment.ReassignType === 'Resource') {
+                return 'Action is reassigned to Resource';
+            }
+        }
+
+        return 'Action was reassigned';
+    }
 }

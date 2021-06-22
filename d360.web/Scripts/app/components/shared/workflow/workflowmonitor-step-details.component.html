@@ -122,24 +122,16 @@
                     <div *ngIf="reassignment != null">
                         <div class="row">
                             <div class="col s12 FieldName">
-                                Action is Reassigned to {{reassignment.ReassignType}}
+                                {{reassignmentFieldName}}
                             </div>
                         </div>
-                        <div class="row" *ngIf="step?.ItemFields?.Reassigned['@reassignType']=='Object'">
-                            <div class="col s6">
-                                <span class="FieldName">
-                                    Asset Type:
-                                </span>
+                        <div class="row" *ngIf="reassignment.ReassignType == 'Object'">
+                            <div class="col s12">
                                 <span>
-                                    {{reassignment.ObjectType}}
-                                </span>
-                            </div>
-                            <div class="col s6">
-                                <span class="FieldName">
-                                    Asset Name:
-                                </span>
-                                <span>
-                                    {{reassignment.ObjectName}}
+                                    {{reassignment.ByResourceName}} reassigned this action from <strong>{{step?.IssueDetails?.ObjectName}}</strong> to <strong>{{reassignment.ObjectName}}</strong> on {{reassignment.ReassignOn | date: 'medium'}}.
+                                    <ng-container *ngIf="reassignment.NewItemId != null">
+                                        A <a [href]="'/monitor?itemId=' + reassignment.NewItemId" target="_blank">new workflow <i class="fa fa-external-link"></i></a> has been created.
+                                    </ng-container>
                                 </span>
                             </div>
                         </div>
