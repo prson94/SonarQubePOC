@@ -1895,23 +1895,30 @@ from	IntersectType I
                     declare @object nvarchar(255)
                     declare @objectId int
                     declare @referenceId int
+                    declare @isSubject bit
 
                     select @object = Object, @objectId = ObjectId from asset where uid = @assetUid
 
-                    ;with refs as (select I.ObjectID as Id from fieldtype FT
-	                    inner join [Intersect] I on I.IntersectTypeID = FT.LookupObjectID and I.[Subject] = @object and I.[SubjectID] = @objectid
-	                    inner join Asset A on A.uid = @assetUid
-                    where FT.[Type] = 'RefListRelationship' and FT.ID = @fieldTypeId
-                    union 
-                    select I.SubjectID as Id from fieldtype FT
-	                    inner join [Intersect] I on I.IntersectTypeID = FT.LookupObjectID and I.Object = @object and I.ObjectId = @objectid
-	                    inner join Asset A on A.uid = @assetUid
-                    where FT.[Type] = 'RefListRelationship' and FT.ID = @fieldTypeId)
-                    select @referenceId = (select top 1 Id from refs)
+	                select	@isSubject = iif(I.Object = 'ReferenceItemType' and I.ObjectID = 0, 1, 0) 
+		                from	IntersectType I 
+				                inner join FieldType F on F.LookupObjectType = 'IntersectType' and F.LookupObjectID = I.ID and F.ID = @fieldTypeId;
+		
+		                if @isSubject = 1
+		                begin
+			                select	top 1
+					                @referenceId = A.ID
+			                from	[Intersect] I
+					                inner join AssetType A on A.Object = I.Object and A.ObjectID = I.ObjectID and I.Subject = @object and I.Subjectid = @objectId
+		                end
+		                else
+		                begin 
+			                select	top 1
+					                @referenceId = A.ID
+			                from	[Intersect] I
+					                inner join AssetType A on A.Object = I.Subject and A.ObjectID = I.SubjectID and I.Object = @object and I.Objectid = @objectId
+		                end
 
-
-                    select * from FieldType where
-                    objectid = @referenceid and Object = 'ReferenceItemType'
+                   select * from fieldtype where assettypeid = @referenceid
                         ", new { fieldTypeId = fieldType.ID, assetUid }).ToList();
 
                 fields.Add(new FieldType
