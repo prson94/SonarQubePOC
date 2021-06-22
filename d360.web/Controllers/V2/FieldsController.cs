@@ -2366,6 +2366,10 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     }
                     response.items.Add(new FieldTypeApiViewModel() { Name = "Context", FriendlyName = "Context", Type = new FieldTypeDataTypeApiViewModel() { Html = new FieldTypeDataTypeHtmlApiViewModel() }, Category = "" });
                 }
+                if (fieldType.Type == DataType.RefListRelationship.ToString())
+                {
+                    var fields = FieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid);
+                }
                 return Request.CreateResponse(HttpStatusCode.OK, response);
 
             }
