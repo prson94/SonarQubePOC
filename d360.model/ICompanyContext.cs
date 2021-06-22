@@ -180,7 +180,6 @@ namespace d360.model
         AssetDetail GetAssetDetail(string objectType, long objectId);
         string GetAssetTypeNoReadSqlStatement(string identifier = null);
         string GetAssetTypeNoReadSqlStatement(Permission permission, string identifier = null);
-        List<FusionAttributeItem> GetAttributesByFusion(int fusionID);
         Task<T> GetDatabaseJsonAsObjectAsync<T>(string query, DynamicParameters dbArgs, int timeout = 90);
         Task<IEnumerable<FieldFilterModel>> GetFieldFiltersByType(SystemObjects type, int id);
         IQueryable<FieldWithRelation> GetFieldRelationsByObject(SystemObjects type, int id);

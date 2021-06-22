@@ -754,26 +754,6 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 	order by	ASTT.Name + ' : ' + D.DisplayValue").ToList();
         }
 
-
-
-        public List<FusionAttributeItem> GetAttributesByFusion(int fusionID)
-        {
-            string k = key(FUSIONATTRIBUTES_BY_FUSION_PREFIX_KEY, fusionID);
-            if (Caching.ItemExists<List<FusionAttributeItem>>(k))
-            {
-                return Caching.GetItem<List<FusionAttributeItem>>(k);
-            }
-            else
-            {
-
-                string query = string.Format("fusion.GetAttributesByFusion {0}", fusionID);
-                var list = Database.Connection.Query<FusionAttributeItem>(query).ToList();
-                Caching.SetItem<List<FusionAttributeItem>>(k, list);
-
-                return list;
-            }
-        }
-
         #endregion
 
         public AssetDetail GetAssetDetail(long id)
