@@ -7,7 +7,9 @@ import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from "./messages-observable.service";
 import { ScoreType } from "../models/metrics.model";
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class ScoreService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }

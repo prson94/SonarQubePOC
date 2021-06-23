@@ -18,7 +18,9 @@ import {JsonResult} from '../models/jsonresult.model';
 import { MessagesObservableService } from './messages-observable.service';
 import {BaseObservableService} from './baseObservable.service';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class OrganizationsService extends BaseObservableService {
     constructor(
         private http: HttpClient,

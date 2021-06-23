@@ -201,8 +201,11 @@ where   AssetTypeID in (
                                 assetVersionCheckObjectType.Valid = exists;
                             }
                         }
-                    
-                        assetVersionCheckObjectTypes.Add(assetVersionCheckObjectType);                    
+
+                        lock (locker)
+                        {
+                            assetVersionCheckObjectTypes.Add(assetVersionCheckObjectType);
+                        }
                     }
                 };
 

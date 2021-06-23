@@ -11,7 +11,9 @@ import {catchError, map} from "rxjs/operators";
 
 declare var CompanySettings: any;
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class LoadService extends BaseObservableService {
 
     lineageVersion: number = 1;

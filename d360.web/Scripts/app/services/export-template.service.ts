@@ -9,7 +9,9 @@ import { MessagesObservableService } from './messages-observable.service';
 import {BaseObservableService} from "./baseObservable.service";
 import { ApiResult } from '../models/apiresult.model';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class ExportTemplateService extends BaseObservableService {
 
     constructor(

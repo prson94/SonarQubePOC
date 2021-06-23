@@ -8,7 +8,9 @@ import { Predicate, PredicateType } from '../models/predicate.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { ApiResult } from '../models/apiresult.model';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class PredicatesService extends BaseObservableService {
 
     constructor(

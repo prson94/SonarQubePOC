@@ -48,12 +48,9 @@ from	metrics.Score T
 				Db.Database.Connection.Execute(endScoreSql, new { ExecutionId = ExecutionRecord.ID, model.VersionUids });	// End-date asset scores where this measure is the only one that was present (a one-measure score).
 				Db.CreateCheckDependencyRemovedResultExecution(model.VersionUids);
 			}
-			
-			if (executionItems.Count == 0)
-			{
-				// Only delete this execution if there is nothing to do here.
-				updateExecution(Db.Connection, ExecutionRecord, true, shouldDeleteAfterCompletion: true);
-			}
+
+			// Only delete this execution if there is nothing to do here.
+			updateExecution(Db.Connection, ExecutionRecord, true, shouldDeleteAfterCompletion: (executionItems.Count == 0));
 		}
 	}
 }

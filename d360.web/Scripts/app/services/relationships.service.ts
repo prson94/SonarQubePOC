@@ -9,7 +9,9 @@ import { DropdownOption } from '../models/dropdown.model';
 import { Observable, forkJoin } from 'rxjs';
 import { ApiResult } from '../models/apiresult.model';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class RelationshipsService extends BaseObservableService {
 
     private MAX_SYNCHRONOUS_API_ITEM_COUNT: number = 250;

@@ -2,7 +2,9 @@ import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { CascadingChange } from '../models/cascade.model';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class CascadeService {
     // Observable sources
     private cascadeSource = new Subject<CascadingChange>();

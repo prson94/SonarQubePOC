@@ -14,7 +14,7 @@ namespace igx.jobs.scoreprocessor
                 c.AddAzureStorageCoreServices()
                 .AddAzureStorage(s => {
 #if DEBUG
-                    s.MaxDequeueCount = 1;
+                    s.MaxDequeueCount = 3;
                     s.BatchSize = 1;
 #else
                     s.MaxDequeueCount = 5;

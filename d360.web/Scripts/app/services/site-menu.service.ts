@@ -8,7 +8,9 @@ import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 import { SecondaryNavPostModel } from '../models/secondaryNav.model';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class SiteMenuService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }

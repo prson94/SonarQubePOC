@@ -10,7 +10,6 @@ import {
     Group,
     GroupEditorModel,
     ResourceGroup,
-
     GroupApiModels,
     ResourceGroupInfo,
     AddUserToGroup
@@ -21,7 +20,9 @@ import {CountObject} from '../models/resource.model';
 import {MessagesObservableService} from './messages-observable.service';
 import {BaseObservableService} from "./baseObservable.service";
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class GroupService extends BaseObservableService implements IGroupService {
     constructor(
         private http: HttpClient,

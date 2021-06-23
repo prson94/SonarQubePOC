@@ -327,7 +327,7 @@ begin
     insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
         select	@scoreExecutionId as ExecutionID,
 		        @changeType as ChangeType,
-		        ROW_NUMBER() OVER(PARTITION BY M.AssetUid, M.EffectiveDate ORDER BY M.AssetUid, M.EffectiveDate) as RowNumber,
+		        ROW_NUMBER() OVER(ORDER BY M.AssetUid, M.EffectiveDate) as RowNumber,
 		        (
                 select	M.AssetUid,
 		    	        M.EffectiveDate,
@@ -1024,6 +1024,10 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
             {
                 sendScoreQueueMessage(execution);
             }
+            else
+            {
+                endEmptyExecution(Connection, execution.ID);
+            }
         }
 
         public void CreateExternalScoreWorkflowCheckExecution(Guid apiExecutionUid)
@@ -1062,6 +1066,10 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
             if (rowsImpacted > 0)
             {
                 sendScoreQueueMessage(execution, ScoreQueueChangeType.WorkflowCheck);
+            }
+            else
+            {
+                endEmptyExecution(Connection, execution.ID);
             }
         }
 
@@ -1125,6 +1133,10 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
             if (rowsImpacted > 0)
             {
                 sendScoreQueueMessage(execution);
+            }
+            else
+            {
+                endEmptyExecution(Connection, execution.ID);
             }
         }
 
@@ -1203,6 +1215,10 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
                 {
                     sendScoreQueueMessage(execution);
                 }
+                else
+                {
+                    endEmptyExecution(Connection, execution.ID);
+                }
             }
         }
 
@@ -1279,6 +1295,10 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
                 if (rowsImpacted > 0)
                 {
                     sendScoreQueueMessage(execution);
+                }
+                else
+                {
+                    endEmptyExecution(Connection, execution.ID);
                 }
             }
         }
@@ -1540,6 +1560,10 @@ where   J.Payload like '%Measures%';";
             {
                 sendScoreQueueMessage(execution);
             }
+            else
+            {
+                endEmptyExecution(Connection, execution.ID);
+            }
         }
 
         public void CreateRollupPathChangedExecution(int? intersectTypeId = null, int? assetTypeId = null, Guid? triggeredByApiExecutionUid = null)
@@ -1634,6 +1658,10 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
             {
                 sendScoreQueueMessage(execution);
             }
+            else
+            {
+                endEmptyExecution(Connection, execution.ID);
+            }
         }
 
         public void CreateRulesRemovedExecution(Guid apiExecutionUid, List<Guid> assetUids)
@@ -1671,11 +1699,13 @@ inner join metrics.AssetVersion Ve on Ve.Uid = Ar.AssetVersionUid and Ve.Effecti
             }
         }
 
-        public void CreateWorkflowCheckExecution(ScoreExecution execution, ScoreQueueChangeType previousChangeType)
+        public void CreateWorkflowCheckExecution(ScoreExecution previousExecution, ScoreQueueChangeType previousChangeType)
         {
+            var newExecution = createScoreExecution();
+
             var sql = @"
 insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
-	select	ExecutionID,
+	select	@executionID,
 			@changeType,
 			RowNumber,
 			(
@@ -1687,7 +1717,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 			) as Payload,
 			0 as [State]
 	from	metrics.ExecutionItem I
-	where	ExecutionID = @ID 
+	where	ExecutionID = @previousID 
 			and ChangeType = @previousChangeType
 			and [State] = 1";
 
@@ -1700,14 +1730,19 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
                 sql,
                 new
                 {
-                    execution.ID,
+                    previousID = previousExecution.ID,
+                    previousChangeType = (int)previousChangeType,
+                    executionID = newExecution.ID,
                     changeType = (int)ScoreQueueChangeType.WorkflowCheck,
-                    previousChangeType = (int)previousChangeType
                 });
 
             if (rowsImpacted > 0)
             {
-                sendScoreQueueMessage(execution, ScoreQueueChangeType.WorkflowCheck);
+                sendScoreQueueMessage(newExecution, ScoreQueueChangeType.WorkflowCheck);
+            }
+            else
+            {
+                endEmptyExecution(Connection, newExecution.ID);
             }
         }
 
@@ -1774,6 +1809,10 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
                 {
                     sendScoreQueueMessage(execution);
                 }
+                else
+                {
+                    endEmptyExecution(Connection, execution.ID);
+                }
             }
         }
 
@@ -1815,6 +1854,22 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
         }
 
         #region helpers
+
+        private void endEmptyExecution(SqlConnection cnn, long executionId)
+        {
+            try
+            {
+                if (cnn.State != ConnectionState.Open)
+                {
+                    cnn.Open();
+                }
+                cnn.Execute("update metrics.Execution set PercentComplete = 1, CompletedOn = getutcdate(), UpdatedOn = getutcdate() where ID = @executionId", new { executionId });
+            }
+            catch
+            {
+                // Do nothing.
+            }
+        }
 
         private ScoreExecution createScoreExecution(Guid? triggeredByApiExecutionUid = null, Guid? triggeredMeasureUid = null)
         {

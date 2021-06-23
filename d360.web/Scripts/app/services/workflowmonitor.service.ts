@@ -10,11 +10,9 @@ import { GridFilterExpression, GridFilterColumn, GridFilterFieldType } from "../
 import { SortOrder } from "../models/enums.model";
 
 
-
-
-
-
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class WorkflowMonitorService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }

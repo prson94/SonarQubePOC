@@ -8,7 +8,9 @@ import { MessagesObservableService } from './messages-observable.service';
 import { DiagramNodeBase } from '../models/process.model';
 
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class ProcessService extends BaseObservableService {
 
     constructor(

@@ -10,7 +10,9 @@ import {GridFilterExpression} from '../models/grid-definition.model';
 import {BaseObservableService} from './baseObservable.service';
 import {MessagesObservableService} from './messages-observable.service';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class AuditService extends BaseObservableService {
     constructor(
         private http: HttpClient,

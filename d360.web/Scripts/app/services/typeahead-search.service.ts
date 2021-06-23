@@ -6,7 +6,9 @@ import { HttpClient } from '@angular/common/http';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class TypeaheadSearchService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }

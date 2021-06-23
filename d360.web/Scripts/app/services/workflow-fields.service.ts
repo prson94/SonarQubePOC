@@ -3,7 +3,9 @@ import { Subject} from 'rxjs';
 import { WorkflowChangeType, NodeModel, EmailTaskRecipientType, HTTPResponseOutput } from '../models/workflow.model';
 
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class WorkflowFieldsService {
 
     private formFieldsSource = new Subject<any[]>();
