@@ -531,8 +531,28 @@ select	@pageSize as 'pageSize',
                 case when FT.Type = 'Score' then FT.IsDisplayable else null end as 'Type.Score.IsDisplayable',
                 case when FT.Type = 'Score' then FT.IsListable else null end as 'Type.Score.IsListable',
                 case when FT.Type = 'Score' then FT.IsPrimaryFilter else null end as 'Type.Score.IsPrimaryFilter',
-                case when FT.Type = 'Score' then FT.ShowIfEmpty else null end as 'Type.Score.ShowIfEmpty'
+                case when FT.Type = 'Score' then FT.ShowIfEmpty else null end as 'Type.Score.ShowIfEmpty',
 
+
+		        case when FT.Type = 'Counter' then FT.ColumnOrder else null end as 'Type.Counter.ColumnOrder',
+		        case when FT.Type = 'Counter' then FT.ColumnWidth else null end as 'Type.Counter.ColumnWidth',
+		        case when FT.Type = 'Counter' then FT.SortOrder else null end as 'Type.Counter.SortOrder',
+		        case when FT.Type = 'Counter' then TRY_CAST(FT.DefaultValue as datetime) else null end as 'Type.Counter.DefaultValue',
+		        case when FT.Type = 'Counter' then FT.DisplayDescription else null end as 'Type.Counter.Description.Display',
+		        case when FT.Type = 'Counter' then FT.FormDescription else null end as 'Type.Counter.Description.Form',
+		        case when FT.Type = 'Counter' then FT.IsRequired else null end as 'Type.Counter.Validation.IsRequired',
+		        case when FT.Type = 'Counter' then FT.IsDisplayable else null end as 'Type.Counter.IsDisplayable',
+		        case when FT.Type = 'Counter' then FT.IsEditable else null end as 'Type.Counter.IsEditable',
+		        case when FT.Type = 'Counter' then FT.IsListable else null end as 'Type.Counter.IsListable',
+		        case when FT.Type = 'Counter' then FT.IsPartOfKey else null end as 'Type.Counter.IsPartOfKey',
+		        case when FT.Type = 'Counter' then FT.IsPrimaryFilter else null end as 'Type.Counter.IsPrimaryFilter',
+		        case when FT.Type = 'Counter' then FT.ShowIfEmpty else null end as 'Type.Counter.ShowIfEmpty',
+                case when FT.Type = 'Counter' then FT.SearchAddToResult else null end as 'Type.Counter.Search.AddToResult', 
+                case when FT.Type = 'Counter' then FT.SearchPrefix else null end as 'Type.Counter.Search.Prefix', 
+                case when FT.Type = 'Counter' then FT.SearchSuffix else null end as 'Type.Counter.Search.Suffix', 
+                case when FT.Type = 'Counter' then FT.SearchDisplayOrder else null end as 'Type.Counter.Search.DisplayOrder',
+                case when FT.Type = 'Counter' then FT.CounterPrefix else null end as 'Type.Counter.CounterPrefix', 
+                case when FT.Type = 'Counter' then FT.CounterInitialIndex else null end as 'Type.Counter.CounterInitialIndex'
 
         from	FieldType FT
 				left join AssetType O_A on O_A.ID = FT.AssetTypeID 
@@ -967,7 +987,7 @@ from	IntersectType I
                         field.Show = i.Show;
                         if (i.RelationIndex != null)
                         {
-                            if(definitionRelations[i.RelationIndex ?? 0].AssetTypeUid != field.AssetTypeUid)
+                            if (definitionRelations[i.RelationIndex ?? 0].AssetTypeUid != field.AssetTypeUid)
                             {
                                 hasDefinitionError = true;
                                 definitionErrorMessage = $@"The definition provided for the computed relationship lookup {f.Name} is invalid. Field {i.FieldTypeName} does not match Asset Type.";
@@ -1534,6 +1554,38 @@ from	IntersectType I
                     newFieldType.SortOrder = f.Type.Tag.SortOrder;
                     newFieldType.IsPrimaryFilter = f.Type.Tag.IsPrimaryFilter;
                 }
+                else if (f.Type.Counter != null)
+                {
+                    newFieldType.Type = DataType.Counter.ToString();
+                    newFieldType.ColumnOrder = f.Type.Counter.ColumnOrder.HasValue ? f.Type.Counter.ColumnOrder.Value : ++maxColumnIndex;
+                    newFieldType.ColumnWidth = f.Type.Counter.ColumnWidth;
+                    if (f.Type.Counter.Description != null)
+                    {
+                        newFieldType.DisplayDescription = f.Type.Counter.Description.Display;
+                        newFieldType.FormDescription = f.Type.Counter.Description.Form;
+                    }
+                    if (f.Type.Counter.Validation != null)
+                    {
+                        newFieldType.IsRequired = f.Type.Counter.Validation.IsRequired;
+                    }
+                    newFieldType.IsDisplayable = f.Type.Counter.IsDisplayable;
+                    newFieldType.IsEditable = f.Type.Counter.IsEditable;
+                    newFieldType.IsListable = f.Type.Counter.IsListable;
+                    newFieldType.IsPartOfKey = f.Type.Counter.IsPartOfKey;
+                    newFieldType.IsPrimaryFilter = f.Type.Counter.IsPrimaryFilter;
+                    newFieldType.ShowIfEmpty = f.Type.Counter.ShowIfEmpty;
+                    newFieldType.SortOrder = f.Type.Counter.SortOrder;
+                    newFieldType.CounterPrefix = f.Type.Counter.CounterPrefix;
+                    newFieldType.CounterInitialIndex = f.Type.Counter.CounterInitialIndex;
+
+                    if (f.Type.Counter.Search != null)
+                    {
+                        newFieldType.SearchAddToResult = f.Type.Counter.Search.AddToResult;
+                        newFieldType.SearchPrefix = f.Type.Counter.Search.Prefix;
+                        newFieldType.SearchSuffix = f.Type.Counter.Search.Suffix;
+                        newFieldType.SearchDisplayOrder = f.Type.Counter.Search.DisplayOrder;
+                    }
+                }
                 else
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "No valid type defined", $"You have not included a valid type for the field type [{f.Name}].");
@@ -1622,6 +1674,10 @@ from	IntersectType I
                     currentFieldType.SearchPrefix = newFieldType.SearchPrefix;
                     currentFieldType.SearchSuffix = newFieldType.SearchSuffix;
                     currentFieldType.SearchDisplayOrder = newFieldType.SearchDisplayOrder;
+
+                    currentFieldType.CounterPrefix = newFieldType.CounterPrefix;
+                    currentFieldType.CounterInitialIndex = newFieldType.CounterInitialIndex;
+
                     fieldTypeNamesToDelete.Add(f.Name);
                 }
 
@@ -1730,6 +1786,8 @@ from	IntersectType I
             int? assetTypeID = null;
             var impactedMeasureVersions = new List<Guid>();
             bool? assetTypeHasScoringAllocation = null;
+            List<FieldType> deletedFieldTypes = new List<FieldType>();
+
             currentFieldTypes.ForEach(c =>
             {
                 assetTypeID = c.AssetTypeID;
@@ -1749,6 +1807,7 @@ from	IntersectType I
                         impactedMeasureVersions.AddRange(impacted);
                     }
                     Company.FieldTypes.Remove(c);
+                    deletedFieldTypes.Add(c);
                     fieldsRemoved = true;
                 }
             });
@@ -1756,6 +1815,11 @@ from	IntersectType I
             if (fieldsRemoved)
             {
                 Company.SaveChanges();
+
+                foreach (var counterFieldType in deletedFieldTypes.Where(x => x.Type == DataType.Counter.ToString()))
+                {
+                    Company.Connection.Execute("delete from dbo.FieldCounterValue where FieldTypeId = @fieldTypeId", new { fieldTypeId = counterFieldType.ID });
+                }
             }
             if (shouldRefreshPath)
             {

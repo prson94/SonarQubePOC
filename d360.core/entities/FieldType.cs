@@ -159,6 +159,12 @@ namespace d360.core.entities
         [IgnoreDataMember]
         public virtual FieldTypeLookup FieldTypeLookup { get; set; }
 
+        [DataMember]
+        public string CounterPrefix { get; set; }
+
+        [DataMember]
+        public int? CounterInitialIndex { get; set; }
+
     }
 
     #region Definition property models
@@ -619,8 +625,22 @@ namespace d360.core.entities
         public bool IsListable { get; set; }
         [DataMember]
         public bool IsPrimaryFilter { get; set; }
-
     }
+
+    public class FieldTypeCounterApiViewModel : FieldTypeEditableApiViewModel
+    {
+        [DataMember]
+        public FieldTypeDescriptionApiViewModel_Validation Validation { get; set; }
+        [DataMember]
+        public FieldTypeDescriptionApiViewModel_DisplayForm Description { get; set; }
+        [DataMember]
+        public FieldTypeDescriptionApiViewModel_Search Search { get; set; }
+        [DataMember]
+        public string CounterPrefix { get; set; }
+        [DataMember]
+        public int? CounterInitialIndex { get; set; }
+    }
+
     public class FieldTypeDataTypeApiViewModel
     {
         [DataMember]
@@ -661,6 +681,8 @@ namespace d360.core.entities
         public FieldTypeDataTypeTagApiViewModel Tag { get; set; }
         [DataMember]
         public FieldTypeDataTypeComputedScoreApiViewModel Score { get; set; }
+        [DataMember]
+        public FieldTypeCounterApiViewModel Counter { get; set; }
 
         public bool IsOnlyOneTypeModelDefined()
         {
@@ -685,6 +707,7 @@ namespace d360.core.entities
             childPopulatedCount += (Text != null) ? 1 : 0;
             childPopulatedCount += (Tag != null) ? 1 : 0;
             childPopulatedCount += (Score != null) ? 1 : 0;
+            childPopulatedCount += (Counter != null) ? 1 : 0;
 
             return (childPopulatedCount == 1);
         }

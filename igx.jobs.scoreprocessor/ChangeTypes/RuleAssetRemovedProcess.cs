@@ -31,6 +31,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
             {
                 var model = executionItems[0].GetPayload<RuleAssetRemovedModel>();
 				Db.CreateRuleResultsRemovedExecution(model.AssetUid);
+                updateExecutionMarkingItemsAsComplete(Db.Connection, ExecutionRecord);
             }
         }
     }

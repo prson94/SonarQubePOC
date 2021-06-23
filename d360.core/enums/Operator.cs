@@ -21,7 +21,7 @@ namespace d360.core.enums
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Relation),
             OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text),
-            OperatorAllowedDataTypesAdvancedFilter(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text, DataType.Path, DataType.Relationship),
+            OperatorAllowedDataTypesAdvancedFilter(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text, DataType.Path, DataType.Relationship, DataType.Counter),
             OperatorFieldTypeRequirements(false),
             SortOrder(300)
         ]
@@ -33,7 +33,7 @@ namespace d360.core.enums
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Relation),
             OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text),
-            OperatorAllowedDataTypesAdvancedFilter(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text, DataType.Path, DataType.Relationship),
+            OperatorAllowedDataTypesAdvancedFilter(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text, DataType.Path, DataType.Relationship, DataType.Counter),
             OperatorFieldTypeRequirements(false),
             SortOrder(400)
         ]
@@ -125,7 +125,7 @@ namespace d360.core.enums
             OperatorValueCountRange(2, 2),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Date/*, DataType.Decimal, DataType.Number*/),
-            OperatorAllowedDataTypesAdvancedFilter(DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Number, DataType.Score),
+            OperatorAllowedDataTypesAdvancedFilter(DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Number, DataType.Score, DataType.Counter),
             OperatorFieldTypeRequirements(false),
             SortOrder(1200)
         ]
@@ -137,7 +137,7 @@ namespace d360.core.enums
             OperatorValueCountRange(0, 0),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation, MetricGovernanceCheckType.Field), //remove field MetricGovernanceCheckType.Field before release  
             OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.Lookup, DataType.Number, DataType.Text), //comment out before release also 
-            OperatorAllowedDataTypesAdvancedFilter(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.Lookup, DataType.Number, DataType.Text, DataType.Link, DataType.Tag, DataType.Score, DataType.JSON, DataType.FieldFromRelationship, DataType.Relationship), //comment out before release also 
+            OperatorAllowedDataTypesAdvancedFilter(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.Lookup, DataType.Number, DataType.Text, DataType.Link, DataType.Tag, DataType.Score, DataType.JSON, DataType.FieldFromRelationship, DataType.Relationship, DataType.Counter),
             OperatorFieldTypeRequirements(false),
             SortOrder(2000)
         ]
@@ -149,7 +149,7 @@ namespace d360.core.enums
             OperatorValueCountRange(0, 0),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation, MetricGovernanceCheckType.Field), //remove field MetricGovernanceCheckType.Field before release  
             OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.Lookup, DataType.Number, DataType.Text),//comment out again before release 
-            OperatorAllowedDataTypesAdvancedFilter(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.Lookup, DataType.Number, DataType.Text, DataType.Link, DataType.Tag, DataType.Score, DataType.JSON, DataType.FieldFromRelationship, DataType.Relationship),//comment out again before release 
+            OperatorAllowedDataTypesAdvancedFilter(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.Lookup, DataType.Number, DataType.Text, DataType.Link, DataType.Tag, DataType.Score, DataType.JSON, DataType.FieldFromRelationship, DataType.Relationship, DataType.Counter),
             OperatorFieldTypeRequirements(false),
             SortOrder(2100)
         ]
@@ -161,7 +161,7 @@ namespace d360.core.enums
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Decimal, DataType.Number),
-            OperatorAllowedDataTypesAdvancedFilter(DataType.Decimal, DataType.Number, DataType.Score),
+            OperatorAllowedDataTypesAdvancedFilter(DataType.Decimal, DataType.Number, DataType.Score, DataType.Counter),
             OperatorFieldTypeRequirements(false),
             SortOrder(900)
             ]
@@ -173,7 +173,7 @@ namespace d360.core.enums
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Decimal, DataType.Number),
-            OperatorAllowedDataTypesAdvancedFilter(DataType.Number),
+            OperatorAllowedDataTypesAdvancedFilter(DataType.Number, DataType.Counter),
             OperatorFieldTypeRequirements(false),
             SortOrder(1000)
         ]
@@ -185,7 +185,7 @@ namespace d360.core.enums
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Decimal, DataType.Number),
-            OperatorAllowedDataTypesAdvancedFilter(DataType.Decimal, DataType.Number, DataType.Score),
+            OperatorAllowedDataTypesAdvancedFilter(DataType.Decimal, DataType.Number, DataType.Score, DataType.Counter),
             OperatorFieldTypeRequirements(false),
             SortOrder(700)
         ]
@@ -197,7 +197,7 @@ namespace d360.core.enums
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Decimal, DataType.Number),
-            OperatorAllowedDataTypesAdvancedFilter(DataType.Number),
+            OperatorAllowedDataTypesAdvancedFilter(DataType.Number, DataType.Counter),
             OperatorFieldTypeRequirements(false),
             SortOrder(1100)
         ]

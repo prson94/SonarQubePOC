@@ -272,6 +272,10 @@ export class AdvancedFilterFieldCondition {
                 value = this.value;
             }
 
+            if (this.fieldType === "Counter") {
+                return this.type.Type.Counter.CounterPrefix + value;
+            }
+
             if (this.fieldType === "Number" || this.fieldType === "Decimal") {
                 return +value;
             }

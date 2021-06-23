@@ -439,6 +439,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.enableAllowMultipleValues = false;
                 this.showDescription = false;
                 break;
+            case 'counter':
+                this.model.FieldType.Type.Counter.ShowIfEmpty = true;
+                this.model.FieldType.Type.Counter.Validation.IsRequired = true;
+                this.showDescription = false;
+                break;
             default:
                 break;
         }
@@ -1376,7 +1381,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'IsDisplayable':
                 return (['ComplexRelationLookup', 'RefListRelationship'].indexOf(this.currentType) > -1);
             case 'IsEditable':
-                return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Tag', 'Score'].indexOf(this.currentType) > -1);
+                return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Tag', 'Score', 'Counter'].indexOf(this.currentType) > -1);
             case 'IsListable':
                 return (['ComplexRelationLookup', 'RefListRelationship', 'Json', 'JSON'].indexOf(this.currentType) > -1
                     || (this.currentType == 'Relationship' && !this.isListableRelationship));
@@ -1384,7 +1389,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 if (this.objectType && this.objectType.toLowerCase() == 'fusionattributetype')
                     return (['Boolean', 'Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Path', 'RefListRelationship', 'Tag', 'Score'].indexOf(this.currentType) > -1);
                 else
-                    return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag', 'Score'].indexOf(this.currentType) > -1);
+                    return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag', 'Score', 'Counter'].indexOf(this.currentType) > -1);
             case 'IsPartOfKey':
                 return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag', 'Score', 'Link']
                     .indexOf(this.currentType) > -1

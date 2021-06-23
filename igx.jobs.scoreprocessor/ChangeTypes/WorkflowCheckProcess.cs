@@ -26,7 +26,7 @@ Object varchar(50), ObjectID int,
 HasScoreWorkflow bit);
 
 insert into #Tbl
-select	JSON_VALUE(P.Measures, '$[0].AllocationUid'),
+select	P.AllocationUid,
         A.Uid,
 		A.Object,
 		A.ObjectID,
@@ -34,13 +34,13 @@ select	JSON_VALUE(P.Measures, '$[0].AllocationUid'),
 		TA.ObjectID  as TypeID,
 		cast(iif(W.ID is not null, 1, 0) as bit) as HasWorkflow
 from	metrics.ExecutionItem I
-		cross apply openjson(I.Payload) with (AssetUid uniqueidentifier '$.AssetUid', EffectiveDate date '$.EffectiveDate', Measures nvarchar(max) '$.Measures' as json) P
+		cross apply openjson(I.Payload) with (AllocationUid uniqueidentifier '$.AllocationUid', AssetUid uniqueidentifier '$.AssetUid', EffectiveDate date '$.EffectiveDate') P
 		inner join Asset A on A.Uid = P.AssetUid
 		inner join AssetType TA on TA.ID = A.AssetTypeID
 		left join workflow.EventRegistration W on W.Object = TA.Object and W.ObjectID = TA.ObjectID and W.ChangeType = 5
 where	I.ExecutionID = @ID
-		and I.ChangeType = 0
-		and I.[State] = 1
+		and I.[State] = 0 
+		and P.AllocationUid is not null
 
 select	[Type], TypeID,
 	(
@@ -64,6 +64,8 @@ select * from metrics.Allocation where Uid in (select top 1 AllocationUid from #
                     Db.SendWorkflowEvents(g.Type, g.TypeID, g.Assets, scoreType: (allocation != null) ? allocation.ScoreType : ScoreType.Governance);
                 });
             }
+
+            updateExecutionMarkingItemsAsComplete(Db.Connection, ExecutionRecord);
         }
     }
 }

@@ -62,7 +62,7 @@ namespace d360.model
         DbSet<FollowDetail> FollowDetails { get; set; }
         DbSet<Follow> Follows { get; set; }
         DbSet<FusionAgentError> FusionAgentErrors { get; set; }
-        DbSet<FusionAttribute> FusionAttributes { get; set; }        
+        DbSet<FusionAttribute> FusionAttributes { get; set; }
         DbSet<FusionAttributeType> FusionAttributeTypes { get; set; }
         DbSet<FusionExecution> FusionExecutions { get; set; }
         DbSet<FusionStatusLog> FusionStatusLogs { get; set; }
@@ -70,7 +70,7 @@ namespace d360.model
         DbSet<FusionType> FusionTypes { get; set; }
         DbSet<GlobalReportingResource> GlobalReportingResources { get; set; }
         DbSet<GraphFilter> GraphFilters { get; set; }
-        DbSet<Group> Groups { get; set; }            
+        DbSet<Group> Groups { get; set; }
         DbSet<HelpResource> HelpResources { get; set; }
         DbSet<IntersectDetail> IntersectDetails { get; set; }
         DbSet<Intersect> Intersects { get; set; }
@@ -149,7 +149,7 @@ namespace d360.model
 
         new bool Add<T>(T item) where T : BaseObject;
         IntersectDetail AddIntersect(int intersectTypeID, string subject, int subjectID, string @object, int objectID);
-        IntersectDetail AddIntersect(int intersectTypeID, SystemObjects subject, int subjectID, SystemObjects @object, int objectID);        
+        IntersectDetail AddIntersect(int intersectTypeID, SystemObjects subject, int subjectID, SystemObjects @object, int objectID);
         void AddOrUpdateFields(List<Field> items);
         int AddWebStatistic(SystemObjects @object, int objectID, string ip, string userAgent, string host, string browserLanguage, string action, int resourceID, DateTime timestamp);
         bool AssignActivityWorkflowToNewObject(WorkflowEventRegistration reg, int itemId, int workflowId, int objectId, string @object);
@@ -219,14 +219,14 @@ namespace d360.model
         string GetUserHomePage();
         Task<IEnumerable<ObjectResult>> GetWhenResults(ResponsibilityTypeRelationRule rule, SqlTransaction trans = null);
         IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID, bool sendToDefaultUsers = true);
-        IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnGroup(int groupId);        
+        IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnGroup(int groupId);
         bool HasAssetPermission(long id, Permission permission);
         bool HasAssetPermission(string type, int id, Permission permission);
         bool HasAssetPermission(SystemObjects type, int id, Permission permission);
         bool HasUserReadPermission(string type, int objectId, int assetTypeId, int resourceId);
         bool HasAssetTypePermission(string type, int id, Permission permission);
         bool HasAssetTypePermission(SystemObjects type, int id, Permission permission);
-        bool HasAssetTypePermission(int id, Permission permission);        
+        bool HasAssetTypePermission(int id, Permission permission);
         decimal? GetAssetScore(long assetId, ScoreType type);
         decimal? GetPreviousAssetScore(long assetId, ScoreType type);
         List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeInsert> import, int timeout = 3600);
@@ -238,7 +238,7 @@ namespace d360.model
         List<AssetCrossReferenceResult> ImportCrossReferences(ApiExecution execution, IEnumerable<AssetCrossReference> import, int timeout = 3600);
         bool IsUserFollowing(SystemObjects type, int objectID, int? resourceID);
         bool IsUserFollowingParent(SystemObjects type, int objectID, int? resourceID);
-        Task<int> MarkStepAsCompleteAndContinue(WorkflowItemStep itemStep, long itemID, EventObjectInfo objectInfo);                
+        Task<int> MarkStepAsCompleteAndContinue(WorkflowItemStep itemStep, long itemID, EventObjectInfo objectInfo);
         Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true);
         Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml);
         Task ProcessResponsibilityRelationRules(int? ruleID = null, int timeout = 7200);
@@ -259,10 +259,10 @@ namespace d360.model
         bool SaveOrUpdate<T>(T entity, List<Field> fields, int parentId = -1, bool forceUpdate = false) where T : BaseIntObject, IFieldsObject;
         bool SaveOrUpdateAsset(Asset asset, List<Field> fields, int parentId = -1);
         Task SendDigestEmails(EnvironmentLevel environmentLevel);
-        void SendWorkflowEvents(string objectType, int objectTypeID, IEnumerable<IWorkflowEnabledAsset> results, core.enums.Workflow.ChangeType? changeTypeOverride = null, List<AssetFieldTypeUpdate> fieldUpdates = null, ScoreType? scoreType = null);        
+        void SendWorkflowEvents(string objectType, int objectTypeID, IEnumerable<IWorkflowEnabledAsset> results, core.enums.Workflow.ChangeType? changeTypeOverride = null, List<AssetFieldTypeUpdate> fieldUpdates = null, ScoreType? scoreType = null);
         bool TypeHasParent(SystemObjects type, int id, PredicateType parentFunctionalType = PredicateType.InterTypeHierarchy);
         new bool Update<T>(T item) where T : BaseObject;
-        bool UpdateFollowStatus(SystemObjects type, int objectID, int? resourceID, bool includeChildren = false);        
+        bool UpdateFollowStatus(SystemObjects type, int objectID, int? resourceID, bool includeChildren = false);
         IntersectType UpsertIntersectType(IntersectType model, int lineageVersion);
         Database Database { get; }
         DbEntityEntry Entry(object entity);
@@ -287,7 +287,7 @@ namespace d360.model
         List<ResponsibilityTypeUpsertResult> UpsertResponsibilityTypes(ApiExecution execution, List<ResponsibilityTypeUpsertModel> import, int timeout = 3600);
         string GetIconText(string assetName);
         void SetApiExecutionProcessingStartTime(Guid ExecutionId);
-        string GetEscapedFilterString(string filter, bool isContains = false);        
+        string GetEscapedFilterString(string filter, bool isContains = false);
         Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds);
         void SendGraphAssetTypeEvent(Guid assetTypeUid);
         void SendApiGraphEvent(ApiExecutionInfo info);
@@ -311,6 +311,7 @@ namespace d360.model
         void SendAssetGraphEvents(IEnumerable<IGraphAsset> results, Dictionary<Guid, List<string>> fields = null, bool delayedDelivery = false);
         List<Guid> GetImpactedMeasureVersionsBy(MetricGovernanceCheckType check, int typeId);
 
+        string GetCounterFieldValue(int fieldTypeId, long assetId);
         string GetOutputFieldValue(int stepId, long itemId, string fieldId);
 
         List<DataProfileUpsertResponse> UpsertDataProfiles(List<DataProfileUpsertModel> request, ApiExecution execution, bool isInsert, int timeout = 3600);
@@ -342,22 +343,22 @@ namespace d360.model
         /// A Score Engine method that is called when a dependent object such as an Intersect Type, Responsibility Type or Field Type is removed from Govern, and score recalculations will take place.
         /// </summary>
         void CreateCheckDependencyRemovedResultExecution(List<Guid> versionUids);
-        
+
         /// <summary>
         /// A Score Engine method that is called when a workflow check should occur when externally calculated scores are added to Govern.
         /// </summary>
         void CreateExternalScoreWorkflowCheckExecution(Guid apiExecutionUid);
-        
+
         /// <summary>
         /// A Score Engine method that is called when assets are added to Govern.
         /// </summary>
         void CreateImportAssetsExecution(Guid apiExecutionUid, Guid assetTypeUid);
-        
+
         /// <summary>
         /// A Score Engine method that is called when relationships are removed from Govern.
         /// </summary>
         void CreateDeleteRelationshipsExecution(Guid apiExecutionUid, int intersectTypeId);
-        
+
         /// <summary>
         /// A Score Engine method that is called when relationships are added to Govern.
         /// </summary>
@@ -407,7 +408,7 @@ namespace d360.model
         /// A Score Engine method that is called when a workflow check occurs after scores are processed.
         /// </summary>
         void CreateWorkflowCheckExecution(ScoreExecution execution, ScoreQueueChangeType previousChangeType);
-        
+
         /// <summary>
         /// A Score Engine method that is called from the Workflow system when an asset field is updated.
         /// </summary>

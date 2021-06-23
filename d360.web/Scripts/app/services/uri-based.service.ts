@@ -6,7 +6,9 @@ import { BaseObservableService } from './baseObservable.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { MessagesObservableService } from './messages-observable.service';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class UriBasedService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }

@@ -43,7 +43,9 @@ import { map, catchError } from 'rxjs/operators';
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 import { AssetTypeClass } from '../models/asset.model';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class WorkflowService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService);}

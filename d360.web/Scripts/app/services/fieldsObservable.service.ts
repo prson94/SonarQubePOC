@@ -11,7 +11,9 @@ import { BaseObservableService } from "./baseObservable.service";
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 import { FieldType, FieldTypeAPIModel, FieldTypeAPIModelField } from '../models/fieldtype-api.model';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class FieldsObservableService extends BaseObservableService implements IFieldsService {
     constructor(
         private http: HttpClient,

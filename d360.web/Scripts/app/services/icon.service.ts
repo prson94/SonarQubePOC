@@ -7,7 +7,9 @@ import { catchError, map } from "rxjs/operators";
 import { IconProperties } from '../models/icon-properties.model';
 import { AssetTypeClass } from '../models/asset.model';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class IconService extends BaseObservableService   {
     constructor(
         private http: HttpClient,

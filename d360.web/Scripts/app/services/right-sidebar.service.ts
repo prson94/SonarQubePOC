@@ -8,7 +8,9 @@ import { Router, NavigationEnd, NavigationStart } from '@angular/router';
 
 declare var CompanySettings: any;
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class SecondaryNavService {
     // Observable sources
     private rightSidebarSource = new Subject<SecondaryNavItem>();

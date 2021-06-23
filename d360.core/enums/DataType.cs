@@ -63,7 +63,9 @@ namespace d360.core
         [Description("Tag")]
         Tag = 1 << 26,
         [Description("Score")]
-        Score = 1 << 27
+        Score = 1 << 27,
+        [Description("Counter")]
+        Counter = 1 << 28
     }
 
     public class DataTypeInfo

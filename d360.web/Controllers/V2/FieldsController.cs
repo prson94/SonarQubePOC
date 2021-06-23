@@ -285,6 +285,22 @@ namespace d360.web.Controllers.V2
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                     throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
 
+                if (assetTypeIdentifierInfoModel != null && model.Fields.Any(x => x.Type.Counter != null))
+                {
+                    int currentAssetCount = Company.Assets.Where(x => x.AssetTypeID == assetTypeIdentifierInfoModel.ID).Count();
+                    model.Fields.ForEach(ft =>
+                    {
+                        int? currentInitialIndex = Company.FieldTypes.Where(x => x.AssetTypeID == assetTypeIdentifierInfoModel.ID && x.Name == ft.Name).FirstOrDefault()?.CounterInitialIndex;
+                        if (ft.Type.Counter != null)
+                        {
+                            if (ft.Type.Counter.CounterInitialIndex != currentInitialIndex && ft.Type.Counter.CounterInitialIndex <= currentAssetCount)
+                            {
+                                throw new RestApiException(HttpStatusCode.BadRequest, "Field type error", $"Field {ft.FriendlyName}. CounterInitialIndex must be higher that asset count ({currentAssetCount}).");
+                            }
+                        }
+                    });
+                }
+
                 if (model.Action == FieldTypesApiEditAction.Replace)
                 {
                     // This is a full replace, so we need to validate that there are no current assets before we allow this.

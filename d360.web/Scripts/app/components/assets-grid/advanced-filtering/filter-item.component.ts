@@ -758,6 +758,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             var temp;
             switch (type) {
                 case "multi-number":
+                case "multi-counter":
                     if (parseFloat(this.condition.value) > parseFloat(this.condition.value2)) {
                         temp = this.condition.value;
                         this.condition.value = this.condition.value2;
@@ -1028,6 +1029,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         var type = this.getTypeForCondition(this.condition);
+        if (type === "Counter") {
+            if (this.currentOperator.toString() === "Between") {
+                return "multi-counter";
+            }
+            return "counter";
+        }
 
         if (type === "Number") {
             this.numberMax = 2147483647;
@@ -1210,6 +1217,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
             res.FieldType = data[2];
         }
         return res;
+    }
+
+    get counterPrefix() {
+        return this.currentField?.Type?.Counter?.CounterPrefix;
     }
 
     getFieldsDropdownClass(): string {

@@ -5,12 +5,33 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="View.reporting.Rules_Fields-v1">
+  <changeSet author="TDuric" id="View.reporting.Rules_Fields-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+ CREATE OR ALTER VIEW [reporting].[Rules_Fields] AS
+    select 	distinct O.ID as AssetID,
+            O.ObjectID as RuleID, 
+	        O.DisplayValue as RuleName, 
+	        FT.ID as FieldTypeID, 
+            FT.Name as FieldName, 
+            FT.FriendlyName as FieldFriendlyName, 
+	        case when fcv.value is not null
+			then FT.CounterPrefix + cast(FCV.Value as nvarchar(50))
+			else F.FormattedValue 
+			end as FieldValue 
+    from	AssetDetail O 
+			inner join AssetType AT on AT.uid = O.assettypeuid and at.class = 7 and at.State = 1
+	        inner join FieldType FT on FT.Object = at.object and ft.objectid = at.objectid
+            left join Field F on F.ObjectType = O.Object and F.ObjectID = O.ObjectID  and F.FieldTypeId = FT.Id
+			left join FieldCounterValue FCV on FCV.AssetId = O.ID and FCV.FieldTypeId = FT.Id
+	where F.ID is not null or fcv.value is not null
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
  CREATE OR ALTER VIEW [reporting].[Rules_Fields] AS
     select 	O.ID as AssetID,
             O.ObjectID as RuleID, 
@@ -22,11 +43,6 @@
     from	AssetDetail O 
             inner join Field F on F.ObjectType = O.Object and F.ObjectID = O.ObjectID and O.AssetTypeClass = 7 and O.State = 1
 	        inner join FieldType FT on FT.ID = F.FieldTypeID
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

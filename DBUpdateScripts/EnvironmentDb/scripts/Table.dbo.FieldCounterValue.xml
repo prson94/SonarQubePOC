@@ -1,0 +1,155 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="TDuric" id="Table.dbo.FieldCounterValue-v2.2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FieldCounterValue')
+BEGIN
+	CREATE TABLE [dbo].[FieldCounterValue](
+		[AssetId] [bigint] NOT NULL,
+		[AssetTypeId] [int] NOT NULL,
+		[FieldTypeId] [int] NOT NULL,
+		[Value] [int] NOT NULL,
+	 CONSTRAINT [UQ_FieldCounterAssetMapping] UNIQUE NONCLUSTERED 
+	(
+		[AssetId] ASC,
+		[FieldTypeId] ASC
+	)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY],
+	 CONSTRAINT [UQ_FieldCounterValue] UNIQUE NONCLUSTERED 
+	(
+		[FieldTypeId] ASC,
+		[Value] ASC
+	)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+	) ON [PRIMARY]
+
+	CREATE NONCLUSTERED INDEX [IX_FieldCounterValue] ON [dbo].[FieldCounterValue]
+	(
+		[AssetId] ASC
+	)WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
+  
+  
+  <changeSet author="TDuric" id="Table.dbo.FieldCounterValue_AfterInsert-v2.2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER   TRIGGER [dbo].[FieldCounterValue_AfterInsert]
+	ON [dbo].[FieldCounterValue]
+ INSTEAD OF INSERT, UPDATE
+AS
+BEGIN
+
+declare @currentFieldTypeId int
+
+drop table if exists #fieldTypeIds
+select distinct fieldtypeid 
+into #fieldTypeIds
+from inserted
+
+
+while exists (select 1 from #fieldTypeIds)
+	begin
+	set @currentFieldTypeId = (select top 1 * from #fieldTypeIds)
+	declare @lastIndex int = (select top 1 [Value] from dbo.FieldCounterValue where FieldTypeId = @currentFieldTypeId order by [Value] desc) + 1
+	declare @initialIndex int = (select top 1 CounterInitialIndex from FieldType where ID = @currentFieldTypeId)
+
+	if @lastIndex is null or @initialIndex > @lastIndex
+	begin
+		set @lastIndex = @initialIndex
+	end
+
+	if @lastIndex is null
+	begin
+		set @lastIndex = (select count(*) from fieldtype ft
+			inner join AssetType at on at.Object = ft.object and at.objectid = ft.objectid
+			inner join Asset A on a.assettypeid = at.id
+			 where ft.id = @currentFieldTypeId)
+	end
+	
+
+	drop table if exists #indexMap
+
+	select i.*, Row_number() Over(Order by assetid) + @lastIndex as 'IndexValue' 
+	into #indexMap
+	from inserted i
+	where fieldtypeid = @currentFieldTypeId
+
+	drop table if exists #indexList
+
+	declare @start int = @lastIndex
+	declare @end   int = @start + (select count(*) from #indexMap)
+
+	;with numcte  
+	AS  
+	(  
+	  SELECT @start [SEQUENCE] 
+	  UNION all  
+	  SELECT [SEQUENCE] + 1 FROM numcte WHERE [SEQUENCE] < @end 
+	)      
+	SELECT * 
+	into #indexList
+	FROM numcte
+
+	drop table if exists #toInsert
+
+	create table #toInsert(assetid int, assettypeid int, fieldtypeid int, value int)
+
+	insert into #toInsert
+	select *
+	from inserted
+	where value is not null and fieldtypeid = @currentFieldTypeId
+
+	delete from #indexList where [SEQUENCE] in (select value from #toInsert)
+
+	;with index_cte as (
+	 select *, ROW_NUMBER() OVER (ORDER BY [SEQUENCE]) as RowNumber from #indexList
+	),
+	[data] as (
+	select *, ROW_NUMBER() OVER (ORDER BY AssetId) as RowNumber
+	from inserted
+	where value is null and fieldtypeid = @currentFieldTypeId
+	)
+	insert into #toInsert
+	select assetid, assettypeid, fieldtypeid, cte.SEQUENCE as Value 
+	from [data]
+	inner join index_cte cte on cte.RowNumber = [data].RowNumber
+
+	select * from #toInsert
+
+	MERGE dbo.FieldCounterValue T
+	using (select * from #toInsert) S
+	ON T.AssetId = S.AssetId and T.FieldTypeId = S.FieldTypeId
+	WHEN MATCHED THEN UPDATE SET T.Value = S.Value
+	WHEN NOT MATCHED THEN INSERT (AssetId,AssetTypeId,FieldTypeId, Value) values (S.AssetID,S.AssetTypeId, s.FieldTypeId, s.Value);
+
+	delete top (1) from #fieldTypeIds
+	end
+
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

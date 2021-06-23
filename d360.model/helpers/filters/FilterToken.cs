@@ -699,6 +699,7 @@ namespace d360.model.helpers
                 case "number":
                 case "decimal":
                 case "score":
+                case "counter":
                     return !(new[] { "ct", "nct" }.Contains(operand));
                 case "date":
                 case "datetime":
@@ -715,6 +716,10 @@ namespace d360.model.helpers
             if (fieldType.Type == "Path")
             {
                 return $"Node.DisplayPath";
+            }
+            else if(fieldType.Type == "Counter")
+            {
+                return $"F{fieldType.ID}.FormattedValue";
             }
             else
             {

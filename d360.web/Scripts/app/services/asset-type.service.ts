@@ -12,7 +12,9 @@ import { MessagesObservableService } from './messages-observable.service';
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 import { Response } from 'powerbi-router';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class AssetTypeService extends BaseObservableService {
 
     constructor(

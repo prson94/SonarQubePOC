@@ -92,6 +92,8 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                                 }
 
                                 Db.CreateMeasureChangedResultExecution(list, ExecutionRecord.Uid);
+
+                                updateExecutionMarkingItemsAsComplete(Db.Connection, ExecutionRecord);
                             }
                         }
                     }

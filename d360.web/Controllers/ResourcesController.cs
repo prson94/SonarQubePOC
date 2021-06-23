@@ -514,7 +514,7 @@ from	FollowDetail F
                         var sql = @"
 with FieldValueDet as (
 select  FT.ColumnOrder,
-        COALESCE(Color.value,FormattedValue,' ') as Value,
+        COALESCE(Color.value,Counter.Val,FormattedValue,' ') as Value,
 	    F.FriendlyName as Name,
         case 
 		    when Color.value is not null then 'Color' 
@@ -538,6 +538,12 @@ outer apply(
              where FieldTypeID = F.fieldTypeID and fi.AssetID = F.AssetID and FT.Type = 'Lookup'
 			for json path)
 		)Color(value)
+outer apply(
+select top 1 ISNULL(FT.CounterPrefix,'') + cast(fcv.value as nvarchar(20) )
+                from fieldcountervalue fcv
+				inner join Asset A on a.Object =@o and A.ObjectID=@oid
+                where fcv.AssetId=a.ID and fcv.FieldTypeId=ft.id
+)Counter(val)
 where   F.[Object]= @o and F.ObjectID = @oid and F.[Name] != 'Description' and F.[Type] not in ('JsonElement', 'Score', 'Path')
 union
 select  FT.ColumnOrder,
