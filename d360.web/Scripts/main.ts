@@ -21,5 +21,5 @@ console.log("Govern Build Date: " + __BUILD_DATE);  // remove for ng build
 console.log("Browser Language: " + navigator.language);
 
 
-platformBrowserDynamic().bootstrapModule(AppModule)
+platformBrowserDynamic().bootstrapModule(AppModule, { ngZoneEventCoalescing: true })
     .catch((err) => console.log(err));

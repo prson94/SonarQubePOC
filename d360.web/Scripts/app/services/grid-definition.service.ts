@@ -6,7 +6,9 @@ import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs";
 import {catchError, map} from "rxjs/operators";
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class GridDefinitionService extends BaseObservableService {
     constructor(
         private http: HttpClient,

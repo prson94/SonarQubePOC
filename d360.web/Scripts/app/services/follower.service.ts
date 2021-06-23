@@ -8,7 +8,9 @@ import {FollowDetail, FollowInfo} from '../models/follower.model';
 import {MessagesObservableService} from './messages-observable.service';
 import {BaseObservableService} from "./baseObservable.service";
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class FollowerService extends BaseObservableService {
 
     constructor(

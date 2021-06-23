@@ -9,7 +9,9 @@ import { SearchDetail } from '../models/search-result.model';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class ObjectStatisticsService extends BaseObservableService {
     constructor(
         private http: HttpClient,

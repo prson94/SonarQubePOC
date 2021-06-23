@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpClientJsonpModule } from '@angular/common/http';
-import { Observable, throwError } from "rxjs";
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from "rxjs";
 import { catchError, map, debounceTime } from "rxjs/operators";
 
 import { JsonResult } from '../models/jsonresult.model';
@@ -9,14 +9,14 @@ import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';
 import { AssetEditorModel, AssetTypeClass, AssetCount } from '../models/asset.model';
-import { CommonComponentAssetResult, AssetSearchFilter, AssetSearchApiResponse } from '../models/asset-search.model';
-import { URLSearchParams } from 'url';
-import { FormResponseType } from '../models/workflow.model';
+import { AssetSearchFilter, AssetSearchApiResponse } from '../models/asset-search.model';
 import { SelectItem } from 'primeng/api';
 import { LookupGrid } from '../models/grid-definition.model';
 import * as _ from 'lodash';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class AssetService extends BaseObservableService {
 
     constructor(

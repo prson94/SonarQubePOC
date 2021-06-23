@@ -5,7 +5,9 @@ import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from "./baseObservable.service";
 import { WebAnalyticsActivity } from '../models/web-analytics-activity.model';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class WebAnalyticsService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }

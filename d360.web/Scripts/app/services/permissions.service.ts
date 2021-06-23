@@ -7,7 +7,9 @@ import { ResponsibilityTypeRelationPermission } from '../models/responsibility-t
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class PermissionsService extends BaseObservableService {
     constructor(
         private http: HttpClient,

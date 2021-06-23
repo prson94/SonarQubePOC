@@ -7,7 +7,9 @@ import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 import { JsonResult } from '../models/jsonresult.model';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class TagService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }

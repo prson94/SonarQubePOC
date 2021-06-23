@@ -8,7 +8,9 @@ import { JsonResult } from '../models/jsonresult.model';
 import { MessagesObservableService } from './messages-observable.service';
 import { Router } from '@angular/router';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class BaseObservableService {
 
     constructor(protected messages: MessagesObservableService) {

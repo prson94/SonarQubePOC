@@ -8,7 +8,9 @@ import { MessagesObservableService } from './messages-observable.service';
 import { ConnectorLabel, ConnectorLabelUsage } from '../models/connectorLabel.model';
 
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class ConnectorLabelService extends BaseObservableService {
 
     constructor(

@@ -8,7 +8,9 @@ import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 import { catchError, map } from 'rxjs/operators';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class ReportsService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
