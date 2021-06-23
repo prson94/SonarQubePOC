@@ -323,6 +323,7 @@ namespace d360.web.Controllers.V2
             Guid? externalId = null;
             string status = null;
             string component = null;
+            DateTime SqlDateTimeMin = (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue;
 
             if (!Company.CurrentResourceIsAdmin)
             {
@@ -356,7 +357,7 @@ namespace d360.web.Controllers.V2
                 }
                 _startDate = _tempstartDate;
 
-                if (_startDate == DateTime.MinValue)
+                if (_startDate == DateTime.MinValue || DateTime.Compare((DateTime)_startDate, SqlDateTimeMin) < 0)
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"Start date is not valid.");
                 }
@@ -371,7 +372,7 @@ namespace d360.web.Controllers.V2
                 }
                 _endDate = _tempendDate;
 
-                if (_endDate == DateTime.MaxValue)
+                if (_endDate == DateTime.MaxValue || DateTime.Compare((DateTime)_endDate,SqlDateTimeMin) < 0)
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"End date is not valid.");
                 }
@@ -419,20 +420,26 @@ namespace d360.web.Controllers.V2
 
             #endregion
 
-
-            var executions = await AssetRepository.GetConnectorStatusItems(queryParams, _startDate, _endDate, externalId, component, status);
-            if (executions.StatusCode != HttpStatusCode.OK)
-            {
-                return await Task.FromResult(errorMessageResponse(executions.StatusCode, "Invalid request", executions.Message));
-            }
-            return await Task.FromResult<IHttpActionResult>(
-                    ResponseMessage(
-                        Request.CreateResponse(
-                            HttpStatusCode.OK,
-                            executions
+            try
+            { 
+                var executions = await AssetRepository.GetConnectorStatusItems(queryParams, _startDate, _endDate, externalId, component, status);
+                if (executions.StatusCode != HttpStatusCode.OK)
+                {
+                    return await Task.FromResult(errorMessageResponse(executions.StatusCode, "Invalid request", executions.Message));
+                }
+                return await Task.FromResult<IHttpActionResult>(
+                        ResponseMessage(
+                            Request.CreateResponse(
+                                HttpStatusCode.OK,
+                                executions
+                            )
                         )
-                    )
-                );
+                    );
+            }
+            catch (Exception e)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", e.Message));
+            }
         }
         #endregion
     }
