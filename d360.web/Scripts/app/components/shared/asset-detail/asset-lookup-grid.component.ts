@@ -3,7 +3,7 @@ import { LookupGrid, GridFilterColumn, LookupGridField } from "../../../models/g
 import { Router } from "@angular/router";
 import { SiteUrlHelpers } from "../../../static/site-url-helpers";
 import { BaseComponent } from "../base.component";
-import { DetailField } from "../../../models/object-detail.model";
+import { ComplexLookupType, DetailField } from "../../../models/object-detail.model";
 import { AssetService } from "../../../services/asset.service";
 import { Subscription } from "rxjs";
 import { Filters } from "../../assets-grid/advanced-filtering/advanced-filtering.models";
@@ -247,6 +247,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     }
 
     private get filtersLoadIdentifier() {
-        return "ComplexField" + this.assetUid + "|" + this.field.FieldName;
+        if (!this.data) return "";
+        return "ComplexField" + this.assetUid + "|" + this.field.FieldName + "|" + this.data["ComplexFieldType"];
     }
 }

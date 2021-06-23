@@ -714,4 +714,5 @@ export class SystemFields {
 export class ComplexFieldDefinition {
     AssetUid: string = '';
     FieldApiName: string = '';
+    FieldType: string = '';
 }

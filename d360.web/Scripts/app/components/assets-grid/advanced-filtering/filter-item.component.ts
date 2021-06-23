@@ -332,10 +332,14 @@ export class FilterItemComponent implements OnInit, OnChanges {
             ft.Operators[1].label = "does not contain";
         }
 
-        if (this.isRuleResults || this.isComplexField) {
+        if (this.isRuleResults) {
             if (ft.Name !== "EvaluatedAssetClass") {
                 ft.Operators = ft.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
             }
+        }
+
+        if (this.isComplexField && this.complexFieldDefinition.FieldType === 'OwnershipLookup') {
+            ft.Operators = ft.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
         }
 
         return ft ? ft.Operators : [];
@@ -485,7 +489,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
                 if (this.condition.field === "[Level]") {
                     this.loadLookupValuesForLevelNames();
                 }
-                else if (this.isComplexField) {
+                else if (this.isComplexField && this.complexFieldDefinition.FieldType === 'OwnershipLookup') {
                     this.loadLookupValuesForComplexFields(params);
                 }
                 else {
@@ -1203,6 +1207,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             var data = this.loadIdentifier.replace("ComplexField", "").replace("ComplexField", "").split("|");
             res.AssetUid = data[0];
             res.FieldApiName = data[1];
+            res.FieldType = data[2];
         }
         return res;
     }

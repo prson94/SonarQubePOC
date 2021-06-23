@@ -157,7 +157,6 @@ export class AdvancedFilteringComponent implements OnChanges {
             let res = response[1] as FieldTypeAPIModelField[];
             this.allocations = response[2];
             this.relationshipTypes = response[3];
-            console.log(res);
 
             if (res.some((f) => f.Type.ComputedRelationshipField)) {
                 try {
@@ -458,6 +457,7 @@ export class AdvancedFilteringComponent implements OnChanges {
             var data = this.loadIdentifier.replace("ComplexField", "").replace("ComplexField", "").split("|");
             res.AssetUid = data[0];
             res.FieldApiName = data[1];
+            res.FieldType = data[2];
         }
         return res;
     }

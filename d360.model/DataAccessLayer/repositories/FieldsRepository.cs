@@ -1860,6 +1860,7 @@ from	IntersectType I
                 fields.Add(new FieldType
                 {
                     Name = "Code",
+                    FriendlyName = "Code",
                     Type = DataType.Text.ToString()
                 });
 

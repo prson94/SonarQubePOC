@@ -340,8 +340,7 @@ namespace d360.model.helpers
 
         private string ParseTokensForComplexFields(FilterToken token)
         {
-
-
+            token.IsComplexField = true;
             if (token.IsOnlyOperator)
             {
                 return token.@operator;

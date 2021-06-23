@@ -2368,14 +2368,22 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 }
                 if (fieldType.Type == DataType.RefListRelationship.ToString())
                 {
+                    Guid assetTypeUid = Guid.Empty;
                     var fields = FieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid);
+                    if (fields.Count > 0)
+                    {
+                        var assettypeid = fields.FirstOrDefault().AssetTypeID;
+                        assetTypeUid = Company.AssetTypes.FirstOrDefault(x => x.ID == assettypeid).uid;
+                    }
+
                     foreach (var f in fields)
                     {
                         var c = new FieldTypeApiViewModel()
                         {
                             Name = f.Name,
                             FriendlyName = f.FriendlyName,
-                            Category = ""
+                            Category = "",
+                            AssetTypeUid = assetTypeUid
                         };
 
                         c.Type = new FieldTypeDataTypeApiViewModel();
@@ -2384,13 +2392,66 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
 
                             c.Type.Lookup = new FieldTypeDataTypeLookupApiViewModel()
                             {
-                                List = new FieldTypeDataTypeLookupApiViewModel_List() { }
+                                List = new FieldTypeDataTypeLookupApiViewModel_List()
+                                {
+                                    AllowMultipleValues = f.AllowMultipleValues
+                                }
                             };
                         }
 
                         if (f.Type == DataType.Boolean.ToString())
                         {
                             c.Type.Boolean = new FieldTypeDataTypeBooleanApiViewModel();
+                        }
+
+                        if (f.Type == DataType.Date.ToString())
+                        {
+                            c.Type.Date = new FieldTypeDataTypeDateApiViewModel();
+                        }
+
+                        if (f.Type == DataType.DateTime.ToString())
+                        {
+                            c.Type.DateTime = new FieldTypeDataTypeDateTimeApiViewModel();
+                        }
+                        if (f.Type == DataType.Decimal.ToString())
+                        {
+                            c.Type.Decimal = new FieldTypeDataTypeDecimalApiViewModel();
+                        }
+                        if (f.Type == DataType.Html.ToString())
+                        {
+                            c.Type.Html = new FieldTypeDataTypeHtmlApiViewModel();
+                        }
+                        if (f.Type == DataType.JSON.ToString())
+                        {
+                            c.Type.Json = new FieldTypeDataTypeJsonApiViewModel();
+                        }
+                        if (f.Type == DataType.JsonElement.ToString())
+                        {
+                            c.Type.JsonElement = new FieldTypeDataTypeJsonElementApiViewModel();
+                        }
+                        if (f.Type == DataType.Link.ToString())
+                        {
+                            c.Type.Link = new FieldTypeDataTypeLinkApiViewModel();
+                        }
+                        if (f.Type == DataType.Number.ToString())
+                        {
+                            c.Type.Number = new FieldTypeDataTypeNumberApiViewModel();
+                        }
+                        if (f.Type == DataType.Score.ToString())
+                        {
+                            c.Type.Score = new FieldTypeDataTypeComputedScoreApiViewModel();
+                        }
+                        if (f.Type == DataType.Tag.ToString())
+                        {
+                            c.Type.Tag = new FieldTypeDataTypeTagApiViewModel();
+                        }
+                        if (f.Type == DataType.Text.ToString())
+                        {
+                            c.Type.Text = new FieldTypeDataTypeTextApiViewModel();
+                        }
+                        if (c.Type == null)
+                        {
+                            c.Type.Text = new FieldTypeDataTypeTextApiViewModel();
                         }
 
                         response.items.Add(c);

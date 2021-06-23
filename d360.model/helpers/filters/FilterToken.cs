@@ -28,6 +28,8 @@ namespace d360.model.helpers
         private AssetType assetType { get; set; }
         private IntersectType intersectType { get; set; }
 
+        public bool IsComplexField { get; set; } = false;
+
         public bool IsOnlyOperator
         {
             get
@@ -415,7 +417,24 @@ namespace d360.model.helpers
                     throw new Exception("Lookup field type is missing LookupObjectID value!");
                 }
                 this.isLookupField = true;
-                LoadLookupSql();
+                if (this.IsComplexField)
+                {
+                    if (@operator == "eq")
+                    {
+                        @operator = "ct";
+                        this.value = "%" + this.value + "%";
+                    }
+
+                    if (@operator == "ne")
+                    {
+                        @operator = "nct";
+                        this.value = "%" + this.value + "%";
+                    }
+                }
+                else
+                {
+                    LoadLookupSql();
+                }
             }
 
             if (!this.isLookupField)
