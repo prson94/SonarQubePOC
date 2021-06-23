@@ -4,9 +4,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using Dapper;
 using d360.core;
-using System.Diagnostics;
 using d360.core.entities;
-using System.Configuration;
 using d360.core.enums;
 
 namespace d360.utils.company
@@ -61,36 +59,27 @@ namespace d360.utils.company
             }
         }
 
-        public static string GetEventTopicName(int companyID)
-        {
-            return ConfigurationManager.AppSettings["EventBusTopicName"].ToString();
-        }
-
         public static List<CompanyWithDatabaseServerSettings> GetCompaniesWithDatabaseServerSettings()
         {
-            var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
-            cnn.Open();
-            var companies = cnn.Query<CompanyWithDatabaseServerSettings>(@"
-select  c.ID as CompanyID, 
-        c.ClientID,
-        c.Status, 
-        ds.Server, 
-        ds.Username, 
-        ds.Password, 
-        ds.FusionQueue, 
-        ds.SearchServer, 
-        ds.EventTopic, 
-        ds.IsDevelopment,
-        c.EnvironmentLevel,
-        CDS.UrlPrefix,
-        c.Priority,
-		CASE Lower(cs.Value) WHEN 'true' THEN 1 ELSE 0 END AS  'IsFusionEnabled'
-from    company c 
-        inner join databaseserver ds on c.databaseserverid = ds.id and c.Status = 'Active' 
-        inner join CompanyDomainSetting CDS on CDS.CompanyID = c.ID and CDS.IsPrimary = 1
-		left outer Join CompanySetting CS ON settingID = 70 and CS.companyId = c.Id").ToList();
-            cnn.Close();
-            cnn.Dispose();
+            List<CompanyWithDatabaseServerSettings> companies = null;
+            using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
+            {
+                cnn.Open();
+                companies = cnn.Query<CompanyWithDatabaseServerSettings>(@"
+                    select  c.ID as CompanyID, 
+                            c.ClientID,
+                            ds.Server, 
+                            ds.Username, 
+                            ds.Password,                             
+                            ds.SearchServer, 
+                            ds.EventTopic, 
+                            c.EnvironmentLevel,
+                            CDS.UrlPrefix,
+                            c.Priority		
+                    from    company c 
+                            inner join databaseserver ds on c.databaseserverid = ds.id and c.Status = 'Active' 
+                            inner join CompanyDomainSetting CDS on CDS.CompanyID = c.ID and CDS.IsPrimary = 1").ToList();
+            }
 
             return companies;
         }
@@ -147,8 +136,6 @@ values	(S.CompanyID, @jobToken, getutcdate(), 0, 1)
 output inserted.CompanyID into @ids;
 
 select CompanyID from @ids", new { level = (int)level, jobToken = (int)jobToken, timeoutOn = DateTime.UtcNow.AddHours(-1*timeoutInHours) }).ToList();
-
-                cnn.Close();
             }
 
             return companies;
