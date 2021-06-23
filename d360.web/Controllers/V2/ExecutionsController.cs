@@ -438,7 +438,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception e)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", e.Message));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", e.Message)).ConfigureAwait(false);
             }
         }
         #endregion
