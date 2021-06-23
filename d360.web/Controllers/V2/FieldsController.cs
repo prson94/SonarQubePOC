@@ -2351,7 +2351,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 response.items = new List<FieldTypeApiViewModel>();
 
                 var asset = AssetRepository.GetAssetByUID(assetUid);
-                var assetType = AssetRepository.GetArtifactTypeByID(asset.AssetTypeID);
+                var assetType = Company.AssetTypes.FirstOrDefault(x=> x.ID == asset.AssetTypeID);
                 var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetType.ID && x.Name == fieldName);
                 if (fieldType.Type == DataType.OwnershipLookup.ToString())
                 {
@@ -2366,7 +2366,8 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     }
                     response.items.Add(new FieldTypeApiViewModel() { Name = "Context", FriendlyName = "Context", Type = new FieldTypeDataTypeApiViewModel() { Html = new FieldTypeDataTypeHtmlApiViewModel() }, Category = "" });
                 }
-                if (fieldType.Type == DataType.RefListRelationship.ToString())
+                if (fieldType.Type == DataType.RefListRelationship.ToString() 
+                    || fieldType.Type == DataType.ComplexRelationLookup.ToString())
                 {
                     Guid assetTypeUid = Guid.Empty;
                     var fields = FieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid);
