@@ -5,94 +5,14 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.fusion.GetAttributesByFusion-v1">
+  <changeSet author="TKlok" id="Procedure.fusion.GetAttributesByFusion-v2">
+    <comment>GOV-15015?</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-create or alter procedure [fusion].[GetAttributesByFusion]
-	@FusionID int
-as
-begin
-	set nocount on;
-
-	declare @FusionTypeID int;
-	declare @types table (ID int, ParentID int null, Name nvarchar(250), IsLeaf bit);
-
-	select @FusionTypeID = FusionTypeID from Fusion where ID = @FusionID;
-
-	IF OBJECT_ID('tempdb..#tree') IS NOT NULL
-		DROP TABLE #tree
-	create table #tree (ObjectType varchar(25) null, ObjectID int null, ParentObjectType varchar(25) null, ParentID varchar(15) null, Name nvarchar(250) null, FusionAttributeTypeID int null, TypeName nvarchar(250) null)
-	create nonclustered index IX_TempTree ON #tree (Name asc)
-
-	insert into @types
-		select	ID,
-				ParentID,
-				Name,
-				case 
-					when T.ParentID is null then 0
-					when C.NumChildren > 0 then 0
-					else 1
-				end as IsLeaf
-
-		from	FusionAttributeType T
-				cross apply (
-							select	count(1) as NumChildren
-							from	FusionAttributeType
-							where	FusionTypeID = @FusionTypeID
-									and ParentID = T.ID
-							) C
-		where	FusionTypeID = @FusionTypeID;
-
-	with h as	(
-				select	A.ID,
-						A.ParentID,
-						A.Name as Parent,
-						A.FusionAttributeTypeID as ParentTypeID,
-						T.ID as TypeID,
-						T.Name
-				from	FusionAttribute A
-						inner join @types T on T.IsLeaf = 1 and T.ParentID = A.FusionAttributeTypeID
-				union all
-				select	A.ID,
-						A.ParentID,
-						A.Name as Parent,
-						A.FusionAttributeTypeID as ParentTypeID,
-						h.TypeID,
-						h.Name
-				from	FusionAttribute A
-						inner join h on h.ParentID = A.FusionAttributeTypeID
-				)
-
-
-	insert into #tree (ObjectType, ObjectID, ParentObjectType, ParentID, Name, FusionAttributeTypeID, TypeName)
-		select	distinct 
-				'FusionAttribute',
-				h.ID,
-				'FusionAttribute',
-				h.ParentID,
-				A.TextPath + ' (All ' + h.Name +  ' Items)',
-				h.TypeID,
-				T.TextPath as Name
-		from	h
-				inner join FusionAttributeType T on T.ID = h.TypeID
-				left join FusionAttribute A on A.ID = h.ID
-		order by A.TextPath + ' (All ' + h.Name +  ' Items)'
-
-	
-		
-
-	select		'FusionAttributeType' as ObjectType,
-				FusionAttributeTypeID as ObjectID, 
-				ObjectType as ParentObjectType,
-				ObjectID as ParentObjectID, 
-				Name, 
-				TypeName 
-	from		#tree 
-	
-end
+DROP PROCEDURE IF EXISTS [fusion].[GetAttributesByFusion]
 		]]>
     </sql>
 	<rollback>

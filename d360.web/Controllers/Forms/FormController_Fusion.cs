@@ -273,43 +273,6 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpPost, ValidateInput(false), Route("ScheduleMarkitLineage")]
-        public JsonResult ScheduleMarkitLineage(int id)
-        {
-            const int markitFusionTypeId = 13;
-            const string markitLineageSettingKey = "UseNewMarkitLineageGeneration";
-
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException("You do not have permission to start Markit Lineage generation.", HttpStatusCode.Forbidden);
-
-            var fusion = Company.GetById<Fusion>(id);
-
-            if (fusion == null)
-                return jsonException("Fusion configuration for this id was not found.", HttpStatusCode.NotFound);
-
-            if (fusion.FusionTypeID == markitFusionTypeId)
-            {
-                if (Community.GetCompanySettings().TryGetValue(markitLineageSettingKey, out string val))
-                {
-                    if (val.Trim().ToLower() == "true")
-                    {
-
-                        try
-                        {
-                            Company.Database.Connection.Execute("insert into [queue].[Task] ([Action], [Object], [ObjectID]) values ('FusionCache', 'Fusion', @fusionId)", new { fusionId = id });
-                            return jsonSuccess("Markit lineage process queued successfully.", fusion.FusionTypeID.ToString(), "add", HttpStatusCode.OK);
-
-                        }
-                        catch (Exception ex)
-                        {
-                            return jsonException(ex, HttpStatusCode.InternalServerError);
-                        }
-                    }
-                }
-            }
-            return jsonException("The request could not be completed because the configuration is incorrect.", HttpStatusCode.BadRequest);
-        }
-
         #endregion
 
         #endregion
@@ -318,37 +281,6 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [ActionName("FusionType"), HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("FusionType")]
-        public JsonResult PostFusionType(FusionType fusion, AssetTypeStyle style = null)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var model = new FusionType
-                {
-                    Description = fusion.Description,
-                    Name = fusion.Name
-                };
-
-                Company.Add(model);
-
-                if (style != null)
-                    upsertAssetStyle(SystemObjects.FusionType, model.ID, style.IconForeColor, style.IconBackColor, model.Name);
-
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, new { ParentID = 0, Type = "FusionType", Context = "FusionType", Name = model.Name });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
 
         [HttpDelete, Route("DeleteFusionType")]
         public JsonResult DeleteFusionType(FormCollection form)
@@ -387,37 +319,6 @@ namespace d360.web.Controllers
             var form = new FormCollection();
             form.Add("ID", id.ToString());
             return DeleteFusionType(form);
-        }
-
-        [ActionName("FusionType"), HttpPut, ValidateInput(false), Route("FusionType")]
-        public JsonResult PutFusionType(FusionType fusion, AssetTypeStyle style = null)
-        {
-            try
-            {
-                var model = Company.GetById<FusionType>(fusion.ID);
-                if (model == null) throw new NotFoundException("fusion type");
-
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                model.Description = fusion.Description;
-                model.Name = fusion.Name;
-
-                Company.Update(model);
-                if (style != null)
-                    upsertAssetStyle(SystemObjects.FusionType, model.ID, style.IconForeColor, style.IconBackColor, model.Name);
-
-                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK, new { ParentID = 0, Type = "FusionType", Context = "FusionType", Name = model.Name });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
         }
 
         #endregion
@@ -517,21 +418,5 @@ namespace d360.web.Controllers
 
         #endregion
 
-        #region FusionAttributeType
-
-        // used by filter icon in fusion page.
-        [Route("getfusionattributetypes"), NonNullableParameters]
-        public JsonNetResult GetFusionAttributeTypes(int fusionID)
-        {
-            var model = Company.GetById<Fusion>(fusionID, i => i.FusionType.FusionAttributeTypes);
-            return new JsonNetResult
-            {
-                Data = model.FusionType.FusionAttributeTypes.OrderBy(i => i.TextPath),
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-
-        #endregion
     }
 }
