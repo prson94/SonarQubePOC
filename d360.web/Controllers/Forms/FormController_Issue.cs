@@ -30,7 +30,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { FieldName = "IssueTypeID", FieldType = DataType.Hidden.ToString(), Value = issueTypeId.ToString() });
 
             string ignoreObjectTypeSQL = string.Empty;
-            List<string> ignoreObjects = new List<string>()
+            List<string> ignoreObjects = new List<string>
             {
                 SystemObjects.FusionType.ToString(),
                 SystemObjects.FusionAttributeType.ToString(),

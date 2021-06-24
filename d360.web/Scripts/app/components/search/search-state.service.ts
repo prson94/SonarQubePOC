@@ -28,7 +28,7 @@ export class SearchStateService extends BaseObservableService {
     constructor(private http: HttpClient, messagesService: MessagesObservableService, protected authenticationService: AuthenticationService, protected searchService: SearchService) {
         super(messagesService);
         this.createQuerySubscriptions();
-        this.searchService.getSearchCategories(this.authenticationService.isAdmin).subscribe(res => this.searchTypes = res);
+        this.searchService.getSearchCategories(this.authenticationService.isAdmin).subscribe((res) => this.searchTypes = res);
     }
 
     //Subject definitions
