@@ -417,6 +417,11 @@ export class FilterItemComponent implements OnInit, OnChanges {
             if (type.Type.Relationship) {
                 this.relationshipFieldIntersectTypeUid = type.Type.Relationship.IntersectTypeUid;
                 var relationship = this.relationshipTypes.filter((r) => r.Uid === this.relationshipFieldIntersectTypeUid)[0];
+                console.log(this.assetTypeUid);
+
+                if (this.isComplexField) {
+                    console.log(this.relationshipTypes);
+                }
 
                 this.relationshipFieldIntersectCardinality =
                     relationship.Object.Uid === this.assetTypeUid

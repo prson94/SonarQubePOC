@@ -521,7 +521,10 @@ export class AdvancedFilteringComponent implements OnChanges {
         if (this.isAssetType) {
             return this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid);
         }
-        else if (this.isRuleResults || this.isComplexField) {
+        else if (this.isComplexField) {
+            return this.relationshipService.getRelationshipTypesForComplexField(this.complexFieldDefinition.AssetUid, this.complexFieldDefinition.FieldApiName);
+        }
+        else if (this.isRuleResults) {
             var staticObs = of([]);
             return staticObs;
         }

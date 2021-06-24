@@ -49,6 +49,14 @@ export class RelationshipsService extends BaseObservableService {
             );
     }
 
+    getRelationshipTypesForComplexField(assetUid: string, fieldName: string): Observable<RelationshipType[]> {
+        return this.http.get(`api/v2/relationships/types/complexField/${assetUid}/${fieldName}`)
+            .pipe(
+                map(response => <RelationshipType[]>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     saveRelationships(intersectTypeUid: string, model: any[]): Observable<ApiResult[]> {
         if (model.length > this.MAX_SYNCHRONOUS_API_ITEM_COUNT) {
             var models: any[] = [];

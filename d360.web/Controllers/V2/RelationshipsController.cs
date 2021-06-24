@@ -1629,6 +1629,102 @@ create table #relationshipCountMap(IntersectTypeUid uniqueidentifier, IsSubject 
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
+
+        /// <summary>
+        /// GET a list of relationship types for complex field.
+        /// </summary>
+        /// <param name="assetUid">Asset Uid.</param>
+        /// <param name="fieldName">Field Api Name.</param>
+        /// <returns>A list of predicates contained within your Govern environment.</returns>
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            Route("types/complexField/{assetUid}/{fieldName}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of predicates.", typeof(PredicatesApiViewModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+       ]
+        public async Task<HttpResponseMessage> GetRelationshipTypesForComplexField(Guid assetUid, string fieldName = null)
+        {
+            var prefix = "Relationships.GetRelationshipTypesForComplexField => ";
+            var errorMessage = "";
+
+            try
+            {
+                var asset = AssetRepository.GetAssetByUID(assetUid);
+                var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == asset.AssetTypeID);
+                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetType.ID && x.Name == fieldName);
+
+                if (fieldType.Type != DataType.ComplexRelationLookup.ToString())
+                {
+                    return Request.CreateResponse(HttpStatusCode.OK, new List<IntersectTypeApiViewModel>());
+                }
+                var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
+                var definition = ftl.ParseComplexLookupDefinition();
+
+                var fields = FieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid, true).ToList();
+
+                List<Guid> relationshipTypes = new List<Guid>();
+
+                foreach (var f in fields)
+                {
+                    if (f.Type == DataType.Relationship.ToString())
+                    {
+                        relationshipTypes.Add(Company.IntersectTypes.FirstOrDefault(x => x.ID == f.LookupObjectID).uid);
+                    }
+                }
+
+                var dbArgs = new DynamicParameters();
+                dbArgs.Add("uids", relationshipTypes);
+                var sql = $@"
+                select	I.Id,
+                        I.Uid,
+		                I.State as State,
+                        coalesce(I.IsSystem, 0) as IsSystem,
+		                P.UID as 'Predicate.Uid',
+		                coalesce(P.[Type],0) as 'Predicate.Type',
+		                coalesce(P.Name,'') as 'Predicate.Name',
+		                coalesce(P.Inverse,'') as 'Predicate.Inverse',
+		                S.Uid as 'Subject.Uid',		
+		                coalesce(SFT.Name + ' / ','') + coalesce(SP.[Path], S.Name) as 'Subject.Name',
+		                coalesce(S.Class, 0) as 'Subject.Class',
+		                I.SubjectCardinality as 'Subject.Cardinality',
+		                O.Uid as 'Object.Uid',
+		                coalesce(OFT.Name + ' / ','') + coalesce(OP.[Path], O.Name)  as 'Object.Name',
+		                coalesce(O.Class, 0) as 'Object.Class',
+		                I.ObjectCardinality as 'Object.Cardinality'
+                from	IntersectType I
+		                left join [Predicate] P on P.ID = I.PredicateID
+
+		                left join AssetType S on (S.Object = I.Subject and S.ObjectID = I.SubjectID)
+                        left join FusionAttributeType SFAT on I.Subject = 'FusionAttributeType' and SFAT.ID = I.SubjectID 
+                        left join FusionType SFT on SFT.ID = SFAT.FusionTypeID 
+                        outer apply dbo.GetAssetTypeTextPathById(S.ID, '/') SP
+		
+		                left join AssetType O on (O.Object = I.Object and O.ObjectID = I.ObjectID)
+                        left join FusionAttributeType OFAT on I.Object = 'FusionAttributeType' and OFAT.ID = I.ObjectID 
+                        left join FusionType OFT on OFT.ID = OFAT.FusionTypeID 
+                        outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
+                        where I.Uid in @uids
+                        for json path";
+
+                var models = await Company.GetDatabaseJsonAsObjectAsync<List<dynamic>>(sql, dbArgs, ApiTimeout);
+                foreach(var item in models)
+                {
+                    var data = (IDictionary<string, object>)item;
+
+                }
+                return Request.CreateResponse(HttpStatusCode.OK, models);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
     }
 
 }
