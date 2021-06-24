@@ -2097,6 +2097,14 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 var assetTypeId = Company.AssetTypes
                     .FirstOrDefault(x => x.uid == assetTypeUid).ID;
                 var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetTypeId && x.Name == fieldName);
+
+                //case when fieldname coming from complex relation grid with coded names from procedure
+                if (fieldType == null && fieldName.Contains("_"))
+                {
+                    fieldTypeId = int.Parse(fieldName.Split('_')[1]);
+                    fieldType = Company.FieldTypes.FirstOrDefault(x => x.ID == fieldTypeId);
+                }
+
                 if (fieldType.Type == "FieldFromRelationship" && fieldType.LookupObjectFieldTypeID > 0)
                 {
                     fieldTypeId = fieldType.LookupObjectFieldTypeID.Value;
@@ -2367,7 +2375,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 response.items = new List<FieldTypeApiViewModel>();
 
                 var asset = AssetRepository.GetAssetByUID(assetUid);
-                var assetType = Company.AssetTypes.FirstOrDefault(x=> x.ID == asset.AssetTypeID);
+                var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == asset.AssetTypeID);
                 var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetType.ID && x.Name == fieldName);
                 if (fieldType.Type == DataType.OwnershipLookup.ToString())
                 {
@@ -2382,11 +2390,11 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     }
                     response.items.Add(new FieldTypeApiViewModel() { Name = "Context", FriendlyName = "Context", Type = new FieldTypeDataTypeApiViewModel() { Html = new FieldTypeDataTypeHtmlApiViewModel() }, Category = "" });
                 }
-                if (fieldType.Type == DataType.RefListRelationship.ToString() 
+                if (fieldType.Type == DataType.RefListRelationship.ToString()
                     || fieldType.Type == DataType.ComplexRelationLookup.ToString())
                 {
                     Guid assetTypeUid = Guid.Empty;
-                    var fields = FieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid);
+                    var fields = FieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid, true).ToList();
                     if (fields.Count > 0)
                     {
                         var assettypeid = fields.FirstOrDefault().AssetTypeID;
@@ -2406,7 +2414,10 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                         c.Type = new FieldTypeDataTypeApiViewModel();
                         if (f.Type == DataType.Lookup.ToString())
                         {
-
+                            if (fieldType.Type == DataType.ComplexRelationLookup.ToString())
+                            {
+                                c.AssetTypeUid = Company.AssetTypes.FirstOrDefault(x => x.Object == (f.LookupObjectType + "Type") && x.ObjectID == f.LookupObjectID).uid;
+                            }
                             c.Type.Lookup = new FieldTypeDataTypeLookupApiViewModel()
                             {
                                 List = new FieldTypeDataTypeLookupApiViewModel_List()
@@ -2466,9 +2477,20 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                         {
                             c.Type.Text = new FieldTypeDataTypeTextApiViewModel();
                         }
-                        if (c.Type == null)
+                        if (f.Type == DataType.Path.ToString())
                         {
-                            c.Type.Text = new FieldTypeDataTypeTextApiViewModel();
+                            c.Type.Path = new FieldTypeDataTypePathApiViewModel();
+                        }
+
+                        if (f.Type == DataType.Relationship.ToString())
+                        {
+                            c.Type.Relationship = new FieldTypeDataTypeRelationshipApiViewModel();
+                            c.Type.Relationship.IntersectTypeUid = Company.IntersectTypes.FirstOrDefault(x => x.ID == f.LookupObjectID).uid;
+                        }
+
+                        if (string.IsNullOrEmpty(c.FriendlyName))
+                        {
+                            c.FriendlyName = "#Missing Friendly Name";
                         }
 
                         response.items.Add(c);
