@@ -12,6 +12,7 @@ namespace d360.model
     {
         DbSet<Client> Clients { get; set; }
         DbSet<Company> Companies { get; set; }
+        DbSet<CompanyDomainGroup> CompanyDomainGroups { get; set; }
         DbSet<CompanyDomainSetting> CompanyDomainSettings { get; set; }        
         DbSet<CompanyRebuildJobStatus> CompanyRebuildJobStatuses { get; set; }        
         DbSet<CompanyResource> CompanyResources { get; set; }

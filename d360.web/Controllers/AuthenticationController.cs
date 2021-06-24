@@ -304,6 +304,15 @@ namespace d360.web.Controllers
                 {
                     userName = userName.ToLower();
                     resource = Community.Filter<Resource>(i => i.Username.ToLower() == userName).SingleOrDefault();
+
+                    // If user is assigned to any groups in SAML claims, then check to see if any of those groups should be assigned as admin. If so, assign the user as admin.
+
+                    bool isCompanyAdministrator = false;
+                    if (groups?.Any() == true)
+                    {
+                        isCompanyAdministrator = Community.CompanyDomainGroups.Any(g => groups.Contains(g.GroupName) && g.IsAdministrator);
+                    }
+
                     if (resource == null)
                     {
                         Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Did not find resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Warning });
@@ -334,7 +343,7 @@ namespace d360.web.Controllers
                             var companyResource = new CompanyResource
                             {
                                 CompanyID = Community.CurrentCompanyID,
-                                IsAdministrator = false,
+                                IsAdministrator = isCompanyAdministrator,
                                 ResourceID = resource.ID,
                                 LastLoggedInOn = DateTime.UtcNow,
                                 State = CompanyResourceState.Active
@@ -369,7 +378,7 @@ namespace d360.web.Controllers
                             {
                                 companyResource = new CompanyResource {
                                     CompanyID = Community.CurrentCompanyID,
-                                    IsAdministrator = false,
+                                    IsAdministrator = isCompanyAdministrator,
                                     ResourceID = resource.ID,
                                     LastLoggedInOn = DateTime.UtcNow,
                                     State = CompanyResourceState.Active
@@ -400,6 +409,10 @@ namespace d360.web.Controllers
                         {
                             if (companyResource.State == CompanyResourceState.Active)
                             {
+                                // We will not support downgrading users from admin to non-admin, ONLY upgrading (GOV-13515).
+                                if (isCompanyAdministrator) {
+                                    companyResource.IsAdministrator = isCompanyAdministrator;
+                                }
                                 companyResource.LastLoggedInOn = DateTime.UtcNow;
                                 Community.Update(companyResource);
                             }
