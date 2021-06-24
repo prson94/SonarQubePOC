@@ -131,19 +131,6 @@ namespace d360.web.Controllers
                 visibleCategories.Add("Synonym");
             }
 
-            if (Community.IsFusionEnabled())
-            {
-                if (Company.FusionAttributes.Any())
-                {
-                    visibleCategories.Add("FusionAttributes");
-                }
-
-                if (Company.FusionTypes.Any())
-                {
-                    visibleCategories.Add("FusionType");
-                }
-            }
-
             return Json(visibleCategories, JsonRequestBehavior.AllowGet);
         }
 
@@ -225,8 +212,6 @@ namespace d360.web.Controllers
 
         //Icons set based on main Nav item for category
         private static readonly Dictionary<string, string> siteNavMap = new Dictionary<string, string>() {
-            { "Fusion", "#Fusion" },
-            { "FusionType", "#Fusion" },
             { "Business Asset", "#Business" },
             { "Technical Asset", "#Technical" },
             { "Model", "#Models" },

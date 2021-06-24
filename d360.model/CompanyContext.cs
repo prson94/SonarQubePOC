@@ -320,12 +320,6 @@ namespace d360.model
 
         public List<AllocationPossibility> GetAllocationOptions()
         {
-            string classList = "1,2,6,7,8,9";
-            if (Community.IsFusionEnabled())
-            {
-                classList += ",3,4";
-            }
-
             var list = Database.Connection.Query<AllocationPossibility>($@"
 select	T.Object as ObjectType, 
 		T.ObjectID as ObjectTypeID, 
@@ -333,7 +327,7 @@ select	T.Object as ObjectType,
         P.[Path] as Name
 from	AssetType T
         cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
-where	T.[Class] in ({classList})").ToList();
+where	T.[Class] in (1,2,6,7,8,9)").ToList();
 
             list = list.OrderBy(i => i.ClassName).ThenBy(i => i.Name).ToList();
 
@@ -1201,13 +1195,9 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
             List<string> excludedClasses = new List<string>
             {
                 SystemObjects.FusionType.ToString(),
-                SystemObjects.OrganizationType.ToString()
+                SystemObjects.OrganizationType.ToString(),
+                SystemObjects.FusionAttributeType.ToString()
             };
-
-            if (!Community.IsFusionEnabled())
-            {
-                excludedClasses.Add(SystemObjects.FusionAttributeType.ToString());
-            }
 
             if (limitToClasses != null && limitToClasses.Count > 0)
             {

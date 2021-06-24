@@ -276,10 +276,9 @@ namespace d360.web.Controllers.V2
                     ExistingIntersectID = FieldsRepository.GetFieldInterSetUID(existingFields);
                 }
 
-                var isFusionEnabled = Community.IsFusionEnabled();
                 var isJsonAttributeFieldTypeEnabled = Community.GetCompanySettingByKey<bool>("EnableJsonAttribute");
 
-                var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, isFusionEnabled, existingFields, ExistingIntersectID);
+                var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, existingFields, ExistingIntersectID);
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                     throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
 

@@ -234,10 +234,6 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                                     menu.NavigationItems = [];
                                     menu.ngUrl = SiteUrlHelpers.SITE_URL_REFERENCE_ROOT;
                                     break;
-                                case '#Fusion':
-                                    menu.NavigationItems = [];
-                                    menu.ngUrl = SiteUrlHelpers.SITE_URL_FUSION_ROOT;
-                                    break;
                                 case '#Community':
                                     menu.NavigationItems = [];
                                     menu.ngUrl = SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT;
@@ -373,11 +369,6 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         integrationMenu.Items.push({ Name: 'API', Url: '/swagger/ui/index', Items: null, IsLink: true, IsHomePage: false, count: null });
         integrationMenu.Items.push({ Name: 'Bulk Loader', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD}`, Items: null, IsLink: false, IsHomePage: false, count:null  });
         if (CompanySettings.ShowCustomAPIAdmin != 'false') integrationMenu.Items.push({ Name: 'Custom API', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOM_API}`, Items: null, IsLink: false, IsHomePage: false, count:null });
-
-        if (CompanySettings.FusionEnabled != 'false')
-            integrationMenu.Items.push({ Name: 'Fusion', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_FUSION}`, Items: null, IsLink: false, IsHomePage: false, count: null });
-
-        this.adminMenu.NavigationItems.push(integrationMenu);
 
         let securityMenu = new SiteMenuItem();
         securityMenu.Name = "Security";

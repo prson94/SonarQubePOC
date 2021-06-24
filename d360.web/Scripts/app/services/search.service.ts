@@ -49,14 +49,8 @@ export class SearchService extends BaseObservableService  {
             );
     }
 
-    public getSearchCategories(settings: any, showUsers: boolean = true, keepNotVisible: boolean = false): Observable<SearchType[]> {
+    public getSearchCategories(showUsers: boolean = true, keepNotVisible: boolean = false): Observable<SearchType[]> {
         let exclude: string[] = [];
-        if (settings) {
-            if (settings['FusionEnabled'].toString() === 'false') {
-                exclude.push('FusionAttributes');
-                exclude.push('FusionType');
-            }
-        }
         if (!showUsers) {
             exclude.push('Group');
             exclude.push('User');
