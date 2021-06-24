@@ -90,17 +90,6 @@
                             <div class="FieldInstructions">If enabled, the content of the description property is auto-displayed to all users on the list page for this artifact type.</div>
                         </div>
                     </div>
-                    <ng-container *ngIf="isFusionEnabled && showFusionOwnerSettings">
-                        <div class="FieldName">Can Own Fusion?</div>
-                        <div class="row">
-                            <div class="col l1 m2 s12">
-                                <input pCheckbox type="checkbox" name="CanOwnFusion" [(ngModel)]="model.AssetType.CanOwnFusion" />
-                            </div>
-                            <div class="col l11 m10 s12">
-                                <div class="FieldInstructions">If enabled, items of this type can own fusion configurations.</div>
-                            </div>
-                        </div>
-                    </ng-container>
                     <d3s-asset-type-editor-use-as-transformation [assetTypeId]="id" *ngIf="lineageVersion == 3" [(UseAsTransformation)]="model.AssetType.UseAsTransformation"></d3s-asset-type-editor-use-as-transformation>
                     <ng-container *ngIf="ShowAutoDisplayOption()">
                         <div class="FieldName">Auto Display Owner/Parent?</div>

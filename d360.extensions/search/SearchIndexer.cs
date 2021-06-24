@@ -44,11 +44,7 @@ namespace d360.extensions.search
                 AssetTypeClass.ReferenceItemType.ToString(),
                 AssetTypeClass.User.ToString(),
                 AssetTypeClass.Group.ToString(),
-                AssetTypeClass.Fusion.ToString(),
-                AssetTypeClass.FusionAttribute.ToString(),
                 "Reference",
-                SystemObjects.FusionType.ToString(),
-                "FusionAttributes",
                 "Intersect",
                 "Synonym",
             };
@@ -84,10 +80,6 @@ namespace d360.extensions.search
             {
                 case AssetTypeClass.ReferenceItemType:
                     return "Reference";
-                case AssetTypeClass.Fusion:
-                    return "Fusion Type";
-                case AssetTypeClass.FusionAttribute:
-                    return "FusionAttributes";
                 default:
                     return typeClass.ToString();
             }
@@ -99,10 +91,6 @@ namespace d360.extensions.search
             {
                 case "Reference":
                     return (int)AssetTypeClass.ReferenceItemType;
-                case "FusionAttributes":
-                    return (int)AssetTypeClass.FusionAttribute;
-                case "Fusion Type":
-                    return (int)AssetTypeClass.Fusion;
                 default:
                     if(Enum.TryParse(category, out AssetTypeClass assetTypeClass))
                     {
@@ -244,13 +232,6 @@ namespace d360.extensions.search
             int assettypeclass = (int)assetClass;
 
             long assetCount = CreatePendingDBLog(assetClass, null);
-
-            //Use count of assets in class (if not Fusion) to determine if the class contains a large number of assets
-            //and indexing by asset type is more performant.
-            if (assetClass != AssetTypeClass.Fusion && assetClass != AssetTypeClass.FusionAttribute)
-            {
-                processByAssetType = assetCount > _indexClassAsTypesLimit;
-            }
 
             if(processByAssetType)
             {
@@ -642,62 +623,6 @@ namespace d360.extensions.search
                             Fields = new Dictionary<string, string>() {
                                 { "Name", o.DisplayValue },
                                 { "Description", o.Description }
-                            }
-                        };
-                    };
-                    break;
-                case AssetTypeClass.Fusion:
-                    sql = @"select
-                        f.id as ID,
-	                    f.Name as FusionName,
-	                    f.Description as FusionDescription,
-	                    ft.Name as FusionTypeName,
-	                    ft.Description as FusionTypeDescription,
-                        ft.ID as FusionTypeID
-                    from fusion f
-                        inner join fusiontype ft on f.fusiontypeid = ft.id";
-                    shaper = (dynamic o) =>
-                    {
-                        return new IndexObjectModel
-                        {
-                            Category = GetCategoryFromClass(assetClass),
-                            CompanyID = companyID,
-                            ID = o.ID,
-                            AssetType = o.FusionTypeName,
-                            RelativeUrl = $"fusion/{o.ID}",
-                            Fields = new Dictionary<string, string>() {
-                                { "Name", o.FusionName },
-                                { "Description", o.FusionDescription }
-                            }
-                        };
-                    };
-                    break;
-                case AssetTypeClass.FusionAttribute:
-                    sql = @"select
-	                        f.ID,
-	                        f.Name,
-	                        f.FusionAttributeTypeID,
-	                        ft.Name as FusionAttributeTypeName,
-	                        fu.Name as FusionName,
-							a.id as AssetID,
-                            dbo.GenerateAssetUrl(a.id) as 'Url'
-                        from fusionattribute f
-	                        inner join fusionattributetype ft on (f.fusionattributetypeid = ft.id)
-	                        inner join fusion fu on (f.fusionid = fu.id)
-                            inner join asset a on a.object = 'FusionAttribute' and f.id = a.objectid
-                        where f.Deleted = 0";
-                    shaper = (dynamic o) =>
-                    {
-                        return new IndexObjectModel
-                        {
-                            Category = GetCategoryFromClass(assetClass),
-                            CompanyID = companyID,
-                            ID = o.ID,
-                            AssetID = o.AssetID,
-                            AssetType = $"{o.FusionName} {o.FusionAttributeTypeName}",
-                            RelativeUrl = o.Url,
-                            Fields = new Dictionary<string, string>() {
-                                { "Name", o.Name }
                             }
                         };
                     };

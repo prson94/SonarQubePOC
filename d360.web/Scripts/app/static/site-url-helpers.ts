@@ -62,7 +62,6 @@ export class SiteUrlHelpers {
 
     //admin child routes
     static SITE_URL_ADMIN_BULK_LOAD = `load`;
-    static SITE_URL_ADMIN_FUSION = `fusion`;
     static SITE_URL_ADMIN_ASSET = `assets`;
     static SITE_URL_ADMIN_ASSET_BUSINESS = `BusinessAsset`;
     static SITE_URL_ADMIN_ASSET_TECHNICAL = `TechnicalAsset`;
@@ -127,9 +126,6 @@ export class SiteUrlHelpers {
         }
         if (objectType.toLowerCase() == "report") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`;
-        }
-        if (objectType.toLowerCase() == "fusiontype") {
-            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_FUSION}`;
         }
         if (objectType.toLowerCase() == "tag" && uid && uid != '00000000-0000-0000-0000-000000000000') {
             return `${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${uid}`;

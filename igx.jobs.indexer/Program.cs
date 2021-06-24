@@ -167,9 +167,6 @@ namespace igx.jobs.indexer
                 companyConn.Open();
             }
 
-            List<CompanySetting> settings = CompanyConnectionUtils.GetCompanySettings(CompanyID);
-            bool fusionEnabled = (settings.Any(i => i.SettingID == 70) ? bool.Parse(settings.Single(i => i.SettingID == 70).Value) : true);
-
             int SuggestedIndexLimit = SuggestIndexLimit(companyConn);
             if (SuggestedIndexLimit > 1000)
             {
@@ -188,12 +185,6 @@ namespace igx.jobs.indexer
                 AssetTypeClass.User
             };
 
-            if(fusionEnabled)
-            {
-                classes.Add(AssetTypeClass.Fusion);
-                classes.Add(AssetTypeClass.FusionAttribute);
-            }
-            
             source.ClearIndex(CompanyID);
 
             classes.ForEach(cls => {

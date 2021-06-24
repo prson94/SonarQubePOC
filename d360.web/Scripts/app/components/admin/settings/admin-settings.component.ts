@@ -83,7 +83,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
 
                 this.companySettings = data;
 
-                this.searchService.getSearchCategories(data, true, true).subscribe(cat => {
+                this.searchService.getSearchCategories(true, true).subscribe(cat => {
                     this.searchTypes = SettingsHelper.searchTypeStringToList(this.companySettings.DefaultSearchTypes, cat);
                 });
                 

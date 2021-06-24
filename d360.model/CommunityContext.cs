@@ -493,10 +493,5 @@ where S.ID <> 4", new { c = CurrentCompanyID })
             return settings;
         }
 
-        public bool IsFusionEnabled()
-        {
-            return GetCompanySettingByKey<bool>("FusionEnabled");
-        }
-
     }
 }

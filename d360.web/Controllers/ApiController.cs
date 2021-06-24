@@ -4377,11 +4377,6 @@ where v.id = {0}", id)).FirstOrDefault();
 
             var data = Company.Query<dynamic>(sql, new { obj = new DbString { IsAnsi = true, Value = obj.ToString(), IsFixedLength = true, Length = 50 }, objid });
 
-            if (!Community.IsFusionEnabled())
-            {
-                data = data.Where(x => x.Object != SystemObjects.FusionType.ToString()
-                && x.Object != SystemObjects.FusionAttributeType.ToString());
-            }
             return data;
 
         }
