@@ -1600,7 +1600,7 @@ from	IntersectType I
                 {
                     if (!allowedConversions.Any(i => i.FromType == currentFieldType.Type && i.ToType == newFieldType.Type) && (currentFieldType.Type != newFieldType.Type))
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field conversion error", $"You may not convert field {newFieldType.Name} from a {currentFieldType.Type} to a {newFieldType.Type}.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field conversion error", $"You may not convert field {newFieldType.Name} from a {currentFieldType.Type} to a {newFieldType.Type} or a field with the same name and different type may already exist.");
                     }
 
                     currentFieldType.AllowAllLabel = newFieldType.AllowAllLabel;
