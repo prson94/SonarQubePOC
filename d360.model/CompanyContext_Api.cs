@@ -6730,19 +6730,26 @@ where   ExecutionID = @ExecutionID and Success is null and (Uid is null or Uid =
 
 update  ER 
 set     Success = 0,
-    Message = 'Relationship type (Uid) not found.' 
+        Message = 'Relationship type (Uid) not found.' 
 from    [api].[ExecutionRelationshipType] ER 
 where   ER.ExecutionID = @ExecutionID 
     and ER.Success is null 
     and not exists (select 1 from IntersectType where Uid = ER.[Uid]);
 
+update  ER 
+set     Success = 0,
+        Message = 'Relationship type referenced in FieldFromRelationship field type. Cardinality may not be changed.' 
+from    [api].[ExecutionRelationshipType] ER 
+        inner join IntersectType I on I.Uid = ER.[Uid] and I.SubjectCardinality = 2 and I.ObjectCardinality = 1 and (ER.SubjectCardinality <> 2 or ER.ObjectCardinality <> 1) 
+            and  ER.ExecutionID = @ExecutionID and ER.Success is null;
+
 Update  T
 set     SubjectUid = SA.Uid, [Subject] = SA.Object, SubjectID = SA.ObjectID,
-    ObjectUid = OA.Uid, [Object] = OA.Object, ObjectID = OA.ObjectID
+        ObjectUid = OA.Uid, [Object] = OA.Object, ObjectID = OA.ObjectID
 from    [api].[ExecutionRelationshipType] T
-    inner join IntersectType S on S.Uid = T.Uid
-    inner join AssetType SA on SA.Object = S.Subject and SA.ObjectID = S.SubjectID
-    inner join AssetType OA on OA.Object = S.Object and OA.ObjectID = S.ObjectID
+        inner join IntersectType S on S.Uid = T.Uid
+        inner join AssetType SA on SA.Object = S.Subject and SA.ObjectID = S.SubjectID
+        inner join AssetType OA on OA.Object = S.Object and OA.ObjectID = S.ObjectID
 where   T.ExecutionID = @ExecutionID and T.Success is null;",
                 new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
             }
