@@ -150,7 +150,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 
     private buildBreadcrumb() {
         if (this.selected) {
-            this.buildSecondaryNavigation(this.selected.Uid);
+            this.buildSecondaryNavigation(this.selected.Uid, null, this.object, null, null, null, this.assetTypeClass);
         }
     }
 

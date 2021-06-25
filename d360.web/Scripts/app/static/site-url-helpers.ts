@@ -179,6 +179,25 @@ export class SiteUrlHelpers {
         }
     }
 
+    // getAssetUrl - Generates the url for an object based on its type
+    static getAssetUrl(uid: string): string {
+        return `${SiteUrlHelpers.SITE_URL_ASSET_ROOT}/${uid}`;
+    }
+
+    // getAssetTypeUrl - Generates the url for an object based on its type
+    static getAssetTypeUrl(type: string, uid: string): string {
+        switch (type.toUpperCase()) {
+            case 'TAXONOMY':
+            case 'TAXONOMYTYPE':
+                return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/structure/${uid}`;
+            case 'POLICY':
+            case 'POLICYTYPE':
+                return `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/structure/${uid}`;
+            default:
+                return `${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${uid}`;
+        }
+    }
+
     // convertClassicUrl - Converts a url from the legacy site to the new url used in angular
     // inputs - url the old url
     // output - the converted url
