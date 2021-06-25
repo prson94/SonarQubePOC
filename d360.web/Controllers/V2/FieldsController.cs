@@ -2397,7 +2397,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     var fields = FieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid, true).ToList();
                     if (fields.Count > 0)
                     {
-                        var assettypeid = fields.FirstOrDefault().AssetTypeID;
+                        var assettypeid = fields.Where(x=> x.AssetTypeID != null).FirstOrDefault().AssetTypeID;
                         assetTypeUid = Company.AssetTypes.FirstOrDefault(x => x.ID == assettypeid).uid;
                     }
 

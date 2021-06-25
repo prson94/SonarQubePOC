@@ -1681,6 +1681,11 @@ namespace d360.web.Controllers.V2
                 }
 
             }
+            catch (FilterExpressionParserException ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Filter expression parse error", errorMessage));
+            }
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");

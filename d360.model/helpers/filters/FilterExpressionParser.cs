@@ -124,21 +124,28 @@ namespace d360.model.helpers
 
         public string ParseAsFiltersDataTable(string filterString)
         {
-            if (parseType != FilterExpressionParseType.ComplexLookupField)
+            try
             {
-                throw new InvalidOperationException("ParseAsFiltersDataTable is only allowed for FilterExpressionParseType.ComplexLookupField");
+                if (parseType != FilterExpressionParseType.ComplexLookupField)
+                {
+                    throw new InvalidOperationException("ParseAsFiltersDataTable is only allowed for FilterExpressionParseType.ComplexLookupField");
+                }
+
+                Tokenize(filterString);
+
+                StringBuilder query = new StringBuilder();
+
+                foreach (var item in this.FilterTokens)
+                {
+                    query.Append(ParseTokensForComplexFields(item));
+                }
+
+                return query.Length > 0 ? $"({query})" : "";
             }
-
-            Tokenize(filterString);
-
-            StringBuilder query = new StringBuilder();
-
-            foreach (var item in this.FilterTokens)
+            catch (Exception ex)
             {
-                query.Append(ParseTokensForComplexFields(item));
+                throw new FilterExpressionParserException("Invalid filter expression: " + ex.Message);
             }
-
-            return query.Length > 0 ? $"({query})" : "";
         }
 
         public string Parse(string filterString, out Dictionary<string, object> sqlParams, out List<int> fieldIds)
@@ -345,16 +352,16 @@ namespace d360.model.helpers
             {
                 return token.@operator;
             }
-            if (token.Field.ToLower().StartsWith("related:"))
+            if (token.Field.ToLower().StartsWith("$related:"))
             {
-                var intersectTypeUid = token.Field.ToLower().Replace("related:", "");
+                var intersectTypeUid = token.Field.ToLower().Replace("$related:", "");
                 var intersectUid = token.EscapedValueAsString;
-                var ftRelationship = fieldTypes.Where(x => x.Name.ToLower() == token.Field.ToLower()).FirstOrDefault();
+                var ftRelationship = fieldTypes.Where(x => x.Name.Replace("$", "").ToLower() == token.Field.Replace("$", "").ToLower()).FirstOrDefault();
                 var ftQueryName = fieldTypes.FirstOrDefault(x => x.LookupObjectID == ftRelationship.LookupObjectID && x.LookupObjectType == ftRelationship.LookupObjectType && ftRelationship.Name != x.Name).Name;
                 if (ftRelationship != null)
                 {
                     string relField = ftQueryName.Replace("_IntersectTypeUid", "_Uid");
-                    return $"( {ftQueryName} = '{intersectTypeUid}' and {relField} = '{intersectUid}')";
+                    return $"( {ftQueryName} = '{intersectTypeUid}' and {relField} = '{intersectUid.Replace("'","")}')";
                 }
             }
             else

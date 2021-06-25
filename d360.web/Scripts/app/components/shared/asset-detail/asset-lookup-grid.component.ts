@@ -194,11 +194,16 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
 
         this.loadSubscription = this.assetService.getAssetsComplexFieldValue(this.assetUid, this.field.FieldName, params)
             .subscribe((result) => {
-                this.data = result;
-                this.loadInitialInfo();
+                if (result) {
+                    this.data = result;
+                    this.loadInitialInfo();
+                }
                 this.isLoading = false;
                 this.cdRef.markForCheck();
-            }, null, () => {
+            }, () => {
+                this.isLoading = false;
+                this.cdRef.markForCheck();
+            }, () => {
                 this.isLoading = false;
                 this.cdRef.markForCheck();
             });

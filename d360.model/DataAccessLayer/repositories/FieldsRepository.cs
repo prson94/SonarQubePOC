@@ -1995,7 +1995,6 @@ from	IntersectType I
                             ft.LookupObjectID = it.ID;
                             fields.Add(ft);
                         }
-
                         var ft2 = new FieldType();
 
                         ft2.Name = "Related:" + it.uid;

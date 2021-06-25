@@ -27,6 +27,7 @@ using System.Web.Http.Description;
 using System.IO;
 using Dapper;
 using d360.model.helpers.filters;
+using Newtonsoft.Json.Linq;
 
 namespace d360.web.Controllers.V2
 {
@@ -1709,11 +1710,22 @@ create table #relationshipCountMap(IntersectTypeUid uniqueidentifier, IsSubject 
                         where I.Uid in @uids
                         for json path";
 
-                var models = await Company.GetDatabaseJsonAsObjectAsync<List<dynamic>>(sql, dbArgs, ApiTimeout);
-                foreach(var item in models)
+                var models = await Company.GetDatabaseJsonAsObjectAsync<List<JObject>>(sql, dbArgs, ApiTimeout);
+                foreach (var item in models)
                 {
-                    var data = (IDictionary<string, object>)item;
-
+                    var objectUid = Guid.Parse(item.GetValue("Object")["Uid"].ToString());
+                    var subjectUid = Guid.Parse(item.GetValue("Subject")["Uid"].ToString());
+                    foreach (var r in definition.Relations)
+                    {
+                        if (objectUid == r.AssetTypeUid)
+                        {
+                            item["SideOfRelationship"] = "Object";
+                        }
+                        else if (subjectUid == r.AssetTypeUid)
+                        {
+                            item["SideOfRelationship"] = "Subject";
+                        }
+                    }
                 }
                 return Request.CreateResponse(HttpStatusCode.OK, models);
             }

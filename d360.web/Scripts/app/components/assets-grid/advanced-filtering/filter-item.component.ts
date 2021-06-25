@@ -416,18 +416,24 @@ export class FilterItemComponent implements OnInit, OnChanges {
         if (type.Type) {
             if (type.Type.Relationship) {
                 this.relationshipFieldIntersectTypeUid = type.Type.Relationship.IntersectTypeUid;
-                var relationship = this.relationshipTypes.filter((r) => r.Uid === this.relationshipFieldIntersectTypeUid)[0];
-                console.log(this.assetTypeUid);
+                var relationship = this.relationshipTypes.filter((r) => r.Uid.toLowerCase() === this.relationshipFieldIntersectTypeUid.toLowerCase())[0];
 
-                if (this.isComplexField) {
-                    console.log(this.relationshipTypes);
+                let typeUidSide = this.assetTypeUid;
+
+                if (!typeUidSide && relationship["SideOfRelationship"]) {
+                    if (relationship["SideOfRelationship"] === "Object") {
+                        typeUidSide = relationship.Object.Uid;
+                    }
+                    else {
+                        typeUidSide = relationship.Subject.Uid;
+                    }
                 }
 
                 this.relationshipFieldIntersectCardinality =
                     relationship.Object.Uid === this.assetTypeUid
                         ? relationship.Subject.Cardinality : relationship.Object.Cardinality;
 
-                this.relationshipFieldName = this.relationshipFieldIntersectTypeUid + "|" + (relationship.Object.Uid === this.assetTypeUid ? relationship.Subject.Uid : relationship.Object.Uid);
+                this.relationshipFieldName = this.relationshipFieldIntersectTypeUid + "|" + (relationship.Object.Uid === typeUidSide ? relationship.Subject.Uid : relationship.Object.Uid);
                 this.condition.relationshipFieldName = this.relationshipFieldName;
             }
 
