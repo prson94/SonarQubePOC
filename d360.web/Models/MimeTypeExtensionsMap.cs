@@ -33,17 +33,6 @@ namespace d360.web.Models
             new MimeTypeExtensionMapItem { Extension = ".xltx", MimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.template"},
         };
 
-        public static string GetMimeType(string extension)
-        {
-            if (!extension.StartsWith("."))
-            {
-                extension = "." + extension;
-            }
-
-            var item = items.SingleOrDefault(i => i.Extension.ToLower().Equals(extension.Trim().ToLower()));
-            return (item == null) ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : item.MimeType;
-        }
-
         public static string GetExtension(string mimeType)
         {
             var item = items.SingleOrDefault(i => i.MimeType.ToLower().Equals(mimeType.Trim().ToLower()));
