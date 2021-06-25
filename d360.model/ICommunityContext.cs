@@ -41,8 +41,5 @@ namespace d360.model
         int SaveChanges();
         new bool Update<T>(T item) where T : BaseObject;
         Resource ValidateResource(string username, string password);
-
-        bool IsFusionEnabled();
-
     }
 }

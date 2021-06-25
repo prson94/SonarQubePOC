@@ -125,7 +125,6 @@ namespace d360.web.Models
         public bool WriteActionDescription { get; set; }
 
         public int LineageVersion { get; set; } = 1;
-        public bool FusionEnabled { get; set; } = true;
         public int MaxExcelExportRows { get; set; }
         public string AllowedOrigins { get; set; }
         public string FramingDomains { get; set; }

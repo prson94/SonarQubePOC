@@ -320,12 +320,6 @@ namespace d360.model
 
         public List<AllocationPossibility> GetAllocationOptions()
         {
-            string classList = "1,2,6,7,8,9";
-            if (Community.IsFusionEnabled())
-            {
-                classList += ",3,4";
-            }
-
             var list = Database.Connection.Query<AllocationPossibility>($@"
 select	T.Object as ObjectType, 
 		T.ObjectID as ObjectTypeID, 
@@ -333,7 +327,7 @@ select	T.Object as ObjectType,
         P.[Path] as Name
 from	AssetType T
         cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
-where	T.[Class] in ({classList})").ToList();
+where	T.[Class] in (1,2,6,7,8,9)").ToList();
 
             list = list.OrderBy(i => i.ClassName).ThenBy(i => i.Name).ToList();
 
@@ -711,36 +705,6 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 
         #region Fusion
 
-        public Dictionary<string, object> GetFusionAsDictionary(int id)
-        {
-            var item = GetById<Fusion>(id);
-            var sType = SystemObjects.Fusion.ToString();
-            var fields = Filter<FieldWithRelation>(i => i.ObjectType == sType && i.ObjectID == item.ID && i.IsListable).ToList();
-
-            var model = new Dictionary<string, object>();
-            model.Add("ID", item.ID);
-            model.Add("FusionTypeID", item.FusionTypeID);
-            model.Add("Name", item.Name);
-            model.Add("Enabled", item.Enabled);
-            model.Add("Manual", item.Manual);
-            if (item.ForceRefresh.HasValue)
-            {
-                if (item.ForceRefresh.Value)
-                {
-                    model.Add("ForceRefresh", item.ForceRefresh.Value);
-                }
-            }
-            foreach (var n in fields.Where(f => f.ObjectID == item.ID).OrderBy(f => f.SortOrder))
-            {
-                model.Add(n.Name, n.FormattedValue);
-            }
-
-            bool hasDashboards = Filter<Report>(x => x.ObjectType == "FusionType" && x.ObjectID == item.FusionTypeID && x.ReportType == "powerbi").Any();
-            model.Add("HasDashboards", hasDashboards);
-
-            return model;
-        }
-
         public List<FusionOwnerOption> GetFusionOwnerOptions()
         {
             return Database.Connection.Query<FusionOwnerOption>(@"
@@ -752,26 +716,6 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 			inner join AssetType ASTT on ASTT.ID = AST.AssetTypeID and ASTT.CanOwnFusion = 1 and ASTT.[Object] = 'ArtifactType'		
             cross apply GetAssetDisplayValueById(AST.ID) D
 	order by	ASTT.Name + ' : ' + D.DisplayValue").ToList();
-        }
-
-
-
-        public List<FusionAttributeItem> GetAttributesByFusion(int fusionID)
-        {
-            string k = key(FUSIONATTRIBUTES_BY_FUSION_PREFIX_KEY, fusionID);
-            if (Caching.ItemExists<List<FusionAttributeItem>>(k))
-            {
-                return Caching.GetItem<List<FusionAttributeItem>>(k);
-            }
-            else
-            {
-
-                string query = string.Format("fusion.GetAttributesByFusion {0}", fusionID);
-                var list = Database.Connection.Query<FusionAttributeItem>(query).ToList();
-                Caching.SetItem<List<FusionAttributeItem>>(k, list);
-
-                return list;
-            }
         }
 
         #endregion
@@ -1251,13 +1195,9 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
             List<string> excludedClasses = new List<string>
             {
                 SystemObjects.FusionType.ToString(),
-                SystemObjects.OrganizationType.ToString()
+                SystemObjects.OrganizationType.ToString(),
+                SystemObjects.FusionAttributeType.ToString()
             };
-
-            if (!Community.IsFusionEnabled())
-            {
-                excludedClasses.Add(SystemObjects.FusionAttributeType.ToString());
-            }
 
             if (limitToClasses != null && limitToClasses.Count > 0)
             {

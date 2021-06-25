@@ -154,6 +154,9 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
                     this.activeTab.loaded = true;
                 }
             }
+            if (params['itemId'] != null) {
+                this.itemId = +params['itemId'];
+            }
         });
 
         this.activeTab.loaded = true;
@@ -179,6 +182,17 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
             assetFilter.value = this.objectId.toString();
             assetFilter.condition = "EQUAL";
             this.predefinedFilters.push(assetFilter);
+            this.filtersLoaded = true;
+        }
+
+        if (this.itemId != null) {
+            let itemFilter = new GridFilterExpression();
+            itemFilter = new GridFilterExpression();
+            itemFilter.field = "ItemID";
+            itemFilter.fieldtype = GridFilterFieldType.Normal;
+            itemFilter.value = this.itemId.toString();
+            itemFilter.condition = "EQUAL";
+            this.predefinedFilters.push(itemFilter);
             this.filtersLoaded = true;
         }
 

@@ -1286,4 +1286,12 @@ from	metrics.AssetVersion V
 		</sql>
 	</changeSet>
 
+	<changeSet author="TKlok" id="Data.Corrections.GOV-15034">
+			<sql dbms="mssql" splitStatements="false" stripComments="false">
+	<![CDATA[
+	DELETE FROM [dbo].[SiteNav]
+	WHERE Name = '#Fusion'
+	]]>
+		</sql>
+	</changeSet>
 </databaseChangeLog>

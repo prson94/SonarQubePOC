@@ -24,16 +24,10 @@ namespace d360.core.validators
         private Guid? _governanceRoleUid = null;
 
         ICompanyContext CompanyContext;
-        public AssetTypeValidator(ICompanyContext companyContext, int lineageVersion, bool isFusionEnabled, Guid? govRoleUid = null)
+        public AssetTypeValidator(ICompanyContext companyContext, int lineageVersion, Guid? govRoleUid = null)
         {
             this.CompanyContext = companyContext;
             this._governanceRoleUid = govRoleUid;
-            if (isFusionEnabled)
-            {
-                SupportedClasses.Add(AssetTypeClass.FusionAttribute);
-                ParentAssetTypeClass.Add(AssetTypeClass.FusionAttribute);
-            }
-
         }
 
         public WorkHttpStatus ValidateModel(bool isInsert, AssetTypeUpsert model, AssetType parentAssetType, Predicate predicate, AssetType assetType = null)

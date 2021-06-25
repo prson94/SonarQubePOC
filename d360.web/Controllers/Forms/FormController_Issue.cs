@@ -29,15 +29,13 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();
             list.Add(new EditableField { FieldName = "IssueTypeID", FieldType = DataType.Hidden.ToString(), Value = issueTypeId.ToString() });
 
-            List<string> ignoreObjects = new List<string>();
             string ignoreObjectTypeSQL = string.Empty;
-            if (!Community.IsFusionEnabled())
+            List<string> ignoreObjects = new List<string>
             {
-                ignoreObjects.Add(SystemObjects.FusionType.ToString());
-                ignoreObjects.Add(SystemObjects.FusionAttributeType.ToString());
-            }
-
-            ignoreObjects.Add(SystemObjects.ReferenceItemType.ToString());
+                SystemObjects.FusionType.ToString(),
+                SystemObjects.FusionAttributeType.ToString(),
+                SystemObjects.ReferenceItemType.ToString()
+            };
 
             if (ignoreObjects.Count > 0)
                 ignoreObjectTypeSQL = $" AND T.Object not in ({string.Join(",", ignoreObjects.Select(o => "'" + o + "'"))})";           

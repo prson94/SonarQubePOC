@@ -220,6 +220,10 @@ namespace d360.web.Controllers
                         dbArgs.Add($"{ff.FieldName}{count}", $"{ff.RawValue}");
                         typeClause.Add($@"assettype.ObjectID = cast(@{ff.FieldName}{count} as int)");
                         break;
+                    case "ItemID":
+                        dbArgs.Add($"{ff.FieldName}{count}", $"{ff.RawValue}");
+                        typeClause.Add($@"wi.ID = cast(@{ff.FieldName}{count} as int)");
+                        break;
                 }
             }
 

@@ -206,16 +206,13 @@ namespace igx.jobs
             }
         }
 
-        public static List<CompanyWithDatabaseServerSettings> GetCompaniesByCurrentSlot(bool FusionEnabledOnly = false)
+        public static List<CompanyWithDatabaseServerSettings> GetCompaniesByCurrentSlot()
         {
 
             try
             {
                 var lvl = GetEnvironmentLevelCurrentSlot();
-                if(FusionEnabledOnly)
-                    return CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings().Where(i => i.EnvironmentLevel == lvl && i.IsFusionEnabled).ToList();
-                else
-                    return CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings().Where(i => i.EnvironmentLevel == lvl).ToList();
+                return CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings().Where(i => i.EnvironmentLevel == lvl).ToList();
             }
             catch (Exception)
             {

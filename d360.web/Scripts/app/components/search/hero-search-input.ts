@@ -5,7 +5,6 @@ import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { AuthenticationService } from '../../services/authentication.service';
 
-declare var CompanySettings;
 @Component({
     selector: 'd3s-hero-search-input',
     templateUrl: 'hero-search-input.html',
@@ -23,20 +22,18 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
     }
 
     ngOnInit() {
-        if (CompanySettings) {
-            this.searchService.getSearchCategories(CompanySettings, this.authenticationService.isAdmin, false).subscribe((cat) => {
-                this.searchObjectTypes = cat.map((set) => {
-                    return {
-                        label: set.title,
-                        value: set.value
-                    };
-                });
-                var availableTypes = this.searchObjectTypes.map((x) => x.value);
-                this.searchTypes = this.searchTypes.filter(st => availableTypes.indexOf(st) >= 0);
-
-                this.setEventTypeLabel();
+        this.searchService.getSearchCategories(this.authenticationService.isAdmin, false).subscribe((cat) => {
+            this.searchObjectTypes = cat.map((set) => {
+                return {
+                    label: set.title,
+                    value: set.value
+                };
             });
-        }
+            var availableTypes = this.searchObjectTypes.map((x) => x.value);
+            this.searchTypes = this.searchTypes.filter(st => availableTypes.indexOf(st) >= 0);
+
+            this.setEventTypeLabel();
+        });
     }
 
     ngAfterViewInit(): void {

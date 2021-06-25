@@ -304,7 +304,7 @@ namespace d360.model
                     order by wfm.Name asc,wfm.[version] desc,wfm.Step asc", new { r = resourceId, newOffset });
         }
 
-        public bool AssignActivityWorkflowToNewObject(WorkflowEventRegistration reg, int itemId, int workflowId, int objectId, string @object)
+        public Issue AssignActivityWorkflowToNewObject(WorkflowEventRegistration reg, int itemId, int workflowId, int objectId, string @object)
         {
             var item = WorkflowItems.Where(x => x.ID == itemId).FirstOrDefault();
 
@@ -347,7 +347,7 @@ namespace d360.model
 
             SaveChanges();
 
-            return true;
+            return issue;
 
         }
         public bool ExecuteTimerSteps()
@@ -1750,7 +1750,8 @@ namespace d360.model
                             objectType = SystemObjects.Group.ToString();
                             objectId = group.ObjectID;
                         }
-                    }else if(stepSettings.RecipientType == EmailTaskRecipientType.SpecificUser)
+                    }
+                    else if(stepSettings.RecipientType == EmailTaskRecipientType.SpecificUser)
                     {
                         isResourceReassignment = false;
                         objectType = "Specific Users";

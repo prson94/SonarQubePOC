@@ -155,7 +155,7 @@ from	Resource R
                     }
                     else if (!string.IsNullOrEmpty(username))
                     {
-                        u = cnn.Query<usercompany>(baseSql + @" and lower(ltrim(rtrim(R.Username))) = @username", new { com = companyID, username }).FirstOrDefault();
+                        u = cnn.Query<usercompany>(baseSql + @" and ltrim(rtrim(R.Username)) = @username", new { com = companyID, username = new DbString { IsAnsi = false, Length = 250, Value = username } }).FirstOrDefault();
                     }
 
                 }

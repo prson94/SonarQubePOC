@@ -41,7 +41,6 @@ export class CompanySettings {
     WriteActionDescription: boolean;
     CurrentCompanyLogoPath: string;
     LineageVersion: number;
-    FusionEnabled: boolean = true;
     MaxExcelExportRows: number;
     AllowedOrigins: string;
     FramingDomains: string;

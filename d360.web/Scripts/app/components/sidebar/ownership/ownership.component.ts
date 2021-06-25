@@ -4,7 +4,6 @@ import {Subject} from "rxjs";
 import {takeUntil} from "rxjs/operators";
 
 import {ObjectDetailService} from '../../../services/object-detail.service';
-import {FusionService} from '../../../services/fusion.service';
 
 import {BaseComponent} from '../../shared/base.component';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
@@ -24,7 +23,6 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
     `,
     providers: [
         ObjectDetailService,
-        FusionService
     ]
 })
 
@@ -35,7 +33,6 @@ export class OwnershipComponent extends BaseComponent implements OnInit {
         private route: ActivatedRoute,
         private router: Router,
         private objectDetailService: ObjectDetailService,
-        private fusionservice: FusionService,
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService
     ) {
@@ -50,17 +47,7 @@ export class OwnershipComponent extends BaseComponent implements OnInit {
                 this.assetID = +params['assetID'];
                 this.objectDetailService.getAsset(this.assetID).subscribe(
                     res => {
-                        if (res.Type == "FusionType") {
-                            this.fusionservice
-                                .getFusionConfigurationsByType(res.TypeID)
-                                .pipe(takeUntil(this.destroySubject$))
-                                .subscribe(
-                                    fus => {
-                                        this.objectName = fus[0].Name;
-                                    })
-                        } else {
-                            this.objectName = res.DisplayValue;
-                        }
+                        this.objectName = res.DisplayValue;
                         this.uid = res.uid;
                         let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
 

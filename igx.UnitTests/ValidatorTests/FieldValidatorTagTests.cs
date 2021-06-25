@@ -167,7 +167,7 @@ namespace igx.UnitTests.ValidatorTests
 
             var fieldTypes = new List<FieldType>() { new FieldType() { Type = "Tag", Name = "test" } };
 
-            var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels,true, fieldTypes);
+            var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels, fieldTypes);
 
             Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
         }

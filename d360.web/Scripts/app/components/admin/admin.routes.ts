@@ -20,7 +20,6 @@ const routes: Routes = [
             { path: 'responsibilities', loadChildren: () => import('./responsibilities/admin-responsibilities.module').then((m) => m.AdminResponsibilitiesModule) },
             { path: 'resources', loadChildren: () => import('./resources/admin-resources.module').then( (m) => m.AdminResourcesModule) },
             { path: 'groups', loadChildren: () => import('./groups/admin-groups.module').then( (m) => m.AdminGroupsModule) },
-            { path: 'fusion', loadChildren: () => import('./fusion/admin-fusion.module').then( (m) => m.AdminFusionModule) },
             { path: 'policies', loadChildren: () => import('./hierarchies/admin-hierarchies.module').then((m) => m.AdminHierarchiesModule) },
             { path: 'taxonomies', loadChildren: () => import('./hierarchies/admin-hierarchies.module').then((m) => m.AdminHierarchiesModule) },            
             { path: 'assets', loadChildren: () => import('./artifacts/admin-artifacts.module').then((m) => m.AdminArtifactsModule) },

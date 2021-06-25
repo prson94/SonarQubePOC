@@ -327,7 +327,7 @@ begin
     insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
         select	@scoreExecutionId as ExecutionID,
 		        @changeType as ChangeType,
-		        ROW_NUMBER() OVER(PARTITION BY M.AssetUid, M.EffectiveDate ORDER BY M.AssetUid, M.EffectiveDate) as RowNumber,
+		        ROW_NUMBER() OVER(ORDER BY M.AssetUid, M.EffectiveDate) as RowNumber,
 		        (
                 select	M.AssetUid,
 		    	        M.EffectiveDate,

@@ -706,6 +706,7 @@ export class WorkflowStepReassignment {
             this.ReassignType = reassignObject['@reassignType'];
             this.ObjectType = reassignObject['@objectType'];
             this.ObjectID = reassignObject['@objectId'];
+            this.ObjectUid = reassignObject['@objectUid'];
             this.ObjectName = reassignObject['@objectName'];
             this.ByResourceID = reassignObject['@byResourceId'];
             this.FromResourceID = reassignObject['@fromResourceId'];
@@ -714,6 +715,7 @@ export class WorkflowStepReassignment {
             this.ToResourceName = reassignObject['@toResourceName'];
             this.FromResourceName = reassignObject['@fromResourceName'];
             this.ReassignOn = reassignObject['@reassignOn'];
+            this.NewItemId = reassignObject['@newItemId'];
             this.IsBulkReassignment = (this.ReassignType == 'Resource' && this.ByResourceID != null);
         }
     }
@@ -722,6 +724,7 @@ export class WorkflowStepReassignment {
     ReassignType: string;
     ObjectType: string;
     ObjectID: number;
+    ObjectUid: string;
     ObjectName: string;
     ByResourceID: number;
     ByResourceName: string;
@@ -730,6 +733,7 @@ export class WorkflowStepReassignment {
     ToResourceID: number;
     ToResourceName: string;
     ReassignOn: string;
+    NewItemId: number;
 }
 
 export class WorkflowStepIssueDetail {
