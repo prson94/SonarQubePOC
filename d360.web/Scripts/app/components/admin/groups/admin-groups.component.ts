@@ -36,8 +36,8 @@ export class AdminGroupsComponent extends AdminBaseComponent {
         protected messagesService: MessagesObservableService
     ) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
-        this.areaName = "Groups";
-        this.adminHeading = "Security";
+        this.areaName = StringConstants.Section_Groups;
+        this.adminHeading = StringConstants.SubArea_Security;
         this.setCommonItems();
         this.theDeleteCallback = this.deleteService.bind(this);
         this.buildSecondaryNavigationForObject(0, 'GroupType');

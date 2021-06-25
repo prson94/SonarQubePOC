@@ -36,7 +36,7 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
         titleService: Title)
     {
         super(headerBreadcrumbService, titleService, secondaryNavService);        
-        this.areaName = "Rules";
+        this.areaName = StringConstants.Section_Rules;
         this.setCommonItems();
         this.theDeleteCallback = this.deleteRuleType.bind(this);
     }

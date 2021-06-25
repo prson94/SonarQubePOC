@@ -8,6 +8,7 @@ import { Report } from '../../../models/report.model';
 import { Title } from '@angular/platform-browser';
 import { StateService } from '../../../services/state.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { StringConstants } from '../../../static/string-constants';
 
 
 @Component({
@@ -121,6 +122,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
 
     constructor(private stateService: StateService, secondaryNavService: SecondaryNavService, protected reportsService: ReportsService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, secondaryNavService);        
+        this.areaName = StringConstants.Section_Dashboards;
         this.theDeleteCallback = this.deleteReport.bind(this);
     }
     

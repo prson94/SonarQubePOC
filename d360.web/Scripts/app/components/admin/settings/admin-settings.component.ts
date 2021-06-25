@@ -10,6 +10,7 @@ import { SelectItem } from 'primeng/api';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { DynamicButton } from '../../../models/secondaryNav.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { StringConstants } from '../../../static/string-constants';
 
 @Component({
     selector: 'admin-settings',
@@ -67,7 +68,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     ) {
 
         super(headerBreadcrumbService, titleService, secondaryNavService);        
-        this.areaName = "Settings";
+        this.areaName = StringConstants.Section_Settings;
         this.setCommonItems();
 
         this.load();
