@@ -1,0 +1,90 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Table.dbo.CompanyDomainGroup-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'CompanyDomainGroup')
+BEGIN
+	create table [dbo].CompanyDomainGroup (
+		ID int identity NOT NULL,
+		CompanyID int NOT NULL,
+		DomainSettingID int NOT NULL,
+		GroupName nvarchar(250) NOT NULL,
+		IsAdministrator bit NOT NULL,
+		constraint PK_CompanyDomainGroup primary key clustered ( [ID] asc )
+	)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+drop table if exists [dbo].[CompanyDomainGroup]
+		]]>
+	</rollback>
+  </changeSet>
+
+
+  <changeSet author="Pappas" id="Table.dbo.CompanyDomainGroup-Constraints-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_CompanyDomainGroup_CompanyDomainSetting')
+BEGIN
+	alter table [dbo].[CompanyDomainGroup]  with check add constraint [FK_CompanyDomainGroup_CompanyDomainSetting] foreign key (CompanyID, DomainSettingID) references [dbo].[CompanyDomainSetting] (CompanyID, DomainSettingID) on delete cascade;
+	alter table [dbo].[CompanyDomainGroup] check constraint [FK_CompanyDomainGroup_CompanyDomainSetting];
+END
+
+IF NOT EXISTS (select * from [sys].[default_constraints] where name = 'DF_CompanyDomainGroup_IsAdministrator')
+BEGIN
+	alter table [dbo].[CompanyDomainGroup] add constraint DF_CompanyDomainGroup_IsAdministrator default (0) for IsAdministrator;
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.foreign_keys where name = 'FK_CompanyDomainGroup_CompanyDomainSetting')
+BEGIN
+	alter table [dbo].[CompanyDomainGroup] drop constraint [FK_CompanyDomainGroup_CompanyDomainSetting]
+END
+
+IF EXISTS (select * from [sys].[default_constraints] where name = 'DF_CompanyDomainGroup_IsAdministrator')
+BEGIN
+	alter table [dbo].[CompanyDomainGroup] drop constraint DF_CompanyDomainGroup_IsAdministrator
+END
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.CompanyDomainGroup-Indices-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_CompanyDomainGroup_CompanyDomainSetting')
+BEGIN
+	create nonclustered index IX_CompanyDomainGroup_CompanyDomainSetting on dbo.CompanyDomainGroup ( CompanyID, DomainSettingID )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_CompanyDomainGroup_CompanyDomainSetting')
+BEGIN
+	drop index [IX_CompanyDomainGroup_CompanyDomainSetting] ON [dbo].[CompanyDomainGroup]
+END
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

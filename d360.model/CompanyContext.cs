@@ -78,6 +78,7 @@ namespace d360.model
             Storage = storage;
 
             CurrentCompanyID = context.CompanyID;
+            CurrentDomainSettingID = context.DomainSettingID;
             CurrentResourceID = context.ResourceID;
             CurrentResourceIsAdmin = context.IsAdministrator;
             CurrentCompanyDomain = context.CompanyPrefix;

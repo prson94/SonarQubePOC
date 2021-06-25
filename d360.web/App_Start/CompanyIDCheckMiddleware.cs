@@ -9,6 +9,7 @@ using System.Linq;
 using d360.extensions.caching;
 using System.Diagnostics;
 using d360.web.caching;
+using d360.core.entities;
 
 namespace d360.web
 {
@@ -17,6 +18,7 @@ namespace d360.web
         public class cd
         {
             public int CompanyID { get; set; }
+            public int DomainSettingID { get; set; }
             public string UrlPrefix { get; set; }
         }
 
@@ -26,23 +28,24 @@ namespace d360.web
             _next = next;
         }
 
-        async Task<Dictionary<string, int>> loadCache()
+        async Task<List<cd>> loadCache()
         {
             var key = "CompanyPrefixes";
             var cache = new MemoryCachingProvider();//RedisCachingProvider();
-            var dict = cache.GetItem<Dictionary<string, int>>(key);
+            var dict = cache.GetItem<List<cd>>(key);
 
             if (dict == null)
             {
                 using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
                 {
                     cnn.Open();
-                    dict = (await cnn.QueryAsync<cd>("select CompanyID, UrlPrefix from CompanyDomainSetting")).ToDictionary(k => k.UrlPrefix, v => v.CompanyID);                                        
+                    dict = (await cnn.QueryAsync<cd>("select CompanyID, DomainSettingID, UrlPrefix from CompanyDomainSetting")).ToList();                                        
                 }
                 cache.SetItem(key, dict, true, 5);
             }
             return dict;
         }
+
         public async Task Invoke(IDictionary<string, object> environment)
         {
             IOwinContext context = new OwinContext(environment);
@@ -56,16 +59,18 @@ namespace d360.web
                     host = host.Substring(0, host.IndexOf(".data3sixty")).ToLower();
                     searchHeaders = false;
                 }
-                if (searchHeaders || !dict.ContainsKey(host))
+                if (searchHeaders || !dict.Any(d => d.UrlPrefix == host))
                 {
                     if (!string.IsNullOrEmpty(context.Request.Headers["CompanyID"]))
                         host = context.Request.Headers["CompanyID"].ToLower();
                 }
                 
-                if (dict.ContainsKey(host))
+                if (dict.Any(d => d.UrlPrefix == host))
                 {
+                    var domainSetting = dict.Single(d => d.UrlPrefix == host);
                     context.Request.Set("CompanyDomain", host);
-                    context.Request.Set("CompanyID", dict[host]);
+                    context.Request.Set("CompanyID", domainSetting.CompanyID);
+                    context.Request.Set("DomainSettingID", domainSetting.DomainSettingID);
                 }
                 else
                 {

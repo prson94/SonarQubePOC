@@ -72,6 +72,7 @@ namespace d360.web
                             var ctx = req.GetOwinContext();
                             i.Instance.CompanyPrefix = ctx.Get<string>("CompanyDomain");
                             i.Instance.CompanyID = ctx.Get<int>("CompanyID");
+                            i.Instance.DomainSettingID = ctx.Get<int>("DomainSettingID");
                             i.Instance.ResourceID= ctx.Get<int>("ResourceID");
                             i.Instance.IsAdministrator = ctx.Get<bool>("IsAdministrator");
 

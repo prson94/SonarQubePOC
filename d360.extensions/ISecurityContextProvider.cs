@@ -12,6 +12,7 @@ namespace d360.extensions
     {
         string CompanyPrefix { get; set; }
         int CompanyID { get; set; }
+        int DomainSettingID { get; set; }
         int ResourceID { get; set; }
         bool IsAdministrator { get; set; }
         
