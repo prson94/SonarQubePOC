@@ -186,16 +186,23 @@ export class SiteUrlHelpers {
 
     // getAssetTypeUrl - Generates the url for an object based on its type
     static getAssetTypeUrl(type: string, uid: string): string {
+        let uri: string = "";
+
         switch (type.toUpperCase()) {
             case 'TAXONOMY':
             case 'TAXONOMYTYPE':
-                return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/structure/${uid}`;
+                uri = `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/structure/${uid}`;
+                break;
             case 'POLICY':
             case 'POLICYTYPE':
-                return `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/structure/${uid}`;
+                uri = `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/structure/${uid}`;
+                break;
             default:
-                return `${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${uid}`;
+                uri = `${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${uid}`;
+                break;
         }
+
+        return uri;
     }
 
     // convertClassicUrl - Converts a url from the legacy site to the new url used in angular
