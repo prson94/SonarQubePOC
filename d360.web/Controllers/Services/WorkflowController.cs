@@ -354,7 +354,7 @@ order by wi.StartedOn desc";
                 if (reg == null) return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow registration is missing or invalid");
 
                 //add new event for the requested object and change type                
-                Company.AssignActivityWorkflowToNewObject(reg, itemId, workflowId, objectId, objectType);
+                var issue = Company.AssignActivityWorkflowToNewObject(reg, itemId, workflowId, objectId, objectType);
 
                 //terminate current workflow
 
@@ -395,6 +395,7 @@ order by wi.StartedOn desc";
 
                 reassigned.Add(new XAttribute("byResourceId", Company.CurrentResourceID.ToString()));
                 reassigned.Add(new XAttribute("reassignOn", DateTime.UtcNow));
+                reassigned.Add(new XAttribute("newIssueId", issue.ID.ToString()));
 
                 fieldElement.Add(reassigned);
                 workflowItemStep.Fields = fieldElement.ToString();
@@ -2902,13 +2903,30 @@ order by wi.StartedOn desc";
                         {
                             int objectId = (int)reassigned["@objectId"];
                             var objectType = reassigned["@objectType"];
-                            var sql = @"Select D.DisplayValue as ObjectName
+                            var sql = @"Select A.Uid, D.DisplayValue as ObjectName
                         From
                         Asset A
                         cross apply dbo.GetAssetDisplayValueById(A.ID) D
                         where   A.Object = @obj and A.ObjectID = @objId";
-                            var objectName = Company.Query<string>(sql, new { obj = objectType.Value, objId = objectId }).FirstOrDefault();
-                            reassigned["@objectName"] = objectName;
+                            var objectDetails = Company.Query<dynamic>(sql, new { obj = objectType.Value, objId = objectId }).FirstOrDefault();
+                            reassigned["@objectName"] = objectDetails.ObjectName;
+                            reassigned["@objectUid"] = objectDetails.Uid;
+
+                            if (reassigned["@byResourceId"] != null)
+                            {
+                                userList.Add((int)reassigned["@byResourceId"]);
+                            }
+
+                            if (reassigned["@newIssueId"] != null)
+                            {
+                                var newWorkflowDetails = Company.Query<dynamic>(@"select i.Id, v.TypeId from workflow.item i 
+                                    inner join workflow.version v on v.id = i.versionid where [object] = 'Issue' and objectid = @newIssueId"
+                                    , new { newIssueId = (int)reassigned["@newIssueId"] }).FirstOrDefault();
+                                if (newWorkflowDetails != null)
+                                {
+                                    reassigned["@newItemId"] = newWorkflowDetails.Id;
+                                }
+                            }
                         }
                         else if (reassigned["@reassignType"] == "Resource" && reassigned["@toResourceId"] != null)
                         {
@@ -2941,7 +2959,7 @@ order by wi.StartedOn desc";
                     }
                 }
 
-                if (hasBulkReassignments)
+                if (userList.Any())
                 {
                     //get all the users at once
                     var users = Company.GlobalReportingResources.Where(r => userList.Contains(r.ResourceID)).ToList();
@@ -2993,7 +3011,8 @@ order by wi.StartedOn desc";
                                 {
                                     var resp = Company.ResponsibilityTypes.Where(x => x.ID == objectId).FirstOrDefault();
                                     previousObjectName = resp != null ? (" - " + resp.Name) : "[unknown]";
-                                }else if(objectType == "Specific Users")
+                                }
+                                else if (objectType == "Specific Users")
                                 {
                                     previousObjectName = "";
                                 }
