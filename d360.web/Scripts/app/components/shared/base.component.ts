@@ -1052,8 +1052,9 @@ export class BaseComponent {
                         this.secondaryNavService.setCurrentArea(data.DisplayValue, res, 'Definition');
                     });
 
+                    let areaRootUriSegment: string = (objectName.toLowerCase() == 'policy') ? SiteUrlHelpers.SITE_URL_POLICY_ROOT : SiteUrlHelpers.SITE_URL_MODEL_ROOT;
                     let areaBreadcrumb = new Breadcrumb(
-                        currentAreaName ? currentAreaName : res, `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`
+                        currentAreaName ? currentAreaName : res, `${areaRootUriSegment}/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`
                     );
                     this.breadcrumbsService.showBreadcrumb(areaBreadcrumb);
 
@@ -1066,14 +1067,14 @@ export class BaseComponent {
 
                     this.setObjectInfo(objectName, data.ObjectId, data.DisplayValue, data.AssetID, undefined, data.Uid);
 
-                    if (selected && selected.ID > 0) {
+                    if (selected && selected.ID > 0 && data && data.Uid) {
                         this.setObjectInfo(objectName, selected.ID, selected.DisplayValue, selected.AssetID, undefined, selected.Uid);
                         this.baseCrumbs = [];
                         this.checkParentBase(selected, this.preloadedTreeData, data.ObjectTypeId, objectName);
                         this.breadcrumbsService.showBreadcrumb(
                             new Breadcrumb(
                                 selected.DisplayValue,
-                                SiteUrlHelpers.getObjectUrl(objectTypeName, selected.ID),
+                                SiteUrlHelpers.getAssetUrl(data.Uid),
                                 true,
                                 objectName,
                                 selected.ID,
