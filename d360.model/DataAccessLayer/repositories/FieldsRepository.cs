@@ -1997,7 +1997,7 @@ from	IntersectType I
                         }
                         var ft2 = new FieldType();
 
-                        ft2.Name = "Related:" + it.uid;
+                        ft2.Name = "$Related:" + it.uid;
                         ft2.FriendlyName = f.Value.FieldTypeName;
                         ft2.Type = DataType.Relationship.ToString();
                         ft2.LookupObjectType = "IntersectType";

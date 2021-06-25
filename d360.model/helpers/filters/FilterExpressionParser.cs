@@ -354,15 +354,7 @@ namespace d360.model.helpers
             }
             if (token.Field.ToLower().StartsWith("$related:"))
             {
-                var intersectTypeUid = token.Field.ToLower().Replace("$related:", "");
-                var intersectUid = token.EscapedValueAsString;
-                var ftRelationship = fieldTypes.Where(x => x.Name.Replace("$", "").ToLower() == token.Field.Replace("$", "").ToLower()).FirstOrDefault();
-                var ftQueryName = fieldTypes.FirstOrDefault(x => x.LookupObjectID == ftRelationship.LookupObjectID && x.LookupObjectType == ftRelationship.LookupObjectType && ftRelationship.Name != x.Name).Name;
-                if (ftRelationship != null)
-                {
-                    string relField = ftQueryName.Replace("_IntersectTypeUid", "_Uid");
-                    return $"( {ftQueryName} = '{intersectTypeUid}' and {relField} = '{intersectUid.Replace("'","")}')";
-                }
+                return GetRelationshipsSQLForComplexField(token);
             }
             else
             {
@@ -392,10 +384,43 @@ namespace d360.model.helpers
                 }
 
             }
-
-            return "";
         }
 
+        private string GetRelationshipsSQLForComplexField(FilterToken token)
+        {
+            var intersectTypeUid = token.Field.ToLower().Replace("$related:", "");
+            var intersectUid = token.EscapedValueAsString;
+            var ftRelationship = fieldTypes.Where(x => x.Name.ToLower() == token.Field.ToLower()).FirstOrDefault();
+            var ftQueryName = fieldTypes.FirstOrDefault(x => x.LookupObjectID == ftRelationship.LookupObjectID && x.LookupObjectType == ftRelationship.LookupObjectType && ftRelationship.Name != x.Name).Name;
+            var relationshipFilterSQL = "";
+            if (ftRelationship != null)
+            {
+                string sqlOperator = "=";
+                string relField = ftQueryName.Replace("_IntersectTypeUid", "_Uid");
+                if (token.IsNullValue)
+                {
+                    sqlOperator = " is null ";
+                    if (token.@operator == "ne")
+                    {
+                        sqlOperator = " is not null";
+                    }
+
+                    relationshipFilterSQL = $"( {ftQueryName} {sqlOperator})";
+                }
+                else
+                {
+                    if (token.@operator == "ne")
+                    {
+                        sqlOperator = "<>";
+                    }
+
+                    relationshipFilterSQL = $"( {ftQueryName} = '{intersectTypeUid}' and {relField} {sqlOperator} '{intersectUid.Replace("'", "")}')";
+                }
+
+            }
+
+            return relationshipFilterSQL;
+        }
 
         private string[] GetTokens(ref string filterString)
         {

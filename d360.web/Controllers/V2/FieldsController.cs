@@ -2163,7 +2163,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
             try
             {
                 var asset = AssetRepository.GetAssetByUID(assetUid);
-                var assetType = AssetRepository.GetArtifactTypeByID(asset.AssetTypeID);
+                var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == asset.AssetTypeID);
                 var dbArgs = new DynamicParameters();
 
                 var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetType.ID && x.Name == fieldName);
@@ -2396,7 +2396,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     var fields = FieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid, true).ToList();
                     if (fields.Count > 0)
                     {
-                        var assettypeid = fields.Where(x=> x.AssetTypeID != null).FirstOrDefault().AssetTypeID;
+                        var assettypeid = fields.Where(x => x.AssetTypeID != null).FirstOrDefault().AssetTypeID;
                         assetTypeUid = Company.AssetTypes.FirstOrDefault(x => x.ID == assettypeid).uid;
                     }
 
