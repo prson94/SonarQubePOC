@@ -11,26 +11,14 @@ namespace d360.extensions.info
             
         }
 
-        public int CompanyID
-        {
-            get; set;
-        }
+        public int CompanyID { get; set; }
 
-        public int ResourceID
-        {
-            get; set;
-        }
+        public int DomainSettingID { get; set; }
 
-        public bool IsAdministrator
-        {
-            get; set;
-        }
+        public int ResourceID { get; set; }
 
-        public string CompanyPrefix
-        {
-            get;
+        public bool IsAdministrator { get; set; }
 
-            set;
-        }
+        public string CompanyPrefix { get; set; }
     }
 }

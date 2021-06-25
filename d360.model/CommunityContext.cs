@@ -32,6 +32,7 @@ namespace d360.model
             QueueSource = queueSource;
 
             CurrentCompanyID = context.CompanyID;
+            CurrentDomainSettingID = context.DomainSettingID;
             CurrentResourceID = context.ResourceID;
             CurrentResourceIsAdmin = context.IsAdministrator;
             CurrentCompanyDomain = context.CompanyPrefix;

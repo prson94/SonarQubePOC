@@ -17,6 +17,7 @@ namespace d360.model
         SqlConnection Connection { get; }
         string CurrentCompanyDomain { get; set; }
         int CurrentCompanyID { get; set; }
+        int CurrentDomainSettingID { get; set; }
         int CurrentResourceID { get; set; }
         bool CurrentResourceIsAdmin { get; set; }
         ObjectContext ObjectContext { get; }

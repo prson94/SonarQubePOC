@@ -310,7 +310,11 @@ namespace d360.web.Controllers
                     bool isCompanyAdministrator = false;
                     if (groups?.Any() == true)
                     {
-                        isCompanyAdministrator = Community.CompanyDomainGroups.Any(g => groups.Contains(g.GroupName) && g.IsAdministrator);
+                        isCompanyAdministrator = Community.CompanyDomainGroups.Any(g => 
+                            g.CompanyID == Community.CurrentCompanyID && 
+                            g.DomainSettingID == Community.CurrentDomainSettingID && 
+                            groups.Contains(g.GroupName) && 
+                            g.IsAdministrator);
                     }
 
                     if (resource == null)

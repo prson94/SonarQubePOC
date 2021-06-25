@@ -67,6 +67,7 @@ namespace d360.model
     {
         public int CurrentResourceID { get; set; }
         public int CurrentCompanyID { get; set; }
+        public int CurrentDomainSettingID { get; set; }
         public string CurrentCompanyDomain { get; set; }
         public bool CurrentResourceIsAdmin { get; set; }
 
