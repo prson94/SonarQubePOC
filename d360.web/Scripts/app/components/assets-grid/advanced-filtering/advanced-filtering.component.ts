@@ -23,6 +23,7 @@ import { Router } from "@angular/router";
 })
 export class AdvancedFilteringComponent implements OnChanges {
     @Input() loadIdentifier: string = "";
+    @Input() enableFilterSaving: boolean = true;
     @Input() gridType: string = "List";
     @Output() onChange = new EventEmitter();
     @Output() onLoad = new EventEmitter();
@@ -275,7 +276,11 @@ export class AdvancedFilteringComponent implements OnChanges {
         this.fields = tempFields;
 
         this.cdRef.markForCheck();
-        var loadedFilters = this.loadFilters();
+
+        let loadedFilters: AdvancedFilterFieldCondition[] = [];
+        if (this.enableFilterSaving) {
+            loadedFilters = this.loadFilters();
+        }
 
         this.fields.forEach((field) => {
             if (field.Type) {

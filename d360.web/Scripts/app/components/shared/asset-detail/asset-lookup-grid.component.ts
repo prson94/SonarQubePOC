@@ -1,6 +1,6 @@
 ﻿import { Component, Input, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy } from "@angular/core";
 import { LookupGrid, GridFilterColumn, LookupGridField } from "../../../models/grid-definition.model";
-import { Router } from "@angular/router";
+import { NavigationEnd, Router } from "@angular/router";
 import { SiteUrlHelpers } from "../../../static/site-url-helpers";
 import { BaseComponent } from "../base.component";
 import { ComplexLookupType, DetailField } from "../../../models/object-detail.model";
@@ -38,6 +38,8 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     loadSubscription: Subscription;
     currentFilters: any;
 
+    showAdvancedFilterField: boolean = true;
+
     simpleSearchTooltipHTML: string = `<p>Type to provide a search term. Matches will be found where the value of any column starts with the term or terms provided.</p><p>You can also use wildcards for more control over how the term is matched.
 *account* : Match on values which contain 'account'</p><p>All matches are case insensitive.</p>`;
 
@@ -52,6 +54,8 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         private cdRef: ChangeDetectorRef
     ) {
         super();
+        this.showAdvancedFilterField = !this.router.url.startsWith("/sidebar/visualization/");
+        this.areFiltersLoaded = true;
     }
 
     ngOnDestroy() {
@@ -256,7 +260,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         this.loadData(this.eventData);
     }
 
-    private get filtersLoadIdentifier() {
+    get filtersLoadIdentifier() {
         return "ComplexField" + this.assetUid + "|" + this.field.FieldName + "|" + this.field.DataType;
     }
 }

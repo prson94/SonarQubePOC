@@ -17,7 +17,7 @@ import { MultiInputFieldModule } from "../../shared/controls/multi-input-field/m
 import { PopupMenuModule } from "../../shared/controls/popup-menu/popup-menu.component";
 import { OverlayPanelModule } from "primeng/overlaypanel";
 import { FocusTrapModule } from "primeng/focustrap";
-
+import { DatePipe } from '@angular/common';
 
 @NgModule({
     imports: [
@@ -41,6 +41,7 @@ import { FocusTrapModule } from "primeng/focustrap";
         FocusTrapModule
     ],
     declarations: [AdvancedFilteringComponent, FilterItemComponent],
-    exports: [AdvancedFilteringComponent]
+    exports: [AdvancedFilteringComponent],
+    providers: [DatePipe]
 })
 export class AdvancedFiltersModule { }

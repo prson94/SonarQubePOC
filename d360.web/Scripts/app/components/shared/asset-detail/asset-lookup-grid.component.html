@@ -23,7 +23,7 @@
                              [infoTooltip]="simpleSearchTooltipHTML">
             </ig-search-field>
         </div>
-        <advanced-filtering [loadIdentifier]="filtersLoadIdentifier" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+        <advanced-filtering *ngIf="showAdvancedFilterField" [loadIdentifier]="filtersLoadIdentifier" [enableFilterSaving]="false" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
         <div class="grid-action-buttons">
             <button igButton
                     class="ig-lookup-grid-button"
