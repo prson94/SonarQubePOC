@@ -154,12 +154,13 @@ namespace d360.web.Controllers
                                     var colorData = await Company.QueryFirstOrDefaultAsync<string>($@"SELECT colorJSON FROM Asset A cross apply dbo.GetAssetColorJsonByColor(A.Color) WHERE A.ID = @ID ", new { ID = (detail != null ? detail.AssetID : 0) }).ConfigureAwait(false);
                                     var obj = JObject.Parse(colorData ?? "{}");
                                     var url = isReference && !string.IsNullOrEmpty(lookupUrl) ? lookupUrl : detail?.Url ?? "";
+                                    var text = ft.AllowMultipleValues ? item.Text : formattedValue;
 
                                     ro.Values.Add(new ReadOnlyFieldValue
                                     {
                                         TooltipContext = tooltipContext,
                                         TooltipID = item.Value,
-                                        Value = $"[{{\"name\":\"{item.Text}\", \"color\":\"{(string)obj["Value"] ?? "transparent"}\"}}]",
+                                        Value = $"[{{\"name\":\"{text}\", \"color\":\"{(string)obj["Value"] ?? "transparent"}\"}}]",
                                         TooltipType = ft.LookupObjectType,
                                         TooltipUrl = url
                                     });
@@ -172,11 +173,13 @@ namespace d360.web.Controllers
                                 {
                                     var detail = Company.GetObjectDetail(ft.LookupObjectType, item.Value);
                                     var url = isReference && !string.IsNullOrEmpty(lookupUrl) ? lookupUrl : detail?.Url ?? "";
+                                    var text = ft.AllowMultipleValues ? item.Text : formattedValue;
+
                                     ro.Values.Add(new ReadOnlyFieldValue
                                     {
                                         TooltipContext = tooltipContext,
                                         TooltipID = item.Value,
-                                        Value = item.Text,
+                                        Value = text,
                                         TooltipType = ft.LookupObjectType,
                                         TooltipUrl = url
                                     });
