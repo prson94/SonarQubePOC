@@ -70,6 +70,30 @@ END
 	</rollback>
   </changeSet>
 
+<changeSet author="Puneet Gupta" id="Table.dbo.AssetType-IX_AssetType_Uid_ObjectID-v4">
+    <comment>GOV-14285</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetType_Uid_ObjectID')
+BEGIN
+	CREATE NONCLUSTERED INDEX IX_AssetType_Uid_ObjectID ON [dbo].[AssetType] ([uid], [objectid])
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_AssetType_Uid_ObjectID')
+BEGIN
+	DROP INDEX IX_AssetType_Uid_ObjectID ON [dbo].[AssetType]
+END
+		]]>
+	</rollback>
+  </changeSet>
+  
+  
   <changeSet author="Core" id="Table.dbo.AssetType-AssetType_AfterInsert-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
