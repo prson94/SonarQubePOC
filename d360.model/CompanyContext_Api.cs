@@ -540,7 +540,7 @@ where EA.ExecutionID = @executionId and EA.Success is null;
                 Connection.Execute($@"
 update	T
 set		T.Success = 0,
-		T.[Message] = coalesce(T.[Message] + '; ', '') + '{errorPrefix} contains one or more fields with invalid lookup values: [' + S.FieldValue + ']'
+		T.[Message] = coalesce(T.[Message] + '; ', '') + '{errorPrefix} contains one or more fields [' + S.FieldName + '] with invalid lookup values: [' + S.FieldValue + ']'
 from	{targetTable} T
 		inner join	(
 					select F.* from FieldType FT
