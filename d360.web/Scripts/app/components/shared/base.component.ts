@@ -39,6 +39,9 @@ export class BaseComponent {
     public baseCrumbs: Breadcrumb[] = [];
     public baseTreeNodeArray: any[] = [];
 
+    public simpleSearchTooltipHTML: string = `<p>Type to provide a search term. Matches will be found where the value of any field starts with the term or terms provided.</p><p>You can also use wildcards for more control over how the term is matched.
+*term* : Match on values which contain 'term'</p><p>All matches are case insensitive.</p>`;
+
     // sidebar
     sidebarSubscription: Subscription;
     isVisitingSidebar = false;
