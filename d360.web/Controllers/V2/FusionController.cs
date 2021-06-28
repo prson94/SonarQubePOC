@@ -26,8 +26,7 @@ namespace d360.web.Controllers.V2
         Authorize
     ]
     public class FusionController : BaseV2ApiController
-    {
-        static string APIMACHINENAME = "API-GENERATED";
+    {        
         private IFusionRepository FusionRepository;
         public FusionController(ICommunityContext community, ICompanyContext company, IFusionRepository fusionRepository) : base(community, company)
         {

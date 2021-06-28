@@ -2889,8 +2889,7 @@ order by wi.StartedOn desc";
         {
             var ItemFields = detail.ItemFields;
             var userList = new List<int>();
-            bool hasBulkReassignments = false;
-
+            
             if (ItemFields != null && ItemFields.Reassigned != null)
             {
                 for (int i = 0; i < detail.ItemFields.Reassigned.Count; i++)
@@ -2929,8 +2928,7 @@ order by wi.StartedOn desc";
                             }
                         }
                         else if (reassigned["@reassignType"] == "Resource" && reassigned["@toResourceId"] != null)
-                        {
-                            hasBulkReassignments = true;
+                        {                            
                             userList.Add((int)reassigned["@toResourceId"]);
 
                             if (reassigned["@fromResourceId"] != null)
@@ -2943,8 +2941,7 @@ order by wi.StartedOn desc";
                             }
                         }
                         else if (reassigned["@reassignType"] == "Resource" && reassigned["@objectType"] != null)
-                        {
-                            hasBulkReassignments = true;
+                        {                            
                             userList.Add((int)reassigned["@toResourceId"]);
 
                             if (reassigned["@fromResourceId"] != null)
