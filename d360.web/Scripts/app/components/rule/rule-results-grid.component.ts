@@ -37,10 +37,6 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
 
     @ViewChild(RuleColumnFilterComponent, { static: false }) private filtersComponent: RuleColumnFilterComponent;
 
-    simpleSearchTooltipHTML: string = `<p>Type to provide a search term. Matches will be found where the value of any column starts with the term or terms provided.</p><p>You can also use wildcards for more control over how the term is matched.
-*account* : Match on values which contain 'account'</p>`;
-
-
     currentPageNumber: number = 0;
     sortField: string = "";
     sortOrder: SortOrder = SortOrder.None;

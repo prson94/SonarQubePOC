@@ -39,6 +39,9 @@ export class BaseComponent {
     public baseCrumbs: Breadcrumb[] = [];
     public baseTreeNodeArray: any[] = [];
 
+    public simpleSearchTooltipHTML: string = `<p>Type to provide a search term. Matches will be found where the value of any field starts with the term or terms provided.</p><p>You can also use wildcards for more control over how the term is matched.
+*term* : Match on values which contain 'term'</p><p>All matches are case insensitive.</p>`;
+
     // sidebar
     sidebarSubscription: Subscription;
     isVisitingSidebar = false;
@@ -1052,8 +1055,9 @@ export class BaseComponent {
                         this.secondaryNavService.setCurrentArea(data.DisplayValue, res, 'Definition');
                     });
 
+                    let areaRootUriSegment: string = (objectName.toLowerCase() == 'policy') ? SiteUrlHelpers.SITE_URL_POLICY_ROOT : SiteUrlHelpers.SITE_URL_MODEL_ROOT;
                     let areaBreadcrumb = new Breadcrumb(
-                        currentAreaName ? currentAreaName : res, `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`
+                        currentAreaName ? currentAreaName : res, `${areaRootUriSegment}/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`
                     );
                     this.breadcrumbsService.showBreadcrumb(areaBreadcrumb);
 
@@ -1066,14 +1070,14 @@ export class BaseComponent {
 
                     this.setObjectInfo(objectName, data.ObjectId, data.DisplayValue, data.AssetID, undefined, data.Uid);
 
-                    if (selected && selected.ID > 0) {
+                    if (selected && selected.ID > 0 && data && data.Uid) {
                         this.setObjectInfo(objectName, selected.ID, selected.DisplayValue, selected.AssetID, undefined, selected.Uid);
                         this.baseCrumbs = [];
                         this.checkParentBase(selected, this.preloadedTreeData, data.ObjectTypeId, objectName);
                         this.breadcrumbsService.showBreadcrumb(
                             new Breadcrumb(
                                 selected.DisplayValue,
-                                SiteUrlHelpers.getObjectUrl(objectTypeName, selected.ID),
+                                SiteUrlHelpers.getAssetUrl(data.Uid),
                                 true,
                                 objectName,
                                 selected.ID,

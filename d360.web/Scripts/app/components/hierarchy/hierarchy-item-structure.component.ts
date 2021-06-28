@@ -77,9 +77,6 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     @ViewChild("treeTable", { static: false }) treeTable: TreeTable;
     @ViewChild("inputBox", { static: false }) filterText: any;
 
-    simpleSearchTooltipHTML: string = `<p>Type to provide a search term. Matches will be found where the value of any column starts with the term or terms provided.</p><p>You can also use wildcards for more control over how the term is matched.
-*account* : Match on values which contain 'account'</p><p>All matches are case insensitive.</p>`;
-
     simpleFilterValue: string = '';
     areAllExpanded: boolean = false;
     loadNodesSub: Subscription;
@@ -188,7 +185,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         this.headerBreadcrumbService.getFolderTitle(this.navFolderName).then((res) => {
             this.headerBreadcrumbService.clearBreadcrumbs();
             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res, `${this.type}/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`));
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.assetType.Name, SiteUrlHelpers.getObjectUrl(this.objectType, this.assetType.ID), undefined, this.objectType, this.assetType.ID, undefined, undefined, true));
+            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.assetType.Name, SiteUrlHelpers.getAssetTypeUrl(this.objectType, this.assetTypeUid), undefined, this.objectType, this.assetType.ID, undefined, undefined, true));
 
             this.headerBreadcrumbService.getAssetFolderIcon(this.objectType, this.objectTypeId, this.currentAreaName ? this.currentAreaName : res)
                 .subscribe((icon) => {
