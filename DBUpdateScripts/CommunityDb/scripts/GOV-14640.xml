@@ -1,0 +1,40 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Puneet Gupta" id="GOV-14640">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+	if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Company' and COLUMN_NAME = 'SynchAgentLog')
+	begin
+		if exists (select sdc.name
+					from sys.default_constraints sdc
+					where object_name(sdc.parent_object_id) = 'Company' and sdc.name = 'DF_Company_SynchAgentLog'
+					)
+		begin
+			alter table [dbo].[Company] drop constraint DF_Company_SynchAgentLog;
+		end
+		
+		alter table [dbo].[Company] drop column [SynchAgentLog]
+	end
+	]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+	if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Company' and COLUMN_NAME = 'SynchAgentLog')
+	begin
+		alter table [dbo].[Company] add [SynchAgentLog] [bit]
+		
+		alter table [dbo].[Company] add  constraint [DF_Company_SynchAgentLog]  default ((0)) FOR [SynchAgentLog]
+	end
+	]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
