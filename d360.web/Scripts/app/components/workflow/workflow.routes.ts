@@ -24,7 +24,7 @@ const routes: Routes = [
                 path: 'form/:workflowId/:stepId/:itemId', component: WorkflowFormComponent
             }, 
             {
-                path: 'status/:workflowInstance', component: WorkflowViewDetailsComponent
+                path: 'details/:workflowInstance', component: WorkflowViewDetailsComponent
             },
         ]
     }
