@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="Table.api.ExecutionUser-v1">
+  <changeSet author="kmcnamee" id="Table.api.ExecutionUser-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -31,20 +31,28 @@ BEGIN
 		ObjectID int not null,
 		ObjectType varchar(50),
 		ObjectTypeID int not null
-	 CONSTRAINT [PK_ApiExecutionUser] PRIMARY KEY CLUSTERED 
+	 CONSTRAINT [PK_ApiExecutionUser] PRIMARY KEY NONCLUSTERED 
 	(
 		[ExecutionID] ASC,
 		[ItemNumber] ASC
 	)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
 	) ON [PRIMARY]
 END
+
+IF EXISTS (select * from sys.indexes  where name = 'PK_ApiExecutionUser' and type_desc = 'CLUSTERED')
+BEGIN
+	ALTER TABLE [api].[ExecutionUser] drop  CONSTRAINT [PK_ApiExecutionUser]
+	
+
+	ALTER TABLE [api].[ExecutionUser] ADD  CONSTRAINT [PK_ApiExecutionUser] PRIMARY KEY NONCLUSTERED 
+	(
+		[ExecutionID] ASC,
+		[ItemNumber] ASC
+	)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF) ON [PRIMARY]
+	
+ END
 		]]>
     </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
   </changeSet>
 
 </databaseChangeLog>
