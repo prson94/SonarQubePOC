@@ -147,6 +147,11 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     }
 
     loadData(event) {
+        this.eventData = event;
+
+        if (!this.areFiltersLoaded) {
+            return;
+        }
         this.isLoading = true;
         var params = {};
         if (event.rows) {
@@ -183,8 +188,6 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         else {
             delete params['filter'];
         }
-
-        this.eventData = event;
 
         if (this.loadSubscription) {
             this.loadSubscription.unsubscribe();
@@ -241,9 +244,11 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     }
 
     onFiltersLoaded() {
-
+        this.areFiltersLoaded = true;
+        this.loadData(this.eventData);
     }
 
+    areFiltersLoaded: boolean = false;
     newAdvancedFilters: Filters;
     eventData: any;
     public advancedFiltersChanged($event) {
@@ -252,7 +257,6 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     }
 
     private get filtersLoadIdentifier() {
-        if (!this.data) return "";
-        return "ComplexField" + this.assetUid + "|" + this.field.FieldName + "|" + this.data["ComplexFieldType"];
+        return "ComplexField" + this.assetUid + "|" + this.field.FieldName + "|" + this.field.DataType;
     }
 }

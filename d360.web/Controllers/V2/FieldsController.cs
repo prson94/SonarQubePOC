@@ -2201,11 +2201,26 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     }
                     if (filterName == "ResourceName")
                     {
+                        var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
+                        var definition = ftl.ParseOwnershipLookupDefinition();
 
                         dbArgs.Add("assettypeid", assetType.ID);
                         dbArgs.Add("assetId", asset.ID);
 
-                        var possibleOwnersSql = @"declare @id int = (select top 1 id from assettype where id = @assettypeid)
+                        string selectSqlStatement = @"
+                                select '[' + ResponsibilityTypeName + '] - ' + ResourceName as 'title', 
+                                ResourceName as 'value'
+                                from #OwnershipLookupAssets";
+
+                        if (!definition.ExpandGroupMembership)
+                        {
+                            selectSqlStatement = @"
+                                select distinct SecurityAssetName as 'title',
+						        SecurityAssetName as 'value'
+                                from #OwnershipLookupAssets";
+                        }
+
+                        var possibleOwnersSql = $@"declare @id int = (select top 1 id from assettype where id = @assettypeid)
 
                     drop table if exists #OwnershipLookupAssets;
                     create table #OwnershipLookupAssets (
@@ -2269,10 +2284,9 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     create index cix_OwnershipLookupAssetId on #OwnershipLookupAssets (AssetId);
 
                         select count(*) from #OwnershipLookupAssets
-
-                        select '[' + ResponsibilityTypeName + '] - ' + ResourceName as 'title', 
-                        ResourceName as 'value'
-                        from #OwnershipLookupAssets";
+                            
+                        {selectSqlStatement}
+                        ";
 
                         var gridReader = await Company.Database.Connection.QueryMultipleAsync(
                           new CommandDefinition(possibleOwnersSql,
@@ -2485,6 +2499,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                         {
                             c.Type.Relationship = new FieldTypeDataTypeRelationshipApiViewModel();
                             c.Type.Relationship.IntersectTypeUid = Company.IntersectTypes.FirstOrDefault(x => x.ID == f.LookupObjectID).uid;
+                            c.FriendlyName = c.FriendlyName.Replace("Related Item.", "");
                         }
 
                         if (string.IsNullOrEmpty(c.FriendlyName))

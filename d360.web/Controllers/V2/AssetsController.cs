@@ -1673,8 +1673,6 @@ namespace d360.web.Controllers.V2
                         {
                             result.Add("ScoringInfo", scoringInfo);
                         }
-                        result.Add("ComplexFieldType", fieldType.Type);
-
                     }
                     var response = Request.CreateResponse(HttpStatusCode.OK, result);
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));

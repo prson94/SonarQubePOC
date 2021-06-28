@@ -1941,7 +1941,6 @@ from	IntersectType I
                 List<FieldType> fields = Company.FieldTypes.Where(x => fieldTypeIds.Contains(x.ID)).AsNoTracking().ToList();
                 foreach (var f in mappings)
                 {
-
                     if (f.Value == null)
                     {
                         if (!forUiFiltering)
@@ -1962,13 +1961,13 @@ from	IntersectType I
                     {
                         var ft = fields.FirstOrDefault(x => x.ID == f.Value.FieldTypeID);
                         ft.Name = f.Key;
-
+                        ft.FriendlyName = !string.IsNullOrEmpty(f.Value.OverrideDisplayName) ? f.Value.OverrideDisplayName : f.Value.FieldTypeName;
                     }
                     else if (f.Value.FieldTypeName == "DisplayValue")
                     {
                         var ft = new FieldType();
                         ft.Name = f.Key;
-                        ft.FriendlyName = "Display Value";
+                        ft.FriendlyName = !string.IsNullOrEmpty(f.Value.OverrideDisplayName) ? f.Value.OverrideDisplayName : "Display Value";
                         ft.Type = DataType.Text.ToString();
                         fields.Add(ft);
                     }
@@ -1976,7 +1975,7 @@ from	IntersectType I
                     {
                         var ft = new FieldType();
                         ft.Name = f.Key;
-                        ft.FriendlyName = "Asset Path";
+                        ft.FriendlyName = !string.IsNullOrEmpty(f.Value.OverrideDisplayName) ? f.Value.OverrideDisplayName : "Asset Path";
                         ft.Type = DataType.Path.ToString();
                         fields.Add(ft);
                     }
@@ -1998,7 +1997,7 @@ from	IntersectType I
                         var ft2 = new FieldType();
 
                         ft2.Name = "$Related:" + it.uid;
-                        ft2.FriendlyName = f.Value.FieldTypeName;
+                        ft2.FriendlyName = !string.IsNullOrEmpty(f.Value.OverrideDisplayName) ? f.Value.OverrideDisplayName : f.Value.FieldTypeName;
                         ft2.Type = DataType.Relationship.ToString();
                         ft2.LookupObjectType = "IntersectType";
                         ft2.LookupObjectID = it.ID;
@@ -2008,7 +2007,7 @@ from	IntersectType I
                     {
                         var ft = new FieldType();
                         ft.Name = f.Key;
-                        ft.FriendlyName = f.Value.FieldTypeName;
+                        ft.FriendlyName = !string.IsNullOrEmpty(f.Value.OverrideDisplayName) ? f.Value.OverrideDisplayName : f.Value.FieldTypeName;
                         ft.Type = DataType.Text.ToString();
                         fields.Add(ft);
                     }

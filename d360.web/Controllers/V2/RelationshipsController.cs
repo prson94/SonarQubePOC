@@ -1711,6 +1711,12 @@ create table #relationshipCountMap(IntersectTypeUid uniqueidentifier, IsSubject 
                         for json path";
 
                 var models = await Company.GetDatabaseJsonAsObjectAsync<List<JObject>>(sql, dbArgs, ApiTimeout);
+
+                if (models == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.OK, new List<string>());
+                }
+
                 foreach (var item in models)
                 {
                     var objectUid = Guid.Parse(item.GetValue("Object")["Uid"].ToString());
