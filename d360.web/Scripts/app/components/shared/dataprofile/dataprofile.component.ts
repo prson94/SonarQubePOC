@@ -87,10 +87,10 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         }
         if (this.dataProfile.cardinalityDetail) {
             if (this.dataProfile.topK) {
-                this.topSamples = this.dataProfile.cardinalityDetail.filter((i) => this.dataProfile.topK.some(x => x === i.key));
+                this.topSamples = this.dataProfile.cardinalityDetail.filter((i) => this.dataProfile.topK.some((x) => x === i.key));
             }
             if (this.dataProfile.bottomK) {
-                this.bottomSamples = this.dataProfile.cardinalityDetail.filter((i) => this.dataProfile.bottomK.some(x => x === i.key));
+                this.bottomSamples = this.dataProfile.cardinalityDetail.filter((i) => this.dataProfile.bottomK.some((x) => x === i.key));
             }
         }
         
@@ -110,7 +110,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
             if (retval.length > 0) {
                 retval = retval + "<br/>"
             }
-            retval = retval + `Blank: ${this.dataProfile.blankCount} <span style="color: gray;">${((this.dataProfile.blankCount / this.dataProfile.sampleCount) * 100).toPrecision(2) }%</span>`;;
+            retval = retval + `Blank: ${this.dataProfile.blankCount} <span style="color: gray;">${((this.dataProfile.blankCount / this.dataProfile.sampleCount) * 100).toPrecision(2) }%</span>`;
         }
 
         return retval;
