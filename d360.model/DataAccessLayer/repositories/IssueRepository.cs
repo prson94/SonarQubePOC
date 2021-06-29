@@ -30,6 +30,7 @@ namespace d360.model.DataAccessLayer
             var dbArgs = new DynamicParameters();
 
             bool hasResourceParam = false;
+            bool limitToActiveWorkflows = false;
             var assetSQL = "";
             var resourceSQL = "";
             var issueTypeSQL = "";
@@ -47,9 +48,31 @@ namespace d360.model.DataAccessLayer
                                     from 
                                         IssueType IT
                                         LEFT JOIN 
-                                        [reporting].[Global_Resource] R on R.ResourceID = IT.UpdatedBy ";        
+                                        [reporting].[Global_Resource] R on R.ResourceID = IT.UpdatedBy ";
+
+            var workflowSql = $@"EXISTS (SELECT 1 FROM workflow.type T INNER JOIN workflow.EventRegistration E on E.TypeID = T.ID and E.[Object] = 'IssueType' and E.ObjectID = IT.ID and T.State = 1)";
+            var workflowObjectSql = $@"EXISTS (SELECT 1 FROM workflow.type T INNER JOIN workflow.EventRegistration E on E.TypeID = T.ID and E.[Object] = 'IssueType' and E.ObjectID = IT.ID and T.State = 1
+									WHERE (E.Condition.value('(./Conditions/Condition[@ContextualFieldID=""IssueObjectID""]/@Value)[1]', 'int') IS NULL) 
+                                    OR ((E.Condition.value('(./Conditions/Condition[@ContextualFieldID=""IssueObject""]/@Value)[1]', 'nvarchar(max)') = AT.[Object] 
+                                    AND E.Condition.value('(./Conditions/Condition[@ContextualFieldID=""IssueObjectID""]/@Value)[1]', 'int') = AT.ObjectID)))";
 
             issueTypeSQL = baseIssueTypesSql;
+
+            #region Limit By Active Workflows
+            var limitToActiveWorkflowsParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_limittoactiveworkflows");
+
+            if (limitToActiveWorkflowsParam.Key != null)
+            {
+                if (limitToActiveWorkflowsParam.Value != null && !string.IsNullOrWhiteSpace(limitToActiveWorkflowsParam.Value) && bool.TryParse(limitToActiveWorkflowsParam.Value, out limitToActiveWorkflows))
+                {
+
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid Limit To Active Workflows value provided");
+                }
+            }
+            #endregion
 
             #region Action Type
             var actionTypeUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_actiontypeuid");
@@ -99,9 +122,12 @@ namespace d360.model.DataAccessLayer
                              Inner Join AssetType AT on AT.ID = ITR.AssetTypeID
                              Inner Join Asset A on A.AssetTypeID = AT.ID";
 
+                var activeWorkflowSql = string.IsNullOrEmpty(assetTypeUidParam.Value) ? workflowSql : workflowObjectSql;
                 issueTypeSQL = $@"{baseIssueTypesSql}
                                     cross apply (select count(*) as Allocations from IssueTypeRelation R where R.IssueTypeID = IT.ID) C
-                                    where C.Allocations = 0";
+                                    {(string.IsNullOrEmpty(assetTypeUidParam.Value) ? "" : "left join AssetType AT on AT.uid = @assetTypeUid")}
+                                    where C.Allocations = 0
+                                    {(limitToActiveWorkflows ? "and " + activeWorkflowSql : "")}";
                 
                 if (assetTypeUidParam.Key != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value))
                 {                 
@@ -157,9 +183,12 @@ namespace d360.model.DataAccessLayer
                 if (assetConditions.Count > 0 || hasResourceParam)
                 {
                     var resourceJoinSQL = "";
+
+                    assetConditionStr += "Where " + (limitToActiveWorkflows ? workflowObjectSql : "1=1");
+
                     if (assetConditions.Count > 0)
                     {                        
-                        assetConditionStr = $"Where { string.Join(" AND ", assetConditions.ToArray())}";                        
+                        assetConditionStr = $"AND { string.Join(" AND ", assetConditions.ToArray())}";                        
                     }
 
                     if (hasResourceParam)
@@ -203,13 +232,15 @@ namespace d360.model.DataAccessLayer
             if(assetSQL.Trim() != "")
             {
                 assetSQL = $@"{assetSQL}
-                              {conditionStr}";
+                              {conditionStr}
+                              {(string.IsNullOrEmpty(conditionStr) ? $"WHERE " : "AND")} {(limitToActiveWorkflows ? workflowObjectSql : "")}";
             }
 
             if (resourceSQL.Trim() != "")
             {
                 resourceSQL = $@"{resourceSQL}
-                                {conditionStr}";
+                                {conditionStr}
+                                {(string.IsNullOrEmpty(conditionStr) ? $"WHERE " : "AND")} {(limitToActiveWorkflows ? workflowObjectSql : "")}";
             }
 
             var sql = $@"{issueTypeSQL} 

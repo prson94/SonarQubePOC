@@ -358,6 +358,7 @@ for json path";
             SwaggerParameter("_assetTypeUid", "Filter by provided asset type Uid.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_assetUid", "Filter by provided asset Uid.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_name", "Filter by provided name value.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_limitToActiveWorkflows", "Set to true to only return actions associated with an active workflow.", DataType = "boolean", ParameterType = "query", Required = false),
         ]
         public async Task<HttpResponseMessage> GetIssueTypes()
         {
@@ -471,6 +472,16 @@ for json path";
                 else
                 {
                     return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Resource Uid provided is invalid."));
+                }
+            }
+
+            var limitToActiveWorkflowsParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_limittoactiveworkflows");
+
+            if (limitToActiveWorkflowsParam.Key != null && !string.IsNullOrWhiteSpace(limitToActiveWorkflowsParam.Value))
+            {
+                if (!bool.TryParse(limitToActiveWorkflowsParam.Value, out _))
+                {
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Limit To Active Workflows value provided is not valid."));
                 }
             }
 

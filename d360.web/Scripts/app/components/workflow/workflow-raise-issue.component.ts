@@ -161,7 +161,6 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
                             } 
 
                             this.isLoading = false;
-
                             this.loadIssueTypes()   
                         }
                     );
@@ -170,11 +169,16 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
 
     private loadIssueTypes() {
         this.isLoading = true;
-        let params = { _assetUid: "", _assetTypeUid: "", _resourceUid: "" };
+        let params = { _assetUid: "", _assetTypeUid: "", _resourceUid: "", _limitToActiveWorkflows: "true" };
         if (this.selectedAssetUid) {
             params._assetUid = this.selectedAssetUid;
-            params._resourceUid = this.resourceUid;            
-        }        
+            params._resourceUid = this.resourceUid;    
+
+        }      
+        if (this.selectedAssetTypeUid) {
+            params._assetTypeUid = this.selectedAssetTypeUid; 
+        }
+
         this.workflowService.getWorkflowIssueTypes(this.selectedObjectType, this.selectedObjectId, params)
             .subscribe(result => {
                 this.issueTypes = result;
