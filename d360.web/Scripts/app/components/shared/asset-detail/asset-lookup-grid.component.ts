@@ -230,6 +230,15 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         return `<div class="score-pill-small ${className}"></div><span>${value}</span>`;
     }
 
+    colorFieldData(data: any, colName: string): any {
+        var value = data[colName] as string;
+        if (!value) {
+            return null;
+        }
+        var data = JSON.parse(value);
+        return data;
+    }
+
     toggleShowDescription() {
         this.showDescription = !this.showDescription;
         localStorage.setItem(`lookup_description_${CurrentResourceID}_${this.lookupField.fieldTypeId}`, this.showDescription.toString());

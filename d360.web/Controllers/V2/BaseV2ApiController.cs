@@ -20,7 +20,7 @@ namespace d360.web.Controllers.V2
     {
         ICompanyContext _company;
         public BaseV2ApiController(ICommunityContext community, ICompanyContext company)
-            : base(community,company)
+            : base(community, company)
 
         {
             _company = company;
@@ -246,7 +246,7 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        public string isPageSizeAndNumValid (IEnumerable<KeyValuePair<string, string>> queryParams)
+        public string isPageSizeAndNumValid(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var parameters = queryParams.ToList();
             long pageSize = 0;
@@ -733,6 +733,17 @@ namespace d360.web.Controllers.V2
                         document.SetCellStyle(rowIndex, colIndex, style);
                     }
                     break;
+                case "COLOR":
+                    var data = JsonConvert.DeserializeObject<dynamic>(valueString);
+                    if (data != null && data.Name != null)
+                    {
+                        document.SetCellValue(rowIndex, colIndex, data.Name.ToString());
+                    }
+                    else
+                    {
+                        document.SetCellValue(rowIndex, colIndex, "");
+                    }
+                    break;
                 default:
                     var doc = new HtmlAgilityPack.HtmlDocument();
                     doc.LoadHtml(value + "");
@@ -793,7 +804,7 @@ namespace d360.web.Controllers.V2
                 return (((row as IDictionary<string, object>)[$"{hardCodedName}"]) ?? "").ToString();
             }
         }
-       
+
         private void SetExcelColumnWidths(SLDocument document, List<FieldType> fields)
         {
             int index = 1;
@@ -885,14 +896,14 @@ namespace d360.web.Controllers.V2
                     status.StatusCode = System.Net.HttpStatusCode.BadRequest;
                     status.Message = $"Asset identifier with value {uid} does not correspond to a valid asset.";
                 }
-                else 
+                else
                 {
                     var canRead = Company.HasAssetPermission(asset.ID, permission);
                     if (!canRead)
                     {
                         status.StatusCode = System.Net.HttpStatusCode.Forbidden;
                         status.Message = $"You do not have permissions to view score history on this asset.";
-                    }               
+                    }
                 }
             }
 

@@ -445,18 +445,16 @@ namespace d360.model.helpers
                 if (@operator == "eq")
                 {
                     @operator = "ct";
-                    value = "\"Name\":\"" + value.ToString().Trim() + "\"";
+                    value = "%\"Name\":\"" + value.ToString().Trim() + "\"%";
                 }
 
                 if (@operator == "ne")
                 {
                     @operator = "nct";
-                    value = "\"Name\":\"" + value.ToString().Trim() + "\"";
+                    value = "%\"Name\":\"" + value.ToString().Trim() + "\"%";
                 }
 
-                stringBuilder.Append("ACJ.ColorJson");
-                stringBuilder.Append(GetSQLOperator(@operator));
-                stringBuilder.Append($"@filter_{parameterIdx}");
+                this.field = "ACJ.ColorJson";
             }
 
             if (sqlParamsRef != null)

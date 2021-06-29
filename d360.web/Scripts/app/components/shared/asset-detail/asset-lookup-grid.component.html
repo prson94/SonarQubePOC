@@ -100,6 +100,20 @@
                         <span *ngSwitchCase="'link'" style="display:block; word-wrap:break-word !important" [innerHtml]="item[column.datafield]"></span>
                         <span *ngSwitchCase="'html'" style="display:block; word-wrap:break-word !important" [innerHtml]="item[column.datafield]"></span>
                         <span *ngSwitchCase="'Score'" style="display:block; word-wrap:break-word !important" [innerHtml]="getScoreFieldHTML(item,column.datafield)"></span>
+                        <span *ngSwitchCase="'color'" style="display:block; word-wrap:break-word !important">
+                            <ng-container *ngIf="colorFieldData(item,column.datafield)">
+                                <span class="ref-list-color">
+                                    <span class="ig-colorfield-swatch" [style.background]="colorFieldData(item,column.datafield).Value"></span>
+                                    <span>{{colorFieldData(item,column.datafield).Name}}</span>
+                                </span>
+                            </ng-container>
+                            <ng-container *ngIf="!colorFieldData(item,column.datafield)">
+                                <span class="ref-list-color">
+                                    <span class="ig-colorfield-swatch empty"></span>
+                                    <span class="color-text">None</span>
+                                </span>
+                            </ng-container>
+                        </span>
                         <span *ngSwitchDefault style="display:block; word-wrap:break-word !important" [innerText]="item[column.datafield]"></span>
                     </div>
                 </td>
