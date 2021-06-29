@@ -4,7 +4,7 @@
     padding: 16px 11px 6px 11px;
     overflow-y: auto;
     -webkit-flex: 1 1 auto;
-    height: 100vh;
+    height: calc(100vh - 255px);
 
     .tooltip-icon {
         width: 32px;
@@ -45,11 +45,6 @@
         .sampleQuality {
             margin: 5px 0px 5px 0px;
 
-            .percentage {
-                color: @d3s-gray-2;
-                margin-left: 5px;
-            }
-
             .qualitySampleValue {
                 float: right;
                 padding-right: 5px;
@@ -66,11 +61,20 @@
             height: 12px;
             width: 100%;
         }
+
+        .percentage {
+            color: @d3s-gray-2;
+            margin-left: 5px;
+        }
     }
 
     .summaryRow {
         display: flex;
         flex-direction: row;
+
+        .ig-label {
+            word-break: break-word;
+        }
     }
 
     .effectiveDate {

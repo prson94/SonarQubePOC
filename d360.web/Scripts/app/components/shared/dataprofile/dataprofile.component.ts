@@ -71,6 +71,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         if (this.dataProfile.cardinalityDetail) {
             this.dataProfile.cardinalityDetail = this.dataProfile.cardinalityDetail.sort((a, b) => (b.count - a.count));
         }
+
         if (this.dataProfile.cardinalityDetail) {
             if (this.dataProfile.topK) {
                 this.topSamples = this.dataProfile.cardinalityDetail.filter((i) => this.dataProfile.topK.some((x) => x === i.key));
@@ -79,7 +80,10 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
                 this.bottomSamples = this.dataProfile.cardinalityDetail.filter((i) => this.dataProfile.bottomK.some((x) => x === i.key));
             }
         }
-        
+
+        if (this.dataProfile.shapesDetail) {
+            this.dataProfile.shapesDetail = this.dataProfile.shapesDetail.sort((a, b) => (b.count - a.count));
+        }
     }
 
     private getBackgroundSize(size: number, total: number) {

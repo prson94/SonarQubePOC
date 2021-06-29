@@ -23,7 +23,7 @@
                                 <div *ngIf="dataProfile.sampleCount" class="summaryRow">
                                     <label class="ig-label">Sample Row Count: </label>
                                     <span class="ig-value" style="margin-left:5px">{{dataProfile.sampleCount}}</span>
-                                    <span class="ig-value percentage">{{sampleCountPercentage | number : '1.0-2'}}%</span>
+                                    <span *ngIf="dataProfile.totalCount" class="ig-value percentage">{{sampleCountPercentage | number : '1.0-2'}}%</span>
                                     <ng-container *ngTemplateOutlet="sampleCountTooltip"></ng-container>
                                 </div>
                                 <div *ngIf="dataProfile.type" class="summaryRow">
@@ -31,7 +31,7 @@
                                     <span class="ig-value" style="margin-left:5px">{{dataProfile.type}}</span>
                                 </div>
                                 <div *ngIf="dataProfile.typeQualifier" class="summaryRow">
-                                    <label class="ig-label">Detected Type: </label>
+                                    <label class="ig-label" style="width: 95px">Detected Type: </label>
                                     <span class="ig-value" style="margin-left:5px">{{dataProfile.typeQualifier}}</span>
                                 </div>
                                 <div *ngIf="dataProfile.confidence" class="summaryRow">
@@ -97,7 +97,7 @@
                     </div>
                 </ig-property-group>
 
-                <ig-property-group *ngIf="topSamples"
+                <ig-property-group *ngIf="topSamples && topSamples.Count>0"
                                    [expanded]="true"
                                    [title]="'Top Values'"
                                    [shouldBePadded]="false"
@@ -124,7 +124,7 @@
                     </div>
                 </ig-property-group>
 
-                <ig-property-group *ngIf="bottomSamples"
+                <ig-property-group *ngIf="bottomSamples && bottomSamples.Count>0"
                                    [expanded]="true"
                                    [title]="'Bottom Values'"
                                    [shouldBePadded]="false"
@@ -290,7 +290,7 @@
 </div>
 
 <ng-template #sampleCountTooltip>
-    <span class="tooltip-icon" style="margin-left:5px">
+    <span *ngIf="dataProfile.totalCount" class="tooltip-icon">
         <i class="fa fa-question-circle" pTooltip="{{sampleCountPercentage | number : '1.0-2'}}% of Total Count" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
     </span>
 </ng-template>
