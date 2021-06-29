@@ -1,8 +1,4 @@
-﻿import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
-//import { DetailRow, DetailField, DetailFieldType, ComplexLookupType, NymType, Category } from '../../../models/object-detail.model';
-import { ObjectDetailService } from '../../../services/object-detail.service';
-import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { AssetService } from '../../../services/asset.service';
+﻿import { Input, Component } from '@angular/core';
 import { BaseComponent } from '../base.component';
 
 @Component({
@@ -16,12 +12,6 @@ export class SidePanelComponent extends BaseComponent{
     private showDataProfile: boolean;
     private showSidePanel: boolean;    
     private activePanelName: string;
-
-    constructor(
-        private cdRef: ChangeDetectorRef
-    ) {
-        super();
-    }
 
     ngOnInit() {
         this.showDataProfilePanel();

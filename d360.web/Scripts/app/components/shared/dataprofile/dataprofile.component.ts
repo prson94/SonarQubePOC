@@ -1,15 +1,10 @@
-﻿import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef, Output, EventEmitter, OnInit, ViewEncapsulation } from '@angular/core';
-import { DetailRow, DetailField, DetailFieldType, ComplexLookupType, NymType, Category } from '../../../models/object-detail.model';
-import { ObjectDetailService } from '../../../services/object-detail.service';
-import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { AssetService } from '../../../services/asset.service';
+﻿import { Input, Component, OnInit} from '@angular/core';
 import { BaseComponent } from '../base.component';
 
 @Component({
     selector: 'data-profile',
     templateUrl: './dataprofile.component.html',
-    styleUrls: ['dataprofile.less'],
-    providers: [ObjectDetailService, AssetService]
+    styleUrls: ['dataprofile.less']
 })
 
 export class DataProfileComponent extends BaseComponent implements OnInit {
@@ -41,19 +36,10 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     private showSampleSummary: boolean = false;
     private showSampleQuality: boolean = false;
     private showStatistics: boolean;
-    private nullBlankTooltipText: string;
-
-    constructor(
-        private objectDetailService: ObjectDetailService,
-        private assetService: AssetService,
-        private messagesService: MessagesObservableService,
-        protected cdRef: ChangeDetectorRef,
-    ) {
-        super();
-    }
+    private nullBlankTooltipText: string;    
 
     ngOnInit() { 
-        this.cdRef.markForCheck();
+        
         this.validPercentage = ((this.dataProfile.matchCount / this.dataProfile.totalCount) * 100);
 
         if (this.dataProfile.sampleCount && this.dataProfile.totalCount) {
