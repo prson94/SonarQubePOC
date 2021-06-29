@@ -59,6 +59,7 @@ namespace d360.web.Controllers
 
             var formattedValue = string.Empty;
             var value = string.Empty;
+            var allowAllSelected = false;
 
             var k = fields.SingleOrDefault(i => i.FieldTypeID == ft.ID);
             if (k != null)
@@ -67,6 +68,7 @@ namespace d360.web.Controllers
                 if (value == "0" && ft.AllowAllValue && ft.Type == DataType.Lookup.ToString())
                 {
                     formattedValue = ft.AllowAllLabel;
+                    allowAllSelected = true;
                 }
                 else
                 {
@@ -122,12 +124,10 @@ namespace d360.web.Controllers
                 else if (ft.Type == DataType.DateTime.ToString()) ro.DataType = "datetime";
                 else if (ft.Type == DataType.Boolean.ToString()) ro.DataType = "bool";
 
-                if (!string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue)
+                if (!string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue && !allowAllSelected)
                 {
-
                     ro.Values = new List<ReadOnlyFieldValue>();
                     ro.Value = "values";
-
                     var items = ((!string.IsNullOrEmpty(value)) ? value.Split(',') : new string[] { });
                     var itemIds = new List<long>();
                     var isReference = ft.LookupObjectType == "ReferenceItem";
