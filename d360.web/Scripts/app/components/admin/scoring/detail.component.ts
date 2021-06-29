@@ -22,6 +22,7 @@ import { RelationshipType } from '../../../models/relationship.model';
 import { ResponsibilityType } from '../../../models/responsibility-type.model';
 import { Predicate } from '../../../models/predicate.model';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
+import { StringConstants } from '../../../static/string-constants';
 
 @Component({
     selector: 'd3s-allocation-detail',
@@ -77,7 +78,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
-        this.areaName = "Scoring Definitions";
+        this.areaName = StringConstants.Section_Scoring;
     }
 
     ngOnInit() {

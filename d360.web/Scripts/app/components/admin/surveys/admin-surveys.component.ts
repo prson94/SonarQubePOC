@@ -8,6 +8,7 @@ import { SurveyType } from '../../../models/survey.model';
 import { catchError } from 'rxjs/operators';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { StringConstants } from '../../../static/string-constants';
 
 @Component({
     selector: 'd3s-admin-surveys',
@@ -106,7 +107,7 @@ export class AdminSurveysComponent extends AdminBaseComponent {
         titleService: Title,
         secondaryNavService: SecondaryNavService) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
-        this.areaName = "Surveys";
+        this.areaName = StringConstants.Section_Surveys;
         this.setCommonItems();
     }
 

@@ -10,6 +10,7 @@ import { ScoreType, ScoreTypeAllocation, ScoreTypeAllocationFormatted } from '..
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AssetTypeClass } from '../../../models/asset.model';
+import { StringConstants } from '../../../static/string-constants';
 
 @Component({
     selector: 'scoring-index-component',
@@ -42,8 +43,8 @@ export class ScoringIndexComponent extends AdminBaseComponent implements OnInit,
         titleService: Title,
         private router: Router) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
-        this.areaName = "Scoring Definitions";
-        this.tabTitle = 'Scoring Definitions';
+        this.areaName = StringConstants.Section_Scoring;
+        this.tabTitle = StringConstants.Section_Scoring;
         this.setCommonItems();
         this.setCommonSecondaryNavTabs(false);
         this.selection = new ScoreTypeAllocation();
@@ -106,9 +107,9 @@ export class ScoringIndexComponent extends AdminBaseComponent implements OnInit,
     getClassFriendlyName(atc: AssetTypeClass): string {
         switch (atc.toString()) {
             case 'BusinessAsset':
-                return 'Business Asset';
+                return StringConstants.AssetTypeClass_Business;
             case 'TechnicalAsset':
-                return 'Technical Asset';
+                return StringConstants.AssetTypeClass_Technical;
             default:
                 return atc.toString();
         }

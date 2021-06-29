@@ -9,6 +9,7 @@ import { AssetTypeService } from '../../../services/asset-type.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { forEach } from 'core-js/fn/array';
+import { StringConstants } from '../../../static/string-constants';
 
 @Component({
     selector: 'd3s-admin-models-component',
@@ -51,13 +52,13 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
 
             if (url.toUpperCase() == 'TAXONOMIES') {
                 this.assetTypeClass = AssetTypeClass.Model;
-                this.areaName = 'Models';
+                this.areaName = StringConstants.Section_Models;
                 this.tabTitle = 'Model Types';
                 this.objectType = 'TaxonomyType';
             }
             else if (url.toUpperCase() == 'POLICIES') {
                 this.assetTypeClass = AssetTypeClass.Policy;
-                this.areaName = 'Policies';
+                this.areaName = StringConstants.Section_Policies;
                 this.tabTitle = 'Policy Types';
                 this.objectType = 'PolicyType';
             }

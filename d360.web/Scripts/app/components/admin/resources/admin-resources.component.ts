@@ -3,6 +3,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
+import { StringConstants } from '../../../static/string-constants';
 
 
 @Component({
@@ -13,8 +14,8 @@ import { SecondaryNavService } from '../../../services/right-sidebar.service';
 export class AdminResourcesComponent extends AdminBaseComponent implements OnInit {
     constructor(headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, secondaryNavService: SecondaryNavService,) {
         super(headerBreadcrumbService, titleService);
-        this.areaName = "Users";
-        this.adminHeading = "Security";
+        this.areaName = StringConstants.Section_Users;
+        this.adminHeading = StringConstants.SubArea_Security;
         this.secondaryNavService = secondaryNavService;
 
         this.setCommonItems();

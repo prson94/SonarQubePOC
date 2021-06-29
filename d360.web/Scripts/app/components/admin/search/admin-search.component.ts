@@ -7,6 +7,7 @@ import { Title } from "@angular/platform-browser";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { IndexableType, IndexableStatus } from "../../../models/search-admin.model";
 import { TreeNode } from "primeng/api";
+import { StringConstants } from "../../../static/string-constants";
 
 
 @Component({
@@ -31,7 +32,7 @@ export class AdminSearchComponent extends AdminBaseComponent implements OnDestro
         titleService: Title
     ) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
-        this.areaName = "Search Index";
+        this.areaName = StringConstants.Section_Search;
         this.setCommonItems();
     }
 

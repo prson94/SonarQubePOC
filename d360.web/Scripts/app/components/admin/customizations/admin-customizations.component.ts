@@ -6,6 +6,7 @@ import { Title } from '@angular/platform-browser';
 import 'codemirror/mode/css/css.js';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { StringConstants } from '../../../static/string-constants';
 
 @Component({
     selector: 'd3s-admin-customizations-component',
@@ -48,7 +49,7 @@ export class AdminCustomizationsComponent extends AdminBaseComponent implements 
     ) {
 
         super(headerBreadcrumbService, titleService, secondaryNavService);
-        this.areaName = "Branding";
+        this.areaName = StringConstants.Section_Branding;
         this.setCommonItems();
         
     }
