@@ -1,4 +1,5 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
 using d360.core.enums;
 using System;
 using System.Collections.Generic;
@@ -418,7 +419,7 @@ namespace d360.model.helpers
                 LoadLookupSql();
             }
 
-            if (!this.isLookupField)
+            if (!this.isLookupField && fieldType.Type != DataType.Color.ToString())
             {
                 var fieldSql = GetColumnValueSyntax(fieldType.ID);
 
@@ -437,6 +438,25 @@ namespace d360.model.helpers
                 stringBuilder.Append($"@filter_{parameterIdx}");
 
                 this.AppendNullOperatorForNotOperators(fieldSql);
+            }
+
+            if (fieldType.Type == DataType.Color.ToString())
+            {
+                if (@operator == "eq")
+                {
+                    @operator = "ct";
+                    value = "\"Name\":\"" + value.ToString().Trim() + "\"";
+                }
+
+                if (@operator == "ne")
+                {
+                    @operator = "nct";
+                    value = "\"Name\":\"" + value.ToString().Trim() + "\"";
+                }
+
+                stringBuilder.Append("ACJ.ColorJson");
+                stringBuilder.Append(GetSQLOperator(@operator));
+                stringBuilder.Append($"@filter_{parameterIdx}");
             }
 
             if (sqlParamsRef != null)
@@ -698,7 +718,7 @@ namespace d360.model.helpers
             {
                 return $"Node.DisplayPath";
             }
-            else if(fieldType.Type == "Counter")
+            else if (fieldType.Type == "Counter")
             {
                 return $"F{fieldType.ID}.FormattedValue";
             }

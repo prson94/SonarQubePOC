@@ -360,7 +360,6 @@ namespace d360.model.helpers
             }
             else
             {
-
                 var fieldType = this.fieldTypes.FirstOrDefault(x => x.Name.ToLower() == token.Field);
 
                 if (fieldType != null && disallowedFieldTypes.Contains(fieldType.Type))
