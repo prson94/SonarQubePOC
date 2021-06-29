@@ -72,6 +72,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
     numberMax: number = null;
     numberMin: number = null;
 
+    defaultColorOptions: any[] = [];
+
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
     @ViewChild("multiInput", { static: false }) multiInputRef: MultiInputField;
     @ViewChild("dataTable", { static: false }) dataTable: Table;
@@ -87,6 +89,11 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.updateTopPosition();
             this.setSelectionVirtualScrollHeight();
         }, 25);
+
+        this.assetService.getAllColors().subscribe(x => {
+            this.defaultColorOptions = x;
+            this.cdRef.markForCheck();
+        });
     }
 
     ngOnChanges() {
@@ -1093,6 +1100,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         if (type === "Lookup" || type === "Tag" || type === "Relationship" || this.currentField.IsRelationship) {
+            if (!this.currentField.Type.Lookup.List.Uid && this.currentField.Name === "Color") {
+                return "color-picker";
+            }
+
             return "lookup";
         }
 

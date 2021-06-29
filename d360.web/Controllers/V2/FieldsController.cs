@@ -2494,6 +2494,16 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                         {
                             c.Type.Path = new FieldTypeDataTypePathApiViewModel();
                         }
+                        if (f.Type == DataType.Color.ToString())
+                        {
+                            c.Type.Lookup = new FieldTypeDataTypeLookupApiViewModel();
+                            c.Type.Lookup.List = new FieldTypeDataTypeLookupApiViewModel_List()
+                            {
+                                AllowMultipleValues = f.AllowMultipleValues,
+                            };
+                            c.FriendlyName = "Color";
+                            c.Name = "Color";
+                        }
 
                         if (f.Type == DataType.Relationship.ToString())
                         {

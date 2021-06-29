@@ -1891,7 +1891,22 @@ from	IntersectType I
             }
             else if (fieldType.Type == "RefListRelationship")
             {
-                var fields = Company.Query<FieldType>($@"
+                var fields = new List<FieldType>();
+
+                fields.Add(new FieldType
+                {
+                    Name = "Code",
+                    FriendlyName = "Code",
+                    Type = DataType.Text.ToString()
+                });
+
+                fields.Add(new FieldType
+                {
+                    Name = "Color",
+                    Type = DataType.Color.ToString()
+                });
+
+                fields.AddRange(Company.Query<FieldType>($@"
                     declare @object nvarchar(255)
                     declare @objectId int
                     declare @referenceId int
@@ -1919,25 +1934,7 @@ from	IntersectType I
 		                end
 
                    select * from fieldtype where assettypeid = @referenceid
-                        ", new { fieldTypeId = fieldType.ID, assetUid }).ToList();
-
-                fields.Add(new FieldType
-                {
-                    Name = "Code",
-                    FriendlyName = "Code",
-                    Type = DataType.Text.ToString()
-                });
-
-                fields.Add(new FieldType
-                {
-                    Name = "Color",
-                    Type = DataType.Color.ToString()
-                });
-
-                if (handleFiltersAsString)
-                {
-                    fields.ForEach(x => x.Type = DataType.Text.ToString());
-                }
+                        ", new { fieldTypeId = fieldType.ID, assetUid }).ToList());
 
                 return fields;
             }

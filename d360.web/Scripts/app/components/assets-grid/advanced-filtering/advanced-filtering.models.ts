@@ -485,6 +485,12 @@ export class AdvancedFilterFieldConditionCollection {
             if ((cond.fieldType === "Lookup" || cond.fieldType === "Tag" || cond.field === SystemFields.OwnedByFieldCode) && cond.value) {
                 let subConditions: AdvancedFilterFieldCondition[] = [];
                 valuesArr = cond.value as SelectItem[];
+
+                if (cond.field === "Color" && typeof cond.value === "string") {
+                    valuesArr = [];
+                    valuesArr.push({ value: cond.value });
+                }
+
                 valuesArr.filter((v) => v.value !== "").forEach((r) => {
                     if (cond.field === SystemFields.OwnedByFieldCode) {
                         if ((r.value as string).length === 36) {
