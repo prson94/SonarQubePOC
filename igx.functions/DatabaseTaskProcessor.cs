@@ -282,11 +282,6 @@ from    [queue].[Task] T
 
                                                             break;
                                                     #endregion
-                                                    case "FusionCache":
-                                                        #region
-                                                            companyConnection.Execute("exec fusion.ProcessFusionCacheInQueue @FusionID", new { FusionID = q.ObjectID }, null, 10800);    // 180 minute timeout.
-                                                        break;
-                                                    #endregion
                                                     case "Notify":
                                                         #region Email Notification
                                                         // this can be used for the comment tag notifications in the future
