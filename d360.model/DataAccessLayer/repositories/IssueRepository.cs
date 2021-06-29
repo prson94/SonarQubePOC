@@ -63,11 +63,7 @@ namespace d360.model.DataAccessLayer
 
             if (limitToActiveWorkflowsParam.Key != null)
             {
-                if (limitToActiveWorkflowsParam.Value != null && !string.IsNullOrWhiteSpace(limitToActiveWorkflowsParam.Value) && bool.TryParse(limitToActiveWorkflowsParam.Value, out limitToActiveWorkflows))
-                {
-
-                }
-                else
+                if (limitToActiveWorkflowsParam.Value != null && !string.IsNullOrWhiteSpace(limitToActiveWorkflowsParam.Value) && !bool.TryParse(limitToActiveWorkflowsParam.Value, out limitToActiveWorkflows))
                 {
                     throw new ArgumentException("Invalid Limit To Active Workflows value provided");
                 }
