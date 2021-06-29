@@ -32,7 +32,7 @@
     "codemirror": "5.59.4",
     "core-js": "^2.5.7",
     "gojs": "2.1.22",
-    "highcharts": "8.2.2",
+    "highcharts": "9.1.2",
     "lodash": "4.17.21",
     "ng-json-view": "2.2.0",
     "ng2-codemirror": "1.1.3",
