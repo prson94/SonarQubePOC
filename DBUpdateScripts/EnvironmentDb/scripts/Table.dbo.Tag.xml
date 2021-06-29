@@ -35,7 +35,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Puneet Gupta" id="Table.dbo.Tag-IX_Tag_Uid_State_Value-v2">
+  <changeSet author="Puneet Gupta" id="Table.dbo.Tag-Indices-v1">
     <comment>GOV-14285</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"

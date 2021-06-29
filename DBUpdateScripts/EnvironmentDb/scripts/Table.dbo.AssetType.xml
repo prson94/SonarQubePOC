@@ -70,7 +70,7 @@ END
 	</rollback>
   </changeSet>
 
-<changeSet author="Puneet Gupta" id="Table.dbo.AssetType-IX_AssetType_Uid_ObjectID-v4">
+<changeSet author="Puneet Gupta" id="Table.dbo.AssetType-Indices-v1">
     <comment>GOV-14285</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
