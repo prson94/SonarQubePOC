@@ -2391,13 +2391,13 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
                     var definition = ftl.ParseOwnershipLookupDefinition();
 
-                    response.items.Add(new FieldTypeApiViewModel { Name = "ResponsibilityTypeName", FriendlyName = "Responsibility", Type = new FieldTypeDataTypeApiViewModel() { Lookup = new FieldTypeDataTypeLookupApiViewModel() { List = new FieldTypeDataTypeLookupApiViewModel_List() } }, Category = "" });
-                    response.items.Add(new FieldTypeApiViewModel { Name = "ResourceName", FriendlyName = "Assigned User/Group", Type = new FieldTypeDataTypeApiViewModel() { Lookup = new FieldTypeDataTypeLookupApiViewModel() { List = new FieldTypeDataTypeLookupApiViewModel_List() } }, Category = "" });
+                    response.items.Add(new FieldTypeApiViewModel { Name = "ResponsibilityTypeName", FriendlyName = "Responsibility", Type = new FieldTypeDataTypeApiViewModel { Lookup = new FieldTypeDataTypeLookupApiViewModel { List = new FieldTypeDataTypeLookupApiViewModel_List() } }, Category = "" });
+                    response.items.Add(new FieldTypeApiViewModel { Name = "ResourceName", FriendlyName = "Assigned User/Group", Type = new FieldTypeDataTypeApiViewModel { Lookup = new FieldTypeDataTypeLookupApiViewModel { List = new FieldTypeDataTypeLookupApiViewModel_List() } }, Category = "" });
                     if (definition.DisplayAssignmentSource)
                     {
-                        response.items.Add(new FieldTypeApiViewModel { Name = "SecurityAssetName", FriendlyName = "Via", Type = new FieldTypeDataTypeApiViewModel() { Lookup = new FieldTypeDataTypeLookupApiViewModel() { List = new FieldTypeDataTypeLookupApiViewModel_List() } }, Category = "" });
+                        response.items.Add(new FieldTypeApiViewModel { Name = "SecurityAssetName", FriendlyName = "Via", Type = new FieldTypeDataTypeApiViewModel { Lookup = new FieldTypeDataTypeLookupApiViewModel { List = new FieldTypeDataTypeLookupApiViewModel_List() } }, Category = "" });
                     }
-                    response.items.Add(new FieldTypeApiViewModel { Name = "Context", FriendlyName = "Context", Type = new FieldTypeDataTypeApiViewModel() { Html = new FieldTypeDataTypeHtmlApiViewModel() }, Category = "" });
+                    response.items.Add(new FieldTypeApiViewModel { Name = "Context", FriendlyName = "Context", Type = new FieldTypeDataTypeApiViewModel { Html = new FieldTypeDataTypeHtmlApiViewModel() }, Category = "" });
                 }
                 if (fieldType.Type == DataType.RefListRelationship.ToString()
                     || fieldType.Type == DataType.ComplexRelationLookup.ToString())
