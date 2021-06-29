@@ -1,0 +1,33 @@
+﻿import { NgModule } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { HTTP_INTERCEPTORS, HttpClientModule } from "@angular/common/http";
+import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+import { ButtonModule } from 'primeng/button';
+import { DirectivesModule } from '../../../directives/directives.module';
+import { SidePanelComponent } from "./side-panel.component";
+import { DataProfileModule } from "../dataprofile/dataprofile.module";
+
+
+@NgModule({
+    imports: [        
+        CommonModule,            
+        HttpClientModule,                
+        ButtonModule,
+        DirectivesModule,
+        DataProfileModule
+    ],
+    declarations: [
+        SidePanelComponent,        
+    ],
+    exports: [
+        SidePanelComponent,
+    ],
+    providers: [
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernRequestInterceptor,
+            multi: true
+        },        
+    ]
+})
+export class SidePanelModule { }

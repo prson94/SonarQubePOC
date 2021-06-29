@@ -1,0 +1,16 @@
+﻿<div *ngIf="!showSidePanel">
+    <div style="padding: 16px 11px 6px 11px;height:100vh">
+        <button igButton *ngIf="dataProfile" icon="fa-bar-chart" (click)="showDataProfilePanel()" tooltip="Profiling" style="float:right;z-index:1000"></button>
+    </div>
+</div>
+<div *ngIf="showSidePanel">
+    <div>
+        <div style="padding: 16px 11px 6px 11px; margin: 0;">
+            <div style="height: 34px; letter-spacing: normal; word-break: break-word; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 8px; vertical-align:middle">
+                <span style="font-size: 18px; font-weight: 600; font-stretch: normal; font-style: normal; vertical-align: middle">{{activePanelName}}</span>
+                <button igButton icon="fa-arrow-circle-right" (click)="hideSidePanel()" tooltip="Hide Side Panel" style="float:right;z-index:1000"></button>
+            </div>
+        </div>        
+        <data-profile *ngIf="showDataProfile && dataProfile" [dataProfile]="dataProfile"></data-profile>
+    </div>
+</div>        
