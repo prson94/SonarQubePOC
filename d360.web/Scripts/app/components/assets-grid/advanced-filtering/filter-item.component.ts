@@ -90,7 +90,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.setSelectionVirtualScrollHeight();
         }, 25);
 
-        this.assetService.getAllColors().subscribe(x => {
+        this.assetService.getAllColors().subscribe((x) => {
             this.defaultColorOptions = x;
             this.cdRef.markForCheck();
         });

@@ -247,8 +247,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         if (!value) {
             return null;
         }
-        var data = JSON.parse(value);
-        return data;
+        return JSON.parse(value);
     }
 
     toggleShowDescription() {

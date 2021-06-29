@@ -556,8 +556,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get(url)
             .pipe(
-                map(response => <FieldTypeAPIModelField[]>response["items"]),
-                catchError(err => this.handleError(err))
+                map((response) => <FieldTypeAPIModelField[]>response["items"]),
+                catchError((err) => this.handleError(err))
             );
 
     }

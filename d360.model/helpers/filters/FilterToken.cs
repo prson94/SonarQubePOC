@@ -29,7 +29,7 @@ namespace d360.model.helpers
         private AssetType assetType { get; set; }
         private IntersectType intersectType { get; set; }
 
-        public bool IsComplexField { get; set; } = false;
+        public bool IsComplexField { get; set; }
 
         public bool IsOnlyOperator
         {

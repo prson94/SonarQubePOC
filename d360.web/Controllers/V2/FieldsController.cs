@@ -1,7 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
-using d360.core.queue;
 using d360.extensions;
 using d360.model;
 using d360.web.Filters;
@@ -9,12 +8,9 @@ using d360.web.Models;
 using Dapper;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -45,7 +41,7 @@ namespace d360.web.Controllers.V2
         IQueueSource QueueSource;
         IStorageProvider Storage;
         IFieldsRepository FieldsRepository;
-        IAssetRepository AssetRepository;
+        private readonly IAssetRepository AssetRepository;
 
         public FieldsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IFieldsRepository fieldsRepository, IAssetRepository assetRepository)
             : base(community, company)
@@ -2197,7 +2193,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                             items = gridReader.Read<dynamic>().ToList()
                         };
 
-                        return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, data)));
+                        return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, data))).ConfigureAwait(false);
                     }
                     if (filterName == "ResourceName")
                     {
@@ -2300,7 +2296,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                             items = gridReader.Read<dynamic>().ToList()
                         };
 
-                        return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, data)));
+                        return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, data))).ConfigureAwait(false);
                     }
 
                     if (filterName == "SecurityAssetName")
@@ -2347,12 +2343,12 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                             items = readItems
                         };
 
-                        return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, data)));
+                        return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, data))).ConfigureAwait(false);
                     }
                 }
 
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new List<string>())));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new List<string>()))).ConfigureAwait(false);
 
             }
             catch (Exception ex)
@@ -2360,7 +2356,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", prefix}});
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
             }
         }
 
@@ -2395,13 +2391,13 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
                     var definition = ftl.ParseOwnershipLookupDefinition();
 
-                    response.items.Add(new FieldTypeApiViewModel() { Name = "ResponsibilityTypeName", FriendlyName = "Responsibility", Type = new FieldTypeDataTypeApiViewModel() { Lookup = new FieldTypeDataTypeLookupApiViewModel() { List = new FieldTypeDataTypeLookupApiViewModel_List() } }, Category = "" });
-                    response.items.Add(new FieldTypeApiViewModel() { Name = "ResourceName", FriendlyName = "Assigned User/Group", Type = new FieldTypeDataTypeApiViewModel() { Lookup = new FieldTypeDataTypeLookupApiViewModel() { List = new FieldTypeDataTypeLookupApiViewModel_List() } }, Category = "" });
+                    response.items.Add(new FieldTypeApiViewModel { Name = "ResponsibilityTypeName", FriendlyName = "Responsibility", Type = new FieldTypeDataTypeApiViewModel() { Lookup = new FieldTypeDataTypeLookupApiViewModel() { List = new FieldTypeDataTypeLookupApiViewModel_List() } }, Category = "" });
+                    response.items.Add(new FieldTypeApiViewModel { Name = "ResourceName", FriendlyName = "Assigned User/Group", Type = new FieldTypeDataTypeApiViewModel() { Lookup = new FieldTypeDataTypeLookupApiViewModel() { List = new FieldTypeDataTypeLookupApiViewModel_List() } }, Category = "" });
                     if (definition.DisplayAssignmentSource)
                     {
-                        response.items.Add(new FieldTypeApiViewModel() { Name = "SecurityAssetName", FriendlyName = "Via", Type = new FieldTypeDataTypeApiViewModel() { Lookup = new FieldTypeDataTypeLookupApiViewModel() { List = new FieldTypeDataTypeLookupApiViewModel_List() } }, Category = "" });
+                        response.items.Add(new FieldTypeApiViewModel { Name = "SecurityAssetName", FriendlyName = "Via", Type = new FieldTypeDataTypeApiViewModel() { Lookup = new FieldTypeDataTypeLookupApiViewModel() { List = new FieldTypeDataTypeLookupApiViewModel_List() } }, Category = "" });
                     }
-                    response.items.Add(new FieldTypeApiViewModel() { Name = "Context", FriendlyName = "Context", Type = new FieldTypeDataTypeApiViewModel() { Html = new FieldTypeDataTypeHtmlApiViewModel() }, Category = "" });
+                    response.items.Add(new FieldTypeApiViewModel { Name = "Context", FriendlyName = "Context", Type = new FieldTypeDataTypeApiViewModel() { Html = new FieldTypeDataTypeHtmlApiViewModel() }, Category = "" });
                 }
                 if (fieldType.Type == DataType.RefListRelationship.ToString()
                     || fieldType.Type == DataType.ComplexRelationLookup.ToString())
@@ -2416,7 +2412,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
 
                     foreach (var f in fields)
                     {
-                        var c = new FieldTypeApiViewModel()
+                        var c = new FieldTypeApiViewModel
                         {
                             Name = f.Name,
                             FriendlyName = f.FriendlyName,
@@ -2431,9 +2427,10 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                             {
                                 c.AssetTypeUid = Company.AssetTypes.FirstOrDefault(x => x.Object == (f.LookupObjectType + "Type") && x.ObjectID == f.LookupObjectID).uid;
                             }
-                            c.Type.Lookup = new FieldTypeDataTypeLookupApiViewModel()
+
+                            c.Type.Lookup = new FieldTypeDataTypeLookupApiViewModel
                             {
-                                List = new FieldTypeDataTypeLookupApiViewModel_List()
+                                List = new FieldTypeDataTypeLookupApiViewModel_List
                                 {
                                     AllowMultipleValues = f.AllowMultipleValues
                                 }
@@ -2497,7 +2494,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                         if (f.Type == DataType.Color.ToString())
                         {
                             c.Type.Lookup = new FieldTypeDataTypeLookupApiViewModel();
-                            c.Type.Lookup.List = new FieldTypeDataTypeLookupApiViewModel_List()
+                            c.Type.Lookup.List = new FieldTypeDataTypeLookupApiViewModel_List
                             {
                                 AllowMultipleValues = f.AllowMultipleValues,
                             };
