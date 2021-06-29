@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.dbo.GetComplexLookupByAsset-v49">
-  <comment>GOV-15030</comment>
+  <changeSet author="TKlok" id="Procedure.dbo.GetComplexLookupByAsset-v50">
+  <comment>GOV-15132</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -545,7 +545,7 @@ set nocount on;
 					cross apply openjson(F.Definition, N'lax $') with (DataType varchar(25)) J;
 
 			insert into @columns ([text], datafield, columntype, uidfield, urlfield, description, columnwidth, sort)
-				select coalesce(OverrideDisplayName, FriendlyName, replace(FieldTypeName, 'Related Item.', '')), DataField, ColumnDataType, BaseField+'Uid', BaseField+'Url', Description, Width, Row_Number() over (order by RelationRowNumber, RowNumber) from @fields where Show = 1;
+				select coalesce(OverrideDisplayName, FriendlyName, replace(FieldTypeName, 'Related Item.', '')), DataField, ColumnDataType, BaseField+'Uid', BaseField+'Url', Description, Width, Row_Number() over (order by RowNumber, RelationRowNumber) from @fields where Show = 1;
 
 			insert into @datafields
 				select distinct DataField, FieldDataType, RowNumber from @fields where DataField is not null
@@ -1357,7 +1357,7 @@ set nocount on;
 				end
 			end
 			
-			if @countOnly = 0
+			if @countOnly = 0 or @filters <> ''
 			begin
 			set @tableStatement = @tableStatement + ' ' + @joinPrefix + ' join graph.AssetNodeDisplayPath H'+@rn+'P on H'+@rn+'P.ID = H'+@rn+'.ID' +
 								  case @obj
@@ -1719,7 +1719,7 @@ set nocount on;
 
 			if @alias is not null and @fieldVal is not null
 			begin
-				set @filters = replace(@filters,LOWER(@alias),@fieldVal)
+				set @filters = replace(@filters,LOWER(' '+ @alias+ ' '),' '+ @fieldVal+ ' ')
 			end
 
 			delete top (1) from #tempSelectTable
