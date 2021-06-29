@@ -131,6 +131,7 @@
                                     [(ngModel)]="model.FieldType.Type[currentType].IsEditable"
                                     label="Is Editable?"
                                     [ngModelOptions]="{standalone: true}"
+                                    (ngModelChange)="model.FieldType.Type[currentType].IsEditable=$event;onShowEditableChange($event);"
                                     [disabled]="isSettingDisabled('IsEditable')"></p-checkbox>
                     </div>
                     <div *ngIf="showIsListable">
