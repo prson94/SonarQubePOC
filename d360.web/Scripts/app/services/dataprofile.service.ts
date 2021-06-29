@@ -31,8 +31,8 @@ export class DataProfileService extends BaseObservableService {
             .http
             .get(`/api/v2/dataprofiles/${assetUid}`, httpOptions)
             .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err, true))
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err, true))
             );
     }
 }

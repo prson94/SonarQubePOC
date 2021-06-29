@@ -87,10 +87,10 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         }
         if (this.dataProfile.cardinalityDetail) {
             if (this.dataProfile.topK) {
-                this.topSamples = this.dataProfile.cardinalityDetail.filter(i => this.dataProfile.topK.some(x => x === i.key));
+                this.topSamples = this.dataProfile.cardinalityDetail.filter((i) => this.dataProfile.topK.some(x => x === i.key));
             }
-            if (this.dataProfile.topK) {
-                this.bottomSamples = this.dataProfile.cardinalityDetail.filter(i => this.dataProfile.bottomK.some(x => x === i.key));
+            if (this.dataProfile.bottomK) {
+                this.bottomSamples = this.dataProfile.cardinalityDetail.filter((i) => this.dataProfile.bottomK.some(x => x === i.key));
             }
         }
         
@@ -130,12 +130,12 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
         if (this.dataProfile.outlierCount) {
             if (this.dataProfile.matchCount) {
-                validBar += `#d83961 ${matchPercentage}%,`
+                validBar += `#d83961 ${matchPercentage}%,`;
             }
             outlierBar = `#d83961 ${matchPercentage + outlierPercentage}%, #7690a9 ${matchPercentage + outlierPercentage}%,`;
         } else {
             if (this.dataProfile.matchCount) {
-                outlierBar += `#7690a9 ${matchPercentage}%,`
+                outlierBar += `#7690a9 ${matchPercentage}%,`;
             }            
         }
         

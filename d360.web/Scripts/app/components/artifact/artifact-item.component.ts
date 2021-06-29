@@ -14,7 +14,7 @@ import { SiteUrlHelpers } from "../../static/site-url-helpers";
 import { finalize } from 'rxjs/operators';
 import { SiteMenuService } from '../../services/site-menu.service';
 import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
-import { DataProfileService } from '../../services/dataprofile.service'
+import { DataProfileService } from '../../services/dataprofile.service';
 
 declare var CompanySettings;
 
@@ -99,7 +99,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
                                 this.dataProfile = r.items[0];
                                 this.showDataProfile = true;
                             }
-                        }) 
+                        }); 
                 },
                 err => {
                     this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
