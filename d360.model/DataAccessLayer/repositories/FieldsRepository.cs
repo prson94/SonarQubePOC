@@ -1928,6 +1928,17 @@ from	IntersectType I
                     Type = DataType.Text.ToString()
                 });
 
+                fields.Add(new FieldType
+                {
+                    Name = "Color",
+                    Type = DataType.Color.ToString()
+                });
+
+                if (handleFiltersAsString)
+                {
+                    fields.ForEach(x => x.Type = DataType.Text.ToString());
+                }
+
                 return fields;
             }
             else
