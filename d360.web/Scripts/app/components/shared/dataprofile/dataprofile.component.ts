@@ -61,15 +61,15 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
     private sortSamples() {
         if (this.dataProfile.outlierDetail) {
-            this.dataProfile.outlierDetail = this.dataProfile.outlierDetail.sort((a, b) => (b.count - a.count))
+            this.dataProfile.outlierDetail = this.dataProfile.outlierDetail.sort((a, b) => (b.count - a.count));
         }
 
         if (this.dataProfile.sampleDetail) {
-            this.dataProfile.sampleDetail = this.dataProfile.sampleDetail.sort((a, b) => (b.count - a.count))
+            this.dataProfile.sampleDetail = this.dataProfile.sampleDetail.sort((a, b) => (b.count - a.count));
         }
 
         if (this.dataProfile.cardinalityDetail) {
-            this.dataProfile.cardinalityDetail = this.dataProfile.cardinalityDetail.sort((a, b) => (b.count - a.count))
+            this.dataProfile.cardinalityDetail = this.dataProfile.cardinalityDetail.sort((a, b) => (b.count - a.count));
         }
         if (this.dataProfile.cardinalityDetail) {
             if (this.dataProfile.topK) {
@@ -83,7 +83,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     }
 
     private getBackgroundSize(size: number, total: number) {
-        return "" + (size / total) * 100 +"% 100%"
+        return "" + (size / total) * 100 + "% 100%";
     }
 
     private getNullBlankToolTip() {
@@ -94,7 +94,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
         if (this.dataProfile.blankCount) {
             if (retval.length > 0) {
-                retval = retval + "<br/>"
+                retval = retval + "<br/>";
             }
             retval = retval + `Blank: ${this.dataProfile.blankCount} <span style="color: gray;">${((this.dataProfile.blankCount / this.dataProfile.sampleCount) * 100).toPrecision(2) }%</span>`;
         }
@@ -104,8 +104,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
     private getSampleBarChart() {
 
-        var validBar: string = "#7690a9 0%, "
-        var outlierBar: string = ""
+        var validBar: string = "#7690a9 0%, ";
+        var outlierBar: string = "";
 
         var matchPercentage = (this.dataProfile.matchCount / this.dataProfile.sampleCount) * 100;
         var outlierPercentage = (this.dataProfile.outlierCount / this.dataProfile.sampleCount) * 100;
@@ -126,7 +126,6 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         }
         
         return { "background-image": `linear-gradient(to right, ${validBar} ${outlierBar} #7690a9 100%)` };      
-        //return { "background-image": `linear-gradient(to right, #2e9b61 0%,#2e9b61 50%,#d83961 50%,#d83961 88%,#7690a9 88%,#7690a9 100%)` };      
     }
 
     private checkVisibility() {   
