@@ -465,32 +465,7 @@ namespace d360.web.Controllers.V2
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
             }
-        }
-
-        /// <summary>
-        /// Retrieves Data Profile results for a given asset.
-        /// </summary>
-        /// <param name="assetUid">The unique identifier of an asset.</param>
-        /// <returns>A list of Data Profile results</returns>
-        [
-            HttpGet,            
-            Route("{assetUid:Guid}/similar/{similarType}/"),
-            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
-            SwaggerProduces("application/json", "text/json", "application/xml", "text/xml", "application/octet-stream"),
-            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this asset is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            SwaggerParameter("_startDate", "Start date to get data profile data for. If _startDate and _endDate are not supplied the date defaults to the most recent date for the specified asset for which there is data. Otherwise the default is current date UTC.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_endDate", "End date to get data profile data for. If _startDate and _endDate are not supplied the date defaults to the most recent date for the specified asset for which there is data. Otherwise the default is current date UTC.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_includeChildAssets", " If true returns the data profile results for all descendant assets of the specified asset for the same date criteria.", DataType = "boolean", ParameterType = "query", Required = false),
-            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250. Maximum page size is 10,000", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
-        ]
-        public async Task<IHttpActionResult> GetMatchingAssets(Guid assetUid)
-        {
-            return null;
-        }
+        }        
 
         public WorkHttpStatus ValidateDataProfileUpsertRequest(List<DataProfileUpsertModel> models, bool IsInsert)
         {
