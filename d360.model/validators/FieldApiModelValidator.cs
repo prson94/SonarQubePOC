@@ -266,6 +266,12 @@ namespace d360.model.validators
                             }
                         }
                     }
+
+                    if (field.Type.Relationship.IsEditable == false && field.Type.Relationship.Description.Form.Trim().Length > 0)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. Form description must be empty for Relationship field when IsEditable set to false.");
+                    }
+
                 }
 
                 if (field?.Type?.Boolean != null)

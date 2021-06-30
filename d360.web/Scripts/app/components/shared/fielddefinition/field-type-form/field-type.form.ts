@@ -370,7 +370,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     } else if (this.lookups.Field_Relationships.length > 0) {
                         observables.push(this.cardinalRelationshipSelected(this.lookups.Field_Relationships[0].value));
                     }
-                    this.showDescription = false;
+                    if (!this.model.FieldType.Type["Relationship"].IsEditable) {
+                        this.showDescription = false;
+                        this.model.FieldType.Type["Relationship"].Description.Form = "";
+                    }
                 } catch (e) {
                     console.log(e);
                 }
@@ -1461,6 +1464,18 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     onShowDetailChange(event: boolean) {
         if (event == false && this.currentType == 'Score') {
             this.model.FieldType.Type[this.currentType].ShowIfEmpty = false;
+        }
+    }
+
+    onShowEditableChange(event: boolean) {
+        if (this.currentType == 'Relationship') {
+            if (event == true) {
+                this.showDescription = true;
+            }
+            else {
+                this.showDescription = false;
+                this.model.FieldType.Type[this.currentType].Description.Form = "";
+            }
         }
     }
 
