@@ -1518,13 +1518,15 @@ namespace d360.model
 
             if (asset != null)
             {
-                asset.UpdatedBy = CurrentResourceID;
-                asset.UpdatedOn = DateTime.UtcNow;
-
                 CreateWorkflowItemFieldUpdateExecution(assetType, asset); // Send scoring updates
             }
 
             SaveChanges();
+
+            if (asset != null)
+            {
+                Database.Connection.Execute("update asset set updatedby = @updatedBy, updatedOn = GETUTCDATE() where id = @id", new { updatedBy = CurrentResourceID, id = asset.ID });                
+            }
 
             //update asset table to trigger audit                    
             Database.Connection.Execute(
