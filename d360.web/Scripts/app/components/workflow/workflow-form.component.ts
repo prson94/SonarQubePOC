@@ -51,6 +51,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private isCompleted: boolean = false;
     private isUserAllowedToComplete: boolean = false;
     private isItemDeleted: boolean = false;
+    private isFormInvalid: boolean = false;
     private isReassignEnabled: boolean = false;
     private reassignType: string;
     private reassignAvailableTypes = [];
@@ -167,6 +168,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                 this.isLoading = false;
                 this.isCompleted = res.IsCompleted;
                 this.isItemDeleted = res.IsItemDeleted;
+                this.isFormInvalid = res.IsFormInvalid;
                 this.objectName = res.ObjectName;
                 this.objectType = res.ObjectType;
                 this.objectID = res.ObjectID;
