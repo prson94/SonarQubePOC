@@ -864,6 +864,7 @@
     <Content Include="Scripts\app\components\shared\controls\search-field\search-field.component.html" />
     <Content Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.html" />
     <None Include="Scripts\app\components\shared\controls\switch\switch.less" />
+    <Content Include="Scripts\app\components\shared\dataprofile\dataprofile.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\settingspanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\overview.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\savedfilter.component.html" />
@@ -910,6 +911,7 @@
     <Content Include="Scripts\app\components\shared\search\typeahead-search.component.html" />
     <Content Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.html" />
     <Content Include="Scripts\app\components\admin\tags\tags-usage-info.component.html" />
+    <Content Include="Scripts\app\components\shared\sidepanel\side-panel.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree-node.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\score-badge\score-badge.component.html" />
@@ -1053,6 +1055,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\property-group\property-group.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\search-field\search-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dataprofile\dataprofile.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dataprofile\dataprofile.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\tools\overview.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-object-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-relationships.component.ts" />
@@ -1083,6 +1087,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\sidepanel\side-panel.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\sidepanel\side-panel.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\simple-badge\simple-badge.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dayofweek-input\dayofweek-input.component.ts" />
     <Content Include="Scripts\app\components\shared\social\social-comment.component.html" />
@@ -1312,6 +1318,7 @@
     <Content Include="Scripts\app\components\shared\social\social-board.less" />
     <Content Include="Scripts\tsconfig.aot.json" />
     <Content Include="Scripts\tsconfig.json" />
+    <Content Include="Scripts\app\components\shared\dataprofile\dataprofile.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1320,6 +1327,7 @@
     </None>
     <TypeScriptCompile Include="Scripts\app\guards\redirect.guard.ts" />
     <TypeScriptCompile Include="Scripts\app\models\search-admin.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\dataprofile.service.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.prod.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.ts" />
     <TypeScriptCompile Include="Scripts\main.ts" />

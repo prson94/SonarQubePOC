@@ -1,0 +1,101 @@
+@import '../../../../../Content/styles/_Variables.less';
+
+.summarySection {
+    padding: 16px 11px 6px 11px;
+    overflow-y: auto;
+    -webkit-flex: 1 1 auto;
+    height: calc(100vh - 255px);
+
+    .tooltip-icon {
+        width: 32px;
+        color: @ig-midblue;
+        text-align: center;
+        cursor: pointer;
+        padding-top: 1px;
+    }
+
+    .group {
+        padding-top: 10px;
+        padding-bottom: 20px;
+        --validbar: @d3s-primary-green;
+        --invalidbar: @d3s-primary-red;
+        --otherbar: @d3s-primary-gray;
+
+        .validCircle {
+            background-color: var(--validbar);
+        }
+
+        .invalidCircle {
+            background-color: var(--invalidbar);
+        }
+
+        .otherCircle {
+            background-color: var(--otherbar);
+        }
+
+        .sampleRow {
+            background-image: linear-gradient(to right, #9edae5, #9edae5);
+            background-size: 1% 100%;
+            background-repeat: no-repeat;
+            margin-bottom: 5px;
+
+            .sampleKey {
+                padding-left: 10px;
+            }
+
+            .sampleValue {
+                float: right;
+                padding-right: 10px;
+
+                .sampleCount {
+                    font-weight: bold;
+                }
+
+                .samplePercentage {
+                    color: @d3s-gray-2;
+                }
+            }
+        }
+
+        .sampleQuality {
+            margin: 5px 0px 5px 0px;
+
+            .qualitySampleValue {
+                float: right;
+                padding-right: 5px;
+            }
+        }
+
+        .showMore {
+            color: #006fba;
+            cursor: pointer;
+        }
+
+        .sampleBarChart {
+            border-radius: 12px;
+            height: 12px;
+            width: 100%;
+        }
+
+        .percentage {
+            color: @d3s-gray-2;
+            margin-left: 5px;
+        }
+    }
+
+    .summaryRow {
+        display: flex;
+        flex-direction: row;
+
+        .ig-label {
+            word-break: break-word;
+        }
+    }
+
+    .effectiveDate {
+        float: right;
+        padding-top: 6px;
+        color: @d3s-gray-2;
+        margin-left: 5px;
+    }
+}

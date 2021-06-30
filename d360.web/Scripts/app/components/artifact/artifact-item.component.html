@@ -1,10 +1,15 @@
 <d3s-loading [isLoading]="isLoading"></d3s-loading>                                                
 <div *ngIf="!isLoading">                                    
     <div class="row">
-        <div class="col s12">
-            <div class="tile tile-detail">                               
-                <d3s-object-definition-tile [objectPermissions]="permissions" [objectID]="artifact?.ID" [useV2Api]="true" [objectType]="'Artifact'" [nymTypes]="artifact?.NymTypes" (onEditComplete)="editArtifact($event)"></d3s-object-definition-tile>
+        <div>
+            <div class="col s12" style="display:flex;">
+                <div class="tile tile-detail" style="flex:1;">
+                    <d3s-object-definition-tile [objectPermissions]="permissions" [objectID]="artifact?.ID" [useV2Api]="true" [objectType]="'Artifact'" [nymTypes]="artifact?.NymTypes" (onEditComplete)="editArtifact($event)"></d3s-object-definition-tile>
+                </div>
+                <div *ngIf="showDataProfile" class="tile tile-detail side-panel">
+                        <side-panel [dataProfile]="dataProfile" ></side-panel>
+                </div>                
             </div>
-        </div>
+        </div>             
     </div>                    
 </div> 

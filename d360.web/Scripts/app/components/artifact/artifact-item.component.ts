@@ -14,13 +14,14 @@ import { SiteUrlHelpers } from "../../static/site-url-helpers";
 import { finalize } from 'rxjs/operators';
 import { SiteMenuService } from '../../services/site-menu.service';
 import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
+import { DataProfileService } from '../../services/dataprofile.service';
 
 declare var CompanySettings;
 
 @Component({
     selector: 'd3s-artifact-item',
     templateUrl: './artifact-item.component.html',
-    providers: [ArtifactService, PermissionsService, SiteMenuService]
+    providers: [ArtifactService, PermissionsService, SiteMenuService, DataProfileService]
 })
 
 export class ArtifactItemComponent extends AssetGridBaseComponent implements OnInit, OnDestroy {
@@ -32,6 +33,8 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
     private messages: MessageBarItem[] = [];
     private showSurvey: boolean = false;
     private showSocialScoreBar: boolean = true;
+    private showDataProfile: boolean = false;
+    private dataProfile: any;
 
     constructor(
         private route: ActivatedRoute,
@@ -41,7 +44,8 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
         private titleService: Title,
         webAnalyticsService: WebAnalyticsService,
         headerBreadcrumbService: HeaderBreadcrumbService,
-        protected permissionsService: PermissionsService
+        protected permissionsService: PermissionsService,
+        private dataProfileService: DataProfileService
     ) {
         super(headerBreadcrumbService, secondaryNavService, webAnalyticsService);
     }
@@ -89,6 +93,13 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
                     this.buildSecondaryNavigation(this.artifact.Uid);
 
                     this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
+                    this.dataProfileService.getDataProfiles(this.artifact.Uid).subscribe(
+                        (r) => {
+                            if (r && r.items && r.items.length > 0) {
+                                this.dataProfile = r.items[0];
+                                this.showDataProfile = true;
+                            }
+                        }); 
                 },
                 err => {
                     this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
@@ -100,5 +111,9 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
     private editArtifact(e: any) {
         this.isLoading = true;
         this.load(e.ID, this.artifactTypeId);
+    }
+
+    private showDataProfilePanel() {
+        this.showDataProfile = !this.showDataProfile;
     }
 }

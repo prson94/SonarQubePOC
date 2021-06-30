@@ -33,6 +33,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
 import { AssetGridModule } from '../assets-grid/asset-grid.module';
 import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score.module';
+import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
 
 
 @NgModule({
@@ -69,7 +70,8 @@ import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score
         SharedAssetEditorsModule,
         TilesModule,
         WorkflowModule,
-        AssetGridModule
+        AssetGridModule,
+        SidePanelModule
     ],
     declarations: [        
         ArtifactComponent,
