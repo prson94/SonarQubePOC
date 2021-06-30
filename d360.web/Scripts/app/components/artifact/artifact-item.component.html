@@ -6,7 +6,7 @@
                 <div class="tile tile-detail" style="flex:1;">
                     <d3s-object-definition-tile [objectPermissions]="permissions" [objectID]="artifact?.ID" [useV2Api]="true" [objectType]="'Artifact'" [nymTypes]="artifact?.NymTypes" (onEditComplete)="editArtifact($event)"></d3s-object-definition-tile>
                 </div>
-                <div *ngIf="showDataProfile" class="tile tile-detail" style="margin-left: 15px; flex:0;height:100%;background-color:white;border-top-right-radius:0px; border-bottom-right-radius:0px;margin-right:-16px">
+                <div *ngIf="showDataProfile" class="tile tile-detail side-panel">
                         <side-panel [dataProfile]="dataProfile" ></side-panel>
                 </div>                
             </div>

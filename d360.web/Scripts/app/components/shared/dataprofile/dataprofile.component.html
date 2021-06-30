@@ -52,7 +52,7 @@
                         <div class="sampleBarChart" [ngStyle]="sampleBarChart">&nbsp;</div>
                         <div *ngIf="dataProfile.sampleCount && dataProfile.matchCount" class="sampleQuality">
                             <span>
-                                <span class="ig-colorfield-swatch" style="background-color:#2e9b61"></span><label class="ig-label" style="display:inline">Valid: </label>
+                                <span class="ig-colorfield-swatch validCircle"></span><label class="ig-label" style="display:inline">Valid: </label>
                             </span>
                             <span class="qualitySampleValue">
                                 <label style="font-weight: bold;">{{dataProfile.matchCount}}</label>
@@ -72,7 +72,7 @@
                         </div>
                         <div *ngIf="dataProfile.sampleCount && dataProfile.outlierCount" class="sampleQuality">
                             <span>
-                                <span class="ig-colorfield-swatch" style="background-color:#d83961"></span><label class="ig-label" style="display:inline">Invalid/Outliers: </label>
+                                <span class="ig-colorfield-swatch invalidCircle"></span><label class="ig-label" style="display:inline">Invalid/Outliers: </label>
                                 <ng-container *ngTemplateOutlet="outlierInfoTooltip"></ng-container>
                             </span>
                             <span class="qualitySampleValue">
@@ -83,7 +83,7 @@
                         </div>
                         <div *ngIf="dataProfile.sampleCount && dataProfile.nullCount && dataProfile.blankCount" class="sampleQuality">
                             <span>
-                                <span class="ig-colorfield-swatch" style="background-color:#7690a9"></span>
+                                <span class="ig-colorfield-swatch otherCircle"></span>
                                 <label *ngIf="dataProfile.nullCount && dataProfile.blankCount" class="ig-label" style="display: inline">Null/Blank: <ng-container *ngTemplateOutlet="nullBlankTooltip"></ng-container></label>
                                 <label *ngIf="!dataProfile.nullCount && dataProfile.blankCount" class="ig-label" style="display: inline">Blank: </label>
                                 <label *ngIf="dataProfile.nullCount && !dataProfile.blankCount" class="ig-label" style="display: inline">Null: </label>

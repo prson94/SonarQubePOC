@@ -17,6 +17,21 @@
     .group {
         padding-top: 10px;
         padding-bottom: 20px;
+        --validbar: @d3s-primary-green;
+        --invalidbar: @d3s-primary-red;
+        --otherbar: @d3s-primary-gray;
+
+        .validCircle {
+            background-color: var(--validbar);
+        }
+
+        .invalidCircle {
+            background-color: var(--invalidbar);
+        }
+
+        .otherCircle {
+            background-color: var(--otherbar);
+        }
 
         .sampleRow {
             background-image: linear-gradient(to right, #9edae5, #9edae5);

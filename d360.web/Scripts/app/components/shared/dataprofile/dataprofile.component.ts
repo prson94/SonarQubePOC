@@ -115,17 +115,17 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         var outlierPercentage = (this.dataProfile.outlierCount / this.dataProfile.sampleCount) * 100;
 
         if (this.dataProfile.matchCount) {
-            validBar = `#2e9b61 0%, #2e9b61 ${matchPercentage}%, `;
+            validBar = `var(--validbar) 0%, var(--validbar) ${matchPercentage}%, `;
         }
 
         if (this.dataProfile.outlierCount) {
             if (this.dataProfile.matchCount) {
-                validBar += `#d83961 ${matchPercentage}%,`;
+                validBar += `var(--invalidbar) ${matchPercentage}%,`;
             }
-            outlierBar = `#d83961 ${matchPercentage + outlierPercentage}%, #7690a9 ${matchPercentage + outlierPercentage}%,`;
+            outlierBar = `var(--invalidbar) ${matchPercentage + outlierPercentage}%, var(--otherbar) ${matchPercentage + outlierPercentage}%,`;
         } else {
             if (this.dataProfile.matchCount) {
-                outlierBar += `#7690a9 ${matchPercentage}%,`;
+                outlierBar += `var(--otherbar) ${matchPercentage}%,`;
             }            
         }
         

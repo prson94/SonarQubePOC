@@ -298,6 +298,35 @@ button.WhiteButton {
     box-shadow: 2px 2px 1px 0px rgba(0,0,0,0.15);
 }
 
+.side-panel {
+    margin-left: 15px;
+    flex: 0;
+    height: 100%;
+    background-color: white;
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+    margin-right: -16px;
+    height: calc(100vh - 190px);
+
+    .panel-header {
+        height: 34px;
+        letter-spacing: normal;
+        word-break: break-word;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding-right: 8px;
+        vertical-align: middle;
+
+        .header-label {
+            font-size: 18px;
+            font-weight: 600;
+            font-stretch: normal;
+            font-style: normal;
+        }
+    }
+}
+
 .tile-clickable {
     cursor: pointer;
 }
