@@ -10,48 +10,6 @@ using System.Web.Mvc;
 
 namespace d360.web.Models
 {
-    #region V1 API Result Sample Models
-
-    [DataContract]
-    public class ArtifactResultModel
-    {
-        [DataMember]
-        public int ID { get; set; }
-        [DataMember]
-        public string Url { get; set; }
-        [DataMember]
-        public Guid uid { get; set; }
-        [DataMember]
-        public Guid? ParentUid { get; set; }
-        [DataMember]
-        public int? ParentID { get; set; }
-        [DataMember]
-        public string FieldApiName1 { get; set; }
-        [DataMember]
-        public string FieldApiNameN { get; set; }
-    }
-
-    [DataContract]
-    public class TaxonomyResultModel
-    {
-        [DataMember]
-        public int ID { get; set; }
-        [DataMember]
-        public string Url { get; set; }
-        [DataMember]
-        public string Parent { get; set; }
-        [DataMember]
-        public int? ParentID { get; set; }
-        [DataMember]
-        public string ParentUrl { get; set; }
-        [DataMember]
-        public string FieldApiName1 { get; set; }
-        [DataMember]
-        public string FieldApiNameN { get; set; }
-    }
-
-    #endregion
-
     [DataContract(Name = "artifacts", Namespace = constants.NAMESPACE)]
     public class ArtifactModelRequestList : List<ArtifactModelRequest> { }
 
@@ -60,25 +18,6 @@ namespace d360.web.Models
     public class ArtifactModelRequest : Dictionary<string, object> { }
 
 
-
-    public class CommentRequestData
-    {
-        public string ObjectType { get; set; }
-
-        public int? ObjectID { get; set; }
-
-        public int Skip { get; set; }
-
-        public int Take { get; set; }
-
-        public int DateFilter { get; set; }
-
-        public int TypeFilter { get; set; }
-
-        public string SearchFilter { get; set; }
-
-        public bool IsNg { get; set; }
-    }
 
     public class CountModel
     {
@@ -117,18 +56,7 @@ namespace d360.web.Models
 
         public string Category { get; set; }
     }
-
-    [DataContract(Namespace = constants.NAMESPACE)]
-    public class DisplayField
-    {
-        [DataMember]
-        public string Name { get; set; }
-        [DataMember]
-        public string FriendlyName { get; set; }
-        [DataMember]
-        public string Value { get; set; }
-    }
-
+    
     public class FieldLoader
     {
         public List<Field> GetFormDynamicFieldValues(SystemObjects type, int id, ICollection<FieldType> fieldTypes, FormCollection form, HttpServerUtilityBase Server = null, bool ignoreFieldIfNull = true)
@@ -221,18 +149,6 @@ namespace d360.web.Models
         public Guid Uid { get; set; }
     }
 
-    [DataContract]
-    public class GridColumnGroup
-    {
-        [DataMember]
-        public string text { get; set; }
-
-        [DataMember]
-        public string align { get; set; }
-
-        [DataMember]
-        public string name { get; set; }
-    }
 
     [DataContract]
     public class GridColumn

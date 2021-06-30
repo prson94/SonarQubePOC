@@ -882,11 +882,26 @@ order by r.Name";
                     throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Please select a predicate for this relationship.");
                 }
 
+                var newSubjectCardinality = parseEnumField<Cardinality>(form, "SubjectCardinality");
+                var newObjectCardinality = parseEnumField<Cardinality>(form, "ObjectCardinality");
+                if (
+                    (model.SubjectCardinality == Cardinality.Many && model.ObjectCardinality == Cardinality.One) &&
+                    (newSubjectCardinality != Cardinality.Many || newObjectCardinality != Cardinality.One)
+                    )
+                {
+                    var fieldFromRelationshipTypeString = DataType.FieldFromRelationship.ToString();
+                    // We need to perform a check here to validate that this relationship type is NOT used on any FieldFromRelationship field types.
+                    if (Company.Any<FieldType>(ft => ft.Type == fieldFromRelationshipTypeString && ft.LookupObjectType == "IntersectType" && ft.LookupObjectID == model.ID))
+                    {
+                        return jsonException("You are not allowed to update this relationship type as there are existing field types that depend on it.", HttpStatusCode.Conflict);
+                    }
+                }
+
                 model.Subject = subjectInfo[0];
-                model.SubjectCardinality = parseEnumField<Cardinality>(form, "SubjectCardinality");
+                model.SubjectCardinality = newSubjectCardinality;
                 model.SubjectID = int.Parse(subjectInfo[1]);
                 model.Object = objectInfo[0];
-                model.ObjectCardinality = parseEnumField<Cardinality>(form, "ObjectCardinality");
+                model.ObjectCardinality = newObjectCardinality;
                 model.ObjectID = int.Parse(objectInfo[1]);
                 model.PredicateID = int.Parse(predicate);
 

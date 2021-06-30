@@ -35,6 +35,29 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Puneet Gupta" id="Table.dbo.Tag-Indices-v1">
+    <comment>GOV-14285</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Tag_Uid_State_Value')
+BEGIN
+	CREATE NONCLUSTERED INDEX IX_Tag_Uid_State_Value ON [dbo].[Tag] ([uid], [State], [Value])
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_Tag_Uid_State_Value')
+BEGIN
+	DROP INDEX IX_Tag_Uid_State_Value ON [dbo].[Tag]
+END
+		]]>
+	</rollback>
+  </changeSet>
+
   <changeSet author="Core" id="Table.dbo.Tag-Tag_AfterUpdate-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"

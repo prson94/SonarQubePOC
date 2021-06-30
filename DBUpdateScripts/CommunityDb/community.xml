@@ -94,7 +94,8 @@
   <include file="scripts/GOV-14666.xml"/>  <!-- Remove setting WorkflowDigestEmailEnabled (59) -->
   <include file="scripts/GOV-14831.xml"/>  <!-- Drop backup table [dbo].[CommonQuery_backup]-->
   <include file="scripts/GOV-14838.xml"/>  <!-- Rename tables dbo.CompanyHelpResource and dbo.HelpResource-->
-
+  <include file="scripts/GOV-14640.xml"/>  <!-- Removing dbo.Company synchagentlog column-->
+  <include file="scripts/GOV-11731.xml"/>  <!-- Removing Rename Fusion definitions tables in previous sprint-->
 	<!-- Tables -->
   <include file="scripts/Table.dbo.CompanyDomainGroup.xml"/>
 </databaseChangeLog>

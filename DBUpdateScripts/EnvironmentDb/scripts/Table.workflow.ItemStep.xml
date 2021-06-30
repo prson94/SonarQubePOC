@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.workflow.ItemStep-v1">
+  <changeSet author="kmcnamee" id="Table.workflow.ItemStep-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -50,6 +50,11 @@ END
 IF NOT EXISTS (select * from sys.xml_indexes where name = 'PXML_WorkflowItemStep_Fields')
 BEGIN
 	CREATE PRIMARY XML INDEX [PXML_WorkflowItemStep_Fields] ON [workflow].[ItemStep] ( [Fields] )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ItemStep_ItemIDStepID')
+BEGIN
+	CREATE NONCLUSTERED INDEX IX_ItemStep_ItemIDStepID ON [workflow].[ItemStep] ([ItemID],[StepID])
 END
 		]]>
     </sql>

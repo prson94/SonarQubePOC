@@ -60,12 +60,10 @@ namespace d360.model
         DbSet<FieldType> FieldTypes { get; set; }
         DbSet<FieldWithRelation> FieldWithRelations { get; set; }
         DbSet<FollowDetail> FollowDetails { get; set; }
-        DbSet<Follow> Follows { get; set; }
-        DbSet<FusionAgentError> FusionAgentErrors { get; set; }
+        DbSet<Follow> Follows { get; set; }        
         DbSet<FusionAttribute> FusionAttributes { get; set; }
         DbSet<FusionAttributeType> FusionAttributeTypes { get; set; }
-        DbSet<FusionExecution> FusionExecutions { get; set; }
-        DbSet<FusionStatusLog> FusionStatusLogs { get; set; }
+        DbSet<FusionExecution> FusionExecutions { get; set; }        
         DbSet<Fusion> FusionTypeConfigurations { get; set; }
         DbSet<FusionType> FusionTypes { get; set; }
         DbSet<GlobalReportingResource> GlobalReportingResources { get; set; }

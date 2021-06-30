@@ -6,6 +6,7 @@ import { Title } from '@angular/platform-browser';
 import { ExportTemplateService } from '../../../services/export-template.service';
 import { ExportTemplate } from '../../../models/export-template.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { StringConstants } from '../../../static/string-constants';
 
 @Component({
     selector: 'd3s-admin-export-templates-component',
@@ -138,7 +139,7 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
             protected messagesService: MessagesObservableService,
         ) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
-        this.areaName = "Export Templates";
+        this.areaName = StringConstants.Section_ExportTemplates;
         this.setCommonItems();
                 
         this.setCommonSecondaryNavTabs(false);

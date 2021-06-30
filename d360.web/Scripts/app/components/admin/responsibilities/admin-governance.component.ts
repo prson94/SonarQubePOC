@@ -7,6 +7,7 @@ import { FormMode } from "../../../models/form.model";
 import { AdminBaseComponent } from "../admin-base.component";
 import { Title } from "@angular/platform-browser";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
+import { StringConstants } from "../../../static/string-constants";
 
 @Component({
     selector: "admin-governance",
@@ -26,8 +27,8 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
 
     constructor(secondaryNavService: SecondaryNavService, private responsibilityTypeService: ResponsibilityTypeService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, protected messagesService: MessagesObservableService) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
-        this.areaName = "Responsibilities";
-        this.adminHeading = "Security";
+        this.areaName = StringConstants.Section_Responsibilities;
+        this.adminHeading = StringConstants.SubArea_Security;
         this.tabTitle = "Responsibility Types";
         this.theDeleteCallback = this.doDelete.bind(this);
         this.load();

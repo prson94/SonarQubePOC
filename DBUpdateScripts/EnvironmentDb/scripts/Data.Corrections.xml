@@ -1294,4 +1294,48 @@ from	metrics.AssetVersion V
 	]]>
 		</sql>
 	</changeSet>
-</databaseChangeLog>
+
+	<changeSet author="Puneet Gupta" id="Data.Corrections.GOV-15005">
+			<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+	<![CDATA[
+
+if exists (select 1 from [dbo].[Fusion] where [FusionTypeID] = 116 and ID = 0)
+begin
+	DELETE FROM [dbo].[Fusion]
+	WHERE FusionTypeID = 116 and ID = 0
+end
+
+if exists (select 1 from [dbo].[FusionAttribute] where FusionAttributeTypeID = 1820)
+begin
+	DELETE FROM [dbo].[FusionAttribute]
+	WHERE FusionAttributeTypeID = 1820
+end
+
+if exists (select 1 from [dbo].[FusionType] where [id] = 116)
+begin
+	DELETE FROM [dbo].[FusionType]
+	WHERE id = 116
+end
+
+
+if exists (select 1 from [dbo].[FusionAttributeType] where ID = 1820)
+begin
+	DELETE FROM [dbo].[FusionAttributeType]
+	WHERE id = 1820
+end
+
+if exists (select 1 from FieldType where Object = 'FusionAttributeType' and ObjectID = 1820)
+begin
+	 delete from FieldType 
+	 where Object = 'FusionAttributeType' and ObjectID = 1820
+end
+	]]>
+		</sql>
+    <rollback>
+      <![CDATA[	
+
+		]]>
+    </rollback>
+		
+	</changeSet>
+	</databaseChangeLog>

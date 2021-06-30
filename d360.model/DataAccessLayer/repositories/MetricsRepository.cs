@@ -514,7 +514,7 @@ namespace d360.model.DataAccessLayer
                         }
                         else
                         {
-                            if (!Company.Query<bool>("select cast(iif(count(1)>0,1,0) as bit) from metrics.RollupPath where Uid = @ResultPathUid and AssetTypeID = @ID", new { model.Definition.DataQuality.ResultPathUid, targetAssetType.ID }).Single())
+                            if (!Company.Query<bool>("select cast(iif(count(1)>0,1,0) as bit) from metrics.RollupPath where Uid = @ResultPathUid and AssetTypeID = @ID and [State] = 1", new { model.Definition.DataQuality.ResultPathUid, targetAssetType.ID }).Single())
                             {
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"ResultPathUid with the specified identifier {model.Definition.DataQuality.ResultPathUid} does not exist or does not correspond to the asset type you are scoring.");
                             }
@@ -1896,6 +1896,7 @@ from    (
         from    [metrics].[RollupPath] P
         where   P.ScoreType = @scoreType 
                 and P.AssetTypeid = @assetTypeId
+                and P.[State] = 1
         ) P
 order by P.[Path]";
             return await Company.QueryAsync<MetricPathOptionViewModel>(sql, new { assetTypeId, scoreType = (int)scoreType }, ApiTimeout);

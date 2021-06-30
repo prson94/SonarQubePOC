@@ -46,6 +46,7 @@ namespace d360.core.entities
         public DateTime? CompletedOn { get; set; }
 
         public int? CompletedBy { get; set; }
+        public int? InitiatorID { get; set; }
 
         public EventObjectInfo GetEventObjectInfo()
         {

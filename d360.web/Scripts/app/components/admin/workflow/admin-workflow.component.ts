@@ -6,6 +6,7 @@ import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 
 import { WorkflowDiagramModel } from '../../../models/workflow.model';
+import { StringConstants } from '../../../static/string-constants';
 
 
 @Component({
@@ -28,7 +29,7 @@ export class AdminWorkflowComponent extends AdminBaseComponent implements OnInit
     }
 
     ngOnInit() {
-        this.areaName = "Workflows";
+        this.areaName = StringConstants.Section_Workflows;
         this.clearSidebar();
         this.titleService.setTitle('Workflows');
         this.setCommonItems();

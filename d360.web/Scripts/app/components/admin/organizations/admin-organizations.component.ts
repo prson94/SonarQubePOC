@@ -9,6 +9,7 @@ import { AdminBaseComponent } from '../admin-base.component';
 import { Organization, OrganizationType } from '../../../models/organization.model';
 import { Title } from '@angular/platform-browser';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { StringConstants } from '../../../static/string-constants';
 
 @Component({
     selector: 'd3s-admin-organizations-component',
@@ -65,8 +66,8 @@ export class AdminOrganizationsComponent extends AdminBaseComponent implements O
 
     constructor(private router: Router, private stateService: StateService, secondaryNavService: SecondaryNavService, private organizationService: OrganizationsService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, secondaryNavService);        
-        this.areaName = "Organizations";
-        this.adminHeading = "Security";
+        this.areaName = StringConstants.Section_Organizations;
+        this.adminHeading = StringConstants.SubArea_Security;
         this.setCommonItems();
     }
 

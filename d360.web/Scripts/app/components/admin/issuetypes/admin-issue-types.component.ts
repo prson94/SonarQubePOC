@@ -6,6 +6,7 @@ import { WorkflowService } from '../../../services/workflow.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { StringConstants } from '../../../static/string-constants';
 
 @Component({
     selector: 'd3s-admin-issue-types',
@@ -119,8 +120,8 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
     theDeleteCallback: Function;
     constructor(secondaryNavService: SecondaryNavService, private workflowService: WorkflowService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
-        this.areaName = "Workflow Actions";
-        this.adminHeading = "Workflow Actions";
+        this.areaName = StringConstants.Section_Actions;
+        this.adminHeading = StringConstants.Section_Actions;
         this.tabTitle = 'Action Types';
         this.setCommonItems();
         this.theDeleteCallback = this.deleteIssueType.bind(this);

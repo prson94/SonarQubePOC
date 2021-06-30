@@ -45,5 +45,26 @@ END
 		]]>
 	</rollback>
   </changeSet>
+  <changeSet author="MDonato" id="Table.dbo.Issue-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Issue' and COLUMN_NAME = 'InitiatorID')
+begin
+	alter table [dbo].[Issue] add [InitiatorID] int null
+end
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Issue' and COLUMN_NAME = 'InitiatorID')
+begin
+	alter table [dbo].[Issue] drop column [InitiatorID]
+end
 
+]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

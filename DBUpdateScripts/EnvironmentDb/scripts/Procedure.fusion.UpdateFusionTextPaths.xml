@@ -5,12 +5,18 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.fusion.UpdateFusionTextPaths-v1">
+  <changeSet author="sdooley" id="Procedure.fusion.UpdateFusionTextPaths-v2">
+    <comment>GOV-15014</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+DROP PROCEDURE IF EXISTS [fusion].[UpdateFusionTextPaths]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [fusion].[UpdateFusionTextPaths]
 	@FusionID int
 as
@@ -38,11 +44,6 @@ begin
 	where T.TextPath <> cte.itempath
 	OPTION (MAXRECURSION 10)
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

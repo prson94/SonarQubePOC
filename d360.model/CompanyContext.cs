@@ -146,12 +146,9 @@ namespace d360.model
         public DbSet<FusionAttribute> FusionAttributes { get; set; }
 
         public DbSet<FusionAttributeType> FusionAttributeTypes { get; set; }
+        
 
-        public DbSet<FusionStatusLog> FusionStatusLogs { get; set; }
-
-        public DbSet<FusionType> FusionTypes { get; set; }
-
-        public DbSet<FusionAgentError> FusionAgentErrors { get; set; }
+        public DbSet<FusionType> FusionTypes { get; set; }        
 
         public DbSet<GraphFilter> GraphFilters { get; set; }
 

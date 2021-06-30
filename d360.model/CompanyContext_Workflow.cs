@@ -330,7 +330,8 @@ namespace d360.model
                 UpdatedBy = CurrentResourceID,
                 UpdatedOn = DateTime.UtcNow,
                 IssueTypeID = orgIssue.IssueTypeID,
-                CommentID = orgIssue.CommentID
+                CommentID = orgIssue.CommentID,
+                InitiatorID = item.StartedBy
             };
 
             Issues.Add(issue);
@@ -594,6 +595,16 @@ namespace d360.model
                 .Where(i => i.TypeID == workflowTypeID && i.ID == registration.Type.PublishedVersionID)
                 .OrderByDescending(i => i.Version)
                 .FirstOrDefault();
+
+            //if the object is an action, the requestor is the initiator of the action
+            if (objectInfo.ObjectType == SystemObjects.IssueType)
+            {
+                var issue = await Issues.FirstOrDefaultAsync(i => i.ID == objectInfo.ObjectID);
+                if (issue != null)
+                {
+                    requestorId = issue.InitiatorID ?? requestorId;
+                }
+            }
 
             var item = new WorkflowItem
             {

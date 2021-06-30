@@ -9,6 +9,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Array } from 'core-js';
+import { StringConstants } from '../../../static/string-constants';
 declare var CompanySettings;
 
 @Component({
@@ -42,9 +43,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     constructor(private router: Router, private tagsService: TagService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesObservableService, titleService: Title, secondaryNavService: SecondaryNavService,) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
-        this.areaName = "Tags";
+        this.areaName = StringConstants.Section_Tags;
         this.setCommonItems();
-        this.tabTitle = 'Tags';
+        this.tabTitle = StringConstants.Section_Tags;
         this.secondaryNavService.setCurrentArea(this.areaName, 'fa-tag', this.tabTitle);
 
     }

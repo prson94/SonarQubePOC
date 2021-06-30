@@ -198,9 +198,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         var params = {};
         params["_pageSize"] = $event.rows;
         params["_pageNum"] = ($event.first / $event.rows) + 1;
-        params["_order"] = "Name";
-        params["_direction"] = "asc";
-        params["_includeFields"] = "Name";
+        params["useTypeLevelDefaultSorts"] = "true";
 
         var targetClass = this.isSubject ? this.relationshipType.Object.Class : this.relationshipType.Subject.Class;
 
