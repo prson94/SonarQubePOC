@@ -1287,8 +1287,14 @@ from	metrics.AssetVersion V
 	</changeSet>
 
 	<changeSet author="TKlok" id="Data.Corrections.GOV-15034">
+	<validCheckSum>7:72d6d78e055f4cbc83f086229ca82525</validCheckSum>
 			<sql dbms="mssql" splitStatements="false" stripComments="false">
 	<![CDATA[
+	DELETE T
+	FROM [dbo].[SiteNavPermission] T
+	INNER JOIN [dbo].[SiteNav] O ON O.ID = T.SiteNavID
+	WHERE O.Name = '#Fusion';
+
 	DELETE FROM [dbo].[SiteNav]
 	WHERE Name = '#Fusion'
 	]]>
