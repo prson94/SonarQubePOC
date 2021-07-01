@@ -49,13 +49,32 @@ namespace d360.web.Controllers
 
             if (nodes != null)
             {
+                List<string> toggleVisibilityURLs = new List<string> {
+                    "artifact/","policy/","quality/rule","model/"};
+
                 nodes.ForEach(n =>
                 {
                     n.NavigationItems = (string.IsNullOrEmpty(n.Items)) ?
                         new List<NavigationItem>() :
                         parseXmlNavigationDocument(XElement.Parse(string.Format("<nav>{0}</nav>", n.Items)));
+
+
+                    var urls = n.NavigationItems.Select(x => x.Url).ToList();
+                    var counts = 0;
+                    foreach (var urlPart in toggleVisibilityURLs)
+                    {
+                        var matches = urls.Where(x => !string.IsNullOrEmpty(x) && x.ToLower().Contains(urlPart.ToLower()));
+                        counts += matches.Count();
+                    }
+
+                    if (urls.Count == counts)
+                    {
+                        n.ShowVisibilityToggle = true;
+                    }
+
                 });
             }
+
 
             return new JsonNetResult
             {

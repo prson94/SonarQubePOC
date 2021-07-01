@@ -47,15 +47,15 @@ namespace d360.core.entities
     public class CompanyWithDatabaseServerSettings
     {
         public int CompanyID { get; set; }
-        public int ClientID { get; set; }        
+        public int ClientID { get; set; }
         public string Server { get; set; }
         public string Username { get; set; }
-        public string Password { get; set; }        
+        public string Password { get; set; }
         public string SearchServer { get; set; }
-        public string EventTopic { get; set; }        
+        public string EventTopic { get; set; }
         public string UrlPrefix { get; set; }
         public EnvironmentLevel EnvironmentLevel { get; set; }
-        public int Priority { get; set; }        
+        public int Priority { get; set; }
     }
 
     public class FieldsObjectModel
@@ -161,6 +161,7 @@ namespace d360.core.entities
     public class TopNavigationItem
     {
         public string MenuID { get; set; }
+        public bool ShowVisibilityToggle { get; set; }
         public bool ShouldDisplay { get; set; } = true;
         [JsonIgnore]
         public string Items { get; set; }
