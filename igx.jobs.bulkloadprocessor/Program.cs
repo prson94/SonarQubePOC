@@ -1034,11 +1034,13 @@ using       (
 on          (
                 T.AssetID = S.AssetID and T.FieldTypeID = S.FieldTypeID
             )
-when matched then
+when matched and S.Value is null then
+	delete
+when matched and S.Value is not null then
 	update
 	set	T.Value = S.Value,
 		T.UpdatedBy = S.UpdatedBy
-when not matched by target then
+when not matched by target and S.Value is not null then
     insert  (FieldTypeID, ObjectType, ObjectID, Value, UpdatedBy)
     values  (S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.UpdatedBy);", transaction: trans);
 
