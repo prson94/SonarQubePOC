@@ -97,7 +97,7 @@
                     </div>
                 </ig-property-group>
 
-                <ig-property-group *ngIf="topSamples && topSamples.Count>0"
+                <ig-property-group *ngIf="topSamples && topSamples.length>0"
                                    [expanded]="true"
                                    [title]="'Top Values'"
                                    [shouldBePadded]="false"
@@ -124,7 +124,7 @@
                     </div>
                 </ig-property-group>
 
-                <ig-property-group *ngIf="bottomSamples && bottomSamples.Count>0"
+                <ig-property-group *ngIf="bottomSamples && bottomSamples.length>0"
                                    [expanded]="true"
                                    [title]="'Bottom Values'"
                                    [shouldBePadded]="false"
