@@ -358,6 +358,7 @@ export class WorkflowForm {
     IsCompleted: boolean;
     IsItemDeleted: boolean;
     IsUserAllowedToComplete: boolean;
+    IsFormInvalid: boolean;
     ObjectName: string;
     ObjectType: string;
     ObjectTypeID: number;

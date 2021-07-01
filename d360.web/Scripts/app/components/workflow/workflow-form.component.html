@@ -293,7 +293,7 @@
                 </div>
             </div>
         </div>
-        <div *ngIf="!isUserAllowedToComplete && !isCompleted && !isItemDeleted"
+        <div *ngIf="!isUserAllowedToComplete && !isCompleted && !isItemDeleted && !isFormInvalid"
             class="tile tile-detail">
             <header>{{title}}</header>
             <div class="row">
@@ -322,6 +322,22 @@
                         (click)="close();"
                         label="Close"
                         style="width: 150px;"></button>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="isFormInvalid && !isCompleted"
+             class="tile tile-detail">
+            <header>{{title}}</header>
+            <div class="row">
+                <div class="col s12">The form configuration is invalid.</div>
+                <div class="col s12">&nbsp;</div>
+                <div class="col s12">
+                    <button pButton
+                            *ngIf="hasCloseButton"
+                            type="button"
+                            (click)="close();"
+                            label="Close"
+                            style="width: 150px;"></button>
                 </div>
             </div>
         </div>

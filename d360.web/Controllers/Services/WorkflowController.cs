@@ -762,6 +762,7 @@ order by wi.StartedOn desc";
             var issueTypeName = "";
             var issueObjectType = "";
             var typeName = "";
+            var formError = false;
 
             foreach (var item in properties)
             {
@@ -774,7 +775,11 @@ order by wi.StartedOn desc";
                     //load the possible options for this relationship type into values array
                     var intersectType = Company.IntersectTypes.Where(x => x.ID == item.IntersectTypeID).FirstOrDefault();
 
-                    if (intersectType == null) throw new Exception("RELATIONSHIP INPUT CANNOT FIND THE SPECIFIED INTERSECT TYPE");
+                    if (intersectType == null)
+                    {
+                        formError = true;
+                        continue;
+                    }
 
                     var reg = Company.WorkflowEventRegistrations.Where(x => x.TypeID == typeID).FirstOrDefault();
 
@@ -786,7 +791,11 @@ order by wi.StartedOn desc";
                     if (reg.Object == "IssueType")
                     {
                         var issue = Company.Issues.FirstOrDefault(i => i.ID == itemStep.Item.ObjectID);
-                        if (issue == null) throw new Exception("RELATIONSHIP INPUT CANNOT IDENTIFY ISSUE OBJECT");
+                        if (issue == null)
+                        {
+                            formError = true;
+                            continue;
+                        }
 
                         obj = issue.ObjectType;
                         objId = issue.ObjectTypeID;
@@ -914,6 +923,7 @@ order by wi.StartedOn desc";
                 Description = desc ?? "",
                 IsCompleted = itemStep.CompletedOn.HasValue || isCompletedByCurrentUser,
                 IsItemDeleted = details == null,
+                IsFormInvalid = formError,
                 ObjectName = details == null ? "(unknown)" : details.Name,
                 ObjectType = itemStep.Item.Object,
                 ObjectID = itemStep.Item.ObjectID,
