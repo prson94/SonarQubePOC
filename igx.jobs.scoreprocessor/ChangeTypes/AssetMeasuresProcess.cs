@@ -673,6 +673,8 @@ where   AssetTypeID in (
 
                 using (var trans = company.BeginTransaction())
                 {
+                    bool transactionSuccessful = false;
+
                     try
                     {
                         var itemsTable = new DataTable();
@@ -791,29 +793,8 @@ when not matched then
         S.ConditionUid, S.Evidence, S.OtherConditions, S.IsRemoved
     );", transaction: trans);
 
-                        // Call the new procedure here.
-                        var allocationUids = items.Select(item => item.AllocationUid).Distinct().ToList();
-                        allocationUids.ForEach(allocationUid =>
-                        {
-                            company.Execute(
-                                "metrics.ProcessAssetScores @allocationUid, @assets",
-                                new
-                                {
-                                    allocationUid,
-                                    assets = items
-                                                .Where(item => item.AllocationUid == allocationUid)
-                                                .Select(i => new { i.AssetUid, i.EffectiveDate })
-                                                .Distinct()
-                                                .AsTableValuedParameter("dbo.AssetEffectiveDate", new List<string> { "AssetUid", "EffectiveDate" }),
-                                },
-                                commandTimeout: 600,
-                                transaction: trans
-                            );
-                        });
-
                         trans.Commit();
-
-                        success = true;
+                        transactionSuccessful = true;
                     }
                     catch (Exception ex)
                     {
@@ -831,6 +812,40 @@ when not matched then
                         {
                             updateExecution(company, ExecutionRecord, false, ex);
                         }
+                    }
+
+                    if (transactionSuccessful)
+                    { 
+                        try
+                        {
+                            // Call the new procedure here.
+                            var allocationUids = items.Select(item => item.AllocationUid).Distinct().ToList();
+                            allocationUids.ForEach(allocationUid =>
+                            {
+                                company.Execute(
+                                    "metrics.ProcessAssetScores @allocationUid, @assets",
+                                    new
+                                    {
+                                        allocationUid,
+                                        assets = items
+                                                    .Where(item => item.AllocationUid == allocationUid)
+                                                    .Select(i => new { i.AssetUid, i.EffectiveDate })
+                                                    .Distinct()
+                                                    .AsTableValuedParameter("dbo.AssetEffectiveDate", new List<string> { "AssetUid", "EffectiveDate" }),
+                                    },
+                                    commandTimeout: 600
+                                );
+                            });
+
+                            success = true;
+                        }
+                        catch (Exception ex)
+                        {
+                            if (ExecutionRecord != null)
+                            {
+                                updateExecution(company, ExecutionRecord, false, ex);
+                            }
+                        }                    
                     }
                 }
 

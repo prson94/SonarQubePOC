@@ -296,7 +296,7 @@ where   Uid = @Uid;", executionRecord, commandTimeout: 180);
             Db.Execute(@"update T 
 set     T.PercentComplete = Com.Completed / Tot.Total,
         T.Failures = @Failures, 
-        T.ErrorMessage = @ErrorMessage,
+        T.ErrorMessage = iif(Com.Completed = Tot.Total, '', @ErrorMessage),
         T.StartedOn = @StartedOn,
         T.CompletedOn = @CompletedOn, 
         T.ProcessingStartedOn = @ProcessingStartedOn,

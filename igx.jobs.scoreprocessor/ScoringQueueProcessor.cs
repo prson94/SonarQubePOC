@@ -30,7 +30,7 @@ namespace igx.jobs.scoreprocessor
 
         {
 #if DEBUG
-            //var scoreInfo = new ScoreQueueInfo { ChangeType = ScoreQueueChangeType.AssetMeasures, CompanyID = 2, StartedOn = DateTime.Parse("2021-04-06"), ExecutionUid = Guid.Parse("0001F0C6-1262-4CD4-9091-0CD35C6C6C51") };
+            //var scoreInfo = new ScoreQueueInfo { ChangeType = ScoreQueueChangeType.AssetMeasures, CompanyID = 59, StartedOn = DateTime.Parse("2021-07-01"), ExecutionUid = Guid.Parse("572C8380-512F-4361-9E57-EBC758470976") };
             var scoreInfo = JsonConvert.DeserializeObject<ScoreQueueInfo>(myQueueItem);
 #else
             var scoreInfo = JsonConvert.DeserializeObject<ScoreQueueInfo>(myQueueItem);
