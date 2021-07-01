@@ -2544,6 +2544,37 @@ from	AssetCrossReference T
                                             }
                                             #endregion
 
+                                            #region Remove default value settings from FieldTypes
+
+                                            Connection.Execute(
+                                                $@"
+drop table if exists #tempassetobject;
+
+create table #tempassetobject (id [bigint] IDENTITY(1,1) NOT NULL, Object varchar(50), ObjectID int);
+
+insert into #tempassetobject (Object, ObjectID)
+    select  a.Object,
+            a.ObjectID
+    from    Asset a
+    where   exists (
+                select  1
+                from    api.ExecutionDeletedAsset S 
+                where   s.Uid = A.Uid 
+                        and {querySuffix}
+            );
+
+create nonclustered index cix_tempassetid on #tempassetobject (Object, ObjectID, id);
+
+update	T
+set     T.DefaultValue = null
+from	dbo.FieldType T
+        inner join #tempassetobject S on S.Object = T.LookupObjectType and S.ObjectID = T.DefaultValue and T.LookupObjectType is not null and T.DefaultValue is not null and T.[Type] = 'Lookup';
+
+drop table if exists #tempassetobject;",
+                                                new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+                                            #endregion
+
                                             #region Asset table
 
                                             Connection.Execute(
@@ -2892,8 +2923,6 @@ drop table if exists #temprestable2;",
                                             trans.Commit();
                                             runCompleted = true;
                                         }
-
-
                                     }
                                     catch (Exception ex)
                                     {
