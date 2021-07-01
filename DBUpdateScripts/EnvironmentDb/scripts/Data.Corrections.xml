@@ -1305,10 +1305,10 @@ from	metrics.AssetVersion V
 			<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 	<![CDATA[
 
-if exists (select 1 from [dbo].[Fusion] where [FusionTypeID] = 116 and ID = 0)
+if exists (select 1 from [dbo].[Fusion] where [FusionTypeID] = 116)
 begin
 	DELETE FROM [dbo].[Fusion]
-	WHERE FusionTypeID = 116 and ID = 0
+	WHERE FusionTypeID = 116
 end
 
 if exists (select 1 from [dbo].[FusionAttribute] where FusionAttributeTypeID = 1820)
