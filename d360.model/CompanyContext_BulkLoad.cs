@@ -537,11 +537,21 @@ from	[Load] L
 
                         if (assetType.Class == AssetTypeClass.Model)
                         {
-                            maxLevel = (await Connection.QuerySingleAsync<int>(@"
+                            maxLevel = await Connection.QuerySingleAsync<int>(@"
                             select coalesce(max(L.[Level]), 1) from LoadColumn LC
                             inner join LoadItemColumn LIC on LIC.LoadID = @ID and LIC.ColumnIndex = LC.ColumnIndex and LIC.[Value] is not null
-                            inner join AssetTypeLevel L on L.AssetTypeID = @atID and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
-                            where LC.Loadid = @ID;", new { load.ID, atID = assetType.ID }, transaction: trans));
+                            inner join (
+								select	AssetTypeID, [Level], [Name] 
+								from	AssetTypeLevel L
+								where	L.AssetTypeID = @atID
+								union all
+								select	T.ID, N.Level, 'Level ' + cast(N.Level as nvarchar(30)) 
+								from	AssetType T
+										outer apply (select top 100 row_number() over (order by (select null)) [Level] FROM sys.objects) N
+								where	T.ID = @atID and N.[Level] <= T.HierarchyMaximumDepth
+										and not exists (select 1 from AssetTypeLevel where AssetTypeID = T.ID and [Level] = N.[Level])
+                            ) L on L.AssetTypeID = @atID and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
+                            where LC.Loadid = @ID;", new { load.ID, atID = assetType.ID }, transaction: trans);
                         }
 
                         await Connection.ExecuteAsync(@"
@@ -601,7 +611,17 @@ from	[Load] L
                                     F.FieldTypeID = FT.ID
                             from    #BulkExecutionField F
                                     inner join AssetType T on T.ID = @atID
-                                    inner join AssetTypeLevel L on L.AssetTypeID = T.ID and L.[Level] <= @maxLevel
+                                    inner join (
+								        select	AssetTypeID, [Level], [Name] 
+								        from	AssetTypeLevel L
+								        where	L.AssetTypeID = @atID
+								        union all
+								        select	T.ID, N.Level, 'Level ' + cast(N.Level as nvarchar(30))
+								        from	AssetType T
+										        outer apply (select top 100 row_number() over (order by (select null)) [Level] FROM sys.objects) N
+								        where	T.ID = @atID and N.[Level] <= T.HierarchyMaximumDepth
+										        and not exists (select 1 from AssetTypeLevel where AssetTypeID = T.ID and [Level] = N.[Level])
+                            ) L on L.AssetTypeID = T.ID and L.[Level] <= @maxLevel
                                     inner join FieldType FT on FT.Name = replace(F.FieldName,L.[Name] + ' ', '')  and FT.[Object] = T.[Object] and FT.ObjectID = T.ObjectID
                             where   F.FieldName = (coalesce(L.Name,'') + ' ' + coalesce(FT.Name,'')) and F.FieldTypeID is null;
 
@@ -878,12 +898,22 @@ from	[Load] L
                         outer apply (
                             select      coalesce(max(L.[Level]), 1) as [Level]
                                 from		AssetType ATT
-			                                inner join AssetTypeLevel L on (L.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType')
+			                                inner join (
+								                select	AssetTypeID, [Level], [Name] 
+								                from	AssetTypeLevel L
+								                where	L.AssetTypeID = @atID
+								                union all
+								                select	T.ID, N.Level, 'Level ' + cast(N.Level as nvarchar(30)) 
+								                from	AssetType T
+										                outer apply (select top 100 row_number() over (order by (select null)) [Level] FROM sys.objects) N
+								                where	T.ID = @atID and N.[Level] <= T.HierarchyMaximumDepth
+										                and not exists (select 1 from AssetTypeLevel where AssetTypeID = T.ID and [Level] = N.[Level])
+                                            ) L on (L.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType')
 			                                inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
 			                                inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = I.RowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
                                 where		ATT.[ObjectID] = @ObjectID
                         ) L
-                        where I.LoadID = @id ", new { id = load.ID, assetType.ObjectID }, timeout: timeout)).ToList();
+                        where I.LoadID = @id ", new { id = load.ID, assetType.ObjectID, atID = assetType.ID }, timeout: timeout)).ToList();
                 }
                 else
                 {
