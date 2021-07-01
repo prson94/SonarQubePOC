@@ -177,17 +177,11 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
                     }
                     break;       
                 case "date":
-                case "localDate":
-                    this.ShowDate = true;
-                    if (!(this.dataProfile.regExp || this.dataProfile.blankCount || this.dataProfile.nullCount
-                        || this.dataProfile.min || this.dataProfile.max)) {
-                        this.showStatistics = false;
-                    }
-                    break;
-                case "localTime":
-                case "localDateTime":
-                case "offsetDateTime":
-                case "zonedDateTime":
+                case "localdate":                   
+                case "localtime":
+                case "localdatetime":
+                case "offsetdatetime":
+                case "zoneddatetime":
                     this.ShowDateTime = true;                    
                     if (!(this.dataProfile.regExp || this.dataProfile.blankCount || this.dataProfile.nullCount
                         || this.dataProfile.min || this.dataProfile.max)) {

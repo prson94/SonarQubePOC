@@ -228,8 +228,8 @@
                             <ng-container *ngTemplateOutlet="meanTemplate"></ng-container>
 
                             <ng-container *ngTemplateOutlet="standardDeviationTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="regExpTemplate"></ng-container>
                             <ng-container *ngTemplateOutlet="leadingZeroCountTemplate"></ng-container>
+                            <ng-container *ngTemplateOutlet="regExpTemplate"></ng-container>
                         </div>
                         <div *ngIf="ShowString">
                             <ng-container *ngTemplateOutlet="nullCountTemplate"></ng-container>
@@ -245,16 +245,7 @@
                             <ng-container *ngTemplateOutlet="leadingWhiteSpaceTemplate"></ng-container>
                             <ng-container *ngTemplateOutlet="trailingWhiteSpaceTemplate"></ng-container>
                             <ng-container *ngTemplateOutlet="regExpTemplate"></ng-container>
-                        </div>
-                        <div *ngIf="ShowDate">
-                            <ng-container *ngTemplateOutlet="nullCountTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="blankCountTemplate"></ng-container>
-
-                            <ng-container *ngTemplateOutlet="minTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="maxTemplate"></ng-container>
-
-                            <ng-container *ngTemplateOutlet="regExpTemplate"></ng-container>
-                        </div>
+                        </div>                        
                         <div *ngIf="ShowDateTime">
                             <ng-container *ngTemplateOutlet="nullCountTemplate"></ng-container>
                             <ng-container *ngTemplateOutlet="blankCountTemplate"></ng-container>
