@@ -63,7 +63,7 @@ namespace d360.web.Controllers
                     var counts = 0;
                     foreach (var urlPart in toggleVisibilityURLs)
                     {
-                        var matches = urls.Where(x => !string.IsNullOrEmpty(x) && x.ToLower().Contains(urlPart.ToLower()));
+                        var matches = urls.Where(x => !string.IsNullOrEmpty(x) && x.ToLower(System.Globalization.CultureInfo.InvariantCulture).Contains(urlPart.ToLower(System.Globalization.CultureInfo.InvariantCulture)));
                         counts += matches.Count();
                     }
 

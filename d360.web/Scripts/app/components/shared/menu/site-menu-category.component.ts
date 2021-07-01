@@ -47,13 +47,13 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
 
     toggleEmptyVisibility() {
         var newValue = (!this.hideEmptyItems).toString();
-        localStorage.setItem(this.storageKey, newValue)
+        localStorage.setItem(this.storageKey, newValue);
     }
 
     hideEmptySubItems(items: SiteMenuItem[]) {
         items.forEach((x) => {
             if (x.Items) {
-                x.Items = x.Items.filter(x => x.count > 0);
+                x.Items = x.Items.filter((y) => y.count > 0);
                 this.hideEmptySubItems(x.Items);
             }
         });
@@ -65,7 +65,9 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
             this.hideEmptySubItems(items);
             return items;
         }
-        else return this.menu.NavigationItems;
+        else {
+            return this.menu.NavigationItems;
+        }
     }
 
     get showVisiblityToggle(): boolean {
