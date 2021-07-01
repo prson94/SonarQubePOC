@@ -373,7 +373,6 @@ namespace igx.jobs.apiexecutionprocessor
                                 #region Process DataQualityResults
 
                                 var postDataQualityResultsRequest = await storage.DeserializeJsonObjectFromBlobAsync<List<DataQualityInsertModel>>(Info.StorageFolder, Info.RequestFileName);
-                                                                
 
                                 log.WriteLine($"POST DataQualityResults (DB Start): Total raw Data Quality Results: {postDataQualityResultsRequest.Count}. Timeout: {dbExecutionTimeout}. Merge Block Size: {mergeBlockSize}.");
                                 var postDataQualityResultsResponse = company.UpsertAssetResults(postDataQualityResultsRequest.ToList<IDataQualityUpsert>(), dbExecutionItem, dbExecutionTimeout, Info.SendWorkflowEvents);
@@ -383,8 +382,6 @@ namespace igx.jobs.apiexecutionprocessor
                                 log.WriteLine($"POST DataQualityResults (DB Complete): Total results: {postDataQualityResultsResponse.Count}.");
                                 
                                 await SaveResultsJsonToAzure(postDataQualityResultsResponse, log, "DataQualityResults", HttpMethod.Post);
-
-                                company.SendApiGraphEvent(Info);
 
                                 var ruleResultUids = postDataQualityResultsResponse.Where(i => i.Success).Select(i => i.Uid.Value).ToList();
                                 if (ruleResultUids.Count > 0)
