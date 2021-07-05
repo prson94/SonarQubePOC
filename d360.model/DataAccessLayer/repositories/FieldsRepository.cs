@@ -1564,10 +1564,7 @@ from	IntersectType I
                         newFieldType.DisplayDescription = f.Type.Counter.Description.Display;
                         newFieldType.FormDescription = f.Type.Counter.Description.Form;
                     }
-                    if (f.Type.Counter.Validation != null)
-                    {
-                        newFieldType.IsRequired = f.Type.Counter.Validation.IsRequired;
-                    }
+
                     newFieldType.IsDisplayable = f.Type.Counter.IsDisplayable;
                     newFieldType.IsEditable = f.Type.Counter.IsEditable;
                     newFieldType.IsListable = f.Type.Counter.IsListable;

@@ -1203,7 +1203,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerParameter("Class", "Comma separated values of classes to filter by. Allowed values are BusinessAsset, TechnicalAsset, Model, Policy, Rule.", DataType = "string", ParameterType = "query", Required = false)
         ]
-        public async Task<HttpResponseMessage> GetAssetTypeCountsAsync()
+        public async Task<HttpResponseMessage> GetAssetTypeCountsAsync(Guid? assetTypeUid = null)
         {
             var prefix = "Assets.GetAssetTypeCountsAsync => ";
             var errorMessage = "";
@@ -1248,7 +1248,7 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
-                var classes = await AssetRepository.GetAssetTypeCounts(classFilters.Select(x => (int)x).ToArray());
+                var classes = await AssetRepository.GetAssetTypeCounts(classFilters.Select(x => (int)x).ToArray(), assetTypeUid);
                 return Request.CreateResponse(HttpStatusCode.OK, classes);
             }
             catch (Exception ex)

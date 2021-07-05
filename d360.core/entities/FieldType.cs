@@ -630,8 +630,6 @@ namespace d360.core.entities
     public class FieldTypeCounterApiViewModel : FieldTypeEditableApiViewModel
     {
         [DataMember]
-        public FieldTypeDescriptionApiViewModel_Validation Validation { get; set; }
-        [DataMember]
         public FieldTypeDescriptionApiViewModel_DisplayForm Description { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_Search Search { get; set; }

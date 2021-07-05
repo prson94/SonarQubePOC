@@ -3411,7 +3411,7 @@ where	O.RowNum = 1";
             return results;
         }
 
-        public async Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses)
+        public async Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses, Guid? assetTypeUid = null)
         {
 
             string assetPermissionWhere = @" and ID NOT IN (select AssetId 
@@ -3424,6 +3424,11 @@ where	O.RowNum = 1";
             if (CompanyContext.CurrentResourceIsAdmin)
             {
                 assetTypePermissionWhere = "";
+            }
+
+            if (assetTypeUid.HasValue)
+            {
+                assetTypePermissionWhere += " and at.uid = @assetTypeUid";
             }
 
             var countsSQL = $@"select AT.uid, 
@@ -3450,7 +3455,7 @@ where	O.RowNum = 1";
                          at.Class in @filterClasses
                          {assetTypePermissionWhere}
                     order by at.name";
-            return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses, p = (int)Permission.ReadAsset }, ApiTimeout);
+            return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses, p = (int)Permission.ReadAsset, assetTypeUid }, ApiTimeout);
         }
 
         public async Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid)
