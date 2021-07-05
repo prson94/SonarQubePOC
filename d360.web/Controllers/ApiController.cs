@@ -2480,7 +2480,7 @@ from    (
 
             if (LookupFieldHasColorItem(fieldType))
             {
-                string colorAndValueSql = $@"(SELECT F.FormattedValue as name,
+                string colorAndValueSql = $@"(SELECT TOP 1 F.FormattedValue as name,
 								COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color
                                 , FD.FormattedValue as description
                                 , FPL.FormattedValue as profilelevel
@@ -2491,8 +2491,8 @@ from    (
                                 inner join Asset AI on AI.AssetTypeId = {objectDetail.AssetTypeID} and AI.ObjectID = f.ObjectID 
                                 cross apply dbo.GetAssetColorJsonByColor(ACf.Color) ACJ
                                 cross apply GetAssetDisplayValueByID(ACF.ID) ADV 
-                                outer apply (select FormattedValue from field FD1 inner join FieldType FT1 on FD1.FieldTypeID = FT1.ID where FT1.[Type]='{DataType.Text}' and LOWER(FT1.FriendlyName)='description' and FD1.ObjectID = F.Value and FD1.AssetID=ACF.ID) FD
-								outer apply (select FormattedValue from field FD2 inner join FieldType FT2 on FD2.FieldTypeID = FT2.ID where FD2.ObjectType='{SystemObjects.ReferenceItem}' and FT2.[Type]='{DataType.Text}' and LOWER(FT2.FriendlyName)='profile level' and FD2.ObjectID = F.Value and FD2.AssetID=ACF.ID) FPL
+                                outer apply (select FormattedValue from field FD1 inner join FieldType FT1 on FD1.FieldTypeID = FT1.ID where FT1.[Type]='{DataType.Text}' and LOWER(FT1.FriendlyName)='description' and FD1.ObjectID = SPF.Value and FD1.AssetID=ACF.ID) FD
+								outer apply (select FormattedValue from field FD2 inner join FieldType FT2 on FD2.FieldTypeID = FT2.ID where FD2.ObjectType='{SystemObjects.ReferenceItem}' and FT2.[Type]='{DataType.Text}' and LOWER(FT2.FriendlyName)='profile level' and FD2.ObjectID = SPF.Value and FD2.AssetID=ACF.ID) FPL
                                 where f.FieldTypeID = {fieldType.ID} and f.[ObjectType] = '{type.ToString()}' and f.[ObjectID] = {id}) FOR JSON PATH";
                 string colorAndValue = Company.Query<string>(colorAndValueSql).FirstOrDefault();
                 if (!string.IsNullOrEmpty(colorAndValue))
