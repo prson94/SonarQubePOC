@@ -16,7 +16,8 @@
             Conditions
         </div>
         <d3s-workflow-condition-list [readonly]="true"
-                                     [conditions]="link.condition">
+                                     [conditions]="link.condition"
+                                     [hideAllAnyOption]="true">
         </d3s-workflow-condition-list>
     </div>
     <div *ngIf="link.transitionType == TransitionType.Timer">
