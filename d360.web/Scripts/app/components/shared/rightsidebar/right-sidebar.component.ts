@@ -254,6 +254,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.showStatus = false;
                 this.showDataClassification = false;
                 this.showOnlyMainTab = false;
+                this.showSurvey = false;
+                this.searchDetails = null;
                 this.emitChanges();
             })
         this.areaSub = this.secondaryNavService.currentArea$.subscribe(
