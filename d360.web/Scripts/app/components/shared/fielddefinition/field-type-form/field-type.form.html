@@ -142,7 +142,7 @@
                                     (ngModelChange)="!$event ? model.FieldType.Type[currentType].SortOrder=0:model.FieldType.Type[currentType].SortOrder=model.FieldType.Type[currentType].SortOrder"
                                     [disabled]="isSettingDisabled('IsListable')"></p-checkbox>
                     </div>
-                    <div>
+                    <div *ngIf="showIsRequired">
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.Type[currentType].Validation.IsRequired"
                                     label="Is Required?"
@@ -899,7 +899,7 @@
                                         label="Hide Grid Column Headers?"></p-checkbox>
                         </li>
                     </ul>
-                    
+
                 </div>
             </div>
         </simple-accordion>
@@ -936,34 +936,6 @@
             </div>
         </simple-accordion>
 
-        <simple-accordion header="Descriptions"
-                          active="false">
-            <div class="row">
-                <div class="col s6">
-                    <div id='DisplayDescriptionTip'
-                         class="FieldName">
-                        Display Description
-                    </div>
-                    <textarea pInputTextarea
-                              autoResize="'true'"
-                              maxlength="4000"
-                              [(ngModel)]="model.FieldType.Type[currentType].Description.Display"
-                              [ngModelOptions]="{standalone: true}"></textarea>
-                </div>
-                <div *ngIf="showDescription" class="col s6">
-                    <div id='FormDescriptionTip'
-                         class="FieldName">
-                        Form Description
-                    </div>
-                    <textarea pInputTextarea
-                              autoResize="'true'"
-                              maxlength="4000"
-                              [(ngModel)]="model.FieldType.Type[currentType].Description.Form"
-                              [ngModelOptions]="{standalone: true}"></textarea>
-                </div>
-            </div>
-        </simple-accordion>
-
         <simple-accordion header="Value Selection"
                           active="false"
                           *ngIf="currentType === 'Counter'">
@@ -996,6 +968,34 @@
                     <div class="form-instructions">
                         The initial value will be the value of the counter for the first added asset after the counter field type is defined. It must be greater than the number of existing assets.
                     </div>
+                </div>
+            </div>
+        </simple-accordion>
+
+        <simple-accordion header="Descriptions"
+                          active="false">
+            <div class="row">
+                <div class="col s6">
+                    <div id='DisplayDescriptionTip'
+                         class="FieldName">
+                        Display Description
+                    </div>
+                    <textarea pInputTextarea
+                              autoResize="'true'"
+                              maxlength="4000"
+                              [(ngModel)]="model.FieldType.Type[currentType].Description.Display"
+                              [ngModelOptions]="{standalone: true}"></textarea>
+                </div>
+                <div *ngIf="showDescription" class="col s6">
+                    <div id='FormDescriptionTip'
+                         class="FieldName">
+                        Form Description
+                    </div>
+                    <textarea pInputTextarea
+                              autoResize="'true'"
+                              maxlength="4000"
+                              [(ngModel)]="model.FieldType.Type[currentType].Description.Form"
+                              [ngModelOptions]="{standalone: true}"></textarea>
                 </div>
             </div>
         </simple-accordion>

@@ -117,6 +117,12 @@ export class AssetService extends BaseObservableService {
                 catchError(err => this.handleError(err, true)));
     }
 
+    public getAssetCountsByAssetTypeUid(uid: string): Observable<AssetCount[]> {
+        return this.http.get(`/api/v2/assets/counts/byAssetType?assetTypeUid=${uid}`)
+            .pipe(map(res => { return <AssetCount[]>res }),
+                catchError(err => this.handleError(err, true)));
+    }
+
     public getAllColors(): Observable<SelectItem[]> {
         return this.http.get(`/api/v2/assets/colors`)
             .pipe(map(res => { return <SelectItem[]>res }),

@@ -19,6 +19,7 @@ import { Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { MessagesObservableService } from '../../../../services/messages-observable.service';
 import { FieldTypeAPIModelField, FieldType, FieldTypeAPIModel, DefinitionField, Relation } from '../../../../models/fieldtype-api.model';
+import { AssetService } from '../../../../services/asset.service';
 
 
 @Component({
@@ -44,7 +45,7 @@ import { FieldTypeAPIModelField, FieldType, FieldTypeAPIModel, DefinitionField, 
                 font-weight: bold;
             }`
     ],
-    providers: [FieldsObservableService, ObjectDetailService],
+    providers: [FieldsObservableService, ObjectDetailService, AssetService],
 })
 
 export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
@@ -62,6 +63,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     @Input() showIsListable: boolean = true;
     @Input() showIsPartOfKey: boolean = true;
     @Input() showIsEditable: boolean = true;
+    @Input() showIsRequired: boolean = true;
     @Input() showDescription: boolean = true;
     @Input() enableAllowMultipleValues: boolean = true;
     @Input() showAddToSearch: boolean = false;
@@ -129,10 +131,16 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private maxLengthLowerNumeric = -9999999999;
     private maxLengthUpperNumeric = 9999999999;
 
+    numberOfAssetsForType: number = 0;
+
     private disableFieldTypeSelection: boolean = false;
     public enableListSingleResponsibilityType: boolean = false;
 
-    constructor(private fieldsService: FieldsObservableService, private messagesService: MessagesObservableService, private objectDetailService: ObjectDetailService) {
+    constructor(private fieldsService: FieldsObservableService,
+        private messagesService: MessagesObservableService,
+        private objectDetailService: ObjectDetailService,
+        private assetService: AssetService
+    ) {
         super();
         this.model = new FieldTypeEditorModel();
         this.model.FieldType = new FieldTypeAPIModelField();
@@ -145,6 +153,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     ngOnInit() {
         this.initialItem = _.cloneDeep(this.model);
+
+        this.assetService.getAssetCountsByAssetTypeUid(this.assetTypeUid)
+            .subscribe((res) => {
+                if (res.length > 0) {
+                    this.numberOfAssetsForType = +res[0].count + 1;
+                }
+            });
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -213,6 +228,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         if (this.name && (this.assetTypeUid || this.actionTypeUid || this.relationshipTypeUid)) {
             this.actionName = 'Edit';
             this.isLoading = true;
+
             this.fieldsService.getFieldTypeEditor(this.name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
                 .subscribe(ret => {
                     this.getFieldTypeEditorHandler(ret);
@@ -444,7 +460,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 break;
             case 'counter':
                 this.model.FieldType.Type.Counter.ShowIfEmpty = true;
-                this.model.FieldType.Type.Counter.Validation.IsRequired = true;
+                if (!this.model.FieldType.Type.Counter.CounterInitialIndex) {
+                    this.model.FieldType.Type.Counter.CounterInitialIndex = this.numberOfAssetsForType;
+                }
+                this.showIsRequired = false;
                 this.showDescription = false;
                 break;
             default:
