@@ -1945,7 +1945,7 @@ from	IntersectType I
                 var definition = ftl.ParseComplexLookupDefinition();
 
                 var mappings = definition.GetFieldMapings();
-                var fieldTypeIds = mappings.Where(x => x.Value != null).Select(x => x.Value.FieldTypeID).Where(x => x > 0).ToList();
+                var fieldTypeIds = definition.Fields.Select(x => x.FieldTypeID).Where(x => x > 0).ToList();
                 List<FieldType> fields = Company.FieldTypes.Where(x => fieldTypeIds.Contains(x.ID)).AsNoTracking().ToList();
                 foreach (var f in mappings)
                 {
@@ -1969,7 +1969,7 @@ from	IntersectType I
                     {
                         var ft = fields.FirstOrDefault(x => x.ID == f.Value.FieldTypeID);
                         ft.Name = f.Key;
-                        ft.FriendlyName = !string.IsNullOrEmpty(f.Value.OverrideDisplayName) ? f.Value.OverrideDisplayName : f.Value.FieldTypeName;
+                        ft.FriendlyName = !string.IsNullOrEmpty(f.Value.OverrideDisplayName) ? f.Value.OverrideDisplayName : ft.FriendlyName;
                     }
                     else if (f.Value.FieldTypeName == "DisplayValue")
                     {

@@ -2425,7 +2425,12 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                         {
                             if (fieldType.Type == DataType.ComplexRelationLookup.ToString())
                             {
-                                c.AssetTypeUid = Company.AssetTypes.FirstOrDefault(x => x.Object == (f.LookupObjectType + "Type") && x.ObjectID == f.LookupObjectID).uid;
+                                var @object = f.LookupObjectType.EndsWith("Type") ? f.LookupObjectType : f.LookupObjectType + "Type";
+                                var lookupAssetType = Company.AssetTypes.FirstOrDefault(x => x.Object == @object && x.ObjectID == f.LookupObjectID);
+                                if (lookupAssetType != null)
+                                {
+                                    c.AssetTypeUid = lookupAssetType.uid;
+                                }
                             }
 
                             c.Type.Lookup = new FieldTypeDataTypeLookupApiViewModel

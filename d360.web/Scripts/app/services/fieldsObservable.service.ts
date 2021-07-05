@@ -510,10 +510,11 @@ export class FieldsObservableService extends BaseObservableService implements IF
 
     }
 
+
     getLookupValues(assetTypeUid: string, fieldName: string, params: any): Observable<any> {
         var qString = '';
         if (params) {
-            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
             if (qString)
                 qString = '?' + qString;
         }

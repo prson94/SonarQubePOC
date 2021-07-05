@@ -117,6 +117,13 @@
                 </td>
             </tr>
         </ng-template>
+        <ng-template pTemplate="emptymessage" let-columns>
+            <tr>
+                <td [attr.colspan]="visibleColumns.length">
+                    No results match your search criteria
+                </td>
+            </tr>
+        </ng-template>
         <ng-template *ngIf="!hideFooter" pTemplate="summary">
             <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="data?.total"></d3s-grid-paging-info>
         </ng-template>

@@ -180,7 +180,8 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         }
 
         if (this.simpleTextFilter) {
-            params['simpleFilter'] = this.simpleTextFilter;
+            var value = (this.simpleTextFilter as string).replace(/'/g, "&apos;");
+            params['simpleFilter'] = encodeURIComponent(value);
         }
         else {
             delete params['simpleFilter'];
