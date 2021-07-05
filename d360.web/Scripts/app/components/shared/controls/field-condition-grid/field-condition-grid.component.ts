@@ -3,7 +3,6 @@ import { NgForm, FormGroup, FormBuilder, FormControl, Validators } from '@angula
 import { SelectItem } from 'primeng/api';
 import { Operator } from '../../../../models/operator.model';
 import { FieldTypeAPIModelFieldCondition, FieldCondition } from '../../../../models/field-condition-grid.models';
-import { settings } from 'cluster';
 import { Condition } from '../../../../models/metrics.model';
 import * as _ from 'lodash';
 
