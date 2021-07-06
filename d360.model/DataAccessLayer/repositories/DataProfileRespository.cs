@@ -11,6 +11,7 @@ using d360.core.exceptions;
 using Newtonsoft.Json;
 using d360.core.queue;
 using d360.extensions;
+using d360.core.enums;
 
 namespace d360.model.DataAccessLayer
 {
@@ -349,5 +350,150 @@ namespace d360.model.DataAccessLayer
 
             return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
         }
+
+        public async Task<AssetDataProfilesMatchingAssetsApiViewModel> GetMatchingAssets(Guid assetUid, string similarType, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+
+            var dbArgs = new DynamicParameters();
+            var results = new AssetDataProfilesMatchingAssetsApiViewModel();
+            results.pageNum = CompanyContext.ParsePageNumber(queryParams, 1);
+            results.pageSize = CompanyContext.ParsePageSize(queryParams);
+            string offset = CompanyContext.ParsePageOffsetSql(results.pageNum, results.pageSize);
+            string whereConditions = $@"where 
+		                                 ADP.ProfileSetDate = maxProfileDate.profileSetDate";
+            string sqlJoins = "";
+            bool includeTotal = true;
+            string orderDirection = "asc";
+            string simpleFilterSQL = "";
+            string structureCondition = "";
+
+            var asset = CompanyContext.Filter<Asset>(o => o.uid == assetUid).FirstOrDefault();
+            if (asset == null)
+            {
+                throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Asset with provided Uid does not exist.");
+            }
+
+            AssetDataProfile dataprofile = CompanyContext.AssetDataProfile.Where(x => x.AssetId == asset.ID).OrderByDescending(x => x.ProfileSetDate).FirstOrDefault();
+            if (dataprofile == null)
+            {
+                throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Profile record does not exist for provided Uid.");
+            }
+
+            if (similarType == null)
+            {
+                throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Signature Type is required.");
+            }
+            else
+            {
+                string[] allowedValues = new string[] { "structure", "data" };
+
+                if (allowedValues.Contains(similarType.ToLower()))
+                {
+                    if(similarType.ToLower() == "structure")
+                    {
+                        dbArgs.Add("@signature", dataprofile.StructureSignature);
+                        structureCondition = "ADP.StructureSignature = @signature";
+                    }
+                    else {
+                        dbArgs.Add("@signature", dataprofile.DataSignature);
+                        structureCondition = "ADP.DataSignature = @signature";
+                    }                    
+                }
+                else
+                {
+                    throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Signature Type is invalid.");
+                }
+            }
+
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includetotal"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includetotal").Value, out includeTotal);
+            }
+
+            if (queryParams.Any(q => q.Key == "_direction"))
+            {
+                string[] allowedValues = new string[] { "asc", "desc" };
+                var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value.Trim().ToLower();
+
+                if (allowedValues.Contains(directionFilter))
+                {
+                    orderDirection = directionFilter;
+                }
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
+            {
+                var simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
+                if (!string.IsNullOrEmpty(simpleFilter))
+                {
+                    simpleFilter = CompanyContext.GetEscapedFilterString(simpleFilter);
+
+                    dbArgs.Add("@simpleFilter", simpleFilter);
+
+                    simpleFilterSQL = $@"AND NDP.DisplayPath like @simpleFilter";                    
+                }
+            }
+
+            sqlJoins = $@" AssetDataProfile ADP	 
+	                        inner join 
+		                    [graph].AssetNodeDisplayPath NDP on {structureCondition} and NDP.ID=adp.AssetID and adp.AssetId != @assetId {simpleFilterSQL}
+                            outer apply 
+			                (
+			                select 
+				                max(ProfileSetDate) profileSetDate 
+			                from 
+				                AssetDataProfile 
+			                where 
+				                AssetID = ADP.AssetID
+			                ) maxProfileDate";
+
+            if (!CompanyContext.CurrentResourceIsAdmin)
+            {
+                sqlJoins = $@"{sqlJoins}
+                              outer apply (select 1 as [value] from ResponsibilityDetail RD where resourceid = @userid and ((RD.AssetID = NDP.id and applyToType=0) or (RD.AssetID = 0 and RD.AssetTypeID=NDP.AssetTypeID)) and RD.PermissionsBitMask & {(int)Permission.ReadAsset} = 0) hasAccess";
+
+                whereConditions = $@"{whereConditions} 
+                                    and
+		                            (
+		                            hasAccess.value is null 
+		                            or 
+		                            hasAccess.value != 1	
+		                            )";
+
+                dbArgs.Add("@userid", CompanyContext.CurrentResourceID);
+            }
+            
+            dbArgs.Add("@signature", dataprofile.StructureSignature);
+            dbArgs.Add("@assetId", asset.ID);
+
+            var itemsSQL = $@"
+                            SELECT 
+                                distinct
+	                            NDP.uid, 
+                                NDP.DisplayPath as [path]
+                            FROM                                     
+	                            {sqlJoins}		                            
+	                            {whereConditions}
+		                    order by NDP.DisplayPath {orderDirection}
+                            {offset}";            
+
+            results.items = await CompanyContext.QueryAsync<AssetDataProfileMatchingAssetsModel>(itemsSQL, dbArgs, ApiTimeout);
+
+            if (includeTotal)
+            {
+                var countSQL = $@"
+                            SELECT 
+	                            Count(*)
+                            FROM                                     
+	                            {sqlJoins}		                            
+	                            {whereConditions}
+		                    ";
+                
+                results.total = results.total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSQL, dbArgs, ApiTimeout);
+            }
+
+            return results;
+        }
+
     }
 }

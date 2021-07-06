@@ -1,4 +1,5 @@
 ﻿using d360.core.entities;
+using d360.core.enums;
 using d360.core.queue;
 using d360.model;
 using d360.model.DataAccessLayer;
@@ -467,6 +468,56 @@ namespace d360.web.Controllers.V2
             }
         }        
 
+        /// <summary>
+        /// Retrieves a list of assets that match a given asset.
+        /// </summary>
+        /// <param name="assetUid">The unique identifier of an asset.</param>
+        /// <param name="similarType">Type of signature to match, Data or Structure.</param>
+        /// <returns>A list of matching asset uids associatedwith asset paths</returns>
+        [
+            HttpGet,            
+            Route("{assetUid:Guid}/similar/{similarType}/"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
+            SwaggerProduces("application/json", "text/json", "application/xml", "text/xml", "application/octet-stream"),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that a record could not be found based on the supplied Uid, possibly due to an incorrectly formatted identifier (uid) or when a data profile record does not exist for the supplied asset.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),            
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250. Maximum page size is 10,000", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending and are sorted on the asset path value", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_simpleFilter", "The text or phrase you want to find within fields. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
+        ]
+        public async Task<IHttpActionResult> GetMatchingAssets(Guid assetUid, string similarType)
+        {
+            var prefix = "DataProfiles.GetMatchingAssets => ";
+
+            try
+            {                
+                var queryParams = Request.GetQueryNameValuePairs();
+
+                var validationResult = ValidateMatchAssetGetParameters(assetUid, similarType, queryParams);
+
+                if (validationResult.StatusCode != HttpStatusCode.OK)
+                {
+                    return await Task.FromResult(errorMessageResponse(validationResult.StatusCode, validationResult.Error, validationResult.Message)).ConfigureAwait(false);
+                }
+              
+                var results = await DataProfiles.GetMatchingAssets(assetUid, similarType, queryParams).ConfigureAwait(false);
+                
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string> {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage)).ConfigureAwait(false);
+            }
+        }
+
         public WorkHttpStatus ValidateDataProfileUpsertRequest(List<DataProfileUpsertModel> models, bool IsInsert)
         {
             if (models == null || models.Count == 0)
@@ -526,6 +577,63 @@ namespace d360.web.Controllers.V2
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResults.First().ErrorMessage);
                 }
             }
+            return new WorkHttpStatus(HttpStatusCode.OK, "", "");
+        }
+
+        private WorkHttpStatus ValidateMatchAssetGetParameters(Guid assetUid, string similarType, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            var isValid = isPageSizeAndNumValid(queryParams);
+            var asset = AssetRepository.GetAssetByUID(assetUid);            
+
+            if (asset == null)
+            {
+                return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, $"AssetUid {assetUid} is invalid");
+            }
+
+            if (!Company.HasAssetPermission(asset.Object, asset.ObjectID, Permission.ReadAsset))
+            {
+                return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, $"AssetUid {assetUid} is invalid");
+            }            
+
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_includetotal"))
+            {
+                if (!bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value, out bool includeTotal))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Invalid _includeTotal provided");
+                }
+            }
+
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_direction"))
+            {
+                string[] allowedValues = new string[] { "asc", "desc" };
+                var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value.Trim().ToLower();
+
+                if (!allowedValues.Contains(directionFilter))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Invalid value for parameter '_direction'. Allowed values are 'desc' and 'asc'.");
+                }
+            }
+
+            if (similarType != null)
+            {
+                string[] allowedValues = new string[] { "structure", "data" };
+
+                if (!allowedValues.Contains(similarType))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"'{similarType}' is an invalid similar type.");
+                }
+            }
+            else
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"similarType is a required field.");
+            }
+
+            AssetDataProfile dataprofile = Company.AssetDataProfile.Where(x => x.AssetId == asset.ID).OrderByDescending(x => x.ProfileSetDate).FirstOrDefault();
+            if (dataprofile == null || similarType.ToLower() == "structure" && dataprofile.StructureSignature == null || similarType.ToLower() == "data" && dataprofile.DataSignature == null)
+            {
+                return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, $"{similarType} signature not found for AssetUid {assetUid}");
+            }
+
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
     }
