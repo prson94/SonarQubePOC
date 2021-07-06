@@ -208,7 +208,8 @@ namespace d360.extensions.queue
                 {
                     msg.MessageId += $"_O{e.Object.Object}|{e.Object.ObjectID}";
                 }
-                msg.MessageId = messageId;
+                
+                msg.MessageId += messageId; // append workflow information to make it unique
 
                 if (e.Action == ChangeType.Add || e.Action == ChangeType.Update) //delay the processing if add or edit so update has chance to process
                     msg.ScheduledEnqueueTime = DateTime.UtcNow.AddSeconds(15);
