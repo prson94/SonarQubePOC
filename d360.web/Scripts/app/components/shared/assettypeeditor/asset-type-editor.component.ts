@@ -30,6 +30,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     action: string = "Edit";
     model: AssetTypeEditorModel;
     private isSaving = false;
+    private originalParentUid: string = null;
     AssetTypeClass = AssetTypeClass;
     selectedFlowType: FlowObjectType;
 
@@ -142,6 +143,9 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
                 ) {
                     this.model.AssetType.CanEditParent = true;
                 }
+                if (this.model.AssetType.ParentUid !== null) {
+                    this.originalParentUid = this.model.AssetType.ParentUid;
+                }
                 this.isLoading = false;
             });
     }
@@ -230,6 +234,8 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     public updateParent(predicateUid: string) {
         if (predicateUid == null || predicateUid.length == 0) {
             this.model.AssetType.ParentUid = null;
+        } else if (this.model.AssetType.ParentUid === null && this.originalParentUid !== null) {
+            this.model.AssetType.ParentUid = this.originalParentUid;
         }
     }
 
