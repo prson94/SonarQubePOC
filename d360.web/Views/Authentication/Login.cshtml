@@ -12,18 +12,6 @@
         hasRegister = true;
     }
 }
-@section TopJs {
-    <script type="text/javascript">
-        $(document).ready(function () {
-            $("#UserName").focus();
-            $('input').keypress(function (e) {
-                if (e.which == 13) {
-                    $('#loginButton').submit();
-                }
-            });
-        });
-    </script>
-}
 @section TopCss {
 
 }

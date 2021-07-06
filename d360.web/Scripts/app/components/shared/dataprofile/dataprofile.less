@@ -48,10 +48,11 @@
                 padding-right: 10px;
 
                 .sampleCount {
-                    font-weight: bold;
+                    color: @ig-black;
                 }
 
                 .samplePercentage {
+                    padding-left: 8px;
                     color: @d3s-gray-2;
                 }
             }
@@ -60,9 +61,21 @@
         .sampleQuality {
             margin: 5px 0px 5px 0px;
 
+            .quality-label {
+                display: inline;
+                color: @ig-black;
+                margin-top: 4px;
+                line-height: 16px;
+                word-break: break-all;
+            }
+
             .qualitySampleValue {
                 float: right;
                 padding-right: 5px;
+
+                .qualityValue-label {
+                    color: @ig-black;
+                }
             }
         }
 
@@ -97,5 +110,5 @@
         padding-top: 6px;
         color: @d3s-gray-2;
         margin-left: 5px;
-    }
+    }        
 }
