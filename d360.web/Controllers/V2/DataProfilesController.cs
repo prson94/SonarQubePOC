@@ -41,7 +41,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("{assetUid:Guid}"),
-            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetDataProfilesApiViewModel)),
             SwaggerProduces("application/json", "text/json", "application/xml", "text/xml", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this asset is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
@@ -145,7 +145,7 @@ namespace d360.web.Controllers.V2
             HttpPost,
             Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Adding Data Profile Records.", typeof(DataProfileUpsertResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "Adding Data Profile Records.", typeof(List<DataProfileUpsertResponse>)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
@@ -154,13 +154,13 @@ namespace d360.web.Controllers.V2
         {
             var prefix = "DataProfiles.PostDataProfiles => ";
 
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
-            }
-
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
+                }
+
                 var validationResult = ValidateDataProfileUpsertRequest(models, true);
                 if (validationResult.StatusCode != HttpStatusCode.OK)
                 {
@@ -198,7 +198,7 @@ namespace d360.web.Controllers.V2
             HttpPut,
             Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Updating Data Profile Records.", typeof(DataProfileUpsertResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "Updating Data Profile Records.", typeof(List<DataProfileUpsertResponse>)),
             SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
@@ -208,13 +208,13 @@ namespace d360.web.Controllers.V2
         {
             var prefix = "DataProfiles.PutDataProfiles => ";
 
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
-            }
-
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
+                }
+
                 var validationResult = ValidateDataProfileUpsertRequest(models, false);
                 if (validationResult.StatusCode != HttpStatusCode.OK)
                 {
@@ -265,13 +265,13 @@ namespace d360.web.Controllers.V2
             var prefix = "DataProfiles.PostDataProfiles => ";
             var execution = getApiExecution(1);
 
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
-            }
-
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
+                }
+
                 Asset asset = AssetRepository.GetAssetByUID(assetUid);
 
                 if (asset == null)
@@ -314,7 +314,6 @@ namespace d360.web.Controllers.V2
         [
             HttpPost,
             Route("batch"),
-            SwaggerRequestExample(typeof(AssetInsert), typeof(AssetInsertsExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
@@ -327,6 +326,11 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
+                }
+
                 List<ValidationResult> validationResults = new List<ValidationResult>();
                 foreach (var model in models)
                 {
@@ -371,7 +375,6 @@ namespace d360.web.Controllers.V2
         [
             HttpPut,
             Route("batch"),
-            SwaggerRequestExample(typeof(AssetInsert), typeof(AssetInsertsExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
@@ -384,6 +387,11 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
+                }
+
                 List<ValidationResult> validationResults = new List<ValidationResult>();
                 foreach (var model in models)
                 {
@@ -441,6 +449,11 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                { 
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
+                }
+
                 var execution = getApiExecution(models.Count);
 
                 ApiExecutionInfo executionInfo = await DataProfiles.DeleteBatchDataProfiles(models, execution);
