@@ -13,7 +13,7 @@
     </div>
     <d3s-delete-form *ngIf="isDeleting"
                      [callback]="theDeleteCallback"
-                     [itemId]="selectedRow?.ID"
+                     [itemId]="selectedRow"
                      [method]="'callback'"
                      [prompt]="'Are you sure you want to delete the rule [' + [selectedRow?.Name] + ']?'"
                      (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>
