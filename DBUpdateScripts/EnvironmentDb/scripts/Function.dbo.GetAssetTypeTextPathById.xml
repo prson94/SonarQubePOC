@@ -27,9 +27,9 @@ RETURN
 				cast(T.Name as nvarchar(2500)) as [Path],
 				1 as [Level]
 		from	AssetType T
-				left join IntersectType I on I.Object = T.Object and I.ObjectID = T.ObjectID and I.PredicateID in (select ID from [Predicate] where Type = 3)
+				left join IntersectType I on I.Object = T.Object and I.ObjectID = T.ObjectID and (I.[Object] <> I.[Subject] or I.ObjectID <> I.SubjectID) and I.PredicateID in (select ID from [Predicate] where Type = 3)
 		where	T.ID = @Id
-				and (I.[Object] <> I.[Subject] or I.ObjectID <> I.SubjectID)
+				
 		union all
 		select	I.SubjectID as ParentID,
 				T.Object,
