@@ -385,11 +385,11 @@ namespace d360.model.DataAccessLayer
             }
             else
             {
-                string[] allowedValues = new string[] { "structure", "data" };
+                string[] allowedValues = new [] { "structure", "data" };
 
-                if (allowedValues.Contains(similarType.ToLower()))
+                if (allowedValues.Contains(similarType.ToLowerInvariant()))
                 {
-                    if(similarType.ToLower() == "structure")
+                    if(similarType.ToLowerInvariant() == "structure")
                     {
                         dbArgs.Add("@signature", dataprofile.StructureSignature);
                         structureCondition = "ADP.StructureSignature = @signature";
@@ -412,7 +412,7 @@ namespace d360.model.DataAccessLayer
 
             if (queryParams.Any(q => q.Key == "_direction"))
             {
-                string[] allowedValues = new string[] { "asc", "desc" };
+                string[] allowedValues = new [] { "asc", "desc" };
                 var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value.Trim().ToLower();
 
                 if (allowedValues.Contains(directionFilter))

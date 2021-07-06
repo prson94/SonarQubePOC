@@ -87,6 +87,11 @@ namespace d360.web.Controllers.V2
         {
             var isValid = isPageSizeAndNumValid(queryParams);
 
+            if (!string.IsNullOrEmpty(isValid))
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, isValid);
+            }
+
             var asset = AssetRepository.GetAssetByUID(assetUid);
 
             if (asset == null)
@@ -581,8 +586,7 @@ namespace d360.web.Controllers.V2
         }
 
         private WorkHttpStatus ValidateMatchAssetGetParameters(Guid assetUid, string similarType, IEnumerable<KeyValuePair<string, string>> queryParams)
-        {
-            var isValid = isPageSizeAndNumValid(queryParams);
+        {            
             var asset = AssetRepository.GetAssetByUID(assetUid);            
 
             if (asset == null)
@@ -593,7 +597,14 @@ namespace d360.web.Controllers.V2
             if (!Company.HasAssetPermission(asset.Object, asset.ObjectID, Permission.ReadAsset))
             {
                 return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, $"AssetUid {assetUid} is invalid");
-            }            
+            }
+
+            var isValid = isPageSizeAndNumValid(queryParams);
+
+            if (!string.IsNullOrEmpty(isValid))
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, isValid);
+            }
 
             if (queryParams.Any(qp => qp.Key.ToLower() == "_includetotal"))
             {
@@ -605,7 +616,7 @@ namespace d360.web.Controllers.V2
 
             if (queryParams.Any(qp => qp.Key.ToLower() == "_direction"))
             {
-                string[] allowedValues = new string[] { "asc", "desc" };
+                string[] allowedValues = new [] { "asc", "desc" };
                 var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value.Trim().ToLower();
 
                 if (!allowedValues.Contains(directionFilter))
@@ -616,7 +627,7 @@ namespace d360.web.Controllers.V2
 
             if (similarType != null)
             {
-                string[] allowedValues = new string[] { "structure", "data" };
+                string[] allowedValues = new [] { "structure", "data" };
 
                 if (!allowedValues.Contains(similarType))
                 {
@@ -629,7 +640,7 @@ namespace d360.web.Controllers.V2
             }
 
             AssetDataProfile dataprofile = Company.AssetDataProfile.Where(x => x.AssetId == asset.ID).OrderByDescending(x => x.ProfileSetDate).FirstOrDefault();
-            if (dataprofile == null || similarType.ToLower() == "structure" && dataprofile.StructureSignature == null || similarType.ToLower() == "data" && dataprofile.DataSignature == null)
+            if (dataprofile == null || similarType.ToLowerInvariant() == "structure" && dataprofile.StructureSignature == null || similarType.ToLowerInvariant() == "data" && dataprofile.DataSignature == null)
             {
                 return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, $"{similarType} signature not found for AssetUid {assetUid}");
             }
