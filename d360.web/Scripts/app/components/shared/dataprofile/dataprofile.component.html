@@ -18,11 +18,11 @@
                             <div readonly class="group">
                                 <div *ngIf="dataProfile.totalCount!==null" class="summaryRow">
                                     <label class="ig-label">Total Row Count: </label>
-                                    <span class="ig-value" style="margin-left:5px">{{dataProfile.totalCount}}</span>
+                                    <span class="ig-value" style="margin-left:5px">{{dataProfile.totalCount | number}}</span>
                                 </div>
                                 <div *ngIf="dataProfile.sampleCount!==null" class="summaryRow">
                                     <label class="ig-label">Sample Row Count: </label>
-                                    <span class="ig-value" style="margin-left:5px">{{dataProfile.sampleCount}}</span>
+                                    <span class="ig-value" style="margin-left:5px">{{dataProfile.sampleCount | number}}</span>
                                     <span *ngIf="dataProfile.totalCount" class="ig-value percentage">{{sampleCountPercentage | number : '1.0-2'}}%</span>
                                     <ng-container *ngTemplateOutlet="sampleCountTooltip"></ng-container>
                                 </div>
@@ -31,7 +31,7 @@
                                     <span class="ig-value" style="margin-left:5px">{{dataProfile.type}}</span>
                                 </div>
                                 <div *ngIf="dataProfile.typeQualifier" class="summaryRow">
-                                    <label class="ig-label" style="width: 95px">Detected Type: </label>
+                                    <label class="ig-label">Detected Type: </label>
                                     <span class="ig-value" style="margin-left:5px">{{dataProfile.typeQualifier}}</span>
                                 </div>
                                 <div *ngIf="dataProfile.confidence!==null" class="summaryRow">
@@ -52,31 +52,31 @@
                         <div class="sampleBarChart" [ngStyle]="sampleBarChart">&nbsp;</div>
                         <div *ngIf="dataProfile.matchCount!==null" class="sampleQuality">
                             <span>
-                                <span class="ig-colorfield-swatch validCircle"></span><label class="ig-label" style="display:inline">Valid: </label>
+                                <span class="ig-colorfield-swatch validCircle"></span><label class="quality-label">Valid</label>
                             </span>
                             <span class="qualitySampleValue">
-                                <label style="font-weight: bold;">{{dataProfile.matchCount}}</label>
+                                <label class="qualityValue-label" style="font-weight: 600;">{{dataProfile.matchCount | number}}</label>
                                 <span *ngIf="dataProfile.sampleCount" class="ig-value percentage">{{((dataProfile.matchCount/dataProfile.sampleCount)*100) | number : '1.0-2'}}%</span>
                                 <ng-container *ngTemplateOutlet="samplePercentageTooltip;context:{numerator: dataProfile.matchCount}"></ng-container>
                             </span>
                         </div>
-                        <div *ngIf="dataProfile.sampleCount!==null && dataProfile.cardinality!==null" class="sampleQuality">
+                        <div *ngIf="dataProfile.matchCount!==null && dataProfile.cardinality!==null" class="sampleQuality">
                             <span style="padding-left:30px">
-                                <label class="ig-label" style="display:inline">Distinct: </label>
+                                <label class="quality-label">Distinct</label>
                             </span>
-                            <span class="qualitySampleValue" style="padding-right: 20px;">
-                                <label style="font-weight: bold;">{{dataProfile.cardinality}}</label>
-                                <span *ngIf="dataProfile.sampleCount" class="ig-value percentage">{{((dataProfile.cardinality/dataProfile.sampleCount)*100) | number : '1.0-2'}}%</span>
-                                <ng-container *ngTemplateOutlet="samplePercentageTooltip;context:{numerator: dataProfile.cardinality}"></ng-container>
+                            <span class="qualitySampleValue" style="padding-right: 30px;">
+                                <label class="qualityValue-label">{{dataProfile.cardinality | number}}</label>
+                                <span *ngIf="dataProfile.matchCount" class="ig-value percentage">{{((dataProfile.cardinality/dataProfile.matchCount)*100) | number : '1.0-2'}}%</span>
+                                <ng-container *ngTemplateOutlet="validPercentageTooltip"></ng-container>
                             </span>
                         </div>
                         <div *ngIf="dataProfile.sampleCount!==null && dataProfile.outlierCount!==null" class="sampleQuality">
                             <span>
-                                <span class="ig-colorfield-swatch invalidCircle"></span><label class="ig-label" style="display:inline">Invalid/Outliers: </label>
+                                <span class="ig-colorfield-swatch invalidCircle"></span><label class="quality-label">Invalid/Outliers</label>
                                 <ng-container *ngTemplateOutlet="outlierInfoTooltip"></ng-container>
                             </span>
                             <span class="qualitySampleValue">
-                                <label style="font-weight: bold;">{{dataProfile.outlierCount}}</label>
+                                <label class="qualityValue-label" style="font-weight: 600;">{{dataProfile.outlierCount | number}}</label>
                                 <span *ngIf="dataProfile.sampleCount" class="ig-value percentage">{{((dataProfile.outlierCount/dataProfile.sampleCount)*100) | number : '1.0-2'}}%</span>
                                 <ng-container *ngTemplateOutlet="samplePercentageTooltip;context:{numerator: dataProfile.outlierCount}"></ng-container>                                
                             </span>
@@ -84,12 +84,12 @@
                         <div *ngIf="dataProfile.nullCount!==null && dataProfile.blankCount!==null" class="sampleQuality">
                             <span>
                                 <span class="ig-colorfield-swatch otherCircle"></span>
-                                <label *ngIf="dataProfile.nullCount!==null && dataProfile.blankCount!==null" class="ig-label" style="display: inline">Null/Blank: <ng-container *ngTemplateOutlet="nullBlankTooltip"></ng-container></label>
-                                <label *ngIf="dataProfile.nullCount==null && dataProfile.blankCount!==null" class="ig-label" style="display: inline">Blank: </label>
-                                <label *ngIf="dataProfile.nullCount!==null && dataProfile.blankCount==null" class="ig-label" style="display: inline">Null: </label>
+                                <label *ngIf="dataProfile.nullCount!==null && dataProfile.blankCount!==null" class="quality-label">Null/Blank<ng-container *ngTemplateOutlet="nullBlankTooltip"></ng-container></label>
+                                <label *ngIf="dataProfile.nullCount==null && dataProfile.blankCount!==null" class="quality-label">Blank</label>
+                                <label *ngIf="dataProfile.nullCount!==null && dataProfile.blankCount==null" class="quality-label">Null</label>
                             </span>
                             <span class="qualitySampleValue">
-                                <label style="font-weight: bold;">{{nullBlankCountTotal}}</label>
+                                <label class="qualityValue-label" style="font-weight: 600;">{{nullBlankCountTotal | number}}</label>
                                 <span *ngIf="dataProfile.sampleCount" class="ig-value percentage">{{((nullBlankCountTotal/dataProfile.sampleCount)*100) | number : '1.0-2'}}%</span>
                                 <ng-container *ngTemplateOutlet="samplePercentageTooltip;context:{numerator: nullBlankCountTotal}"></ng-container>
                             </span>
@@ -110,7 +110,7 @@
                                     {{top.key}}
                                 </span>
                                 <span class="sampleValue">
-                                    <span class="sampleCount">{{top.count}} </span>
+                                    <span class="sampleCount">{{top.count | number}} </span>
                                     <span *ngIf="dataProfile.sampleCount" class="samplePercentage">{{(top.count/dataProfile.sampleCount)*100 | number: '1.0-2'}}%</span>
                                 </span>
                             </div>
@@ -137,7 +137,7 @@
                                     {{bottom.key}}
                                 </span>
                                 <span class="sampleValue">
-                                    <span class="sampleCount">{{bottom.count}} </span>
+                                    <span class="sampleCount">{{bottom.count | number}} </span>
                                     <span *ngIf="dataProfile.sampleCount" class="samplePercentage">{{(bottom.count/dataProfile.sampleCount)*100 | number: '1.0-2'}}%</span>
                                 </span>
                             </div>
@@ -167,7 +167,7 @@
                                     {{outlier.key}}
                                 </span>
                                 <span class="sampleValue">
-                                    <span class="sampleCount">{{outlier.count}} </span>
+                                    <span class="sampleCount">{{outlier.count | number}} </span>
                                     <span *ngIf="dataProfile.sampleCount" class="samplePercentage">{{(outlier.count/dataProfile.sampleCount)*100 | number: '1.0-2'}}%</span>
                                 </span>
                             </div>
@@ -194,7 +194,7 @@
                                     {{shape.key}}
                                 </span>
                                 <span class="sampleValue">
-                                    <span class="sampleCount">{{shape.count}} </span>
+                                    <span class="sampleCount">{{shape.count | number}} </span>
                                     <span *ngIf="dataProfile.sampleCount" class="samplePercentage">{{(shape.count/dataProfile.sampleCount)*100 | number: '1.0-2'}}%</span>
                                 </span>
                             </div>
@@ -282,13 +282,19 @@
 
 <ng-template #sampleCountTooltip>
     <span *ngIf="dataProfile.totalCount" class="tooltip-icon">
-        <i class="fa fa-question-circle" pTooltip="{{sampleCountPercentage | number : '1.0-2'}}% of Total Count" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+        <i class="fa fa-question-circle" pTooltip="{{sampleCountPercentage | number : '1.0-2'}}% of Total Row Count" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
     </span>
 </ng-template>
 
 <ng-template #samplePercentageTooltip let-numerator="numerator">
     <span *ngIf="dataProfile.sampleCount" class="tooltip-icon" style="margin-left:5px">
-        <i class="fa fa-question-circle" pTooltip="{{((numerator/dataProfile.sampleCount)*100) | number : '1.0-2'}}% of Sample Count" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+        <i class="fa fa-question-circle" pTooltip="{{((numerator/dataProfile.sampleCount)*100) | number : '1.0-2'}}% of Sample Row Count" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+    </span>
+</ng-template>
+
+<ng-template #validPercentageTooltip>
+    <span *ngIf="dataProfile.matchCount" class="tooltip-icon" style="margin-left:5px">
+        <i class="fa fa-question-circle" pTooltip="{{((dataProfile.cardinality/dataProfile.matchCount)*100) | number : '1.0-2'}}% of Valid" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
     </span>
 </ng-template>
 
@@ -309,7 +315,7 @@
 </ng-template>
 
 <ng-template #validationTooltip>
-    <span *ngIf="dataProfile.regExp" class="tooltip-icon" style="margin-left:5px"
+    <span *ngIf="dataProfile.regExp" class="tooltip-icon"
           pTooltip="Validation to check whether the sample values are valid or not."
           [escape]="false"
           tooltipPosition="top"
@@ -331,7 +337,7 @@
 <ng-template #regExpTemplate>
     <div *ngIf="dataProfile.regExp">
         <span class="summaryRow">
-            <label class="ig-label">Validation Regular Expression: </label>
+            <label class="ig-label">Validation Regular Expression</label>
             <ng-container *ngTemplateOutlet="validationTooltip"></ng-container>
         </span>
         <div class="ig-value">
@@ -342,25 +348,25 @@
 
 <ng-template #blankCountTemplate>
     <div *ngIf="dataProfile.blankCount!==null">
-        <label class="ig-label">Blank Count: </label>
+        <label class="ig-label">Blank Count</label>
         <div class="ig-value">
-            {{dataProfile.blankCount}}
+            {{dataProfile.blankCount | number}}
         </div>
     </div>
 </ng-template>
 
 <ng-template #nullCountTemplate>
     <div *ngIf="dataProfile.nullCount!==null">
-        <label class="ig-label">Null Count: </label>
+        <label class="ig-label">Null Count</label>
         <div class="ig-value">
-            {{dataProfile.nullCount}}
+            {{dataProfile.nullCount | number}}
         </div>
     </div>
 </ng-template>
 
 <ng-template #minTemplate>
     <div *ngIf="dataProfile.min!==null">
-        <label class="ig-label">Minimum Value: </label>
+        <label class="ig-label">Minimum Value</label>
         <div class="ig-value">
             {{dataProfile.min}}
         </div>
@@ -369,7 +375,7 @@
 
 <ng-template #maxTemplate>
     <div *ngIf="dataProfile.max!==null">
-        <label class="ig-label">Maximum Value: </label>
+        <label class="ig-label">Maximum Value</label>
         <div class="ig-value">
             {{dataProfile.max}}
         </div>
@@ -378,52 +384,52 @@
 
 <ng-template #meanTemplate>
     <div *ngIf="dataProfile.mean!==null">
-        <label class="ig-label">Mean: </label>
+        <label class="ig-label">Mean</label>
         <div class="ig-value">
-            {{dataProfile.mean}}
+            {{dataProfile.mean | number}}
         </div>
     </div>
 </ng-template>
 
 <ng-template #standardDeviationTemplate>
     <div *ngIf="dataProfile.standardDeviation!==null">
-        <label class="ig-label">Standard Deviation: </label>
+        <label class="ig-label">Standard Deviation</label>
         <div class="ig-value">
-            {{dataProfile.standardDeviation}}
+            {{dataProfile.standardDeviation | number}}
         </div>
     </div>
 </ng-template>
 
 <ng-template #leadingZeroCountTemplate>
     <div *ngIf="dataProfile.leadingZeroCount!==null">
-        <label class="ig-label">Leading Zero Count: </label>
+        <label class="ig-label">Leading Zero Count</label>
         <div class="ig-value">
-            {{dataProfile.leadingZeroCount}}
+            {{dataProfile.leadingZeroCount | number}}
         </div>
     </div>
 </ng-template>
 
 <ng-template #minLengthTemplate>
     <div *ngIf="dataProfile.minLength!==null">
-        <label class="ig-label">Minimum Length: </label>
+        <label class="ig-label">Minimum Length</label>
         <div class="ig-value">
-            {{dataProfile.minLength}}
+            {{dataProfile.minLength | number}}
         </div>
     </div>
 </ng-template>
     
 <ng-template #maxLengthTemplate>
     <div *ngIf="dataProfile.maxLength!==null">
-        <label class="ig-label">Maximum Length: </label>
+        <label class="ig-label">Maximum Length</label>
         <div class="ig-value">
-            {{dataProfile.maxLength}}
+            {{dataProfile.maxLength | number}}
         </div>
     </div>
 </ng-template>
 
 <ng-template #multilineTemplate>
     <div *ngIf="dataProfile.multiline!==null">
-        <label class="ig-label">Multiline: </label>
+        <label class="ig-label">Multiline</label>
         <div class="ig-value">
             {{dataProfile.multiline}}
         </div>
@@ -432,7 +438,7 @@
 
 <ng-template #leadingWhiteSpaceTemplate>
     <div *ngIf="dataProfile.leadingWhiteSpace!==null">
-        <label class="ig-label">Leading Whitespace: </label>
+        <label class="ig-label">Leading Whitespace</label>
         <div class="ig-value">
             {{dataProfile.leadingWhiteSpace}}
         </div>
@@ -441,7 +447,7 @@
 
 <ng-template #trailingWhiteSpaceTemplate>
     <div *ngIf="dataProfile.trailingWhiteSpace!==null">
-        <label class="ig-label">Trailing Whitespace: </label>
+        <label class="ig-label">Trailing Whitespace</label>
         <div class="ig-value">
             {{dataProfile.trailingWhiteSpace}}
         </div>
