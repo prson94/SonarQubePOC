@@ -42,7 +42,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         
         this.validPercentage = ((this.dataProfile.matchCount / this.dataProfile.totalCount) * 100);
 
-        if (this.dataProfile.sampleCount !== null && this.dataProfile.totalCount) {
+        if (this.dataProfile.sampleCount != null && this.dataProfile.totalCount) {
             this.sampleCountPercentage = (this.dataProfile.sampleCount / this.dataProfile.totalCount) * 100;
         }
         this.nullBlankCountTotal = ((this.dataProfile.nullCount ?? 0) + (this.dataProfile.blankCount ?? 0));
@@ -92,11 +92,11 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
     private getNullBlankToolTip() {
         var retval: string = "";
-        if (this.dataProfile.nullCount !== null) {
+        if (this.dataProfile.nullCount != null) {
             retval = `Null: ${this.dataProfile.nullCount} <span style="color: gray;">${((this.dataProfile.nullCount / this.dataProfile.sampleCount) * 100).toPrecision(2)}%</span>`;
         }
 
-        if (this.dataProfile.blankCount !== null) {
+        if (this.dataProfile.blankCount != null) {
             if (retval.length > 0) {
                 retval = retval + "<br/>";
             }
@@ -114,17 +114,17 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         var matchPercentage = (this.dataProfile.matchCount / this.dataProfile.sampleCount) * 100;
         var outlierPercentage = (this.dataProfile.outlierCount / this.dataProfile.sampleCount) * 100;
 
-        if (this.dataProfile.matchCount !== null) {
+        if (this.dataProfile.matchCount != null) {
             validBar = `var(--validbar) 0%, var(--validbar) ${matchPercentage}%, `;
         }
 
-        if (this.dataProfile.outlierCount !== null) {
-            if (this.dataProfile.matchCount !== null) {
+        if (this.dataProfile.outlierCount != null) {
+            if (this.dataProfile.matchCount != null) {
                 validBar += `var(--invalidbar) ${matchPercentage}%,`;
             }
             outlierBar = `var(--invalidbar) ${matchPercentage + outlierPercentage}%, var(--otherbar) ${matchPercentage + outlierPercentage}%,`;
         } else {
-            if (this.dataProfile.matchCount !== null) {
+            if (this.dataProfile.matchCount != null) {
                 outlierBar += `var(--otherbar) ${matchPercentage}%,`;
             }            
         }
@@ -133,19 +133,19 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     }
 
     private checkVisibility() {   
-        if (this.dataProfile.totalCount !== null || this.dataProfile.sampleCount !== null || this.dataProfile.type || this.dataProfile.typeQualifier || this.dataProfile.confidence !== null)
+        if (this.dataProfile.totalCount != null || this.dataProfile.sampleCount != null || this.dataProfile.type || this.dataProfile.typeQualifier || this.dataProfile.confidence != null)
         {
             this.showSampleSummary = true;
         }
 
-        if (this.dataProfile.sampleCount !== null && (this.dataProfile.cardinality !== null || this.dataProfile.matchCount !== null || this.dataProfile.outlierCount !== null || this.dataProfile.nullCount !== null || this.dataProfile.blankCount !== null)) {
+        if (this.dataProfile.sampleCount != null && (this.dataProfile.cardinality != null || this.dataProfile.matchCount != null || this.dataProfile.outlierCount != null || this.dataProfile.nullCount != null || this.dataProfile.blankCount != null)) {
             this.showSampleQuality = true;
         }
 
-        if (this.dataProfile.regExp || this.dataProfile.blankCount !== null || this.dataProfile.nullCount !== null ||
-            this.dataProfile.min !== null || this.dataProfile.max !== null || this.dataProfile.mean !== null || this.dataProfile.standardDeviation !== null ||
-            this.dataProfile.leadingZeroCount !== null || this.dataProfile.minLength !== null || this.dataProfile.maxLength !== null ||
-            this.dataProfile.multiline !== null || this.dataProfile.leadingWhiteSpace !== null || this.dataProfile.trailingWhiteSpace !== null) {
+        if (this.dataProfile.regExp || this.dataProfile.blankCount != null || this.dataProfile.nullCount != null ||
+            this.dataProfile.min != null || this.dataProfile.max != null || this.dataProfile.mean != null || this.dataProfile.standardDeviation != null ||
+            this.dataProfile.leadingZeroCount != null || this.dataProfile.minLength != null || this.dataProfile.maxLength != null ||
+            this.dataProfile.multiline != null || this.dataProfile.leadingWhiteSpace != null || this.dataProfile.trailingWhiteSpace != null) {
             this.showStatistics = true;
         }
 
@@ -153,7 +153,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
             switch (this.dataProfile.type.toLowerCase()) {
                 case "boolean": 
                     this.ShowBoolean = true;
-                    if (!(this.dataProfile.regExp || this.dataProfile.blankCount !== null || this.dataProfile.nullCount !== null)) {
+                    if (!(this.dataProfile.regExp || this.dataProfile.blankCount != null || this.dataProfile.nullCount != null)) {
                         this.showStatistics = false;
                     }
                     break;                
@@ -161,18 +161,18 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
                 case "long":
                 case "double":
                     this.ShowNumber = true;
-                    if (!(this.dataProfile.regExp || this.dataProfile.blankCount !== null || this.dataProfile.nullCount !== null
-                        || this.dataProfile.min !== null || this.dataProfile.max !== null || this.dataProfile.mean !== null
-                        || this.dataProfile.leadingZeroCount !== null || this.dataProfile.standardDeviation !== null)) {
+                    if (!(this.dataProfile.regExp || this.dataProfile.blankCount != null || this.dataProfile.nullCount != null
+                        || this.dataProfile.min != null || this.dataProfile.max != null || this.dataProfile.mean != null
+                        || this.dataProfile.leadingZeroCount != null || this.dataProfile.standardDeviation != null)) {
                         this.showStatistics = false;
                     }
                     break;
                 case "string": 
                     this.ShowString = true;
-                    if (!(this.dataProfile.regExp || this.dataProfile.blankCount !== null || this.dataProfile.nullCount !== null
-                        || this.dataProfile.min !== null || this.dataProfile.max !== null || this.dataProfile.multiline !== null
-                        || this.dataProfile.minLength !== null || this.dataProfile.maxLength !== null || this.dataProfile.leadingWhiteSpace !== null
-                        || this.dataProfile.trailingWhiteSpace !== null)) {
+                    if (!(this.dataProfile.regExp || this.dataProfile.blankCount != null || this.dataProfile.nullCount != null
+                        || this.dataProfile.min != null || this.dataProfile.max != null || this.dataProfile.multiline != null
+                        || this.dataProfile.minLength != null || this.dataProfile.maxLength != null || this.dataProfile.leadingWhiteSpace != null
+                        || this.dataProfile.trailingWhiteSpace != null)) {
                         this.showStatistics = false;
                     }
                     break;       
@@ -183,8 +183,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
                 case "offsetdatetime":
                 case "zoneddatetime":
                     this.ShowDateTime = true;                    
-                    if (!(this.dataProfile.regExp || this.dataProfile.blankCount !== null || this.dataProfile.nullCount !== null
-                        || this.dataProfile.min !== null || this.dataProfile.max !== null)) {
+                    if (!(this.dataProfile.regExp || this.dataProfile.blankCount != null || this.dataProfile.nullCount != null
+                        || this.dataProfile.min != null || this.dataProfile.max != null)) {
                         this.showStatistics = false;
                     }
                     break;   
