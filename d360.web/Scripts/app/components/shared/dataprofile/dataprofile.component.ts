@@ -201,10 +201,10 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     }
 
     private setBaseTypeText() {
-        if (this.dataProfile.type)
+        if (this.dataProfile.type) {
             switch (this.dataProfile.type.toLowerCase()) {
                 case "long":
-                    this.baseType = "Number (Long)"
+                    this.baseType = "Number (Long)";
                     break;
                 case "double":
                     this.baseType = "Number (Double)";
@@ -214,7 +214,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
                     break;
                 default:
                     this.baseType = this.dataProfile.type;
-                    break; 
+                    break;
             }
+        }
     }
 }
