@@ -34,6 +34,7 @@ export class SearchFieldComponent implements ControlValueAccessor, OnInit, OnDes
     @Input() debounce: number = 200;
     @Input() style: any;
     @Input() infoTooltip: string = "";
+    @Input() darkMode: boolean = false;
 
     @Output() onSearch = new EventEmitter();
 
@@ -106,6 +107,10 @@ export class SearchFieldComponent implements ControlValueAccessor, OnInit, OnDes
         } else if (event.type == 'keyup' && this.isKeypress()) {
             this.valueChanged.next(this.value);
         }
+    }
+
+    focus() {
+        this.el.nativeElement.focus();
     }
 
     @HostListener('focus')

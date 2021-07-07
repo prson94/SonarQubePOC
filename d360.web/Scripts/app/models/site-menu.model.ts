@@ -5,13 +5,14 @@
     ShowChildren?: boolean = false;
     IsLink: boolean;
     IsHomePage: boolean = false;
-    count: number;    
+    count: number;
 }
 
 export class SiteMenu {
     MenuID: string;
     NavigationItems: SiteMenuItem[];
     ShouldDisplay: boolean = true;
+    ShowVisibilityToggle: boolean;
     SortOrder: number;
     isActiveItem: boolean = false;
 
@@ -42,7 +43,7 @@ export class SiteNav {
 
     ImageIconUrl: string;
     FullURL: string;
-    IconPayload: string; 
+    IconPayload: string;
 
     Permissions: SiteNavPermission[] = [];
     public static zindex: number = 1000;
@@ -58,7 +59,7 @@ export class SiteNavPermission {
 
 export class NavigationState {
     SiteMenuID: string;
-    DisplayElements: DisplayElement[]; 
+    DisplayElements: DisplayElement[];
 }
 
 export class DisplayElement {

@@ -12,6 +12,8 @@ import { SiteMenuCategoryComponent } from './site-menu-category.component';
 import { PipesModule } from '../../../pipes/pipes.module';
 
 import { TooltipModule } from 'primeng/tooltip';
+import { DirectivesModule } from '../../../directives/directives.module';
+import { SearchFieldModule } from '../controls/search-field/search-field.component';
 
 @NgModule({
     imports: [
@@ -23,6 +25,8 @@ import { TooltipModule } from 'primeng/tooltip';
 
         //prime
         TooltipModule,
+        DirectivesModule,
+        SearchFieldModule
     ],
     declarations: [
         SiteMenuComponent,

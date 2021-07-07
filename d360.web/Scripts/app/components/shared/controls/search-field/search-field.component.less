@@ -91,4 +91,32 @@ ig-search-field {
       }
     }
   }
+
+  .dark-mode {
+    color: white;
+
+    .ig-input:enabled:focus {
+      outline: none;
+      box-shadow: none;
+      border-color: #646a7a;
+    }
+
+    input {
+      background-color: #646a7a;
+      color: white;
+
+      &::placeholder {
+        color: white;
+      }
+    }
+
+    .ig-search-field-keypress {
+      color: white;
+    }
+
+    .ig-search-field-button.clear {
+      color: white;
+      background-color: #646a7a;
+    }
+  }
 }

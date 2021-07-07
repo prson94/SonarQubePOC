@@ -2,44 +2,16 @@
 import { Router } from '@angular/router';
 import { BaseComponent } from '../base.component';
 import { SiteMenuService } from '../../../services/site-menu.service';
-import { SiteMenu, SiteNav } from '../../../models/site-menu.model';
+import { SiteMenu, SiteMenuItem, SiteNav } from '../../../models/site-menu.model';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import { isString, isArray } from 'util';
 import * as _ from 'lodash';
+import { SearchFieldComponent } from '../controls/search-field/search-field.component';
+import { forEach } from 'lodash';
 
 @Component({
     selector: 'd3s-site-menu-category',
-    template: ` 
-                    <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" (mouseenter)="show(item); clearSearches(null, item);" (mouseleave)="hide(item);" (click)="navigateToUrl(url)" style="cursor: pointer;" >
-                       <div class="menu-category-box">
-                            <img class="d3s-gov-icon" *ngIf="rootIconName && rootIconName.indexOf('/Content') != -1" [src]="rootIconName" />
-                            <i *ngIf="rootIconName && rootIconName.indexOf('/Content') == -1" [class]="'fa ' + rootIconName"></i>
-                            <img *ngIf="imageUrl" [src]="imageUrl" />
-                            <div [ngClass]="{'caption':true, 'min':!expanded}">
-                                <div [ngClass]="{'no-overflow':expanded, 'icon-active':expanded, 'icon':!expanded}"> {{title}} </div>
-                                <i [ngClass]="{'pull-right menu-category fa fa-caret-right':(menu && menu.NavigationItems && menu.NavigationItems.length > 0),'icon-active':expanded, 'icon':!expanded}"></i>
-                            </div>
-                        </div>
-                        <div #panel *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel" title="" [ngStyle]="{'display:flex; flex-direction:column': menu.isActiveItem}" (click)="stopNavigation($event)" (keyup)="checkKey($event,panel)">
-                            <div class="ie-min-content">
-                                <div class="row megamenu-title truncate">
-                                    <input (keyup)="positionMenu($event,item)" #searchinput type="search" [(ngModel)]=searchText placeholder="Search menu..."/>
-                                    <i (click)="clearInput()" [ngClass]="{'fa fa-times':searchText != '', 'fa fa-search':searchText == '' ||  !seachtext}"></i>
-                                    <div class="megamenu-tools" *ngIf="showClearButton">
-                                        <i (click)="clearClick.emit(true)" class=" pull-right fa fa-eraser" [pTooltip]="'Clear ' + title + ' List'" tooltipZIndex="10001"></i>
-                                    </div>
-                                </div> 
-                                <div class="row megamenu-items"[ngStyle]="{'max-height': getMaxHeight()}">
-                                    <div class="col s12 megamenu-items-container" *ngFor="let item of menu.NavigationItems | simpleSearch: searchText">
-                                        <ul class="menu-group">                                        
-                                            <d3s-site-menu-mega-item [category] = "menu.MenuID" [item]="item" [level]="0" [searchText]="searchText" [(active)]="menu.isActiveItem" [count]="item.count"></d3s-site-menu-mega-item>
-                                        </ul>
-                                    </div> 
-                                </div>
-                            </div>
-                        </div>
-                    </li>                    
-                `,
+    templateUrl: 'site-menu-category.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -59,7 +31,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
 
     public showing: boolean = false;
     private viewReady: boolean;
-    private maxMenuHeight: number; 
+    private maxMenuHeight: number;
     public searchText: string = "";
 
     private currentButtonIndex: number = -1;
@@ -71,13 +43,49 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         super();
     }
 
-    @ViewChild('searchinput', { static: false }) searchInput: any;
+    @ViewChild('searchinput', { static: false }) searchInput: SearchFieldComponent;
 
+    toggleEmptyVisibility() {
+        var newValue = (!this.hideEmptyItems).toString();
+        localStorage.setItem(this.storageKey, newValue);
+    }
+
+    hideEmptySubItems(items: SiteMenuItem[]) {
+        items.forEach((x) => {
+            if (x.Items) {
+                x.Items = x.Items.filter((y) => y.count > 0);
+                this.hideEmptySubItems(x.Items);
+            }
+        });
+    }
+
+    get visibleMenuItems(): SiteMenuItem[] {
+        if (this.hideEmptyItems) {
+            var items = this.menu.NavigationItems.filter((x) => x.count > 0);
+            this.hideEmptySubItems(items);
+            return items;
+        }
+        else {
+            return this.menu.NavigationItems;
+        }
+    }
+
+    get showVisiblityToggle(): boolean {
+        return this.menu.ShowVisibilityToggle;
+    }
+
+    get hideEmptyItems(): boolean {
+        return localStorage.getItem(this.storageKey) === "true";
+    }
+
+    get storageKey(): string {
+        return "hide-empty-items-" + this.menu.MenuID;
+    }
 
     getMaxHeight() {
         return (window.innerHeight - 80) + 'px';
     }
-    
+
     checkKey(event, elem) {
         if (event.keyCode == 40 || event.keyCode == 13 || event.keyCode == 38) {
 
@@ -101,7 +109,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
             if (arr.indexOf("highlight") == -1) {
                 allAItems[this.currentButtonIndex].className += " highlight";
             }
-            
+
         }
     }
     navigateToUrl(url) {
@@ -119,7 +127,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     show(item) {
         if (this.menu && this.menu.isActiveItem)
             return;
-        this.positionMenu(null,item);
+        this.positionMenu(null, item);
     }
 
     private positionMenu(event: any, item: any) {
@@ -135,9 +143,9 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
                 submenu.style.top = dims.top + 'px';
                 submenu.style.left = item.offsetWidth + 'px';
                 window.setTimeout(() => {
-                    this.searchInput.nativeElement.focus();
+                    this.searchInput.focus();
                 }, 350);
-              
+
                 window.setTimeout(() => {
                     this.repositionMenuToFit(submenu);
                 }, 150);
@@ -182,7 +190,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         this.viewReady = true;
 
         if (this.searchInput) {
-            this.searchInput.nativeElement.focus();
+            this.searchInput.focus();
         }
 
     }
@@ -202,7 +210,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
             var maxHeight = dims.top + dims.height;
 
             //case where menu is bigger than height of page
-            if (dims.height > windowHeight) {                
+            if (dims.height > windowHeight) {
                 dims = element.getBoundingClientRect();
                 element.style.top = 40 + 'px';
                 maxHeight = dims.top + dims.height;
@@ -215,8 +223,8 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
                 var topOffset = dims.top + (windowHeight - maxHeight);
 
                 element.style.top = topOffset + 'px';
-            }            
-        } 
+            }
+        }
     }
 
     hide(item) {
@@ -233,6 +241,6 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     clearInput() {
         this.searchText = "";
     }
-  
+
 
 }
