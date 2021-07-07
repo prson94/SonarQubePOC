@@ -327,13 +327,13 @@ where   AssetTypeID in (
                                                 else
                                                 {
                                                     var iDb = GetCompanyContext();
-
-                                                    var dqQueryDetail = dqMeasureQueryLibrary.FirstOrDefault(dq => dq.AssetVersionRollupPathUid == r.Measure.RollupPath.AssetVersionRollupPathUid);
-                                                    if (dqQueryDetail == null)
+                                                    DataQualityMeasureQueryModel dqQueryDetail = null;
+                                                    lock (resultsLock)
                                                     {
-                                                        dqQueryDetail = iDb.BuildDataQualityMeasureQueryModel(MetricDataQualityQueryType.MeasureResults_For_Calculation, r.Measure.RollupPath.AssetVersionRollupPathUid);
-                                                        lock (resultsLock)
+                                                        dqQueryDetail = dqMeasureQueryLibrary.FirstOrDefault(dq => dq.AssetVersionRollupPathUid == r.Measure.RollupPath.AssetVersionRollupPathUid);
+                                                        if (dqQueryDetail == null)
                                                         {
+                                                            dqQueryDetail = iDb.BuildDataQualityMeasureQueryModel(MetricDataQualityQueryType.MeasureResults_For_Calculation, r.Measure.RollupPath.AssetVersionRollupPathUid);
                                                             dqMeasureQueryLibrary.Add(dqQueryDetail); // Add to library for future reference.
                                                         }
                                                     }
