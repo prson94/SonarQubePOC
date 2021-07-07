@@ -533,7 +533,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
     getLookupValuesForComplexField(assetUid: string, fieldName: string, filterName: string, params: any): Observable<any> {
         var qString = '';
         if (params) {
-            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
             if (qString)
                 qString = '?' + qString;
         }
