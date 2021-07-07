@@ -37,6 +37,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     private showSampleQuality: boolean = false;
     private showStatistics: boolean;
     private nullBlankTooltipText: string;    
+    private baseType: string;
 
     ngOnInit() { 
         
@@ -51,6 +52,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         this.sampleBarChart = this.getSampleBarChart();
 
         this.nullBlankTooltipText = this.getNullBlankToolTip();
+
+        this.setBaseTypeText();
 
         this.checkVisibility();
     }
@@ -195,5 +198,23 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         } else {
             this.ShowOther = true;
         }         
+    }
+
+    private setBaseTypeText() {
+        if (this.dataProfile.type)
+            switch (this.dataProfile.type.toLowerCase()) {
+                case "long":
+                    this.baseType = "Number (Long)"
+                    break;
+                case "double":
+                    this.baseType = "Number (Double)";
+                    break;
+                case "boolean":
+                    this.baseType = "True/False (Boolean)";
+                    break;
+                default:
+                    this.baseType = this.dataProfile.type;
+                    break; 
+            }
     }
 }
