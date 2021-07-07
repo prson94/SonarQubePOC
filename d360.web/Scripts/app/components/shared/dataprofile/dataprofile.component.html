@@ -26,15 +26,15 @@
                                     <span *ngIf="dataProfile.totalCount" class="ig-value percentage">{{sampleCountPercentage | number : '1.0-2'}}%</span>
                                     <ng-container *ngTemplateOutlet="sampleCountTooltip"></ng-container>
                                 </div>
-                                <div *ngIf="dataProfile.type" class="summaryRow">
+                                <div *ngIf="hasValidCounts && dataProfile.type" class="summaryRow">
                                     <label class="ig-label">Base Type: </label>
-                                    <span class="ig-value" style="margin-left:5px">{{dataProfile.type}}</span>
+                                    <span class="ig-value" style="margin-left:5px">{{baseType}}</span>
                                 </div>
-                                <div *ngIf="dataProfile.typeQualifier" class="summaryRow">
+                                <div *ngIf="hasValidCounts && dataProfile.typeQualifier" class="summaryRow">
                                     <label class="ig-label">Detected Type: </label>
                                     <span class="ig-value" style="margin-left:5px">{{dataProfile.typeQualifier}}</span>
                                 </div>
-                                <div *ngIf="dataProfile.confidence!=null" class="summaryRow">
+                                <div *ngIf="hasValidCounts && dataProfile.confidence!=null" class="summaryRow">
                                     <label class="ig-label">Type Confidence: </label>
                                     <span class="ig-value" style="margin-left:5px">{{(dataProfile.confidence*100)}}%</span>
                                     <ng-container *ngTemplateOutlet="confidenceTooltip"></ng-container>
@@ -49,7 +49,7 @@
                                    [shouldBePadded]="false"
                                    [showHeaderLine]="false">
                     <div readonly class="group">
-                        <div class="sampleBarChart" [ngStyle]="sampleBarChart">&nbsp;</div>
+                        <div *ngIf="dataProfile.sampleCount" class="sampleBarChart" [ngStyle]="sampleBarChart">&nbsp;</div>
                         <div *ngIf="dataProfile.matchCount!=null" class="sampleQuality">
                             <span>
                                 <span class="ig-colorfield-swatch validCircle"></span><label class="quality-label">Valid</label>
@@ -97,7 +97,7 @@
                     </div>
                 </ig-property-group>
 
-                <ig-property-group *ngIf="topSamples && topSamples.length>0"
+                <ig-property-group *ngIf="hasValidCounts && topSamples && topSamples.length>0"
                                    [expanded]="true"
                                    [title]="'Top Values'"
                                    [shouldBePadded]="false"
@@ -124,7 +124,7 @@
                     </div>
                 </ig-property-group>
 
-                <ig-property-group *ngIf="bottomSamples && bottomSamples.length>0"
+                <ig-property-group *ngIf="hasValidCounts && bottomSamples && bottomSamples.length>0"
                                    [expanded]="true"
                                    [title]="'Bottom Values'"
                                    [shouldBePadded]="false"
@@ -151,7 +151,7 @@
                     </div>
                 </ig-property-group>
 
-                <ig-property-group *ngIf="dataProfile.outlierDetail" 
+                <ig-property-group *ngIf="hasValidCounts && dataProfile.outlierDetail" 
                                    class="outlier"
                                    [expanded]="true"
                                    [title]="'Invalid/Outliers'"
@@ -181,7 +181,7 @@
                     </div>
                 </ig-property-group>
 
-                <ig-property-group *ngIf="dataProfile.shapesDetail"
+                <ig-property-group *ngIf="hasValidCounts && dataProfile.shapesDetail"
                                    [expanded]="true"
                                    [title]="'Shapes'"
                                    [shouldBePadded]="false"

@@ -3,7 +3,7 @@
     <div class="row">
         <div>
             <div class="col s12" style="display:flex;">
-                <div class="tile tile-detail" style="flex:1;">
+                <div class="tile tile-detail main-panel">
                     <d3s-object-definition-tile [objectPermissions]="permissions" [objectID]="artifact?.ID" [useV2Api]="true" [objectType]="'Artifact'" [nymTypes]="artifact?.NymTypes" (onEditComplete)="editArtifact($event)"></d3s-object-definition-tile>
                 </div>
                 <div *ngIf="showDataProfile" class="tile tile-detail side-panel">

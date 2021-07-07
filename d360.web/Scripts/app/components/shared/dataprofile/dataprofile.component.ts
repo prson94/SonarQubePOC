@@ -37,6 +37,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     private showSampleQuality: boolean = false;
     private showStatistics: boolean;
     private nullBlankTooltipText: string;    
+    private baseType: string;
+    private hasValidCounts: boolean = true;
 
     ngOnInit() { 
         
@@ -51,6 +53,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         this.sampleBarChart = this.getSampleBarChart();
 
         this.nullBlankTooltipText = this.getNullBlankToolTip();
+
+        this.setBaseTypeText();
 
         this.checkVisibility();
     }
@@ -132,20 +136,24 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         return { "background-image": `linear-gradient(to right, ${validBar} ${outlierBar} #7690a9 100%)` };      
     }
 
-    private checkVisibility() {   
+    private checkVisibility() {         
+        if (!this.dataProfile.totalCount && !this.dataProfile.sampleCount) {
+            this.hasValidCounts = false;
+        }
+
         if (this.dataProfile.totalCount != null || this.dataProfile.sampleCount != null || this.dataProfile.type || this.dataProfile.typeQualifier || this.dataProfile.confidence != null)
         {
             this.showSampleSummary = true;
         }
 
-        if (this.dataProfile.sampleCount != null && (this.dataProfile.cardinality != null || this.dataProfile.matchCount != null || this.dataProfile.outlierCount != null || this.dataProfile.nullCount != null || this.dataProfile.blankCount != null)) {
+        if (this.hasValidCounts && this.dataProfile.sampleCount != null && (this.dataProfile.cardinality != null || this.dataProfile.matchCount != null || this.dataProfile.outlierCount != null || this.dataProfile.nullCount != null || this.dataProfile.blankCount != null)) {
             this.showSampleQuality = true;
         }
 
-        if (this.dataProfile.regExp || this.dataProfile.blankCount != null || this.dataProfile.nullCount != null ||
+        if (this.hasValidCounts && (this.dataProfile.regExp || this.dataProfile.blankCount != null || this.dataProfile.nullCount != null ||
             this.dataProfile.min != null || this.dataProfile.max != null || this.dataProfile.mean != null || this.dataProfile.standardDeviation != null ||
             this.dataProfile.leadingZeroCount != null || this.dataProfile.minLength != null || this.dataProfile.maxLength != null ||
-            this.dataProfile.multiline != null || this.dataProfile.leadingWhiteSpace != null || this.dataProfile.trailingWhiteSpace != null) {
+            this.dataProfile.multiline != null || this.dataProfile.leadingWhiteSpace != null || this.dataProfile.trailingWhiteSpace != null)) {
             this.showStatistics = true;
         }
 
@@ -195,5 +203,24 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         } else {
             this.ShowOther = true;
         }         
+    }
+
+    private setBaseTypeText() {
+        if (this.dataProfile.type) {
+            switch (this.dataProfile.type.toLowerCase()) {
+                case "long":
+                    this.baseType = "Number (Long)";
+                    break;
+                case "double":
+                    this.baseType = "Number (Double)";
+                    break;
+                case "boolean":
+                    this.baseType = "True/False (Boolean)";
+                    break;
+                default:
+                    this.baseType = this.dataProfile.type;
+                    break;
+            }
+        }
     }
 }

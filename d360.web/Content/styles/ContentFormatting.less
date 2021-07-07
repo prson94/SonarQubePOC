@@ -298,6 +298,12 @@ button.WhiteButton {
     box-shadow: 2px 2px 1px 0px rgba(0,0,0,0.15);
 }
 
+.main-panel {
+    flex: 1;
+    height: calc(100vh - 190px);
+    overflow:auto;
+}
+
 .side-panel {
     margin-left: 15px;
     flex: 0;
@@ -324,20 +330,7 @@ button.WhiteButton {
             font-stretch: normal;
             font-style: normal;
         }
-    }
-
-    .info-tip {
-        display: inline;
-
-        .fa {
-            position: relative;
-            font-size: 14px;
-            width: initial;
-            color: @ig-midblue;
-            line-height: 11px;
-            background: none;
-        }
-    }
+    }    
 }
 
 .tile-clickable {
