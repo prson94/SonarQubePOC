@@ -5,13 +5,330 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Procedure.bulkload.GetLoadColumns-v8">
-    <comment>GOV-14299</comment>
+  <changeSet author="tduric" id="Procedure.bulkload.GetLoadColumns-v9">
+    <comment>GOV-15193</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+CREATE OR ALTER procedure [bulkload].[GetLoadColumns]
+	@action varchar(2),
+	@type varchar(50),
+	@id int,
+	@getLookups bit = 1
+as
+begin
+	declare @fields table (ID int identity, FieldTypeID int, Name nvarchar(250), [Required] bit, PartOfKey bit, AllowMultipleValues bit, IsLookup bit, [Level] int)
+	declare @lookups table ([Value] uniqueidentifier, FieldTypeID int, [Label] nvarchar(max))
+	declare @current int = 1,
+			@max int,
+			@isLookup bit = 0,
+			@fieldTypeID int
+
+	if @action = 'M'
+	begin
+		if @id = 0 
+		begin
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (1, 'Action', 1, 0, 0, 1, 1)
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Group Name', 1, 1, 0, 0, 1)
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'User Email', 1, 1, 0, 0, 1)
+
+			insert into @lookups (FieldTypeID, [Label]) values (1, 'Add')
+			insert into @lookups (FieldTypeID, [Label]) values (1, 'Remove')
+		end
+
+		if @id = 1 
+		begin
+			set @type = 'ResourceType'
+
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (1, 'Status', 1, 1, 0, 0, 1)
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'User Email', 1, 1, 0, 0, 1)
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'First Name', 1, 1, 0, 0, 1)
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Last Name', 1, 1, 0, 0, 1)
+
+			insert into @lookups (FieldTypeID, [Label]) values (1, 'Active')
+			insert into @lookups (FieldTypeID, [Label]) values (1, 'Inactive')
+		end
+	end
+
+	if @action = 'O'
+	begin
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (1, 'Responsibility', 1, 1, 0, 1, 1)
+
+			insert into @lookups (FieldTypeID, [Label])
+				select	1, Name from ResponsibilityType order by Name
+
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (2, 'Resource', 1, 1, 0, 1, 1)
+
+			insert into @lookups (FieldTypeID, [Label])
+				select	2, 'User:' + email from reporting.Global_Resource order by email
+
+			insert into @lookups (FieldTypeID, [Label])
+				select	2, 'Group:' + DisplayValue from AssetDetail A
+				where	A.Object = 'Group'
+				order by DisplayValue
+			
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Asset UID', 1, 1, 0, 0, 1);
+	end
+
+	if @action = 'P'
+	begin
+		if @type = 'AttributeType'
+		begin
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (-1, 'Owner Type', 1, 1, 0, 1, 1)
+
+			insert into @lookups ([Value], FieldTypeID, [Label])
+				select	[uid],
+						-1,
+						'Glossary: ' + [Name] 
+				from	AssetType T
+				where	T.Object = 'ArtifactType'
+				order by Name
+			
+			insert into @lookups ([Value], FieldTypeID, [Label])
+				select	[uid],
+						-1,
+						'Model: ' + [Name]
+				from	AssetType T
+				where	T.Object = 'TaxonomyType'
+				order by Name
+
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Owner ID', 1, 1, 0, 0, 1)
+		end 
+
+		if @type = 'IntersectType'
+		begin
+			declare @s varchar(50),
+					@sid int,
+					@o varchar(50),
+					@oid int
+
+			select	@s = Subject,
+					@sid = SubjectID,
+					@o = Object,
+					@oid = ObjectID
+			from	IntersectType
+			where	ID = @id
+
+
+			if @s = 'TaxonomyType'
+			begin
+				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Subject Path', 1, 1, 0, 0, 1)
+			end
+			else
+			begin
+				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level])
+					select	FT.ID, 
+							'Subject ' + FT.Name, 
+							FT.IsRequired, 
+							FT.IsPartOfKey, 
+							FT.AllowMultipleValues,
+							case FT.Type
+								when 'Lookup' then cast(1 as bit)
+								else cast(0 as bit)
+							end as IsLookup, 
+							1
+					from	FieldType FT 
+					where	FT.IsPartOfKey = 1 and FT.Object = @s and FT.ObjectID = @sid
+			end
+
+			if @s = 'TaxonomyType'
+			begin
+				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Object Path', 1, 1, 0, 0, 1)
+			end
+			else
+			begin
+				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level])
+					select	FT.ID, 
+							'Object ' + FT.Name, 
+							FT.IsRequired, 
+							FT.IsPartOfKey, 
+							FT.AllowMultipleValues,
+							case FT.Type
+								when 'Lookup' then cast(1 as bit)
+								else cast(0 as bit)
+							end as IsLookup,
+							1
+					from	FieldType FT 
+					where	FT.IsPartOfKey = 1 and FT.Object = @o and FT.ObjectID = @oid
+			end
+
+		end 
+
+		if @type = 'ArtifactType' or @type = 'ReferenceItemType'
+		begin
+			declare @parentTypeID int = null,
+					@parentTypeName nvarchar(250) = null
+
+			select	@parentTypeID = I.SubjectID,
+					@parentTypeName = I.SubjectName
+			from	IntersectTypeDetail I                
+			where	I.[PredicateType] = 3 and [Object] = @type and ObjectID = @id;
+
+			if @parentTypeID is not null
+			begin
+				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values(0, @parentTypeName, 1, 1, 0, 1, 1);
+
+				if @type = 'ArtifactType'
+				begin
+					insert into @lookups ([Value], FieldTypeID, [Label])
+						select	[uid], 0, DisplayValue 
+						from	AssetDetail 
+						where	typeid = @parentTypeID and [object] = 'Artifact' order by DisplayValue;
+				end
+
+				if @type = 'ReferenceItemType'
+				begin
+					insert into @lookups ([Value], FieldTypeID, [Label])
+					select	[uid], 0, DisplayValue 
+					from	AssetDetail 
+					where	typeid = @parentTypeID and [object] = 'ReferenceItem' order by DisplayValue;
+				end
+			end
+		end 
+
+		if @type = 'ReferenceItemType'
+		begin
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (-1, 'Code', 1, 1, 0, 0, 1)
+		end 
+
+		if @type = 'TaxonomyType'
+		begin
+			declare @initialDepth int = 1,
+					@maxDepth int = 1
+			Select  @maxDepth = HierarchyMaximumDepth from AssetType where object='TaxonomyType' and objectId = @id
+			declare @levels table (Value int)
+			while  @initialDepth <= @maxDepth
+			begin
+				insert into @levels values (@initialDepth)
+				set @initialDepth = @initialDepth + 1
+			end
+
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) 
+				select	FT.ID, 
+						case
+							when TTL.Name is not null then TTL.Name + ' ' + FT.Name
+							else 'Level ' + cast(L.Value as nvarchar)  + ' ' + FT.Name
+						end, 
+						FT.IsRequired, 
+						FT.IsPartOfKey, 
+						FT.AllowMultipleValues,
+						case FT.Type
+							when 'Lookup' then cast(1 as bit)
+							else cast(0 as bit)
+						end as IsLookup,
+						L.Value as [Level]
+				from	@levels L 
+						inner join FieldType FT on FT.IsPartOfKey = 1 and FT.Object = @type and FT.ObjectID = @id						
+						left join AssetTypeLevel TTL on TTL.[Level] = L.Value and TTL.AssetTypeID = FT.AssetTypeID
+		end 
+
+		if @type = 'RuleType'
+		begin
+				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Threshold', 1, 0, 0, 0, 1)
+		end
+	end 
+	
+	if (@action = 'R' or @action = 'U')
+	begin
+		
+		print 'relate / unrelate'
+				
+		declare @subjectType varchar(50),
+				@subjectTypeName nvarchar(500),
+				@subjectTypeID int,
+				@objectType varchar(50),
+				@objectTypeName nvarchar(500),
+				@objectTypeID int
+		select	@subjectType = Subject,
+				@subjectTypeName = SubjectName,
+				@subjectTypeID = SubjectID,
+				@objectTypeName = ObjectName,
+				@objectType = Object,
+				@objectTypeID = ObjectID
+		from	IntersectTypeDetail
+		where	ID = @id
+		
+
+		if @objectType = 'FusionAttributeType' or @objectType = 'IntersectType'
+		begin
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @objectTypeName, 1, 1, 0, 0, 1)
+		end		
+		else if @objectType = 'ReferenceItemType' and @objectTypeID = 0
+		begin
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @objectTypeName + ' Asset Type Uid', 1, 1, 0, 0, 1)
+		end		
+		else
+		begin
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @objectTypeName + ' Asset Uid', 1, 1, 0, 0, 1)				
+		end
+
+		if @subjectType = 'FusionAttributeType' or @subjectType = 'IntersectType'
+		begin
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @subjectTypeName, 1, 1, 0, 0, 1)
+		end
+		else if @subjectType = 'ReferenceItemType' and @subjectTypeID = 0
+		begin
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @subjectTypeName + ' Asset Type Uid', 1, 1, 0, 0, 1)
+		end		
+		else
+		begin
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @subjectTypeName + ' Asset Uid', 1, 1, 0, 0, 1)
+		end
+	end 
+	
+	if ((@action = 'M' and @id = 1 ) or @action = 'R' or @action = 'P')
+	begin
+		insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level])
+			select		ID,
+						Name, 
+						IsRequired,
+						IsPartOfKey,
+						AllowMultipleValues,
+						case Type
+							when 'Lookup' then cast(1 as bit)
+							else cast(0 as bit)
+						end as IsLookup, 
+						1
+			from		FieldType 
+			where		Object = @type 
+						and ObjectID = @id 
+						and Type not in ('ComplexRelationLookup', 'FieldFromRelationship', 'OwnershipLookup', 'RefListRelationship', 'Tag', 'Relationship')
+						and ( (@type = 'IntersectType' and IsPartOfKey = 0) OR (@type = 'TaxonomyType' and IsPartOfKey = 0) OR (@type <> 'TaxonomyType') )
+						and (IsEditable = 1 or (@action = 'P' and [Type] = 'JSON') or (IsEditable = 0 and IsRequired = 1) or Type = 'Counter')						
+			order by	ColumnOrder;
+		
+			insert into @lookups (FieldTypeID, [Label])
+				select		F.FieldTypeID,
+							V.[Text]
+				from		@fields F 
+							inner join FieldType FT on FT.ID = F.FieldTypeID and F.FieldTypeID <> 0
+							inner join FieldLookupValue V on V.FieldTypeID = F.FieldTypeID and F.IsLookup = 1
+				order by	F.FieldTypeID, V.[Text];
+	end
+	
+	select	Name,
+			[Required],
+			PartOfKey,
+			AllowMultipleValues,
+			IsLookup,
+			F.[FieldTypeId],
+			F.[Level],
+			(
+			select	Value,
+					Label
+			from	@lookups
+			where	FieldTypeID = F.FieldTypeID
+			for json path
+			) as Lookups
+	from	@fields F
+	for json path
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER procedure [bulkload].[GetLoadColumns]
 	@action varchar(2),
 	@type varchar(50),
@@ -325,324 +642,6 @@ begin
 	from	@fields F
 	for json path
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-CREATE or ALTER   procedure [bulkload].[GetLoadColumns]
-	@action varchar(2),
-	@type varchar(50),
-	@id int,
-	@getLookups bit = 1
-as
-begin
-	declare @fields table (ID int identity, FieldTypeID int, Name nvarchar(250), [Required] bit, PartOfKey bit, AllowMultipleValues bit, IsLookup bit, [Level] int)
-	declare @lookups table ([Value] uniqueidentifier, FieldTypeID int, [Label] nvarchar(max))
-	declare @current int = 1,
-			@max int,
-			@isLookup bit = 0,
-			@fieldTypeID int
-
-	if @action = 'M'
-	begin
-		if @id = 0 
-		begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (1, 'Action', 1, 0, 0, 1, 1)
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Group Name', 1, 1, 0, 0, 1)
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'User Email', 1, 1, 0, 0, 1)
-
-			insert into @lookups (FieldTypeID, [Label]) values (1, 'Add')
-			insert into @lookups (FieldTypeID, [Label]) values (1, 'Remove')
-		end
-
-		if @id = 1 
-		begin
-			set @type = 'ResourceType'
-
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (1, 'Status', 1, 1, 0, 0, 1)
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'User Email', 1, 1, 0, 0, 1)
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'First Name', 1, 1, 0, 0, 1)
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Last Name', 1, 1, 0, 0, 1)
-
-			insert into @lookups (FieldTypeID, [Label]) values (1, 'Active')
-			insert into @lookups (FieldTypeID, [Label]) values (1, 'Inactive')
-		end
-	end
-
-	if @action = 'O'
-	begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (1, 'Responsibility', 1, 1, 0, 1, 1)
-
-			insert into @lookups (FieldTypeID, [Label])
-				select	1, Name from ResponsibilityType order by Name
-
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (2, 'Resource', 1, 1, 0, 1, 1)
-
-			insert into @lookups (FieldTypeID, [Label])
-				select	2, 'User:' + email from reporting.Global_Resource order by email
-
-			insert into @lookups (FieldTypeID, [Label])
-				select	2, 'Group:' + DisplayValue from AssetDetail A
-				where	A.Object = 'Group'
-				order by DisplayValue
-			
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Asset UID', 1, 1, 0, 0, 1);
-	end
-
-	if @action = 'P'
-	begin
-		if @type = 'AttributeType'
-		begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (-1, 'Owner Type', 1, 1, 0, 1, 1)
-
-			insert into @lookups ([Value], FieldTypeID, [Label])
-				select	[uid],
-						-1,
-						'Glossary: ' + [Name] 
-				from	AssetType T
-				where	T.Object = 'ArtifactType'
-				order by Name
-			
-			insert into @lookups ([Value], FieldTypeID, [Label])
-				select	[uid],
-						-1,
-						'Model: ' + [Name]
-				from	AssetType T
-				where	T.Object = 'TaxonomyType'
-				order by Name
-
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Owner ID', 1, 1, 0, 0, 1)
-		end 
-
-		if @type = 'IntersectType'
-		begin
-			declare @s varchar(50),
-					@sid int,
-					@o varchar(50),
-					@oid int
-
-			select	@s = Subject,
-					@sid = SubjectID,
-					@o = Object,
-					@oid = ObjectID
-			from	IntersectType
-			where	ID = @id
-
-
-			if @s = 'TaxonomyType'
-			begin
-				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Subject Path', 1, 1, 0, 0, 1)
-			end
-			else
-			begin
-				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level])
-					select	FT.ID, 
-							'Subject ' + FT.Name, 
-							FT.IsRequired, 
-							FT.IsPartOfKey, 
-							FT.AllowMultipleValues,
-							case FT.Type
-								when 'Lookup' then cast(1 as bit)
-								else cast(0 as bit)
-							end as IsLookup, 
-							1
-					from	FieldType FT 
-					where	FT.IsPartOfKey = 1 and FT.Object = @s and FT.ObjectID = @sid
-			end
-
-			if @s = 'TaxonomyType'
-			begin
-				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Object Path', 1, 1, 0, 0, 1)
-			end
-			else
-			begin
-				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level])
-					select	FT.ID, 
-							'Object ' + FT.Name, 
-							FT.IsRequired, 
-							FT.IsPartOfKey, 
-							FT.AllowMultipleValues,
-							case FT.Type
-								when 'Lookup' then cast(1 as bit)
-								else cast(0 as bit)
-							end as IsLookup,
-							1
-					from	FieldType FT 
-					where	FT.IsPartOfKey = 1 and FT.Object = @o and FT.ObjectID = @oid
-			end
-
-		end 
-
-		if @type = 'ArtifactType' or @type = 'ReferenceItemType'
-		begin
-			declare @parentTypeID int = null,
-					@parentTypeName nvarchar(250) = null
-
-			select	@parentTypeID = I.SubjectID,
-					@parentTypeName = I.SubjectName
-			from	IntersectTypeDetail I                
-			where	I.[PredicateType] = 3 and [Object] = @type and ObjectID = @id;
-
-			if @parentTypeID is not null
-			begin
-				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values(0, @parentTypeName, 1, 1, 0, 1, 1);
-
-				if @type = 'ArtifactType'
-				begin
-					insert into @lookups ([Value], FieldTypeID, [Label])
-						select	[uid], 0, DisplayValue 
-						from	AssetDetail 
-						where	typeid = @parentTypeID and [object] = 'Artifact' order by DisplayValue;
-				end
-
-				if @type = 'ReferenceItemType'
-				begin
-					insert into @lookups ([Value], FieldTypeID, [Label])
-					select	[uid], 0, DisplayValue 
-					from	AssetDetail 
-					where	typeid = @parentTypeID and [object] = 'ReferenceItem' order by DisplayValue;
-				end
-			end
-		end 
-
-		if @type = 'ReferenceItemType'
-		begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (-1, 'Code', 1, 1, 0, 0, 1)
-		end 
-
-		if @type = 'TaxonomyType'
-		begin
-			declare @initialDepth int = 1,
-					@maxDepth int = 1
-			Select  @maxDepth = HierarchyMaximumDepth from AssetType where object='TaxonomyType' and objectId = @id
-			declare @levels table (Value int)
-			while  @initialDepth <= @maxDepth
-			begin
-				insert into @levels values (@initialDepth)
-				set @initialDepth = @initialDepth + 1
-			end
-
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) 
-				select	FT.ID, 
-						case
-							when TTL.Name is not null then TTL.Name + ' ' + FT.Name
-							else 'Level ' + cast(L.Value as nvarchar)  + ' ' + FT.Name
-						end, 
-						FT.IsRequired, 
-						FT.IsPartOfKey, 
-						FT.AllowMultipleValues,
-						case FT.Type
-							when 'Lookup' then cast(1 as bit)
-							else cast(0 as bit)
-						end as IsLookup,
-						L.Value as [Level]
-				from	@levels L 
-						inner join FieldType FT on FT.IsPartOfKey = 1 and FT.Object = @type and FT.ObjectID = @id						
-						left join AssetTypeLevel TTL on TTL.[Level] = L.Value and TTL.AssetTypeID = FT.AssetTypeID
-		end 
-
-		if @type = 'RuleType'
-		begin
-				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Threshold', 1, 0, 0, 0, 1)
-		end
-	end 
-	
-	if (@action = 'R' or @action = 'U')
-	begin
-		
-		print 'relate / unrelate'
-				
-		declare @subjectType varchar(50),
-				@subjectTypeName nvarchar(500),
-				@subjectTypeID int,
-				@objectType varchar(50),
-				@objectTypeName nvarchar(500),
-				@objectTypeID int
-		select	@subjectType = Subject,
-				@subjectTypeName = SubjectName,
-				@subjectTypeID = SubjectID,
-				@objectTypeName = ObjectName,
-				@objectType = Object,
-				@objectTypeID = ObjectID
-		from	IntersectTypeDetail
-		where	ID = @id
-		
-
-		if @objectType = 'FusionAttributeType' or @objectType = 'IntersectType'
-		begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @objectTypeName, 1, 1, 0, 0, 1)
-		end		
-		else if @objectType = 'ReferenceItemType' and @objectTypeID = 0
-		begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @objectTypeName + ' Asset Type Uid', 1, 1, 0, 0, 1)
-		end		
-		else
-		begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @objectTypeName + ' Asset Uid', 1, 1, 0, 0, 1)				
-		end
-
-		if @subjectType = 'FusionAttributeType' or @subjectType = 'IntersectType'
-		begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @subjectTypeName, 1, 1, 0, 0, 1)
-		end
-		else if @subjectType = 'ReferenceItemType' and @subjectTypeID = 0
-		begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @subjectTypeName + ' Asset Type Uid', 1, 1, 0, 0, 1)
-		end		
-		else
-		begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @subjectTypeName + ' Asset Uid', 1, 1, 0, 0, 1)
-		end
-	end 
-	
-	if ((@action = 'M' and @id = 1 ) or @action = 'R' or @action = 'P')
-	begin
-		insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level])
-			select		ID,
-						Name, 
-						IsRequired,
-						IsPartOfKey,
-						AllowMultipleValues,
-						case Type
-							when 'Lookup' then cast(1 as bit)
-							else cast(0 as bit)
-						end as IsLookup, 
-						1
-			from		FieldType 
-			where		Object = @type 
-						and ObjectID = @id 
-						and Type not in ('ComplexRelationLookup', 'FieldFromRelationship', 'OwnershipLookup', 'RefListRelationship', 'Tag', 'Relationship')
-						and ( (@type = 'IntersectType' and IsPartOfKey = 0) OR (@type = 'TaxonomyType' and IsPartOfKey = 0) OR (@type <> 'TaxonomyType') )
-						and (IsEditable = 1 or (@action = 'P' and [Type] = 'JSON') or (IsEditable = 0 and IsRequired = 1))						
-			order by	ColumnOrder;
-		
-			insert into @lookups (FieldTypeID, [Label])
-				select		F.FieldTypeID,
-							V.[Text]
-				from		@fields F 
-							inner join FieldType FT on FT.ID = F.FieldTypeID and F.FieldTypeID <> 0
-							inner join FieldLookupValue V on V.FieldTypeID = F.FieldTypeID and F.IsLookup = 1 and V.LookupObjectType = FT.LookupObjectType and V.LookupObjectID = FT.LookupObjectID
-				order by	F.FieldTypeID, V.[Text];
-	end
-	
-	select	Name,
-			[Required],
-			PartOfKey,
-			AllowMultipleValues,
-			IsLookup,
-			F.[FieldTypeId],
-			F.[Level],
-			(
-			select	Value,
-					Label
-			from	@lookups
-			where	FieldTypeID = F.FieldTypeID
-			for json path
-			) as Lookups
-	from	@fields F
-	for json path
-end
-
 ]]>
 	</rollback>
   </changeSet>
