@@ -1,4 +1,5 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
 using d360.core.enums;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,8 @@ namespace d360.model.helpers
 
         private AssetType assetType { get; set; }
         private IntersectType intersectType { get; set; }
+
+        public bool IsComplexField { get; set; }
 
         public bool IsOnlyOperator
         {
@@ -415,10 +418,27 @@ namespace d360.model.helpers
                     throw new Exception("Lookup field type is missing LookupObjectID value!");
                 }
                 this.isLookupField = true;
-                LoadLookupSql();
+                if (this.IsComplexField)
+                {
+                    if (@operator == "eq")
+                    {
+                        @operator = "ct";
+                        this.value = "%" + this.value + "%";
+                    }
+
+                    if (@operator == "ne")
+                    {
+                        @operator = "nct";
+                        this.value = "%" + this.value + "%";
+                    }
+                }
+                else
+                {
+                    LoadLookupSql();
+                }
             }
 
-            if (!this.isLookupField)
+            if (!this.isLookupField && fieldType.Type != DataType.Color.ToString())
             {
                 var fieldSql = GetColumnValueSyntax(fieldType.ID);
 
@@ -437,6 +457,23 @@ namespace d360.model.helpers
                 stringBuilder.Append($"@filter_{parameterIdx}");
 
                 this.AppendNullOperatorForNotOperators(fieldSql);
+            }
+
+            if (fieldType.Type == DataType.Color.ToString())
+            {
+                if (@operator == "eq")
+                {
+                    @operator = "ct";
+                    value = "%\"Name\":\"" + value.ToString().Trim() + "\"%";
+                }
+
+                if (@operator == "ne")
+                {
+                    @operator = "nct";
+                    value = "%\"Name\":\"" + value.ToString().Trim() + "\"%";
+                }
+
+                this.field = "ACJ.ColorJson";
             }
 
             if (sqlParamsRef != null)
@@ -698,7 +735,7 @@ namespace d360.model.helpers
             {
                 return $"Node.DisplayPath";
             }
-            else if(fieldType.Type == "Counter")
+            else if (fieldType.Type == "Counter")
             {
                 return $"F{fieldType.ID}.FormattedValue";
             }

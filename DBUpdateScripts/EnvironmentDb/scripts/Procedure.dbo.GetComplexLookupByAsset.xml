@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Procedure.dbo.GetComplexLookupByAsset-v50">
-  <comment>GOV-15132</comment>
+  <changeSet author="TDuric" id="Procedure.dbo.GetComplexLookupByAsset-v51">
+  <comment>GOV-15114</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -700,6 +700,9 @@ set nocount on;
 				where	AssetTypeID = @referenceItemTypeID 
 						and IsListable = 1;
 
+			insert into  @tables
+			    select ' outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ'
+
 			-- Resolve data types to send back to caller.
 			update	@fields 
 			set		FieldDataType = case FieldDataType 
@@ -728,15 +731,21 @@ set nocount on;
 			insert into @columns ([text], datafield, columntype, description, columnwidth, sort)
 				select 'Code', 'Code', 'text', null, null, 0
 				union
+				select 'Color', 'Color', 'color', null, null, 0
+				union
 				select OverrideDisplayName, FieldTypeName, ColumnDataType, Description, Width, RowNumber from @fields;
 
 			insert into @datafields
 				select 'Code', 'text', 0
 				union
+				select 'Color', 'color', 0
+				union
 				select distinct FieldTypeName, FieldDataType, RowNumber from @fields
 
 			insert into @selects
 				select 'A.[Code]', 'Code'
+				union
+				select 'ACJ.ColorJson', 'Color'
 				union
 				select case
 						when FieldDataType = 'number' then
@@ -1471,7 +1480,7 @@ set nocount on;
 					cross apply openjson(F.Definition, N'lax $') with (DataType varchar(25)) J;
 
 			insert into @columns ([text], datafield, columntype, uidfield, urlfield, description, columnwidth, sort)
-				select coalesce(OverrideDisplayName, FriendlyName, replace(FieldTypeName, 'Related Item.', '')), DataField, ColumnDataType, BaseField+'Uid', BaseField+'Url', Description, Width, Row_Number() over (order by RelationRowNumber, RowNumber) from @fields where Show = 1;
+				select coalesce(OverrideDisplayName, FriendlyName, replace(FieldTypeName, 'Related Item.', '')), DataField, ColumnDataType, BaseField+'Uid', BaseField+'Url', Description, Width, Row_Number() over (order by RowNumber, RelationRowNumber) from @fields where Show = 1;
 
 			insert into @datafields
 				select distinct DataField, FieldDataType, RowNumber from @fields where DataField is not null

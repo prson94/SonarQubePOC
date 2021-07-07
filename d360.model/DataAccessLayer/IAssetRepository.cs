@@ -65,5 +65,7 @@ namespace d360.model.DataAccessLayer
         Task<AssetWatchers> GetAssetWatchers(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams);
         Task<WatchedAssetTypeDetailModel> GetWatchedAssetDetails(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams);
         ApiExecutionExternalViewModel AddConnectorStatus(ApiExecutionExternalRequestModel model);
+
+        IEnumerable<dynamic> GetPossibleOwnersForAssetType(AssetType assetType);
     }
 }

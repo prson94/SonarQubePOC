@@ -735,7 +735,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                     newFieldType.SortOrder = f.Type.ComputedOwnershipLookup.SortOrder;
                     newFieldType.ColumnWidth = f.Type.ComputedOwnershipLookup.ColumnWidth;
 
-                    if(f.Type.ComputedOwnershipLookup.Definition.ResponsibilityTypeUid != null)
+                    if (f.Type.ComputedOwnershipLookup.Definition.ResponsibilityTypeUid != null)
                     {
                         int relationshipsTypeId = Company.Query<int>(@"SELECT id FROM [dbo].[ResponsibilityType] WHERE uid = @uid", new
                         {
@@ -1870,7 +1870,7 @@ from	IntersectType I
             return RetValueList;
         }
 
-        public List<FieldType> GetFieldDefinitionForComplexLookupFieldType(FieldType fieldType, Guid assetUid, bool handleFiltersAsString)
+        public List<FieldType> GetFieldDefinitionForComplexLookupFieldType(FieldType fieldType, Guid assetUid, bool forUiFiltering = false)
         {
             if (fieldType.Type == "OwnershipLookup")
             {
@@ -1888,7 +1888,22 @@ from	IntersectType I
             }
             else if (fieldType.Type == "RefListRelationship")
             {
-                var fields = Company.Query<FieldType>($@"
+                var fields = new List<FieldType>();
+
+                fields.Add(new FieldType
+                {
+                    Name = "Code",
+                    FriendlyName = "Code",
+                    Type = DataType.Text.ToString()
+                });
+
+                fields.Add(new FieldType
+                {
+                    Name = "Color",
+                    Type = DataType.Color.ToString()
+                });
+
+                fields.AddRange(Company.Query<FieldType>($@"
                     declare @object nvarchar(255)
                     declare @objectId int
                     declare @referenceId int
@@ -1916,18 +1931,7 @@ from	IntersectType I
 		                end
 
                    select * from fieldtype where assettypeid = @referenceid
-                        ", new { fieldTypeId = fieldType.ID, assetUid }).ToList();
-
-                fields.Add(new FieldType
-                {
-                    Name = "Code",
-                    Type = DataType.Text.ToString()
-                });
-
-                if (handleFiltersAsString)
-                {
-                    fields.ForEach(x => x.Type = DataType.Text.ToString());
-                }
+                        ", new { fieldTypeId = fieldType.ID, assetUid }).ToList());
 
                 return fields;
             }
@@ -1938,49 +1942,67 @@ from	IntersectType I
                 var definition = ftl.ParseComplexLookupDefinition();
 
                 var mappings = definition.GetFieldMapings();
-                var fieldTypeIds = mappings.Where(x => x.Value != null).Select(x => x.Value.FieldTypeID).Where(x => x > 0).ToList();
+                var fieldTypeIds = definition.Fields.Select(x => x.FieldTypeID).Where(x => x > 0).ToList();
                 List<FieldType> fields = Company.FieldTypes.Where(x => fieldTypeIds.Contains(x.ID)).AsNoTracking().ToList();
                 foreach (var f in mappings)
                 {
                     if (f.Value == null)
                     {
-                        var ft = new FieldType();
-                        ft.Name = f.Key;
-                        ft.Type = DataType.Text.ToString();
-                        fields.Add(ft);
-                        continue;
-                    }
+                        if (!forUiFiltering)
+                        {
+                            var ft = new FieldType();
+                            ft.Name = f.Key;
+                            ft.Type = DataType.Text.ToString();
+                            fields.Add(ft);
+                            continue;
+                        }
+                        else
+                        {
+                            continue;
+                        }
 
+                    }
                     if (f.Value.FieldTypeID > 0 && !f.Value.FieldTypeName.StartsWith("Related Item."))
                     {
                         var ft = fields.FirstOrDefault(x => x.ID == f.Value.FieldTypeID);
                         ft.Name = f.Key;
-
+                        ft.FriendlyName = !string.IsNullOrEmpty(f.Value.OverrideDisplayName) ? f.Value.OverrideDisplayName : ft.FriendlyName;
                     }
-                    else if (f.Value.FieldTypeName == "DisplayValue" || f.Value.FieldTypeName.Contains("_assetPath"))
+                    else if (f.Value.FieldTypeName == "DisplayValue")
                     {
                         var ft = new FieldType();
                         ft.Name = f.Key;
-                        ft.FriendlyName = f.Value.FieldTypeName;
+                        ft.FriendlyName = !string.IsNullOrEmpty(f.Value.OverrideDisplayName) ? f.Value.OverrideDisplayName : "Display Value";
                         ft.Type = DataType.Text.ToString();
+                        fields.Add(ft);
+                    }
+                    else if (f.Value.FieldTypeName.Contains("_assetPath"))
+                    {
+                        var ft = new FieldType();
+                        ft.Name = f.Key;
+                        ft.FriendlyName = !string.IsNullOrEmpty(f.Value.OverrideDisplayName) ? f.Value.OverrideDisplayName : "Asset Path";
+                        ft.Type = DataType.Path.ToString();
                         fields.Add(ft);
                     }
                     else if (f.Value.FieldTypeName.StartsWith("Related Item."))
                     {
                         var it = Company.IntersectTypes.FirstOrDefault(x => x.ID == f.Value.FieldTypeID);
-                        var ft = new FieldType();
 
-                        ft.Name = f.Key;
-                        ft.FriendlyName = f.Value.FieldTypeName;
-                        ft.Type = DataType.Relationship.ToString();
-                        ft.LookupObjectType = "IntersectType";
-                        ft.LookupObjectID = it.ID;
-                        fields.Add(ft);
+                        if (!forUiFiltering)
+                        {
+                            var ft = new FieldType();
 
+                            ft.Name = f.Key;
+                            ft.FriendlyName = f.Value.FieldTypeName;
+                            ft.Type = DataType.Relationship.ToString();
+                            ft.LookupObjectType = "IntersectType";
+                            ft.LookupObjectID = it.ID;
+                            fields.Add(ft);
+                        }
                         var ft2 = new FieldType();
 
-                        ft2.Name = "Related:" + it.uid;
-                        ft2.FriendlyName = f.Value.FieldTypeName;
+                        ft2.Name = "$Related:" + it.uid;
+                        ft2.FriendlyName = !string.IsNullOrEmpty(f.Value.OverrideDisplayName) ? f.Value.OverrideDisplayName : f.Value.FieldTypeName;
                         ft2.Type = DataType.Relationship.ToString();
                         ft2.LookupObjectType = "IntersectType";
                         ft2.LookupObjectID = it.ID;
@@ -1990,15 +2012,10 @@ from	IntersectType I
                     {
                         var ft = new FieldType();
                         ft.Name = f.Key;
-                        ft.FriendlyName = f.Value.FieldTypeName;
+                        ft.FriendlyName = !string.IsNullOrEmpty(f.Value.OverrideDisplayName) ? f.Value.OverrideDisplayName : f.Value.FieldTypeName;
                         ft.Type = DataType.Text.ToString();
                         fields.Add(ft);
                     }
-                }
-
-                if (handleFiltersAsString)
-                {
-                    fields.ForEach(x => x.Type = DataType.Text.ToString());
                 }
 
                 return fields;

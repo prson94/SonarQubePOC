@@ -1,7 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
-using d360.core.queue;
 using d360.extensions;
 using d360.model;
 using d360.web.Filters;
@@ -9,12 +8,9 @@ using d360.web.Models;
 using Dapper;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -45,13 +41,15 @@ namespace d360.web.Controllers.V2
         IQueueSource QueueSource;
         IStorageProvider Storage;
         IFieldsRepository FieldsRepository;
+        private readonly IAssetRepository AssetRepository;
 
-        public FieldsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IFieldsRepository fieldsRepository)
+        public FieldsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IFieldsRepository fieldsRepository, IAssetRepository assetRepository)
             : base(community, company)
         {
             QueueSource = queueSource;
             Storage = storage;
             FieldsRepository = fieldsRepository;
+            AssetRepository = assetRepository;
         }
 
         #endregion
@@ -2041,11 +2039,11 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
 
         #endregion
 
-
+        #region Advanced filtering APIs
         /// <summary>
-        /// Retrieves details about assets being watched for a given asset type.
+        /// Retrieves lookup values for an asset type and field name
         /// </summary>
-        /// <returns>Returns a list of watched asset details</returns>        
+        /// <returns>Returns a list of lookup values</returns>        
         /// <param name="assetTypeUid">Uid of the asset type</param>
         /// <param name="fieldName">Field name</param>
         [HttpGet,
@@ -2096,6 +2094,14 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 var assetTypeId = Company.AssetTypes
                     .FirstOrDefault(x => x.uid == assetTypeUid).ID;
                 var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetTypeId && x.Name == fieldName);
+
+                //case when fieldname coming from complex relation grid with coded names from procedure
+                if (fieldType == null && fieldName.Contains("_"))
+                {
+                    fieldTypeId = int.Parse(fieldName.Split('_')[1]);
+                    fieldType = Company.FieldTypes.FirstOrDefault(x => x.ID == fieldTypeId);
+                }
+
                 if (fieldType.Type == "FieldFromRelationship" && fieldType.LookupObjectFieldTypeID > 0)
                 {
                     fieldTypeId = fieldType.LookupObjectFieldTypeID.Value;
@@ -2135,5 +2141,404 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
+
+        /// <summary>
+        /// Retrieves lookup values for an asset type and field name
+        /// </summary>
+        /// <returns>Returns a list of lookup values</returns>        
+        /// <param name="assetUid">Uid of the asset type</param>
+        /// <param name="fieldName">Field name</param>
+        /// <param name="filterName">Field name</param>
+        [HttpGet,
+         Route("{assetUid:Guid}/complexLookupvalues/{fieldName}/filter/{filterName}"),
+         SwaggerResponse(HttpStatusCode.OK, "A list of filter values for a given asset type and field name.", typeof(List<string>)),
+         SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse)),
+         SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+         ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<IHttpActionResult> GetFilterValuesForComplexFields(Guid assetUid, string fieldName, string filterName, int? skip = null, int? take = 0, string filter = null)
+        {
+            var prefix = "Fields.GetFilterValuesForComplexFields => ";
+            try
+            {
+                var asset = AssetRepository.GetAssetByUID(assetUid);
+                var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == asset.AssetTypeID);
+                var dbArgs = new DynamicParameters();
+
+                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetType.ID && x.Name == fieldName);
+                if (fieldType.Type == DataType.OwnershipLookup.ToString())
+                {
+                    if (filterName == "ResponsibilityTypeName")
+                    {
+
+                        var itemsQuery = $@"
+                            select count(*) from ResponsibilityType rt
+                            inner join ResponsibilityTypeRelation RTR on RTR.ResponsibilityTypeID = RT.ID
+                            inner join AssetType at on at.Object = RTR.ObjectType  and at.objectid = rtr.objectid
+                            where at.uid = @assetTypeUid  
+                            
+                            select rt.Name as 'value', rt.Name as 'title' from ResponsibilityType rt
+                            inner join ResponsibilityTypeRelation RTR on RTR.ResponsibilityTypeID = RT.ID
+                            inner join AssetType at on at.Object = RTR.ObjectType  and at.objectid = rtr.objectid
+                            where at.uid = @assetTypeUid";
+
+                        dbArgs.Add("assetTypeUid", assetType.uid);
+
+                        var gridReader = await Company.Database.Connection.QueryMultipleAsync(
+                              new CommandDefinition(itemsQuery,
+                              parameters: dbArgs,
+                              commandTimeout: 60
+                            ));
+
+                        var data = new
+                        {
+                            count = gridReader.Read<int>().FirstOrDefault(),
+                            items = gridReader.Read<dynamic>().ToList()
+                        };
+
+                        return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, data))).ConfigureAwait(false);
+                    }
+                    if (filterName == "ResourceName")
+                    {
+                        var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
+                        var definition = ftl.ParseOwnershipLookupDefinition();
+
+                        dbArgs.Add("assettypeid", assetType.ID);
+                        dbArgs.Add("assetId", asset.ID);
+
+                        string selectSqlStatement = @"
+                                select '[' + ResponsibilityTypeName + '] - ' + ResourceName as 'title', 
+                                ResourceName as 'value'
+                                from #OwnershipLookupAssets";
+
+                        if (!definition.ExpandGroupMembership)
+                        {
+                            selectSqlStatement = @"
+                                select distinct SecurityAssetName as 'title',
+						        SecurityAssetName as 'value'
+                                from #OwnershipLookupAssets";
+                        }
+
+                        var possibleOwnersSql = $@"declare @id int = (select top 1 id from assettype where id = @assettypeid)
+
+                    drop table if exists #OwnershipLookupAssets;
+                    create table #OwnershipLookupAssets (
+						AssetID bigint,
+                        ResponsibilityTypeID int,
+                        ResponsibilityTypeName nvarchar(250),
+                        ResourceName nvarchar(501),
+                        SecurityAsset char(1),
+                        SecurityAssetName nvarchar(501),
+                        Context nvarchar(max),
+                        ResourceId int,
+                        ResourceUid uniqueidentifier,
+                        SecurityAssetId int,
+                        SecurityAssetUid uniqueidentifier
+					);
+					insert into #OwnershipLookupAssets
+                        SELECT [AssetID]
+                              ,[ResponsibilityTypeID]
+                              ,[ResponsibilityTypeName]
+                              ,[ResourceName]
+                              ,[SecurityAsset]
+                              ,[SecurityAssetName]
+                              ,[Context]
+                              ,[ResourceId]
+                              ,[ResourceUid]
+                              ,[SecurityAssetId]
+                              ,[SecurityAssetUid]
+                        FROM [dbo].[ResponsibilityDetail] rd
+                        where rd.assetid <> 0 and IsVisible = 1 and rd.[AssetTypeID] = @id and rd.AssetID = @assetId
+                        union all
+                        select a.[ID] as AssetID
+                             ,rd.[ResponsibilityTypeID]
+                             ,rd.[ResponsibilityTypeName]
+                             ,rd.[ResourceName]
+                             ,rd.[SecurityAsset]
+                             ,rd.[SecurityAssetName]
+                             ,rd.[Context]
+                             ,rd.[ResourceId]
+                             ,rd.[ResourceUid]
+                             ,rd.[SecurityAssetId]
+                             ,rd.[SecurityAssetUid]
+                        from ResponsibilityDetail rd
+                        inner join asset a on rd.assettypeid = a.assettypeid
+                        where rd.assetid = 0 and IsVisible = 1 and rd.assettypeid = @id and a.id = @assetId
+                        union all
+                        select a.[ID] as AssetID
+                             ,rd.[ResponsibilityTypeID]
+                             ,rd.[ResponsibilityTypeName]
+                             ,rd.[ResourceName]
+                             ,rd.[SecurityAsset]
+                             ,rd.[SecurityAssetName]
+                             ,rd.[Context]
+                             ,rd.[ResourceId]
+                             ,rd.[ResourceUid]
+                             ,rd.[SecurityAssetId]
+                             ,rd.[SecurityAssetUid]
+                        from ResponsibilityDetail rd
+                        inner join asset a on rd.assetid = a.id
+                        where rd.AssetTypeID = 0 and IsVisible = 1 and a.AssetTypeID = @id and a.id = @assetId;
+
+                    create index cix_OwnershipLookupAssetId on #OwnershipLookupAssets (AssetId);
+
+                        select count(*) from #OwnershipLookupAssets
+                            
+                        {selectSqlStatement}
+                        ";
+
+                        var gridReader = await Company.Database.Connection.QueryMultipleAsync(
+                          new CommandDefinition(possibleOwnersSql,
+                          parameters: dbArgs,
+                          commandTimeout: 60
+                        ));
+
+                        var data = new
+                        {
+                            count = gridReader.Read<int>().FirstOrDefault(),
+                            items = gridReader.Read<dynamic>().ToList()
+                        };
+
+                        return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, data))).ConfigureAwait(false);
+                    }
+
+                    if (filterName == "SecurityAssetName")
+                    {
+                        var viaResources = $@"
+            ; with owners as (select distinct
+                    responsibilityTypeId,
+		            securityAssetid,
+	                '[' + ResponsibilityTypeName + '] - ' + SecurityAssetName as 'Name', 
+                    case 
+                        when SecurityAsset = 'R' then 'Resource'
+                        when SecurityAsset = 'O' then 'Organization'
+                        when SecurityAsset = 'G' then 'Group'
+                        else[Type]
+                            end as [Type],
+                    SecurityAssetName
+                            from ResponsibilityDetail
+            where TypeID = @id
+                    and[Type] = @Object and SecurityAsset <> 'R'
+                    and IsVisible = 1)
+            select o.Name as 'title', o.SecurityAssetName as 'value'
+            from owners o
+            cross apply(
+            select top 1 * from
+            ResponsibilityDetail rd where rd.ResponsibilityTypeID = o.responsibilityTypeId
+
+                                                and rd.SecurityAssetID = o.SecurityAssetID and rd.TypeID = @id and rd.[Type] = @Object
+            )Res
+            order by o.[Name]
+                        ";
+
+                        dbArgs.Add("id", assetType.ObjectID);
+                        dbArgs.Add("Object", assetType.Object);
+                        var gridReader = await Company.Database.Connection.QueryMultipleAsync(
+                          new CommandDefinition(viaResources,
+                          parameters: dbArgs,
+                          commandTimeout: 60
+                        ));
+                        var readItems = gridReader.Read<dynamic>().ToList();
+
+                        var data = new
+                        {
+                            count = readItems.Count,
+                            items = readItems
+                        };
+
+                        return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, data))).ConfigureAwait(false);
+                    }
+                }
+
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new List<string>()))).ConfigureAwait(false);
+
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix}});
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
+            }
+        }
+
+
+        /// <summary>
+        /// Retrieves complex lookup field types for an asset and field name
+        /// </summary>
+        /// <returns>Returns a list of field types</returns>        
+        /// <param name="assetUid">Uid of the asset</param>
+        /// <param name="fieldName">Field name</param>
+        [HttpGet,
+            Route("{assetUid:Guid}/complexlookupfields/{fieldName}"),
+             SwaggerResponse(HttpStatusCode.OK, "A list of filter values for a given asset uid and field name.", typeof(List<FieldTypesApiViewModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+            ]
+        public HttpResponseMessage GetComplexLookupFields(Guid assetUid, string fieldName)
+        {
+
+            var prefix = "Fields.GetFilterVales => ";
+            try
+            {
+                FieldTypesApiViewModel response = new FieldTypesApiViewModel();
+                response.items = new List<FieldTypeApiViewModel>();
+
+                var asset = AssetRepository.GetAssetByUID(assetUid);
+                var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == asset.AssetTypeID);
+                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetType.ID && x.Name == fieldName);
+                if (fieldType.Type == DataType.OwnershipLookup.ToString())
+                {
+                    var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
+                    var definition = ftl.ParseOwnershipLookupDefinition();
+
+                    response.items.Add(new FieldTypeApiViewModel { Name = "ResponsibilityTypeName", FriendlyName = "Responsibility", Type = new FieldTypeDataTypeApiViewModel { Lookup = new FieldTypeDataTypeLookupApiViewModel { List = new FieldTypeDataTypeLookupApiViewModel_List() } }, Category = "" });
+                    response.items.Add(new FieldTypeApiViewModel { Name = "ResourceName", FriendlyName = "Assigned User/Group", Type = new FieldTypeDataTypeApiViewModel { Lookup = new FieldTypeDataTypeLookupApiViewModel { List = new FieldTypeDataTypeLookupApiViewModel_List() } }, Category = "" });
+                    if (definition.DisplayAssignmentSource)
+                    {
+                        response.items.Add(new FieldTypeApiViewModel { Name = "SecurityAssetName", FriendlyName = "Via", Type = new FieldTypeDataTypeApiViewModel { Lookup = new FieldTypeDataTypeLookupApiViewModel { List = new FieldTypeDataTypeLookupApiViewModel_List() } }, Category = "" });
+                    }
+                    response.items.Add(new FieldTypeApiViewModel { Name = "Context", FriendlyName = "Context", Type = new FieldTypeDataTypeApiViewModel { Html = new FieldTypeDataTypeHtmlApiViewModel() }, Category = "" });
+                }
+                if (fieldType.Type == DataType.RefListRelationship.ToString()
+                    || fieldType.Type == DataType.ComplexRelationLookup.ToString())
+                {
+                    Guid assetTypeUid = Guid.Empty;
+                    var fields = FieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid, true).ToList();
+                    if (fields.Count > 0)
+                    {
+                        var assettypeid = fields.Where(x => x.AssetTypeID != null).FirstOrDefault().AssetTypeID;
+                        assetTypeUid = Company.AssetTypes.FirstOrDefault(x => x.ID == assettypeid).uid;
+                    }
+
+                    foreach (var f in fields)
+                    {
+                        var c = new FieldTypeApiViewModel
+                        {
+                            Name = f.Name,
+                            FriendlyName = f.FriendlyName,
+                            Category = "",
+                            AssetTypeUid = assetTypeUid
+                        };
+
+                        c.Type = new FieldTypeDataTypeApiViewModel();
+                        if (f.Type == DataType.Lookup.ToString())
+                        {
+                            if (fieldType.Type == DataType.ComplexRelationLookup.ToString())
+                            {
+                                var @object = f.LookupObjectType.EndsWith("Type") ? f.LookupObjectType : f.LookupObjectType + "Type";
+                                var lookupAssetType = Company.AssetTypes.FirstOrDefault(x => x.Object == @object && x.ObjectID == f.LookupObjectID);
+                                if (lookupAssetType != null)
+                                {
+                                    c.AssetTypeUid = lookupAssetType.uid;
+                                }
+                            }
+
+                            c.Type.Lookup = new FieldTypeDataTypeLookupApiViewModel
+                            {
+                                List = new FieldTypeDataTypeLookupApiViewModel_List
+                                {
+                                    AllowMultipleValues = f.AllowMultipleValues
+                                }
+                            };
+                        }
+
+                        if (f.Type == DataType.Boolean.ToString())
+                        {
+                            c.Type.Boolean = new FieldTypeDataTypeBooleanApiViewModel();
+                        }
+
+                        if (f.Type == DataType.Date.ToString())
+                        {
+                            c.Type.Date = new FieldTypeDataTypeDateApiViewModel();
+                        }
+
+                        if (f.Type == DataType.DateTime.ToString())
+                        {
+                            c.Type.DateTime = new FieldTypeDataTypeDateTimeApiViewModel();
+                        }
+                        if (f.Type == DataType.Decimal.ToString())
+                        {
+                            c.Type.Decimal = new FieldTypeDataTypeDecimalApiViewModel();
+                        }
+                        if (f.Type == DataType.Html.ToString())
+                        {
+                            c.Type.Html = new FieldTypeDataTypeHtmlApiViewModel();
+                        }
+                        if (f.Type == DataType.JSON.ToString())
+                        {
+                            c.Type.Json = new FieldTypeDataTypeJsonApiViewModel();
+                        }
+                        if (f.Type == DataType.JsonElement.ToString())
+                        {
+                            c.Type.JsonElement = new FieldTypeDataTypeJsonElementApiViewModel();
+                        }
+                        if (f.Type == DataType.Link.ToString())
+                        {
+                            c.Type.Link = new FieldTypeDataTypeLinkApiViewModel();
+                        }
+                        if (f.Type == DataType.Number.ToString())
+                        {
+                            c.Type.Number = new FieldTypeDataTypeNumberApiViewModel();
+                        }
+                        if (f.Type == DataType.Score.ToString())
+                        {
+                            c.Type.Score = new FieldTypeDataTypeComputedScoreApiViewModel();
+                        }
+                        if (f.Type == DataType.Tag.ToString())
+                        {
+                            c.Type.Tag = new FieldTypeDataTypeTagApiViewModel();
+                        }
+                        if (f.Type == DataType.Text.ToString())
+                        {
+                            c.Type.Text = new FieldTypeDataTypeTextApiViewModel();
+                        }
+                        if (f.Type == DataType.Path.ToString())
+                        {
+                            c.Type.Path = new FieldTypeDataTypePathApiViewModel();
+                        }
+                        if (f.Type == DataType.Color.ToString())
+                        {
+                            c.Type.Lookup = new FieldTypeDataTypeLookupApiViewModel();
+                            c.Type.Lookup.List = new FieldTypeDataTypeLookupApiViewModel_List
+                            {
+                                AllowMultipleValues = f.AllowMultipleValues,
+                            };
+                            c.FriendlyName = "Color";
+                            c.Name = "Color";
+                        }
+
+                        if (f.Type == DataType.Relationship.ToString())
+                        {
+                            c.Type.Relationship = new FieldTypeDataTypeRelationshipApiViewModel();
+                            c.Type.Relationship.IntersectTypeUid = Company.IntersectTypes.FirstOrDefault(x => x.ID == f.LookupObjectID).uid;
+                            c.FriendlyName = c.FriendlyName.Replace("Related Item.", "");
+                        }
+
+                        if (string.IsNullOrEmpty(c.FriendlyName))
+                        {
+                            c.FriendlyName = "#Missing Friendly Name";
+                        }
+
+                        response.items.Add(c);
+                    }
+                }
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix
+    }
+});
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
+        #endregion
     }
 }

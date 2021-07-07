@@ -5,7 +5,7 @@ import { FieldsObservableService } from "../../../services/fieldsObservable.serv
 import { CompanySettingsService } from "../../../services/settings.service";
 import { FieldType, FieldTypeAPIModelField, FieldTypeHelper } from "../../../models/fieldtype-api.model";
 import { forkJoin, Observable, of } from "rxjs";
-import { AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, FieldTypeAPIModelFieldCondition, Filters, SystemFields } from "./advanced-filtering.models";
+import { AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, ComplexFieldDefinition, FieldTypeAPIModelFieldCondition, Filters, SystemFields } from "./advanced-filtering.models";
 import { DatePipe } from "@angular/common";
 import { AllocationService } from "../../../services/allocations.service";
 import { ScoreTypeAllocation } from "../../../models/metrics.model";
@@ -23,6 +23,7 @@ import { Router } from "@angular/router";
 })
 export class AdvancedFilteringComponent implements OnChanges {
     @Input() loadIdentifier: string = "";
+    @Input() enableFilterSaving: boolean = true;
     @Input() gridType: string = "List";
     @Output() onChange = new EventEmitter();
     @Output() onLoad = new EventEmitter();
@@ -243,6 +244,7 @@ export class AdvancedFilteringComponent implements OnChanges {
             tempFields.push(fModel);
         });
 
+
         tempFields.forEach((f) => {
             f.Operators = [];
 
@@ -274,7 +276,11 @@ export class AdvancedFilteringComponent implements OnChanges {
         this.fields = tempFields;
 
         this.cdRef.markForCheck();
-        var loadedFilters = this.loadFilters();
+
+        let loadedFilters: AdvancedFilterFieldCondition[] = [];
+        if (this.enableFilterSaving) {
+            loadedFilters = this.loadFilters();
+        }
 
         this.fields.forEach((field) => {
             if (field.Type) {
@@ -446,6 +452,20 @@ export class AdvancedFilteringComponent implements OnChanges {
         return this.loadIdentifier.startsWith("RuleResults");
     }
 
+    get isComplexField() {
+        return this.loadIdentifier.startsWith("ComplexField");
+    }
+
+    get complexFieldDefinition(): ComplexFieldDefinition {
+        let res = new ComplexFieldDefinition();
+        if (this.isComplexField) {
+            var data = this.loadIdentifier.replace("ComplexField", "").replace("ComplexField", "").split("|");
+            res.AssetUid = data[0];
+            res.FieldApiName = data[1];
+            res.FieldType = data[2];
+        }
+        return res;
+    }
 
     getFieldsObs(): Observable<FieldTypeAPIModelField[]> {
         if (this.isAssetType) {
@@ -486,13 +506,17 @@ export class AdvancedFilteringComponent implements OnChanges {
             var staticObs = of(fields);
             return staticObs;
         }
+        else if (this.isComplexField) {
+            var definition = this.complexFieldDefinition;
+            return this.fieldsService.getComplexFieldFieldTypes(definition.AssetUid, definition.FieldApiName);
+        }
     }
 
     getScoreAllocationObs(): Observable<ScoreTypeAllocation[]> {
         if (this.isAssetType) {
             return this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid);
         }
-        else if (this.isRuleResults) {
+        else if (this.isRuleResults || this.isComplexField) {
             var staticObs = of([]);
             return staticObs;
         }
@@ -501,6 +525,9 @@ export class AdvancedFilteringComponent implements OnChanges {
     getRelationshipTypeObs(): Observable<RelationshipType[]> {
         if (this.isAssetType) {
             return this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid);
+        }
+        else if (this.isComplexField) {
+            return this.relationshipService.getRelationshipTypesForComplexField(this.complexFieldDefinition.AssetUid, this.complexFieldDefinition.FieldApiName);
         }
         else if (this.isRuleResults) {
             var staticObs = of([]);

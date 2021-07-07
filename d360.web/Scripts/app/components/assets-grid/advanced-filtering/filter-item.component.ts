@@ -3,7 +3,7 @@ import { LazyLoadEvent, SelectItem, SelectItemGroup } from "primeng/api";
 import * as _ from "lodash";
 import { FieldTypeAPIModelFieldCondition } from "../../../models/field-condition-grid.models";
 import { OperatorModel } from "../../../models/operator.model";
-import { AdvancedFilterFieldCondition, SystemFields } from "./advanced-filtering.models";
+import { AdvancedFilterFieldCondition, ComplexFieldDefinition, SystemFields } from "./advanced-filtering.models";
 import { FieldsObservableService } from "../../../services/fieldsObservable.service";
 import { AssetTypeService } from "../../../services/asset-type.service";
 import { TagService } from "../../../services/tag.service";
@@ -72,6 +72,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
     numberMax: number = null;
     numberMin: number = null;
 
+    defaultColorOptions: any[] = [];
+
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
     @ViewChild("multiInput", { static: false }) multiInputRef: MultiInputField;
     @ViewChild("dataTable", { static: false }) dataTable: Table;
@@ -87,6 +89,11 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.updateTopPosition();
             this.setSelectionVirtualScrollHeight();
         }, 25);
+
+        this.assetService.getAllColors().subscribe((x) => {
+            this.defaultColorOptions = x;
+            this.cdRef.markForCheck();
+        });
     }
 
     ngOnChanges() {
@@ -132,6 +139,13 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         if (this.isRuleResults) {
+            let assetFieldGroup: SelectItemGroup = { value: "rule-results-field", label: "Asset Fields", items: [] };
+            this.allFieldsDropdown.push(assetFieldGroup);
+            this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
+                assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
+            });
+        }
+        if (this.isComplexField) {
             let assetFieldGroup: SelectItemGroup = { value: "rule-results-field", label: "Asset Fields", items: [] };
             this.allFieldsDropdown.push(assetFieldGroup);
             this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
@@ -331,6 +345,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
             }
         }
 
+        if (this.isComplexField && this.complexFieldDefinition.FieldType === 'OwnershipLookup') {
+            ft.Operators = ft.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
+        }
+
         return ft ? ft.Operators : [];
     }
 
@@ -405,13 +423,24 @@ export class FilterItemComponent implements OnInit, OnChanges {
         if (type.Type) {
             if (type.Type.Relationship) {
                 this.relationshipFieldIntersectTypeUid = type.Type.Relationship.IntersectTypeUid;
-                var relationship = this.relationshipTypes.filter((r) => r.Uid === this.relationshipFieldIntersectTypeUid)[0];
+                var relationship = this.relationshipTypes.filter((r) => r.Uid.toLowerCase() === this.relationshipFieldIntersectTypeUid.toLowerCase())[0];
+
+                let typeUidSide = this.assetTypeUid;
+
+                if (!typeUidSide && relationship["SideOfRelationship"]) {
+                    if (relationship["SideOfRelationship"] === "Object") {
+                        typeUidSide = relationship.Object.Uid;
+                    }
+                    else {
+                        typeUidSide = relationship.Subject.Uid;
+                    }
+                }
 
                 this.relationshipFieldIntersectCardinality =
                     relationship.Object.Uid === this.assetTypeUid
                         ? relationship.Subject.Cardinality : relationship.Object.Cardinality;
 
-                this.relationshipFieldName = this.relationshipFieldIntersectTypeUid + "|" + (relationship.Object.Uid === this.assetTypeUid ? relationship.Subject.Uid : relationship.Object.Uid);
+                this.relationshipFieldName = this.relationshipFieldIntersectTypeUid + "|" + (relationship.Object.Uid === typeUidSide ? relationship.Subject.Uid : relationship.Object.Uid);
                 this.condition.relationshipFieldName = this.relationshipFieldName;
             }
 
@@ -477,6 +506,9 @@ export class FilterItemComponent implements OnInit, OnChanges {
             if (this.condition.fieldType === "Lookup") {
                 if (this.condition.field === "[Level]") {
                     this.loadLookupValuesForLevelNames();
+                }
+                else if (this.isComplexField && this.complexFieldDefinition.FieldType === 'OwnershipLookup') {
+                    this.loadLookupValuesForComplexFields(params);
                 }
                 else {
                     this.loadLookupValues(params);
@@ -550,6 +582,43 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
                 res.items.forEach((str) => {
                     loadedData.push({ title: str, value: str });
+                });
+
+                Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
+
+                this.currentField.Values = [...this.currentField.Values];
+
+                this.isLookupValuesLoading = false;
+
+                this.cdRef.markForCheck();
+            });
+    }
+
+    loadLookupValuesForComplexFields(params: any) {
+        if (this.currentField.Values && this.currentField.Values.length > 0 && !params.filter) {
+            var subData = this.currentField.Values.slice(+params.skip, +params.skip + +params.take);
+            if (!subData.some((x) => !x)) {
+                return;
+            }
+        }
+
+        if (this.lazyLoadSubscription) {
+            this.lazyLoadSubscription.unsubscribe();
+        }
+        this.isLookupValuesLoading = true;
+
+        var definition = this.complexFieldDefinition;
+
+        this.lazyLoadSubscription = this.fieldsService.getLookupValuesForComplexField(definition.AssetUid, definition.FieldApiName, this.currentField.Name.trim(), params)
+            .subscribe((res) => {
+                if (!this.currentField.Values || this.currentField.Values.length === 0) {
+                    this.currentField.Values = Array.from({ length: res.count });
+                }
+
+                let loadedData = [];
+
+                res.items.forEach((str) => {
+                    loadedData.push({ title: str.title, value: str.value });
                 });
 
                 Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
@@ -1031,6 +1100,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         if (type === "Lookup" || type === "Tag" || type === "Relationship" || this.currentField.IsRelationship) {
+            if (!this.currentField.Type.Lookup.List.Uid && this.currentField.Name === "Color") {
+                return "color-picker";
+            }
+
             return "lookup";
         }
 
@@ -1153,12 +1226,27 @@ export class FilterItemComponent implements OnInit, OnChanges {
         return this.loadIdentifier.startsWith("RuleResults");
     }
 
+    get isComplexField() {
+        return this.loadIdentifier.startsWith("ComplexField");
+    }
+
+    get complexFieldDefinition(): ComplexFieldDefinition {
+        let res = new ComplexFieldDefinition();
+        if (this.isComplexField) {
+            var data = this.loadIdentifier.replace("ComplexField", "").replace("ComplexField", "").split("|");
+            res.AssetUid = data[0];
+            res.FieldApiName = data[1];
+            res.FieldType = data[2];
+        }
+        return res;
+    }
+
     get counterPrefix() {
         return this.currentField?.Type?.Counter?.CounterPrefix;
     }
 
     getFieldsDropdownClass(): string {
-        if (this.isRuleResults) {
+        if (this.isRuleResults || this.isComplexField) {
             return "ig-dropdown-hide-groups";
         }
         else {

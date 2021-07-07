@@ -20,6 +20,8 @@ import { TilesModule } from "../tiles/tiles.module";
 import { TableModule } from "primeng/table";
 import { SharedGridPagingInfoModule } from "../grid-paging-info.component";
 import { OwnershipListModule } from "../small-widgets/ownership-list/ownership-list.component";
+import { AdvancedFiltersModule } from "../../assets-grid/advanced-filtering/advanced-filtering.module";
+import { SearchFieldModule } from "../controls/search-field/search-field.component";
 
 
 @NgModule({
@@ -38,6 +40,8 @@ import { OwnershipListModule } from "../small-widgets/ownership-list/ownership-l
         TableModule,
         SharedGridPagingInfoModule,
         OwnershipListModule,
+        AdvancedFiltersModule,
+        SearchFieldModule
     ],
     declarations: [
         AssetDetailFieldComponent,

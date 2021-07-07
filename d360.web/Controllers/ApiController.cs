@@ -1468,6 +1468,7 @@ where   h.ID <> @t order by h.[Level] desc;
                                         LookupFieldTypeID = ft.ID,
                                         LookupType = (int)((DataType)Enum.Parse(typeof(DataType), ft.Type)),
                                         ShowIfEmpty = ft.ShowIfEmpty,
+                                        DataType = ft.Type
                                     }
                                 },
                         Category = ft.Category
@@ -1591,7 +1592,8 @@ where   h.ID <> @t order by h.[Level] desc;
                 FieldDescription = ft.DisplayDescription,
                 FieldName = ft.Name,
                 Values = values,
-                ShowIfEmpty = ft.ShowIfEmpty
+                ShowIfEmpty = ft.ShowIfEmpty,
+                DataType = ft.Type
             };
 
             list.Add(new DetailReadOnlyRowModel

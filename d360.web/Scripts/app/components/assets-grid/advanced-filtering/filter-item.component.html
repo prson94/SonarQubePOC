@@ -166,7 +166,6 @@
                         </div>
                     </ng-container>
 
-
                     <ng-container *ngIf="currentInputType === 'counter'">
                         <div class="ig-inputgroup">
                             <span *ngIf="counterPrefix" class="ig-input-addon">{{counterPrefix}}</span>
@@ -176,16 +175,24 @@
 
                     <ng-container *ngIf="currentInputType === 'multi-counter'">
                         <div class="ig-inputgroup">
-                            <span *ngIf="counterPrefix"  class="ig-input-addon">{{counterPrefix}}</span>
+                            <span *ngIf="counterPrefix" class="ig-input-addon">{{counterPrefix}}</span>
                             <ig-number-input igSize="full" [(ngModel)]="condition.value" [required]="true" [min]="numberMin" [max]="numberMax" [enforceMaxMin]="true"></ig-number-input>
                         </div>
                         <div class="value-separator">and</div>
                         <div class="ig-inputgroup">
-                            <span *ngIf="counterPrefix"  class="ig-input-addon">{{counterPrefix}}</span>
+                            <span *ngIf="counterPrefix" class="ig-input-addon">{{counterPrefix}}</span>
                             <ig-number-input igSize="full" [(ngModel)]="condition.value2" [required]="true" [min]="numberMin" [max]="numberMax" [enforceMaxMin]="true"></ig-number-input>
                         </div>
                     </ng-container>
 
+
+                    <ng-container *ngIf="currentInputType === 'color-picker'">
+                        <ig-color-picker igSize="full" 
+                                         [colors]="defaultColorOptions" 
+                                         [(ngModel)]="condition.value"
+                                         [invalidOptions]="['Custom']">
+                        </ig-color-picker>
+                    </ng-container>
                 </ng-container>
             </div>
 

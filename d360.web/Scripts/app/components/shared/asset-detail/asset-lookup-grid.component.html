@@ -13,28 +13,26 @@
         </div>
     </div>
 </div>
-<div class="ig-lookup-grid-filter-container">
-    <div [hidden]="!showSimpleFilter || hideFilter" class="ig-lookup-grid-simple-filter-container">
-        <input igInput type="text" size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="ig-lookup-grid-simple-filter">
-        <span class="ig-lookup-grid-filter-search-icon"><i class="fa fa-search"></i></span>
-    </div>
-    <div *ngIf="!showSimpleFilter || hideFilter" class="ig-lookup-grid-filter-placeholder">&nbsp;</div>
-    <div class="ig-lookup-grid-button-container">
-        <button igButton 
-                class="ig-lookup-grid-button" 
-                icon="fa-download" 
-                (click)="export()" 
-                pTooltip="Export to Excel" 
-                tooltipPosition="top" 
-                tooltipStyleClass="ig-tooltip"></button>
-        <button igButton 
-                *ngIf="!hideFilter && !hideHeader" 
-                class="ig-lookup-grid-button" 
-                icon="fa-filter" 
-                (click)="showSimpleFilter = !showSimpleFilter"
-                pTooltip="Filter Mode" 
-                tooltipPosition="left" 
-                tooltipStyleClass="ig-tooltip"></button>
+<div class="ig-lookup-grid-filter-container" *ngIf="filtersLoadIdentifier">
+    <div class="grid-actions-header">
+        <div class="simple-search">
+            <ig-search-field mode="Keypress"
+                             [debounce]="600"
+                             (onSearch)="loadData($event)"
+                             [(ngModel)]="simpleTextFilter"
+                             [infoTooltip]="simpleSearchTooltipHTML">
+            </ig-search-field>
+        </div>
+        <advanced-filtering *ngIf="showAdvancedFilterField" [loadIdentifier]="filtersLoadIdentifier" [enableFilterSaving]="false" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+        <div class="grid-action-buttons">
+            <button igButton
+                    class="ig-lookup-grid-button"
+                    icon="fa-download"
+                    (click)="export()"
+                    pTooltip="Export to Excel"
+                    tooltipPosition="top"
+                    tooltipStyleClass="ig-tooltip"></button>
+        </div>
     </div>
 </div>
 <div>
@@ -100,8 +98,29 @@
                         <span *ngSwitchCase="'link'" style="display:block; word-wrap:break-word !important" [innerHtml]="item[column.datafield]"></span>
                         <span *ngSwitchCase="'html'" style="display:block; word-wrap:break-word !important" [innerHtml]="item[column.datafield]"></span>
                         <span *ngSwitchCase="'Score'" style="display:block; word-wrap:break-word !important" [innerHtml]="getScoreFieldHTML(item,column.datafield)"></span>
+                        <span *ngSwitchCase="'color'" style="display:block; word-wrap:break-word !important">
+                            <ng-container *ngIf="colorFieldData(item,column.datafield)">
+                                <span class="ref-list-color">
+                                    <span class="ig-colorfield-swatch" [style.background]="colorFieldData(item,column.datafield).Value"></span>
+                                    <span>{{colorFieldData(item,column.datafield).Name}}</span>
+                                </span>
+                            </ng-container>
+                            <ng-container *ngIf="!colorFieldData(item,column.datafield)">
+                                <span class="ref-list-color">
+                                    <span class="ig-colorfield-swatch empty"></span>
+                                    <span class="color-text">None</span>
+                                </span>
+                            </ng-container>
+                        </span>
                         <span *ngSwitchDefault style="display:block; word-wrap:break-word !important" [innerText]="item[column.datafield]"></span>
                     </div>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage" let-columns>
+            <tr>
+                <td [attr.colspan]="visibleColumns.length">
+                    No results match your search criteria
                 </td>
             </tr>
         </ng-template>
