@@ -1301,9 +1301,10 @@ from	metrics.AssetVersion V
 		</sql>
 	</changeSet>
 
-	<changeSet author="Puneet Gupta" id="Data.Corrections.GOV-15005-2">
+	<changeSet author="Puneet Gupta" id="Data.Corrections.GOV-15005-3">
 			<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 	<![CDATA[
+Declare @AssetTypeID int;
 
 if exists (select 1 from [dbo].[Fusion] where [FusionTypeID] = 116)
 begin
@@ -1319,6 +1320,17 @@ end
 
 if exists (select 1 from [dbo].[FusionType] where [id] = 116)
 begin
+	select @AssetTypeID = max(id)
+	from assettype
+	where [object] = 'FusionType' and [ObjectID] = 116;
+	
+	if @AssetTypeID is not null
+	   begin
+			delete from AssetTypeStyle where id = @AssetTypeID;
+			delete from AssetTypeLevel where AssetTypeID = @AssetTypeID;
+			delete from AssetTypeExportTemplate where AssetTypeID = @AssetTypeID;
+	   end
+
 	DELETE FROM [dbo].[FusionType]
 	WHERE id = 116
 end
@@ -1326,6 +1338,19 @@ end
 
 if exists (select 1 from [dbo].[FusionAttributeType] where ID = 1820)
 begin
+	set @AssetTypeID = null;
+	
+	select @AssetTypeID = max(id)
+	from assettype
+	where [object] = 'FusionAttributeType' and [ObjectID] = 1820;
+	
+	if @AssetTypeID is not null
+	   begin
+			delete from AssetTypeStyle where id = @AssetTypeID;
+			delete from AssetTypeLevel where AssetTypeID = @AssetTypeID;
+			delete from AssetTypeExportTemplate where AssetTypeID = @AssetTypeID;
+	   end
+
 	DELETE FROM [dbo].[FusionAttributeType]
 	WHERE id = 1820
 end
