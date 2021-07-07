@@ -617,6 +617,10 @@ namespace d360.model.DataAccessLayer
             }
 
             var ownershipFieldTypes = fieldTypes.Where(f => f.Type == "OwnershipLookup").ToList();
+            if(ownershipFieldTypes.Any(f => f.SortOrder > 0))
+            {
+                includeOwnershipLookup = true;
+            }
             if (includeOwnershipLookup && ownershipFieldTypes.Any())
             {
                 populateOwnershipLookupTableSQL = @"
