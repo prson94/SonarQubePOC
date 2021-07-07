@@ -269,6 +269,19 @@ namespace d360.core.entities
         public Guid? ExecutionItemUid { get; set; }
     }
 
+    public class AssetDataProfileMatchingAssetsModel
+    {
+        [DataMember]
+        public Guid uid { get; set; }
+        public string path { get; set; }
+    }
+
+    public class AssetDataProfilesMatchingAssetsApiViewModel : PagedApiBaseViewModel
+    {
+        [DataMember]
+        public IEnumerable<AssetDataProfileMatchingAssetsModel> items { get; set; }
+    }
+
     public class ValidateSampleAttribute : ValidationAttribute
     {
         public ValidateSampleAttribute(int maxlength)
