@@ -2684,9 +2684,13 @@ namespace d360.model
         public static FieldTypeComplexLookupDefinition ParseComplexLookupDefinition(this FieldTypeLookup lookup)
         {
             FieldTypeComplexLookupDefinition definition = JsonConvert.DeserializeObject<FieldTypeComplexLookupDefinition>(lookup.Definition);
-            foreach (var f in definition.Fields.Where(f => f.RelationIndex == null))
+
+            if (definition.Fields != null)
             {
-                f.RelationIndex = definition.Relations.FindIndex(r => r.AssetTypeUid == f.AssetTypeUid);
+                foreach (var f in definition.Fields.Where(f => f.RelationIndex == null))
+                {
+                    f.RelationIndex = definition.Relations.FindIndex(r => r.AssetTypeUid == f.AssetTypeUid);
+                }
             }
             return definition;
         }
@@ -2861,20 +2865,10 @@ namespace d360.model
                     Assets.Add(dict);
                 }
 
-
-
                 unflattened.Add(Assets);
             }
 
             return unflattened;
-        }
-
-        public static Dictionary<string, string> GetSelects(this FieldTypeComplexLookupDefinition definition)
-        {
-            var ret = new Dictionary<string, string>();
-            List<Guid> assetTypes = definition.Relations.Select(x => x.AssetTypeUid.HasValue ? x.AssetTypeUid.Value : Guid.Empty).ToList();
-
-            return ret;
         }
     }
 }
