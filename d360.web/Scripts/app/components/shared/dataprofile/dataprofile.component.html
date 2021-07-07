@@ -49,7 +49,7 @@
                                    [shouldBePadded]="false"
                                    [showHeaderLine]="false">
                     <div readonly class="group">
-                        <div class="sampleBarChart" [ngStyle]="sampleBarChart">&nbsp;</div>
+                        <div *ngIf="dataProfile.sampleCount" class="sampleBarChart" [ngStyle]="sampleBarChart">&nbsp;</div>
                         <div *ngIf="dataProfile.matchCount!=null" class="sampleQuality">
                             <span>
                                 <span class="ig-colorfield-swatch validCircle"></span><label class="quality-label">Valid</label>
