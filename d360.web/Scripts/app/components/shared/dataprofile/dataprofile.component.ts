@@ -138,7 +138,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
     private checkVisibility() {         
         if (!this.dataProfile.totalCount && !this.dataProfile.sampleCount) {
-            this.hasValidCounts=false
+            this.hasValidCounts = false;
         }
 
         if (this.dataProfile.totalCount != null || this.dataProfile.sampleCount != null || this.dataProfile.type || this.dataProfile.typeQualifier || this.dataProfile.confidence != null)
