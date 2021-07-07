@@ -95,7 +95,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
                     this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
                     this.dataProfileService.getDataProfiles(this.artifact.Uid).subscribe(
                         (r) => {
-                            if (r && r.items && r.items.length > 0 && r.totalCount && r.sampleCount) {
+                            if (r && r.items && r.items.length > 0 && r.items[0].totalCount != null && r.items[0].sampleCount != null) {
                                 this.dataProfile = r.items[0];
                                 this.showDataProfile = true;
                             }
