@@ -24,7 +24,6 @@ import { BaseComponent } from '../../../shared/base.component';
                         </div>
                     </div>
         <d3s-tile-actions hideTooltip="true" [hasAdd]="!readonly" (addClick)="addClick.emit()"></d3s-tile-actions>
-<div *ngIf="!isAllAnyVisible()">&nbsp;</div>
 </header>
     <p-table #dt [value]="filteredConditions" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="10" [rowsPerPageOptions]="defaultPagingOptions">
         <ng-template pTemplate="header">
