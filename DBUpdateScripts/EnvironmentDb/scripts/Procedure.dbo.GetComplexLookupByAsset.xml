@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.dbo.GetComplexLookupByAsset-v52">
+  <changeSet author="TDuric" id="Procedure.dbo.GetComplexLookupByAsset-v52.2">
   <comment>GOV-15197</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -733,15 +733,21 @@ set nocount on;
 			insert into @columns ([text], datafield, columntype, description, columnwidth, sort)
 				select 'Code', 'Code', 'text', null, null, 0
 				union
+				select 'Color', 'Color', 'color', null, null, 0
+				union
 				select OverrideDisplayName, FieldTypeName, ColumnDataType, Description, Width, RowNumber from @fields;
 
 			insert into @datafields
 				select 'Code', 'text', 0
 				union
+				select 'Color', 'color', 0
+				union
 				select distinct FieldTypeName, FieldDataType, RowNumber from @fields
 
 			insert into @selects
 				select 'A.[Code]', 'Code'
+				union
+				select 'ACJ.ColorJson', 'Color'
 				union
 				select case
 						when FieldDataType = 'number' then
