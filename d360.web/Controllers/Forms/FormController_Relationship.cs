@@ -884,18 +884,33 @@ order by r.Name";
 
                 var newSubjectCardinality = parseEnumField<Cardinality>(form, "SubjectCardinality");
                 var newObjectCardinality = parseEnumField<Cardinality>(form, "ObjectCardinality");
-                if (
-                    (model.SubjectCardinality == Cardinality.Many && model.ObjectCardinality == Cardinality.One) &&
-                    (newSubjectCardinality != Cardinality.Many || newObjectCardinality != Cardinality.One)
-                    )
+
+                #region We need to perform a check here to validate that this relationship type is NOT used on any FieldFromRelationship field types.
+
+                bool isCardinalityException = false;
+                var fieldFromRelationshipTypeString = DataType.FieldFromRelationship.ToString();
+
+                if (model.SubjectCardinality == Cardinality.One && newSubjectCardinality != Cardinality.One)
                 {
-                    var fieldFromRelationshipTypeString = DataType.FieldFromRelationship.ToString();
-                    // We need to perform a check here to validate that this relationship type is NOT used on any FieldFromRelationship field types.
-                    if (Company.Any<FieldType>(ft => ft.Type == fieldFromRelationshipTypeString && ft.LookupObjectType == "IntersectType" && ft.LookupObjectID == model.ID))
+                    if (Company.Any<FieldType>(ft => ft.Object == model.Object && ft.ObjectID == model.ObjectID && ft.Type == fieldFromRelationshipTypeString && ft.LookupObjectType == "IntersectType" && ft.LookupObjectID == model.ID))
                     {
-                        return jsonException("You are not allowed to update this relationship type as there are existing field types that depend on it.", HttpStatusCode.Conflict);
+                        isCardinalityException = true;
                     }
                 }
+
+                if (model.ObjectCardinality == Cardinality.One && newObjectCardinality != Cardinality.One)
+                {
+                    if (Company.Any<FieldType>(ft => ft.Object == model.Subject && ft.ObjectID == model.SubjectID && ft.Type == fieldFromRelationshipTypeString && ft.LookupObjectType == "IntersectType" && ft.LookupObjectID == model.ID))
+                    {
+                        isCardinalityException = true;
+                    }
+                }
+                if (isCardinalityException)
+                {
+                    return jsonException("You are not allowed to update this relationship type as there are existing field types that depend on it.", HttpStatusCode.Conflict);
+                }
+
+                #endregion
 
                 model.Subject = subjectInfo[0];
                 model.SubjectCardinality = newSubjectCardinality;

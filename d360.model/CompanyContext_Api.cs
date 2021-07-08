@@ -6769,8 +6769,13 @@ update  ER
 set     Success = 0,
         Message = 'Relationship type referenced in FieldFromRelationship field type. Cardinality may not be changed.' 
 from    [api].[ExecutionRelationshipType] ER 
-        inner join IntersectType I on I.Uid = ER.[Uid] and I.SubjectCardinality = 2 and I.ObjectCardinality = 1 and (ER.SubjectCardinality <> 2 or ER.ObjectCardinality <> 1) 
-            and  ER.ExecutionID = @ExecutionID and ER.Success is null;
+        inner join IntersectType I on I.Uid = ER.[Uid] 
+            and (
+                (I.SubjectCardinality = 1 and ER.SubjectCardinality <> 1 and I.ID in (select LookupObjectID from FieldType where LookupObjectType = 'IntersectType' and Object = I.Object and ObjectID = I.ObjectID and [Type] = 'FieldFromRelationship')) 
+                or (I.ObjectCardinality = 1 and ER.ObjectCardinality <> 1  and I.ID in (select LookupObjectID from FieldType where LookupObjectType = 'IntersectType' and Object = I.Subject and ObjectID = I.SubjectID and [Type] = 'FieldFromRelationship')) 
+                )
+            and  ER.ExecutionID = @ExecutionID 
+            and ER.Success is null;
 
 Update  T
 set     SubjectUid = SA.Uid, [Subject] = SA.Object, SubjectID = SA.ObjectID,
