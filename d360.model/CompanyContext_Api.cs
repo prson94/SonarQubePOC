@@ -644,7 +644,7 @@ from	{targetTable} T
         {
             Connection.Execute($@"
 update	api.Execution
-set		[ErrorMessage] = coalesce([ErrorMessage],'') + @msg
+set		[ErrorMessage] = LEFT(coalesce([ErrorMessage],'') + @msg,2000)
 where	ExecutionID = @executionID; 
 
 update	{targetTable} 
