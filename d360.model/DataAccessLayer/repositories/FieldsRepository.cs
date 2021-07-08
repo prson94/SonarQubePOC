@@ -1965,6 +1965,10 @@ from	IntersectType I
                     if (f.Value.FieldTypeID > 0 && !f.Value.FieldTypeName.StartsWith("Related Item."))
                     {
                         var ft = fields.FirstOrDefault(x => x.ID == f.Value.FieldTypeID);
+                        if (ft == null)
+                        {
+                            continue;
+                        }
                         ft.Name = f.Key;
                         ft.FriendlyName = !string.IsNullOrEmpty(f.Value.OverrideDisplayName) ? f.Value.OverrideDisplayName : ft.FriendlyName;
                     }

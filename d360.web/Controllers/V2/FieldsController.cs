@@ -292,7 +292,7 @@ namespace d360.web.Controllers.V2
                         {
                             if (ft.Type.Counter.CounterInitialIndex != currentInitialIndex && ft.Type.Counter.CounterInitialIndex <= currentAssetCount)
                             {
-                                throw new RestApiException(HttpStatusCode.BadRequest, "Field type error", $"Field {ft.FriendlyName}. CounterInitialIndex must be higher that asset count ({currentAssetCount}).");
+                                throw new RestApiException(HttpStatusCode.BadRequest, "Field type error", $"Counter Initial Value must be higher that asset count ({currentAssetCount}).");
                             }
                         }
                     });
@@ -2514,6 +2514,12 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                             c.Type.Relationship = new FieldTypeDataTypeRelationshipApiViewModel();
                             c.Type.Relationship.IntersectTypeUid = Company.IntersectTypes.FirstOrDefault(x => x.ID == f.LookupObjectID).uid;
                             c.FriendlyName = c.FriendlyName.Replace("Related Item.", "");
+                        }
+
+                        if (f.Type == DataType.Counter.ToString())
+                        {
+                            c.Type.Counter = new FieldTypeCounterApiViewModel();
+                            c.Type.Counter.CounterPrefix = f.CounterPrefix;
                         }
 
                         if (string.IsNullOrEmpty(c.FriendlyName))

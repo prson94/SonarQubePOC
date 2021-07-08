@@ -5,14 +5,14 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.dbo.GetComplexLookupByAsset-v51">
-  <comment>GOV-15114</comment>
+  <changeSet author="TDuric" id="Procedure.dbo.GetComplexLookupByAsset-v53">
+  <comment>GOV-15197</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE OR ALTER   procedure [dbo].[GetComplexLookupByAsset]
+CREATE OR ALTER procedure [dbo].[GetComplexLookupByAsset]
 	@object varchar(50),
 	@objectId int,
 	@fieldTypeId int,
@@ -52,7 +52,7 @@ set nocount on;
 		RowNumber int identity, RelationRowNumber int, RRN varchar(3), --RRN is the Relation record varchar-based RowNumber value from above table
 		AssetTypeUid uniqueidentifier, Object varchar(50), ObjectID int, FieldTypeID int, FT varchar(15), FieldTypeName nvarchar(250), [Filter] nvarchar(max), FriendlyName nvarchar(250), OverrideDisplayName nvarchar(250), DisplayOrder int, SortOrder int, Show bit, Width int, 
 		DataField varchar(50), BaseField varchar(250), FieldDataType varchar(25), ColumnDataType varchar(25), DataFormat varchar(25), [Description] nvarchar(max),
-		IsRelationLink bit, IsRelationField bit
+		IsRelationLink bit, IsRelationField bit, CounterPrefix nvarchar(10)
 	)
 	
 	-- The tables to hold the statements that are used to build the SQL below.
@@ -86,7 +86,7 @@ set nocount on;
 					) R
 			where	O.FieldTypeID = @fieldTypeId;
 
-		insert into @fields (AssetTypeUid, Object, ObjectID, FieldTypeID, FieldTypeName, [Filter], OverrideDisplayName, DisplayOrder, SortOrder, Show, Width, FriendlyName, RelationRowNumber)
+		insert into @fields (AssetTypeUid, Object, ObjectID, FieldTypeID, FieldTypeName, [Filter], OverrideDisplayName, DisplayOrder, SortOrder, Show, Width, FriendlyName, RelationRowNumber, CounterPrefix)
 			select		F.AssetTypeUid,
 						F.Object,
 						F.ObjectID,
@@ -99,7 +99,8 @@ set nocount on;
 						F.Show,
 						F.Width,
 						FT.FriendlyName,
-						F.RelationIndex + 1 as RelationRowNumber
+						F.RelationIndex + 1 as RelationRowNumber,
+						FT.CounterPrefix
 			from		FieldTypeLookup O
 						cross apply OPENJSON(O.[Definition], N'lax $.Fields') with (
 							AssetTypeUid uniqueidentifier,
@@ -219,6 +220,7 @@ set nocount on;
 									when 'Decimal' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as float)'
 									when 'Number' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as int)'
 									when 'Boolean' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as bit)'
+									when 'Counter' then  '('''+F.CounterPrefix+'''' + ' + try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as nvarchar(20)))'
 									else 'H' + F.RRN + '_F' + F.FT + '.FormattedValue'
 								end							
 							when F.FieldTypeID = 0 and F.FieldTypeName = 'DisplayValue' then 'H' + F.RRN + '_DV.DisplayValue'
@@ -467,8 +469,11 @@ set nocount on;
 								' left join #jsons H'+T.RRN+'_J'+T.FT+' on H'+T.RRN+'_J'+T.FT+'.JsonFieldTypeID = '+ T.FT + 
 								' left join Field H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.FieldTypeID = H'+T.RRN+'_J'+T.FT+'.FieldTypeID and H'+T.RRN+'_F'+T.FT+'.AssetID = H'+T.RRN+'.ID' + 
 								' left join FieldJsonProperty H'+T.RRN+'_P'+T.FT+' on H'+T.RRN+'_P'+T.FT+'.FieldID = H'+T.RRN+'_F'+T.FT+'.ID and H'+T.RRN+'_P'+T.FT+'.[Path] = H'+T.RRN+'_J'+T.FT+'.[Path]'
-							when T.IsRelationField = 1 and T.FieldTypeID > 0 and T.FieldDataType <> 'JsonElement' and T.FieldDataType <> 'Score' then ' left join Field H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.ObjectType = ''Intersect'' and H'+T.RRN+'_F'+T.FT+'.FieldTypeID = '+T.FT+' and H'+T.RRN+'_F'+T.FT+'.ObjectID = R'+T.RRN+'.ID and H'+T.RRN+'_F'+T.FT+'.FormattedValue <> '''''
-							when T.IsRelationField = 0 and T.FieldTypeID > 0 and T.FieldDataType <> 'JsonElement' and T.FieldDataType <> 'Score' then ' left join FieldDetail H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.FieldTypeID = '+T.FT+' and H'+T.RRN+'_F'+T.FT+'.AssetID = H'+T.RRN+'.ID and H'+T.RRN+'_F'+T.FT+'.FormattedValue <> '''''
+							when T.FieldTypeID > 0 and T.FieldDataType = 'Counter' then ' outer apply (select top 1 [Value] as FormattedValue
+                            from dbo.FieldCounterValue
+                            where AssetId = H'+T.RRN +'.ID and FieldTypeId = '+T.FT+')H'+T.RRN+'_F'+T.FT
+							when T.IsRelationField = 1 and T.FieldTypeID > 0 and T.FieldDataType <> 'JsonElement' and T.FieldDataType <> 'Score' and T.FieldDataType <> 'Counter' then ' left join Field H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.ObjectType = ''Intersect'' and H'+T.RRN+'_F'+T.FT+'.FieldTypeID = '+T.FT+' and H'+T.RRN+'_F'+T.FT+'.ObjectID = R'+T.RRN+'.ID and H'+T.RRN+'_F'+T.FT+'.FormattedValue <> '''''
+							when T.IsRelationField = 0 and T.FieldTypeID > 0 and T.FieldDataType <> 'JsonElement' and T.FieldDataType <> 'Score' and T.FieldDataType <> 'Counter' then ' left join FieldDetail H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.FieldTypeID = '+T.FT+' and H'+T.RRN+'_F'+T.FT+'.AssetID = H'+T.RRN+'.ID and H'+T.RRN+'_F'+T.FT+'.FormattedValue <> '''''
 							when T.FieldDataType = 'Score' then 'left join FieldType HFT'+T.RRN+'_F'+T.FT +' on HFT'+T.RRN+'_F'+T.FT+'.ID = ' + T.FT + '
 								     outer apply dbo.GetAssetScoreById(H'+T.RRN +'.ID, HFT'+T.RRN+'_F'+T.FT+'.scoretype) H'+T.RRN+'_F'+T.FT
 							when T.FieldTypeID = 0 and T.FieldTypeName = 'DisplayValue' then ' left join AssetDisplayValue H'+T.RRN+'_DV on H'+T.RRN+'_DV.AssetID = H'+T.RRN+'.ID'
@@ -699,7 +704,7 @@ set nocount on;
 				from	FieldType
 				where	AssetTypeID = @referenceItemTypeID 
 						and IsListable = 1;
-
+						
 			insert into  @tables
 			    select ' outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ'
 
@@ -1635,6 +1640,9 @@ set nocount on;
 				where	AssetTypeID = @referenceItemTypeID 
 						and IsListable = 1;
 
+			insert into  @tables
+			    select ' outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ'
+
 			-- Resolve data types to send back to caller.
 			update	@fields 
 			set		FieldDataType = case FieldDataType 
@@ -1663,15 +1671,21 @@ set nocount on;
 			insert into @columns ([text], datafield, columntype, description, columnwidth, sort)
 				select 'Code', 'Code', 'text', null, null, 0
 				union
+				select 'Color', 'Color', 'color', null, null, 0
+				union
 				select OverrideDisplayName, FieldTypeName, ColumnDataType, Description, Width, RowNumber from @fields;
 
 			insert into @datafields
 				select 'Code', 'text', 0
 				union
+				select 'Color', 'color', 0
+				union
 				select distinct FieldTypeName, FieldDataType, RowNumber from @fields
 
 			insert into @selects
 				select 'A.[Code]', 'Code'
+				union
+				select 'ACJ.ColorJson', 'Color'
 				union
 				select case
 						when FieldDataType = 'number' then
