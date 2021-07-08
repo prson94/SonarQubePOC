@@ -187,8 +187,20 @@ namespace d360.model.DataAccessLayer
 
         public async Task<IEnumerable<ResponsibilityTypeAllocationViewModel>> GetResponsibilityTypeAllocations(Guid responsibilityTypeUid)
         {
-            return await Company.QueryAsync<ResponsibilityTypeAllocationViewModel>(@"
-                            select 
+            return await GetResponsibilityTypeAllocations(responsibilityTypeUid, "R");
+        }
+
+        public async Task<IEnumerable<ResponsibilityTypeAllocationViewModel>> GetResponsibilityTypeAllocationsByAsset(Guid assetTypeUid)
+        {
+            return await GetResponsibilityTypeAllocations(assetTypeUid, "A");
+        }
+
+        private async Task<IEnumerable<ResponsibilityTypeAllocationViewModel>> GetResponsibilityTypeAllocations(Guid uid, string type = "R")
+        {
+            string sql = @"
+                            select
+                                rt.[Name] as ResponsibilityTypeName, 
+	                            rt.[uid] as ResponsibilityTypeUid,
 	                            att.Class as AssetClass,
 	                            att.[Name] as AssetTypeName,
 	                            P.[Path] as AssetTypePath,
@@ -199,9 +211,9 @@ namespace d360.model.DataAccessLayer
 	                            inner join [dbo].responsibilitytyperelation rtr on (rt.id = rtr.ResponsibilityTypeID)
 	                            inner join [dbo].assettype att on(att.[Object] = rtr.ObjectType and att.ObjectID = rtr.ObjectID)
                                 cross apply dbo.GetAssetTypeTextPathById(att.ID, ' / ') P
-                            where
-	                            rt.[uid] = @uid
-                            ", new { uid = responsibilityTypeUid.ToString() }, ApiTimeout);
+                            where ";
+            sql += (type == "A") ? "att.[uid] = @uid"  : "rt.[uid] = @uid";
+            return await Company.QueryAsync<ResponsibilityTypeAllocationViewModel>(sql, new { uid = uid.ToString() }, ApiTimeout);
         }
 
         public async Task<IEnumerable<ResponsibilityTypeViewModel>> GetResponsibilityTypesByAssetUid(Guid assetTypeUid)

@@ -43,7 +43,7 @@
             <object-detail [objectType]="'ResponsibilityType'" *ngIf="selectedRow && selectedRow?.ID" [objectID]="selectedRow?.ID"></object-detail>
         </div>
         <div *ngSwitchDefault class="tile tile-detail">
-            <d3s-responsibility-relations queryType="R" *ngIf="selectedRow && selectedRow?.ID" [id]="selectedRow?.ID" (onDelete)="responsibilityRelationDelete()"></d3s-responsibility-relations>
+            <d3s-responsibility-relations queryType="R" *ngIf="selectedRow && selectedRow?.uid" [uid]="selectedRow?.uid" (onDelete)="responsibilityRelationDelete()"></d3s-responsibility-relations>
         </div>
         <div *ngSwitchDefault class="tile tile-detail">
             <d3s-responsibility-rules [id]="selectedRow?.ID" *ngIf="selectedRow && selectedRow?.ID" [forceReload]="forceRulesReloadFlag"></d3s-responsibility-rules>

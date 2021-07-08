@@ -1984,32 +1984,6 @@ from    ResponsibilityTypeRelation R
             return list;
         }
 
-        [Route("ownership/types/asset/{id:int}/relations")]
-        public List<ResponsibilityTypeRelationViewModel> GetResponsibilityTypeRelationsByAssetType(int id)
-        {
-            var list = Company.Query<ResponsibilityTypeRelationViewModel>(@"
-select  R.ResponsibilityTypeID,
-        O.Name as ResponsibilityTypeName,
-        D.[Class],
-        D.Name as AssetTypeName, 
-        D.ID as AssetTypeID,
-        R.ObjectType,
-        R.ObjectID,
-        R.PermissionsBitMask
-from    ResponsibilityTypeRelation R 
-        inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID 
-        inner join AssetType D on D.Object = R.ObjectType and D.ObjectID = R.ObjectID and D.ID = @id 
-        cross apply dbo.GetAssetTypeTextPathById(D.ID, ' / ') P",
-            new { id }).ToList().OrderBy(i => i.ClassName).ThenBy(i => i.AssetTypeName).ToList();
-
-            list.ForEach(i =>
-            {
-                i.LoadPermissionsFromMask();
-            });
-
-            return list;
-        }
-
         [Route("ownership/types/{id:int}/rules")]
         public IEnumerable<dynamic> GetRulesByResponsibilityType(int id)
         {

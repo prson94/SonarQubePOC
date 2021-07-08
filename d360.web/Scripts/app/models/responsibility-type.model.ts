@@ -1,5 +1,6 @@
 ﻿import { SelectItem } from 'primeng/api';
 import { Observable } from 'rxjs';
+import { AssetTypeClassApiModel } from "./asset.model";
 
 export interface IResponsibilityTypeService {
     getResponsibilityTypes(): Observable<ResponsibilityType[]>;
@@ -51,6 +52,22 @@ export class ResponsibilityTypeRelation {
     Permissions: ResponsibilityTypeRelationPermission[] = [];
 }
 
+export class ResponsibilityTypeAllocation {
+    ResponsibilityTypeUid: string;
+    ResponsibilityTypeName: string;
+    AssetTypeUid: string;
+    AssetTypeName: string;
+    AssetTypePath: string;
+    AssetClass: AssetTypeClassApiModel;
+    PermissionsMask: number;
+    Permissions: ResponsibilityTypeRelationPermission[];
+}
+
+export class ResponsibilityTypeAllocationPost {
+    AssetTypeUid: string;
+    Permissions: number[];
+}
+
 export class ResponsibilityTypeRelation_FormData {
     AllocationOptions: ResponsibilityTypeRelationAllocationOption[] = [];
     PermissionOptions: ResponsibilityTypeRelationPermission[] = [];
@@ -59,6 +76,7 @@ export class ResponsibilityTypeRelation_FormData {
 export class ResponsibilityTypeRelationAllocationOption {
     IsUsed: boolean;
     ID: number;
+    Uid: string;
     Path: string;
 }
 

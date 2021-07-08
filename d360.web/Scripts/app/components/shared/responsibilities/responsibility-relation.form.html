@@ -26,7 +26,7 @@
         </div>
         <div class="row">
             <div class="col l3 m3 s12" *ngFor="let cat of permissionCategories">
-                <div *ngFor="let p of commonFormData.PermissionOptions | permissionFilter:cat" [pTooltip]="p.Description" tooltipPosition="bottom" tooltipStyleClass="ig-tooltip">
+                <div *ngFor="let p of relation.Permissions | permissionFilter:cat" [pTooltip]="p.Description" tooltipPosition="bottom" tooltipStyleClass="ig-tooltip">
                     <p-checkbox [(value)]="p.Value" [(ngModel)]="p.Selected" binary="true" [ngModelOptions]="{standalone: true}" [label]="p.Name"></p-checkbox>
                 </div>
             </div>

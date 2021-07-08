@@ -60,6 +60,16 @@ namespace igx.UnitTests.V2ControllerTests
         }
 
         [Fact]
+        public async void GetResponsibilityTypeAllocationsByAssetAsync()
+        {
+            var result = await responsibilitiesController.GetResponsibilityTypeAllocationsByAssetAsync(Guid.NewGuid());
+            var str = await result.Content.ReadAsStringAsync();
+
+            Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);
+            AssertJSON.True<IEnumerable<ResponsibilityTypeAllocationViewModel>>(str);
+        }
+
+        [Fact]
         public async void GetResponsibilityRulesForTypeAsync()
         {
             var result = await responsibilitiesController.GetResponsibilityRulesForTypeAsync(Guid.NewGuid());

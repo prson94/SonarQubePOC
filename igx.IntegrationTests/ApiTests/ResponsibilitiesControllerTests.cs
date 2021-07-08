@@ -176,6 +176,8 @@ namespace igx.IntegrationTests.ApiTests
 
             foreach(var item in parsedData)
             {
+                Assert.True(item["ResponsibilityTypeUid"] != null, XMsg.InvalidFieldValue("ResponsibilityTypeUid"));
+                Assert.True(item["ResponsibilityTypeName"] != null, XMsg.InvalidFieldValue("ResponsibilityTypeName"));
                 Assert.True(item["AssetTypeUid"] != null, XMsg.InvalidFieldValue("AssetTypeUid"));
                 Assert.True(item["AssetTypeName"] != null, XMsg.InvalidFieldValue("AssetTypeName"));
                 Assert.True(item["AssetTypeClass"] != null, XMsg.InvalidFieldValue("AssetTypeClass"));

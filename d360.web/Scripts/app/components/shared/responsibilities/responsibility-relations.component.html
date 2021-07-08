@@ -1,4 +1,4 @@
-﻿<div *ngIf="id">
+﻿<div *ngIf="uid">
     <div *ngIf="!isLoading && !isEditing && !isDeleting">
         <header>
             {{title}}            
@@ -46,7 +46,7 @@
             </ng-template>
             <ng-template pTemplate="body" let-item>
                 <tr (dblclick)="isEditing=showEditButton;" [pSelectableRow]="item">
-                    <td *ngIf="queryType === 'R'">{{item.ClassName}}</td>
+                    <td *ngIf="queryType === 'R'">{{item.AssetTypeClass.Name}}</td>
                     <td *ngIf="queryType === 'R'">{{item.AssetTypeName}}</td>
                     <td *ngIf="queryType === 'A'">{{item.ResponsibilityTypeName}}</td>
                     <td>
