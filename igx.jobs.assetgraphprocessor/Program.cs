@@ -12,7 +12,12 @@ namespace igx.jobs.assetgraphprocessor
             builder.ConfigureWebJobs(c =>
             {
                 c.AddTimers();
-                c.AddServiceBus();
+                c.AddServiceBus(s =>
+                {
+                    s.MessageHandlerOptions.MaxAutoRenewDuration = new TimeSpan(0, 5, 0); // auto renew messages for 5 additional minutes.
+                    s.MessageHandlerOptions.AutoComplete = false;
+                    s.MessageHandlerOptions.MaxConcurrentCalls = 5; // up to 5 concurrent calls.
+                });
             });
 
             System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
