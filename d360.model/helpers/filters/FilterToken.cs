@@ -473,7 +473,7 @@ namespace d360.model.helpers
                     value = "%\"Name\":\"" + value.ToString().Trim() + "\"%";
                 }
 
-                this.field = "ACJ.ColorJson";
+                this.field = "ISNULL(ACJ.ColorJson,'')";
             }
 
             if (sqlParamsRef != null)
