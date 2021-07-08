@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.dbo.GetComplexLookupByAsset-v52.2">
+  <changeSet author="TDuric" id="Procedure.dbo.GetComplexLookupByAsset-v53">
   <comment>GOV-15197</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -704,6 +704,9 @@ set nocount on;
 				from	FieldType
 				where	AssetTypeID = @referenceItemTypeID 
 						and IsListable = 1;
+						
+			insert into  @tables
+			    select ' outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ'
 
 			-- Resolve data types to send back to caller.
 			update	@fields 
