@@ -110,12 +110,12 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
         this.onFieldsChanged.emit();
     }
 
-    deleteRule(id: number) {
-        this.responsibilityTypeService.deleteRule(id).subscribe((res) => {
-            this.showMessageForResult(this.messagesService, res);
+    deleteRule(item: any) {
+        this.responsibilityTypeService.deleteResponsibilityRulesForType(item.uid, item.ResponsibilityTypeUid).subscribe((res) => {
+            this.showMessageForApiResponse(this.messagesService, res[0]);
             if (!res.isError) {
                 this.isDeleting = false;
-                let index = this.rows.findIndex((f) => f.ID == id);
+                let index = this.rows.findIndex((f) => f.ID == item.ID);
                 if (index >= 0 && index < this.rows.length)
                     this.rows.splice(index, 1);
                 this.onFieldsChanged.emit();

@@ -843,48 +843,6 @@ order by	case
 
         #region Form Get/Post
 
-        [HttpDelete, Route("DeleteResponsibilityTypeRelationRuleByID"), NonNullableParameters]
-        public async Task<JsonResult> DeleteResponsibilityTypeRelationRuleByID(int id)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-                }
-
-                var model = Company.GetById<ResponsibilityTypeRelationRule>(id, i => i.ResponsibilityType);
-                if (model == null)
-                {
-                    throw new NotFoundException("responsibility type rule");
-                }
-
-                var results = await ResponsibilityRepository.DeleteResponsibilityRules(model.ResponsibilityType.UID, new List<Guid>() { model.UID.Value });
-                if (results == null)
-                {
-                    throw new GenericException(HttpStatusCode.BadRequest, "Invalid request", "Your request is invalid. Please check your request and try again.");
-                }
-
-                if (results[0].Success)
-                {
-                    return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-                }
-                else
-                {
-                    throw new GenericException(HttpStatusCode.BadRequest, "Invalid request", results[0].Message);
-                }
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
         [HttpDelete, Route("DeleteResponsibilityTypeRelationRuleDateByID"), NonNullableParameters]
         public JsonResult DeleteResponsibilityTypeRelationRuleDateByID(int id)
         {

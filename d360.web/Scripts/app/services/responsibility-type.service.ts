@@ -47,6 +47,22 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
             );
     }
 
+
+    deleteResponsibilityRulesForType(ruleUid?: string, responsibilityTypeUid?: string): Observable<any> {
+        var model = [];
+        model.push({ uid: ruleUid });
+
+        const httpHeaders = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+            body: model
+        };
+        return this.http.delete(`api/v2/responsibilities/types/${responsibilityTypeUid}/ownershiprules`, httpHeaders)
+            .pipe(
+                map((response) => <any[]>response),
+                catchError((err) => this.handleError(err))
+            );
+    }
+
     getAdminResponsibilityTypeDetails(uid: string): Observable<any> {
         return this.http.get(`api/v2/responsibilities/type/${uid}`)
             .pipe(
@@ -236,14 +252,6 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
 
     postRule(rule: ResponsibilityTypeRelationRule): Observable<any> {
         return this.http.post(`form/ResponsibilityTypeRelationRule`, rule)
-            .pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err))
-            );
-    }
-
-    deleteRule(id: number): Observable<any> {
-        return this.http.delete(`form/DeleteResponsibilityTypeRelationRuleByID?id=${id}`)
             .pipe(
                 map((response) => response),
                 catchError((err) => this.handleError(err))

@@ -2014,12 +2014,14 @@ from    ResponsibilityTypeRelation R
         public IEnumerable<dynamic> GetRulesByResponsibilityType(int id)
         {
             return Company.Query<dynamic>(@"
-select  R.ID, 
+select  R.ID,
+        R.uid,
         R.ResponsibilityTypeID, 
         R.Name, 
         R.Context,
         D.Name as ObjectName, 
-        O.Name as ResponsibilityType, 
+        O.Name as ResponsibilityType,
+        O.uid as ResponsibilityTypeUid,
 		R.LastRunOn 
 from    ResponsibilityTypeRelationRule R 
         inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID and O.ID = @id 
