@@ -96,11 +96,11 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
     private getNullBlankToolTip() {
         var retval: string = "";
-        if (this.dataProfile.nullCount != null) {
+        if (this.dataProfile.nullCount) {
             retval = `Null: ${this.dataProfile.nullCount.toLocaleString()} <span style="color: gray;">${((this.dataProfile.nullCount / this.dataProfile.sampleCount) * 100).toPrecision(2)}%</span>`;
         }
 
-        if (this.dataProfile.blankCount != null) {
+        if (this.dataProfile.blankCount) {
             if (retval.length > 0) {
                 retval = retval + "<br/>";
             }
