@@ -618,6 +618,7 @@ where   AssetTypeID in (
                     });
 
                     // Now add scores in this set via a transaction.
+                    scoreItems = scoreItems.DistinctBy(s => new { s.AllocationUid, s.AssetUid, s.EffectiveDate, s.MeasureVersionUid }).ToList();
                     var success = addScoresToEnvironmentDatabase(scoreItems);
                     
                     // Stop the stopwatch and figure out how much time elapsed, taking the average time across all loops so far.
