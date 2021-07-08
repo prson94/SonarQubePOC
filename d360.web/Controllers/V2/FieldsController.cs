@@ -292,7 +292,7 @@ namespace d360.web.Controllers.V2
                         {
                             if (ft.Type.Counter.CounterInitialIndex != currentInitialIndex && ft.Type.Counter.CounterInitialIndex <= currentAssetCount)
                             {
-                                throw new RestApiException(HttpStatusCode.BadRequest, "Field type error", $"Field {ft.FriendlyName}. CounterInitialIndex must be higher that asset count ({currentAssetCount}).");
+                                throw new RestApiException(HttpStatusCode.BadRequest, "Field type error", $"Counter Initial Value must be higher that asset count ({currentAssetCount}).");
                             }
                         }
                     });

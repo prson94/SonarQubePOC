@@ -373,7 +373,7 @@ namespace d360.model.validators
                 {
                     if (field.Type.Counter.IsEditable == true)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. IsEditable cannot be true for this field type.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"IsEditable cannot be true for this field type.");
                     }
 
                     if (!string.IsNullOrEmpty(field.Type.Counter.CounterPrefix))
@@ -383,24 +383,24 @@ namespace d360.model.validators
 
                         if (value.Length > 10)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. Counter Prefix cannot be longer than 10 characters.");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Counter Prefix cannot be longer than 10 characters.");
                         }
 
                         var match = Regex.Matches(value, "[a-zA-Z0-9-_]");
                         if (match.Count != value.Length)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. Counter Prefix must be consisted of alphanumericals and/or symbols _ or -.");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Counter Prefix must be consisted of alphanumericals and/or symbols _ or -.");
                         }
 
                         if (!Regex.IsMatch(value[0].ToString(), "[a-zA-Z]"))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. Counter Prefix must start with a character.");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Counter Prefix must start with a character.");
                         }
                     }
 
                     if (field.Type.Counter.CounterInitialIndex.HasValue && (field.Type.Counter.CounterInitialIndex.Value <= 0 || field.Type.Counter.CounterInitialIndex.Value > 9999999))
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. Counter Initial Value must be between 1 and 9999999.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Counter Initial Value must be between 1 and 9999999.");
                     }
 
                     var allowedTypes = new List<string> {

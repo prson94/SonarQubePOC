@@ -464,6 +464,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     this.model.FieldType.Type.Counter.CounterInitialIndex = this.numberOfAssetsForType;
                 }
                 this.showIsRequired = false;
+                this.enableAllowMultipleValues = false;
                 this.showDescription = false;
                 break;
             default:
