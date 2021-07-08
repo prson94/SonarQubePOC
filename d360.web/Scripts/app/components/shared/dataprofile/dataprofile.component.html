@@ -84,9 +84,9 @@
                         <div *ngIf="dataProfile.nullCount!=null && dataProfile.blankCount!=null" class="sampleQuality">
                             <span>
                                 <span class="ig-colorfield-swatch otherCircle"></span>
-                                <label *ngIf="dataProfile.nullCount!=null && dataProfile.blankCount!=null" class="ig-label" style="display: inline">Null/Blank<ng-container *ngTemplateOutlet="nullBlankTooltip"></ng-container></label>
-                                <label *ngIf="dataProfile.nullCount==null && dataProfile.blankCount!=null" class="ig-label" style="display: inline">Blank</label>
-                                <label *ngIf="dataProfile.nullCount!=null && dataProfile.blankCount==null" class="ig-label" style="display: inline">Null</label>
+                                <label *ngIf="dataProfile.nullCount && dataProfile.blankCount" class="ig-label" style="display: inline">Null/Blank<ng-container *ngTemplateOutlet="nullBlankTooltip"></ng-container></label>
+                                <label *ngIf="!dataProfile.nullCount && dataProfile.blankCount" class="ig-label" style="display: inline">Blank</label>
+                                <label *ngIf="dataProfile.nullCount && !dataProfile.blankCount" class="ig-label" style="display: inline">Null</label>
                             </span>
                             <span class="qualitySampleValue">
                                 <label class="qualityValue-label" style="font-weight: 600;">{{nullBlankCountTotal | number}}</label>
