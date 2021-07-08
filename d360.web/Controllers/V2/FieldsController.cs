@@ -2516,6 +2516,12 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                             c.FriendlyName = c.FriendlyName.Replace("Related Item.", "");
                         }
 
+                        if (f.Type == DataType.Counter.ToString())
+                        {
+                            c.Type.Counter = new FieldTypeCounterApiViewModel();
+                            c.Type.Counter.CounterPrefix = f.CounterPrefix;
+                        }
+
                         if (string.IsNullOrEmpty(c.FriendlyName))
                         {
                             c.FriendlyName = "#Missing Friendly Name";

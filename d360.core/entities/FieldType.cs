@@ -652,6 +652,8 @@ namespace d360.core.entities
         [DataMember]
         public FieldTypeDataTypeComputedRelationshipReferenceListApiViewModel ComputedRelationshipReferenceList { get; set; }
         [DataMember]
+        public FieldTypeCounterApiViewModel Counter { get; set; }
+        [DataMember]
         public FieldTypeDataTypeDateApiViewModel Date { get; set; }
         [DataMember]
         public FieldTypeDataTypeDateTimeApiViewModel DateTime { get; set; }
@@ -679,8 +681,6 @@ namespace d360.core.entities
         public FieldTypeDataTypeTagApiViewModel Tag { get; set; }
         [DataMember]
         public FieldTypeDataTypeComputedScoreApiViewModel Score { get; set; }
-        [DataMember]
-        public FieldTypeCounterApiViewModel Counter { get; set; }
 
         public bool IsOnlyOneTypeModelDefined()
         {
