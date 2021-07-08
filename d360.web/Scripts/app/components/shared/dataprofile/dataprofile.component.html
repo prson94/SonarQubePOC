@@ -81,7 +81,7 @@
                                 <ng-container *ngTemplateOutlet="samplePercentageTooltip;context:{numerator: dataProfile.outlierCount}"></ng-container>                                
                             </span>
                         </div>
-                        <div *ngIf="dataProfile.nullCount!=null && dataProfile.blankCount!=null" class="sampleQuality">
+                        <div *ngIf="dataProfile.nullCount || dataProfile.blankCount" class="sampleQuality">
                             <span>
                                 <span class="ig-colorfield-swatch otherCircle"></span>
                                 <label *ngIf="dataProfile.nullCount && dataProfile.blankCount" class="ig-label" style="display: inline">Null/Blank<ng-container *ngTemplateOutlet="nullBlankTooltip"></ng-container></label>
