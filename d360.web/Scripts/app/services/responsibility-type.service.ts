@@ -48,7 +48,7 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
 
     deleteResponsibilityRulesForType(ruleUid?: string, responsibilityTypeUid?: string): Observable<any> {
         var model = [];
-        model.push({ uid: ruleUid })
+        model.push({ uid: ruleUid });
 
         const httpHeaders = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
