@@ -30,6 +30,26 @@ export enum Permission {
     EditRelationships = 8192,
 }
 
+export class ResponsibilityTypeRelationPermission {
+    Value: number;
+    ID: string;
+    Category: string;
+    Name: string;
+    Description: number;
+    Selected: boolean;
+
+    static hasPermission(permissions: ResponsibilityTypeRelationPermission[], p: Permission): boolean {
+
+        let index = permissions.findIndex((i) => i.Value === p);
+
+        if (index >= 0 && index < permissions.length) {
+            return true;
+        }
+
+        return false;
+    }
+}
+
 export class ResponsibilityType {
     ID: number;
     Name: string;    
@@ -78,26 +98,6 @@ export class ResponsibilityTypeRelationAllocationOption {
     ID: number;
     Uid: string;
     Path: string;
-}
-
-export class ResponsibilityTypeRelationPermission {
-    Value: number;
-    ID: string;
-    Category: string;
-    Name: string;
-    Description: number;
-    Selected: boolean;
-
-    static hasPermission(permissions: ResponsibilityTypeRelationPermission[], p: Permission): boolean {
-
-        let index = permissions.findIndex((i) => i.Value === p);
-
-        if (index >= 0 && index < permissions.length) {
-            return true;
-        }
-
-        return false;
-    }
 }
 
 export class ResponsibilityTypeCount {

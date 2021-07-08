@@ -59,8 +59,9 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
     }
 
     load(): void {
-        if (this.uid == null)
+        if (this.uid == null) {
             return;
+        }
 
         // Update component title.
         if (this.queryType === 'A') {
@@ -83,7 +84,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
 
                         //#region Remove the already-populated relations from the list of options.
                         this.rows.forEach(e => {
-                            let ix: ResponsibilityTypeRelationAllocationOption = this.commonFormData.AllocationOptions.find((ao) => ao.Uid === e.AssetTypeUid)
+                            let ix: ResponsibilityTypeRelationAllocationOption = this.commonFormData.AllocationOptions.find((ao) => ao.Uid === e.AssetTypeUid);
                             if (ix) {
                                 ix.IsUsed = true;
                             }

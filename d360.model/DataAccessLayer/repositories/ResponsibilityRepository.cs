@@ -187,15 +187,15 @@ namespace d360.model.DataAccessLayer
 
         public async Task<IEnumerable<ResponsibilityTypeAllocationViewModel>> GetResponsibilityTypeAllocations(Guid responsibilityTypeUid)
         {
-            return await GetResponsibilityTypeAllocations(responsibilityTypeUid, "R");
+            return await FetchResponsibilityTypeAllocations(responsibilityTypeUid).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<ResponsibilityTypeAllocationViewModel>> GetResponsibilityTypeAllocationsByAsset(Guid assetTypeUid)
         {
-            return await GetResponsibilityTypeAllocations(assetTypeUid, "A");
+            return await FetchResponsibilityTypeAllocations(assetTypeUid, "A").ConfigureAwait(false);
         }
 
-        private async Task<IEnumerable<ResponsibilityTypeAllocationViewModel>> GetResponsibilityTypeAllocations(Guid uid, string type = "R")
+        private async Task<IEnumerable<ResponsibilityTypeAllocationViewModel>> FetchResponsibilityTypeAllocations(Guid uid, string type = "R")
         {
             string sql = @"
                             select
