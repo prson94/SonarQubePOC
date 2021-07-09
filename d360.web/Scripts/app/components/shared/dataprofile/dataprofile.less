@@ -6,8 +6,8 @@
     -webkit-flex: 1 1 auto;
     height: calc(100vh - 255px);
 
-    .ig-value{
-        margin-bottom:10px;
+    .ig-value {
+        margin-bottom: 10px;
     }
 
     .tooltip-icon {
@@ -21,9 +21,9 @@
     .group {
         padding-top: 10px;
         padding-bottom: 20px;
-        --validbar: @d3s-primary-green;
-        --invalidbar: @d3s-primary-red;
-        --otherbar: @d3s-primary-gray;
+        --validbar: @ig-green-t1;
+        --invalidbar: @ig-red-t1;
+        --otherbar: @ig-slate-t1;
 
         .validCircle {
             background-color: var(--validbar);
@@ -75,7 +75,6 @@
 
             .qualitySampleValue {
                 float: right;
-                padding-right: 5px;
 
                 .qualityValue-label {
                     color: @ig-black;
@@ -114,5 +113,5 @@
         padding-top: 6px;
         color: @d3s-gray-2;
         margin-left: 5px;
-    }        
+    }
 }
