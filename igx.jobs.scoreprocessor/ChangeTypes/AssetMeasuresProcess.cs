@@ -268,7 +268,10 @@ where   AssetTypeID in (
                                         {
                                             Result = r,
                                             Measure = m
-                                        }).ToList();
+                                        })
+                                        .GroupBy(r => r.Result.MetricAssetVersionUid)
+                                        .Select(r => r.First())
+                                        .ToList();
 
                         var assetFields = setFields.Where(f => f.Assetuid == assetUid).ToList();
 
@@ -618,6 +621,7 @@ where   AssetTypeID in (
                     });
 
                     // Now add scores in this set via a transaction.
+                    scoreItems = scoreItems.Distinct(new StagingScoreItemComparer()).ToList();
                     var success = addScoresToEnvironmentDatabase(scoreItems);
                     
                     // Stop the stopwatch and figure out how much time elapsed, taking the average time across all loops so far.
