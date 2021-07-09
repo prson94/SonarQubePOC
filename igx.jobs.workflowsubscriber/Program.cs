@@ -27,8 +27,7 @@ namespace igx.jobs.workflowsubscriber
                 c.AddAzureStorageCoreServices()
                 .AddServiceBus(s =>
                 {
-                    s.MessageHandlerOptions.MaxAutoRenewDuration = new TimeSpan(0, 5, 0); // auto renew messages for 5 additional minutes.
-                    s.MessageHandlerOptions.AutoComplete = false;
+                    s.MessageHandlerOptions.MaxAutoRenewDuration = new TimeSpan(0, 5, 0); // auto renew messages for 5 additional minutes.                    
                     s.MessageHandlerOptions.MaxConcurrentCalls = 25; // up to 25 concurrent calls.
                 })
                 .AddAzureStorage()
