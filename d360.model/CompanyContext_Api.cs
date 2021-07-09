@@ -525,6 +525,17 @@ inner join api.ExecutionField EF on EA.ItemNumber = EF.ItemNumber AND EF.Executi
 inner join FieldType FT on FT.Id = EF.FieldTypeId and FT.[Type] = 'Counter'
 inner join FieldCounterValue FCV on FCV.FieldTypeId = FT.ID and FCV.Value = TRY_CAST(EF.FieldValue AS INT) and a.id <> fcv.assetid
 where EA.ExecutionID = @executionId and EA.Success is null;
+
+update EA
+set EA.Success = 0,
+    EA.[Message] = 'Asset with same counter value already exists. (' + FT.Name + ' = ' + cast(fcv.value as nvarchar(50)) + ')'
+from api.ExecutionAsset EA
+left join asset a on a.uid = ea.[uid]
+inner join api.Execution EX on ex.executionid = @executionId
+inner join api.ExecutionField EF on EA.ItemNumber = EF.ItemNumber AND EF.ExecutionID = EA.ExecutionId
+inner join FieldType FT on FT.Id = EF.FieldTypeId and FT.[Type] = 'Counter'
+inner join FieldCounterValue FCV on FCV.FieldTypeId = FT.ID and FCV.Value = TRY_CAST(EF.FieldValue AS INT)
+where EA.ExecutionID = @executionId and EA.Success is null and a.uid is null;
 ",
                 new { executionId }, commandTimeout: timeout);
 
@@ -854,7 +865,7 @@ where	ExecutionID = @executionID
                         left join {ApiExecutionFieldTable} ef on ef.executionid = @executionid and ef.itemnumber = ea.itemnumber and ft.id = ef.fieldtypeid
                         left join dbo.FieldCounterValue FCV on FCV.AssetId = ea.assetid and FCV.FieldTypeId = ft.id
                         where ea.ExecutionID = @executionID 
-                                and ea.Success is null 
+                                and ea.Success is null and ea.assetid is not null
                                 and ea.ItemNumber between @beginItemNumber and @endItemNumber
                                 and ((ex.Method = 'PUT' and ef.FieldValue is not null and cast(ef.FieldValue as int) <> isnull(FCV.Value,0)) or ex.Method = 'POST' or ex.Method = 'BULK');"
                       , new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID, assetTypeId, dataType = DataType.Counter.ToString() }, transaction: trans, commandTimeout: timeout);
