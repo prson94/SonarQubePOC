@@ -395,7 +395,7 @@ export class AdvancedFilterFieldCondition {
                 value = "*" + value;
                 break;
         }
-        if (this.fieldType === "Number" || this.fieldType === "Decimal") {
+        if (this.fieldType === "Number" || this.fieldType === "Decimal" || this.fieldType === "Counter") {
             return value;
         }
 

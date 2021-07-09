@@ -501,6 +501,7 @@ namespace d360.model.helpers
             switch (ft.ToLower())
             {
                 case "number":
+                case "counter":
                     int number = 0;
                     if (!int.TryParse(value.ToString(), NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out number))
                     {
@@ -692,7 +693,7 @@ namespace d360.model.helpers
         private void ValidateTokenForType()
         {
             bool hasApostrophe = value.ToString().First() == '\'' && value.ToString().Last() == '\'';
-            if (!hasApostrophe && !(fieldType.Type == "Number" || fieldType.Type == "Decimal" || fieldType.Type == "Boolean" || fieldType.Type == "Score"))
+            if (!hasApostrophe && !(fieldType.Type == "Number" || fieldType.Type == "Decimal" || fieldType.Type == "Boolean" || fieldType.Type == "Score" || fieldType.Type == "Counter"))
             {
                 throw new Exception("Text values should be placed within quotations.");
             }

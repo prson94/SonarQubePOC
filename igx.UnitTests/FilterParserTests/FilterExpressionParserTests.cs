@@ -35,6 +35,7 @@ namespace igx.UnitTests.FilterExpressionTests
             fieldTypes.Add(new FieldType() { Name = "text", ID = 5, Type = "Text" });
             fieldTypes.Add(new FieldType() { Name = "lookup", ID = 6, Type = "Lookup", LookupObjectType = "ArtifactType", LookupObjectID = 1 });
             fieldTypes.Add(new FieldType() { Name = "relationship", ID = 6, Type = "Relationship", LookupObjectType = "IntersectType", LookupObjectID = 1 });
+            fieldTypes.Add(new FieldType() { Name = "counter", ID = 7, Type = "Counter" });
 
             fieldTypes.ForEach(x =>
             {
@@ -91,6 +92,11 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("relationship ge 'relationshipassetvalue'")]
         [InlineData("nonexistingfield ge 'relationshipassetvalue'")]
         [InlineData("text eq Chetna's ^&*()_+-={}[]|\\;:\",./<>? Check~` All")]
+        [InlineData("counter eq test")]
+        [InlineData("counter eq 'test'")]
+        [InlineData("counter eq '12'")]
+        [InlineData("counter ct 12")]
+        [InlineData("counter nct 12")]
         public void InvalidFormatExpressions(string expression)
         {
             bool didThrow = false;
@@ -204,6 +210,32 @@ namespace igx.UnitTests.FilterExpressionTests
             List<int> filteredFields = new List<int>();
             string sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
             Assert.True(sqlParams.Count == 1);
+            foreach (var param in sqlParams)
+            {
+                Assert.True(CheckParamOccurance(sql, param.Key));
+            }
+        }
+
+        [Theory]
+        [InlineData("counter eq 12", "F7.FormattedValue = @filter_1")]
+        [InlineData("counter ne 12", "(F7.FormattedValue <> @filter_1 or F7.FormattedValue is null)")]
+        [InlineData("counter ge 12", "F7.FormattedValue >= @filter_1")]
+        [InlineData("counter gt 12", "F7.FormattedValue > @filter_1")]
+        [InlineData("counter le 12", "F7.FormattedValue <= @filter_1")]
+        [InlineData("counter lt 12", "F7.FormattedValue < @filter_1")]
+        [InlineData("counter eq null", "F7.FormattedValue is null", false)]
+        [InlineData("counter ne null", "F7.FormattedValue is not null", false)]
+        public void ValidCounterTests(string expression, string expectedQuery, bool checkParamCount = true)
+        {
+            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+
+            List<int> filteredFields = new List<int>();
+            string sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
+            if (checkParamCount)
+            {
+                Assert.True(sqlParams.Count == 1);
+            }
+            Assert.True(sql == expectedQuery);
             foreach (var param in sqlParams)
             {
                 Assert.True(CheckParamOccurance(sql, param.Key));
