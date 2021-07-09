@@ -232,21 +232,21 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     }
 
     private setMinAndMaxText() {
-        if (this.dataProfile.type && (this.dataProfile.type.toLowerCase() == 'double' || this.dataProfile.type.toLowerCase() == 'long')) {
+        if (this.dataProfile.type && (this.dataProfile.type.toLowerCase() === 'double' || this.dataProfile.type.toLowerCase() === 'long')) {
             if (isNaN(Number(this.dataProfile?.max))) {
-                this.maxValue = this.dataProfile?.max
+                this.maxValue = this.dataProfile?.max;
             } else {
                 this.maxValue = Number(this.dataProfile?.max).toLocaleString();
             }
 
             if (isNaN(Number(this.dataProfile?.min))) {
-                this.minValue = this.dataProfile?.min
+                this.minValue = this.dataProfile?.min;
             } else {
                 this.minValue = Number(this.dataProfile?.min).toLocaleString();
             }
         } else {
-            this.maxValue = this.dataProfile?.max
-            this.minValue = this.dataProfile?.min
+            this.maxValue = this.dataProfile?.max;
+            this.minValue = this.dataProfile?.min;
         } 
     }
 
