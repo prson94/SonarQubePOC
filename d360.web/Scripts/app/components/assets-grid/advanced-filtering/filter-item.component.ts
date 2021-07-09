@@ -1100,7 +1100,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         if (type === "Lookup" || type === "Tag" || type === "Relationship" || this.currentField.IsRelationship) {
-            if (!this.currentField.Type.Lookup.List.Uid && this.currentField.Name === "Color") {
+            if (!this.currentField.Type?.Lookup?.List?.Uid && this.currentField.Name === "Color") {
                 return "color-picker";
             }
 
