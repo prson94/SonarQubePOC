@@ -1045,7 +1045,7 @@ where   Success is null", transaction: trans);
 
                     Company.CreateMeasureChangedResultExecution(structuredMeasures);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     try
                     {
