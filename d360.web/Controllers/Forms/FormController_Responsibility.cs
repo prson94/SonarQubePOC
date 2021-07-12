@@ -434,6 +434,7 @@ namespace d360.web.Controllers
 select	cast(0 as bit) as IsUsed,
         A.ID, 
 		A.[Class],
+        A.Uid,
     case Object
             when 'ArtifactType' then
 				case Class
@@ -472,116 +473,6 @@ order by case Object
                 },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
-        }
-
-        [HttpDelete, Route("ResponsibilityTypeRelation"), NonNullableParameters]
-        public JsonResult DeleteResponsibilityTypeRelation(int responsibilityTypeId, string type, int typeId)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-                }
-
-                var model = Company.Filter<ResponsibilityTypeRelation>(i =>
-                    i.ResponsibilityTypeID == responsibilityTypeId &&
-                    i.ObjectType == type &&
-                    i.ObjectID == typeId).SingleOrDefault();
-
-                if (model == null) throw new NotFoundException("responsibility type relation");
-
-                ResponsibilityType responsibilityType = Company.Filter<ResponsibilityType>(i => i.ID == responsibilityTypeId).FirstOrDefault();
-                AssetType assetType = Company.Filter<AssetType>(i => i.Object == type && i.ObjectID == typeId).FirstOrDefault();
-
-                string ownershipLookupMessage = ResponsibilityRepository.GetResponsibilityTypeUsedInOwnershipLookupMessage(responsibilityType, assetType);
-                if (ownershipLookupMessage != "")
-                {
-                    throw new GenericException(HttpStatusCode.BadRequest, "Error Occured!", ownershipLookupMessage);
-                }
-
-                Company.RemoveResponsibilityTypeRelation(model);
-
-                return jsonSuccess("Item successfully removed.", "0", "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), ActionName("ResponsibilityTypeRelation"), Route("ResponsibilityTypeRelation")]
-        public JsonResult PostResponsibilityTypeRelation(ResponsibilityTypeRelationViewModel model)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-                }
-
-                var assetType = Company.GetById<AssetType>(model.AssetTypeID);
-
-                if (assetType == null)
-                {
-                    return jsonException("Asset Type not found", HttpStatusCode.BadRequest);
-                }
-
-                var rtr = new ResponsibilityTypeRelation { ObjectID = assetType.ObjectID, ObjectType = assetType.Object, ResponsibilityTypeID = model.ResponsibilityTypeID, PermissionsBitMask = 0 };
-
-                rtr.PermissionsBitMask = model.Permissions.Where(i => i.Selected).Sum(i => i.Value);
-
-                Company.Add(rtr);
-
-                return jsonSuccess("Item successfully created.", model.ResponsibilityTypeID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), ActionName("ResponsibilityTypeRelation"), Route("ResponsibilityTypeRelation")]
-        public JsonResult PutResponsibilityTypeRelation(ResponsibilityTypeRelationViewModel model)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-                }
-
-                var existing = Company.Filter<ResponsibilityTypeRelation>(r => r.ObjectType == model.ObjectType && r.ObjectID == model.ObjectID && r.ResponsibilityTypeID == model.ResponsibilityTypeID).SingleOrDefault();
-                if (existing == null)
-                {
-                    throw new NotFoundException("responsibility type relation");
-                }
-
-                existing.PermissionsBitMask = model.Permissions.Where(i => i.Selected).Sum(i => i.Value);
-
-                Company.Update(existing);
-
-                return jsonSuccess("Item successfully updated.", model.ResponsibilityTypeID.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
         }
 
         #endregion

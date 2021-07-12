@@ -16,6 +16,7 @@ namespace d360.model.DataAccessLayer
         Task<ResponsibilityTypeRuleStatsViewModel> GetResponsibilityRuleStats(Guid responsibilityTypeRuleUid);
         Task<IEnumerable<ResponsibilityTypeRuleViewModel>> GetResponsibilityRules(Guid responsibilityTypeUid);
         Task<IEnumerable<ResponsibilityTypeAllocationViewModel>> GetResponsibilityTypeAllocations(Guid responsibilityTypeUid);
+        Task<IEnumerable<ResponsibilityTypeAllocationViewModel>> GetResponsibilityTypeAllocationsByAsset(Guid assetTypeUid);
         Task<IEnumerable<ResponsibilityTypeViewModel>> GetResponsibilityTypesByAssetUid(Guid assetTypeUid);
         Task<IEnumerable<ResponsibilityTypeViewModel>> GetResponsibilityTypes();
         List<ResponsibilityTypeUpsertResult> UpsertResponsibilityTypes(List<ResponsibilityTypeUpsertModel> responsibilityTypeUpserts, ApiExecution execution);

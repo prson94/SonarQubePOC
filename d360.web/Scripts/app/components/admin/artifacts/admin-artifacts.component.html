@@ -83,7 +83,7 @@
             <d3s-field-definition-tile [objectName]="selectedRow?.data?.name" [objectType]="'ArtifactType'" [assetTypeUid]="selectedRow?.data?.uid" [supportsPrimaryFilterOption]="true" [showAddToSearch]="true"></d3s-field-definition-tile>
         </div>
         <div class="tile tile-detail" *ngIf="!isEditingFieldType && !isAddingFieldType">
-            <d3s-responsibility-relations queryType="A" [id]="selectedRow?.data?.AssetTypeID" [showAddButton]="false"></d3s-responsibility-relations>
+            <d3s-responsibility-relations queryType="A" [uid]="selectedRow?.data?.uid" [showAddButton]="false"></d3s-responsibility-relations>
         </div>
         <div class="tile tile-detail" *ngIf="!isEditingFieldType && !isAddingFieldType">
             <d3s-admin-allocation [objectType]="objectType" [objectID]="selectedRow?.data?.ID"></d3s-admin-allocation>

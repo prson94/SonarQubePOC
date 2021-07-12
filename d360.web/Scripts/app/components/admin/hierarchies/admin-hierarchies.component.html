@@ -104,7 +104,7 @@
             <d3s-admin-level-grid [objectType]="objectType" [maxDepth]="selected?.MaximumDepth" [objectId]="selectedItemID"></d3s-admin-level-grid>
         </div>
         <div class="tile tile-detail">
-            <d3s-responsibility-relations queryType="A" [id]="selectedAssetTypeID" [showAddButton]="false"></d3s-responsibility-relations>
+            <d3s-responsibility-relations queryType="A" [uid]="selected?.uid" [showAddButton]="false"></d3s-responsibility-relations>
         </div>
         <div class="tile tile-detail">
             <d3s-admin-allocation [objectType]="objectType" [objectID]="selectedItemID"></d3s-admin-allocation>

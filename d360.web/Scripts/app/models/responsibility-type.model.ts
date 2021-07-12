@@ -1,5 +1,6 @@
 ﻿import { SelectItem } from 'primeng/api';
 import { Observable } from 'rxjs';
+import { AssetTypeClassApiModel } from "./asset.model";
 
 export interface IResponsibilityTypeService {
     getResponsibilityTypes(): Observable<ResponsibilityType[]>;
@@ -29,6 +30,26 @@ export enum Permission {
     EditRelationships = 8192,
 }
 
+export class ResponsibilityTypeRelationPermission {
+    Value: number;
+    ID: string;
+    Category: string;
+    Name: string;
+    Description: number;
+    Selected: boolean;
+
+    static hasPermission(permissions: ResponsibilityTypeRelationPermission[], p: Permission): boolean {
+
+        let index = permissions.findIndex((i) => i.Value === p);
+
+        if (index >= 0 && index < permissions.length) {
+            return true;
+        }
+
+        return false;
+    }
+}
+
 export class ResponsibilityType {
     ID: number;
     Name: string;    
@@ -51,6 +72,22 @@ export class ResponsibilityTypeRelation {
     Permissions: ResponsibilityTypeRelationPermission[] = [];
 }
 
+export class ResponsibilityTypeAllocation {
+    ResponsibilityTypeUid: string;
+    ResponsibilityTypeName: string;
+    AssetTypeUid: string;
+    AssetTypeName: string;
+    AssetTypePath: string;
+    AssetClass: AssetTypeClassApiModel;
+    PermissionsMask: number;
+    Permissions: ResponsibilityTypeRelationPermission[];
+}
+
+export class ResponsibilityTypeAllocationPost {
+    AssetTypeUid: string;
+    Permissions: number[];
+}
+
 export class ResponsibilityTypeRelation_FormData {
     AllocationOptions: ResponsibilityTypeRelationAllocationOption[] = [];
     PermissionOptions: ResponsibilityTypeRelationPermission[] = [];
@@ -59,27 +96,8 @@ export class ResponsibilityTypeRelation_FormData {
 export class ResponsibilityTypeRelationAllocationOption {
     IsUsed: boolean;
     ID: number;
+    Uid: string;
     Path: string;
-}
-
-export class ResponsibilityTypeRelationPermission {
-    Value: number;
-    ID: string;
-    Category: string;
-    Name: string;
-    Description: number;
-    Selected: boolean;
-
-    static hasPermission(permissions: ResponsibilityTypeRelationPermission[], p: Permission): boolean {
-
-        let index = permissions.findIndex((i) => i.Value === p);
-
-        if (index >= 0 && index < permissions.length) {
-            return true;
-        }
-
-        return false;
-    }
 }
 
 export class ResponsibilityTypeCount {

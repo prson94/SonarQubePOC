@@ -13,6 +13,12 @@ namespace d360.core.entities
     {
 
         [DataMember]
+        public Guid ResponsibilityTypeUid { get; set; }
+
+        [DataMember]
+        public string ResponsibilityTypeName { get; set; }
+
+        [DataMember]
         public Guid AssetTypeUid { get; set; }
 
         [DataMember]

@@ -12,7 +12,9 @@ import {
     ResponsibilityTypeRelationRuleDefinitionWhenTestRow,
     ResponsibilityTypeRelationRuleDefinitionThenItem,
     ResponsibilityTypeRelationRuleDefinitionThenTestRow,
-    ResponsibilityTypeRelation_FormData
+    ResponsibilityTypeRelation_FormData,
+    ResponsibilityTypeAllocation,
+    ResponsibilityTypeAllocationPost
 } from '../models/responsibility-type.model';
 import { SelectItem } from "primeng/api";
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -153,14 +155,6 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
             );
     }
 
-    getRelationsByAssetType(id: number): Observable<ResponsibilityTypeRelation[]> {
-        return this.http.get(`api/ownership/types/asset/${id}/relations`)
-            .pipe(
-                map((response) => <ResponsibilityTypeRelation[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
-
     getRelationsByObjectType(type: string, id: number): Observable<ResponsibilityTypeRelation[]> {
         return this.http.get(`api/ownership/${type}/${id}/responsibilitytypes`)
             .pipe(
@@ -176,31 +170,53 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
                 catchError((err) => this.handleError(err))
             );
     }
+    getAllocationsByResponsibilityType(uid: string): Observable<ResponsibilityTypeAllocation[]> {
+        return this.http.get(`api/v2/responsibilities/types/${uid}/allocations`)
+            .pipe(
+                map((response) => <ResponsibilityTypeAllocation[]>response),
+                catchError((err) => this.handleError(err))
+            );
+    }
+    getAllocationsByAssetType(uid: string): Observable<ResponsibilityTypeAllocation[]> {
+        return this.http.get(`api/v2/responsibilities/typesbyasset/${uid}/allocations`)
+            .pipe(
+                map((response) => <ResponsibilityTypeAllocation[]>response),
+                catchError((err) => this.handleError(err))
+            );
+    }
 
-    putRelation(rule: ResponsibilityTypeRelation): Observable<any> {
-        return this.http.put(`form/ResponsibilityTypeRelation`, rule)
+    putResponsibilityTypeAllocations(uid: string, allocations: ResponsibilityTypeAllocationPost[]): Observable<any> {
+        return this.http.put(`api/v2/responsibilities/types/${uid}/allocations`, allocations)
             .pipe(
                 map((response) => response),
                 catchError((err) => this.handleError(err))
             );
     }
 
-    postRelation(rule: ResponsibilityTypeRelation): Observable<any> {
-        return this.http.post(`form/ResponsibilityTypeRelation`, rule)
+    postResponsibilityTypeAllocations(uid: string, allocations: ResponsibilityTypeAllocationPost[]): Observable<any> {
+        return this.http.post(`api/v2/responsibilities/types/${uid}/allocations`, allocations)
             .pipe(
                 map((response) => response),
                 catchError((err) => this.handleError(err))
             );
     }
 
-    deleteRelation(relation: ResponsibilityTypeRelation): Observable<any> {
-        return this.http.delete(`form/ResponsibilityTypeRelation?responsibilityTypeId=${relation.ResponsibilityTypeID}&type=${relation.ObjectType}&typeId=${relation.ObjectID}`)
+    deleteResponsibilityTypeAllocation(uid: string, assetTypeUid: string, cascade: boolean = true): Observable<any> {
+        const httpHeaders = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+            body: {
+                Cascade: cascade,
+                Items: [{
+                    AssetTypeUid: assetTypeUid
+                }]
+            }
+        };
+        return this.http.delete(`api/v2/responsibilities/types/${uid}/allocations`, httpHeaders)
             .pipe(
                 map((response) => response),
                 catchError((err) => this.handleError(err))
             );
     }
-
 
     getResponsibilityTypeRelationRule(id: number): Observable<ResponsibilityTypeRelationRule> {
         return this.http.get(`form/ResponsibilityTypeRelationRule?id=${id}`)

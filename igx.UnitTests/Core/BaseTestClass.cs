@@ -611,6 +611,9 @@ namespace igx.UnitTests
             mock.Setup(x => x.GetResponsibilityTypeAllocations(It.IsAny<Guid>()))
                 .Returns(Task.FromResult(new List<ResponsibilityTypeAllocationViewModel>() { new ResponsibilityTypeAllocationViewModel(), new ResponsibilityTypeAllocationViewModel() }.AsEnumerable()));
 
+            mock.Setup(x => x.GetResponsibilityTypeAllocationsByAsset(It.IsAny<Guid>()))
+                .Returns(Task.FromResult(new List<ResponsibilityTypeAllocationViewModel>() { new ResponsibilityTypeAllocationViewModel(), new ResponsibilityTypeAllocationViewModel() }.AsEnumerable()));
+
             mock.Setup(x => x.GetResponsibilityTypes())
                 .Returns(Task.FromResult(new List<ResponsibilityTypeViewModel>() { new ResponsibilityTypeViewModel(), new ResponsibilityTypeViewModel() }.AsEnumerable()));
 

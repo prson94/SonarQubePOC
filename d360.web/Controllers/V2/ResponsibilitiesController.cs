@@ -239,6 +239,44 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
+        /// Retrieves a list of all allocations for the specified asset type.
+        /// </summary>
+        /// <param name="assetTypeUid">The unique identifier of the asset type to get allocations for.</param>
+        /// <returns>Returns a list of responsibility types and allocations for an asset type.</returns>
+        [
+            HttpGet,
+            Route("typesbyasset/{assetTypeUid:Guid}/allocations"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset type allocations for the given responsibility type uid.", typeof(List<ResponsibilityTypeAllocationViewModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
+        ]
+        public async Task<HttpResponseMessage> GetResponsibilityTypeAllocationsByAssetAsync(Guid assetTypeUid)
+        {
+            var prefix = "Responsibilities.GetResponsibilityTypeAllocationsByAssetAsync => ";
+            var errorMessage = "";
+
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            try
+            {
+                IEnumerable<ResponsibilityTypeAllocationViewModel> responsibilityTypeAllocations = await ResponsibilityRepository.GetResponsibilityTypeAllocationsByAsset(assetTypeUid);
+
+                return Request.CreateResponse(HttpStatusCode.OK, responsibilityTypeAllocations);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
+        /// <summary>
         /// Adds a list of all allocations for the specified asset.
         /// </summary>
         /// <param name="uid">The Uid of the responsibility type.</param>
