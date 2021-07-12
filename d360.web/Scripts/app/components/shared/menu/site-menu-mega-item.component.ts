@@ -1,4 +1,4 @@
-﻿﻿import { Input, Component, Output, EventEmitter, ChangeDetectionStrategy, OnInit } from "@angular/core";
+﻿import { Input, Component, Output, EventEmitter, ChangeDetectionStrategy } from "@angular/core";
 import { Router } from '@angular/router';
 import { BaseComponent } from '../base.component';
 import { SiteMenuService } from '../../../services/site-menu.service';
