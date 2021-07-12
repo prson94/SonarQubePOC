@@ -93,6 +93,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CoreTests\CompanyConnectionStringHelperTests.cs" />
+    <Compile Include="CoreTests\PluralServiceHelperTests.cs" />
     <Compile Include="Core\BaseTestClass.cs" />
     <Compile Include="Core\DataConstants.cs" />
     <Compile Include="Core\Helpers.cs" />
