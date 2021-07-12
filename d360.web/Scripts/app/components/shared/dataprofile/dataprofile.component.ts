@@ -10,7 +10,6 @@ import { BaseComponent } from '../base.component';
 export class DataProfileComponent extends BaseComponent implements OnInit {
     @Input() dataProfile: any;
 
-    private sampleCountTooltip: number;
     private sampleCountPercentage: number;
     private nullBlankCountTotal: number;
 
@@ -39,15 +38,21 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     private nullBlankTooltipText: string;    
     private baseType: string;
     private hasValidCounts: boolean = true;
+    private maxValue: any;
+    private minValue: any;
+    private validCount: number;
+    private distinctCount: number;
+    private invalidCount: number;
 
     ngOnInit() { 
         
         this.validPercentage = ((this.dataProfile.matchCount / this.dataProfile.totalCount) * 100);
 
-        if (this.dataProfile.sampleCount != null && this.dataProfile.totalCount) {
-            this.sampleCountPercentage = (this.dataProfile.sampleCount / this.dataProfile.totalCount) * 100;
-        }
         this.nullBlankCountTotal = ((this.dataProfile.nullCount ?? 0) + (this.dataProfile.blankCount ?? 0));
+        this.validCount = this.dataProfile.matchCount ?? 0;
+        this.distinctCount = this.dataProfile.matchCount ?? 0;
+        this.invalidCount = this.dataProfile.outlierCount ?? 0;
+
         this.sortSamples();
 
         this.sampleBarChart = this.getSampleBarChart();
@@ -57,6 +62,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         this.setBaseTypeText();
 
         this.checkVisibility();
+
+        this.setMinAndMaxText();
     }
 
     private showSidePanel() {
@@ -112,7 +119,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
     private getSampleBarChart() {
 
-        var validBar: string = "#7690a9 0%, ";
+        var validBar: string = "var(--otherbar) 0%, ";
         var outlierBar: string = "";
 
         var matchPercentage = (this.dataProfile.matchCount / this.dataProfile.sampleCount) * 100;
@@ -133,7 +140,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
             }            
         }
         
-        return { "background-image": `linear-gradient(to right, ${validBar} ${outlierBar} #7690a9 100%)` };      
+        return { "background-image": `linear-gradient(to right, ${validBar} ${outlierBar} var(--otherbar) 100%)` };      
     }
 
     private checkVisibility() {         
@@ -222,5 +229,28 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
                     break;
             }
         }
+    }
+
+    private setMinAndMaxText() {
+        if (this.dataProfile.type && (this.dataProfile.type.toLowerCase() === 'double' || this.dataProfile.type.toLowerCase() === 'long')) {
+            if (isNaN(Number(this.dataProfile?.max))) {
+                this.maxValue = this.dataProfile?.max;
+            } else {
+                this.maxValue = Number(this.dataProfile?.max).toLocaleString();
+            }
+
+            if (isNaN(Number(this.dataProfile?.min))) {
+                this.minValue = this.dataProfile?.min;
+            } else {
+                this.minValue = Number(this.dataProfile?.min).toLocaleString();
+            }
+        } else {
+            this.maxValue = this.dataProfile?.max;
+            this.minValue = this.dataProfile?.min;
+        } 
+    }
+
+    private capitaliseBoolean(str:any) {
+        return str.toString()[0].toUpperCase() + str.toString().slice(1);
     }
 }
