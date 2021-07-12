@@ -929,6 +929,9 @@ namespace d360.model.DataAccessLayer
                                 globalResource.UpdatedOn = DateTime.UtcNow;
 
                                 CompanyContext.Update(globalResource);
+
+
+
                             }
                             else
                             {
@@ -1103,9 +1106,20 @@ namespace d360.model.DataAccessLayer
             {
                 try
                 {
-                    if (isInsert)
+                    string oldValuesSQL = "";
+                    string logMessage = "Created";
+                    if (!isInsert)
                     {
-                        await CompanyContext.Connection.ExecuteAsync(@"
+                        logMessage = "Updated";
+                        oldValuesSQL = @"update  ar
+							set ar.OldValue = fa.Value
+							from #auditRecords ar
+							inner join reporting.Global_Resource gr on gr.uid = ar.uid
+							outer apply (select top 1 ID from reporting.Global_Audit where Object = 'Resource' and ObjectId = gr.resourceid and Action in ('Created','Updated') order by id desc)Audit(ID)
+							left join reporting.Global_FieldAudit fa on fa.auditid = audit.id and fa.fieldname = ar.fieldname";
+                    }
+
+                    await CompanyContext.Connection.ExecuteAsync($@"
                             drop table if exists #auditRecords
                             create table #auditRecords (uid uniqueidentifier, FieldName nvarchar(200), OldValue nvarchar(max), NewValue nvarchar(max))
 
@@ -1126,12 +1140,14 @@ namespace d360.model.DataAccessLayer
                             inner join reporting.Global_Resource gr on gr.resourceid = ex.ResourceID
                             left join api.executionfield ef on ef.executionid = ex.executionid and ef.itemnumber = ex.ItemNumber
                             where ex.executionid = @executionid and (ex.success <> 0 or ex.success is null)
+                            
+                            {oldValuesSQL}
 
                             declare @audit table (auditId int)
                             insert into reporting.Global_Audit
                             OUTPUT INSERTED.ID
                             INTO @audit
-                            select distinct 'Resource', gr.ResourceId, gr.FirstName + ' ' + gr.LastName, @currentresourceid, GETUTCDATE(), 'Created', 'Resource', gr.ResourceId, 'Resource', gr.FirstName + ' ' + gr.LastName,'Resource created' from #auditRecords ar
+                            select distinct 'Resource', gr.ResourceId, gr.FirstName + ' ' + gr.LastName, @currentresourceid, GETUTCDATE(), '{logMessage}', 'Resource', gr.ResourceId, 'Resource', gr.FirstName + ' ' + gr.LastName,'Resource {logMessage}' from #auditRecords ar
                             inner join reporting.Global_Resource gr on gr.uid = ar.uid
 
                             insert into reporting.global_fieldaudit
@@ -1143,7 +1159,6 @@ namespace d360.model.DataAccessLayer
                             order by ar.uid",
                             new { executionID, CompanyContext.CurrentResourceID },
                             transaction: trans);
-                    }
 
                     trans.Commit();
                 }
