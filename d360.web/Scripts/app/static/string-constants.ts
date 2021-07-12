@@ -52,4 +52,6 @@
     static Section_TechnicalAssets = "Technical Assets";
     static Section_Users = "Users";
     static Section_Workflows = "Workflows";
+
+    static MenuId_Favorites = "*Favourites";
 }
