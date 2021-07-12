@@ -112,6 +112,10 @@ namespace d360.core.validators
                     return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ImproperPredicate);
                 else if (predicate != null && !PredicateSupportingClasses.Contains(model.Class))
                     return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ImproperPredicate);
+                else if (predicate.Type == PredicateType.InterTypeHierarchy && !(model.ParentUid.HasValue && model.ParentUid != Guid.Empty))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.InvalidParentUid);
+                }
             }
 
             if (parentAssetType != null && predicate == null && PredicateSupportingClasses.Contains(model.Class))

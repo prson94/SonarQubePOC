@@ -5,12 +5,56 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.dbo.GetAssetTypeTextPathById-v1">
+  <changeSet author="TKlok" id="Function.dbo.GetAssetTypeTextPathById-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[GetAssetTypeTextPathById]
+(
+	@Id bigint,
+	@delimiter nvarchar(5)
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	with c as (
+		select	I.SubjectID as ParentID,
+				T.Object,
+				T.ObjectID,
+				cast(T.Name as nvarchar(2500)) as [Path],
+				1 as [Level]
+		from	AssetType T
+				left join IntersectType I on I.Object = T.Object and I.ObjectID = T.ObjectID and (I.[Object] <> I.[Subject] or I.ObjectID <> I.SubjectID) and I.PredicateID in (select ID from [Predicate] where Type = 3)
+		where	T.ID = @Id
+				
+		union all
+		select	I.SubjectID as ParentID,
+				T.Object,
+				T.ObjectID,
+				cast(T.Name + @delimiter + C.[Path] as nvarchar(2500)) as [Path],
+				C.Level + 1 as Level
+		from	AssetType T
+				inner join c on T.Object = c.Object and T.ObjectID = c.ParentID
+				outer apply (
+							select	SubjectID
+							from	IntersectType 
+							where	Object = T.Object and ObjectID = T.ObjectID and PredicateID in (select ID from [Predicate] where Type = 3)
+							) I
+	)
+
+	select	top 1 
+			@Id as ID,
+			[Path]
+	from	c
+	order by Level desc
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER FUNCTION [dbo].[GetAssetTypeTextPathById]
 (
 	@Id bigint,
@@ -50,11 +94,6 @@ RETURN
 	from	c
 	order by Level desc
 )
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>
