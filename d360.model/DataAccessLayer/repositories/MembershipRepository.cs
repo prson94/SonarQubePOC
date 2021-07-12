@@ -165,9 +165,11 @@ namespace d360.model.DataAccessLayer
 			                    SUBSTRING(res.FirstName + ' ' +res.LastName,1,250),
 			                    'This user has been removed.'
 	                    from reporting.Global_Resource res
-	                    where res.resourceid = @resourceId",new { 
-                        r = CompanyContext.CurrentResourceID, 
-                        resourceId = model.Resource.ResourceID }).ToList();
+	                    where res.resourceid = @resourceId", new
+                    {
+                        r = CompanyContext.CurrentResourceID,
+                        resourceId = model.Resource.ResourceID
+                    }).ToList();
                 }
 
                 execution.Processed = resources.Count();
@@ -230,7 +232,7 @@ namespace d360.model.DataAccessLayer
             userTable.Columns.Add("Success", typeof(bool));
             userTable.Columns.Add("Message", typeof(string));
             userTable.Columns.Add("Object", typeof(string));
-            userTable.Columns.Add("ObjectID", typeof(int)); 
+            userTable.Columns.Add("ObjectID", typeof(int));
             userTable.Columns.Add("ObjectType", typeof(string));
             userTable.Columns.Add("ObjectTypeID", typeof(int));
 
@@ -465,7 +467,7 @@ namespace d360.model.DataAccessLayer
                         }
                     }
 
-                    if(user.uid != null)
+                    if (user.uid != null)
                     {
                         Guid currentUser = (Guid)user.uid;
                         var isUser = this.AssetRepository.GetAssetByUID(currentUser);
@@ -476,7 +478,7 @@ namespace d360.model.DataAccessLayer
                             messages.Add($"User for uid [{user.uid}] not found");
                         }
                     }
-                    
+
                     if (string.IsNullOrEmpty(user.FirstName))
                     {
                         success = false;
@@ -541,7 +543,7 @@ namespace d360.model.DataAccessLayer
 
                 userTable.Rows.Add(row);
 
-                if (user.Fields != null  && !IsChangePasswordReqeust)
+                if (user.Fields != null && !IsChangePasswordReqeust)
                 {
                     foreach (var field in user.Fields.Keys)
                     {
@@ -927,6 +929,9 @@ namespace d360.model.DataAccessLayer
                                 globalResource.UpdatedOn = DateTime.UtcNow;
 
                                 CompanyContext.Update(globalResource);
+
+
+
                             }
                             else
                             {
@@ -1033,13 +1038,13 @@ namespace d360.model.DataAccessLayer
 
                         if (isInsert == true)
                         {
-                          var  UserUpdateCountResult = (await CompanyContext.Connection.QueryAsync<int>(@"
+                            var UserUpdateCountResult = (await CompanyContext.Connection.QueryAsync<int>(@"
                                 select count(1) 
                                 from api.ExecutionUser U
                                 inner join #UserResults R 
                                 on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and U.IsNew = 0
                                 ", new { executionID }, transaction: trans));
-                           var UserUpdateCount = UserUpdateCountResult.First();
+                            var UserUpdateCount = UserUpdateCountResult.First();
 
                             if (UserUpdateCount > 0)
                             {
@@ -1047,17 +1052,19 @@ namespace d360.model.DataAccessLayer
                             }
                         }
 
-                        CompanyContext.MergeFields(executionID, trans, "api.ExecutionUser", "A.[Object]", "A.ObjectID",  0, itemNumber, sendWorkflowEvents: true, isInsert: isInsertForMergeField);
+                        CompanyContext.MergeFields(executionID, trans, "api.ExecutionUser", "A.[Object]", "A.ObjectID", 0, itemNumber, sendWorkflowEvents: true, isInsert: isInsertForMergeField);
 
                         if (hasRelationshipFieldTypes)
                         {
                             CompanyContext.ImportRelationships(executionID, trans, "api.ExecutionUser", "A.Object", "A.ObjectID", 0, itemNumber, resolveRelationshipOnObjectId: lookupFieldsPassedByValue);
                         }
                     }
+
                     trans.Commit();
 
                     //Convert UserApiUpsertResult to DatabaseBulkAssetResult to use in SendAssetGraphEvents
-                    IEnumerable<IGraphAsset> graphResults = results.Where(r => r.uid.HasValue).Select(r => {
+                    IEnumerable<IGraphAsset> graphResults = results.Where(r => r.uid.HasValue).Select(r =>
+                    {
                         return new DatabaseBulkAssetResult
                         {
                             ExecutionItemUid = r.ExecutionItemUid,
@@ -1087,6 +1094,88 @@ namespace d360.model.DataAccessLayer
                     }
 
                     execution.ErrorMessage = ex.GetFullExceptionData(false);
+                    execution.CompletedOn = DateTime.UtcNow;
+                    CompanyContext.Update(execution);
+
+                    throw ex;
+                }
+            }
+
+
+            using (SqlTransaction trans = CompanyContext.Connection.BeginTransaction())
+            {
+                try
+                {
+                    string oldValuesSQL = "";
+                    string logMessage = "Created";
+                    if (!isInsert)
+                    {
+                        logMessage = "Updated";
+                        oldValuesSQL = @"update  ar
+							set ar.OldValue = fa.Value
+							from #auditRecords ar
+							inner join reporting.Global_Resource gr on gr.uid = ar.uid
+							outer apply (select top 1 ID from reporting.Global_Audit where Object = 'Resource' and ObjectId = gr.resourceid and Action in ('Created','Updated') order by id desc)Audit(ID)
+							left join reporting.Global_FieldAudit fa on fa.auditid = audit.id and fa.fieldname = ar.fieldname";
+                    }
+
+                    await CompanyContext.Connection.ExecuteAsync($@"
+                            drop table if exists #auditRecords
+                            create table #auditRecords (uid uniqueidentifier, FieldName nvarchar(200), OldValue nvarchar(max), NewValue nvarchar(max))
+
+                            ;with cte as (select ex.*, gr.uid as resourceUid from api.executionuser ex
+                            inner join reporting.Global_Resource gr on gr.resourceid = ex.ResourceID
+                            where ex.executionid = @executionid and (ex.success <> 0 or ex.success is null))
+                            insert into #auditRecords
+                            select cte.resourceUid, 'Email','', cte.Username from cte
+                            union 
+                            select cte.resourceUid, 'First Name','', cte.FirstName from cte
+                            union
+                            select cte.resourceUid, 'Last Name', '',cte.lastName from cte
+                            union
+                            select cte.resourceUid, 'Is Administrator', '',try_cast( cte.IsAdministrator as nvarchar(255)) from cte
+
+                            insert into #auditRecords
+                            select gr.uid, ef.FieldName,'', ef.fieldvalue from api.executionuser ex
+                            inner join reporting.Global_Resource gr on gr.resourceid = ex.ResourceID
+                            left join api.executionfield ef on ef.executionid = ex.executionid and ef.itemnumber = ex.ItemNumber
+                            where ex.executionid = @executionid and (ex.success <> 0 or ex.success is null)
+                            
+                            {oldValuesSQL}
+
+                            declare @audit table (auditId int)
+                            insert into reporting.Global_Audit
+                            OUTPUT INSERTED.ID
+                            INTO @audit
+                            select distinct 'Resource', gr.ResourceId, gr.FirstName + ' ' + gr.LastName, @currentresourceid, GETUTCDATE(), '{logMessage}', 'Resource', gr.ResourceId, 'Resource', gr.FirstName + ' ' + gr.LastName,'Resource {logMessage}' from #auditRecords ar
+                            inner join reporting.Global_Resource gr on gr.uid = ar.uid
+
+                            insert into reporting.global_fieldaudit
+                            select a.auditid,0, ar.fieldname, 1,ar.newvalue, ar.oldvalue from @audit a
+                            inner join reporting.Global_Audit ga on ga.id = a.auditid
+                            inner join reporting.Global_Resource gr on gr.ResourceId = ga.ObjectID
+                            inner join #auditRecords ar on gr.uid = ar.uid
+                            where isnull(ar.newvalue,'') <> isnull(ar.oldvalue,'')
+                            order by ar.uid",
+                            new { executionID, CompanyContext.CurrentResourceID },
+                            transaction: trans);
+
+                    trans.Commit();
+                }
+                catch (Exception ex)
+                {
+                    try
+                    {
+                        if (trans != null)
+                        {
+                            trans.Rollback();
+                        }
+                    }
+                    catch
+                    {
+                    }
+
+                    execution.ErrorMessage += ";Audit Log creation failed";
                     execution.CompletedOn = DateTime.UtcNow;
                     CompanyContext.Update(execution);
 
@@ -1202,7 +1291,8 @@ order by	q.SortOrder";
         public async Task<bool> ToggleFavorite(int resourceID, FavoriteApiModel apiFavorite, bool isHomepage = false)
         {
             bool result = false;
-            return await Task.Run(() => {
+            return await Task.Run(() =>
+            {
                 Favorite favorite = new Favorite()
                 {
                     ResourceID = resourceID,
@@ -1487,11 +1577,11 @@ order by	q.SortOrder";
             int pageSize = 200;
             int pageNum = 0;
             string direction = "asc";
-            string order = "Name";            
+            string order = "Name";
 
             string whereSQL = "";
-            
-            
+
+
             dbArgs.Add("@organizationTypeUid", organizationTypeUid);
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagesize"))
@@ -1512,9 +1602,9 @@ order by	q.SortOrder";
             dbArgs.Add("@pageNum", pageNum);
             dbArgs.Add("@pageSize", pageSize);
             dbArgs.Add("@offset", (pageSize * pageNum));
-            
+
             if (queryParams.Any(q => q.Key == "_order"))
-            {   
+            {
                 order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value;
             }
 
@@ -1616,8 +1706,8 @@ order by	q.SortOrder";
                         for Json Path, WITHOUT_ARRAY_WRAPPER";
 
             var jsonString = await this.CompanyContext.QueryFirstOrDefaultAsync<string>(sql, dbArgs, ApiTimeout);
-            
-            if(string.IsNullOrEmpty(jsonString))
+
+            if (string.IsNullOrEmpty(jsonString))
             {
                 return null;
             }

@@ -10282,6 +10282,30 @@ SET DefinitionConverted = cd.[Definition];
                                     var insertSQL = $@"
                                             				drop table if exists #mergeResultTable
             create table #mergeResultTable (GroupName varchar(250), ExecutionItemUid uniqueidentifier) 
+
+            drop table if exists #auditRecords
+			create table #auditRecords (uid uniqueidentifier, FieldName nvarchar(200), OldValue nvarchar(max), NewValue nvarchar(max))
+				;with cte as (
+				select G.uid, 
+				G.Name as OldName, 
+				EG.Name as NewName, 
+				G.Description as OldDesc,
+				eg.Description as NewDesc,
+				G.IsActiveDirectoryGroup as OldIsActiveDirectoryGroup,
+				eg.IsActiveDirectoryGroup as NewIsActiveDirectoryGroup
+				 from api.ExecutionGroup eg
+				inner join [Group] G on G.uid = eg.groupuid
+				where EG.ExecutionID = @ExecutionID
+				and EG.ItemNumber between @beginItemNumber and @endItemNumber
+                and EG.Success is null)
+			insert into #auditRecords
+			select uid, 'Name' as FieldName, OldName as OldValue, NewName as NewValue from cte
+            union 
+			select uid, 'Description' as FieldName, OldDesc as OldValue, NewDesc as NewValue from cte
+			union
+			select uid, 'IsActiveDirectoryGroup' as FieldName, try_cast(OldIsActiveDirectoryGroup as nvarchar(10)) as OldValue, try_cast(NewIsActiveDirectoryGroup as nvarchar(10)) as NewValue from cte
+
+
                                             
             merge into [Group] G
             using ( 
@@ -10382,7 +10406,21 @@ EG.GroupUid
                 inner join #mergeResultTable Res on Res.ExecutionItemUid = EG.ExecutionItemUid
 				inner join [Group] G on G.Name = Res.GroupName
 		        inner join Asset A on A.ObjectID = G.ID and A.Object ='Group'
-                where EG.ExecutionID = @ExecutionID and EG.Success is null";
+                where EG.ExecutionID = @ExecutionID and EG.Success is null
+
+			    declare @audit table (auditId int)
+			    insert into reporting.Global_Audit
+			    OUTPUT INSERTED.ID
+			    INTO @audit
+			    select distinct 'Group', g.id, G.Name, @currentresourceid, GETUTCDATE(), 'Updated', 'Group', g.ID, 'Group', G.Name,'Group updated' from #auditRecords ar
+			    inner join [Group] G on G.uid = ar.uid
+
+			    insert into reporting.global_fieldaudit
+			    select a.auditid,0, ar.fieldname, 1, ar.newvalue, ar.oldvalue from @audit a
+			    inner join reporting.Global_Audit ga on ga.id = a.auditid
+			    inner join [Group] G on G.Id = ga.ObjectId
+			    inner join #auditRecords ar on g.uid = ar.uid
+			    where isnull(ar.newvalue,'') <> isnull(ar.oldvalue,'')";
 
                                     Connection.Execute(insertSQL,
                                             new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID }, transaction: trans, commandTimeout: timeout);

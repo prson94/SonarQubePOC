@@ -576,6 +576,13 @@ namespace d360.web.Controllers.V2
                 foreach (var m in resourceGroups)
                 {
                     Company.Add(m);
+                    Company.Query<int>(@"
+                    insert into reporting.Global_Audit
+                    select distinct 'Group', g.id, G.Name, @currentresourceid, GETUTCDATE(), 'Member added', 'Group', g.ID, 'Group', G.Name,'[' + gr.FirstName + ' ' + gr.LastName + '] added to the group.'
+                    from [group] g 
+                    inner join reporting.Global_Resource gr on gr.ResourceID = @resourceId
+                    where g.id = @groupid
+                    ", new { m.GroupID, m.ResourceID, Company.CurrentResourceID }).FirstOrDefault();
                 }
             }
             catch (Exception ex)
@@ -826,6 +833,15 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                         from[Group] AS G
                         inner join[dbo].[Asset] a on a.uid = @group and a.object = 'Group'
                         where G.ID = A.ObjectID and G.SecondaryOwnerResourceID = @user", new { resource = resourceUid, group = groupUid, user = userId });
+
+
+                Company.Query<int>(@"
+                    insert into reporting.Global_Audit
+                    select distinct 'Group', g.id, G.Name, @currentresourceid, GETUTCDATE(), 'Member removed', 'Group', g.ID, 'Group', G.Name,'[' + gr.FirstName + ' ' + gr.LastName + '] removed from the group.'
+                    from [group] g 
+                    inner join reporting.Global_Resource gr on gr.uid = @resourceUid
+                    where g.uid = @groupUid
+                    ", new { groupUid, resourceUid, Company.CurrentResourceID }).FirstOrDefault();
 
                 if (res > 0)
                 {
