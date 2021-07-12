@@ -23,10 +23,13 @@
                 <ng-template pTemplate="body"
                     let-rowNode
                     let-item="rowData">
-                    <tr [ttSelectableRow]="rowNode"  (click)="navigate(item.uid)">
+                    <tr [ttSelectableRow]="rowNode">
                         <td style="vertical-align: top">
                             <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
-                            {{item.name}}
+                            <a (click)="navigate(item.uid)"
+                               class="link">
+                                {{item.name}}
+                            </a>
                         </td>
                         <td *ngIf="item.description;else other_content"
                             [innerHtml]="item.description"></td>
