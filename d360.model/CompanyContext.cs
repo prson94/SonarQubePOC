@@ -34,22 +34,6 @@ namespace d360.model
     [DbConfigurationType(typeof(AzureConfiguration))]
     public partial class CompanyContext : BaseContext, ICompanyContext
     {
-        #region Caching Methods
-
-        internal string FUSIONATTRIBUTES_BY_FUSION_PREFIX_KEY = "AttributesByFusion_{0}_{1}";
-
-        internal string key(string token)
-        {
-            return string.Format(token, CurrentCompanyID);
-        }
-
-        internal string key(string token, int id)
-        {
-            return string.Format(token, CurrentCompanyID, id);
-        }
-
-        #endregion
-
         internal IQueueSource QueueSource;
         internal IStorageProvider Storage;
 

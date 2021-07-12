@@ -212,20 +212,7 @@ namespace d360.core
 
             return tokenFormatString;
         }
-
-        public static XElement StripNamespaces(this XElement root)
-        {
-            var attributes = root.Attributes();
-            attributes.Where(i => i.Name == "xmlns").Remove();
-            return new XElement(
-                root.Name.LocalName,
-                attributes.Where(i => i.Name != "xmlns"),
-                root.HasElements ?
-                    root.Elements().Select(el => StripNamespaces(el)) :
-                    (object)root.Value
-            );
-        }
-
+        
         public static string GetSafeFilename(this string filename)
         {
             if (string.IsNullOrEmpty(filename))
