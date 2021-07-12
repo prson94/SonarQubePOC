@@ -642,7 +642,7 @@ namespace d360.web.Controllers.V2
             {
                 string[] allowedValues = new [] { "structure", "data" };
 
-                if (!allowedValues.Contains(similarType))
+                if (!allowedValues.Contains(similarType.ToLowerInvariant()))
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"'{similarType}' is an invalid similar type.");
                 }
