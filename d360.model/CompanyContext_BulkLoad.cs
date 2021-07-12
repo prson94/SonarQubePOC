@@ -1098,7 +1098,17 @@ from    LoadItem T
 					        where LC.LoadID = @id and LC.ColumnIndex in (
 			 			        select		LC.ColumnIndex 
 						        from		AssetType ATT
-									        inner join AssetTypeLevel L on (L.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType')																	
+									        inner join (
+	                                            select	AssetTypeID, [Level], [Name] 
+								                from	AssetTypeLevel L
+								                where	L.AssetTypeID = @atID
+								                union all
+								                select	T.ID, N.Level, 'Level ' + cast(N.Level as nvarchar(30)) 
+								                from	AssetType T
+										                outer apply (select top 100 row_number() over (order by (select null)) [Level] FROM sys.objects) N
+								                where	T.ID = @atID and N.[Level] <= T.HierarchyMaximumDepth
+										                and not exists (select 1 from AssetTypeLevel where AssetTypeID = T.ID and [Level] = N.[Level])
+                                            ) L on (L.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType')																	
 									        inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
 									        inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = @rowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
 						        where		ATT.ObjectID = @ObjectID and L.[Level] = @currLevel
@@ -1106,7 +1116,7 @@ from    LoadItem T
 				        ) A
 	        group by	A.RowIndex
         ) K on K.RowIndex = T.RowIndex
-where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIndex = item.RowIndex, currLevel = level, @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, objectID = assetType.ObjectID }, timeout: timeout)).FirstOrDefault();
+where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIndex = item.RowIndex, currLevel = level, atID = assetType.ID, @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, objectID = assetType.ObjectID }, timeout: timeout)).FirstOrDefault();
         }
 
         private async Task<string> GetModelPathForLevel(LoadItem item, AssetType assetType, int level) 
@@ -1120,7 +1130,17 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                     where LC.LoadID = @id and LC.ColumnIndex in (
                         select		LC.ColumnIndex 
                         from		AssetType ATT
-                            inner join AssetTypeLevel L on (L.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType')																	
+                            inner join (
+	                            select	AssetTypeID, [Level], [Name] 
+								from	AssetTypeLevel L
+								where	L.AssetTypeID = @atID
+								union all
+								select	T.ID, N.Level, 'Level ' + cast(N.Level as nvarchar(30)) 
+								from	AssetType T
+										outer apply (select top 100 row_number() over (order by (select null)) [Level] FROM sys.objects) N
+								where	T.ID = @atID and N.[Level] <= T.HierarchyMaximumDepth
+										and not exists (select 1 from AssetTypeLevel where AssetTypeID = T.ID and [Level] = N.[Level]) 
+                            ) L on (L.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType')																	
                             inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
                             inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = @rowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
                         where		ATT.ObjectID = @ObjectID and L.[Level] not like @currLevel)"
@@ -1128,6 +1148,7 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                         id = item.LoadID, 
                         rowIndex = item.RowIndex, 
                         currLevel = level, 
+                        atID = assetType.ID,
                         @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, 
                         objectID = assetType.ObjectID }, timeout: timeout)).FirstOrDefault();
         }
