@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.dbo.GetComplexLookupByAsset-v53">
-  <comment>GOV-15197</comment>
+  <changeSet author="TDuric" id="Procedure.dbo.GetComplexLookupByAsset-v54">
+  <comment>GOV-15232</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -804,6 +804,12 @@ set nocount on;
 			set @alias = (select top 1 alias from #tempSelectTable)
 			set @fieldVal = (select top 1 ColumnName from #tempSelectTable)
 
+			if CHARINDEX('+ try_cast(',@fieldVal) > 0
+			begin
+			   declare @startIndex int = CHARINDEX('+ try_cast(',@fieldVal) + 11
+			   declare @lastIndex int = CHARINDEX(' as nvarchar',@fieldVal)
+			   set @fieldVal = SUBSTRING(@fieldVal, @startIndex, @lastIndex-@startIndex)
+			end
 
 			if @alias is not null and @fieldVal is not null
 			begin
@@ -830,11 +836,16 @@ set nocount on;
 							when F.FieldTypeID = 0 and F.FieldTypeName = 'DisplayValue' then '_DV.DisplayValue'
 							else null
 						end as FieldCol)FSQL(col) 
-					where F.FieldTypeName <> 'TextPath' and FSQL.col is not null
+					where F.FieldTypeName <> 'TextPath' and F.FieldTypeName <> 'Counter' and FSQL.col is not null
 					union 
 					select CONCAT('graph.Getpath(h',F.RRN,'.segments, '' > '', '' / '')',' like ', '@simpleFilter') as Filter
 					 from @fields f 
-					where F.FieldTypeName = 'TextPath')
+					where F.FieldTypeName = 'TextPath'
+					union 
+					select CONCAT(''''+ft.CounterPrefix+''''+' + try_cast('+CONCAT('H',F.RRN,'_F',ft.id, '.FormattedValue')+' as nvarchar(20))' ,' like ', '@simpleFilter') as Filter
+					 from @fields f
+					 inner join fieldtype ft on ft.id = f.fieldtypeid 
+					where F.FieldTypeName = 'Counter')
 			insert into @wheres
 			select '(' + string_agg(Filter,' or ')+ ')' from simpleFilterQueries 
 		end
