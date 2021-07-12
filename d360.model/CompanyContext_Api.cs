@@ -8108,53 +8108,132 @@ where	    A.AssetTypeID = @ID;
             }
             else
             {
-                var activeKeySql = $@"
-select		A.ID,
-		utility.GetHash(cast(@ID as nvarchar) + '|' + STRING_AGG(coalesce((case when ft.type <> 'Counter' then F.Value else isnull(cast(FCV.Value as nvarchar(50)),newid()) end), F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
-from		Asset A 
-		inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
-		left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
-        left join FieldCounterValue FCV on FT.Type = 'Counter' and FCV.FieldTypeId = FT.ID and FCV.AssetId = F.AssetId
-where	    A.AssetTypeID = @ID
-group by    A.ID;";
-
                 if (parentIntersectTypeId.HasValue)
                 {
-                    activeKeySql = $@"
-select		A.ID,
-		utility.GetHash(cast(@ID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
-from		Asset A 
-		left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
-		left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
-		inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
-		left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
-where		A.AssetTypeID = @ID
-group by	A.ID, P.Uid";
+                    string CreateFieldTempData = $@"
+	drop table if exists #Keys;
+	CREATE TABLE #Keys (AssetID bigint primary key clustered, ParentAssetUID uniqueidentifier null, KeyValue nvarchar(max) null, ActiveKey varchar(32) null);
+
+	insert into #Keys WITH(TABLOCK)
+	select		A.ID, P.UID as ParentAssetUID, Null, Null
+	from		Asset A 
+			left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
+			left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID	
+	where		A.AssetTypeID = @ID
+
+	if (select count(1) from fieldtype ft 
+		inner join assettype att on att.id = ft.AssetTypeID 
+		where ft.IsPartOfKey = 1 and ft.AssetTypeID = @ID and ft.DefaultValue is null 
+		and replace(replace(att.DisplayFormat,'}}',''),'{{','') = ft.Name) = 1
+		begin
+			-- display value is the key field and its the only key field and required...	
+			update T
+			set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + ADV.DisplayValue
+			from 
+				#Keys T		
+				inner join AssetDisplayValue ADV on ADV.AssetID = T.AssetID
+		end
+	else if (select count(1) from fieldtype where IsPartOfKey = 1 and Assettypeid = @ID) > 1
+		begin
+			--only key field and required
+			-- multiple key fields need to agg all the values
+			
+			select @fieldtypeid = id,
+				   @DefaultValue = DefaultValue
+			from fieldtype
+			where assettypeid = @id and IsPartOfKey = 1;
+			
+			update T
+			set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + coalesce(F.Value, F.FormattedValue, @DefaultValue)
+			from #Keys T
+			left join Field F on F.AssetID = T.AssetID and F.FieldTypeID = @fieldtypeid
+
+		end
+	else
+		begin
+			-- multiple key fields need to agg all the values
+			drop table if exists #KeysField;
+			CREATE TABLE #KeysField (AssetID bigint,FormattedValue nvarchar(max));
+			
+			insert into #KeysField WITH(TABLOCK)
+			select A.AssetID,STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) FormattedValue
+			from #Keys A
+			inner join FieldType FT on FT.AssetTypeID = @ID and FT.IsPartOfKey = 1
+			left join Field F on FT.ID = F.FieldTypeID and A.AssetID = F.AssetID  
+			group by A.AssetID;
+
+			CREATE NONCLUSTERED INDEX CIX_KeysFieldKeys ON #KeysField ( AssetID ASC );
+			
+			update T
+			set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + KF.FormattedValue
+			from #Keys T
+			inner join #KeysField KF on T.AssetID = KF.AssetID;
+
+			drop table if exists #KeysField;
+		end
+
+	    update #Keys set ActiveKey = utility.GetHash(KeyValue);
+
+ 	    CREATE NONCLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); 
+";
+    Connection.Execute($@"
+    Declare @fieldtypeid int =-1;
+	declare @DefaultValue nvarchar(max);
+
+    update  T
+    set     T.ProposedKey = utility.GetHash(cast(@ID as nvarchar) + '|' + S.ProposedKey) 
+    from    {assetTable} T
+	    inner join	(
+				    select		A.ItemNumber,
+							    COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.LookupValue, F.FieldValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
+				    from		{assetTable} A
+							    inner join {fieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
+							    inner join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID and FT.IsPartOfKey = 1
+				    where		A.ExecutionID = @ExecutionID
+				    group by	A.ItemNumber, A.ParentUid
+				    ) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber;
+
+    {CreateFieldTempData}
+
+    {keyComparisonUpdateStatement}",
+                    new { executionID, at.ID, intersectTypeID = parentIntersectTypeId ?? 0 }, commandTimeout: timeout, transaction: trans);
                 }
+                else
+                {
 
-                Connection.Execute($@"
-update  T
-set     T.ProposedKey = utility.GetHash(cast(@ID as nvarchar) + '|' + S.ProposedKey) 
-from    {assetTable} T
-	inner join	(
-				select		A.ItemNumber,
-							COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.LookupValue, F.FieldValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
-				from		{assetTable} A
-							inner join {fieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
-							inner join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID and FT.IsPartOfKey = 1
-				where		A.ExecutionID = @ExecutionID
-				group by	A.ItemNumber, A.ParentUid
-				) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber;
+                    var activeKeySql = $@"
+    select		A.ID,
+		    utility.GetHash(cast(@ID as nvarchar) + '|' + STRING_AGG(coalesce((case when ft.type <> 'Counter' then F.Value else isnull(cast(FCV.Value as nvarchar(50)),newid()) end), F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
+    from		Asset A 
+		    inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
+		    left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
+            left join FieldCounterValue FCV on FT.Type = 'Counter' and FCV.FieldTypeId = FT.ID and FCV.AssetId = F.AssetId
+    where	    A.AssetTypeID = @ID
+    group by    A.ID;";
 
-{keyTableTempCreation}
+                    Connection.Execute($@"
+    update  T
+    set     T.ProposedKey = utility.GetHash(cast(@ID as nvarchar) + '|' + S.ProposedKey) 
+    from    {assetTable} T
+	    inner join	(
+				    select		A.ItemNumber,
+							    COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.LookupValue, F.FieldValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
+				    from		{assetTable} A
+							    inner join {fieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
+							    inner join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID and FT.IsPartOfKey = 1
+				    where		A.ExecutionID = @ExecutionID
+				    group by	A.ItemNumber, A.ParentUid
+				    ) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
-insert into #Keys WITH(TABLOCK)
-{activeKeySql} 
+    {keyTableTempCreation}
 
-{keyComparisonUpdateStatement}",
-                new { executionID, at.ID, intersectTypeID = parentIntersectTypeId ?? 0 }, commandTimeout: timeout, transaction: trans);
+    insert into #Keys WITH(TABLOCK)
+    {activeKeySql} 
+
+    {keyComparisonUpdateStatement}",
+                    new { executionID, at.ID, intersectTypeID = parentIntersectTypeId ?? 0 }, commandTimeout: timeout, transaction: trans);
+                }
             }
-
         }
 
         public List<AssetMeasureModel> GetAssetMeasuresFromRuleResults(List<Guid> ruleResultUids)
