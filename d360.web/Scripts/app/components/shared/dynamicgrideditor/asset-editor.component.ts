@@ -66,6 +66,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     @Input() useNonLegacyData: boolean = false;
     private isInError: boolean = false;
     private isInErrorMessage: string = "";
+    readonly defaultCategory: string = "General";
 
     form: FormGroup;
 
@@ -554,5 +555,16 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 this.cascadeService.cascadeEvent(editorField.FieldTypeID, value);
             }
         });
+    }
+
+    useAccordion(category: any): boolean {
+        if (category == null || !category.name) {
+            return false;
+        }
+        if (category.name === this.defaultCategory) {
+            return false;
+        }
+
+        return true;
     }
 }
