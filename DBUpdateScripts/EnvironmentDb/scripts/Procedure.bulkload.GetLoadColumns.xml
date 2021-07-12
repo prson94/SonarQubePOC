@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tduric" id="Procedure.bulkload.GetLoadColumns-v9">
-    <comment>GOV-15193</comment>
+  <changeSet author="tduric" id="Procedure.bulkload.GetLoadColumns-v10">
+    <comment>GOV-15193-2</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -296,7 +296,7 @@ begin
 						and ObjectID = @id 
 						and Type not in ('ComplexRelationLookup', 'FieldFromRelationship', 'OwnershipLookup', 'RefListRelationship', 'Tag', 'Relationship')
 						and ( (@type = 'IntersectType' and IsPartOfKey = 0) OR (@type = 'TaxonomyType' and IsPartOfKey = 0) OR (@type <> 'TaxonomyType') )
-						and (IsEditable = 1 or (@action = 'P' and [Type] = 'JSON') or (IsEditable = 0 and IsRequired = 1) or Type = 'Counter')						
+						and (IsEditable = 1 or (@action = 'P' and [Type] = 'JSON') or (IsEditable = 0 and IsRequired = 1))						
 			order by	ColumnOrder;
 		
 			insert into @lookups (FieldTypeID, [Label])
