@@ -74,7 +74,6 @@ namespace d360.core
         public string Name { get; set; }
         public string Description { get; set; }
         public bool ReadOnly { get; set; }
-        public string CompanySettingActive { get; set; }
     }
 
     public class AllowedConversionOption

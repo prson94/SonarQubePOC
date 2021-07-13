@@ -65,5 +65,11 @@ namespace igx.UnitTests.HtmlHelperTests
 
             Assert.Equal(string.Empty, string.Empty);
         }
+
+        [Fact]
+        public void NoHtmlCommentOnlyTest()
+        {
+            Assert.Equal(d360.core.helpers.HtmlHelper.RemoveTags("<!-- invalid invalid -->"), "<!-- invalid invalid -->");            
+        }
     }
 }

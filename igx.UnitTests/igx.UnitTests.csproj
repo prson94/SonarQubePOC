@@ -94,6 +94,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CoreTests\CompanyConnectionStringHelperTests.cs" />
+    <Compile Include="CoreEnumTests\DataTypeTests.cs" />
     <Compile Include="CoreTests\PluralServiceHelperTests.cs" />
     <Compile Include="CoreTests\SystemObjectHelperTests.cs" />
     <Compile Include="Core\BaseTestClass.cs" />
