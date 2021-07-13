@@ -61,7 +61,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
     rollbackValue1: any;
     rollbackValue2: any;
 
-    maxNumberOfFilterCharacters: number = 50;
+    maxNumberOfFilterCharacters: number = 2000;
     selectionScrollHeight: string = "34px";
 
     relationshipFieldIntersectTypeUid: string = "";
