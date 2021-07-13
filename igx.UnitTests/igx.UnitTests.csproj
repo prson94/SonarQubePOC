@@ -103,6 +103,7 @@
     <Compile Include="Core\SqlConstants.cs" />
     <Compile Include="ExtensionTests\ModelExtensionTests-ComplexLookupDefinition.cs" />
     <Compile Include="ExtensionTests\ModelExtensionTests-OwnershipLookupDefinition.cs" />
+    <Compile Include="FilterParserTests\FilterTokenTests.cs" />
     <Compile Include="FilterParserTests\FilterExpressionParserTests.cs" />
     <Compile Include="HelperTests\HtmlHelperTests.cs" />
     <Compile Include="LibraryTests\JsonTest.cs" />

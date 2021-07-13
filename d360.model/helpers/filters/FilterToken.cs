@@ -115,6 +115,7 @@ namespace d360.model.helpers
             return stringBuilder.ToString();
         }
 
+        //tested
         public string GetSQLForOperator()
         {
             if (!IsOnlyOperator)
@@ -777,6 +778,7 @@ namespace d360.model.helpers
             }
         }
 
+        //tested
         private string GetLogicalOperator(string value)
         {
             switch (value)
