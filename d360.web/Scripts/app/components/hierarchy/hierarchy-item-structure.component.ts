@@ -317,6 +317,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     private save(event) {
         this.showEditor = false;
+        this.selected = null;
         this.loadNodes();
         this.headerActionsService.emitFavoritesChange();
         this.isLoading = false;
@@ -324,6 +325,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     private closeEditor() {
         this.showEditor = false;
+        this.selected = null;
     }
 
     private exportExcel(level: number) {
