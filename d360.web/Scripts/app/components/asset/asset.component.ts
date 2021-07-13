@@ -26,7 +26,12 @@ export class AssetComponent extends BaseComponent implements OnInit, OnDestroy {
             if (currentUrl.toLowerCase().indexOf("assettype") == -1) {
                 this.assetService.getAssetLegacyUri(assetUid).subscribe(uri => {
                     if (uri !== '') {
-                        this.router.navigate([uri]);
+                        if (uri.startsWith("reference;")) {
+                            this.router.navigateByUrl(uri);
+                        }
+                        else {
+                            this.router.navigate([uri]);
+                        }
                     }
                     else {
                         this.router.navigate(['/home']);
