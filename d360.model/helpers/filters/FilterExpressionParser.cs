@@ -13,7 +13,7 @@ namespace d360.model.helpers
 {
     public class FilterExpressionParser
     {
-        ICompanyContext CompanyContext;
+        private FilterDataProvider dataProvider;
         private List<FieldType> fieldTypes = new List<FieldType>();
         private List<string> fieldColumns = new List<string>();
         private List<int> filteredFieldIDs = new List<int>();
@@ -25,14 +25,14 @@ namespace d360.model.helpers
         private bool registerTokensAsFields = false;
 
         public FilterExpressionParser(
-            ICompanyContext ctx,
+            FilterDataProvider fdp,
             FilterExpressionParseType type = FilterExpressionParseType.CustomFields,
             bool includeParent = false,
             bool useUserDefaultFields = false,
             bool registerTokensAsFields = false
             )
         {
-            this.CompanyContext = ctx;
+            this.dataProvider = fdp;
             this.parseType = type;
             this.registerTokensAsFields = registerTokensAsFields;
             allowedDefaultFields.Add(new DefaultFilter("Code", "A.Code", SqlFieldType.Text));
@@ -246,13 +246,13 @@ namespace d360.model.helpers
             {
                 if (tokens[i] == "(")
                 {
-                    FilterTokens.Add(new FilterToken(CompanyContext, null, "(", null));
+                    FilterTokens.Add(new FilterToken(this.dataProvider, null, "(", null));
                     i++;
                     continue;
                 }
                 if (tokens[i] == ")")
                 {
-                    FilterTokens.Add(new FilterToken(this.CompanyContext, null, ")", null));
+                    FilterTokens.Add(new FilterToken(this.dataProvider, null, ")", null));
                     i++;
                     continue;
                 }
@@ -260,7 +260,7 @@ namespace d360.model.helpers
                 if (!expectingCondition)
                 {
                     paramCount++;
-                    FilterTokens.Add(new FilterToken(this.CompanyContext, tokens[i], tokens[i + 1], tokens[i + 2], paramCount));
+                    FilterTokens.Add(new FilterToken(this.dataProvider, tokens[i], tokens[i + 1], tokens[i + 2], paramCount));
                     expectingCondition = true;
                     i += 3;
                     continue;
@@ -268,7 +268,7 @@ namespace d360.model.helpers
 
                 if (expectingCondition)
                 {
-                    FilterTokens.Add(new FilterToken(this.CompanyContext, null, tokens[i], null));
+                    FilterTokens.Add(new FilterToken(this.dataProvider, null, tokens[i], null));
                     expectingCondition = false;
                     i++;
                     continue;
@@ -492,9 +492,10 @@ namespace d360.model.helpers
                 AssetUids.Add(assetUid);
             }
 
-            var intersectTypes = CompanyContext.IntersectTypes.Where(x => IntersectUids.Contains(x.uid)).ToList();
-            var filterAssets = CompanyContext.Assets.Where(x => AssetUids.Contains(x.uid)).Include(x => x.AssetType).ToList();
-            var filterAssetTypes = CompanyContext.AssetTypes.Where(x => AssetUids.Contains(x.uid)).ToList();
+            List<IntersectType> intersectTypes;
+            List<Asset> filterAssets;
+            List<AssetType> filterAssetTypes;
+            this.dataProvider.GetDataForRelationshipsParsing(IntersectUids, AssetUids, out intersectTypes, out filterAssets, out filterAssetTypes);
 
             foreach (var itUid in IntersectUids)
             {

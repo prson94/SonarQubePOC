@@ -172,6 +172,7 @@
     <Compile Include="DataAccessLayer\repositories\WorkflowRepository.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="helpers\CustomJSONContract.cs" />
+    <Compile Include="helpers\filters\FilterDataProvider.cs" />
     <Compile Include="helpers\filters\FilterExpressionParser.cs" />
     <Compile Include="helpers\filters\FilterExpressionParserException.cs" />
     <Compile Include="helpers\filters\FilterToken.cs" />

@@ -13,6 +13,7 @@ using d360.core.queue;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
+using d360.model.helpers.filters;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -364,7 +365,9 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
 
                     getFieldSql(fieldTypes, tempArgs, tempJoins, tempFieldColumns);
 
-                    var filterExpressionParser = new FilterExpressionParser(companyContext, FilterExpressionParseType.RelationshipCustomFields);
+                    var filterDataProvider = new FilterDataProvider(companyContext);
+
+                    var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.RelationshipCustomFields);
                     filterExpressionParser.LoadFieldTypes(fieldTypes, tempFieldColumns);
                     Dictionary<string, object> sqlParams;
                     List<int> filteredFields;

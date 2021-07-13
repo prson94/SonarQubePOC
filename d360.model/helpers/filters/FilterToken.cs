@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.model.helpers.filters;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -12,7 +13,7 @@ namespace d360.model.helpers
 {
     public class FilterToken
     {
-        private ICompanyContext CompanyContext;
+        private FilterDataProvider dataProvider;
 
         private int parameterIdx { get; set; }
         private string field { get; set; }
@@ -79,9 +80,9 @@ namespace d360.model.helpers
             }
         }
 
-        public FilterToken(ICompanyContext ctx, string field, string op, object value, int? paramIdx = null)
+        public FilterToken(FilterDataProvider fdp, string field, string op, object value, int? paramIdx = null)
         {
-            CompanyContext = ctx;
+            this.dataProvider = fdp;
             parameterIdx = paramIdx ?? -1;
             this.field = field;
             @operator = op;
@@ -242,7 +243,7 @@ namespace d360.model.helpers
             stringBuilder.Clear();
             var origQuery = $"{this.field} {this.@operator} {this.value.ToString().Trim('\'')}";
 
-            var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.Relationships);
+            var filterExpressionParser = new FilterExpressionParser(this.dataProvider, FilterExpressionParseType.Relationships);
             var query = filterExpressionParser.Parse(origQuery.Replace("$related:", ""), out sqlParams, out _);
 
             foreach (var item in sqlParams)
@@ -606,7 +607,7 @@ namespace d360.model.helpers
 
         private void LoadLookupSql()
         {
-            bool isFieldFromRel = CompanyContext.FieldTypes.FirstOrDefault(x => x.ID == fieldType.ID)?.Type == "FieldFromRelationship";
+            bool isFieldFromRel = this.dataProvider.IsFieldFromRelationship(fieldType.ID);
 
             string type = fieldType.Type;
             int fieldTypeId = fieldType.ID;
@@ -620,7 +621,7 @@ namespace d360.model.helpers
             //handle field from relationship list values
             if (isFieldFromRel)
             {
-                var lookupFieldType = CompanyContext.FieldTypes.FirstOrDefault(x => x.ID == fieldType.LookupObjectFieldTypeID);
+                var lookupFieldType = this.dataProvider.GetFieldTypeById(fieldType.LookupObjectFieldTypeID);
                 fieldTypeIdForLookupValue = lookupFieldType.ID;
                 lookupObjectType = lookupFieldType.LookupObjectType;
                 lookupObjectId = lookupFieldType.LookupObjectID.HasValue ? lookupFieldType.LookupObjectID.Value : 0;
@@ -638,7 +639,7 @@ namespace d360.model.helpers
                 else
                 {
 
-                    int lookupValue = CompanyContext.GetFieldLookupValue(lookupObjectType, lookupObjectId, fieldTypeIdForLookupValue, value.ToString());
+                    int lookupValue = this.dataProvider.GetFieldLookupValue(lookupObjectType, lookupObjectId, fieldTypeIdForLookupValue, value.ToString());
                     if (lookupValue <= 0)
                         throw new Exception($"Invalid lookup value '{value}' for field '{field}'");
 

@@ -23,6 +23,7 @@ using Newtonsoft.Json.Linq;
 using System.Text;
 using d360.model.helpers;
 using System.Globalization;
+using d360.model.helpers.filters;
 
 namespace d360.model.DataAccessLayer
 {
@@ -2203,7 +2204,9 @@ for json path";
 
             if (!string.IsNullOrEmpty(_filter))
             {
-                var filterExpressionParser = new FilterExpressionParser(Company, FilterExpressionParseType.RuleResults);
+                var filterDataProvider = new FilterDataProvider(Company);
+
+                var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.RuleResults);
                 Dictionary<string, object> sqlParams;
                 var query = "(" + filterExpressionParser.Parse(_filter, out sqlParams, out _) + ")";
 
