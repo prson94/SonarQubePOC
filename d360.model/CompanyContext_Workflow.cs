@@ -124,9 +124,9 @@ namespace d360.model
             int todayDayOfWeek = (int)DateTime.UtcNow.DayOfWeek;
 
             //Check if today is a day to send digest emails
-            if(( (int)Math.Pow(2,todayDayOfWeek) & digestDays) == 0)
+            if (((int)Math.Pow(2, todayDayOfWeek) & digestDays) == 0)
             {
-                return; 
+                return;
             }
 
             // 0.5 determine how many days ago last digest was sent
@@ -726,7 +726,7 @@ namespace d360.model
                     //get the object for this conditoin
                     item = WorkflowItems.FirstOrDefault(x => x.ID == itemID);
 
-                    if (item == null) throw new Exception("ERROR UNABLE TO GET THE DETAILS FOR THIS WORKFLOW INSTANCE.");                    
+                    if (item == null) throw new Exception("ERROR UNABLE TO GET THE DETAILS FOR THIS WORKFLOW INSTANCE.");
 
                     if (item.Object == "Issue")
                     {
@@ -950,12 +950,12 @@ namespace d360.model
 
                 if (item == null) throw new Exception("ERROR - CANNOT FIND THE WORKFLOW INSTANCE THAT WE NEED TO MARK AS COMPLETED");
 
-                if(item.Object == SystemObjects.Issue.ToString() && item.ObjectID > 0)
+                if (item.Object == SystemObjects.Issue.ToString() && item.ObjectID > 0)
                 {
                     var issue = Issues.FirstOrDefault(x => x.ID == item.ObjectID);
-                    if(issue != null)
+                    if (issue != null)
                     {
-                        if(issue.CompletedOn == null && issue.CompletedBy == null)
+                        if (issue.CompletedOn == null && issue.CompletedBy == null)
                         {
                             issue.CompletedOn = DateTime.UtcNow;
                             issue.CompletedBy = CurrentResourceID;
@@ -1369,6 +1369,30 @@ namespace d360.model
             // check if the field exists
             var field = Fields.Where(x => x.ObjectID == objectId && x.ObjectType == objectType && x.FieldTypeID == fieldType.ID).FirstOrDefault();
 
+            //validate list field value
+            if (fieldType.Type == DataType.Lookup.ToString() && !string.IsNullOrEmpty(val))
+            {
+                var lookupValues = val.Split(',').Select(x => int.Parse(x)).ToList();
+                var value = Query<int>(@"select value
+                  from[dbo].[FieldLookupValue]
+                  where LookupObjectType = @obj and LookupObjectID = @objId and FieldTypeID = @f and [Value] in @lookupValues",
+
+                new { obj = fieldType.LookupObjectType, objId = fieldType.LookupObjectID, f = fieldType.ID, lookupValues })
+                    .ToList();
+
+                if (value.Count == 0)
+                {
+                    //do not update list field when it is invalid
+                    Console.WriteLine($"Warning - UpdateField : Invalid Lookup value detected. Update field skipped");
+                    return;
+                }
+
+                if (value.Count != lookupValues.Count)
+                {
+                    val = string.Join(",", lookupValues);
+                    Console.WriteLine($"Warning - UpdateField : Some invalid lookup values detected. Field value updated partially");
+                }
+            }
 
             if (field == null && !string.IsNullOrEmpty(val))
             {
@@ -1435,7 +1459,7 @@ namespace d360.model
                     objectId = issue.ObjectID;
                     asset = Assets.Where(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID).FirstOrDefault();
                     assetType = AssetTypes.FirstOrDefault(a => a.Object == issue.ObjectType && a.ObjectID == issue.ObjectTypeID);
-                    ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);                    
+                    ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);
                     isAssetEdited = true;
                 }
                 else
@@ -1525,7 +1549,7 @@ namespace d360.model
 
             if (asset != null)
             {
-                Database.Connection.Execute("update asset set updatedby = @updatedBy, updatedOn = GETUTCDATE() where id = @id", new { updatedBy = CurrentResourceID, id = asset.ID });                
+                Database.Connection.Execute("update asset set updatedby = @updatedBy, updatedOn = GETUTCDATE() where id = @id", new { updatedBy = CurrentResourceID, id = asset.ID });
             }
 
             //update asset table to trigger audit                    
@@ -1539,7 +1563,7 @@ namespace d360.model
                          date = DateTime.UtcNow,
                          ParentObjectID = (asset != null) ? asset.ObjectID : objectInfo.ObjectID,
                          ResourceID = CurrentResourceID,
-                         op = "Updated" 
+                         op = "Updated"
                      });
         }
 
@@ -1739,7 +1763,7 @@ namespace d360.model
                     continue;
 
                 var stepSettings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
-                
+
                 var fieldElement = XElement.Parse(itemStep.Fields);
                 var reassigned = new XElement("Reassigned");
                 var objectType = "";
@@ -1754,17 +1778,17 @@ namespace d360.model
                         objectType = SystemObjects.ResponsibilityType.ToString();
                         objectId = stepSettings.ResponsibilityTypeID;
                     }
-                    else if(stepSettings.RecipientType == EmailTaskRecipientType.Group)
+                    else if (stepSettings.RecipientType == EmailTaskRecipientType.Group)
                     {
                         var group = Assets.Where(x => x.uid == stepSettings.RecipientGroup).FirstOrDefault();
-                        if(group != null)
+                        if (group != null)
                         {
                             isResourceReassignment = false;
                             objectType = SystemObjects.Group.ToString();
                             objectId = group.ObjectID;
                         }
                     }
-                    else if(stepSettings.RecipientType == EmailTaskRecipientType.SpecificUser)
+                    else if (stepSettings.RecipientType == EmailTaskRecipientType.SpecificUser)
                     {
                         isResourceReassignment = false;
                         objectType = "Specific Users";
@@ -1775,7 +1799,7 @@ namespace d360.model
                     foreach (var elem in fieldElement.Elements("Reassigned"))
                     {
                         var reassignTime = DateTime.Parse(elem.Attribute("reassignOn").Value);
-                        if(date < reassignTime)
+                        if (date < reassignTime)
                         {
                             date = reassignTime;
                             type = elem.Attribute("reassignType").Value;
@@ -1811,7 +1835,7 @@ namespace d360.model
                     var itemFields = (WorkflowItemStepDetail.FieldsModel)new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel)).Deserialize(new StringReader(itemStep.Fields));
                     itemFields.NumberOfResponses = 1;
                     itemFields.TotalResources = 1;
-                    using(var sr = new StringWriter())
+                    using (var sr = new StringWriter())
                     {
                         var serializer = new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel));
                         serializer.Serialize(sr, itemFields);
@@ -1942,7 +1966,7 @@ namespace d360.model
             }
             else if (settings.RecipientType == EmailTaskRecipientType.Group)
             {
-                if(settings.RecipientGroup == Guid.Empty)
+                if (settings.RecipientGroup == Guid.Empty)
                 {
                     Console.Write("ERROR - NO GROUP SPECIFIED FOR THE GROUP FORM TASK.");
                     return;
@@ -2481,7 +2505,7 @@ namespace d360.model
                 xRequest.Add(new XElement("Timeout", settings.Timeout.ToString()));
                 if (settings?.Headers?.Any() == true)
                 {
-                    foreach(var header in settings.Headers)
+                    foreach (var header in settings.Headers)
                     {
                         var h = new XElement("Headers");
                         h.Add(new XElement("Key", header.Key));
@@ -2501,7 +2525,7 @@ namespace d360.model
             }
 
             await SaveChangesAsync();
-            
+
         }
 
         public async Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true)
@@ -2512,7 +2536,7 @@ namespace d360.model
         public async Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml)
         {
             if (string.IsNullOrEmpty(bodyTemplate)) return string.Empty;
-            
+
             if (supportHtml)
             {
                 var sanitizer = new Ganss.XSS.HtmlSanitizer();
@@ -2689,7 +2713,7 @@ namespace d360.model
                 }
                 decimal? score = null;
 
-                if(item != null && item.AssetID.HasValue)
+                if (item != null && item.AssetID.HasValue)
                     score = GetAssetScore(item.AssetID.Value, ScoreType.Governance);
 
                 result = result.Replace("[GOV_SCORE]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(unknown score)");
@@ -2792,7 +2816,7 @@ namespace d360.model
                         var fieldRecord = Fields.Where(x => x.ObjectID == objectID && x.ObjectType == obj.ToString() && x.FieldTypeID == fieldId).FirstOrDefault();
 
                         //If there is no field and type is Issue, this might be asset field
-                        if(fieldRecord == null && obj == SystemObjects.Issue)
+                        if (fieldRecord == null && obj == SystemObjects.Issue)
                         {
                             var issue = Issues.FirstOrDefault(x => x.ID == objectID);
                             fieldRecord = Fields.Where(x => x.ObjectID == issue.ObjectID && x.ObjectType == issue.Object && x.FieldTypeID == fieldId).FirstOrDefault();
@@ -2893,10 +2917,10 @@ namespace d360.model
 
                     FieldTypeDefinition_JsonElement jsonElementDefinition = null;
 
-                    if (fieldType!= null && fieldType.Type == DataType.JsonElement.ToString())
+                    if (fieldType != null && fieldType.Type == DataType.JsonElement.ToString())
                     {
                         jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(fieldType.Definition);
-                        
+
                         var fieldRecord = Fields.Where(x => x.ObjectID == objectID && x.ObjectType == obj.ToString() && x.FieldTypeID == jsonElementDefinition.FieldTypeID).FirstOrDefault();
 
                         var fielddata = JObject.Parse(fieldRecord.Value);
@@ -3112,11 +3136,11 @@ namespace d360.model
                     if (issue != null)
                     {
                         var issueAsset = Assets.Where(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID).FirstOrDefault();
-                        if(issueAsset != null) 
+                        if (issueAsset != null)
                             uid = issueAsset.uid.ToString();
                     }
                 }
-                else if(obj == SystemObjects.Intersect)
+                else if (obj == SystemObjects.Intersect)
                 {
                     var intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
 
