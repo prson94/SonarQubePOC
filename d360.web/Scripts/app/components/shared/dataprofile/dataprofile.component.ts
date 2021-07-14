@@ -1,4 +1,5 @@
-﻿import { Input, Component, OnInit} from '@angular/core';
+﻿import { Input, Component, OnInit } from '@angular/core';
+
 import { BaseComponent } from '../base.component';
 
 @Component({
@@ -153,7 +154,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
             this.showSampleSummary = true;
         }
 
-        if (this.hasValidCounts && this.dataProfile.sampleCount != null && (this.dataProfile.cardinality != null || this.dataProfile.matchCount != null || this.dataProfile.outlierCount != null || this.dataProfile.nullCount != null || this.dataProfile.blankCount != null)) {
+        if (this.hasValidCounts && this.dataProfile.sampleCount && (this.dataProfile.cardinality || this.dataProfile.matchCount || this.dataProfile.outlierCount || this.dataProfile.nullCount || this.dataProfile.blankCount)) {
             this.showSampleQuality = true;
         }
 

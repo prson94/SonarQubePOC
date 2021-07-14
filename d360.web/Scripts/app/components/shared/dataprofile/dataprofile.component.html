@@ -56,7 +56,7 @@
                             </span>
                             <span class="qualitySampleValue">
                                 <label class="qualityValue-label" style="font-weight: 600;">{{validCount | number}}</label>
-                                <span *ngIf="dataProfile.sampleCount" class="ig-value percentage">{{validCount/dataProfile.sampleCount | percent : '1.0-2'}}</span>
+                                <span *ngIf="dataProfile.sampleCount" class="ig-value percentage" style="font-weight: 600;">{{validCount/dataProfile.sampleCount | percent : '1.0-2'}}</span>
                                 <ng-container *ngTemplateOutlet="samplePercentageTooltip;context:{numerator: validCount}"></ng-container>
                             </span>
                         </div>
@@ -77,7 +77,7 @@
                             </span>
                             <span class="qualitySampleValue">
                                 <label class="qualityValue-label" style="font-weight: 600;">{{invalidCount | number}}</label>
-                                <span *ngIf="dataProfile.sampleCount" class="ig-value percentage">{{invalidCount/dataProfile.sampleCount | percent : '1.0-2'}}</span>
+                                <span *ngIf="dataProfile.sampleCount" class="ig-value percentage" style="font-weight: 600;">{{invalidCount/dataProfile.sampleCount | percent : '1.0-2'}}</span>
                                 <ng-container *ngTemplateOutlet="samplePercentageTooltip;context:{numerator: invalidCount}"></ng-container>                                
                             </span>
                         </div>
@@ -90,7 +90,7 @@
                             </span>
                             <span class="qualitySampleValue">
                                 <label class="qualityValue-label" style="font-weight: 600;">{{nullBlankCountTotal | number}}</label>
-                                <span *ngIf="dataProfile.sampleCount" class="ig-value percentage">{{nullBlankCountTotal/dataProfile.sampleCount | percent : '1.0-2'}}</span>
+                                <span *ngIf="dataProfile.sampleCount" class="ig-value percentage" style="font-weight: 600;">{{nullBlankCountTotal/dataProfile.sampleCount | percent : '1.0-2'}}</span>
                                 <ng-container *ngTemplateOutlet="samplePercentageTooltip;context:{numerator: nullBlankCountTotal}"></ng-container>
                             </span>
                         </div>
@@ -143,7 +143,7 @@
                             </div>
                         </div>
                         <div>
-                            <span *ngIf="bottomSamples.length > 5 && bottomSamplesToShow < bottomSamples.length" (click)="bottomSamplesToShow = bottomSamples.length" class="showMore">Show More...</span>
+                            <span *ngIf="bottomSamples.length > 5 && bottomSamplesToShow < bottomSamples.length" (click)="bottomSamplesToShow = bottomSamples.length" class="showMore">Show more...</span>
                         </div>
                         <div>
                             <span *ngIf="bottomSamples.length > 5 && bottomSamplesToShow == bottomSamples.length" (click)="bottomSamplesToShow = 5" class="showMore">Show less...</span>
@@ -173,7 +173,7 @@
                             </div>
                         </div>
                         <div>
-                            <span *ngIf="dataProfile.outlierDetail.length > 5 && outliersToShow < dataProfile.outlierDetail.length" (click)="outliersToShow = dataProfile.outlierDetail.length" class="showMore">Show More...</span>
+                            <span *ngIf="dataProfile.outlierDetail.length > 5 && outliersToShow < dataProfile.outlierDetail.length" (click)="outliersToShow = dataProfile.outlierDetail.length" class="showMore">Show more...</span>
                         </div>
                         <div>
                             <span *ngIf="dataProfile.outlierDetail.length > 5 && outliersToShow == dataProfile.outlierDetail.length" (click)="outliersToShow = 5" class="showMore">Show less...</span>
@@ -200,7 +200,7 @@
                             </div>
                         </div>
                         <div>
-                            <span *ngIf="dataProfile.shapesDetail.length > 5 && shapesToShow < dataProfile.shapesDetail.length" (click)="shapesToShow = dataProfile.shapesDetail.length" class="showMore">Show More...</span>
+                            <span *ngIf="dataProfile.shapesDetail.length > 5 && shapesToShow < dataProfile.shapesDetail.length" (click)="shapesToShow = dataProfile.shapesDetail.length" class="showMore">Show more...</span>
                         </div>
                         <div>
                             <span *ngIf="dataProfile.shapesDetail.length > 5 && shapesToShow == dataProfile.shapesDetail.length" (click)="shapesToShow = 5" class="showMore">Show less...</span>
@@ -299,7 +299,7 @@
 </ng-template>
 
 <ng-template #nullBlankTooltip>
-    <span *ngIf="nullBlankCountTotal && dataProfile.sampleCount" class="tooltip-icon" style="margin-left:5px">
+    <span *ngIf="nullBlankCountTotal && dataProfile.sampleCount" class="tooltip-icon" style="margin-left:8px">
         <i class="fa fa-question-circle" pTooltip="{{nullBlankTooltipText}}" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
     </span>
 </ng-template>
@@ -325,7 +325,7 @@
 </ng-template>
 
 <ng-template #outlierInfoTooltip>
-    <span *ngIf="invalidCount!=null" class="tooltip-icon" style="margin-left:5px"
+    <span *ngIf="invalidCount!=null" class="tooltip-icon" style="margin-left:8px"
           pTooltip="This is a combination of invalid values and outliers. Invalid values are those that do not match the selected type. An outlier is an observation point that is distant from other observations."
           [escape]="false"
           tooltipPosition="top"
