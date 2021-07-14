@@ -7,7 +7,7 @@
         <ng-container >
             <div class="summarySection">
                 <div *ngIf="dataProfile.profileSetDate" class="effectiveDate">
-                    <span class="ig-value">Effective Date: {{dataProfile.profileSetDate | date: 'dd MMM yyyy'}}</span>
+                    <span class="ig-value">Effective Date: {{dataProfile.profileSetDate | utcDate | date: 'dd MMM yyyy'}}</span>
                 </div>
                 <div *ngIf="showSampleSummary">
                     <div>
