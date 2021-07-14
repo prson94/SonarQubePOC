@@ -6,6 +6,7 @@ using ComponentSpace.SAML2.Profiles.SSOBrowser;
 using ComponentSpace.SAML2.Protocols;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.helpers;
 using d360.extensions.azuregraph;
 using d360.extensions.mail;
 using d360.model;
@@ -339,7 +340,7 @@ namespace d360.web.Controllers
                                 Email = userName,
                                 FirstName = firstName,
                                 LastName = lastName,
-                                Password = Community.createRandomPassword(),
+                                Password = PasswordHelper.CreateRandomPassword(),
                                 Username = userName
                             };
                             Community.Add(resource);
@@ -1092,7 +1093,7 @@ namespace d360.web.Controllers
                                         Email = model.Email,
                                         FirstName = model.FirstName,
                                         LastName = model.LastName,
-                                        Password = Community.HashPassword(Guid.NewGuid().ToString()),
+                                        Password = PasswordHelper.HashPassword(Guid.NewGuid().ToString()),
                                         Username = model.Email
                                     };
                                     Community.Add(resource);
@@ -1241,7 +1242,7 @@ namespace d360.web.Controllers
                                             Email = model.Email,
                                             FirstName = model.FirstName,
                                             LastName = model.LastName,
-                                            Password = Community.HashPassword(model.Password),
+                                            Password = PasswordHelper.HashPassword(model.Password),
                                             Username = model.Email
                                         };
                                         Community.Add(resource);
@@ -1320,7 +1321,7 @@ namespace d360.web.Controllers
                                         Email = model.Email,
                                         FirstName = model.FirstName,
                                         LastName = model.LastName,
-                                        Password = Community.HashPassword(Guid.NewGuid().ToString()),
+                                        Password = PasswordHelper.HashPassword(Guid.NewGuid().ToString()),
                                         Username = model.Email
                                     };
                                     Community.Add(resource);

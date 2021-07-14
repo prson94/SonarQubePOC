@@ -45,19 +45,6 @@ namespace d360.core.queue
         public List<Guid> VersionUids { get; set; }
     }
 
-    public class ExternalMeasureResultsCreatedModel
-    {
-        public Guid AssetUid { get; set; }
-        public Guid MetricAssetUid { get; set; }
-        public DateTime EffectiveDate { get; set; }
-        public bool Result { get; set; }
-
-        // Populated in processing job.
-        public Guid? MetricAssetVersionUid { get; set; }
-        public Guid? AllocationUid { get; set; }
-        public int? AssetTypeId { get; set; }
-    }
-
     public class RollupPathChangedModel
     {
         public int? IntersectTypeId { get; set; }
