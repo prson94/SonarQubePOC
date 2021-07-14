@@ -55,5 +55,5 @@ export class StringConstants {
     static Section_Users = "Users";
     static Section_Workflows = "Workflows";
 
-    static MenuId_Favorites = "*Favourites";
+    static MenuId_Favorites = "*Favorites";
 }
