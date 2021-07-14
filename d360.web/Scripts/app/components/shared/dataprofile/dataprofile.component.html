@@ -36,7 +36,7 @@
                                 </div>
                                 <div *ngIf="hasValidCounts && dataProfile.confidence!=null" class="summaryRow">
                                     <label class="ig-label">Type Confidence: </label>
-                                    <span class="ig-value" style="margin-left:5px">{{dataProfile.confidence | percent}}</span>
+                                    <span class="ig-value" style="margin-left:5px">{{dataProfile.confidence | percent : '1.0-2'}}</span>
                                     <ng-container *ngTemplateOutlet="confidenceTooltip"></ng-container>
                                 </div>
                             </div>
