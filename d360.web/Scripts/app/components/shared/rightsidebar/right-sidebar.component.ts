@@ -105,7 +105,11 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                             if (state) {
                                 this.secondaryNavService.rebuildFromStorage(state);
                             }
-
+                        } else {
+                            let extras = router.getCurrentNavigation().extras;
+                            if (extras.state?.invalidateKey) {
+                                this.secondaryNavService.invalidateKey();
+                            }
                         }
                     }
                     if (event instanceof NavigationEnd) {

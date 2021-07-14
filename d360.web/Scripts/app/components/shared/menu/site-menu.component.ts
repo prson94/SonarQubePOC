@@ -11,6 +11,7 @@ import * as _ from 'lodash';
 import { isString, isArray } from 'util';
 import { SiteMenuCategoryComponent } from './site-menu-category.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { StringConstants } from "../../../static/string-constants";
 
 declare var CompanySettings;
 
@@ -173,7 +174,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.favoritesService.getHomePageAndFavorites().subscribe(
             homefav => {
                 this.favorites = new SiteMenu();
-                this.favorites.MenuID = '*Favourites';
+                this.favorites.MenuID = StringConstants.MenuId_Favorites;
                 this.favorites.NavigationItems = [];
 
                 for (let favorite of homefav.Favorites) {
