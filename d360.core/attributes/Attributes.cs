@@ -171,16 +171,6 @@ namespace d360.core
         }
     }
 
-    public class EnableAuditAttribute : Attribute
-    {
-        public bool Enabled { get; private set; }
-
-        public EnableAuditAttribute(bool enabled)
-        {
-            Enabled = enabled;
-        }
-    }
-
     public class IsTypeAttribute : Attribute
     {
         public bool IsType { get; private set; }
