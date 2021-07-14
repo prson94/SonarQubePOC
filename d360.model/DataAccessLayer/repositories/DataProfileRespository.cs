@@ -462,8 +462,7 @@ namespace d360.model.DataAccessLayer
 
                 dbArgs.Add("@userid", CompanyContext.CurrentResourceID);
             }
-            
-            dbArgs.Add("@signature", dataprofile.StructureSignature);
+                        
             dbArgs.Add("@assetId", asset.ID);
 
             var itemsSQL = $@"
