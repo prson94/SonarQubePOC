@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Procedure.dbo.GetSiteNavigation-v3">
+  <changeSet author="kmcnamee" id="Procedure.dbo.GetSiteNavigation-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -210,6 +210,7 @@ WHERE n.Name = '#Community' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 				null AS items	
 		FROM	RuleType RT
 				inner join AssetType T on T.Object = 'RuleType' and T.ObjectID = RT.ID
+				and not exists (select 1 from #tempNoReadAssetTypes nr where nr.AssetTypeId = T.ID)
 				LEFT JOIN SiteNav v on v.ObjectID = RT.ID and v.Object ='RuleType'
 		WHERE	v.ObjectID IS NULL
 		Order By RT.name
@@ -432,36 +433,7 @@ SELECT	n.Name as MenuID,
 FROM SiteNav n
 WHERE n.Name = '#Reference' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 
-UNION ALL
-
-SELECT	n.Name as MenuID,
-		n.SortOrder,
-		2 as Feature,
-		n.Icon as Icon, n.ImageIconUrl as ImageIconUrl,
-		n.Title as Title,
-		(
-		SELECT		FT.name, 
-					dbo.GenerateAssetTypeUrl(T.ID)  As url,
-					2 as feature,
-					(
-					SELECT		name, 
-								dbo.GenerateAssetUrl(A.ID)  As url,
-								'F' + cast(F.ID as varchar(15)) as menuID,
-								2 as feature
-					FROM		Fusion F
-								inner join Asset A on A.Object = 'Fusion' and A.ObjectID = F.ID
-					WHERE		F.FusionTypeID = FT.ID
-					ORDER BY	name
-					FOR XML PATH('nav'), TYPE
-					) AS items	
-		FROM		FusionType FT
-					inner join AssetType T on T.Object = 'FusionType' and T.ObjectID = FT.ID
-		ORDER BY	name
-		FOR XML PATH('nav'), TYPE
-		) AS Items	
-	FROM SiteNav n
-WHERE n.Name = '#Fusion' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
-		
+	
 UNION ALL
 
 SELECT	n.Name as MenuID, 

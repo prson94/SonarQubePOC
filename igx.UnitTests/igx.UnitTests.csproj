@@ -73,6 +73,7 @@
     <Reference Include="System.Web.Http.WebHost, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.7\lib\net45\System.Web.Http.WebHost.dll</HintPath>
     </Reference>
+    <Reference Include="System.Web.Mvc, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -117,6 +118,7 @@
     <Compile Include="ScoringTests\OperatorTests-DecimalCompares.cs" />
     <Compile Include="ScoringTests\OperatorTests-DateTimeCompares.cs" />
     <Compile Include="ScoringTests\OperatorTests-DateCompares.cs" />
+    <Compile Include="WebControllerTests\NavigationControllerTest.cs" />
     <Compile Include="V2ControllerTests\ActionsControllerTest.cs" />
     <Compile Include="V2ControllerTests\AssetsControllerTest.cs" />
     <Compile Include="V2ControllerTests\ExecutionsControllerTest.cs" />
