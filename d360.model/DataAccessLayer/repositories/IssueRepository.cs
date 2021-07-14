@@ -26,17 +26,23 @@ namespace d360.model.DataAccessLayer
 
         public async Task<IEnumerable<IssueTypeApiModel>> GetIssueTypes(IEnumerable<KeyValuePair<string, string>> queryParams)
         {           
-
             var dbArgs = new DynamicParameters();
 
             bool hasResourceParam = false;
+            bool hasAssetParam = false;
             bool limitToActiveWorkflows = false;
-            var assetSQL = "";
-            var resourceSQL = "";
-            var issueTypeSQL = "";
-            var orderBy = $"Order by Name";
 
-            List<string> conditions = new List<string>();                        
+            List<string> issueConditions = new List<string>();                        
+            List<string> assetConditions = new List<string>();                                              
+
+            List<string> issueJoins = new List<string>();
+            List<string> assetJoins = new List<string>();
+
+            var assetSql = "";
+            var resourceSql = "";
+            var issueTypeSql = "";
+
+            var orderBySql = $"Order by Name";
 
             var baseIssueTypesSql = $@"Select 
                                         IT.Uid, 
@@ -47,8 +53,8 @@ namespace d360.model.DataAccessLayer
                                         R.Uid as UpdatedByUid
                                     from 
                                         IssueType IT
-                                        LEFT JOIN 
-                                        [reporting].[Global_Resource] R on R.ResourceID = IT.UpdatedBy ";
+                                        left join [reporting].[Global_Resource] R on R.ResourceID = IT.UpdatedBy ";
+
 
             var workflowSql = $@"EXISTS (SELECT 1 FROM workflow.type T INNER JOIN workflow.EventRegistration E on E.TypeID = T.ID and E.[Object] = 'IssueType' and E.ObjectID = IT.ID and T.State = 1)";
             var workflowObjectSql = $@"EXISTS (SELECT 1 FROM workflow.type T INNER JOIN workflow.EventRegistration E on E.TypeID = T.ID and E.[Object] = 'IssueType' and E.ObjectID = IT.ID and T.State = 1
@@ -56,28 +62,29 @@ namespace d360.model.DataAccessLayer
                                     OR ((E.Condition.value('(./Conditions/Condition[@ContextualFieldID=""IssueObject""]/@Value)[1]', 'nvarchar(max)') = AT.[Object] 
                                     AND E.Condition.value('(./Conditions/Condition[@ContextualFieldID=""IssueObjectID""]/@Value)[1]', 'int') = AT.ObjectID)))";
 
-            issueTypeSQL = baseIssueTypesSql;
+            issueTypeSql = baseIssueTypesSql;
 
-            #region Limit By Active Workflows
+            assetConditions.Add("1 = 1");
+            issueConditions.Add("1 = 1");
+
             var limitToActiveWorkflowsParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_limittoactiveworkflows");
+            var resourceUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_resourceuid");
+            var assetTypeUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_assettypeuid");
+            var assetUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_assetuid");
+            var actionTypeUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_actiontypeuid");
+            var nameParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_name");
 
-            if (limitToActiveWorkflowsParam.Key != null)
-            {
-                if (limitToActiveWorkflowsParam.Value != null && !string.IsNullOrWhiteSpace(limitToActiveWorkflowsParam.Value) && !bool.TryParse(limitToActiveWorkflowsParam.Value, out limitToActiveWorkflows))
-                {
-                    throw new ArgumentException("Invalid Limit To Active Workflows value provided");
-                }
-            }
-            #endregion
+
+            hasAssetParam = !string.IsNullOrWhiteSpace(assetTypeUidParam.Value) || !string.IsNullOrWhiteSpace(assetUidParam.Value);
 
             #region Action Type
-            var actionTypeUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_actiontypeuid");
 
             if (actionTypeUidParam.Key != null)
             {
                 if (actionTypeUidParam.Value != null && !string.IsNullOrWhiteSpace(actionTypeUidParam.Value) && (Guid.TryParse(actionTypeUidParam.Value, out Guid actionTypeUid) && actionTypeUid != Guid.Empty))
                 {
-                    conditions.Add("IT.uid = @actionTypeUid");
+                    issueConditions.Add("IT.uid = @actionTypeUid");
+                    assetConditions.Add("IT.uid = @actionTypeUid");
                     dbArgs.Add("@actionTypeUid", actionTypeUid);
                 }
                 else
@@ -90,49 +97,82 @@ namespace d360.model.DataAccessLayer
 
             #region Name
 
-            var nameParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_name");
-
             if (nameParam.Key != null)
             {
                 if (!string.IsNullOrWhiteSpace(nameParam.Value))
                 {
-                    conditions.Add("IT.Name = @name");
+                    issueConditions.Add("IT.Name = @name");
+                    assetConditions.Add("IT.Name = @name");
                     dbArgs.Add("@name", nameParam.Value);
                 }
             }
 
             #endregion
 
+            #region Limit By Active Workflows
+
+            if (limitToActiveWorkflowsParam.Key != null)
+            {
+                if (limitToActiveWorkflowsParam.Value != null && !string.IsNullOrWhiteSpace(limitToActiveWorkflowsParam.Value) && bool.TryParse(limitToActiveWorkflowsParam.Value, out limitToActiveWorkflows))
+                {
+                    if (limitToActiveWorkflows)
+                    {
+                        var activeWorkflowSql = hasAssetParam ? workflowObjectSql : workflowSql;
+
+                        issueConditions.Add(activeWorkflowSql);
+                        assetConditions.Add(workflowObjectSql);
+                    }
+
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid Limit To Active Workflows value provided");
+                }
+            }
+            #endregion
+
             #region Asset, Asset Type and Resource
 
-            var resourceUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_resourceuid");
-
-            var assetTypeUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_assettypeuid");
-
-            var assetUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_assetuid");
+            if (actionTypeUidParam.Key != null)
+            {
+                issueTypeSql = $@"{baseIssueTypesSql}
+                                  {string.Join("\n", issueJoins)}
+                                  where {string.Join(" AND ", issueConditions)}";
+            }
 
             if (assetTypeUidParam.Key != null || assetUidParam.Key != null || resourceUidParam.Key != null)
             {
-                List<string> assetConditions = new List<string>();
-                var joinSQL = $@"Inner Join IssueTypeRelation ITR on IT.ID = ITR.IssueTypeID
-                             Inner Join AssetType AT on AT.ID = ITR.AssetTypeID
-                             Inner Join Asset A on A.AssetTypeID = AT.ID";
+                
+                assetJoins.Add("inner Join IssueTypeRelation ITR on IT.ID = ITR.IssueTypeID");
+                assetJoins.Add("inner Join AssetType AT on AT.ID = ITR.AssetTypeID");
+                assetJoins.Add("inner Join Asset A on A.AssetTypeID = AT.ID");
 
-                var activeWorkflowSql = string.IsNullOrEmpty(assetTypeUidParam.Value) ? workflowSql : workflowObjectSql;
-                issueTypeSQL = $@"{baseIssueTypesSql}
-                                    cross apply (select count(*) as Allocations from IssueTypeRelation R where R.IssueTypeID = IT.ID) C
-                                    {(string.IsNullOrEmpty(assetTypeUidParam.Value) ? "" : "left join AssetType AT on AT.uid = @assetTypeUid")}
-                                    where C.Allocations = 0
-                                    {(limitToActiveWorkflows ? "and " + activeWorkflowSql : "")}";
+                issueJoins.Add("cross apply (select count(*) as Allocations from IssueTypeRelation R where R.IssueTypeID = IT.ID) C");
+
+                if (!string.IsNullOrEmpty(assetTypeUidParam.Value))
+                {
+                    issueJoins.Add("left join AssetType AT on AT.uid = @assetTypeUid");
+                }
+                else if (!string.IsNullOrEmpty(assetUidParam.Value))
+                {
+                    issueJoins.Add("left join Asset A on A.uid = @assetUid");
+                    issueJoins.Add("left join AssetType AT on AT.ID = A.AssetTypeID");
+                }
+
+                issueConditions.Add("C.Allocations = 0");
+
+                issueTypeSql = $@"{baseIssueTypesSql}
+                                  {string.Join("\n", issueJoins)}
+                                  where {string.Join(" AND ", issueConditions)}";
+
                 
                 if (assetTypeUidParam.Key != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value))
                 {                 
                     if (Guid.TryParse(assetTypeUidParam.Value, out Guid assetTypeUid))
                     {
                         if (assetTypeUid != Guid.Empty)
-                        {                            
+                        {
                             assetConditions.Add("AT.Uid = @assetTypeUid");
-
                             dbArgs.Add("@assetTypeUid", assetTypeUid);
                         }
                     }
@@ -149,7 +189,6 @@ namespace d360.model.DataAccessLayer
                         if (assetUid != Guid.Empty)
                         {
                             assetConditions.Add("A.Uid = @assetUid");
-
                             dbArgs.Add("@assetUid", assetUid);
                         }
                     }
@@ -174,76 +213,36 @@ namespace d360.model.DataAccessLayer
                         throw new ArgumentException("Invalid resource uid value provided");
                     }
                 }
-
-                var assetConditionStr = "";                
-                if (assetConditions.Count > 0 || hasResourceParam)
+               
+                if (hasAssetParam || hasResourceParam)
                 {
-                    var resourceJoinSQL = "";
-
-                    assetConditionStr += "Where " + (limitToActiveWorkflows ? workflowObjectSql : "1=1");
-
-                    if (assetConditions.Count > 0)
-                    {                        
-                        assetConditionStr = $"AND { string.Join(" AND ", assetConditions.ToArray())}";                        
-                    }
-
                     if (hasResourceParam)
                     {
-                        resourceSQL = $@" UNION 
+                        resourceSql = $@"UNION 
                                 {baseIssueTypesSql} 
-                                {joinSQL}
-                                Inner Join IssueTypeRelationResponsibility RR on ITR.ID=RR.IssueTypeRelationID
-	                            inner join ResponsibilityDetail RD on RD.ResponsibilityTypeID=RR.ResponsibilityTypeId and RD.ResourceUid=@resourceUid and ((RD.AssetID = A.ID) or (RD.AssetTypeID = A.AssetTypeID and RD.AssetID = 0))
-                                {assetConditionStr}";
+                                {string.Join("\n", assetJoins)}
+                                inner Join IssueTypeRelationResponsibility RR on ITR.ID = RR.IssueTypeRelationID
+	                            inner join ResponsibilityDetail RD on RD.ResponsibilityTypeID = RR.ResponsibilityTypeId and RD.ResourceUid = @resourceUid and ((RD.AssetID = A.ID) or (RD.AssetTypeID = A.AssetTypeID and RD.AssetID = 0))
+                                where {string.Join(" AND ", assetConditions)}";
 
-                        assetConditionStr += string.IsNullOrWhiteSpace(assetConditionStr) ? " where RR.ID is null" : " and RR.ID is null";
+                        assetConditions.Add("RR.ID is null");
 
-                        resourceJoinSQL = "left join IssueTypeRelationResponsibility RR on RR.IssueTypeRelationID = ITR.ID";
+                        assetJoins.Add("left join IssueTypeRelationResponsibility RR on RR.IssueTypeRelationID = ITR.ID");
                     }
 
-                    assetSQL = $@" UNION 
+                    assetSql = $@" UNION 
                                 {baseIssueTypesSql} 
-                                {joinSQL}
-                                {resourceJoinSQL}
-                                {assetConditionStr}";
+                                {string.Join("\n", assetJoins)}
+                                where {string.Join(" AND ", assetConditions)}";
                 }                
             }
 
-            #endregion
-                      
-            var conditionStr = conditions.Count > 0 ? string.Join(" AND ", conditions.ToArray()) : "";
+            #endregion                     
 
-            if (conditionStr.Trim() != "")
-            {
-                if(assetSQL.Trim() == "")
-                {
-                    issueTypeSQL = $"{issueTypeSQL} Where ";
-                }
-                else
-                {
-                    conditionStr = $"AND {conditionStr}";
-                }                
-            }            
-
-            if(assetSQL.Trim() != "")
-            {
-                assetSQL = $@"{assetSQL}
-                              {conditionStr}
-                              {(string.IsNullOrEmpty(conditionStr) ? $"WHERE " : "AND")} {(limitToActiveWorkflows ? workflowObjectSql : "")}";
-            }
-
-            if (resourceSQL.Trim() != "")
-            {
-                resourceSQL = $@"{resourceSQL}
-                                {conditionStr}
-                                {(string.IsNullOrEmpty(conditionStr) ? $"WHERE " : "AND")} {(limitToActiveWorkflows ? workflowObjectSql : "")}";
-            }
-
-            var sql = $@"{issueTypeSQL} 
-                         {conditionStr}
-                         {assetSQL}
-                         {resourceSQL}
-                         {orderBy}";
+            var sql = $@"{issueTypeSql} 
+                         {assetSql}
+                         {resourceSql}
+                         {orderBySql}";
 
             return await this.companyContext.QueryAsync<IssueTypeApiModel>(sql, dbArgs, ApiTimeout);
         }
