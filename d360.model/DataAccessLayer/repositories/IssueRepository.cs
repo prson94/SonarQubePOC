@@ -74,6 +74,9 @@ namespace d360.model.DataAccessLayer
             var actionTypeUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_actiontypeuid");
             var nameParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_name");
 
+
+            hasAssetParam = !string.IsNullOrWhiteSpace(assetTypeUidParam.Value) || !string.IsNullOrWhiteSpace(assetUidParam.Value);
+
             #region Action Type
 
             if (actionTypeUidParam.Key != null)
@@ -114,7 +117,7 @@ namespace d360.model.DataAccessLayer
                 {
                     if (limitToActiveWorkflows)
                     {
-                        var activeWorkflowSql = string.IsNullOrEmpty(assetTypeUidParam.Value) ? workflowSql : workflowObjectSql;
+                        var activeWorkflowSql = hasAssetParam ? workflowObjectSql : workflowSql;
 
                         issueConditions.Add(activeWorkflowSql);
                         assetConditions.Add(workflowObjectSql);
@@ -145,10 +148,16 @@ namespace d360.model.DataAccessLayer
                 assetJoins.Add("inner Join Asset A on A.AssetTypeID = AT.ID");
 
                 issueJoins.Add("cross apply (select count(*) as Allocations from IssueTypeRelation R where R.IssueTypeID = IT.ID) C");
-                //if (!string.IsNullOrEmpty(assetTypeUidParam.Value))
-                //{
-                //    issueJoins.Add("left join AssetType AT on AT.uid = @assetTypeUid");
-                //}
+
+                if (!string.IsNullOrEmpty(assetTypeUidParam.Value))
+                {
+                    issueJoins.Add("left join AssetType AT on AT.uid = @assetTypeUid");
+                }
+                else if (!string.IsNullOrEmpty(assetUidParam.Value))
+                {
+                    issueJoins.Add("left join Asset A on A.uid = @assetUid");
+                    issueJoins.Add("left join AssetType AT on AT.ID = A.AssetTypeID");
+                }
 
                 issueConditions.Add("C.Allocations = 0");
 
@@ -163,7 +172,6 @@ namespace d360.model.DataAccessLayer
                     {
                         if (assetTypeUid != Guid.Empty)
                         {
-                            hasAssetParam = true;
                             assetConditions.Add("AT.Uid = @assetTypeUid");
                             dbArgs.Add("@assetTypeUid", assetTypeUid);
                         }
@@ -180,7 +188,6 @@ namespace d360.model.DataAccessLayer
                     {
                         if (assetUid != Guid.Empty)
                         {
-                            hasAssetParam = true;
                             assetConditions.Add("A.Uid = @assetUid");
                             dbArgs.Add("@assetUid", assetUid);
                         }
