@@ -29,7 +29,6 @@ using d360.core.entities.Metric;
 using d360.model.helpers;
 using System.Text;
 using d360.model.helpers.filters;
-using static d360.model.helpers.filters.FilterBaseToken;
 
 namespace d360.model
 {

@@ -1,4 +1,5 @@
 ﻿using d360.core;
+using d360.core.entities;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -6,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace d360.model.helpers.filters.tokens
+namespace d360.model.helpers.filters
 {
     public class FieldToken : FilterBaseToken, IFilterToken
     {
@@ -138,6 +139,15 @@ namespace d360.model.helpers.filters.tokens
                 sqlParamsRef.Add($"@filter_{parameterIdx}", value);
             }
 
+        }
+
+        public void LoadFieldType(FieldType ft, List<string> fieldColumns)
+        {
+            fieldType = ft;
+            if (fieldColumns != null)
+            {
+                fieldColumn = fieldColumns.FirstOrDefault(x => x.Contains($"F" + fieldType.ID));
+            }
         }
     }
 }

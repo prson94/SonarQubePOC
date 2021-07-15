@@ -425,33 +425,35 @@ namespace d360.model.helpers.filters
             }
         }
 
-        public enum FilterExpressionParseType
-        {
-            CustomFields,
-            Relationships,
-            RuleResults,
-            RelationshipCustomFields,
-            CommunityResposibilityResource,
-            ComplexLookupField
-        }
 
-        public enum SqlFieldType
-        {
-            Text, Boolean, Number, Decimal, Date, DateTime, Guid, AssetTypeClass
-        }
+    }
 
-        public class DefaultFilter
-        {
-            public string ApiName { get; set; }
-            public string SqlExpression { get; set; }
-            public SqlFieldType SqlFieldType { get; set; }
+    public enum FilterExpressionParseType
+    {
+        CustomFields,
+        Relationships,
+        RuleResults,
+        RelationshipCustomFields,
+        CommunityResposibilityResource,
+        ComplexLookupField
+    }
 
-            public DefaultFilter(string apiName, string sqlExpression, SqlFieldType sqlFieldType)
-            {
-                this.ApiName = apiName;
-                this.SqlExpression = sqlExpression;
-                this.SqlFieldType = sqlFieldType;
-            }
+    public enum SqlFieldType
+    {
+        Text, Boolean, Number, Decimal, Date, DateTime, Guid, AssetTypeClass
+    }
+
+    public class DefaultFilter
+    {
+        public string ApiName { get; set; }
+        public string SqlExpression { get; set; }
+        public SqlFieldType SqlFieldType { get; set; }
+
+        public DefaultFilter(string apiName, string sqlExpression, SqlFieldType sqlFieldType)
+        {
+            this.ApiName = apiName;
+            this.SqlExpression = sqlExpression;
+            this.SqlFieldType = sqlFieldType;
         }
     }
 }

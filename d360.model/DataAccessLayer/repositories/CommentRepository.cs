@@ -4,6 +4,7 @@ using d360.core.exceptions;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
+using d360.model.helpers.filters;
 using Dapper;
 using Newtonsoft.Json;
 using System;

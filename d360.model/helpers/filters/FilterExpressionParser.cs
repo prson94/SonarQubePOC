@@ -126,18 +126,13 @@ namespace d360.model.helpers
         {
             try
             {
-                if (parseType != FilterExpressionParseType.ComplexLookupField)
-                {
-                    throw new InvalidOperationException("ParseAsFiltersDataTable is only allowed for FilterExpressionParseType.ComplexLookupField");
-                }
-
                 var tokens = Tokenize(filterString);
 
                 StringBuilder query = new StringBuilder();
 
                 foreach (var item in tokens)
                 {
-                    query.Append(ParseTokensForComplexFields(item));
+                    query.Append(item.GetSqlExpression(null));
                 }
 
                 return query.Length > 0 ? $"({query})" : "";
@@ -155,7 +150,6 @@ namespace d360.model.helpers
                 throw new InvalidOperationException("For FilterExpressionParseType.ComplexLookupField call ParseAsFiltersDataTable");
             }
             fieldIds = this.filteredFieldIDs;
-            this.FilterTokens.Clear();
             try
             {
                 return GetSQL(filterString.Trim(), out sqlParams);
@@ -183,14 +177,7 @@ namespace d360.model.helpers
 
             StringBuilder sb = new StringBuilder();
 
-            if (parseType == FilterExpressionParseType.Relationships)
-            {
-                filterTokens = Tokenize(filterString, true);
-            }
-            else
-            {
-                filterTokens = Tokenize(filterString);
-            }
+            filterTokens = Tokenize(filterString);
 
             this.LoadRelationshipDataForTokens(filterTokens);
 
@@ -202,7 +189,7 @@ namespace d360.model.helpers
             return sb.ToString();
         }
 
-        private List<IFilterToken> Tokenize(string filterString, bool areOnlyRelationshipTokens = false)
+        private List<IFilterToken> Tokenize(string filterString)
         {
             var ret = new List<IFilterToken>();
             Regex regex = new Regex(@"\'(.+?)\'");
@@ -255,7 +242,7 @@ namespace d360.model.helpers
                 if (!expectingCondition)
                 {
                     paramCount++;
-                    if (areOnlyRelationshipTokens)
+                    if (parseType == FilterExpressionParseType.Relationships)
                     {
                         ret.Add(new RelationshipFieldToken(this.dataProvider, tokens[i], tokens[i + 1], tokens[i + 2], paramCount));
                     }
@@ -310,6 +297,11 @@ namespace d360.model.helpers
                 }
                 else if (fieldName.StartsWith("$related"))
                 {
+                    if (parseType != FilterExpressionParseType.ComplexLookupField)
+                    {
+                        return new RelationshipComplexFieldToken(fdp, field, op, value, this.fieldTypes);
+                    }
+
                     return new RelationshipFieldToken(fdp, field, op, value, paramIdx);
                 }
                 else
@@ -324,82 +316,6 @@ namespace d360.model.helpers
                 token.LoadFieldType(fieldType, fieldColumns);
                 return token;
             }
-        }
-
-        private string ParseTokensForComplexFields(FilterToken token)
-        {
-            token.IsComplexField = true;
-            if (token.IsOnlyOperator)
-            {
-                return token.@operator;
-            }
-            if (token.Field.ToLower().StartsWith("$related:"))
-            {
-                return GetRelationshipsSQLForComplexField(token);
-            }
-            else
-            {
-                var fieldType = this.fieldTypes.FirstOrDefault(x => x.Name.ToLower() == token.Field);
-
-                if (fieldType != null && disallowedFieldTypes.Contains(fieldType.Type))
-                {
-                    throw new Exception("Field with name '" + token.Field + "' is not supported (" + fieldType.Type + ")!");
-                }
-
-                token.LoadFieldType(fieldType, null);
-
-                if (!token.IsNullValue)
-                {
-                    token.UpdateTokenValueForType();
-                    return $"( {token.Field} {token.GetSQLOperator(token.@operator)} '{token.EscapedValueAsString}')";
-                }
-                else
-                {
-                    if (!(new[] { "eq", "ne" }.Contains(token.@operator)))
-                    {
-                        throw new FormatException($"NULL value filter can be used only with 'eq' and 'ne' operator!");
-                    }
-
-                    return $"( {token.Field} { token.GetSQLNullOperator(token.@operator)})";
-                }
-
-            }
-        }
-
-        private string GetRelationshipsSQLForComplexField(FilterToken token)
-        {
-            var intersectTypeUid = token.Field.ToLower().Replace("$related:", "");
-            var intersectUid = token.EscapedValueAsString;
-            var ftRelationship = fieldTypes.Where(x => x.Name.ToLower() == token.Field.ToLower()).FirstOrDefault();
-            var ftQueryName = fieldTypes.FirstOrDefault(x => x.LookupObjectID == ftRelationship.LookupObjectID && x.LookupObjectType == ftRelationship.LookupObjectType && ftRelationship.Name != x.Name).Name;
-            var relationshipFilterSQL = "";
-            if (ftRelationship != null)
-            {
-                string sqlOperator = "=";
-                string relField = ftQueryName.Replace("_IntersectTypeUid", "_Uid");
-                if (token.IsNullValue)
-                {
-                    sqlOperator = " is null ";
-                    if (token.@operator == "ne")
-                    {
-                        sqlOperator = " is not null";
-                    }
-
-                    relationshipFilterSQL = $"( {ftQueryName} {sqlOperator})";
-                }
-                else
-                {
-                    if (token.@operator == "ne")
-                    {
-                        sqlOperator = "<>";
-                    }
-
-                    relationshipFilterSQL = $"( {ftQueryName} = '{intersectTypeUid}' and {relField} {sqlOperator} '{intersectUid.Replace("'", "")}')";
-                }
-
-            }
-
-            return relationshipFilterSQL;
         }
 
         private string[] GetTokens(ref string filterString)
