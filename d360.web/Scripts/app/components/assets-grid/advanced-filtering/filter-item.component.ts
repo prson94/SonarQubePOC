@@ -45,6 +45,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
     tableSelection: any;
 
     isLookupValuesLoading: boolean = false;
+    filterTableValue: string = "";
 
     uiCurrentOperatorsList: any[] = [];
     currentOperator: any;
@@ -155,7 +156,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     filterTable($event: any) {
-        this.dataTable.filterGlobal($event.target.value, "contains");
+        this.dataTable.filterGlobal($event, "contains");
     }
 
     setSelectionVirtualScrollHeight() {
@@ -839,6 +840,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         if (this.multiInputRef) {
             this.multiInputRef.clearTextValue();
         }
+        this.filterTableValue = "";
     }
 
     private resetDateFields() {
