@@ -488,7 +488,11 @@ namespace d360.model.DataAccessLayer
 	                            {whereConditions}
 		                    ";
                 
-                results.total = results.total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSQL, dbArgs, ApiTimeout);
+                results.total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSQL, dbArgs, ApiTimeout);
+            }
+            else
+            {
+                results.total = null;
             }
 
             return results;
