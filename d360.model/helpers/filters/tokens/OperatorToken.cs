@@ -25,10 +25,6 @@ namespace d360.model.helpers.filters
 
         public string GetSqlExpression(Dictionary<string, object> sqlParams)
         {
-            if (!IsOnlyOperator)
-            {
-                throw new MethodAccessException("Method can be used only for non field tokens");
-            }
             stringBuilder.Clear();
             if (@operator != "(" && @operator != ")")
             {

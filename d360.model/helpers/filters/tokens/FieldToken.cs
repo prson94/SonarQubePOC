@@ -11,6 +11,9 @@ namespace d360.model.helpers.filters
 {
     public class FieldToken : FilterBaseToken, IFilterToken
     {
+        private bool isLookupField { get; set; }
+
+
         public FieldToken(FilterDataProvider fdp, string field, string op, object value, int? paramIdx = null)
         {
             this.dataProvider = fdp;
@@ -141,12 +144,145 @@ namespace d360.model.helpers.filters
 
         }
 
+
+        private void UpdateTokenForNullValue()
+        {
+            if (!(new[] { "eq", "ne" }.Contains(@operator)))
+            {
+                throw new FormatException($"NULL value filter can be used only with 'eq' and 'ne' operator!");
+            }
+            var fieldSql = GetColumnValueSyntax(fieldType.ID);
+
+            stringBuilder.Append(fieldSql);
+            stringBuilder.Append(GetSQLNullOperator(@operator));
+        }
+
         public void LoadFieldType(FieldType ft, List<string> fieldColumns)
         {
             fieldType = ft;
             if (fieldColumns != null)
             {
                 fieldColumn = fieldColumns.FirstOrDefault(x => x.Contains($"F" + fieldType.ID));
+            }
+        }
+
+        private void LoadLookupSql()
+        {
+            bool isFieldFromRel = this.dataProvider.IsFieldFromRelationship(fieldType.ID);
+
+            string type = fieldType.Type;
+            int fieldTypeId = fieldType.ID;
+            int fieldTypeIdForLookupValue = fieldType.ID;
+            string lookupObjectType = fieldType.LookupObjectType;
+            int lookupObjectId = fieldType.LookupObjectID.HasValue ? fieldType.LookupObjectID.Value : 0;
+            string defaultValue = fieldType.DefaultValue;
+            bool allowAllValue = fieldType.AllowAllValue;
+            string valueQueryPart = "Value";
+
+            //handle field from relationship list values
+            if (isFieldFromRel)
+            {
+                var lookupFieldType = this.dataProvider.GetFieldTypeById(fieldType.LookupObjectFieldTypeID);
+                fieldTypeIdForLookupValue = lookupFieldType.ID;
+                lookupObjectType = lookupFieldType.LookupObjectType;
+                lookupObjectId = lookupFieldType.LookupObjectID.HasValue ? lookupFieldType.LookupObjectID.Value : 0;
+                defaultValue = lookupFieldType.DefaultValue;
+                allowAllValue = lookupFieldType.AllowAllValue;
+                valueQueryPart = "FormattedValue";
+            }
+
+            if (type == "Lookup")
+            {
+                if (@operator == "ct")
+                {
+                    stringBuilder.Append($"F{fieldTypeId}.FormattedValue like @filter_{parameterIdx}");
+                }
+                else
+                {
+
+                    int lookupValue = this.dataProvider.GetFieldLookupValue(lookupObjectType, lookupObjectId, fieldTypeIdForLookupValue, value.ToString());
+                    if (lookupValue <= 0)
+                        throw new Exception($"Invalid lookup value '{value}' for field '{field}'");
+
+                    if (!isFieldFromRel)
+                    {
+                        value = lookupValue.ToString();
+                    }
+
+
+                    string condition = "in";
+                    if (@operator == "ne")
+                    {
+                        condition = "not in";
+                    }
+                    var basicSqlExpression = string.Empty;
+
+                    if (!string.IsNullOrEmpty(defaultValue))
+                    {
+                        basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(coalesce(F{fieldTypeId}.{valueQueryPart},@defLookupValue{parameterIdx}),','))";
+                        sqlParamsRef.Add($"@defLookupValue{parameterIdx}", defaultValue);
+                    }
+                    else
+                    {
+                        basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(F{fieldTypeId}.{valueQueryPart},','))";
+                    }
+
+                    if (allowAllValue)
+                    {
+                        basicSqlExpression = $"(F{fieldTypeId}.{valueQueryPart} = '0' or {basicSqlExpression})";
+                    }
+                    stringBuilder.Append(basicSqlExpression);
+
+                }
+            }
+
+            if (type == "Relationship")
+            {
+                string condition = "exists";
+                if (@operator == "ne")
+                {
+                    condition = "not exists";
+                }
+
+                var whereStatement = $@"{condition}
+                                    (select id from intersectdetail where intersecttypeid = {lookupObjectId} and subjectuid = a.uid and subjecttypeid = T.ObjectId and subjecttype = T.Object and objectname {(@operator == "ct" ? "like" : "=")} @filter_{parameterIdx}
+                                    union select id from IntersectDetail where intersecttypeid = {lookupObjectId} and objectuid = a.uid and objecttypeid = T.ObjectId and objecttype = T.Object and subjectname {(@operator == "ct" ? "like" : "=")} @filter_{parameterIdx})";
+
+                stringBuilder.Append(whereStatement);
+            }
+        }
+
+        private void ValidateTokenForType()
+        {
+            bool hasApostrophe = value.ToString().First() == '\'' && value.ToString().Last() == '\'';
+            if (!hasApostrophe && !(fieldType.Type == "Number" || fieldType.Type == "Decimal" || fieldType.Type == "Boolean" || fieldType.Type == "Score" || fieldType.Type == "Counter"))
+            {
+                throw new Exception("Text values should be placed within quotations.");
+            }
+
+            if (!IsValidOperatorForFieldType())
+            {
+                throw new Exception($"Operator '{@operator}' is not valid for '{fieldType.Type}' on field {field}");
+            }
+        }
+
+        private string GetColumnValueSyntax(int fieldTypeId)
+        {
+            if (fieldType.Type == "Path")
+            {
+                return $"Node.DisplayPath";
+            }
+            else if (fieldType.Type == "Counter")
+            {
+                return $"F{fieldType.ID}.FormattedValue";
+            }
+            else
+            {
+                if (fieldColumn == null || fieldColumn.LastIndexOf(" as ") <= 0)
+                {
+                    return $"F{fieldTypeId}.FormattedValue";
+                }
+                return fieldColumn.Substring(0, fieldColumn.LastIndexOf(" as "));
             }
         }
     }

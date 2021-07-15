@@ -152,7 +152,27 @@ namespace d360.model.helpers
             fieldIds = this.filteredFieldIDs;
             try
             {
-                return GetSQL(filterString.Trim(), out sqlParams);
+                List<IFilterToken> filterTokens = new List<IFilterToken>();
+                sqlParams = new Dictionary<string, object>();
+                if (string.IsNullOrEmpty(filterString))
+                {
+                    return "";
+                }
+
+                filterString = filterString.Trim();
+
+                StringBuilder sb = new StringBuilder();
+
+                filterTokens = Tokenize(filterString);
+
+                this.LoadRelationshipDataForTokens(filterTokens);
+
+                foreach (var token in filterTokens)
+                {
+                    sb.Append($"{token.GetSqlExpression(sqlParams)}");
+                }
+
+                return sb.ToString();
             }
             catch (IndexOutOfRangeException)
             {
@@ -162,31 +182,6 @@ namespace d360.model.helpers
             {
                 throw new FilterExpressionParserException("Invalid filter expression: " + ex.Message);
             }
-        }
-
-        private string GetSQL(string filterString, out Dictionary<string, object> sqlParams)
-        {
-            List<IFilterToken> filterTokens = new List<IFilterToken>();
-            sqlParams = new Dictionary<string, object>();
-            if (string.IsNullOrEmpty(filterString))
-            {
-                return "";
-            }
-
-            filterString = filterString.Trim();
-
-            StringBuilder sb = new StringBuilder();
-
-            filterTokens = Tokenize(filterString);
-
-            this.LoadRelationshipDataForTokens(filterTokens);
-
-            foreach (var token in filterTokens)
-            {
-                sb.Append($"{token.GetSqlExpression(sqlParams)}");
-            }
-
-            return sb.ToString();
         }
 
         private List<IFilterToken> Tokenize(string filterString)
@@ -356,6 +351,7 @@ namespace d360.model.helpers
             return bracketCount == 0 && apostropheCount % 2 == 0;
 
         }
+
         private int[] GetAllIndexesOf(char c, string s)
         {
             List<int> indx = new List<int>();

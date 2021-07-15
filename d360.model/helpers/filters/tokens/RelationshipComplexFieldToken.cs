@@ -17,7 +17,7 @@ namespace d360.model.helpers.filters
         {
             this.dataProvider = fdp;
             this.fieldTypes = types;
-            this.field = field.Replace("$related:", "");
+            this.field = field;
             @operator = op;
             this.value = value.ToString().Replace("'", "");
 

@@ -11,13 +11,16 @@ namespace d360.model.helpers.filters
 {
     public class RelationshipFieldToken : FilterBaseToken, IFilterToken
     {
+        private AssetType assetType { get; set; }
+        private IntersectType intersectType { get; set; }
+
         public RelationshipFieldToken(FilterDataProvider fdp, string field, string op, object value, int? paramIdx = null)
         {
             this.dataProvider = fdp;
             parameterIdx = paramIdx ?? -1;
             this.field = field.Replace("$related:", "");
             @operator = op;
-            this.value = value.ToString().Replace("'","");
+            this.value = value.ToString().Replace("'", "");
 
             if (this.value != null && this.value.ToString().ToLower(CultureInfo.InvariantCulture) == "null")
             {
@@ -151,6 +154,24 @@ namespace d360.model.helpers.filters
 				              AND S.Uid = A.Uid and O.Uid = @intersectAssetFilter{this.parameterIdx})");
             }
         }
+
+
+        private SplitFilterCriteriaRelationship GetSplitFilterCriteriaRelationship()
+        {
+            if (intersectType.Object == assetType.Object && intersectType.ObjectID == assetType.ObjectID
+               && intersectType.Subject == assetType.Object && intersectType.SubjectID == assetType.ObjectID)
+            {
+                return SplitFilterCriteriaRelationship.Both;
+            }
+            if (intersectType.Object == assetType.Object && intersectType.ObjectID == assetType.ObjectID)
+            {
+                return SplitFilterCriteriaRelationship.Object;
+            }
+            else
+                return SplitFilterCriteriaRelationship.Subject;
+
+        }
+
 
         public void LoadRelationshipData(IntersectType it, AssetType at)
         {
