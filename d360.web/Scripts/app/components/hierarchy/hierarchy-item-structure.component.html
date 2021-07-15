@@ -47,7 +47,6 @@
                              [rowsPerPageOptions]="defaultPagingOptions"
                              [value]="treeNodeArray"
                              selectionMode="single"
-                             [(selection)]="selected"
                              styleClass="breadcrumbTree treetable"
                              [style]="{'line-height':'25px'}"
                              [globalFilterFields]="filterColumns"
@@ -56,8 +55,7 @@
                              [loadingIcon]="'fa fa-spinner fa-spin'"
                              [showLoader]="true"
                              (onNodeExpand)="nodeExpanded($event)"
-                             (onNodeCollapse)="nodeCollapsed($event)"
-                             (onNodeSelect)="nodeSelect($event)">
+                             (onNodeCollapse)="nodeCollapsed($event)">
                     <ng-template pTemplate="header">
                         <tr>
                             <th *ngFor="let column of columns"
@@ -98,7 +96,7 @@
                                 <div class="RowTools">
                                     <a style="cursor:pointer;"
                                        *ngIf="displayChildAdd(item?.Level)"
-                                       (click)="selected = rowNode.node; showAdd(item.Level)"><i class="fa fa-plus"></i></a>
+                                       (click)="showAdd(item.Level, rowNode.node.data.AssetUid)"><i class="fa fa-plus"></i></a>
                                 </div>
                             </td>
                             <td>
