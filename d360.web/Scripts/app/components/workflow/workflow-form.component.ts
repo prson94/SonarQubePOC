@@ -251,9 +251,9 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private loadObjectTypes() {
-        this.workflowService.getWorkflowReassignmentAssetTypes(this.workflowItemId).subscribe(result => {
+        this.workflowService.getWorkflowReassignmentAssetTypes(this.workflowItemId).subscribe((result) => {
             this.objectReassignmentTypes = result;
-            if (result && result.length && result.length == 1) {
+            if (result && result.length && result.length === 1) {
                 this.selectedReassignmentType = this.objectReassignmentTypes[0].ID;
             }
         });
@@ -261,7 +261,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
 
     private filterItems(e: any) {
         this.workflowService.getWorkflowReassignmentAssets(this.selectedReassignmentType, e.query)
-            .subscribe(result => {
+            .subscribe((result) => {
                 this.filteredAssets = result;
             });
     }
