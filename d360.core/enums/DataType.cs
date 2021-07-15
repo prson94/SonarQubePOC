@@ -8,7 +8,6 @@ using d360.core.entities;
 namespace d360.core
 {
 
-    [Flags]
     public enum DataType
     {
         [Description("None")]
