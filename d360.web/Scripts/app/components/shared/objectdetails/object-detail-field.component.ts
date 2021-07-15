@@ -81,7 +81,7 @@ export class ObjectDetailFieldComponent {
     }
 
     get linkData(): any {
-        if (!this.field || !this.field.Value) {
+        if (!this.field == null || !this.field.Value || this.field.Value.indexOf("|") === -1) {
             return null;
         }
 
