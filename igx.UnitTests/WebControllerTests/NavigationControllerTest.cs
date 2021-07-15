@@ -79,6 +79,52 @@ namespace igx.UnitTests.WebControllerTests
             Assert.True(string.IsNullOrEmpty(res[0].Items[0].MenuID));
         }
 
+
+        [Fact] void NoTechAssetsMenu()
+        {
+            List<TopNavigationItem> nodes = new List<TopNavigationItem>();
+
+            nodes.Add(new TopNavigationItem
+            {
+                MenuID = "#Technical",
+                SortOrder = 3,
+                Icon = "fa-book",
+                ImageIconUrl = null,
+                Title = "Business Assets",
+                Items = @"<nav>
+                              <name>_3tran</name>
+                              <url>artifact/100000172</url>
+                              <feature>0</feature>
+                            </nav>"
+            });
+
+            ;
+
+            Assert.True(navigationController.GenerateSiteMenu(nodes, false, true).Count == 0);
+        }
+
+        [Fact]
+        void HasTechAssetsMenu()
+        {
+            List<TopNavigationItem> nodes = new List<TopNavigationItem>();
+
+            nodes.Add(new TopNavigationItem
+            {
+                MenuID = "#Technical",
+                SortOrder = 3,
+                Icon = "fa-book",
+                ImageIconUrl = null,
+                Title = "Business Assets",
+                Items = @"<nav>
+                              <name>_3tran</name>
+                              <url>artifact/100000172</url>
+                              <feature>0</feature>
+                            </nav>"
+            });
+
+            Assert.True(navigationController.GenerateSiteMenu(nodes, true, true).Count == 1);
+        }
+
         [Fact]
         public void GenerateSiteMenu()
         {
