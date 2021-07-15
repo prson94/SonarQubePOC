@@ -25,6 +25,11 @@ namespace igx.UnitTests.IconHelperTests
             Assert.True(IconHelper.GetIconText("Banana") == "Ba");
         }
 
+        [Fact]
+        public void IconHelperMultiWordLeadingSpaceText()
+        {
+            Assert.True(IconHelper.GetIconText(" \n Banana Taco Bird") == "Bt");
+        }
 
         [Fact]
         public void IconHelperMultiWordText()

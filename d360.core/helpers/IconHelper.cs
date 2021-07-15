@@ -28,11 +28,7 @@ namespace d360.core.helpers
                 {
                     iconText = words[0][0].ToString().ToUpper();
                 }
-                else
-                {
-                    iconText = "_"; // first character is space.
-                }
-
+                
                 if (!string.IsNullOrEmpty(words[1]))
                 {
 
