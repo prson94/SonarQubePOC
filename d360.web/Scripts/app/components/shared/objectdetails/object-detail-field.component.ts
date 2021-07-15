@@ -86,7 +86,10 @@ export class ObjectDetailFieldComponent {
         }
 
         var value = this.field.Value.split('|');
-
+        //if there is no link title, use url as title
+        if (!value[0]) {
+            value[0] = value[1];
+        }
         return { title: value[0], url: value[1] };
     }
 }
