@@ -873,5 +873,85 @@ namespace d360.model.DataAccessLayer
 
             return model;
         }
+
+        public async Task<IEnumerable<WorkflowReassignmentAssetTypeApiModel>> GetWorkflowReassignmentAssetTypes(int workflowItemId)
+        {
+            var allowedAssetTypeClasses = new List<AssetTypeClass>
+            { 
+                AssetTypeClass.BusinessAsset,
+                AssetTypeClass.TechnicalAsset,
+                AssetTypeClass.Model,
+                AssetTypeClass.Rule,
+                AssetTypeClass.Policy
+            };
+
+            var assetTypeClasses = AssetTypeClass.BusinessAsset.GetAsList().Where(a => allowedAssetTypeClasses.Contains(a.ID));
+
+            var assetTypeClassSql = $" AT.Class in ({string.Join(", ", assetTypeClasses.Select(a => (int)a.ID))})";
+            var assetTypeClassNameSql = $@"case {string.Join("\n", assetTypeClasses.Select(a => $" when AT.Class = {(int)a.ID} then '{a.Name}' "))} else '' end";
+
+            var sql = $@"select AT.ID, ATP.Path as Name, AT.Object, AT.ObjectID, {assetTypeClassNameSql} as AssetClassName, ATP.Path + ' :: ' + {assetTypeClassNameSql} as Label from workflow.item I
+                            inner join workflow.Version V on V.ID = I.VersionID
+                            inner join Issue S on S.ID = I.ObjectID and I.Object = 'Issue'
+                            inner join IssueType IT on IT.ID = S.IssueTypeID
+                            cross apply (
+	                            select	E.Condition.value('(./Conditions/Condition[@ContextualFieldID=""IssueObject""]/@Value)[1]', 'nvarchar(max)') as IssueObject,
+                                        E.Condition.value('(./Conditions/Condition[@ContextualFieldID=""IssueObjectID""]/@Value)[1]', 'int') as IssueObjectID
+                                from workflow.EventRegistration E where E.TypeID = V.TypeID
+                            ) IC
+                            inner join AssetType AT on AT.Object = IC.IssueObject and AT.ObjectID = IC.IssueObjectID
+                            cross apply dbo.GetAssetTypeTextPathById(AT.ID,' > ') ATP
+                            where I.ID = @id and {assetTypeClassSql}
+
+                            union
+
+                            select AT.ID, ATP.Path as Name, AT.Object, AT.ObjectID, {assetTypeClassNameSql} as AssetClassName, ATP.Path + ' :: ' + {assetTypeClassNameSql} as Label from AssetType AT
+                            inner join workflow.item I on I.ID = @id
+                            inner join workflow.Version V on V.ID = I.VersionID
+                            inner join Issue S on S.ID = I.ObjectID and I.Object = 'Issue'
+                            inner join IssueType IT on IT.ID = S.IssueTypeID
+                            cross apply(select count(*) as Allocations from IssueTypeRelation ITR where ITR.IssueTypeID = IT.ID) C
+                            cross apply(
+                               select  E.Condition.value('(./Conditions/Condition[@ContextualFieldID=""IssueObject""]/@Value)[1]', 'nvarchar(max)') as IssueObject
+                               from workflow.EventRegistration E where E.TypeID = V.TypeID
+                            ) IC
+                            cross apply dbo.GetAssetTypeTextPathById(AT.ID,' > ') ATP
+                            where C.Allocations = 0 and IC.IssueObject is null and {assetTypeClassSql}
+
+                            union
+
+                            select AT.ID, ATP.Path as Name, AT.Object, AT.ObjectID, {assetTypeClassNameSql} as AssetClassName, ATP.Path + ' :: ' + {assetTypeClassNameSql} as Label from workflow.item I
+                            inner join workflow.Version V on V.ID = I.VersionID
+                            inner join Issue S on S.ID = I.ObjectID and I.Object = 'Issue'
+                            inner join IssueType IT on IT.ID = S.IssueTypeID
+                            inner join IssueTypeRelation ITR on ITR.IssueTypeID = IT.ID
+                            inner join AssetType AT on AT.ID = ITR.AssetTypeID
+                            cross apply(
+                                select E.Condition.value('(./Conditions/Condition[@ContextualFieldID=""IssueObject""]/@Value)[1]', 'nvarchar(max)') as IssueObject
+                                from workflow.EventRegistration E where E.TypeID = V.TypeID
+                            ) IC
+                            cross apply dbo.GetAssetTypeTextPathById(AT.ID,' > ') ATP
+                            where I.ID = @id and IC.IssueObject is null and {assetTypeClassSql}
+
+                            order by 5,2";
+
+            return await CompanyContext.QueryAsync<WorkflowReassignmentAssetTypeApiModel>(sql, new { id = workflowItemId });
+        }
+
+        public async Task<IEnumerable<WorkflowReassignmentAssetApiModel>> GetWorkflowReassignmentAssets(int assetTypeId, string query, int resultCount = 1000)
+        {
+            var sql = $@"select top {resultCount} AP.ID, 
+                                AP.DisplayPath as Name, 
+                                A.Object, 
+                                A.ObjectID 
+                        from graph.AssetNodeDisplayPath AP
+                        inner join Asset A on A.ID = AP.ID
+                        where AP.AssetTypeID = @assetTypeId {(string.IsNullOrWhiteSpace(query) ? "" : "and AP.DisplayPath like '%' + @query + '%'")}
+                        order by AP.DisplayPath";
+
+
+            return await CompanyContext.QueryAsync<WorkflowReassignmentAssetApiModel>(sql, new { assetTypeId, query });
+        }
+
     }
 }
