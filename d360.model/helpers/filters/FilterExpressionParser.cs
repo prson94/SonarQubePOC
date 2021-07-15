@@ -2,13 +2,9 @@
 using d360.model.helpers.filters;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using static d360.model.helpers.filters.FilterBaseToken;
 
 namespace d360.model.helpers
 {
@@ -292,7 +288,7 @@ namespace d360.model.helpers
                 }
                 else if (fieldName.StartsWith("$related"))
                 {
-                    if (parseType != FilterExpressionParseType.ComplexLookupField)
+                    if (parseType == FilterExpressionParseType.ComplexLookupField)
                     {
                         return new RelationshipComplexFieldToken(fdp, field, op, value, this.fieldTypes);
                     }
