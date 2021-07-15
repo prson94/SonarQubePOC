@@ -1148,7 +1148,7 @@ namespace d360.model.DataAccessLayer
                             insert into reporting.Global_Audit
                             OUTPUT INSERTED.ID
                             INTO @audit
-                            select distinct 'Resource', gr.ResourceId, gr.FirstName + ' ' + gr.LastName, @currentresourceid, GETUTCDATE(), '{logMessage}', 'Resource', gr.ResourceId, 'Resource', gr.FirstName + ' ' + gr.LastName,'Resource {logMessage}' from #auditRecords ar
+                            select distinct 'Resource', gr.ResourceId, SUBSTRING(gr.FirstName + ' ' + gr.LastName,0,250), @currentresourceid, GETUTCDATE(), '{logMessage}', 'Resource', gr.ResourceId, 'Resource', SUBSTRING(gr.FirstName + ' ' + gr.LastName,0,250),'Resource {logMessage}' from #auditRecords ar
                             inner join reporting.Global_Resource gr on gr.uid = ar.uid
 
                             insert into reporting.global_fieldaudit
