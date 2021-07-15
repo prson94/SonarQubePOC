@@ -53,7 +53,7 @@ namespace d360.web.Controllers
 
         internal List<TopNavigationItem> GenerateSiteMenu(List<TopNavigationItem> nodes, bool hasTechAssets, bool showChildren)
         {
-            if (hasTechAssets)
+            if (!hasTechAssets)
             {
                 nodes = nodes.Where(x => x.MenuID != "#Technical").ToList();
             }
