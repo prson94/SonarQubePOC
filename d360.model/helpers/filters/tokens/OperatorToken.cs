@@ -1,0 +1,54 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace d360.model.helpers.filters
+{
+    public class OperatorToken : FilterBaseToken, IFilterToken
+    {
+        public OperatorToken(FilterDataProvider fdp, string field, string op, object value, int? paramIdx = null)
+        {
+            this.dataProvider = fdp;
+            parameterIdx = paramIdx ?? -1;
+            this.field = field;
+            @operator = op;
+            this.value = value;
+
+            if (this.value != null && this.value.ToString().ToLower(CultureInfo.InvariantCulture) == "null")
+            {
+                this.IsNullValue = true;
+            }
+        }
+
+        public string GetSqlExpression(Dictionary<string, object> sqlParams)
+        {
+            if (!IsOnlyOperator)
+            {
+                throw new MethodAccessException("Method can be used only for non field tokens");
+            }
+            stringBuilder.Clear();
+            if (@operator != "(" && @operator != ")")
+            {
+                stringBuilder.Append(GetLogicalOperator(@operator));
+            }
+            else
+            {
+                stringBuilder.Append(@operator);
+            }
+            return stringBuilder.ToString();
+        }
+
+        private string GetLogicalOperator(string value)
+        {
+            switch (value)
+            {
+                case "and": return " and ";
+                case "or": return " or ";
+                default: throw new Exception($"Invalid logical operator '{value}'");
+            }
+        }
+    }
+}

@@ -21,6 +21,7 @@ using System.Data.SqlClient;
 using System.Data;
 using d360.core.entities.Membership;
 using d360.model.helpers;
+using static d360.model.helpers.filters.FilterBaseToken;
 
 namespace d360.model
 {
