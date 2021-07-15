@@ -3157,8 +3157,6 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             var style = CompanyContext.GetAssetTypeStyle(assetTypeId);
             bool add = (style == null);
 
-            string iconText = CompanyContext.GetIconText(objectName);
-
             if (add)
             {
                 style = new AssetTypeStyle
@@ -3166,7 +3164,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     ID = assetTypeId,
                     IconBackColor = backColor,
                     IconForeColor = foreColor,
-                    IconText = iconText,
+                    IconText = IconHelper.GetIconText(objectName),
                     Icon = icon
                 };
                 CompanyContext.Add(style);
@@ -3175,12 +3173,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             {
                 style.IconBackColor = backColor;
                 style.IconForeColor = foreColor;
-                style.IconText = iconText;
+                style.IconText = IconHelper.GetIconText(objectName);
                 style.Icon = icon;
                 CompanyContext.Update(style);
             }
-
-
         }
 
         public bool DoesAssetExists(Guid uid)

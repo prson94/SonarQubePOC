@@ -108,6 +108,7 @@
     <Compile Include="ExtensionTests\ModelExtensionTests-OwnershipLookupDefinition.cs" />
     <Compile Include="FilterParserTests\FilterExpressionParserTests.cs" />
     <Compile Include="HelperTests\HtmlHelperTests.cs" />
+    <Compile Include="HelperTests\IconHelperTests.cs" />
     <Compile Include="HelperTests\PasswordHelperTests.cs" />
     <Compile Include="LibraryTests\JsonTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
