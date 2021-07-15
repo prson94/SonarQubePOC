@@ -24,6 +24,7 @@ using System.Text;
 using d360.core.resources;
 using Newtonsoft.Json;
 using d360.model.DataAccessLayer;
+using d360.core.helpers;
 
 namespace d360.web.Controllers
 {
@@ -78,7 +79,7 @@ namespace d360.web.Controllers
                     ID = assetType.ID,
                     IconBackColor = backColor,
                     IconForeColor = foreColor,
-                    IconText = Company.GetIconText(objectName)
+                    IconText = IconHelper.GetIconText(objectName)
                 };
                 Company.Add(style);
             }
@@ -86,7 +87,7 @@ namespace d360.web.Controllers
             {
                 style.IconBackColor = backColor;
                 style.IconForeColor = foreColor;
-                style.IconText = Company.GetIconText(objectName);
+                style.IconText = IconHelper.GetIconText(objectName);
                 Company.Update(style);
             }
         }

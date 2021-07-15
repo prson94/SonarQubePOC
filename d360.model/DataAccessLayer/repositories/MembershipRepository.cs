@@ -15,6 +15,7 @@ using d360.core;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using Newtonsoft.Json.Linq;
+using d360.core.helpers;
 
 namespace d360.model.DataAccessLayer
 {
@@ -443,7 +444,7 @@ namespace d360.model.DataAccessLayer
                             messages.Add("CurrentPassword parameter value missing.");
                         }
 
-                        var CurrPasswordHash = CommunityContext.HashPassword(CurrPassword);
+                        var CurrPasswordHash = PasswordHelper.HashPassword(CurrPassword);
                         var existing = CommunityContext.Filter<Resource>(i => i.Password == CurrPasswordHash && i.Uid == user.uid).FirstOrDefault();
                         if (existing == null)
                         {
@@ -811,7 +812,7 @@ namespace d360.model.DataAccessLayer
                         {
                             if (string.IsNullOrEmpty(user.Password))
                             {
-                                user.Password = CommunityContext.createRandomPassword();
+                                user.Password = PasswordHelper.CreateRandomPassword();
                             }
 
                             var resource = new Resource()
@@ -820,7 +821,7 @@ namespace d360.model.DataAccessLayer
                                 LastName = user.LastName,
                                 Email = user.Username,
                                 Username = user.Username,
-                                Password = CommunityContext.HashPassword(user.Password)
+                                Password = PasswordHelper.HashPassword(user.Password)
                             };
 
                             CommunityContext.Add(resource);
@@ -858,7 +859,7 @@ namespace d360.model.DataAccessLayer
 
                                 if (!string.IsNullOrEmpty(user.Password))
                                 {
-                                    resource.Password = CommunityContext.HashPassword(user.Password);
+                                    resource.Password = PasswordHelper.HashPassword(user.Password);
                                 }
 
                                 user.uid = resource.Uid;
