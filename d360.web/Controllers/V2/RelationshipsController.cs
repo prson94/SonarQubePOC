@@ -1138,7 +1138,8 @@ namespace d360.web.Controllers.V2
                 }
                 catch (Exception ex)
                 {
-                    execution.ErrorMessage = ex.GetFullExceptionData(false);
+                    string message = ex.GetFullExceptionData(false);
+                    execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
                     execution.CompletedOn = DateTime.UtcNow;
                     Company.Update(execution);
                 }
@@ -1435,7 +1436,8 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                string message = ex.GetFullExceptionData(false);
+                execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
                 execution.CompletedOn = DateTime.UtcNow;
                 Company.Update(execution);
             }

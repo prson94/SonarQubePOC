@@ -462,8 +462,8 @@ namespace igx.jobs.apiexecutionprocessor
                     { "RequestFileName", Info.RequestFileName },
                     { "ResponseFileName", Info.ResponseFileName }
                 });
-
-                dbExecutionItem.ErrorMessage = ex.GetFullExceptionData(false);
+                string message = ex.GetFullExceptionData(false);
+                dbExecutionItem.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
                 dbExecutionItem.CompletedOn = DateTime.UtcNow;
                 dbExecutionItem.MarkedForProcessing = false;
 

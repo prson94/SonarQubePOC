@@ -791,7 +791,10 @@ namespace d360.web.Controllers
                 execution.Error = deleteAssetTypesResults.Count(r => !r.Success);
 
                 if (execution.Error > 0)
-                    execution.ErrorMessage = deleteAssetTypesResults.First().Message;
+                {
+                    string message = deleteAssetTypesResults.First().Message;
+                    execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                }
 
                 Company.Update(execution);
                 Company.SaveChanges();

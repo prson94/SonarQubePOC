@@ -402,7 +402,8 @@ where   T.ExecutionID = @ExecutionID", new { execution.ExecutionID }, transactio
                     {
                     }
 
-                    execution.ErrorMessage = ex.GetFullExceptionData(false);
+                    string message = ex.GetFullExceptionData(false);
+                    execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
                     execution.CompletedOn = DateTime.UtcNow;
                     Update(execution);
                 }
@@ -880,7 +881,8 @@ where   E.ExecutionID = @ExecutionID
             }
             catch (Exception ex)
             {
-                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                string message = ex.GetFullExceptionData(false);
+                execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
                 execution.CompletedOn = DateTime.UtcNow;
                 Update(execution);
             }
