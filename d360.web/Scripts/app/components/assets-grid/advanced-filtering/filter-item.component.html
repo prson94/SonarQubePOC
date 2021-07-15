@@ -102,7 +102,7 @@
                                             <p-tableHeaderCheckbox *ngIf="hasSelectAllCheckbox"></p-tableHeaderCheckbox>
                                         </th>
                                         <th>
-                                            <input type="text" class="filter-item-table-filter" (input)="filterTable($event)" placeholder="Search list" />
+                                            <input type="text" class="filter-item-table-filter" [(ngModel)]="filterTableValue" (ngModelChange)="filterTable($event)" placeholder="Search list" />
                                         </th>
                                     </tr>
                                 </ng-template>
