@@ -155,6 +155,8 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
 
                 if (queryParamsList.Any(q => q.Key.ToLower() == "relationshiptypeuid"))
                 {
+                    //if the search is by intersecttypeid we should change the default order by to I.ID for consistent results
+                    _orderBy = "I.ID";
                     var relationshipTypeUidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "relationshiptypeuid").Value;
                     if (Guid.TryParse(relationshipTypeUidString, out relationshipTypeUid))
                     {
