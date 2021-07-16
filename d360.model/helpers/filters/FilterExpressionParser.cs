@@ -263,11 +263,6 @@ namespace d360.model.helpers
                 }
                 else if (fieldName.StartsWith("$related"))
                 {
-                    if (parseType == FilterExpressionParseType.ComplexLookupField)
-                    {
-                        return new RelationshipComplexFieldToken(fdp, field, op, value, this.fieldTypes);
-                    }
-
                     return new RelationshipFieldToken(fdp, field, op, value, paramIdx);
                 }
                 else
@@ -280,6 +275,10 @@ namespace d360.model.helpers
                 this.filteredFieldIDs.Add(fieldType.ID);
                 if (parseType == FilterExpressionParseType.ComplexLookupField)
                 {
+                    if (fieldName.StartsWith("$related"))
+                    {
+                        return new RelationshipComplexFieldToken(fdp, field, op, value, this.fieldTypes);
+                    }
                     var token = new ComplexFieldToken(fdp, field, op, value, paramIdx);
                     token.LoadFieldType(fieldType, fieldColumns);
                     return token;

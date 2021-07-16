@@ -25,8 +25,6 @@ namespace d360.model.helpers.filters
         protected Dictionary<string, object> sqlParamsRef;
         protected bool convertToNVarChar = false;
 
-        public bool IsComplexField { get; set; }
-
         public string Field
         {
             get
@@ -249,7 +247,7 @@ namespace d360.model.helpers.filters
             }
         }
 
-        protected void UpdateTokenValueForType()
+        protected void UpdateTokenValueForType(bool skipLookupCheck = false)
         {
             CheckFieldValue();
 
@@ -279,7 +277,7 @@ namespace d360.model.helpers.filters
                     throw new Exception("Lookup field type is missing LookupObjectID value!");
                 }
                 this.isLookupField = true;
-                if (this.IsComplexField)
+                if (skipLookupCheck)
                 {
                     if (@operator == "eq")
                     {

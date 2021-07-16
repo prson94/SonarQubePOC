@@ -29,7 +29,7 @@ namespace d360.model.helpers.filters
         {
             if (!IsNullValue)
             {
-                UpdateTokenValueForType();
+                UpdateTokenValueForType(true);
                 return $"( {Field} {GetSQLOperator(@operator)} '{EscapedValueAsString}')";
             }
             else

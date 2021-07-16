@@ -33,9 +33,9 @@ namespace igx.UnitTests.FilterExpressionTests
             fieldTypes.Add(new FieldType() { Name = "H1_00003", ID = 3, Type = "Boolean" });
             fieldTypes.Add(new FieldType() { Name = "H1_00004", ID = 4, Type = "Date" });
             fieldTypes.Add(new FieldType() { Name = "H1_00005", ID = 5, Type = "Text" });
-            fieldTypes.Add(new FieldType() { Name = "lookup", ID = 6, Type = "Lookup", LookupObjectType = "ArtifactType", LookupObjectID = 1 });
-            fieldTypes.Add(new FieldType() { Name = "relationship", ID = 6, Type = "Relationship", LookupObjectType = "IntersectType", LookupObjectID = 1 });
-            fieldTypes.Add(new FieldType() { Name = "counter", ID = 7, Type = "Counter" });
+            fieldTypes.Add(new FieldType() { Name = "H1_00006", ID = 6, Type = "Lookup", LookupObjectType = "ArtifactType", LookupObjectID = 1 });
+            fieldTypes.Add(new FieldType() { Name = "H1_00007", ID = 7, Type = "Counter" });
+            fieldTypes.Add(new FieldType() { Name = "relationship", ID = 8, Type = "Relationship", LookupObjectType = "IntersectType", LookupObjectID = 1 });
 
             var filterDataProvider = new FilterDataProvider(GetCompany());
             this.filterParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField);
@@ -98,6 +98,22 @@ namespace igx.UnitTests.FilterExpressionTests
             Assert.True(parameters.Count == 0);
         }
 
+        [InlineData("h1_00007 eq 5", "( h1_00007  =  '5')")]
+        [InlineData("h1_00007 ne 8", "( h1_00007  <>  '8')")]
+        [InlineData("h1_00007 gt 10", "( h1_00007  >  '10')")]
+        [InlineData("h1_00007 ge 20", "( h1_00007  >=  '20')")]
+        [InlineData("h1_00007 le 10", "( h1_00007  <=  '10')")]
+        [InlineData("h1_00007 lt 20", "( h1_00007  <  '20')")]
+        [InlineData("h1_00007 eq null", "( h1_00007  is null)")]
+        [InlineData("h1_00007 ne null", "( h1_00007  is not null)")]
+        public void CounterTests(string input, string expectedOutput)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            var result = this.filterParser.Parse(input, out parameters, out _);
+            Assert.True(result == expectedOutput);
+            Assert.True(parameters.Count == 0);
+        }
+
         [Theory]
         [InlineData("h1_00004 eq '02-10-2020'", "( h1_00004  =  '02/10/2020 00:00:00')")]
         [InlineData("h1_00004 ne '02-10-2020'", "( h1_00004  <>  '02/10/2020 00:00:00')")]
@@ -108,6 +124,30 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("h1_00004 eq null", "( h1_00004  is null)")]
         [InlineData("h1_00004 ne null", "( h1_00004  is not null)")]
         public void DateTests(string input, string expectedOutput)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            var result = this.filterParser.Parse(input, out parameters, out _);
+            Assert.True(result == expectedOutput);
+            Assert.True(parameters.Count == 0);
+        }
+
+        [Theory]
+        [InlineData("((h1_00006 eq 'France') or (h1_00006 eq 'Brand new country'))", "((( h1_00006  like  '%France%')) or (( h1_00006  like  '%Brand new country%')))")]
+        [InlineData("((h1_00006 ne 'France') or (h1_00006 eq 'Brand new country'))", "((( h1_00006  not like  '%France%')) or (( h1_00006  like  '%Brand new country%')))")]
+        [InlineData("((h1_00006 eq 'France') and (h1_00006 eq 'Brand new country'))", "((( h1_00006  like  '%France%')) and (( h1_00006  like  '%Brand new country%')))")]
+        [InlineData("h1_00006 eq null", "( h1_00006  is null)")]
+        [InlineData("h1_00006 ne null", "( h1_00006  is not null)")]
+        public void LookupTests(string input, string expectedOutput)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            var result = this.filterParser.Parse(input, out parameters, out _);
+            Assert.True(result == expectedOutput);
+            Assert.True(parameters.Count == 0);
+        }
+
+        [Theory]
+        [InlineData("$Related:4df68f30-daa0-48da-912f-2daaea6961e0 eq '6f5cd34d-1bf4-45be-9ab2-d34dec9b64dd'", "")]
+        public void RelationshipTests(string input, string expectedOutput)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             var result = this.filterParser.Parse(input, out parameters, out _);
@@ -129,9 +169,13 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("H1_00004 ct 2")]
         [InlineData("h1_00004 eq 'dadada'")]
         [InlineData("H1_00005 eq text")]
-        [InlineData("H1_00005 eq null")]
-        [InlineData("H1_00005 eq null")]
-        [InlineData("H1_00005 eq null")]
+        [InlineData("H1_00005 eq 4")]
+        [InlineData("H1_00005 gt '4'")]
+        [InlineData("H1_00005 lt 4")]
+        [InlineData("h1_00006 ct 'France'")]
+        [InlineData("h1_00006 nct 'France'")]
+        [InlineData("h1_00006 gt France")]
+        [InlineData("h1_00006 eq France")]
         public void InvalidTests(string input)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
