@@ -299,7 +299,7 @@ namespace d360.model
         string GetDiagramUrlForDiagramAsset(Guid assetUid);
         bool HasRelationshipInProcessDiagram(Guid intersectTypeUid);
         void CreateEventsForAddedActions(List<Issue> actions);
-        List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool isInsert = false);
+        List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool isInsert = false, bool hasLookupFieldTypes = true);
         void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false, bool sendGraphEvents = true);
         void SendAssetGraphEvents(IEnumerable<IGraphAsset> results, Dictionary<Guid, List<string>> fields = null, bool delayedDelivery = false);
         List<Guid> GetImpactedMeasureVersionsBy(MetricGovernanceCheckType check, int typeId);
