@@ -5,13 +5,189 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Function.api.ShouldAllowNewBatchCall-v6.1">
+  <changeSet author="bquinlivan" id="Function.api.ShouldAllowNewBatchCall-v7">
    <comment>GOV-14951</comment>
    <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+CREATE OR ALTER FUNCTION [api].[ShouldAllowNewBatchCall]
+(
+	@executionID uniqueidentifier = null
+)
+RETURNS bit
+AS
+BEGIN    
+	declare @runAssetCount int = 0;
+	declare @runAssetDeleteCount int = 0;
+	declare @runRelationshipCount int = 0;
+	declare @runAssetTypeDeleteCount int = 0;
+	declare @runDataProfileCount int = 0;
+	declare @runDataProfileDeleteCount int = 0;
+	declare @runningCount int = 0;
+
+	-- never ran a batch api execution
+	if ( not exists (select 1 from api.execution))
+	begin
+		return 1;
+	end
+
+	-- all jobs have completed
+	if ( not exists (select 1 from api.execution where completedOn is null))
+	begin
+		return 1;
+	end
+
+	-- all the jobs that have not completed are older than 24 hours
+	-- all jobs have completed
+	if ( not exists (select 1 from api.execution where completedOn is null and startedon > DATEADD(day, -1, GETDATE()) ) )
+	begin
+		return 1;
+	end
+
+	-- count of running asset batch jobs is > 1 for past 24 hours
+	select @runAssetCount = count(distinct e.ExecutionID) from api.execution e inner join api.ExecutionAsset ea on e.ExecutionID = ea.ExecutionID where e.completedOn is null and e.startedon > DATEADD(day, -1, GETDATE()) and e.ErrorMessage is null
+
+	if ( @runAssetCount > 1 )
+	begin
+		return 0;
+	end
+
+	-- count of running data profile batch jobs is > 1 for past 24 hours
+	select @runDataProfileCount = count(distinct e.ExecutionID) from api.execution e inner join api.ExecutionAssetDataProfile ea on e.ExecutionID = ea.ExecutionID where e.completedOn is null and e.startedon > DATEADD(day, -1, GETDATE()) and e.ErrorMessage is null
+
+	if ( @runDataProfileCount > 1 )
+	begin
+		return 0;
+	end
+
+	
+	-- count of running asset delete batch jobs is > 1 for past 24 hours
+	select @runAssetDeleteCount = count(1) from api.execution e inner join api.ExecutionDeletedAsset ea on e.ExecutionID = ea.ExecutionID where e.completedOn is null and e.startedon > DATEADD(day, -1, GETDATE()) and e.ErrorMessage is null
+
+	if ( @runAssetDeleteCount > 1 )
+	begin
+		return 0;
+	end
+
+	-- count of running data profile delete batch jobs is > 1 for past 24 hours
+	select @runDataProfileDeleteCount = count(1) from api.execution e inner join api.ExecutionDeleteAssetDataProfile ea on e.ExecutionID = ea.ExecutionID where e.completedOn is null and e.startedon > DATEADD(day, -1, GETDATE()) and e.ErrorMessage is null
+
+	if ( @runDataProfileDeleteCount > 1 )
+	begin
+		return 0;
+	end
+
+	-- count of running asset delete batch jobs is > 1 for past 24 hours
+	select @runRelationshipCount = count(1) from api.execution e inner join api.ExecutionRelationship ea on e.ExecutionID = ea.ExecutionID where e.completedOn is null and e.startedon > DATEADD(day, -1, GETDATE())  and e.ErrorMessage is null
+
+	if ( @runRelationshipCount > 1 )
+	begin
+		return 0;
+	end
+
+	-- count of running asset delete batch jobs is > 1 for past 24 hours
+	select @runAssetTypeDeleteCount = count(1) from api.execution e inner join api.executiondeletedassettype ea on e.ExecutionID = ea.ExecutionID where e.completedOn is null and e.startedon > DATEADD(day, -1, GETDATE())  and e.ErrorMessage is null
+
+	if ( @runAssetTypeDeleteCount > 1 )
+	begin
+		return 0;
+	end
+
+
+	set @runningCount = @runAssetCount + @runAssetDeleteCount + @runRelationshipCount + @runAssetTypeDeleteCount + @runDataProfileDeleteCount + @runDataProfileCount;
+	-- some combination of the 3 types of batch jobs running more than 1 instance already
+	if (@runningCount > 1)
+	begin
+		return 0;
+	end
+
+	--all other checks have passed. make sure there are no other jobs with the same asset/intersect type running
+	if (@executionID is not null)
+	begin
+
+		--don't consider any execution older than 24 hrs
+		if exists (select 1 from api.Execution where ExecutionID = @executionID and StartedOn < DATEADD(day, -1, GETDATE()))
+		begin
+			return 0;
+		end
+
+		--don't consider any execution which is not in the top 2 pending executions
+		if not exists (select 1 where @executionID in (select top (2 - @runningCount) ExecutionID from api.Execution where completedOn is null and ProcessingStartedOn is null and StartedOn > DATEADD(day, -1, GETDATE()) order by startedOn asc))
+		begin
+			return 0;
+		end
+
+		--find type uid
+		declare @typeUid uniqueidentifier = null;
+		declare @type varchar(25) = null;
+
+		select	@typeUid = f.AssetTypeUid,
+				@type = 'asset'
+		from	api.Execution E 
+				outer apply openjson(e.Fields) with (AssetTypeUid uniqueidentifier '$.AssetTypeUid') f
+		where	E.ExecutionID = @executionID 
+				and e.Fields is not null 
+				and e.Fields like '%AssetTypeUid%';
+
+		select	@typeUid = f.IntersectTypeUid,
+				@type = 'intersect'
+		from	api.Execution E 
+				outer apply openjson(e.Fields) with (IntersectTypeUid uniqueidentifier '$.IntersectTypeUid') f
+		where	E.ExecutionID = @executionID 
+				and e.Fields is not null 
+				and e.Fields like '%IntersectTypeUid%';
+
+		if (@typeUid is not null)
+		begin
+			if (@type = 'asset')
+			begin
+				if exists(
+				select	1 
+				from	api.execution e 
+						outer apply openjson(e.Fields) with (AssetTypeUid uniqueidentifier '$.AssetTypeUid') f
+				where	e.MarkedForProcessing = 1 
+						and (@executionID is null or e.executionID <> @executionID)
+						and e.Fields is not null 
+						and e.Fields like '%AssetTypeUid%' 
+						and e.completedOn is null 
+						and e.startedon > DATEADD(day, -1, GETDATE()) 
+						and e.ErrorMessage is null 
+						and f.AssetTypeUid = @typeUid)
+				begin
+					return 0;
+				end
+			end
+			if (@type = 'intersect')
+			begin
+				if exists(
+				select	1 
+				from	api.execution e 
+						outer apply openjson(e.Fields) with (IntersectTypeUid uniqueidentifier '$.IntersectTypeUid') f
+				where	e.MarkedForProcessing = 1 
+						and (@executionID is null or e.executionID <> @executionID)
+						and e.Fields is not null 
+						and e.Fields like '%IntersectTypeUid%' 
+						and e.completedOn is null 
+						and e.startedon > DATEADD(day, -1, GETDATE()) 
+						and e.ErrorMessage is null 
+						and f.IntersectTypeUid = @typeUid)
+				begin
+					return 0;
+				end
+			end
+		end
+	end
+
+    -- Return the result of the function
+    RETURN 1;
+END
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER FUNCTION [api].[ShouldAllowNewBatchCall]
 (
 	@executionID uniqueidentifier = null
@@ -99,156 +275,6 @@ BEGIN
 
 	-- some combination of the 3 types of batch jobs running more than 1 instance already
 	if ((@runAssetCount + @runAssetDeleteCount + @runRelationshipCount + @runAssetTypeDeleteCount + @runDataProfileDeleteCount + @runDataProfileCount) > 1)
-	begin
-		return 0;
-	end
-
-	--all other checks have passed. make sure there are no other jobs with the same asset/intersect type running
-	if (@executionID is not null)
-	begin
-
-		--don't consider any execution older than 24 hrs
-		if exists (select 1 from api.Execution where ExecutionID = @executionID and StartedOn < DATEADD(day, -1, GETDATE()))
-		begin
-			return 0;
-		end
-
-		--find type uid
-		declare @typeUid uniqueidentifier = null;
-		declare @type varchar(25) = null;
-
-		select	@typeUid = f.AssetTypeUid,
-				@type = 'asset'
-		from	api.Execution E 
-				outer apply openjson(e.Fields) with (AssetTypeUid uniqueidentifier '$.AssetTypeUid') f
-		where	E.ExecutionID = @executionID 
-				and e.Fields is not null 
-				and e.Fields like '%AssetTypeUid%';
-
-		select	@typeUid = f.IntersectTypeUid,
-				@type = 'intersect'
-		from	api.Execution E 
-				outer apply openjson(e.Fields) with (IntersectTypeUid uniqueidentifier '$.IntersectTypeUid') f
-		where	E.ExecutionID = @executionID 
-				and e.Fields is not null 
-				and e.Fields like '%IntersectTypeUid%';
-
-		if (@typeUid is not null)
-		begin
-			if (@type = 'asset')
-			begin
-				if exists(
-				select	1 
-				from	api.execution e 
-						outer apply openjson(e.Fields) with (AssetTypeUid uniqueidentifier '$.AssetTypeUid') f
-				where	e.MarkedForProcessing = 1 
-						and (@executionID is null or e.executionID <> @executionID)
-						and e.Fields is not null 
-						and e.Fields like '%AssetTypeUid%' 
-						and e.completedOn is null 
-						and e.startedon > DATEADD(day, -1, GETDATE()) 
-						and e.ErrorMessage is null 
-						and f.AssetTypeUid = @typeUid)
-				begin
-					return 0;
-				end
-			end
-			if (@type = 'intersect')
-			begin
-				if exists(
-				select	1 
-				from	api.execution e 
-						outer apply openjson(e.Fields) with (IntersectTypeUid uniqueidentifier '$.IntersectTypeUid') f
-				where	e.MarkedForProcessing = 1 
-						and (@executionID is null or e.executionID <> @executionID)
-						and e.Fields is not null 
-						and e.Fields like '%IntersectTypeUid%' 
-						and e.completedOn is null 
-						and e.startedon > DATEADD(day, -1, GETDATE()) 
-						and e.ErrorMessage is null 
-						and f.IntersectTypeUid = @typeUid)
-				begin
-					return 0;
-				end
-			end
-		end
-	end
-
-    -- Return the result of the function
-    RETURN 1;
-END
-
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-CREATE OR ALTER FUNCTION [api].[ShouldAllowNewBatchCall]
-(
-	@executionID uniqueidentifier = null
-)
-RETURNS bit
-AS
-BEGIN    
-	declare @runAssetCount int = 0;
-	declare @runAssetDeleteCount int = 0;
-	declare @runRelationshipCount int = 0;
-	declare @runAssetTypeDeleteCount int = 0;
-
-	-- never ran a batch api execution
-	if ( not exists (select 1 from api.execution))
-	begin
-		return 1;
-	end
-
-	-- all jobs have completed
-	if ( not exists (select 1 from api.execution where completedOn is null))
-	begin
-		return 1;
-	end
-
-	-- all the jobs that have not completed are older than 24 hours
-	-- all jobs have completed
-	if ( not exists (select 1 from api.execution where completedOn is null and startedon > DATEADD(day, -1, GETDATE()) ) )
-	begin
-		return 1;
-	end
-
-	-- count of running asset batch jobs is > 1 for past 24 hours
-	select @runAssetCount = count(distinct e.ExecutionID) from api.execution e inner join api.ExecutionAsset ea on e.ExecutionID = ea.ExecutionID where e.completedOn is null and e.startedon > DATEADD(day, -1, GETDATE()) and e.ErrorMessage is null
-
-	if ( @runAssetCount > 1 )
-	begin
-		return 0;
-	end
-
-	-- count of running asset delete batch jobs is > 1 for past 24 hours
-	select @runAssetDeleteCount = count(1) from api.execution e inner join api.ExecutionDeletedAsset ea on e.ExecutionID = ea.ExecutionID where e.completedOn is null and e.startedon > DATEADD(day, -1, GETDATE()) and e.ErrorMessage is null
-
-	if ( @runAssetDeleteCount > 1 )
-	begin
-		return 0;
-	end
-
-	-- count of running asset delete batch jobs is > 1 for past 24 hours
-	select @runRelationshipCount = count(1) from api.execution e inner join api.ExecutionRelationship ea on e.ExecutionID = ea.ExecutionID where e.completedOn is null and e.startedon > DATEADD(day, -1, GETDATE())  and e.ErrorMessage is null
-
-	if ( @runRelationshipCount > 1 )
-	begin
-		return 0;
-	end
-
-	-- count of running asset delete batch jobs is > 1 for past 24 hours
-	select @runAssetTypeDeleteCount = count(1) from api.execution e inner join api.executiondeletedassettype ea on e.ExecutionID = ea.ExecutionID where e.completedOn is null and e.startedon > DATEADD(day, -1, GETDATE())  and e.ErrorMessage is null
-
-	if ( @runAssetTypeDeleteCount > 1 )
-	begin
-		return 0;
-	end
-
-
-
-	-- some combination of the 3 types of batch jobs running more than 1 instance already
-	if ((@runAssetCount + @runAssetDeleteCount + @runRelationshipCount + @runAssetTypeDeleteCount) > 1)
 	begin
 		return 0;
 	end
