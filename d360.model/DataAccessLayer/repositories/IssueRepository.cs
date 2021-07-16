@@ -236,7 +236,12 @@ namespace d360.model.DataAccessLayer
                                 where {string.Join(" AND ", assetConditions)}";
                 }                
             }
-
+            else if (issueConditions.Any())
+            {
+                issueTypeSql = $@"{baseIssueTypesSql}
+                                  {string.Join("\n", issueJoins)}
+                                  where {string.Join(" AND ", issueConditions)}";
+            }
             #endregion                     
 
             var sql = $@"{issueTypeSql} 
