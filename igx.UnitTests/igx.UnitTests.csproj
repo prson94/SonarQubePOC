@@ -120,6 +120,8 @@
     <Compile Include="ScoringTests\OperatorTests-DecimalCompares.cs" />
     <Compile Include="ScoringTests\OperatorTests-DateTimeCompares.cs" />
     <Compile Include="ScoringTests\OperatorTests-DateCompares.cs" />
+    <Compile Include="SearchTests\ElasticSourceTests.cs" />
+    <Compile Include="SearchTests\SearchIndexerTests.cs" />
     <Compile Include="WebControllerTests\NavigationControllerTest.cs" />
     <Compile Include="V2ControllerTests\ActionsControllerTest.cs" />
     <Compile Include="V2ControllerTests\AssetsControllerTest.cs" />
