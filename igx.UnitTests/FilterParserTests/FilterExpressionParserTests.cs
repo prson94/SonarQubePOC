@@ -379,17 +379,6 @@ namespace igx.UnitTests.FilterExpressionTests
             Assert.True(sql.ToLower().Replace(Environment.NewLine, "") == expectedQuery.ToLower().Replace(Environment.NewLine, ""));
 
         }
-
-        [Fact]
-        public void Test()
-        {
-            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-            List<int> fieldIds = new List<int>();
-            var query = "(($Related:4df68f30-daa0-48da-912f-2daaea6961e0 eq '6f5cd34d-1bf4-45be-9ab2-d34dec9b64dd'))";
-            string sql = filterParser.Parse(query, out sqlParams, out fieldIds);
-
-        }
-
     }
 
 }

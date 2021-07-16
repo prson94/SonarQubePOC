@@ -1,0 +1,154 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Xunit;
+using d360.model.validators;
+using d360.core.entities;
+using d360.model.helpers;
+using d360.model.helpers.filters;
+
+namespace igx.UnitTests.FilterExpressionTests
+{
+    [Trait("Unit tests", "Complex Fields Filtering Tests")]
+    public class ComplexFieldsFilteringTests : BaseTest
+    {
+        private FilterExpressionParser filterParser;
+
+        //check if sql parameter exists in generated sql
+        //check if there is only one instance of single param in case of multiple filters for same field type
+        private Func<string, string, bool> CheckParamOccurance =
+            (string sql, string param) => { return sql.Contains(param) && sql.IndexOf(param) == sql.LastIndexOf(param); };
+
+        private Func<string, string, bool> CheckMultipleParamOccurance =
+          (string sql, string param) => { return sql.Contains(param) && sql.IndexOf(param) != sql.LastIndexOf(param); };
+
+
+        public ComplexFieldsFilteringTests()
+        {
+            List<FieldType> fieldTypes = new List<FieldType>();
+            fieldTypes.Add(new FieldType() { Name = "H1_00001", ID = 1, Type = "Number" });
+            fieldTypes.Add(new FieldType() { Name = "H1_00002", ID = 2, Type = "Decimal" });
+            fieldTypes.Add(new FieldType() { Name = "H1_00003", ID = 3, Type = "Boolean" });
+            fieldTypes.Add(new FieldType() { Name = "H1_00004", ID = 4, Type = "Date" });
+            fieldTypes.Add(new FieldType() { Name = "H1_00005", ID = 5, Type = "Text" });
+            fieldTypes.Add(new FieldType() { Name = "lookup", ID = 6, Type = "Lookup", LookupObjectType = "ArtifactType", LookupObjectID = 1 });
+            fieldTypes.Add(new FieldType() { Name = "relationship", ID = 6, Type = "Relationship", LookupObjectType = "IntersectType", LookupObjectID = 1 });
+            fieldTypes.Add(new FieldType() { Name = "counter", ID = 7, Type = "Counter" });
+
+            var filterDataProvider = new FilterDataProvider(GetCompany());
+            this.filterParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField);
+            this.filterParser.LoadFieldTypes(fieldTypes, null);
+
+        }
+
+        [Theory]
+        [InlineData("H1_00005 eq 'text'", "( h1_00005  =  'text')")]
+        [InlineData("H1_00005 ne 'text'", "( h1_00005  <>  'text')")]
+        [InlineData("H1_00005 ct 'text'", "( h1_00005  like  '%text%')")]
+        [InlineData("H1_00005 nct 'text'", "( h1_00005  not like  '%text%')")]
+        [InlineData("H1_00005 eq null", "( h1_00005  is null)")]
+        [InlineData("H1_00005 ne null", "( h1_00005  is not null)")]
+        public void TextTests(string input, string expectedOutput)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            var result = this.filterParser.Parse(input, out parameters, out _);
+            Assert.True(result == expectedOutput);
+            Assert.True(parameters.Count == 0);
+        }
+
+        [Theory]
+        [InlineData("H1_00003 eq true", "( h1_00003  =  'True')")]
+        [InlineData("H1_00003 eq True", "( h1_00003  =  'True')")]
+        [InlineData("H1_00003 eq false", "( h1_00003  =  'False')")]
+        [InlineData("H1_00003 eq False", "( h1_00003  =  'False')")]
+        [InlineData("H1_00003 eq null", "( h1_00003  is null)")]
+        [InlineData("H1_00003 ne null", "( h1_00003  is not null)")]
+        public void BooleanTests(string input, string expectedOutput)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            var result = this.filterParser.Parse(input, out parameters, out _);
+            Assert.True(result == expectedOutput);
+            Assert.True(parameters.Count == 0);
+        }
+
+        [Theory]
+        [InlineData("H1_00001 eq 5", "( h1_00001  =  '5')")]
+        [InlineData("H1_00001 ne 8", "( h1_00001  <>  '8')")]
+        [InlineData("H1_00001 gt 10", "( h1_00001  >  '10')")]
+        [InlineData("H1_00001 ge 20", "( h1_00001  >=  '20')")]
+        [InlineData("H1_00001 le 10", "( h1_00001  <=  '10')")]
+        [InlineData("H1_00001 lt 20", "( h1_00001  <  '20')")]
+        [InlineData("H1_00001 eq null", "( h1_00001  is null)")]
+        [InlineData("H1_00001 ne null", "( h1_00001  is not null)")]
+        [InlineData("h1_00002 eq 5", "( h1_00002  =  '5')")]
+        [InlineData("h1_00002 ne 8", "( h1_00002  <>  '8')")]
+        [InlineData("h1_00002 gt 10", "( h1_00002  >  '10')")]
+        [InlineData("h1_00002 ge 20", "( h1_00002  >=  '20')")]
+        [InlineData("h1_00002 le 10", "( h1_00002  <=  '10')")]
+        [InlineData("h1_00002 lt 20", "( h1_00002  <  '20')")]
+        [InlineData("h1_00002 eq null", "( h1_00002  is null)")]
+        [InlineData("h1_00002 ne null", "( h1_00002  is not null)")]
+        public void NumberAndDecimalTests(string input, string expectedOutput)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            var result = this.filterParser.Parse(input, out parameters, out _);
+            Assert.True(result == expectedOutput);
+            Assert.True(parameters.Count == 0);
+        }
+
+        [Theory]
+        [InlineData("h1_00004 eq '02-10-2020'", "( h1_00004  =  '02/10/2020 00:00:00')")]
+        [InlineData("h1_00004 ne '02-10-2020'", "( h1_00004  <>  '02/10/2020 00:00:00')")]
+        [InlineData("h1_00004 gt '02-10-2020'", "( h1_00004  >  '02/10/2020 00:00:00')")]
+        [InlineData("h1_00004 ge '02-10-2020'", "( h1_00004  >=  '02/10/2020 00:00:00')")]
+        [InlineData("h1_00004 le '02-10-2020'", "( h1_00004  <=  '02/10/2020 00:00:00')")]
+        [InlineData("h1_00004 lt '02-10-2020'", "( h1_00004  <  '02/10/2020 00:00:00')")]
+        [InlineData("h1_00004 eq null", "( h1_00004  is null)")]
+        [InlineData("h1_00004 ne null", "( h1_00004  is not null)")]
+        public void DateTests(string input, string expectedOutput)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            var result = this.filterParser.Parse(input, out parameters, out _);
+            Assert.True(result == expectedOutput);
+            Assert.True(parameters.Count == 0);
+        }
+
+        [Theory]
+        [InlineData("H1_00003 ct true")]
+        [InlineData("H1_00003 ct 'true'")]
+        [InlineData("H1_00003 gt true")]
+        [InlineData("H1_00003 ge true")]
+        [InlineData("H1_00003 lt true")]
+        [InlineData("H1_00003 le true")]
+        [InlineData("H1_00001 ct 2")]
+        [InlineData("h1_00002 eq 'dadada'")]
+        [InlineData("H1_00003 ct 2")]
+        [InlineData("h1_00003 eq 'dadada'")]
+        [InlineData("H1_00004 ct 2")]
+        [InlineData("h1_00004 eq 'dadada'")]
+        [InlineData("H1_00005 eq text")]
+        [InlineData("H1_00005 eq null")]
+        [InlineData("H1_00005 eq null")]
+        [InlineData("H1_00005 eq null")]
+        public void InvalidTests(string input)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            try
+            {
+                var result = this.filterParser.Parse(input, out parameters, out _);
+                Assert.True(false);
+            }
+            catch (Exception ex)
+            {
+                Assert.True(true);
+            }
+
+        }
+
+    }
+
+}
+
+

@@ -118,36 +118,11 @@ namespace d360.model.helpers
             this.fieldColumns = columns;
         }
 
-        public string ParseAsFiltersDataTable(string filterString)
-        {
-            try
-            {
-                var tokens = Tokenize(filterString);
-
-                StringBuilder query = new StringBuilder();
-
-                foreach (var item in tokens)
-                {
-                    query.Append(item.GetSqlExpression(null));
-                }
-
-                return query.Length > 0 ? $"({query})" : "";
-            }
-            catch (Exception ex)
-            {
-                throw new FilterExpressionParserException("Invalid filter expression: " + ex.Message);
-            }
-        }
-
         public string Parse(string filterString, out Dictionary<string, object> sqlParams, out List<int> fieldIds)
         {
-            if (parseType == FilterExpressionParseType.ComplexLookupField)
-            {
-                throw new InvalidOperationException("For FilterExpressionParseType.ComplexLookupField call ParseAsFiltersDataTable");
-            }
-            fieldIds = this.filteredFieldIDs;
             try
             {
+                fieldIds = this.filteredFieldIDs;
                 List<IFilterToken> filterTokens = new List<IFilterToken>();
                 sqlParams = new Dictionary<string, object>();
                 if (string.IsNullOrEmpty(filterString))
@@ -303,9 +278,18 @@ namespace d360.model.helpers
             else
             {
                 this.filteredFieldIDs.Add(fieldType.ID);
-                var token = new FieldToken(fdp, field, op, value, paramIdx);
-                token.LoadFieldType(fieldType, fieldColumns);
-                return token;
+                if (parseType == FilterExpressionParseType.ComplexLookupField)
+                {
+                    var token = new ComplexFieldToken(fdp, field, op, value, paramIdx);
+                    token.LoadFieldType(fieldType, fieldColumns);
+                    return token;
+                }
+                else
+                {
+                    var token = new FieldToken(fdp, field, op, value, paramIdx);
+                    token.LoadFieldType(fieldType, fieldColumns);
+                    return token;
+                }
             }
         }
 

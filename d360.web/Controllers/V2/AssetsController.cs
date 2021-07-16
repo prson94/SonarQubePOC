@@ -1389,7 +1389,7 @@ namespace d360.web.Controllers.V2
                     var filterDataProvider = new FilterDataProvider(this.Company);
                     var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
                     filterExpressionParser.LoadFieldTypes(fields, null);
-                    filters = filterExpressionParser.ParseAsFiltersDataTable(filter);
+                    filters = filterExpressionParser.Parse(filter, out _, out _);
                 }
 
                 if (qparams.Any(x => x.Key.ToLower() == "_order"))
