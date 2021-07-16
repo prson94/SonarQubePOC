@@ -120,7 +120,7 @@ namespace d360.model.DataAccessLayer
             bool includeTotal = true;
             bool includeAssetPath = false;
 
-            string _orderBy = "I.IntersectTypeID";
+            string _orderBy = "I.IntersectTypeID,I.ID";
             string _orderDirection = "asc";
 
             Guid objectUid;
