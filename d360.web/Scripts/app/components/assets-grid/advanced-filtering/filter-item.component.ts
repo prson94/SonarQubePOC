@@ -810,10 +810,14 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.multiInputRef.clearTextValue();
         }
 
+        this.resetLookupValues();
+
         this.onChange.emit();
     }
 
     cancel() {
+        this.resetLookupValues();
+
         if (!this.rollbackValue1 && !this.rollbackOperator) {
             if (this.condition.isDefaultFilter) {
                 this.resetPersistedFilter();
@@ -840,7 +844,13 @@ export class FilterItemComponent implements OnInit, OnChanges {
         if (this.multiInputRef) {
             this.multiInputRef.clearTextValue();
         }
-        this.filterTableValue = "";
+    }
+
+    private resetLookupValues() {
+        if (this.filterTableValue.length > 0) {
+            this.filterTableValue = "";
+            this.currentField.Values = [];
+        }
     }
 
     private resetDateFields() {
