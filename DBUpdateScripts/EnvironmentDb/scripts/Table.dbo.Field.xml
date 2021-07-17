@@ -105,7 +105,7 @@ END
 	</rollback>
   </changeSet> 
 
-  <changeSet author="kmcnamee" id="Table.dbo.Field-Field_AfterUpsert-v7.1">
+  <changeSet author="kmcnamee" id="Table.dbo.Field-Field_AfterUpsert-v8">
     <comment>GOV-14347</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -125,7 +125,7 @@ AS
 		UPDATE	T
 		SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
 		FROM	Field T 
-				inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.ObjectType = T.ObjectType and F.ObjectID = T.ObjectID and F.ObjectType <> 'FusionAttribute' and F.ObjectType <> 'FusionQueryAttribute' and F.[Value] is not null
+				inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.ObjectType = T.ObjectType and F.ObjectID = T.ObjectID and F.[Value] is not null
 				INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
 		
 
@@ -146,7 +146,7 @@ AS
 			select 1 from 	Field TF
 					inner join FieldType FT on FT.ID = TF.FieldTypeID
 					inner join	#insertedFields SF on FT.LookupObjectType = SF.ObjectType and FT.LookupObjectID = SF.ObjectID 
-					where SF.ObjectType <> 'FusionAttribute' and SF.ObjectType <> 'FusionQueryAttribute' and TF.[Value] is not null)
+					where TF.[Value] is not null)
 		begin
 		
 			UPDATE	TF
@@ -154,7 +154,7 @@ AS
 			from	Field TF
 					inner join FieldType FT on FT.ID = TF.FieldTypeID
 					inner join	#insertedFields SF on FT.LookupObjectType = SF.ObjectType and FT.LookupObjectID = SF.ObjectID 
-					where  SF.ObjectType <> 'FusionAttribute' and SF.ObjectType <> 'FusionQueryAttribute' and TF.[Value] is not null;
+					where TF.[Value] is not null;
 		end
 	end
 
@@ -342,6 +342,120 @@ AS
 				inner join Asset A on A.Object = F.ObjectType and A.ObjectID = F.ObjectID;
    end
 
+      
+	--------------------------------------------
+   	-- audit field value changes													
+	--------------------------------------------
+	Declare @ActionName varchar(20)  = 'Add';
+	IF EXISTS(SELECT * FROM DELETED)
+	BEGIN
+		-- this is an update statement 
+		set @ActionName = 'Update';
+	END
+
+
+
+	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+				select	distinct @ActionName, 
+						i.ObjectType, 
+						i.ObjectID,
+						(select 	
+							@ActionName as Action,
+							i2.ObjectType as ActionObject,
+							i2.ObjectID as ActionObjectID,
+							coalesce(i2.UpdatedBy, 0) as ResourceID,
+							  (
+								select 
+								(select 
+									f.FieldTypeID,
+									ft.FriendlyName as [Name], 
+									f.FormattedValue as [Value] 
+								from field f 
+									inner join fieldtype ft on f.fieldtypeid = ft.id 
+								where f.objectid = i.objectid for xml path('Field'), TYPE
+								)
+								for xml path('FieldInfo'), TYPE
+								)
+						from 
+							inserted i2 
+						where i2.ObjectID = i.ObjectID and i2.ObjectType = i.ObjectType
+						group by ObjectType, ObjectID, UpdatedBy
+						for xml path('fields'))
+						,
+						coalesce(i.AssetID,0) as [AssetID]
+				from inserted i where i.[ObjectType] != 'Intersect';
+
+	-- handle relationships both sides need audit entries
+	if exists(select 1 from inserted where [objecttype]= 'Intersect')
+	begin
+		-- object side of relationship
+		INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+				select	distinct @ActionName, 
+						i.ObjectType, 
+						i.ObjectID,
+						(select 	
+							@ActionName as Action,
+							a.Object as ActionObject,
+							a.ObjectID as ActionObjectID,
+							coalesce(i2.UpdatedBy, 0) as ResourceID,
+							  (
+								select 
+								(select 
+									f.FieldTypeID,
+									ft.FriendlyName as [Name], 
+									f.FormattedValue as [Value] 
+								from field f 
+									inner join fieldtype ft on f.fieldtypeid = ft.id 
+								where f.objectid = i.objectid for xml path('Field'), TYPE
+								)
+								for xml path('FieldInfo'), TYPE
+								)
+						from 
+							inserted i2 
+						where i2.ObjectID = i.ObjectID and i2.ObjectType = i.ObjectType
+						group by ObjectType, ObjectID, UpdatedBy
+						for xml path('fields'))
+						,
+						coalesce(a.ID,0) as [AssetID]
+				from inserted i 
+				inner join [intersect] inter on(i.ObjectID = inter.ID and i.[ObjectType] = 'Intersect')
+				inner join asset a on(a.ObjectID = inter.ObjectID and a.[Object] = inter.[Object])
+				where i.[ObjectType] = 'Intersect';
+
+			-- subject side
+			INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+				select	distinct @ActionName, 
+						i.ObjectType, 
+						i.ObjectID,
+						(select 	
+							@ActionName as Action,
+							a.Object as ActionObject,
+							a.ObjectID as ActionObjectID,
+							coalesce(i2.UpdatedBy, 0) as ResourceID,
+							  (
+								select 
+								(select 
+									f.FieldTypeID,
+									ft.FriendlyName as [Name], 
+									f.FormattedValue as [Value] 
+								from field f 
+									inner join fieldtype ft on f.fieldtypeid = ft.id 
+								where f.objectid = i.objectid for xml path('Field'), TYPE
+								)
+								for xml path('FieldInfo'), TYPE
+								)
+						from 
+							inserted i2 
+						where i2.ObjectID = i.ObjectID and i2.ObjectType = i.ObjectType
+						group by ObjectType, ObjectID, UpdatedBy
+						for xml path('fields'))
+						,
+						coalesce(a.ID,0) as [AssetID]
+				from inserted i 
+				inner join [intersect] inter on(i.ObjectID = inter.ID and i.[ObjectType] = 'Intersect')
+				inner join asset a on(a.ObjectID = inter.SubjectID and a.[Object] = inter.[Subject])
+				where i.[ObjectType] = 'Intersect';
+	end
    ]]>
 	</rollback>
   </changeSet>

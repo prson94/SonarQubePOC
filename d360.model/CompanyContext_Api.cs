@@ -713,7 +713,7 @@ where	ExecutionID = @executionID
             }
         }
 
-        public List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool isInsert = false)
+        public List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool isInsert = false, bool hasLookupFieldTypes = true)
         {
             List<AssetFieldTypeUpdate> res = new List<AssetFieldTypeUpdate>();
 
@@ -794,7 +794,7 @@ where	ExecutionID = @executionID
                                         ,F.FieldValue as [FormattedValue]
                                         ,getutcdate() as [UpdatedOn]
                                         ,@resourceId as [UpdatedBy]
-                                        {(hasAssetID ? ",A.AssetID as AssetID" : ",null as AssetID")}                                         
+                                        {(hasAssetID ? ",A.AssetID as AssetID" : ",null as AssetID")}                                          
                                 from    {tableName} A
                                         inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID
                                             and F.ItemNumber = A.ItemNumber 
@@ -807,6 +807,29 @@ where	ExecutionID = @executionID
                                         and (F.Ignore = 0 or F.Ignore is null)
                                         and FT.Type != 'Relationship'
                                         and FT.Type != 'Counter'
+                                        and FieldValue is not null";
+
+            var lookupFieldValuesSql = $@"
+                                select 
+                                        {objectSqlSyntax} as [Object]
+                                        ,{objectIdSqlSyntax} as [ObjectID] 
+                                        ,F.FieldTypeID as [FieldTypeID]                                        
+                                        ,F.LookupValue as [Value]
+                                        ,F.FieldValue as [FormattedValue]
+                                        ,getutcdate() as [UpdatedOn]
+                                        ,@resourceId as [UpdatedBy]
+                                        {(hasAssetID ? ",A.AssetID as AssetID" : ",null as AssetID")}                                          
+                                from    {tableName} A
+                                        inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID
+                                            and F.ItemNumber = A.ItemNumber 
+                                            and A.ObjectID is not null 
+                                            and F.FieldTypeID is not null
+						                    and A.Success is null
+                                        inner join FieldType FT on FT.Id = F.FieldTypeID
+                                where   A.ExecutionID = @executionID
+                                        and A.ItemNumber between @beginItemNumber and @endItemNumber 
+                                        and (F.Ignore = 0 or F.Ignore is null)
+                                        and FT.Type = 'Lookup'
                                         and FieldValue is not null";
 
             // Insert can blast in field values since all the assets are new.  Update needs to update the existing values and clear any existing
@@ -838,17 +861,36 @@ where	ExecutionID = @executionID
                 new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 
 
+                // update non-lookup fields
                 Connection.Execute($@"
                     merge       Field as T
                     using       (
-                                    {fieldValuesSql}
+                                    {fieldValuesSql} and FT.Type != 'Lookup'
                                 ) as S 
                     on          ( T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.Object and T.ObjectID = S.ObjectID )
-                    when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS OR T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS then update set T.Value = S.Value,T.FormattedValue = S.FormattedValue, T.UpdatedBy = @resourceId, T.UpdatedOn = getutcdate() 
+                    when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS OR T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS then
+                    update set T.Value = S.Value,T.FormattedValue = S.FormattedValue, T.UpdatedBy = @resourceId, T.UpdatedOn = getutcdate()                     
                     when		not matched by target then
                     insert		(FieldTypeID, ObjectType, ObjectID, Value, FormattedValue, UpdatedBy, UpdatedOn, AssetID)
                     values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resourceId, getutcdate(), S.AssetID);",
                                 new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+
+                if (hasLookupFieldTypes)
+                {
+                    // update lookup fields, DO NOT SET THE FORMATTED VALUE to the ID only compare on the id since you dont have the formatted value...
+                    Connection.Execute($@"
+                    merge       Field as T
+                    using       (
+                                    {lookupFieldValuesSql}
+                                ) as S 
+                    on          ( T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.Object and T.ObjectID = S.ObjectID )
+                    when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS then
+                    update set T.Value = S.Value, T.UpdatedBy = @resourceId, T.UpdatedOn = getutcdate()                     
+                    when		not matched by target then
+                    insert		(FieldTypeID, ObjectType, ObjectID, Value, FormattedValue, UpdatedBy, UpdatedOn, AssetID)
+                    values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resourceId, getutcdate(), S.AssetID);",
+                                    new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+                }
             }
 
             return res;
@@ -5444,7 +5486,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                                     #endregion
                                     sw.Restart();
-                                    var transationFieldUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout, isInsert);
+                                    var transationFieldUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout, isInsert,hasLookupFieldTypes);
                                     AddMeasurement(metrics, $"MergeFields >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     sw.Restart();
 
