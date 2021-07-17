@@ -205,7 +205,7 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
     public openEditor(e: any, item: any) {        
         this.showEditor = false;
         this.selected = item;        
-        this.selectNode(e, true)
+        this.selectNode(e, true);
         this.showDelete = false;
     }
 
