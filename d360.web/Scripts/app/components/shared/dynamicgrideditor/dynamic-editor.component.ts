@@ -244,8 +244,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             this.isInErrorMessage = '';
             this.isInError = false;
             let currentCategory = null;
-
-            this.isLoading = false;
+            
             this.categories = [];
 
             result = _.orderBy(result, [field => field.Row ? field.Row : 0], ['asc']);
@@ -332,6 +331,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         }
 
         this.ref.markForCheck();
+        this.isLoading = false;
         setTimeout(() => {
             this.focusToFirst();
         }, 200);
