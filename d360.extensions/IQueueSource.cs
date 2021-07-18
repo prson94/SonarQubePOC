@@ -10,6 +10,7 @@ namespace d360.extensions
 {
     public interface IQueueSource
     {
+        string GetMessageIdFromEventInfo(EventInfo eventInfo);
         bool CreateMessage<T>(string queueName, T item);
 
         bool CreateMessages<T>(string queueName, List<T> items);

@@ -61,6 +61,23 @@ namespace d360.extensions.queue
             return bm;
         }
 
+        public string GetMessageIdFromEventInfo(EventInfo eventInfo)
+        {
+            if (eventInfo == null)
+            {
+                throw new ArgumentNullException("eventInfo");
+            }
+
+            string messageId = $"C{eventInfo.CompanyID}_A{eventInfo.Action}_W{eventInfo.WorkflowItemID}_S{eventInfo.VersionStepTransitionID}_I{eventInfo.ItemStepID}";
+
+            if (eventInfo.Object != null)
+            {
+                messageId += $"_O{eventInfo.Object.Object}|{eventInfo.Object.ObjectID}";
+            }
+            
+            return messageId;
+        }
+
         public bool CreateMessage<T>(string queueName, T item)
         {
             try
@@ -203,13 +220,7 @@ namespace d360.extensions.queue
             {
                 var msg = GetServiceBusMessageFromObject(e);
                 messages.Enqueue(msg);
-                var messageId = $"C{e.CompanyID}_A{e.Action}_W{e.WorkflowItemID}_S{e.VersionStepTransitionID}_I{e.ItemStepID}";
-                if (e.Object != null)
-                {
-                    msg.MessageId += $"_O{e.Object.Object}|{e.Object.ObjectID}";
-                }
-                
-                msg.MessageId += messageId; // append workflow information to make it unique
+                msg.MessageId = GetMessageIdFromEventInfo(e);
 
                 if (e.Action == ChangeType.Add || e.Action == ChangeType.Update) //delay the processing if add or edit so update has chance to process
                     msg.ScheduledEnqueueTime = DateTime.UtcNow.AddSeconds(15);
