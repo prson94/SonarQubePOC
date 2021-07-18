@@ -274,7 +274,7 @@ namespace d360.core
             }
             else
             {
-                string message = error.ToString().Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, error.Length));
+                string message = error.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, error.Length));
 
                 return message;
             }
