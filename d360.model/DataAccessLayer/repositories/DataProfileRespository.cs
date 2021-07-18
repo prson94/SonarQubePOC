@@ -271,8 +271,8 @@ namespace d360.model.DataAccessLayer
             }
             catch (Exception ex)
             {
-                string message = ex.GetFullExceptionData(false);
-                execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                execution.ErrorMessage = message;
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);
             }            
@@ -302,8 +302,8 @@ namespace d360.model.DataAccessLayer
             }
             catch (Exception ex)
             {
-                string message = ex.GetFullExceptionData(false);
-                execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                execution.ErrorMessage = message;
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);
             }

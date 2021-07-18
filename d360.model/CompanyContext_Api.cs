@@ -642,9 +642,10 @@ from	{targetTable} T
 
         private void LogLoopExecutionError(Guid executionID, int beginItemNumber, int endItemNumber, string targetTable, string msg, int timeout = 3600)
         {
+            int characterLimit = constants.ERROR_MESSAGE_CHARACTER_LIMIT;
             Connection.Execute($@"
 update	api.Execution
-set		[ErrorMessage] = LEFT(coalesce([ErrorMessage],'') + @msg,2000)
+set		[ErrorMessage] = LEFT(coalesce([ErrorMessage],'') + @msg,@characterLimit)
 where	ExecutionID = @executionID; 
 
 update	{targetTable} 
@@ -652,7 +653,7 @@ set		Success = 0,
 		[Message] = @msg
 where	ExecutionID = @executionID 
          and ItemNumber between @beginItemNumber and @endItemNumber;",
-         new { executionID, msg, beginItemNumber, endItemNumber }, commandTimeout: timeout);
+         new { executionID, msg, beginItemNumber, endItemNumber, characterLimit }, commandTimeout: timeout);
         }
 
         private void DeleteEmptyAssetListFieldByApiExecutionUid(Guid executionUid, SqlTransaction trans, int beginItemNumber, int endItemNumber, int timeout = 3600)
@@ -1935,7 +1936,7 @@ from	IntersectType I
             if (executionItemDupes.Any())
             {
                 string message = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(import.Select(i => new DatabaseBulkAssetResult { ExecutionItemUid = i.ExecutionItemUid, uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
             }
             else
@@ -1949,7 +1950,7 @@ from	IntersectType I
                 if (uidDupes.Any())
                 {
                     string message = $"Duplicate Asset Uids: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
-                    execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                    execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                     results.AddRange(import.Select(i => new DatabaseBulkAssetResult { ExecutionItemUid = i.ExecutionItemUid, uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
                 }
                 else
@@ -2096,8 +2097,8 @@ where	T.ExecutionID = @ExecutionID
                     catch (Exception generalEx)
                     {
                         generalChecksCompleted = false;
-                        var msg = generalEx.GetFullExceptionData(false);
-                        execution.ErrorMessage = msg.Substring(0, Math.Min(2000, msg.Length));
+                        var msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                        execution.ErrorMessage = msg;
                         execution.Processed = 0;
                         execution.Error = import.Count();
 
@@ -3071,7 +3072,7 @@ drop table if exists #temprestable2;",
             if (executionItemDupes.Any())
             {
                 string message = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(deletes.Select(i => new DatabaseBulkAssetTypeResult { ExecutionItemUid = i.ExecutionItemUid, uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
             }
             else
@@ -3080,7 +3081,7 @@ drop table if exists #temprestable2;",
                 if (uidDupes.Any())
                 {
                     string message = $"Duplicate Asset Type Uids: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
-                    execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                    execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                     results.AddRange(deletes.Select(i => new DatabaseBulkAssetTypeResult { ExecutionItemUid = i.ExecutionItemUid, uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
                 }
                 else
@@ -3255,8 +3256,8 @@ where	T.ExecutionID = @ExecutionID
                     catch (Exception generalEx)
                     {
                         generalChecksCompleted = false;
-                        var msg = generalEx.GetFullExceptionData(false);
-                        execution.ErrorMessage = msg.Substring(0, Math.Min(2000, msg.Length));
+                        var msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                        execution.ErrorMessage = msg;
                         execution.Processed = 0;
                         execution.Error = deletes.Count();
 
@@ -4049,7 +4050,7 @@ where	T.ExecutionID = @ExecutionID
             if (dupes.Any())
             {
                 string message = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(import.Select(i => new RelationshipTypeResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
             else
@@ -4187,7 +4188,7 @@ where   ExecutionID = @ExecutionID
             if (dupes.Any())
             {
                 string message = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(import.Select(i => new RelationshipTypeResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
             else
@@ -4318,7 +4319,7 @@ where   ExecutionID = @ExecutionID
             if (dupes.Any())
             {
                 string message = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(import.Select(i => new RelationshipTypeResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
             else
@@ -4555,7 +4556,7 @@ where   ExecutionID = @ExecutionID
                 if (dupes.Any())
                 {
                     string message = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                    execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                    execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                     results.AddRange(import.Select(i => new DatabaseBulkAssetResult { ExecutionItemUid = i.ExecutionItemUid, uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
 
                     hasDuplicateUids = true;
@@ -4569,7 +4570,7 @@ where   ExecutionID = @ExecutionID
                     if (uidDupes.Any())
                     {
                         string message = $"Duplicate Asset Uids: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
-                        execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                        execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                         results.AddRange(import.Select(i => new DatabaseBulkAssetResult { ExecutionItemUid = i.ExecutionItemUid, uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
 
                         hasDuplicateUids = true;
@@ -5069,8 +5070,8 @@ from	api.ExecutionAsset T
                 catch (Exception generalEx)
                 {
                     generalChecksCompleted = false;
-                    var msg = generalEx.GetFullExceptionData(false);
-                    execution.ErrorMessage = msg.Substring(0, Math.Min(2000, msg.Length));
+                    var msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                    execution.ErrorMessage = msg;
                     execution.Processed = 0;
                     execution.Error = import.Count();
 
@@ -5727,13 +5728,13 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
             if (executionItemDupes.Any())
             {
                 string message = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(import.Select(i => new DatabaseBulkRelationshipResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
             else if (tooLongOwners.Any())
             {
                 string message = $"Owner value max length exceeded : {string.Join(", ", tooLongOwners.Select(i => i.Owner))}. Max length of Owner field is 100 characters.";
-                execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(import.Select(i => new DatabaseBulkRelationshipResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
             else if (!executionItemDupes.Any() && !tooLongOwners.Any())
@@ -6190,8 +6191,8 @@ end",
                 catch (Exception generalEx)
                 {
                     generalChecksCompleted = false;
-                    var msg = generalEx.GetFullExceptionData(false);
-                    execution.ErrorMessage = msg.Substring(0, Math.Min(2000, msg.Length));
+                    var msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                    execution.ErrorMessage = msg;
                     execution.Processed = 0;
                     execution.Error = import.Count();
 
@@ -6546,8 +6547,8 @@ from	api.ExecutionDeletedRelationship T
             catch (Exception generalEx)
             {
                 generalChecksCompleted = false;
-                var msg = generalEx.GetFullExceptionData(false);
-                execution.ErrorMessage = msg.Substring(0, Math.Min(2000, msg.Length));
+                var msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                execution.ErrorMessage = msg;
                 execution.Processed = 0;
                 execution.Error = import.Count();
 
@@ -7242,7 +7243,7 @@ where   ER.ExecutionID = @ExecutionID
             if (executionItemDupes.Any())
             {
                 string message = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(import.Select(i => new PredicateDeleteResult { ExecutionItemUid = i.ExecutionItemUid, Uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
             }
             else
@@ -7251,7 +7252,7 @@ where   ER.ExecutionID = @ExecutionID
                 if (uidDupes.Any())
                 {
                     string message = $"Duplicate predicate Uids: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
-                    execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                    execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                     results.AddRange(import.Select(i => new PredicateDeleteResult { ExecutionItemUid = i.ExecutionItemUid, Uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
                 }
                 else
@@ -7372,8 +7373,8 @@ where	T.ExecutionID = @ExecutionID
                     catch (Exception generalEx)
                     {
                         generalChecksCompleted = false;
-                        var msg = generalEx.GetFullExceptionData(false);
-                        execution.ErrorMessage = msg.Substring(0, Math.Min(2000, msg.Length));
+                        var msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                        execution.ErrorMessage = msg;
                         execution.Processed = 0;
                         execution.Error = import.Count();
 
@@ -7473,19 +7474,19 @@ where	T.ExecutionID = @ExecutionID
             if (executionItemDupes.Any())
             {
                 string message = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(import.Select(i => new PredicateUpsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
             else if (predDupes.Any())
             {
                 string message = $"Duplicate predicate items: {string.Join(", ", predDupes.Select(i => i.Items.First().Name + "|" + i.Items.First().Type.ToString()))}. Name and type must be unique within a batch.";
-                execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(import.Select(i => new PredicateUpsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
             else if (predInverseDupes.Any())
             {
                 string message = $"Duplicate predicate items: {string.Join(", ", predInverseDupes.Select(i => i.Items.First().Inverse + "|" + i.Items.First().Type.ToString()))}. Inverse and type must be unique within a batch.";
-                execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(import.Select(i => new PredicateUpsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
             else
@@ -7656,7 +7657,7 @@ where	ExecutionID = @ExecutionID and [Type] in ({differentLineageVersionIdList})
                 {
                     generalChecksCompleted = false;
                     var msg = generalEx.GetFullExceptionData(false);
-                    execution.ErrorMessage = msg.Substring(0, Math.Min(2000, msg.Length));
+                    execution.ErrorMessage = msg.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, msg.Length));
                     execution.Processed = 0;
                     execution.Error = import.Count();
 
@@ -7789,7 +7790,7 @@ where	ExecutionID = @ExecutionID and [Type] in ({differentLineageVersionIdList})
             if (uidDupes.Any() && execution.Method == "PUT")
             {
                 string message = $"Duplicate Asset Uids: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
-                execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(import.Select(i => new ResponsibilityTypeUpsertResult { Uid = i.Uid.Value, Message = execution.ErrorMessage, Success = false }));
             }
             else if (nameDupes.Any())
@@ -7943,8 +7944,8 @@ where	ExecutionID = @ExecutionID and (Name is null or Name = '');
                 catch (Exception generalEx)
                 {
                     generalChecksCompleted = false;
-                    var msg = generalEx.GetFullExceptionData(false);
-                    execution.ErrorMessage = msg.Substring(0, Math.Min(2000, msg.Length));
+                    var msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                    execution.ErrorMessage = msg;
                     execution.Processed = 0;
                     execution.Error = import.Count();
 
@@ -8403,7 +8404,7 @@ select * from #Items", transaction: trans).ToList();
             if (dupes.Any())
             {
                 string message = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(import.Select(i => new DataQualityResponseModel { ExecutionItemUid = i.ExecutionItemUid.Value, Message = execution.ErrorMessage, Success = false }));
             }
             else
@@ -8786,8 +8787,8 @@ select * from #Items", transaction: trans).ToList();
                 catch (Exception generalEx)
                 {
                     generalChecksCompleted = false;
-                    var msg = generalEx.GetFullExceptionData(false);
-                    execution.ErrorMessage = msg.Substring(0, Math.Min(2000, msg.Length));
+                    var msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                    execution.ErrorMessage = msg;
                     execution.Processed = 0;
                     execution.Error = import.Count();
 
@@ -8984,7 +8985,7 @@ select * from #Items", transaction: trans).ToList();
             if (dupes.Any())
             {
                 string message = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(import.Select(i => new DataQualityDeleteResponseModel { ExecutionItemUid = i.ExecutionItemUid.Value, Message = execution.ErrorMessage, Success = false }));
             }
             else
@@ -9276,8 +9277,8 @@ select * from #Items", transaction: trans).ToList();
                 catch (Exception generalEx)
                 {
                     generalChecksCompleted = false;
-                    var msg = generalEx.GetFullExceptionData(false);
-                    execution.ErrorMessage = msg.Substring(0, Math.Min(2000, msg.Length));
+                    var msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                    execution.ErrorMessage = msg;
                     execution.Processed = 0;
                     execution.Error = import.Count();
 
@@ -9464,13 +9465,13 @@ and (DAR.RunDateEnd is null or AR.RunDate <= DAR.RunDateEnd) ";
             if (executionItemDupes.Any())
             {
                 string message = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(import.Select(i => new ResponsibilityRuleUpsertResponseModel { ExecutionItemUid = i.ExecutionItemUid.Value, Message = execution.ErrorMessage, Success = false }));
             }
             else if (uidDupes.Any())
             {
                 string message = $"Duplicate uid item identifiers: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
-                execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(import.Select(i => new ResponsibilityRuleUpsertResponseModel { Uid = i.Uid.Value, Message = execution.ErrorMessage, Success = false }));
             }
             else
@@ -10031,8 +10032,8 @@ SET DefinitionConverted = cd.[Definition];
                 catch (Exception generalEx)
                 {
                     generalChecksCompleted = false;
-                    var msg = generalEx.GetFullExceptionData(false);
-                    execution.ErrorMessage = msg.Substring(0, Math.Min(2000, msg.Length));
+                    var msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                    execution.ErrorMessage = msg;
                     execution.Processed = 0;
                     execution.Error = import.Count();
 
@@ -10180,7 +10181,7 @@ SET DefinitionConverted = cd.[Definition];
             if (dups.Any())
             {
                 string message = $"Duplicate Names: {string.Join(", ", dups.Select(i => i.Items.First().Name.Trim()))}. Name must be unique within a batch.";
-                execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(groups.Select(i => new GroupResponseResult { ExecutionItemUid = execution.ExecutionID, Message = execution.ErrorMessage, Success = false }));
             }
             else
@@ -10315,8 +10316,8 @@ SET DefinitionConverted = cd.[Definition];
                 catch (Exception generalEx)
                 {
                     generalChecksCompleted = false;
-                    var msg = generalEx.GetFullExceptionData(false);
-                    execution.ErrorMessage = msg.Substring(0, Math.Min(2000, msg.Length));
+                    var msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                    execution.ErrorMessage = msg;
                     execution.Processed = 0;
                     execution.Error = groups.Count();
 
@@ -10630,8 +10631,8 @@ EG.GroupUid
             catch (Exception generalEx)
             {
                 generalChecksCompleted = false;
-                var msg = generalEx.GetFullExceptionData(false);
-                execution.ErrorMessage = msg.Substring(0, Math.Min(2000, msg.Length)); ;
+                var msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                execution.ErrorMessage = msg;
                 execution.Processed = 0;
                 execution.Error = groups.Count();
 
@@ -10760,12 +10761,12 @@ EG.GroupUid
                 if (dups.Any())
                 {
                     string message = $"Duplicate Execution Item Identifiers: {string.Join(", ", dups.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                    execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                    execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 }
                 else
                 {
                     string message = $"Duplicate Records: {string.Join(", ", dupRecords.Select(i => $"AssetUid: {i.keyFields.assetUid}, ProfileSetDate: {i.keyFields.profileSetDate}"))}. AssetUid and ProfileSetDate pairs are used as record identifiers and must be unique within a batch.";
-                    execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                    execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 }
 
                 results.AddRange(request.Select(i => new DataProfileUpsertResponse { ExecutionItemUid = execution.ExecutionID, Message = execution.ErrorMessage, Success = false }));
@@ -11164,8 +11165,8 @@ EG.GroupUid
                 catch (Exception generalEx)
                 {
                     generalChecksCompleted = false;
-                    var msg = generalEx.GetFullExceptionData(false);
-                    execution.ErrorMessage = msg.Substring(0, Math.Min(2000, msg.Length)); ;
+                    var msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                    execution.ErrorMessage = msg;
                     execution.Processed = 0;
                     execution.Error = request.Count();
 
@@ -11467,12 +11468,12 @@ EG.GroupUid
                 if (dups.Any())
                 {
                     string message = $"Duplicate Execution Item Identifiers: {string.Join(", ", dups.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                    execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                    execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 }
                 else
                 {
                     string message = $"Duplicate Records: {string.Join(", ", dupRecords.Select(i => $"AssetUid: {i.keyFields.AssetUid}, ResponsibilityTypeUid: {i.keyFields.ResponsibilityTypeUid}, AssignedUid: {i.keyFields.AssignedUid}"))}. AssetUid, ResponsibilityTypeUid, AssignedUid are key fields and the combination must be unique within a batch.";
-                    execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                    execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 }
 
                 results.AddRange(request.Select(i => new BulkResponsibilityOverrideResponseModel { ExecutionItemUid = execution.ExecutionID, Message = execution.ErrorMessage, Success = false }));
@@ -11665,8 +11666,8 @@ EG.GroupUid
                 catch (Exception generalEx)
                 {
                     generalChecksCompleted = false;
-                    var msg = generalEx.GetFullExceptionData(false);
-                    execution.ErrorMessage = msg.Substring(0, Math.Min(2000, msg.Length));
+                    var msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                    execution.ErrorMessage = msg;
                     execution.Processed = 0;
                     execution.Error = request.Count();
 
@@ -11834,7 +11835,7 @@ EG.GroupUid
             if (dups.Any())
             {
                 string message = $"Duplicate Execution Item Identifiers: {string.Join(", ", dups.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 
                 results.AddRange(models.Select(i => new DataProfileDeleteResponse { ExecutionItemUid = execution.ExecutionID, Message = execution.ErrorMessage, Success = false }));
             }
@@ -11989,8 +11990,8 @@ EG.GroupUid
                 catch (Exception generalEx)
                 {
                     generalChecksCompleted = false;
-                    var msg = generalEx.GetFullExceptionData(false);
-                    execution.ErrorMessage = msg.Substring(0, Math.Min(2000, msg.Length));
+                    var msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                    execution.ErrorMessage = msg;
                     execution.Processed = 0;
                     execution.Error = models.Count();
 

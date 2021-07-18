@@ -793,7 +793,7 @@ namespace d360.web.Controllers
                 if (execution.Error > 0)
                 {
                     string message = deleteAssetTypesResults.First().Message;
-                    execution.ErrorMessage = message.Substring(0, Math.Min(2000, message.Length));
+                    execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 }
 
                 Company.Update(execution);

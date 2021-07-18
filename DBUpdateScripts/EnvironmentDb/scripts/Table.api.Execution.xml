@@ -62,7 +62,10 @@ IF EXISTS (
          AND name = 'ErrorMessage'
 )
 BEGIN
-    ALTER TABLE [api].[Execution] ALTER COLUMN [ErrorMessage] nvarchar(2500);
+update [api].[Execution]
+set  [ErrorMessage] = left(ErrorMessage, 2000);
+   
+ALTER TABLE [api].[Execution] ALTER COLUMN [ErrorMessage] nvarchar(2500);
 END
 		]]>
     </sql>
