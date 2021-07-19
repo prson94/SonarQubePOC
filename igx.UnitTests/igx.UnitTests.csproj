@@ -104,8 +104,9 @@
     <Compile Include="Core\Helpers.cs" />
     <Compile Include="Core\MessagesHelper.cs" />
     <Compile Include="Core\SqlConstants.cs" />
-    <Compile Include="ExtensionTests\ModelExtensionTests-ComplexLookupDefinition.cs" />
-    <Compile Include="ExtensionTests\ModelExtensionTests-OwnershipLookupDefinition.cs" />
+    <Compile Include="ExtensionsTests\QueueSourceTests.cs" />
+    <Compile Include="ModelExtensionTests\ModelExtensionTests-ComplexLookupDefinition.cs" />
+    <Compile Include="ModelExtensionTests\ModelExtensionTests-OwnershipLookupDefinition.cs" />
     <Compile Include="FilterParserTests\FilterExpressionParserTests.cs" />
     <Compile Include="HelperTests\HtmlHelperTests.cs" />
     <Compile Include="HelperTests\IconHelperTests.cs" />
