@@ -177,6 +177,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         }      
         if (this.selectedAssetTypeUid) {
             params._assetTypeUid = this.selectedAssetTypeUid; 
+            params._resourceUid = this.resourceUid;   
         }
 
         this.workflowService.getWorkflowIssueTypes(this.selectedObjectType, this.selectedObjectId, params)
