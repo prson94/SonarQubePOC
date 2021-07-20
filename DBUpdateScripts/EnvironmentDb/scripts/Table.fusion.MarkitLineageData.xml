@@ -5,21 +5,46 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.fusion.MarkitLineageData-v2">
+  <changeSet author="sDooley" id="Table.fusion.MarkitLineageData-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'MarkitLineageData')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'MarkitLineageData_backup')
 BEGIN
-	EXEC sp_rename 'fusion.MarkitLineageData', 'MarkitLineageData_backup'
+	DROP TABLE [fusion].[MarkitLineageData_backup]
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'MarkitLineageData_backup')
+BEGIN
+	CREATE TABLE [fusion].[MarkitLineageData_backup](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[MapRuleItemID] [int] NULL,
+	[SourceFusionAttributeID] [int] NULL,
+	[SourceFusionAttributeTypeID] [int] NULL,
+	[SourceObject] [nvarchar](500) NULL,
+	[SourceParentObject] [nvarchar](max) NULL,
+	[SourceParentObjectFusionAttributeID] [int] NULL,
+	[SourceParentObjectFusionAttributeTypeID] [int] NULL,
+	[TargetFusionAttributeID] [int] NULL,
+	[TargetFusionAttributeTypeID] [int] NULL,
+	[TargetObject] [nvarchar](500) NULL,
+	[TargetParentObject] [nvarchar](max) NULL,
+	[TargetParentObjectFusionAttributeID] [int] NULL,
+	[TargetParentObjectFusionAttributeTypeID] [int] NULL,
+	[UpdatedOn] [datetime] NOT NULL,
+	[SourceAssetID] [bigint] NULL,
+	[TargetAssetID] [bigint] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+END
 		]]>
 	</rollback>
   </changeSet>
