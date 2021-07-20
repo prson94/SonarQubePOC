@@ -196,21 +196,7 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col l3 s12"
-                                 *ngIf="reassignType == 'object'">
-                                <div class="FieldName">Select Asset Type:</div>
-                                <p-dropdown igDropdown name="selectedReassignmentType"
-                                            [ngModel]="selectedReassignmentType"
-                                            (ngModelChange)="selectedReassignmentType=$event;selectedReassignmentAsset=null"
-                                            [options]="objectReassignmentTypes"
-                                            optionValue="ID"
-                                            optionLabel="Label"
-                                            required>
-                                </p-dropdown>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col l3 s12" *ngIf="reassignType == 'object' && selectedReassignmentType != null">
+                            <div class="col l3 s12" *ngIf="reassignType == 'object'">
                                 <div class="FieldName">Select Asset:</div>
                                 <p-autoComplete igAutocomplete 
                                                 placeholder="" 
