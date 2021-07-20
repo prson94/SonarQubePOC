@@ -907,10 +907,11 @@ set nocount on;
 	begin
 		select  @sql = @sql + ' distinct ' + STRING_AGG(ColumnName + ' as [' + Alias + ']', ', ') from (select distinct ColumnName, Alias from @selects) O
 		
-		if exists(select 1 from @orders where [Statement] is not null)
+		if exists(select 1 from @orders where [Statement] is not null and @countOnly = 0 and [Statement] not in (select distinct ColumnName from @selects))
 		BEGIN
 			select @sql = @sql + ',' + STRING_AGG([Statement], ', ') 
 			from @orders
+			where [Statement] not in (select distinct ColumnName from @selects)
 		END
 	end
 	
