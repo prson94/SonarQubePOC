@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.dbo.GetComplexLookupByAsset-v55">
-  <comment>GOV-15252</comment>
+  <changeSet author="bquinlivan" id="Procedure.dbo.GetComplexLookupByAsset-v56">
+  <comment>GOV-15293</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -59,8 +59,8 @@ set nocount on;
 	declare @selects table (ColumnName varchar(500), Alias varchar(250))
 	declare @tables table (RowID INT IDENTITY(1, 1) PRIMARY KEY CLUSTERED, [Statement] varchar(2500))  -- table order by clusterd primary key asc is the default so rows will be ordered by row id asc...
 	declare @wheres table ([Statement] varchar(MAX))
-	declare @orders table ([Statement] varchar(500), SortOrder int)
-	declare @finalOrders table ([Statement] varchar(500), SortOrder int, INDEX IX1 CLUSTERED(SortOrder asc))
+	declare @orders table ([Statement] varchar(500), Direction varchar(5) DEFAULT 'asc', SortOrder int)
+	declare @finalOrders table ([Statement] varchar(500), Direction varchar(5), SortOrder int, INDEX IX1 CLUSTERED(SortOrder asc))
 
 	declare @count int = 0
 	declare @hasSimpleFilter bit =  case when LEN(coalesce(@simpleFilter,'')) > 0 then 1 else 0 end;
@@ -338,19 +338,19 @@ set nocount on;
 			insert into @wheres values ('0=1')
 		end
 		
-		insert into @orders
+		insert into @orders ([Statement], SortOrder)
 			select		case 
-							when F.IsRelationLink = 1 then 'H' + F.RRN + '_A' + F.FT + '_DV.DisplayValue asc'
+							when F.IsRelationLink = 1 then 'H' + F.RRN + '_A' + F.FT + '_DV.DisplayValue'
 							when F.IsRelationLink = 0 and F.FieldTypeID > 0 then 
 								case F.FieldDataType
-									when 'Date' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as date) asc'
-									when 'DateTime' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as datetime) asc'
-									when 'Decimal' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as float) asc'
-									when 'Number' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as int) asc'
-									else 'H' + F.RRN + '_F' + F.FT + '.FormattedValue asc'
+									when 'Date' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as date)'
+									when 'DateTime' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as datetime)'
+									when 'Decimal' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as float)'
+									when 'Number' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as int)'
+									else 'H' + F.RRN + '_F' + F.FT + '.FormattedValue'
 								end
-							when F.FieldTypeID = 0 and F.FieldTypeName = 'DisplayValue' then 'H' + F.RRN + '_DV.DisplayValue asc'
-							when F.FieldTypeID = 0 and F.FieldTypeName = '_assetPath' then 'H' + F.RRN + '__assetPath asc'
+							when F.FieldTypeID = 0 and F.FieldTypeName = 'DisplayValue' then 'H' + F.RRN + '_DV.DisplayValue'
+							when F.FieldTypeID = 0 and F.FieldTypeName = '_assetPath' then 'H' + F.RRN + '__assetPath'
 							else null
 						end,
 						F.SortOrder
@@ -582,7 +582,7 @@ set nocount on;
 				insert into @columns ([text], datafield, columntype, sort) values ('Responsibility', 'ResponsibilityTypeName', 'textbox', 1);
 				insert into @datafields values ('ResponsibilityTypeName', 'string', 1);
 				insert into @selects values ('R.ResponsibilityTypeName', 'ResponsibilityTypeName');
-				insert into @orders values ('R.ResponsibilityTypeName', 1);
+				insert into @orders ([Statement], SortOrder) values ('R.ResponsibilityTypeName', 1);
 			end
 			
 			insert into @datafields values ('ResourceName', 'preview', 2);
@@ -608,7 +608,7 @@ set nocount on;
 
 				insert into @columns ([text], datafield, columntype, urlfield, uidfield, sort) values ('Assigned User', 'ResourceName', 'preview', 'ResourceItemUrl', 'ResourceUid', 2)
 				
-				insert into @orders values ('ResourceName', 2);
+				insert into @orders ([Statement], SortOrder) values ('ResourceName', 2);
 			end
 			else
 			begin
@@ -626,7 +626,7 @@ set nocount on;
 				insert into @selects values ('SecurityAssetName', 'ResourceName');
 				insert into @selects values ('case SecurityAssetName when ResourceName then ''/resource/'' + cast(R.ResourceID as varchar) else ''/group/'' + cast(SecurityAssetID as varchar) end', 'ResourceItemUrl');
 
-				insert into @orders values ('SecurityAssetName', 2);
+				insert into @orders ([Statement], SortOrder) values ('SecurityAssetName', 2);
 			end
 			
 			insert into @columns ([text], datafield, columntype, sort) values ('Context', 'Context', 'textbox', 4)
@@ -768,14 +768,14 @@ set nocount on;
 			insert into @selects 
 				select 'A.[uid]','Uid'
 
-			insert into @orders
+			insert into @orders ([Statement], SortOrder)
 				select		case  
 								when FieldDataType = 'number' then
-									'case when try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as float) is null then F' + cast(FieldTypeID as varchar) + '.FormattedValue else try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as float) end asc'
+									'case when try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as float) is null then F' + cast(FieldTypeID as varchar) + '.FormattedValue else try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as float) end'
 								when FieldDataType = 'date' or FieldDataType = 'datetime' then 
-									'case when try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as datetime) is null then F' + cast(FieldTypeID as varchar) + '.FormattedValue else try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as datetime) end asc'
+									'case when try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as datetime) is null then F' + cast(FieldTypeID as varchar) + '.FormattedValue else try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as datetime) end'
 								else
-									'F' + cast(FieldTypeID as varchar) + '.FormattedValue asc'
+									'F' + cast(FieldTypeID as varchar) + '.FormattedValue'
 							end,
 							SortOrder
 				from		@fields
@@ -784,7 +784,7 @@ set nocount on;
 
 			if not exists (select 1 from @orders where [Statement] is not null)
 			begin
-				insert into @orders values ('A.Code', 1);
+				insert into @orders ([Statement], SortOrder) values ('A.Code', 1);
 			end
 		end
 	end
@@ -876,11 +876,12 @@ set nocount on;
 	if @orderBy <> ''
 	begin
 		delete from @orders
-		insert into @orders
-			select	ColumnName + ' ' + @orderDirection,
+		insert into @orders ([Statement], [Direction], SortOrder)
+			select	ColumnName,
+					@orderDirection,
 					1
 			from	@selects 
-			where	Alias = @orderBy
+			where	Alias = @orderBy		
 	end
 
 	declare @pagingQuery nvarchar(100) = ' offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only'
@@ -905,7 +906,14 @@ set nocount on;
 	else
 	begin
 		select  @sql = @sql + ' distinct ' + STRING_AGG(ColumnName + ' as [' + Alias + ']', ', ') from (select distinct ColumnName, Alias from @selects) O
+		
+		if exists(select 1 from @orders where [Statement] is not null)
+		BEGIN
+			select @sql = @sql + ',' + STRING_AGG([Statement], ', ') 
+			from @orders
+		END
 	end
+	
 	select  @sql = @sql + STRING_AGG([Statement], ' ') from @tables
 	if exists(select 1 from @wheres)
 	begin
@@ -925,12 +933,13 @@ set nocount on;
 			begin
 				insert into @finalOrders
 					select		[Statement],
+								[Direction],
 								SortOrder
 					from		@orders 
 					where		[Statement] is not null 
-					group by	[Statement], SortOrder
+					group by	[Statement], Direction, SortOrder
 
-				select	@sql = @sql + ' order by ' + STRING_AGG([Statement], ', ') 
+				select	@sql = @sql + ' order by ' + STRING_AGG([Statement] + ' ' + [Direction], ', ') 
 				from	@finalOrders
 			end
 		else
@@ -1851,7 +1860,14 @@ set nocount on;
 	end
 	else if @countOnly = 1 
 	begin
-		set  @sql = @sql + '@count = count(1) '
+		if @type = 'OwnershipLookup' and @expandGroupMembership = 0
+		begin
+			set  @sql = @sql + '@count = count(distinct securityassetname) '
+		end
+		else
+		begin
+			set  @sql = @sql + '@count = count(1) '
+		end
 	end
 	else
 	begin
