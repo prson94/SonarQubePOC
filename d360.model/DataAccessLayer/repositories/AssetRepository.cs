@@ -2252,7 +2252,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             }
             catch (Exception ex)
             {
-                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                execution.ErrorMessage = message;
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);
             }
@@ -2519,7 +2520,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             }
             catch (Exception ex)
             {
-                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                execution.ErrorMessage = message;
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);
             }
@@ -2786,7 +2788,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             }
             catch (Exception ex)
             {
-                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                execution.ErrorMessage = message;
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);
             }
@@ -3521,7 +3524,8 @@ where	O.RowNum = 1";
             }
             catch (Exception ex)
             {
-                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                execution.ErrorMessage = message;
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);
             }

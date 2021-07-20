@@ -51,7 +51,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
         this.nullBlankCountTotal = ((this.dataProfile.nullCount ?? 0) + (this.dataProfile.blankCount ?? 0));
         this.validCount = this.dataProfile.matchCount ?? 0;
-        this.distinctCount = this.dataProfile.matchCount ?? 0;
+        this.distinctCount = this.dataProfile.cardinality ?? 0;
         this.invalidCount = this.dataProfile.outlierCount ?? 0;
 
         this.sortSamples();

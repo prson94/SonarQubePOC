@@ -219,6 +219,7 @@
                                             [(ngModel)]="selectedReassignResource"
                                             [options]="resources"
                                             optionValue="ResourceID"
+                                            filterBy="FirstName,LastName"
                                             required>
                                     <ng-template let-item pTemplate="selectedItem">
                                         {{item.FirstName}} {{item.LastName}}

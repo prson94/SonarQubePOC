@@ -232,7 +232,7 @@ namespace d360.core
 
     public static class GeneralExtensions
     {
-        public static string GetFullExceptionData(this Exception ex, bool includeStacktrace = true)
+        public static string GetFullExceptionData(this Exception ex, bool includeStacktrace = true, int characterLimit = -1)
         {
             if (ex.InnerException != null && ex.InnerException.InnerException != null && ex.InnerException.InnerException.GetType() == typeof(SqlException))
             {
@@ -245,8 +245,16 @@ namespace d360.core
                     if (sb.Length > 0) sb.Append(" ");
                     sb.Append(sqlError.Message);
                 }
+                if (characterLimit == -1)
+                {
+                    return sb.ToString();
+                }
+                else
+                {
+                    string message = sb.ToString().Substring(0, Math.Min(characterLimit, sb.Length));
 
-                return sb.ToString();
+                    return message;
+                }
             }
 
             string error = "";
@@ -260,7 +268,16 @@ namespace d360.core
                 iex = iex.InnerException;
             }
 
-            return error;
+            if (characterLimit == -1)
+            {
+                return error;
+            }
+            else
+            {
+                string message = error.Substring(0, Math.Min(characterLimit, error.Length));
+
+                return message;
+            }
         }
 
         public static string AsJson<T>(this T item)
