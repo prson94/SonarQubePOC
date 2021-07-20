@@ -461,38 +461,7 @@ namespace d360.web.Controllers.V2
 
         }
 
-        [
-            HttpGet,
-            Route("{id:int}/reassignment/object/types"),
-            ApiExplorerSettings(IgnoreApi = true),
-            SwaggerResponse(HttpStatusCode.OK, "", typeof(IEnumerable<WorkflowReassignmentAssetTypeApiModel>))
-        ]
-        public async Task<IHttpActionResult> GetWorkflowReassignmentAssetTypes(int id)
-        {
-            var prefix = "Workflow.GetWorkflowReassignmentAssetTypes => ";
-            var errorMessage = "";
-            try
-            {
-                var result = Company.WorkflowItems.FirstOrDefault(i => i.ID == id);
-
-                if (result == null)
-                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Cannot find the specified workflow instance."));
-
-
-
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, await workflowRepository.GetWorkflowReassignmentAssetTypes(id)));
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix  }
-                });
-                return this.errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage);
-            }
-
-        }
-
+        
         [
             HttpGet,
             Route("reassignment/objects/{id:int}"),
@@ -505,10 +474,11 @@ namespace d360.web.Controllers.V2
             var errorMessage = "";
             try
             {
-                var result = Company.AssetTypes.FirstOrDefault(i => i.ID == id);
+
+                var result = Company.WorkflowItems.FirstOrDefault(i => i.ID == id);
 
                 if (result == null)
-                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Cannot find the specified asset type."));
+                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Cannot find the specified workflow instance."));
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, await workflowRepository.GetWorkflowReassignmentAssets(id, query)));
             }

@@ -13,7 +13,7 @@ import { BaseComponent } from '../shared/base.component';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { WorkflowService } from '../../services/workflow.service';
-import { WorkflowFormField, WorkflowFormFieldType, WorkflowReassignmentAsset, WorkflowReassignmentAssetType } from '../../models/workflow.model';
+import { WorkflowFormField, WorkflowFormFieldType, WorkflowReassignmentAsset } from '../../models/workflow.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { Tag } from '../../models/tag.model';
 import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
@@ -65,8 +65,6 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     @Input() hasCloseButton: boolean = true;
     private isSetValidatior: boolean = false;
 
-    private objectReassignmentTypes: WorkflowReassignmentAssetType[] = [];
-    private selectedReassignmentType: number;
     private filteredAssets: WorkflowReassignmentAsset[] = [];
     private selectedReassignmentAsset: WorkflowReassignmentAsset;
 
@@ -185,7 +183,6 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                 this.IsClearAssignementsAllowed = res.IsClearAssignementsAllowed;
                 if (res.AllowReassignObject) {
                     this.reassignAvailableTypes.push({ value: 'object', text: 'Object' });
-                    this.loadObjectTypes();
                 }
                 if (res.AllowReassignResource) {
                     this.reassignAvailableTypes.push({ value: 'resource', text: 'Resource' });
@@ -250,17 +247,8 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
         });
     }
 
-    private loadObjectTypes() {
-        this.workflowService.getWorkflowReassignmentAssetTypes(this.workflowItemId).subscribe((result) => {
-            this.objectReassignmentTypes = result;
-            if (result && result.length && result.length === 1) {
-                this.selectedReassignmentType = this.objectReassignmentTypes[0].ID;
-            }
-        });
-    }
-
     private filterItems(e: any) {
-        this.workflowService.getWorkflowReassignmentAssets(this.selectedReassignmentType, e.query)
+        this.workflowService.getWorkflowReassignmentAssets(this.workflowItemId, e.query)
             .subscribe((result) => {
                 this.filteredAssets = result;
             });

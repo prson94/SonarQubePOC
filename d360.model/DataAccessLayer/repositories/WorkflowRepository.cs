@@ -874,10 +874,10 @@ namespace d360.model.DataAccessLayer
             return model;
         }
 
-        public async Task<IEnumerable<WorkflowReassignmentAssetTypeApiModel>> GetWorkflowReassignmentAssetTypes(int workflowItemId)
+        public async Task<IEnumerable<WorkflowReassignmentAssetApiModel>> GetWorkflowReassignmentAssets(int workflowItemId, string query, int resultCount = 1000)
         {
             var allowedAssetTypeClasses = new List<AssetTypeClass>
-            { 
+            {
                 AssetTypeClass.BusinessAsset,
                 AssetTypeClass.TechnicalAsset,
                 AssetTypeClass.Model,
@@ -886,11 +886,9 @@ namespace d360.model.DataAccessLayer
             };
 
             var assetTypeClasses = AssetTypeClass.BusinessAsset.GetAsList().Where(a => allowedAssetTypeClasses.Contains(a.ID));
-
             var assetTypeClassSql = $" AT.Class in ({string.Join(", ", assetTypeClasses.Select(a => (int)a.ID))})";
-            var assetTypeClassNameSql = $@"case {string.Join("\n", assetTypeClasses.Select(a => $" when AT.Class = {(int)a.ID} then '{a.Name}' "))} else '' end";
 
-            var sql = $@"select AT.ID, ATP.Path as Name, AT.Object, AT.ObjectID, {assetTypeClassNameSql} as AssetClassName, ATP.Path + ' :: ' + {assetTypeClassNameSql} as Label from workflow.item I
+            var assetTypeSql = $@"select AT.ID from workflow.item I
                             inner join workflow.Version V on V.ID = I.VersionID
                             inner join Issue S on S.ID = I.ObjectID and I.Object = 'Issue'
                             inner join IssueType IT on IT.ID = S.IssueTypeID
@@ -905,7 +903,7 @@ namespace d360.model.DataAccessLayer
 
                             union
 
-                            select AT.ID, ATP.Path as Name, AT.Object, AT.ObjectID, {assetTypeClassNameSql} as AssetClassName, ATP.Path + ' :: ' + {assetTypeClassNameSql} as Label from AssetType AT
+                            select AT.ID from AssetType AT
                             inner join workflow.item I on I.ID = @id
                             inner join workflow.Version V on V.ID = I.VersionID
                             inner join Issue S on S.ID = I.ObjectID and I.Object = 'Issue'
@@ -920,7 +918,7 @@ namespace d360.model.DataAccessLayer
 
                             union
 
-                            select AT.ID, ATP.Path as Name, AT.Object, AT.ObjectID, {assetTypeClassNameSql} as AssetClassName, ATP.Path + ' :: ' + {assetTypeClassNameSql} as Label from workflow.item I
+                            select AT.ID from workflow.item I
                             inner join workflow.Version V on V.ID = I.VersionID
                             inner join Issue S on S.ID = I.ObjectID and I.Object = 'Issue'
                             inner join IssueType IT on IT.ID = S.IssueTypeID
@@ -931,26 +929,21 @@ namespace d360.model.DataAccessLayer
                                 from workflow.EventRegistration E where E.TypeID = V.TypeID
                             ) IC
                             cross apply dbo.GetAssetTypeTextPathById(AT.ID,' > ') ATP
-                            where I.ID = @id and IC.IssueObject is null and {assetTypeClassSql}
+                            where I.ID = @id and IC.IssueObject is null and {assetTypeClassSql}";
 
-                            order by 5,2";
+            var assetTypes = await CompanyContext.QueryAsync<int>(assetTypeSql, new { id = workflowItemId });
 
-            return await CompanyContext.QueryAsync<WorkflowReassignmentAssetTypeApiModel>(sql, new { id = workflowItemId });
-        }
-
-        public async Task<IEnumerable<WorkflowReassignmentAssetApiModel>> GetWorkflowReassignmentAssets(int assetTypeId, string query, int resultCount = 1000)
-        {
             var sql = $@"select top {resultCount} AP.ID, 
                                 AP.DisplayPath as Name, 
                                 A.Object, 
                                 A.ObjectID 
                         from graph.AssetNodeDisplayPath AP
                         inner join Asset A on A.ID = AP.ID
-                        where AP.AssetTypeID = @assetTypeId {(string.IsNullOrWhiteSpace(query) ? "" : "and AP.DisplayPath like '%' + @query + '%'")}
+                        where A.AssetTypeID in ({(assetTypes.Any() ? string.Join(",", assetTypes) : "-1")}) {(string.IsNullOrWhiteSpace(query) ? "" : "and AP.DisplayPath like '%' + @query + '%'")}
                         order by AP.DisplayPath";
 
 
-            return await CompanyContext.QueryAsync<WorkflowReassignmentAssetApiModel>(sql, new { assetTypeId, query });
+            return await CompanyContext.QueryAsync<WorkflowReassignmentAssetApiModel>(sql, new { query });
         }
 
     }

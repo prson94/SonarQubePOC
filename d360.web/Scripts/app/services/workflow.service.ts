@@ -30,7 +30,7 @@ import {
     ActionEditorModel,
     AllocationAPIModel,
     AllocationRequestModel,
-    WorkflowReassignmentAssetType,
+    WorkflowReassignmentAsset,
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { SelectItem, FormHelper } from '../models/form.model';
@@ -668,16 +668,8 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-    getWorkflowReassignmentAssetTypes(workflowItemId: number): Observable<WorkflowReassignmentAssetType[]> {
-        return this.http.get(`api/v2/workflow/${workflowItemId}/reassignment/object/types`)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getWorkflowReassignmentAssets(assetTypeId: number, query: string): Observable<WorkflowReassignmentAssetType[]> {
-        return this.http.get(`api/v2/workflow/reassignment/objects/${assetTypeId}?query=${query}`)
+    getWorkflowReassignmentAssets(workflowItemId: number, query: string): Observable<WorkflowReassignmentAsset[]> {
+        return this.http.get(`api/v2/workflow/reassignment/objects/${workflowItemId}?query=${query}`)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
