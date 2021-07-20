@@ -185,7 +185,6 @@ namespace d360.model
         IQueryable<FollowDetail> GetFollowersByObject(SystemObjects type, int id);
         Follow GetFollowingParent(SystemObjects type, int objectID, int? resourceID);
         string GetFormattedFieldLookupValue(int fieldTypeID, string fieldValue);
-        List<FusionOwnerOption> GetFusionOwnerOptions();
         string GetIntersectTypeName(IntersectType intersectType);
         List<IntersectTypeOption> GetIntersectTypeOptions(SystemObjects? subject = null, int? subjectID = null, SystemObjects? @object = null, int? objectID = null, int? predicateID = null, List<AssetTypeClass> limitToClasses = null);
         List<Predicate> GetPredicateOptions(int lineageVersion, SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null);
