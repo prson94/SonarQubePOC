@@ -5,51 +5,25 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.integration.SynchedAssetTypeFieldItem-v1">
+  <changeSet author="Puneet Gupta" id="Table.integration.SynchedAssetTypeFieldItem-Rename-v1">
+  <comment>GOV-15287</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'SynchedAssetTypeFieldItem')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'SynchedAssetTypeFieldItem')
 BEGIN
-	CREATE TABLE [integration].[SynchedAssetTypeFieldItem](
-		[ID] [int] IDENTITY(1,1) NOT NULL,
-		[SynchedAssetTypeID] [int] NOT NULL,
-		[IncludeInPropertyRequest] [bit] CONSTRAINT [DF_IntegrationSynchedAssetTypeFieldItem_IncludeInPropertyRequest] DEFAULT (1) NOT NULL,
-		[SourceField] [varchar](250) NOT NULL,
-		[TargetField] [varchar](250) NOT NULL,
-		[ParentContextPosition] [int] NULL,
-		[IsArray] [bit] CONSTRAINT [DF_IntegrationSynchedAssetTypeFieldItem_IsArray] DEFAULT (0) NOT NULL,
-		[DefaultValue] [nvarchar](250) NULL,
-		[ArrayValueDelimiter] [varchar](10) NULL,
-		[ArrayValueFieldName] [varchar](50) NULL,
-		[Active] [bit] CONSTRAINT [DF_IntegrationSynchedAssetTypeFieldItem_Active] DEFAULT (1) NOT NULL,
-		[ConsiderWhenDeleting] [bit] CONSTRAINT [DF_IntegrationSynchedAssetTypeFieldItem_ConsiderWhenDeleting] DEFAULT (0) NOT NULL,
-		CONSTRAINT [PK_IntegrationSynchedAssetTypeFieldItem] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
-	)
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_IntegrationSynchedAssetTypeFieldItem_IntegrationSynchedAssetType')
-BEGIN
-	ALTER TABLE [integration].[SynchedAssetTypeFieldItem]  WITH CHECK ADD  CONSTRAINT [FK_IntegrationSynchedAssetTypeFieldItem_IntegrationSynchedAssetType] FOREIGN KEY([SynchedAssetTypeID]) REFERENCES [integration].[SynchedAssetType] ([ID])
-	ALTER TABLE [integration].[SynchedAssetTypeFieldItem] CHECK CONSTRAINT [FK_IntegrationSynchedAssetTypeFieldItem_IntegrationSynchedAssetType]
-END
-
-IF NOT EXISTS (select * from [INFORMATION_SCHEMA].[CHECK_CONSTRAINTS] where CONSTRAINT_NAME = 'DF_IntegrationSynchedAssetTypeFieldItem_ConsiderWhenDeleting_Check')
-BEGIN
-	ALTER TABLE [integration].[SynchedAssetTypeFieldItem] WITH CHECK ADD CONSTRAINT [DF_IntegrationSynchedAssetTypeFieldItem_ConsiderWhenDeleting_Check] CHECK (([ConsiderWhenDeleting]=(1) AND [DefaultValue] IS NOT NULL OR [ConsiderWhenDeleting]=(0) AND [DefaultValue] IS NULL OR [ConsiderWhenDeleting]=(0) AND [DefaultValue] IS NOT NULL))
-	ALTER TABLE [integration].[SynchedAssetTypeFieldItem] CHECK CONSTRAINT [DF_IntegrationSynchedAssetTypeFieldItem_ConsiderWhenDeleting_Check]
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'CIX_IntegrationSynchedAssetTypeFieldItem')
-BEGIN
-	CREATE CLUSTERED INDEX [CIX_IntegrationSynchedAssetTypeFieldItem] ON [integration].[SynchedAssetTypeFieldItem] ( [SynchedAssetTypeID] ASC, [SourceField] ASC )
+	exec sp_rename 'integration.SynchedAssetTypeFieldItem', 'SynchedAssetTypeFieldItem_backup';
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'SynchedAssetTypeFieldItem_backup')
+BEGIN
+	exec sp_rename 'integration.SynchedAssetTypeFieldItem_backup', 'SynchedAssetTypeFieldItem';
+END
 
 		]]>
 	</rollback>

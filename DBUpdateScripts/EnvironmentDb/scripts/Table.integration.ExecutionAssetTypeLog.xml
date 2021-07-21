@@ -5,39 +5,25 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.integration.ExecutionAssetTypeLog-v1">
+  <changeSet author="Puneet Gupta" id="Table.integration.ExecutionAssetTypeLog-Rename-v1">
+  <comment>GOV-15287</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'ExecutionAssetTypeLog')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'ExecutionAssetTypeLog')
 BEGIN
-	CREATE TABLE [integration].[ExecutionAssetTypeLog](
-		[Uid] [uniqueidentifier] CONSTRAINT [DF_IntegrationExecutionAssetTypeLog_Uid] DEFAULT (newid()) NOT NULL,
-		[ExecutionID] [bigint] NOT NULL,
-		[SynchedAssetTypeID] [int] NOT NULL,
-		[Section] [int] NOT NULL,
-		[Action] [varchar](1) NOT NULL,
-		[Log] [nvarchar](max) NULL,
-		CONSTRAINT [PK_IntegrationExecutionAssetTypeLog] PRIMARY KEY NONCLUSTERED ( [Uid] ASC )
-	)
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_IntegrationExecutionAssetTypeLog_IntegrationExecutionAssetType')
-BEGIN
-	ALTER TABLE [integration].[ExecutionAssetTypeLog] WITH NOCHECK ADD CONSTRAINT [FK_IntegrationExecutionAssetTypeLog_IntegrationExecutionAssetType] FOREIGN KEY([ExecutionID], [SynchedAssetTypeID]) REFERENCES [integration].[ExecutionAssetType] ([ExecutionID], [SynchedAssetTypeID]) ON DELETE CASCADE
-	ALTER TABLE [integration].[ExecutionAssetTypeLog] CHECK CONSTRAINT [FK_IntegrationExecutionAssetTypeLog_IntegrationExecutionAssetType]
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'CIX_IntegrationExecutionAssetTypeLog')
-BEGIN
-	CREATE CLUSTERED INDEX [CIX_IntegrationExecutionAssetTypeLog] ON [integration].[ExecutionAssetTypeLog] ( [ExecutionID] DESC, [SynchedAssetTypeID] ASC, [Section] ASC )
+	exec sp_rename 'integration.ExecutionAssetTypeLog', 'ExecutionAssetTypeLog_backup';
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'ExecutionAssetTypeLog_backup')
+BEGIN
+	exec sp_rename 'integration.ExecutionAssetTypeLog_backup', 'ExecutionAssetTypeLog';
+END
 
 		]]>
 	</rollback>
