@@ -376,7 +376,6 @@
     <Compile Include="Controllers\Forms\FormController_Artifact.cs" />
     <Compile Include="Controllers\Forms\FormController_CustomAPI.cs" />
     <Compile Include="Controllers\Forms\FormController_FieldType.cs" />
-    <Compile Include="Controllers\Forms\FormController_Fusion.cs" />
     <Compile Include="Controllers\Forms\FormController_Issue.cs" />
     <Compile Include="Controllers\Forms\FormController_Organization.cs" />
     <Compile Include="Controllers\Forms\FormController_Relationship.cs" />

@@ -318,12 +318,6 @@ namespace d360.web.Controllers
                 case "EXPORTTEMPLATE":
                     res = ExportTemplate_EditFields(oid);
                     break;
-                case "FUSION":
-                    res = Fusion_EditFields(oid);
-                    break;
-                case "FUSIONATTRIBUTE":
-                    res = FusionAttribute_EditFields(oid);
-                    break;
                 case "INTERSECTTYPE":
                     res = Relationship_EditFields(oid);
                     break;
@@ -490,12 +484,6 @@ namespace d360.web.Controllers
                 case "EXPORTTEMPLATE":
                     res = ExportTemplate_AddFields();
                     break;
-                case "FUSION":
-                    res = Fusion_AddFields(objectID.GetValueOrDefault());
-                    break;
-                case "FUSIONATTRIBUTE":
-                    res = FusionAttribute_AddFields(objectID.GetValueOrDefault(), typeID.GetValueOrDefault());
-                    break;
                 case "ISSUE":
                     res = Issue_AddFields(objectID.GetValueOrDefault());
                     break;
@@ -587,10 +575,6 @@ namespace d360.web.Controllers
                     return EditApiField(form);
                 case "ENDPOINT":
                     return EditServiceEndpoint(form);
-                case "FUSION":
-                    return EditFusion(form);
-                case "FUSIONATTRIBUTE":
-                    return EditFusionAttribute(form);
                 case "INTERSECT":
                     return EditRelationship(form);
                 case "INTERSECTTYPE":
@@ -640,8 +624,6 @@ namespace d360.web.Controllers
                     return DeleteCustomSynonym(form);
                 case "ENDPOINT":
                     return DeleteCustomAPIEndPoint(form);
-                case "FUSIONCONFIGURATION":
-                    return DeleteFusion(form);
                 case "INTERSECTTYPE":
                     IntersectType intersectType = Company.GetById<IntersectType>(objectID);
                     form.Add("IntersectTypeUid", intersectType.uid.ToString());
@@ -696,8 +678,6 @@ namespace d360.web.Controllers
                     return AddCustomSynonym(form);
                 case "ENDPOINT":
                     return AddServiceEndpoint(form);
-                case "FUSION":
-                    return AddFusion(form);
                 case "INTERSECT":
                     return AddRelationship(form);
                 case "INTERSECTTYPE":
@@ -1209,8 +1189,6 @@ namespace d360.web.Controllers
                     #region
                     sql = $@"
 select * from (
-select 'FusionType|0' as value, 'Fusion' as title
-union
 select 'ArtifactType|0' as value, '{CommonNames.AssetTypeClass_Business.CleanForSql()}' as title
 union
 select 'ArtifactType|0' as value, '{CommonNames.AssetTypeClass_Business.CleanForSql()}' as title

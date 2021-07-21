@@ -685,23 +685,6 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             return dict;
         }
 
-        #region Fusion
-
-        public List<FusionOwnerOption> GetFusionOwnerOptions()
-        {
-            return Database.Connection.Query<FusionOwnerOption>(@"
-	select	ASTT.Name as [Type],
-			AST.ObjectID as ID,
-			ASTT.Name + ' : ' + D.DisplayValue as Name
-	from	
-			Asset AST
-			inner join AssetType ASTT on ASTT.ID = AST.AssetTypeID and ASTT.CanOwnFusion = 1 and ASTT.[Object] = 'ArtifactType'		
-            cross apply GetAssetDisplayValueById(AST.ID) D
-	order by	ASTT.Name + ' : ' + D.DisplayValue").ToList();
-        }
-
-        #endregion
-
         public AssetDetail GetAssetDetail(long id)
         {
             var model = Query<AssetDetail>(@"
