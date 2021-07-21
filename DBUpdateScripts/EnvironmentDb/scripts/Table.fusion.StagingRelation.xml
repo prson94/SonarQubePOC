@@ -5,38 +5,25 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.fusion.StagingRelation-v1">
+  <changeSet author="Puneet Gupta" id="Table.fusion.StagingRelation-Rename-v1">
+  <comment>GOV-15289</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'StagingRelation')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'StagingRelation')
 BEGIN
-	CREATE TABLE [fusion].[StagingRelation](
-		[ID] [bigint] IDENTITY(1,1) NOT NULL,
-		[ExecutionID] [int] NOT NULL,
-		[StartID] [nvarchar](500) NOT NULL,
-		[EndID] [nvarchar](500) NOT NULL,
-		[StartFusionAttributeID] [int] NULL,
-		[EndFusionAttributeID] [int] NULL,
-		[StartFusionAttributeTypeID] [int] NULL,
-		[EndFusionAttributeTypeID] [int] NULL,
-		[IntersectTypeID] [int] NULL,
-		[IntersectID] [int] NULL,
-		CONSTRAINT [PK_FusionStagingRelation] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
-	)
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'CIX_FusionStagingRelation')
-BEGIN
-	CREATE CLUSTERED INDEX [CIX_FusionStagingRelation] ON [fusion].[StagingRelation] ( [ExecutionID] DESC, [ID] ASC )
+	exec sp_rename 'fusion.StagingRelation', 'StagingRelation_backup';
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'StagingRelation_backup')
+BEGIN
+	exec sp_rename 'fusion.StagingRelation_backup', 'StagingRelation'
+END
 		]]>
 	</rollback>
   </changeSet>
