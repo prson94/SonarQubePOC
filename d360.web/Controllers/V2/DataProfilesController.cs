@@ -536,6 +536,84 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Retrieves a list of assets of the given type with the specified confidence.
+        /// </summary>
+        /// <param name="typeQualifier"></param>
+        /// <param name="minConfidence"></param>
+        /// <returns>A list of matching asset uids associated with asset paths and confidence</returns>
+        [
+            HttpGet,
+            Route("type/{typeQualifier}/{minConfidence}"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
+            SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),            
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250. Maximum page size is 10,000", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending and are sorted on the asset path value", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by. Allowed values are 'confidence' and 'path'. By default the results are ordered by asset path value.", DataType = "string", ParameterType = "query", Required = false),
+        ]
+        public async Task<IHttpActionResult> GetAssetsByTypeQualifier(string typeQualifier, Decimal minConfidence)
+        {
+            var prefix = "DataProfiles.GetMatchingAssets => ";
+
+            try {
+                var queryParams = Request.GetQueryNameValuePairs();
+
+                var isValid = isPageSizeAndNumValid(queryParams);
+                if (!string.IsNullOrEmpty(isValid))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, isValid)).ConfigureAwait(false);
+                }
+
+                if (queryParams.Any(qp => qp.Key.ToLower() == "_direction"))
+                {
+                    string[] allowedValues = new[] { "asc", "desc" };
+                    var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value.Trim().ToLower();
+
+                    if (!allowedValues.Contains(directionFilter))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Invalid value for parameter '_direction'. Allowed values are 'desc' and 'asc'.")).ConfigureAwait(false);
+                    }
+                }
+
+                if (queryParams.Any(qp => qp.Key.ToLower() == "_order"))
+                {
+                    string[] allowedValues = new[] { "confidence", "path" };
+                    var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_order").Value.Trim().ToLower();
+
+                    if (!allowedValues.Contains(directionFilter))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Invalid value for parameter '_order'. Allowed values are 'confidence' and 'path'.")).ConfigureAwait(false);
+                    }
+                }
+
+                if (string.IsNullOrEmpty(typeQualifier) || typeQualifier.Length > 200)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Type Qualifier Parameter is invalid")).ConfigureAwait(false);
+                }
+                if (minConfidence <= 0 || minConfidence > 1)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Min Confidence Parameter is invalid")).ConfigureAwait(false);
+                }
+
+                var results = await DataProfiles.GetAssetsByTypeQualifier(typeQualifier, minConfidence, queryParams).ConfigureAwait(false);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string> {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage)).ConfigureAwait(false);
+            }            
+        }
+
         public WorkHttpStatus ValidateDataProfileUpsertRequest(List<DataProfileUpsertModel> models, bool IsInsert)
         {
             if (models == null || models.Count == 0)
@@ -596,7 +674,7 @@ namespace d360.web.Controllers.V2
                 }
             }
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
-        }
+        }        
 
         private WorkHttpStatus ValidateMatchAssetGetParameters(Guid assetUid, string similarType, IEnumerable<KeyValuePair<string, string>> queryParams)
         {            
