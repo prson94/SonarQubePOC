@@ -544,7 +544,6 @@ namespace d360.model.DataAccessLayer
 
             if (queryParams.Any(q => q.Key == "_order"))
             {
-                string[] allowedValues = new[] { "confidence", "path" };
                 var orderFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_order").Value.Trim().ToLower();
 
                 if (orderFilter.Equals("confidence",StringComparison.InvariantCultureIgnoreCase))
