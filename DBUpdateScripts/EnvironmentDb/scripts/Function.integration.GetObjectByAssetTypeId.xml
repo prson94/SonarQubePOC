@@ -5,13 +5,32 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.integration.GetObjectByAssetTypeId-v1">
+  <changeSet author="Puneet Gupta" id="Function.integration.GetObjectByAssetTypeId-Drop-v1">
+    <comment>GOV-15287</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-if not exists (select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'integration' and SPECIFIC_NAME = 'GetObjectByAssetTypeId')
+if exists (select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'integration' and SPECIFIC_NAME = 'GetObjectByAssetTypeId')
+begin
+	IF EXISTS (SELECT f.name
+				FROM sys.Computed_columns f
+				inner join sys.objects o on f.object_id = o.object_id
+				where SCHEMA_NAME(schema_id) = 'integration' and o.name = 'SynchedAssetType' and F.name ='Object' 
+				and f.is_computed = 1
+			   )
+	BEGIN	
+		ALTER TABLE [integration].[SynchedAssetType] DROP column [Object]
+	END
+	
+	drop function [integration].[GetObjectByAssetTypeId];
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+if Not exists (select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'integration' and SPECIFIC_NAME = 'GetObjectByAssetTypeId')
 begin
 	EXEC('CREATE FUNCTION [integration].[GetObjectByAssetTypeId]
 (
@@ -27,11 +46,6 @@ BEGIN
 	RETURN @o
 END')
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

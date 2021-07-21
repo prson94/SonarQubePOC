@@ -5,12 +5,26 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Udt.dbo.IntegrationAssetHashType-v1">
+  <changeSet author="Puneet Gupta" id="Udt.dbo.IntegrationAssetHashType-Drop-v1">
+  <comment>GOV-15287</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+IF TYPE_ID(N'dbo.IntegrationAssetHashType') IS NOT NULL 
+BEGIN
+	if exists (select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'integration' and SPECIFIC_NAME = 'MergeAssetHashes')
+	begin
+		drop procedure [integration].[MergeAssetHashes];
+	end
+
+	DROP TYPE [dbo].[IntegrationAssetHashType]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 IF TYPE_ID(N'dbo.IntegrationAssetHashType') IS NULL 
 BEGIN
 	CREATE TYPE [dbo].[IntegrationAssetHashType] AS TABLE(
@@ -22,11 +36,6 @@ BEGIN
 		PRIMARY KEY CLUSTERED ( [SynchedAssetTypeID] ASC, [Section] ASC, [SourceID] ASC ) WITH (IGNORE_DUP_KEY = OFF)
 	)
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

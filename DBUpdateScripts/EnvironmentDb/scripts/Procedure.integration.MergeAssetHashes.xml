@@ -5,12 +5,21 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.integration.MergeAssetHashes-v1">
+  <changeSet author="Puneet Gupta" id="Procedure.integration.MergeAssetHashes-Drop-v1">
+  <comment>GOV-15287</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+if exists (select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'integration' and SPECIFIC_NAME = 'MergeAssetHashes')
+begin
+	drop procedure [integration].[MergeAssetHashes];
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [integration].[MergeAssetHashes]
 (
 	@SynchedAssetTypeID int,
@@ -38,11 +47,6 @@ begin
 
 	select * from integration.AssetHash where SynchedAssetTypeID = @SynchedAssetTypeID and Section = @Section and RequestNumber = @RequestNumber and [Action] in ('A', 'U');
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

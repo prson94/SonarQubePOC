@@ -5,44 +5,25 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.integration.SynchedAssetTypeRelationItemTarget-v1">
+  <changeSet author="Puneet Gupta" id="Table.integration.SynchedAssetTypeRelationItemTarget-Rename-v1">
+  <comment>GOV-15287</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'SynchedAssetTypeRelationItemTarget')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'SynchedAssetTypeRelationItemTarget')
 BEGIN
-	CREATE TABLE [integration].[SynchedAssetTypeRelationItemTarget](
-		[ID] [int] IDENTITY(1,1) NOT NULL,
-		[SynchedAssetTypeRelationItemID] [int] NOT NULL,
-		[SourceAssetType] [varchar](250) NOT NULL,
-		[IntersectTypeID] [int] NOT NULL,
-		[UseForWriteBack] [bit] CONSTRAINT [DF_IntegrationSynchedAssetTypeRelationItemTarget_UseForWriteBack] DEFAULT (0) NOT NULL,
-		CONSTRAINT [PK_IntegrationSynchedAssetTypeRelationItemTarget] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
-	)
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_IntegrationSynchedAssetTypeRelationItem_IntegrationSynchedAssetTypeRelationItem')
-BEGIN
-	ALTER TABLE [integration].[SynchedAssetTypeRelationItemTarget]  WITH CHECK ADD  CONSTRAINT [FK_IntegrationSynchedAssetTypeRelationItem_IntegrationSynchedAssetTypeRelationItem] FOREIGN KEY([SynchedAssetTypeRelationItemID]) REFERENCES [integration].[SynchedAssetTypeRelationItem] ([ID])
-	ALTER TABLE [integration].[SynchedAssetTypeRelationItemTarget] CHECK CONSTRAINT [FK_IntegrationSynchedAssetTypeRelationItem_IntegrationSynchedAssetTypeRelationItem]
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_IntegrationSynchedAssetTypeRelationItem_IntersectType')
-BEGIN
-	ALTER TABLE [integration].[SynchedAssetTypeRelationItemTarget]  WITH CHECK ADD  CONSTRAINT [FK_IntegrationSynchedAssetTypeRelationItem_IntersectType] FOREIGN KEY([IntersectTypeID]) REFERENCES [dbo].[IntersectType] ([ID])
-	ALTER TABLE [integration].[SynchedAssetTypeRelationItemTarget] CHECK CONSTRAINT [FK_IntegrationSynchedAssetTypeRelationItem_IntersectType]
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'CIX_IntegrationSynchedAssetTypeRelationItemTarget')
-BEGIN
-	CREATE CLUSTERED INDEX [CIX_IntegrationSynchedAssetTypeRelationItemTarget] ON [integration].[SynchedAssetTypeRelationItemTarget] ( [SynchedAssetTypeRelationItemID] ASC, [IntersectTypeID] ASC )
+	exec sp_rename 'integration.SynchedAssetTypeRelationItemTarget', 'SynchedAssetTypeRelationItemTarget_backup';
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'SynchedAssetTypeRelationItemTarget_backup')
+BEGIN
+	exec sp_rename 'integration.SynchedAssetTypeRelationItemTarget_backup', 'SynchedAssetTypeRelationItemTarget';
+END
 
 		]]>
 	</rollback>

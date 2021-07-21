@@ -5,35 +5,25 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.integration.ExecutionAssetTypeError-v1">
+  <changeSet author="Puneet Gupta" id="Table.integration.ExecutionAssetTypeError-Rename-v1">
+  <comment>GOV-15287</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'ExecutionAssetTypeError')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'ExecutionAssetTypeError')
 BEGIN
-	CREATE TABLE [integration].[ExecutionAssetTypeError](
-		[ExecutionID] [bigint] NOT NULL,
-		[SynchedAssetTypeID] [int] NOT NULL,
-		[SourceID] [varchar](100) NOT NULL,
-		[ErrorMessages] [nvarchar](max) NULL,
-		[Uid] [uniqueidentifier] CONSTRAINT [DF_IntegrationExecutionAssetTypeError_Uid] DEFAULT (newid()) NOT NULL,
-		[ErrorCode] [int] NULL,
-		CONSTRAINT [PK_IntegrationExecutionAssetTypeError] PRIMARY KEY NONCLUSTERED ( [Uid] ASC )
-	)
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_IntegrationExecutionAssetTypeError_IntegrationExecutionAssetType')
-BEGIN
-	ALTER TABLE [integration].[ExecutionAssetTypeError] WITH NOCHECK ADD CONSTRAINT [FK_IntegrationExecutionAssetTypeError_IntegrationExecutionAssetType] FOREIGN KEY([ExecutionID], [SynchedAssetTypeID]) REFERENCES [integration].[ExecutionAssetType] ([ExecutionID], [SynchedAssetTypeID]) ON DELETE CASCADE
-	ALTER TABLE [integration].[ExecutionAssetTypeError] CHECK CONSTRAINT [FK_IntegrationExecutionAssetTypeError_IntegrationExecutionAssetType]
+	exec sp_rename 'integration.ExecutionAssetTypeError', 'ExecutionAssetTypeError_backup';
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'ExecutionAssetTypeError_backup')
+BEGIN
+	exec sp_rename 'integration.ExecutionAssetTypeError_backup', 'ExecutionAssetTypeError';
+END
 		]]>
 	</rollback>
   </changeSet>
