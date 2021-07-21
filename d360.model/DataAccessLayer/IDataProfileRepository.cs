@@ -23,5 +23,7 @@ namespace d360.model.DataAccessLayer
         Task<ApiExecutionInfo> DeleteBatchDataProfiles(List<AssetDataProfileDeleteModel> models, ApiExecution execution);
 
         Task<AssetDataProfilesMatchingAssetsApiViewModel> GetMatchingAssets(Guid assetUid, string similarType, IEnumerable<KeyValuePair<string, string>> queryParams);
+
+        Task<AssetDataProfileByTypeQualifierApiViewModel> GetAssetsByTypeQualifier(string typeQualifier, decimal minConfidence, IEnumerable<KeyValuePair<string, string>> queryParams);
     }
 }
