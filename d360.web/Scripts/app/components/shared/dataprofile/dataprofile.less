@@ -42,14 +42,24 @@
             background-size: 1% 100%;
             background-repeat: no-repeat;
             margin-bottom: 5px;
+            display: flex;
+            width: 100%;
+            line-height:18px;
 
             .sampleKey {
                 padding-left: 10px;
+                flex: 1;
+                display: table;
+                table-layout: fixed;
+                width: 100%;
+                word-wrap: break-word;
             }
 
             .sampleValue {
                 float: right;
                 padding-right: 10px;
+                padding-left: 16px;
+                flex: 0;
 
                 .sampleCount {
                     color: @ig-black;

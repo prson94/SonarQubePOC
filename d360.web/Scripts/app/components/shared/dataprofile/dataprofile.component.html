@@ -106,13 +106,13 @@
                         <div *ngFor="let top of topSamples|slice:0:topSamplesToShow let i=index">
                             <div class="sampleRow"
                                  [style.background-size]="getBackgroundSize(top.count, topSamples[0].count)">
-                                <span class="sampleKey">
+                                <div class="sampleKey">
                                     {{top.key}}
-                                </span>
-                                <span class="sampleValue">
+                                </div>
+                                <div class="sampleValue">
                                     <span class="sampleCount">{{top.count | number}}</span>
                                     <span *ngIf="dataProfile.sampleCount" class="samplePercentage">{{top.count/dataProfile.sampleCount | percent: '1.0-2'}}</span>
-                                </span>
+                                </div>
                             </div>
                         </div>
                         <div>
@@ -133,13 +133,13 @@
                         <div *ngFor="let bottom of bottomSamples|slice:0:bottomSamplesToShow let i=index">
                             <div class="sampleRow"
                                  [style.background-size]="getBackgroundSize(bottom.count, bottomSamples[0].count)">
-                                <span class="sampleKey">
+                                <div class="sampleKey">
                                     {{bottom.key}}
-                                </span>
-                                <span class="sampleValue">
+                                </div>
+                                <div class="sampleValue">
                                     <span class="sampleCount">{{bottom.count | number}}</span>
                                     <span *ngIf="dataProfile.sampleCount" class="samplePercentage">{{bottom.count/dataProfile.sampleCount | percent: '1.0-2'}}</span>
-                                </span>
+                                </div>
                             </div>
                         </div>
                         <div>
@@ -163,13 +163,13 @@
                         <div *ngFor="let outlier of dataProfile.outlierDetail|slice:0:outliersToShow let i=index">
                             <div class="sampleRow"
                                  [style.background-size]="getBackgroundSize(outlier.count, dataProfile.outlierDetail[0].count)">
-                                <span class="sampleKey">
+                                <div class="sampleKey">
                                     {{outlier.key}}
-                                </span>
-                                <span class="sampleValue">
+                                </div>
+                                <div class="sampleValue">
                                     <span class="sampleCount">{{outlier.count | number}}</span>
                                     <span *ngIf="dataProfile.sampleCount" class="samplePercentage">{{outlier.count/dataProfile.sampleCount | percent: '1.0-2'}}</span>
-                                </span>
+                                </div>
                             </div>
                         </div>
                         <div>
@@ -190,13 +190,13 @@
                         <div *ngFor="let shape of dataProfile.shapesDetail|slice:0:shapesToShow let i=index">
                             <div class="sampleRow"
                                  [style.background-size]="getBackgroundSize(shape.count, dataProfile.shapesDetail[0].count)">
-                                <span class="sampleKey">
+                                <div class="sampleKey">
                                     {{shape.key}}
-                                </span>
-                                <span class="sampleValue">
+                                </div>
+                                <div class="sampleValue">
                                     <span class="sampleCount">{{shape.count | number}}</span>
                                     <span *ngIf="dataProfile.sampleCount" class="samplePercentage">{{shape.count/dataProfile.sampleCount| percent: '1.0-2'}}</span>
-                                </span>
+                                </div>
                             </div>
                         </div>
                         <div>
