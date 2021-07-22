@@ -213,66 +213,23 @@
                                    [title]="'Statistics'"
                                    [shouldBePadded]="false"
                                    [showHeaderLine]="false">
-                    <div readonly class="group">
-                        <div *ngIf="ShowBoolean">
-                            <ng-container *ngTemplateOutlet="nullCountTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="blankCountTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="regExpTemplate"></ng-container>
-                        </div>
-                        <div *ngIf="ShowNumber">
-                            <ng-container *ngTemplateOutlet="nullCountTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="blankCountTemplate"></ng-container>
+                    <div readonly class="group">                        
+                        <ng-container *ngTemplateOutlet="nullCountTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="blankCountTemplate"></ng-container>
 
-                            <ng-container *ngTemplateOutlet="minTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="maxTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="meanTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="minTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="maxTemplate"></ng-container>
 
-                            <ng-container *ngTemplateOutlet="standardDeviationTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="leadingZeroCountTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="regExpTemplate"></ng-container>
-                        </div>
-                        <div *ngIf="ShowString">
-                            <ng-container *ngTemplateOutlet="nullCountTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="blankCountTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="meanTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="standardDeviationTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="leadingZeroCountTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="minLengthTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="maxLengthTemplate"></ng-container>
 
-                            <ng-container *ngTemplateOutlet="minTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="maxTemplate"></ng-container>
-
-                            <ng-container *ngTemplateOutlet="minLengthTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="maxLengthTemplate"></ng-container>
-
-                            <ng-container *ngTemplateOutlet="multilineTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="leadingWhiteSpaceTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="trailingWhiteSpaceTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="regExpTemplate"></ng-container>
-                        </div>                        
-                        <div *ngIf="ShowDateTime">
-                            <ng-container *ngTemplateOutlet="nullCountTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="blankCountTemplate"></ng-container>
-
-                            <ng-container *ngTemplateOutlet="minTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="maxTemplate"></ng-container>
-
-                            <ng-container *ngTemplateOutlet="regExpTemplate"></ng-container>
-                        </div>
-                        <div *ngIf="ShowOther">
-                            <ng-container *ngTemplateOutlet="nullCountTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="blankCountTemplate"></ng-container>
-
-                            <ng-container *ngTemplateOutlet="minTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="maxTemplate"></ng-container>
-
-                            <ng-container *ngTemplateOutlet="meanTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="standardDeviationTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="leadingZeroCountTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="minLengthTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="maxLengthTemplate"></ng-container>
-
-                            <ng-container *ngTemplateOutlet="multilineTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="leadingWhiteSpaceTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="trailingWhiteSpaceTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="regExpTemplate"></ng-container>
-                        </div>
+                        <ng-container *ngTemplateOutlet="multilineTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="leadingWhiteSpaceTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="trailingWhiteSpaceTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="regExpTemplate"></ng-container>
                     </div>
                 </ig-property-group>
             </div>
