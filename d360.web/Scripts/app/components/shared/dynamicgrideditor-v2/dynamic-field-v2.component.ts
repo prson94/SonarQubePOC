@@ -276,6 +276,7 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
                     } else {
                         this.field.Value = null;
                         this.field.Items = [];
+                        this.form.controls[this.field.FieldName].setValue(null);
 
                         if (this.field.DelayedLoadType == 'FieldFilter') {
                             this.form.controls[this.field.FieldName].disable();
