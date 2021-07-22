@@ -53,8 +53,8 @@
                         </ng-template>
                         <ng-template pTemplate="body" let-item>
                             <tr (dblclick)="selected=item;" [pSelectableRow]="item">
-                                <td style="width: 25%"><div class="path-column-wrapper"><div class="path-column" [title]="item.OwningAssetDisplayPath" [innerHtml]="item.OwningAssetDisplayPath | safeHtml"></div></div></td>
-                                <td><div class="path-column-wrapper"><div class="path-column" [title]="item.EvaluatedAssetDisplayPath" [innerHtml]="item.EvaluatedAssetDisplayPath | safeHtml"></div></div></td>
+                                <td style="width: 25%"><div [title]="item.OwningAssetDisplayPath" [innerHtml]="item.OwningAssetDisplayPath | safeHtml"></div></td>
+                                <td><div [title]="item.EvaluatedAssetDisplayPath" [innerHtml]="item.EvaluatedAssetDisplayPath | safeHtml"></div></td>
                                 <td style="width: 150px">
                                     <span *ngIf="item.EffectiveDate">{{ item.EffectiveDate | date:'shortDate':'GMT'}}</span>
                                     <span *ngIf="!item.EffectiveDate" class="fa fa-exclamation-triangle" style="margin-right: 6px"></span>
