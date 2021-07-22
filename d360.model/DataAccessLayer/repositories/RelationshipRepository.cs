@@ -119,6 +119,7 @@ namespace d360.model.DataAccessLayer
             var dbArgs = new DynamicParameters();
             bool includeTotal = true;
             bool includeAssetPath = false;
+            bool orderByAssetPath = false;
 
             string _orderBy = "I.IntersectTypeID,I.ID";
             string _orderDirection = "asc";
@@ -292,10 +293,12 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 {
                     _orderBy = "ISNULL(ANDP_Object.DisplayPath,OT2.Name)";
                     isSubject = true;
+                    orderByAssetPath = true;
                 }
                 else if (orderValue == "subject.[path]")
                 {
                     _orderBy = "ISNULL(ANDP_Subject.DisplayPath,ST2.Name)";
+                    orderByAssetPath = true;
                 }
             }
 
@@ -413,7 +416,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
             });
             predicateTypeSql += " end as 'Predicate.Type', ";
 
-            if (includeAssetPath)
+            if (includeAssetPath || orderByAssetPath)
             {
                 fieldJoins.Add(" left join graph.AssetNodeDisplayPath ANDP_Object on ANDP_Object.Id = O.Id ");
                 fieldJoins.Add(" left join graph.AssetNodeDisplayPath ANDP_Subject on ANDP_Subject.Id = S.Id ");
