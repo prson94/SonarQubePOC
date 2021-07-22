@@ -273,6 +273,13 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                         }
 
                         this.listItemChange.emit({ field: this.field, value: null });
+                        if (this.field.UseColorControl) {
+                            this.ref.markForCheck();
+                        }
+                        else {
+                            this.ref.detectChanges();
+                            this.form.controls[this.field.FieldName].setValue(this.field.Value);
+                        }
                     }
                 }
             });
