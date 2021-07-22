@@ -354,7 +354,7 @@ namespace d360.model.DataAccessLayer
             return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
-        public async Task<AssetDataProfilesMatchingAssetsApiViewModel> GetMatchingAssets(Guid assetUid, string similarType, IEnumerable<KeyValuePair<string, string>> queryParams)
+        public async Task<AssetDataProfilesMatchingAssetsApiViewModel> GetMatchingAssets(Guid assetUid, string similarType, IEnumerable<KeyValuePair<string, string>> queryParams, bool onlyTotal = false)
         {
 
             var dbArgs = new DynamicParameters();
@@ -467,8 +467,9 @@ namespace d360.model.DataAccessLayer
             }
                         
             dbArgs.Add("@assetId", asset.ID);
-
-            var itemsSQL = $@"
+            if (!onlyTotal)
+            {
+                var itemsSQL = $@"
                             SELECT 
                                 distinct
 	                            NDP.uid, 
@@ -477,11 +478,13 @@ namespace d360.model.DataAccessLayer
 	                            {sqlJoins}		                            
 	                            {whereConditions}
 		                    order by NDP.DisplayPath {orderDirection}
-                            {offset}";            
+                            {offset}";
 
-            results.items = await CompanyContext.QueryAsync<AssetDataProfileMatchingAssetsModel>(itemsSQL, dbArgs, ApiTimeout);
+                results.items = await CompanyContext.QueryAsync<AssetDataProfileMatchingAssetsModel>(itemsSQL, dbArgs, ApiTimeout);
+            }
+            
 
-            if (includeTotal)
+            if (includeTotal || onlyTotal)
             {
                 var countSQL = $@"
                             SELECT 
