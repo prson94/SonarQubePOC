@@ -1028,7 +1028,7 @@ namespace d360.model
 
                 if (!string.IsNullOrEmpty(requestSettings.Body))
                 {
-                    var body = await ProcessMessageTokens(requestSettings.Body, info, prefix, item, false);
+                    var body = await ProcessMessageTokens(requestSettings.Body, info, prefix, item, false, true);
                     var contentArray = Encoding.UTF8.GetBytes(body);
                     request.Content = new ByteArrayContent(contentArray);
                 }
@@ -2528,12 +2528,12 @@ namespace d360.model
 
         }
 
-        public async Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true)
+        public async Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true, bool forJson = false)
         {
-            return await ProcessMessageTokens(bodyTemplate, objectInfo.ObjectID, objectInfo.Object, prefix, itemStep, supportHtml);
+            return await ProcessMessageTokens(bodyTemplate, objectInfo.ObjectID, objectInfo.Object, prefix, itemStep, supportHtml, forJson);
         }
 
-        public async Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml)
+        public async Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml, bool forJson)
         {
             if (string.IsNullOrEmpty(bodyTemplate)) return string.Empty;
 
@@ -2884,6 +2884,14 @@ namespace d360.model
                                     else
                                         fieldValue = fieldRecord.FormattedValue;
                                 }
+                                else if (forJson)
+                                {
+                                    fieldValue = JsonConvert.ToString(fieldRecord.FormattedValue);
+                                    if (!string.IsNullOrEmpty(fieldValue))
+                                    {
+                                        fieldValue = fieldValue.Substring(1, fieldValue.Length - 2);
+                                    }
+                                }
                                 else
                                     fieldValue = fieldRecord.FormattedValue;
                             }
@@ -2926,6 +2934,15 @@ namespace d360.model
                         var fielddata = JObject.Parse(fieldRecord.Value);
 
                         fieldValue = fielddata.SelectToken(jsonElementDefinition.Path, false)?.ToString() ?? "";
+                    }
+
+                    if (forJson)
+                    {
+                        fieldValue = JsonConvert.ToString(fieldValue);
+                        if (!string.IsNullOrEmpty(fieldValue))
+                        {
+                            fieldValue = fieldValue.Substring(1, fieldValue.Length - 2);
+                        }
                     }
 
                     result = result.Replace(item, fieldValue);
