@@ -163,54 +163,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
             this.dataProfile.leadingZeroCount != null || this.dataProfile.minLength != null || this.dataProfile.maxLength != null ||
             this.dataProfile.multiline != null || this.dataProfile.leadingWhiteSpace != null || this.dataProfile.trailingWhiteSpace != null)) {
             this.showStatistics = true;
-        }
-
-        if (this.dataProfile.type) {
-            switch (this.dataProfile.type.toLowerCase()) {
-                case "boolean": 
-                    this.ShowBoolean = true;
-                    if (!(this.dataProfile.regExp || this.dataProfile.blankCount != null || this.dataProfile.nullCount != null)) {
-                        this.showStatistics = false;
-                    }
-                    break;                
-                case "number":
-                case "long":
-                case "double":
-                    this.ShowNumber = true;
-                    if (!(this.dataProfile.regExp || this.dataProfile.blankCount != null || this.dataProfile.nullCount != null
-                        || this.dataProfile.min != null || this.dataProfile.max != null || this.dataProfile.mean != null
-                        || this.dataProfile.leadingZeroCount != null || this.dataProfile.standardDeviation != null)) {
-                        this.showStatistics = false;
-                    }
-                    break;
-                case "string": 
-                    this.ShowString = true;
-                    if (!(this.dataProfile.regExp || this.dataProfile.blankCount != null || this.dataProfile.nullCount != null
-                        || this.dataProfile.min != null || this.dataProfile.max != null || this.dataProfile.multiline != null
-                        || this.dataProfile.minLength != null || this.dataProfile.maxLength != null || this.dataProfile.leadingWhiteSpace != null
-                        || this.dataProfile.trailingWhiteSpace != null)) {
-                        this.showStatistics = false;
-                    }
-                    break;       
-                case "date":
-                case "localdate":                   
-                case "localtime":
-                case "localdatetime":
-                case "offsetdatetime":
-                case "zoneddatetime":
-                    this.ShowDateTime = true;                    
-                    if (!(this.dataProfile.regExp || this.dataProfile.blankCount != null || this.dataProfile.nullCount != null
-                        || this.dataProfile.min != null || this.dataProfile.max != null)) {
-                        this.showStatistics = false;
-                    }
-                    break;   
-                default: 
-                    this.ShowOther = true;
-                    break;                
-            }             
-        } else {
-            this.ShowOther = true;
-        }         
+        }                 
     }
 
     private setBaseTypeText() {
