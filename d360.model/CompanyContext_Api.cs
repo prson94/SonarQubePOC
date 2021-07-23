@@ -9293,10 +9293,6 @@ select * from #Items", transaction: trans).ToList();
                     int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
                     int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
 
-                    var querySuffix = $"DAR.Success is null and DAR.ExecutionID = @ExecutionID and DAR.ItemNumber between @beginItemNumber and @endItemNumber";
-
-                    var updateOnSuccess = $@"update DAR set DAR.Success = 1 from api.ExecutionDeleteAssetResult DAR inner join #ObjectDeleteAssetEdge DAE on DAE.ExecutionItemUid = DAR.ExecutionItemUid where {querySuffix}";
-
                     string ruleResultWhereClause = $@"from AssetResult AR, assetResultedge ARE, graph.AssetNode AN, API.[ExecutionDeleteAssetResult] DAR 
 where 
 DAR.ExecutionID = @executionID 
@@ -9337,38 +9333,43 @@ and (DAR.EffectiveDateStart is null or DAR.EffectiveDateStart <= AR.EffectiveDat
 and (DAR.EffectiveDateEnd is null or DAR.EffectiveDateEnd >= AR.EffectiveDate) 
 and (DAR.RunDateStart is null or AR.RunDate >= DAR.RunDateStart) 
 and (DAR.RunDateEnd is null or AR.RunDate <= DAR.RunDateEnd) ";
+                    string itemNumberRangeSql = "ItemNumber between @beginItemNumber and @endItemNumber";
 
                     string deleteAssetResultSQL = $@"
-    create table #ObjectDeleteAssetEdge ([uid] uniqueidentifier, class int, ItemNumber int, ExecutionItemUid uniqueidentifier, [Operation] varchar(10));
-    CREATE NONCLUSTERED INDEX IX_TempObjectMergeAssetEdge ON #ObjectDeleteAssetEdge ( ItemNumber ASC );
-
-    merge into AssetResultEdge DARE 
-    using   (
-        select  ARE.$from_id as from_id,
-                ARE.$to_id as to_id, 
+    create table #uids ([uid] uniqueidentifier, ItemNumber int);
+    CREATE NONCLUSTERED INDEX IX_Tempuids_Uid ON #uids ( Uid ASC );
+    CREATE NONCLUSTERED INDEX IX_Tempuids_ItemNumber ON #uids ( ItemNumber ASC );
+    
+    insert into #uids (Uid, ItemNumber)
+        select  distinct
                 AR.Uid, 
-                ARE.Class, 
-                DAR.itemnumber, 
-                DAR.ExecutionItemUid
-        {ruleResultWhereClause} 
-                and DAR.ItemNumber between @beginItemNumber and @endItemNumber  
-        ) R on R.from_id = DARE.$from_id and R.to_id = DARE.$to_id
-    WHEN MATCHED THEN DELETE 
-    output R.uid, R.class, R.itemnumber, R.ExecutionItemUid, $action into #ObjectDeleteAssetEdge;
+                DAR.ItemNumber 
+        {ruleResultWhereClause}
+        and DAR.{itemNumberRangeSql};
 
-    merge into AssetResult AR
-    using   (
-	    select  AR1.uid
-	    from    AssetResult AR1
-	            INNER JOIN #ObjectDeleteAssetEdge MAE ON AR1.UID=MAE.Uid
-	            left join assetResultEdge ARE on ARE.$to_id = AR1.$node_id
-	    where   ARE.$to_id is null
-	    ) R on R.Uid = AR.Uid
-    WHEN MATCHED THEN DELETE;
+    delete  T
+    from    AssetResultEdge T
+            inner join AssetResult R on R.$node_id = T.$to_id
+            inner join #uids S on S.Uid = R.Uid and S.{itemNumberRangeSql};
 
-    {updateOnSuccess}";
+    delete  T
+    from    AssetResult T
+            inner join #uids S on S.Uid = T.Uid and S.{itemNumberRangeSql};
 
-                    // Find out which items we need to update scores for.
+    update  T 
+    set     T.Success = iif(C.[Count] = 0, 1, 0) 
+    from    api.ExecutionDeleteAssetResult T 
+            inner join #uids S on S.ItemNumber = T.ItemNumber 
+            cross apply (
+                select  count(1) as [Count]
+                from    AssetResult
+                where   Uid = S.Uid
+            ) C
+    where   T.Success is null 
+            and T.ExecutionID = @ExecutionID 
+            and T.{itemNumberRangeSql}";
+
+                    // Find out which items we need to update scores for. Do this first!
                     var ruleResultUids = Query<Guid>($@"select distinct AR.Uid {ruleResultWhereClause}", new { execution.ExecutionID }).ToList();
                     List<AssetMeasureModel> assetMeasures = null;
                     if (ruleResultUids.Count > 0)
@@ -9417,7 +9418,7 @@ and (DAR.RunDateEnd is null or AR.RunDate <= DAR.RunDateEnd) ";
 
                         results.AddRange(
                             Query<DataQualityDeleteResponseModel>(
-                                $"select ExecutionItemUid, Success, Message from api.ExecutionDeleteAssetResult where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+                                $"select ExecutionItemUid, Success, Message from api.ExecutionDeleteAssetResult where ExecutionID = @ExecutionID and {itemNumberRangeSql}",
                                     new { execution.ExecutionID, beginItemNumber, endItemNumber }
                                 )
                             );
