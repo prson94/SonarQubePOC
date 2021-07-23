@@ -40,5 +40,15 @@ namespace d360.model
         int SaveChanges();
         new bool Update<T>(T item) where T : BaseObject;
         Resource ValidateResource(string username, string password);
+
+        #region OpenId Logic
+
+        DbSet<OpenIdRequest> OpenIdRequests { get; set; }
+        OpenIdRequest GetOpenIdRequest(string state);
+        string GenerateOpenIdRequestValue();
+        void RemoveOpenIdRequest(OpenIdRequest request);
+        void SetOpenIdRequest(OpenIdRequest request);
+
+        #endregion
     }
 }

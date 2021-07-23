@@ -2,6 +2,7 @@
 using d360.core.enums;
 using d360.extensions.caching;
 using d360.web.caching;
+using d360.web.Extensions;
 using Dapper;
 using IdentityModel;
 using IdentityModel.Client;
@@ -39,7 +40,7 @@ namespace d360.web
             public string Password { get; set; }
             public string APIPublicKey { get; set; }
             public string APIPrivateKey { get; set; }
-   
+
         }
 
         public class user
@@ -100,7 +101,7 @@ namespace d360.web
 
             [JsonProperty(PropertyName = "upn", NullValueHandling = NullValueHandling.Ignore, Order = 14)]
             public string Upn { get; set; }
-            
+
             [JsonProperty(PropertyName = "lmg_cert_dn", NullValueHandling = NullValueHandling.Ignore, Order = 16)]
             public string Lmg_cert_dn { get; set; }
 
@@ -116,7 +117,8 @@ namespace d360.web
 
         public ConcurrentBag<usercompany> Users
         {
-            get {
+            get
+            {
                 var cache = new MemoryCachingProvider();
                 var users = cache.GetItem<ConcurrentBag<usercompany>>("Users");
                 if (users == null)
@@ -125,7 +127,8 @@ namespace d360.web
                 }
                 return users;
             }
-            set {
+            set
+            {
                 var cache = new MemoryCachingProvider();// RedisCachingProvider();
                 cache.SetItem("Users", value, true, 10);
             }
@@ -199,7 +202,7 @@ from	Resource R
 
                         var claim = await ValidateJwt(jwtToken, context, jwtTelemetry);
 
-                        if (claim != null && claim.Identity != null &&  !string.IsNullOrEmpty(claim.Identity.Name))
+                        if (claim != null && claim.Identity != null && !string.IsNullOrEmpty(claim.Identity.Name))
                         {
                             jwtTelemetry.TrackTrace(new TraceTelemetry { Message = $"JWT Username {claim.Identity.Name}", SeverityLevel = SeverityLevel.Verbose });
                             u = LoadUserFromDatabase(companyID, null, null, null, claim.Identity.Name);
@@ -214,7 +217,7 @@ from	Resource R
                         }
 
                     }
-                    
+
                 }
                 else if (!string.IsNullOrEmpty(apiCredentials))
                 {
@@ -280,11 +283,11 @@ from	Resource R
                         if (!string.IsNullOrEmpty(token)) Trace.TraceWarning("Could not locate the user with API token of: {0}", token);
                         if (context.Request.User.Identity.IsAuthenticated) Trace.TraceWarning("Could not locate the user with name of: {0}", context.Request.User.Identity.Name);
                         if (!string.IsNullOrEmpty(apiCredentials) || !string.IsNullOrEmpty(token) || context.Request.User.Identity.IsAuthenticated)
-                        {                            
+                        {
                             System.Web.HttpContext.Current.Response.SuppressFormsAuthenticationRedirect = true;
 
                             context.Response.Write("\"Not authorized\"");
-                            context.Response.StatusCode = 401;                            
+                            context.Response.StatusCode = 401;
                             return;
                         }
                     }
@@ -325,89 +328,40 @@ from	Resource R
 
             telemetry.TrackTrace(new TraceTelemetry { Message = $"Discovery Client Starting", SeverityLevel = SeverityLevel.Verbose });
 
-            if(string.IsNullOrEmpty(authority))
+            if (string.IsNullOrEmpty(authority))
             {
                 telemetry.TrackTrace(new TraceTelemetry { Message = $"Jwt Authority Uri is not set cannot continue", SeverityLevel = SeverityLevel.Verbose });
 
                 return null;
             }
 
-            HttpClientHandler httpHandler = new HttpClientHandler()
-            {
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
-            };
-
-            var di = new DiscoveryClient(authority, httpHandler);
-            
-            di.Policy.ValidateIssuerName = jwtDiscoveryValidateIssuerName;
-            var disco = await di.GetAsync();
-            
+            var discoCache = new DiscoveryCache(authority);
+            var disco = await discoCache.GetAsync();
+            disco.Policy.ValidateIssuerName = jwtDiscoveryValidateIssuerName;
 
             if (disco == null)
             {
                 telemetry.TrackTrace(new TraceTelemetry { Message = $"Discovery response is null.", SeverityLevel = SeverityLevel.Verbose });
-
                 return null;
             }
 
             if (disco.IsError)
-            {                
+            {
                 telemetry.TrackTrace(new TraceTelemetry { Message = $"Discovery response indicated error(s). {disco.Error}", SeverityLevel = SeverityLevel.Verbose });
-
                 return null;
             }
 
             if (disco.KeySet == null)
             {
                 telemetry.TrackTrace(new TraceTelemetry { Message = $"Discovery response included no keys.", SeverityLevel = SeverityLevel.Verbose });
-
                 return null;
             }
 
-            var keys = new List<SecurityKey>();
-            foreach (var webKey in disco.KeySet.Keys)
-            {
-                var e = Base64Url.Decode(webKey.E);
-                var n = Base64Url.Decode(webKey.N);
-
-                var key = new RsaSecurityKey(new RSAParameters { Exponent = e, Modulus = n })
-                {
-                    KeyId = webKey.Kid
-                };
-
-                keys.Add(key);
-            }
-
-            telemetry.TrackTrace(new TraceTelemetry { Message = $"Discovery Client Done", SeverityLevel = SeverityLevel.Verbose });
-
-            var parameters = new TokenValidationParameters
-            {                
-                NameClaimType = "upn",                
-            };
-
-            // The signing key must match!
-            parameters.ValidateIssuerSigningKey = true;
-            parameters.IssuerSigningKeys = keys;
-            parameters.RequireSignedTokens = true;
-
-            // Validate the JWT Issuer (iss) claim
-            parameters.ValidateIssuer = true;
-            parameters.ValidIssuer = disco.Issuer;
-
-            // Validate the token expiry
-            parameters.ValidateLifetime = jwtValidateLifetime;
-            parameters.RequireExpirationTime = jwtRequireExpirationTime;
-
-            parameters.ValidateAudience = jwtValidateAudience;
-
-            var handler = new JwtSecurityTokenHandler();
-            handler.InboundClaimTypeMap.Clear();
-
-            telemetry.TrackTrace(new TraceTelemetry { Message = $"ValidateToken Start", SeverityLevel = SeverityLevel.Verbose });
-
-            var user = handler.ValidateToken(jwt, parameters, out var token);
-
-            telemetry.TrackTrace(new TraceTelemetry { Message = $"ValidateToken Done", SeverityLevel = SeverityLevel.Verbose });
+            var user = jwt.ValidateJwtIdentityToken("upn",
+                null, jwtValidateAudience,
+                disco.Issuer, true,
+                disco.KeySet.Keys, true, true, 
+                jwtRequireExpirationTime, jwtValidateLifetime);
 
             return user;
         }

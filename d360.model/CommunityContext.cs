@@ -186,6 +186,51 @@ namespace d360.model
 
         #endregion
 
+        #region OpenId Logic
+
+        public DbSet<OpenIdRequest> OpenIdRequests { get; set; }
+
+        /// <summary>
+        /// Used to generate a state or nonce value.
+        /// </summary>
+        /// <returns></returns>
+        public string GenerateOpenIdRequestValue()
+        {
+            string val;
+
+            var chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+            var stringChars = new char[5];
+            var random = new Random();
+
+            for (int i = 0; i < stringChars.Length; i++)
+            {
+                stringChars[i] = chars[random.Next(chars.Length)];
+            }
+
+            val = new String(stringChars);
+
+            return val;
+        }
+
+        public OpenIdRequest GetOpenIdRequest(string state)
+        {
+            return OpenIdRequests.SingleOrDefault(o => o.State == state);
+        }
+
+        public void RemoveOpenIdRequest(OpenIdRequest request)
+        {
+            OpenIdRequests.Remove(request);
+            SaveChanges();
+        }
+
+        public void SetOpenIdRequest(OpenIdRequest request)
+        {
+            OpenIdRequests.Add(request);
+            SaveChanges();
+        }
+
+        #endregion
+
         public async Task<List<CompanyRebuildJobStatus>> GetRebuildJobStatuses()
         {
             int timeoutInHours = 18;
@@ -294,6 +339,7 @@ namespace d360.model
                                 cds.DomainSetting.IdpDomainCertificate,
                                 cds.DomainSetting.SpDomainCertificate,
                                 cds.DomainSetting.SignInitialSSORequest,
+                                cds.DomainSetting.AuthenticationSettings,
                                 c.Status
                             }
                             ).SingleOrDefault();
@@ -305,6 +351,7 @@ namespace d360.model
                     CurrentCompanySsoModel.IdpSsoEndpoint = model.IdpSsoEndpoint;
                     CurrentCompanySsoModel.HashAlgorithmType = model.HashAlgorithmType;
                     CurrentCompanySsoModel.SignInitialSSORequest = model.SignInitialSSORequest;
+                    CurrentCompanySsoModel.AuthenticationSettings = model.AuthenticationSettings;
                     CurrentCompanySsoModel.IsCompanyActive = model.Status != null && model.Status.ToLower() == "active" ? true : false;
 
                     if (model.IdpDomainCertificate != null)
@@ -319,7 +366,7 @@ namespace d360.model
                     }
                 }
 
-                Caching.SetItemInListByID<CompanySsoModel, string>(CACHE_KEY_SSO_MODELS, CurrentCompanyDomain, CurrentCompanySsoModel);
+                Caching.SetItemInListByID(CACHE_KEY_SSO_MODELS, CurrentCompanyDomain, CurrentCompanySsoModel);
             }
         }
 
