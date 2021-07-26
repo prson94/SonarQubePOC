@@ -149,7 +149,7 @@ namespace d360.model.DataAccessLayer.repositories
                      {
                          fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
 
-                         var AllowAllLabelValue = getAllowedAllValue(f.AllowAllLabel,f.LookupObjectType, listColorsAsJSON);
+                         var AllowAllLabelValue = getAllowedAllValue(f.AllowAllLabel, hasColor);
 
                          dbArgs.Add($"@F{f.ID}_AllValue", AllowAllLabelValue);
                      }
@@ -194,7 +194,7 @@ namespace d360.model.DataAccessLayer.repositories
 
                              fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) end as [{columnName}]");
 
-                             var AllowAllLabelValue = getAllowedAllValue(f.AllowAllLabel, f.LookupObjectType, listColorsAsJSON);
+                             var AllowAllLabelValue = getAllowedAllValue(f.AllowAllLabel, hasColor);
 
                              dbArgs.Add($"@F{f.ID}_AllValue", AllowAllLabelValue);
                          }
@@ -242,7 +242,7 @@ namespace d360.model.DataAccessLayer.repositories
                          {
                              fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
                              
-                             var AllowAllLabelValue = getAllowedAllValue(f.AllowAllLabel, f.LookupObjectType, listColorsAsJSON);
+                             var AllowAllLabelValue = getAllowedAllValue(f.AllowAllLabel, hasColor);
 
                              dbArgs.Add($"@F{f.ID}_AllValue", AllowAllLabelValue);
                          }
@@ -939,9 +939,9 @@ namespace d360.model.DataAccessLayer.repositories
 
             return executionInfo;
         }
-        protected string getAllowedAllValue(string AllowAllLabel,string LookupObjectType,bool listColorsAsJSON)
+        protected string getAllowedAllValue(string AllowAllLabel, bool hasColor)
         {
-            if (!listColorsAsJSON || LookupObjectType != "ReferenceItem")
+            if (!hasColor)
             {
                 return AllowAllLabel;
             }
