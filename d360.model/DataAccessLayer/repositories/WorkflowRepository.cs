@@ -934,11 +934,14 @@ namespace d360.model.DataAccessLayer
             var assetTypes = await CompanyContext.QueryAsync<int>(assetTypeSql, new { id = workflowItemId });
 
             var sql = $@"select top {resultCount} A.ID, 
-                                graph.GetPathByAssetId(a.ID,' > ','/') as Name, 
+                                T.TextPath as Name, 
                                 A.Object, 
                                 A.ObjectID 
-                        from Asset A
-                        where A.AssetTypeID in ({(assetTypes.Any() ? string.Join(",", assetTypes) : "-1")}) {(string.IsNullOrWhiteSpace(query) ? "" : "and (graph.GetPathByAssetId(a.ID,' > ','/') like @query + '%' or graph.GetPathByAssetId(a.ID,' > ','/') like '%' + @query + '%')")}";
+                        from AssetDetail A
+                        cross apply dbo.GetAssetTextPathById(A.ID, ' > ') T
+                        where A.AssetTypeID in ({(assetTypes.Any() ? string.Join(",", assetTypes) : "-1")}) 
+                        {(string.IsNullOrWhiteSpace(query) ? "" : "and (A.DisplayValue like @query + '%' or A.DisplayValue like '%' + @query + '%')")}
+                        order by A.DisplayValue desc";
 
 
             return await CompanyContext.QueryAsync<WorkflowReassignmentAssetApiModel>(sql, new { query });
