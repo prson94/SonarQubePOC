@@ -1224,7 +1224,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
             }
         }
 
-        public void CreateImportRelationshipsExecution(Guid apiExecutionUid, int intersectTypeId)
+        public void CreateImportRelationshipsExecution(Guid apiExecutionUid, int intersectTypeId, int timeout)
         {
             if (isScoreAllocationPresentForIntersectType(intersectTypeId))
             {
@@ -1267,13 +1267,23 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 		            for json path, WITHOUT_ARRAY_WRAPPER
 		            ) as Payload,
 		            0 as [State]
-	        from	api.ExecutionRelationship ER
-			        inner join [Intersect] R on R.ID = ER.IntersectID 
+	        from	(
+        				SELECT a.id, a.Uid, R.IntersectTypeID, A.AssetTypeID
+				        FROM api.ExecutionRelationship ER
+			            inner join [Intersect] R on R.ID = ER.IntersectID 
 					        and ER.ExecutionID = @apiExecutionUid 
 					        and ER.Success = 1
-			        inner join IntersectType T on T.ID = R.IntersectTypeID 
+			            inner join Asset A on (A.Object = R.Subject and A.ObjectID = R.SubjectID)
+					    UNION ALL
+				        SELECT a.id, a.Uid, R.IntersectTypeID, A.AssetTypeID
+				        FROM api.ExecutionRelationship ER
+			            inner join [Intersect] R on R.ID = ER.IntersectID 
+					        and ER.ExecutionID = @apiExecutionUid 
+					        and ER.Success = 1
+			            inner join Asset A on (A.Object = R.Object and A.ObjectID = R.ObjectID)
+        			) S
+			        inner join IntersectType T on T.ID = S.IntersectTypeID 
 			        inner join [Predicate] P on P.ID = T.PredicateID 
-			        inner join Asset S on (S.Object = R.Subject and S.ObjectID = R.SubjectID) or (S.Object = R.Object and S.ObjectID = R.ObjectID)
 			        inner join AssetType ST on ST.ID = S.AssetTypeID
             ) J 
      where J.Payload like '%Measures%';";
@@ -1292,7 +1302,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
                         apiExecutionUid,
                         execution.ID,
                         changeType = (int)ScoreQueueChangeType.AssetMeasures
-                    });
+                    }, commandTimeout: timeout);
 
                 if (rowsImpacted > 0)
                 {
