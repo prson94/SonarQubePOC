@@ -876,6 +876,13 @@ namespace d360.model.DataAccessLayer
 
         public async Task<IEnumerable<WorkflowReassignmentAssetApiModel>> GetWorkflowReassignmentAssets(int workflowItemId, string query, int resultCount = 1000)
         {
+            if (!string.IsNullOrEmpty(query))
+            {
+                query = query.Replace("%", "[%]");
+                query = query.Replace("[", "[[]");
+                query = query.Replace("_", "[_]");
+            }
+
             var allowedAssetTypeClasses = new List<AssetTypeClass>
             {
                 AssetTypeClass.BusinessAsset,
@@ -941,11 +948,9 @@ namespace d360.model.DataAccessLayer
                         cross apply dbo.GetAssetTextPathById(A.ID, ' > ') T
                         where A.AssetTypeID in ({(assetTypes.Any() ? string.Join(",", assetTypes) : "-1")}) 
                         {(string.IsNullOrWhiteSpace(query) ? "" : "and (A.DisplayValue like @query + '%' or A.DisplayValue like '%' + @query + '%')")}
-                        order by A.DisplayValue desc";
-
+                        order by A.DisplayValue";
 
             return await CompanyContext.QueryAsync<WorkflowReassignmentAssetApiModel>(sql, new { query });
         }
-
     }
 }
