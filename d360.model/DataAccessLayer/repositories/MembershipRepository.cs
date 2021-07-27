@@ -1412,7 +1412,6 @@ order by	q.SortOrder";
                             break;
                         case 3: //type/typeid/id/objectid
                             string objecTType = RoutePrefixToObjectType(regex.Groups[1].Value);
-                            int typeObjectid = int.Parse(regex.Groups[2].Value);
                             int oID = int.Parse(regex.Groups[4].Value);
                             asset = CompanyContext.AssetDetails.FirstOrDefault(a => a.Object == objecTType && a.ObjectID == oID);
                             break;
