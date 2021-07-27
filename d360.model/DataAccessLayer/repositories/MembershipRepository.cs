@@ -1385,7 +1385,8 @@ order by	q.SortOrder";
             {
                 {0, @"\b([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})\/?" }, //UID pattern
                 {1, @"^([a-z\/]+)\/(\d+)(\/|[;a-z=]+)(\d+)$" }, // type/typeid/objectid pattern
-                {2, @"^([a-z\/]+)\/(\d+)(\/[a-z]+)?$" } // type/objectid pattern
+                {2, @"^([a-z\/]+)\/(\d+)(\/[a-z]+)?$" }, // type/objectid pattern
+                {3, @"^([a-z\/]+)\/([\d\/]+)\/([id\/]+)\/(\d+)$" }, // type/typeid/ID/objectid pattern
             };
             foreach (KeyValuePair<int, string> entry in patterns)
             {
@@ -1408,6 +1409,12 @@ order by	q.SortOrder";
                             string objectType = RoutePrefixToObjectType(regex.Groups[1].ToString());
                             int oId = int.Parse(regex.Groups[2].ToString());
                             asset = CompanyContext.AssetDetails.FirstOrDefault(a => a.Object == objectType && a.ObjectID == oId);
+                            break;
+                        case 3: //type/typeid/id/objectid
+                            string objecTType = RoutePrefixToObjectType(regex.Groups[1].Value);
+                            int typeObjectid = int.Parse(regex.Groups[2].Value);
+                            int oID = int.Parse(regex.Groups[4].Value);
+                            asset = CompanyContext.AssetDetails.FirstOrDefault(a => a.Object == objecTType && a.ObjectID == oID);
                             break;
                     }
                 }
