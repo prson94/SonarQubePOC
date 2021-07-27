@@ -5,7 +5,7 @@ import { Location } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NgForm, FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
-import { SubscriptionLike as ISubscription } from 'rxjs';
+import { Subject, Subscription, SubscriptionLike as ISubscription } from 'rxjs';
 import { close } from 'fs';
 import { map } from 'rxjs/operators';
 
@@ -65,6 +65,8 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     @Input() hasCloseButton: boolean = true;
     private isSetValidatior: boolean = false;
 
+    private filteredAssetsSource = new Subject<any>();
+    private filteredAssetsSub: Subscription;
     private filteredAssets: WorkflowReassignmentAsset[] = [];
     private selectedReassignmentAsset: WorkflowReassignmentAsset;
 
@@ -95,6 +97,11 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
             if (!window.history || window.history.length <= 2) this.hasCloseButton = false;
             this.load();
         });
+
+        this.filteredAssetsSub = this.workflowService.getWorkflowReassignmentAssets(this.filteredAssetsSource, this.workflowItemId)
+            .subscribe((result) => {
+                this.filteredAssets = result;
+            });
     }
 
 
@@ -127,7 +134,12 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
         if (this.sub) {
             this.sub.unsubscribe();
         }
-        if (this.searchSub) this.searchSub.unsubscribe();
+        if (this.filteredAssetsSub) {
+            this.filteredAssetsSub.unsubscribe();
+        }
+        if (this.searchSub) {
+            this.searchSub.unsubscribe();
+        }
     }
 
     get objectUrl() {
@@ -248,9 +260,6 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private filterItems(e: any) {
-        this.workflowService.getWorkflowReassignmentAssets(this.workflowItemId, e.query)
-            .subscribe((result) => {
-                this.filteredAssets = result;
-            });
+        this.filteredAssetsSource.next(e.query);
     }
 };
