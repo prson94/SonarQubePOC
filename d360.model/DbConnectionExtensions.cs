@@ -59,14 +59,7 @@ namespace d360.model
         {
             if (cnn.State != ConnectionState.Open)
             {
-                try
-                {
-                    await cnn.OpenAsync();
-                }
-                catch
-                {
-                    throw;
-                }
+                await cnn.OpenAsync();
             }
         }
     }
