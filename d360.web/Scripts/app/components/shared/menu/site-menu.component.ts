@@ -12,6 +12,7 @@ import { isString, isArray } from 'util';
 import { SiteMenuCategoryComponent } from './site-menu-category.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from "../../../static/string-constants";
+import { ActivatedRoute } from '@angular/router';
 
 declare var CompanySettings;
 
@@ -29,6 +30,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     @Input() menuOpen: boolean;
     @Output() menuChanged = new EventEmitter<boolean>();
 
+    public hideHeader: boolean = false;
+    public hideNav: boolean = false;
     public isAdmin: boolean = false;
     public siteMenu: SiteMenu[] = [];
     public favorites: SiteMenu;
@@ -37,6 +40,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     private configMenu: SiteMenu;
     private subSiteNav: any;
     private subFavorites: any;
+    private subParams: any;
 
     private subReloadCounts: any;
     protected countData: any[];
@@ -50,6 +54,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     constructor(
         private ref: ChangeDetectorRef,
+        private route: ActivatedRoute,
         private messagesService: MessagesObservableService,
         private stateService: StateService,
         private headerActionsService: HeaderActionsService,
@@ -79,6 +84,24 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(() => {
             this.loadFavorites();
         });
+
+        this.subParams = this.route.queryParams.subscribe((params) => {
+            let markForCheck = false;
+            if (params['noheader'] != null) {
+                this.hideHeader = params['noheader'].toLocaleLowerCase() === 'true';
+                markForCheck = true;
+
+            }
+
+            if (params['nonavigation'] != null) {
+                this.hideNav = params['nonavigation'].toLocaleLowerCase() === 'true';
+                markForCheck = true;
+            }
+
+            if (markForCheck) {
+                this.ref.markForCheck();
+            }
+        });
     }
 
 
@@ -97,6 +120,9 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         }
         if (this.subFavorites) {
             this.subFavorites.unsubscribe();
+        }
+        if (this.subParams) {
+            this.subParams.unsubscribe();
         }
     }
 
