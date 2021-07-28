@@ -354,7 +354,7 @@ namespace d360.model
         /// <summary>
         /// A Score Engine method that is called when relationships are added to Govern.
         /// </summary>
-        void CreateImportRelationshipsExecution(Guid apiExecutionUid, int intersectTypeId);
+        void CreateImportRelationshipsExecution(Guid apiExecutionUid, int intersectTypeId, int timeout);
 
         /// <summary>
         /// A Score Engine method that is called when a measure is updated in Govern, and a notification is sent to the Score Engine to determine what needs to be recalculated.

@@ -6339,7 +6339,7 @@ end",
 
                     // Send score recalculation notifications.
                     sw.Restart();
-                    CreateImportRelationshipsExecution(execution.ExecutionID, rt.ID);
+                    CreateImportRelationshipsExecution(execution.ExecutionID, rt.ID, timeout);
                     AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
                 }
             }
