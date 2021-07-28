@@ -325,7 +325,7 @@ namespace d360.model
 
         public string GetCompanyConnectionString(bool skipCacheCheck = false)
         {
-            var cs = "";
+            string cs;
 
             if (Caching.ListItemExists<string, int>(CACHE_KEY_CONNECTION_STRINGS, CurrentCompanyID) && !skipCacheCheck)
             {
@@ -449,7 +449,13 @@ namespace d360.model
             }
             else throw new Exception($"Invalid settings key '{key}'");
         }
-        
+
+
+        public string GetPrimaryUrlPrefix()
+        {
+            return Query<string>(@"select UrlPrefix from CompanyDomainSetting where CompanyID = @c and IsPrimary = 1", new { c = CurrentCompanyID }).FirstOrDefault();
+        }
+
         public Dictionary<string, string> GetCompanySettings()
         {
             Dictionary<string, string> settings = Caching.GetItem<Dictionary<string, string>>(SettingsCacheKey);

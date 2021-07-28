@@ -31,6 +31,7 @@ namespace d360.model
         new bool Delete<T>(T entity) where T : BaseObject;
         string GetCompanyConnectionString(bool skipCacheCheck = false);
         Dictionary<string, string> GetCompanySettings();
+        string GetPrimaryUrlPrefix();
         T GetCompanySettingByKey<T>(string key);
         Task<List<CompanyRebuildJobStatus>> GetRebuildJobStatuses();
         Task<CompanyRebuildJobStatusState> GetRebuildJobStatus(CompanyRebuildJobToken jobToken);

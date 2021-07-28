@@ -308,4 +308,4 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
         }
         return html;
     }
-};
+}

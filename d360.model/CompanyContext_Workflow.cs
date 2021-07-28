@@ -102,18 +102,6 @@ namespace d360.model
         }
 
 
-        private string GetUrlPrefix()
-        {
-            string prefix;
-            using (var cnn = new System.Data.SqlClient.SqlConnection(core.constants.COMMUNITY_DATABASE_CONNECTION))
-            {
-                cnn.Open();
-
-                prefix = cnn.Query<string>(@"select UrlPrefix from CompanyDomainSetting where CompanyID = @c and IsPrimary = 1", new { c = CurrentCompanyID }).FirstOrDefault();
-            }
-
-            return prefix;
-        }
         public async Task SendDigestEmails(EnvironmentLevel environmentLevel)
         {
             var companySettings = Community.GetCompanySettings();
@@ -174,7 +162,7 @@ namespace d360.model
 
                 span = @"<span style='border-collapse: collapse; box-sizing: border-box; color: #646464; display: inline; font-family: Trebuchet MS, Arial, Helvetica,sans-serif; font-size: 12px; font-weight: 400; height: auto; line-height: 18px;text-size-adjust:100%;width: auto; word-wrap: break-word;'>";
 
-                var rootUrl = $"https://{GetUrlPrefix()}.data3sixty.com";
+                var rootUrl = $"https://{Community.GetPrimaryUrlPrefix()}.data3sixty.com";
 
                 #endregion
 
@@ -997,12 +985,7 @@ namespace d360.model
             if (string.IsNullOrEmpty(requestSettings.Url))
                 throw new Exception($"ERROR - INVALID HTTP REQUEST URL SPECIFIED.");
 
-            var prefix = "";
-            using (var cnn = new System.Data.SqlClient.SqlConnection(core.constants.COMMUNITY_DATABASE_CONNECTION))
-            {
-                cnn.Open();
-                prefix = cnn.Query<string>(@"select UrlPrefix from CompanyDomainSetting where CompanyID = @c and IsPrimary = 1", new { c = CurrentCompanyID }).FirstOrDefault();
-            }
+            var prefix = Community.GetPrimaryUrlPrefix();
 
             HttpRequestMessage request = new HttpRequestMessage();
             using (HttpClient client = new HttpClient())
@@ -1982,18 +1965,8 @@ namespace d360.model
                 users = GetWorkflowUsersBasedOnGroup(recipientGroup).ToList();
             }
 
-            var url = "";
-            var prefix = "";
-            using (var cnn = new System.Data.SqlClient.SqlConnection(core.constants.COMMUNITY_DATABASE_CONNECTION))
-            {
-                cnn.Open();
-
-                prefix = cnn.Query<string>(@"select UrlPrefix from CompanyDomainSetting where CompanyID = @c and IsPrimary = 1", new { c = CurrentCompanyID }).FirstOrDefault();
-
-                cnn.Close();
-            }
-
-            url += $"https://{prefix}.data3sixty.com/workflow/form/{typeId}/{itemStepID}/{itemId}";
+            var prefix = Community.GetPrimaryUrlPrefix();
+            var url = $"https://{prefix}.data3sixty.com/workflow/form/{typeId}/{itemStepID}/{itemId}";
 
             var initiatedBy = "(unknown)";
 
@@ -2069,16 +2042,6 @@ namespace d360.model
 
         private async Task SendAggregateWorkflowEmail(WorkflowEventRegistrationSettingsModel settings, List<string> items)
         {
-            var prefix = "";
-            using (var cnn = new System.Data.SqlClient.SqlConnection(core.constants.COMMUNITY_DATABASE_CONNECTION))
-            {
-                cnn.Open();
-
-                prefix = cnn.Query<string>(@"select UrlPrefix from CompanyDomainSetting where CompanyID = @c and IsPrimary = 1", new { c = CurrentCompanyID }).FirstOrDefault();
-
-                cnn.Close();
-            }
-
             settings.EmailMessageTemplate = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\">{settings.EmailMessageTemplate}";
 
             settings.EmailMessageTemplate += "</body></html>";
@@ -2114,16 +2077,8 @@ namespace d360.model
             if (string.IsNullOrEmpty(item.Step.Settings)) throw new Exception("INVALID EMAIL CONFIGURATION FOR SPECIFIED STEP.");
 
             var url = "";
-            var prefix = "";
-            using (var cnn = new System.Data.SqlClient.SqlConnection(core.constants.COMMUNITY_DATABASE_CONNECTION))
-            {
-                cnn.Open();
-
-                prefix = cnn.Query<string>(@"select UrlPrefix from CompanyDomainSetting where CompanyID = @c and IsPrimary = 1", new { c = CurrentCompanyID }).FirstOrDefault();
-
-                cnn.Close();
-            }
-
+            var prefix = Community.GetPrimaryUrlPrefix();
+            
             url += $"https://{prefix}.data3sixty.com/workflow/details/{item.ItemID}";
 
             settings.BodyTemplate = await ProcessMessageTokens(settings.BodyTemplate, objectInfo, prefix, item);
