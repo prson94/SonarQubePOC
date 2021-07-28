@@ -5,14 +5,14 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Table.integration.UnresolvedRelationships-Rename-v1">
-  <comment>GOV-15287</comment>
+  <changeSet author="Puneet Gupta" id="Table.integration.UnresolvedRelationships-Rename-v2">
+  <comment>GOV-15287,GOV-15378</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'UnresolvedRelationships')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'UnresolvedRelationships')
 BEGIN
 	exec sp_rename 'integration.UnresolvedRelationships', 'UnresolvedRelationships_backup';
 END
