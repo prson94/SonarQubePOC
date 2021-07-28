@@ -144,7 +144,7 @@ where   AssetTypeID in (
             var Db = GetCompanyContext();
             using (var company = GetEnvironmentConnection())
             {
-                await company.OpenWithRetry();
+                await company.OpenIfClosed();
 
                 ExecutionRecord = getExecution(company);
                 checkIfOtherRunningExecutions(company);
@@ -671,7 +671,7 @@ where   AssetTypeID in (
 
             using (var company = GetEnvironmentConnection())
             {
-                company.OpenWithRetry().Wait();
+                company.OpenIfClosed().Wait();
 
                 using (var trans = company.BeginTransaction())
                 {

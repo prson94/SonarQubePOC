@@ -17,7 +17,7 @@ namespace igx.jobs.scoreprocessor
             {
                 using (var company = GetEnvironmentConnection())
                 {
-                    await company.OpenWithRetry();
+                    await company.OpenIfClosed();
 
                     var exec = await company.QueryFirstOrDefaultAsync<ScoreExecution>("select * from metrics.Execution where Uid = @id", new { id = Info.ExecutionUid });
                     if (exec != null)

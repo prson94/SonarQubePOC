@@ -55,24 +55,13 @@ namespace d360.model
             }
         }
 
-        public static async Task OpenWithRetry(this SqlConnection cnn, int retryCount = 3)
+        public static async Task OpenIfClosed(this SqlConnection cnn)
         {
-            int attemptCount = 0;
-
             if (cnn.State != ConnectionState.Open)
             {
                 try
                 {
                     await cnn.OpenAsync();
-                }
-                catch (SqlException ex)
-                {
-                    attemptCount++;
-                    System.Threading.Thread.Sleep(1500 * attemptCount);
-                    if (attemptCount > retryCount)
-                    {
-                        throw ex;
-                    }
                 }
                 catch
                 {
