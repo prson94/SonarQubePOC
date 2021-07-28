@@ -14,16 +14,19 @@
     </div>
 </div>
 <div class="ig-lookup-grid-filter-container" *ngIf="filtersLoadIdentifier">
-    <div class="grid-actions-header">
-        <div class="simple-search">
-            <ig-search-field mode="Keypress"
-                             [debounce]="600"
-                             (onSearch)="loadData($event)"
-                             [(ngModel)]="simpleTextFilter"
-                             [infoTooltip]="simpleSearchTooltipHTML">
-            </ig-search-field>
-        </div>
-        <advanced-filtering *ngIf="showAdvancedFilterField" [loadIdentifier]="filtersLoadIdentifier" [enableFilterSaving]="false" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+    <div class="grid-actions-header" [style.padding]="hideFilter ? '0 0 5px 0' : null">
+        <ng-container *ngIf="!hideFilter">
+            <div class="simple-search">
+                <ig-search-field mode="Keypress"
+                                 [debounce]="600"
+                                 (onSearch)="loadData($event)"
+                                 [(ngModel)]="simpleTextFilter"
+                                 [infoTooltip]="simpleSearchTooltipHTML">
+                </ig-search-field>
+            </div>
+            <advanced-filtering *ngIf="showAdvancedFilterField" [loadIdentifier]="filtersLoadIdentifier" [enableFilterSaving]="false" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+        </ng-container>
+        <div *ngIf="hideFilter" class="ig-lookup-grid-filter-placeholder">&nbsp;</div>
         <div class="grid-action-buttons">
             <button igButton
                     class="ig-lookup-grid-button"
