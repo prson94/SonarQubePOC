@@ -4,6 +4,7 @@ using Dapper;
 using d360.core.entities;
 using System.Data;
 using System.Threading.Tasks;
+using d360.model;
 
 namespace igx.jobs.scoreprocessor
 {
@@ -16,10 +17,7 @@ namespace igx.jobs.scoreprocessor
             {
                 using (var company = GetEnvironmentConnection())
                 {
-                    if (company.State != ConnectionState.Open)
-                    {
-                        company.Open();
-                    }
+                    await company.OpenIfClosed();
 
                     var exec = await company.QueryFirstOrDefaultAsync<ScoreExecution>("select * from metrics.Execution where Uid = @id", new { id = Info.ExecutionUid });
                     if (exec != null)

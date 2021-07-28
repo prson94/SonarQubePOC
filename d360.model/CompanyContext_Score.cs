@@ -1008,10 +1008,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 
             var execution = createScoreExecution();
 
-            if (Connection.State != ConnectionState.Open)
-            {
-                Connection.Open();
-            }
+            Connection.OpenIfClosed().Wait();
 
             int rowsImpacted = Connection.Execute(
                 sql,
@@ -1051,10 +1048,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 
             var execution = createScoreExecution();
 
-            if (Connection.State != ConnectionState.Open)
-            {
-                Connection.Open();
-            }
+            Connection.OpenIfClosed().Wait();
 
             int rowsImpacted = Connection.Execute(
                 sql,
@@ -1117,10 +1111,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 
             var execution = createScoreExecution(apiExecutionUid);
 
-            if (Connection.State != ConnectionState.Open)
-            {
-                Connection.Open();
-            }
+            Connection.OpenIfClosed().Wait();
 
             int rowsImpacted = Connection.Execute(
                 sql, 
@@ -1199,10 +1190,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 
                 var execution = createScoreExecution(apiExecutionUid);
 
-                if (Connection.State != ConnectionState.Open)
-                {
-                    Connection.Open();
-                }
+                Connection.OpenIfClosed().Wait();
 
                 int rowsImpacted = Connection.Execute(
                     sql,
@@ -1290,10 +1278,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 
                 var execution = createScoreExecution(apiExecutionUid);
 
-                if (Connection.State != ConnectionState.Open)
-                {
-                    Connection.Open();
-                }
+                Connection.OpenIfClosed().Wait();
 
                 int rowsImpacted = Connection.Execute(
                     sql,
@@ -1369,10 +1354,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
                         itemsTable.Rows.Add(itemRow);
                     }
 
-                    if (Connection.State != ConnectionState.Open)
-                    {
-                        Connection.Open();
-                    }
+                    Connection.OpenIfClosed().Wait();
 
                     Connection.Execute(@"
 drop table if exists #ExecutionItem;
@@ -1448,10 +1430,7 @@ truncate table #ExecutionItem;", transaction: trans);
             var execution = createScoreExecution();
             var changeType = (int)ScoreQueueChangeType.AssetMeasures;
 
-            if (Connection.State != ConnectionState.Open)
-            {
-                Connection.Open();
-            }
+            Connection.OpenIfClosed().Wait();
 
             string sql = "declare @ef date = cast(getutcdate() as date), @numberOfResults int = 0;";
 
@@ -1561,10 +1540,7 @@ from    (
         ) J 
 where   J.Payload like '%Measures%';";
 
-            if (Connection.State != ConnectionState.Open)
-            {
-                Connection.Open();
-            }
+            Connection.OpenIfClosed().Wait();
 
             int rowsAffected = Connection.Execute(sql, new { ExecutionId = execution.Uid, execution.ID, metricAssetVersionUid, changeType }, commandTimeout: 1200);
 
@@ -1652,10 +1628,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 
             var execution = createScoreExecution();
 
-            if (Connection.State != ConnectionState.Open)
-            {
-                Connection.Open();
-            }
+            Connection.OpenIfClosed().Wait();
 
             int rowsImpacted = Connection.Execute(
                 sql,
@@ -1733,10 +1706,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 			and ChangeType = @previousChangeType
 			and [State] = 1";
 
-            if (Connection.State != ConnectionState.Open)
-            {
-                Connection.Open();
-            }
+            Connection.OpenIfClosed().Wait();
 
             int rowsImpacted = Connection.Execute(
                 sql,
@@ -1802,10 +1772,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 
                 var execution = createScoreExecution();
 
-                if (Connection.State != ConnectionState.Open)
-                {
-                    Connection.Open();
-                }
+                Connection.OpenIfClosed().Wait();
 
                 int rowsImpacted = Connection.Execute(
                     sql,
@@ -1871,10 +1838,7 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
         {
             try
             {
-                if (cnn.State != ConnectionState.Open)
-                {
-                    cnn.Open();
-                }
+                cnn.OpenIfClosed().Wait();
                 cnn.Execute("update metrics.Execution set PercentComplete = 1, CompletedOn = getutcdate(), UpdatedOn = getutcdate() where ID = @executionId", new { executionId });
             }
             catch
@@ -1988,8 +1952,7 @@ from	metrics.AssetVersion V
                 AssetVersionRollupPathUid = assetVersionRollupPathUid
             };
 
-            if (Connection.State != ConnectionState.Open)
-                Connection.Open();
+            Connection.OpenIfClosed().Wait();
 
             var dqQueryDetails = Connection.QueryMultiple(
                 "metrics.BuildDataQualityMeasureQuery @queryType, @assetVersionRollupPathUid",
@@ -2143,10 +2106,9 @@ from	metrics.AssetVersion V
                 args.Add(p.ParameterName, p.Value, p.DbType);
             }
 
-            if (Connection.State != ConnectionState.Open)
-                Connection.Open();
+            Connection.OpenIfClosed().Wait();
 
-            var list = Connection.Query<DataQualityMeasureQueryResultModel>(query.Sql, args).ToList();
+            var list = Connection.Query<DataQualityMeasureQueryResultModel>(query.Sql, args, commandTimeout: 600).ToList();
 
             return list;
         }
@@ -2160,8 +2122,7 @@ from	metrics.AssetVersion V
                 args.Add(p.ParameterName, p.Value, p.DbType);
             }
 
-            if (Connection.State != ConnectionState.Open)
-                Connection.Open();
+            Connection.OpenIfClosed().Wait();
 
             var list = Connection.Query<AssetMeasureModel>(query.Sql, args, commandTimeout: 600)
                 .ToList()
