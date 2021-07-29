@@ -2179,8 +2179,6 @@ for json path";
 
             List<string> simpleFilterWhereConditions = new List<string>();
             List<string> whereConditions = new List<string>();
-            List<string> innerColumns;
-            List<string> outerColumns;
 
             parameters.Add("@evaluatedAssetUid", evaluatedAssetUid);
             parameters.Add("@owningAssetUid", owningAssetUid);
@@ -2208,7 +2206,6 @@ for json path";
                     parameters.Add(item.Key, item.Value);
                 }
                 whereConditions.Add(query);
-                //whereSql += (string.IsNullOrEmpty(whereSql) ? " where " : " and ") + query;
             }
 
             if (!string.IsNullOrEmpty(_simpleFilter))
