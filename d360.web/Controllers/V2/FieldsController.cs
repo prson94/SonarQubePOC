@@ -2445,15 +2445,15 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 if (fieldType.Type == DataType.RefListRelationship.ToString()
                     || fieldType.Type == DataType.ComplexRelationLookup.ToString())
                 {
-                    Guid assetTypeUid = Guid.Empty;
+                    Guid? assetTypeUid = Guid.Empty;
                     var fields = FieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid, true).ToList();
                     if (fields.Count > 0)
                     {
 
                         var assettypeid = fields.Where(x => x.AssetTypeID != null).FirstOrDefault()?.AssetTypeID;
                         if (assettypeid.HasValue)
-                        {
-                            assetTypeUid = Company.AssetTypes.FirstOrDefault(x => x.ID == assettypeid).uid;
+                        {                            
+                            assetTypeUid = Company.AssetTypes.FirstOrDefault(x => x.ID == assettypeid)?.uid;
                         }
                     }
 
