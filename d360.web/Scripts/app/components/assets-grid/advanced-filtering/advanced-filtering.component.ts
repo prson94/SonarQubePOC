@@ -488,17 +488,22 @@ export class AdvancedFilteringComponent implements OnChanges {
             fields.push({
                 Name: "EffectiveDate", FriendlyName: "Effective Date", Type: new FieldType("Date"), Category: ""
             });
+            let passFraction = new FieldType("Decimal");
+            passFraction.Decimal.Validation.MinimumValue = 0;
+            passFraction.Decimal.Validation.MaximumValue = 1;
             fields.push({
-                Name: "PassFraction", FriendlyName: "Pass Fraction", Type: new FieldType("Decimal"), Category: ""
+                Name: "PassFraction", FriendlyName: "Pass Fraction", Type: passFraction, Category: ""
+            });
+            let notNegativeNumber = new FieldType("Number");
+            notNegativeNumber.Number.Validation.MinimumValue = 0;
+            fields.push({
+                Name: "PassCount", FriendlyName: "Rows Passed", Type: notNegativeNumber, Category: ""
             });
             fields.push({
-                Name: "PassCount", FriendlyName: "Rows Passed", Type: new FieldType("Number"), Category: ""
+                Name: "FailCount", FriendlyName: "Rows Failed", Type: notNegativeNumber, Category: ""
             });
             fields.push({
-                Name: "FailCount", FriendlyName: "Rows Failed", Type: new FieldType("Number"), Category: ""
-            });
-            fields.push({
-                Name: "TotalCount", FriendlyName: "Total Rows", Type: new FieldType("Number"), Category: ""
+                Name: "TotalCount", FriendlyName: "Total Rows", Type: notNegativeNumber, Category: ""
             });
             fields.push({
                 Name: "Outdated", FriendlyName: "Outdated Rule Result", Type: new FieldType("Boolean"), Category: ""

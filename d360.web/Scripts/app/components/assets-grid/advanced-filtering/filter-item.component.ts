@@ -384,7 +384,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             if (fieldDropdown) {
                 setTimeout(() => {
                     fieldDropdown.click();
-                });
+                }, 50);
             }
         }
         else {
@@ -1067,12 +1067,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         if (type === "Number") {
-            this.numberMax = 2147483647;
-            this.numberMin = -2147483648;
+            this.numberMax = this.currentField.Type.Number?.Validation?.MaximumValue ?? 2147483647;
+            this.numberMin = this.currentField.Type.Number?.Validation?.MinimumValue ?? -2147483648;
         }
         if (type === "Decimal") {
-            this.numberMax = 9223372036854775807;
-            this.numberMin = -9223372036854775808;
+            this.numberMax = this.currentField.Type.Decimal?.Validation?.MaximumValue ?? 9223372036854775807;
+            this.numberMin = this.currentField.Type.Decimal?.Validation?.MinimumValue ?? -9223372036854775808;
         }
         if (type === "Number" || type === "Decimal" || type === "Score") {
 
@@ -1142,12 +1142,23 @@ export class FilterItemComponent implements OnInit, OnChanges {
         if (!this.doesNeedValue) {
             return false;
         }
-        if (this.currentInputType && this.currentInputType.indexOf("multi") !== -1 && this.currentInputType !== "multi-input") {
-            return this.isEmpty(this.condition.value) || this.isEmpty(this.condition.value2);
+        if (this.currentInputType) {
+            const checkValue2: boolean = (this.currentInputType.indexOf("multi") !== -1 && this.currentInputType !== "multi-input");
+            const checkMinMax: boolean = this.currentInputType.indexOf("number") !== -1
+            if (checkValue2 && this.isEmpty(this.condition.value2)) {
+                return true;
+            }
+            if (this.isEmpty(this.condition.value)) {
+                return true;
+            }
+            if (checkValue2 && checkMinMax && this.isOutsideMinMax(this.condition.value2)) {
+                return true;
+            }
+            if (checkMinMax && this.isOutsideMinMax(this.condition.value)) {
+                return true;
+            }
         }
-        else {
-            return this.isEmpty(this.condition.value);
-        }
+        return this.isEmpty(this.condition.value);
     }
 
     isEmpty(value: any): boolean {
@@ -1158,6 +1169,19 @@ export class FilterItemComponent implements OnInit, OnChanges {
             return true;
         }
 
+        return false;
+    }
+
+    isOutsideMinMax(value: any): boolean {
+        if (Array.isArray(value) && (value as []).length > 0) {
+            return false;
+        }
+        if (value && typeof this.numberMax !== "undefined" && value > +this.numberMax) {
+            return true;
+        }
+        if (value && typeof this.numberMin !== "undefined" && value < +this.numberMin) {
+            return true;
+        }
         return false;
     }
 
