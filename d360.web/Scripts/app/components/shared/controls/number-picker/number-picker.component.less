@@ -1,6 +1,25 @@
 ﻿@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
 @import "../../../../../../Content/styles/_Variables.less";
 ig-number-input {
+    .ig-number-input {
+        position: relative;
+
+        &.ig-input-small {
+            width: @ig-field-width-small !important;
+        }
+
+        &.ig-input-medium {
+            width: @ig-field-width-medium !important;
+        }
+
+        &.ig-input-large {
+            width: @ig-field-width-large !important;
+        }
+
+        &.ig-input-full {
+            width: @ig-field-width-full !important;
+        }
+    }
 
     .ig-number-field {
         font-family: @ig-field-font-family;
@@ -12,7 +31,7 @@ ig-number-input {
         height: @ig-field-height;
         line-height: 30px;
         border-radius: @ig-field-border-radius;
-        width: 150px !important;
+        width: 100% !important;
 
         &:enabled:focus:not(.p-state-error) {
             outline: 0 none;
@@ -78,9 +97,10 @@ ig-number-input {
 }
 
 .ig-button-container {
-    float: left;
-    left: 146px;
-    position: relative;
+    float: right;
+    right: 4px;
+    position: absolute;
+    bottom: 0px;
     height: 32px;
 }
 

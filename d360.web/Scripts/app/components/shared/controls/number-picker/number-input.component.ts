@@ -1,6 +1,6 @@
 ﻿import { NgModule, ElementRef, ChangeDetectorRef, forwardRef, Component, ViewEncapsulation, Input, ViewChild, OnInit, EventEmitter, Output, OnChanges, SimpleChanges, HostListener, DoCheck } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR, NG_VALIDATORS, ValidationErrors, AbstractControl, FormsModule } from '@angular/forms';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR, NG_VALIDATORS, Validator, ValidationErrors, AbstractControl, FormsModule } from '@angular/forms';
 
 
 export const NUMBER_INPUT_ACCESSOR: any = {
@@ -8,15 +8,20 @@ export const NUMBER_INPUT_ACCESSOR: any = {
     useExisting: forwardRef(() => IgNumberFieldcomponent),
     multi: true
 };
+export const NUMBER_INPUT_VALIDATOR: any = {
+    provide: NG_VALIDATORS,
+    useExisting: forwardRef(() => IgNumberFieldcomponent),
+    multi: true,
+};
 
 @Component({
     selector: 'ig-number-input',
     templateUrl: 'number-input.component.html',
-    providers: [NUMBER_INPUT_ACCESSOR],
+    providers: [NUMBER_INPUT_ACCESSOR, NUMBER_INPUT_VALIDATOR],
     styleUrls: ['number-picker.component.less'],
     encapsulation: ViewEncapsulation.None,
 })
-export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
+export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit, Validator {
 
     @Input() placeholder: string;
     @Input() step: string = "any";
@@ -33,11 +38,20 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
 
     @Input() enforceMaxMin: boolean = false;
 
+    public _size: string = "small";
+    @Input() get igSize(): string {
+        return this._size;
+    }
+    set igSize(val: string) {
+        this._size = val;
+    }
+
     hasValue: boolean = false;
 
     value: number;
     onModelChange: Function = () => { };
     onModelTouched: Function = () => { };
+    onValidationChange: Function = () => { };
     @ViewChild('iginput', { static: false }) el: ElementRef;
 
     constructor(private ref: ChangeDetectorRef) { }
@@ -63,6 +77,7 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
         }
         this.value = obj;
         this.onModelChange(this.value);
+        this.onValidationChange();
         this.onModelTouched();
         this.ref.markForCheck();
     }
@@ -81,6 +96,35 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
 
     ngOnInit(): void {
         this.placeholder = this.placeholder == null ? (this.required ? 'Value required' : 'Optional') : this.placeholder;
+    }
+
+    validate(control: AbstractControl): ValidationErrors {
+        if (!this.enforceMaxMin) {
+            return null;
+        }
+        const overMax = this.value && typeof this.max !== "undefined" && this.value > +this.max;
+        const underMin = this.value && typeof this.min !== "undefined" && this.value < +this.min;
+
+        if (overMax) {
+            return {
+                overMax: {
+                    actual: +this.value,
+                    max: +this.max
+                }
+            };
+        } else if (underMin) {
+            return {
+                underMin: {
+                    actual: +this.value,
+                    min: +this.min
+                }
+            };
+        }
+        return null;
+    }
+
+    registerOnValidatorChange?(fn: () => void): void {
+        this.onValidationChange = fn;
     }
 
     increment() {
@@ -112,6 +156,19 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
 
     getStyleClass(): string {
         return 'ig-number-field ' + this.styleClass;
+    }
+    getElementClass() {
+        let classes: string[] = ["ig-number-input"];
+        if (this._size && this._size === "small") {
+            classes.push("ig-input-small");
+        } else if (this._size && this._size === "medium") {
+            classes.push("ig-input-medium");
+        } else if (this._size && this._size === "large") {
+            classes.push("ig-input-large");
+        } else if (this._size && this._size === "full") {
+            classes.push("ig-input-full");
+        }
+        return classes.join(" ");
     }
 
     onInputKeyDown(event) {
