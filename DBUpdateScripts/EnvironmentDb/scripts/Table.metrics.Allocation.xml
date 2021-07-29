@@ -5,12 +5,12 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.metrics.Allocation-v4">
+  <changeSet author="sDooley" id="Table.metrics.Allocation-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
-		<![CDATA[
+      <![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Allocation')
 BEGIN
 	CREATE TABLE [metrics].[Allocation] (
@@ -30,13 +30,23 @@ BEGIN
 		[IsThresholdBased] [bit] NOT NULL
 	)
 END
+
+if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Allocation' and COLUMN_NAME = 'ID')
+begin
+	ALTER TABLE [metrics].[Allocation]
+	ADD ID INT IDENTITY(1,1)
+end
 		]]>
     </sql>
-	<rollback>
-		<![CDATA[	
-
+    <rollback>
+      <![CDATA[	
+if exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Allocation' and COLUMN_NAME = 'ID')
+begin
+	ALTER TABLE [metrics].[Allocation]
+	DROP COLUMN [ID]
+end
 		]]>
-	</rollback>
+    </rollback>
   </changeSet>
 
   <changeSet author="Pappas" id="Constraint.metrics.Allocation-v4">
@@ -201,6 +211,81 @@ begin
 end
 		]]>
 	</rollback>
+  </changeSet>
+
+  <changeSet author="sDooley" id="Table.metrics.Allocation-Allocation_AfterInsert-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+CREATE OR ALTER TRIGGER [metrics].[Allocation_AfterInsert]
+	ON [metrics].[Allocation]
+	FOR INSERT
+AS
+BEGIN
+	SET NOCOUNT ON;
+		
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Add', [queue].WriteIndexXml('', 'MetricAllocation', ID, coalesce(UpdatedBy, 0)), 'MetricAllocation', ID from inserted
+END
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+DROP TRIGGER IF EXISTS [metrics].[Allocation_AfterInsert]
+		]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="sDooley" id="Table.metrics.Allocation-Allocation_AfterUpdate-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+CREATE OR ALTER TRIGGER [metrics].[Allocation_AfterUpdate]
+	ON [metrics].[Allocation]
+	FOR UPDATE
+AS
+BEGIN
+	SET NOCOUNT ON;
+		
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Update', [queue].WriteIndexXml('', 'MetricAllocation', ID, coalesce(UpdatedBy, 0)), 'MetricAllocation', ID from inserted
+END
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+DROP TRIGGER IF EXISTS [metrics].[Allocation_AfterUpdate]
+		]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="sDooley" id="Table.metrics.Allocation-Allocation_AfterUpdate-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+CREATE OR ALTER TRIGGER [metrics].[Allocation_AfterDelete]
+	ON [metrics].[Allocation]
+	AFTER DELETE
+AS
+BEGIN
+	SET NOCOUNT ON;
+		
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Delete', [queue].WriteIndexXml('Removed', 'MetricAllocation', ID, coalesce(UpdatedBy, 0)), 'MetricAllocation', ID from deleted
+END
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+DROP TRIGGER IF EXISTS [metrics].[Allocation_AfterDelete]
+		]]>
+    </rollback>
   </changeSet>
 
 </databaseChangeLog>

@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Procedure.utility.AddAuditEntry-v9.4">
-  <comment>GOV-14410</comment>
+  <changeSet author="kmcnamee" id="Procedure.utility.AddAuditEntry-v9.5">
+  <comment>GOV-14564</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -45,7 +45,8 @@ begin
 		if @DependentObject = 'Report'				begin		select @DependentObjectName = Name from Report where ID = @DependentObjectID				end
 		if @DependentObject = 'ResponsibilityType'	begin		select @DependentObjectName = Name from ResponsibilityType where ID = @DependentObjectID	end				
 		if @DependentObject = 'SurveyType'			begin		select @DependentObjectName = Name from SurveyType where ID = @DependentObjectID			end			
-		if @DependentObject = 'Tag'			        begin		select @DependentObjectName = Value from Tag where ID = @DependentObjectID			        end			
+		if @DependentObject = 'Tag'			        begin		select @DependentObjectName = Value from Tag where ID = @DependentObjectID			        end	
+    if @DependentObject = 'MetricAllocation'	begin		select @DependentObjectName = @MainObject											end	
 		
 		else			
 			begin	
@@ -397,6 +398,21 @@ begin
 		insert into @tbl  select 0, 'Name', Name, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject		
 		insert into @tbl  select 0, 'Description', Description, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject	
 		insert into @tbl  select 0, 'DisplayFormat', DisplayFormat, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject					
+	end
+  
+  if @MainObject = 'MetricAllocation'
+	begin
+		select	@MainObjectTypeName = 'MetricAllocation',
+				@MainObjectName = AT.Name
+		from	[dbo].[AssetType] AT		
+		inner join [metrics].[Allocation] MA on MA.ID = @MainObjectID		
+		where AT.uid = MA.AssetTypeUid
+
+		insert into @tbl  select 0, 'ScoreType', ScoreType, 0, 0 from [metrics].[Allocation] where ID = @MainObjectID		
+		insert into @tbl  select 0, 'AssetTypeName', AssetTypeUid, 0, 0 from [metrics].[Allocation] where ID = @MainObjectID
+		insert into @tbl  select 0, 'IsExternallyCalculated', IsExternallyCalculated, 0, 0 from [metrics].[Allocation] where ID = @MainObjectID				
+		insert into @tbl  select 0, 'LowerThreshold', LowerThreshold, 0, 0 from [metrics].[Allocation] where ID = @MainObjectID		
+		insert into @tbl  select 0, 'UpperThreshold', UpperThreshold, 0, 0 from [metrics].[Allocation] where ID = @MainObjectID
 	end
 
 	insert into @tbl  
@@ -1186,6 +1202,7 @@ begin
 			if @updated = 1
 			begin
 				insert into [reporting].[Global_FieldAudit] 
+				(AuditID,FieldTypeID,FieldName,Version,Value)
 				values	(
 						@auditID, 
 						@fieldTypeID, 

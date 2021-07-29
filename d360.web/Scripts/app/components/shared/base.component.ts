@@ -27,6 +27,7 @@ export class BaseComponent {
 
     readonly resourceTypeUid = '00000001-0000-0000-0000-A00000000011';
     readonly groupTypeUid = '00000001-0000-0000-0000-B00000000012';
+    readonly metricAllocationUid = '00000001-0000-0000-0000-B00000000013';
 
     // current object info
     uid: string;
@@ -480,6 +481,10 @@ export class BaseComponent {
 
         if (this.objectType === "GroupType") {
             return `/${this.objectType}/${this.groupTypeUid}`;
+        }
+
+        if (this.objectType === "MetricAllocation") {
+            return `/${this.objectType}/${this.metricAllocationUid}`;
         }
 
         //Tag needs to be part of the URL for the header to behave
