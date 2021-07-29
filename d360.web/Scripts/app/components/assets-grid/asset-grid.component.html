@@ -1,5 +1,5 @@
 <d3s-loading [isLoading]="isEditing || !isDefinitionLoaded"></d3s-loading>
-<header class="grid-header" *ngIf="!showEditor && !showDelete && !isEditing && !hasNoListableColumns && isDefinitionLoaded">
+<div *ngIf="!showEditor && !showDelete && !isEditing && !hasNoListableColumns && isDefinitionLoaded">
     <div *ngIf="showArtifactDetails && gridObject && gridObject.Description"
          [innerHtml]="gridObject.Description | safeHtml"
          class="tile-description"></div>
@@ -10,7 +10,7 @@
           (click)="toggleArtifactDetail()">
         {{showArtifactDetails ? 'Hide Description':'Show Description'}}
     </span>
-</header>
+</div>
 
 <div class="grid-actions-header {{(this.showEditor || this.showDelete || this.isEditing || !isDefinitionLoaded ? 'hidden' : '')}}">
     <div class="simple-search">
