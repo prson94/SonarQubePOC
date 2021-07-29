@@ -99,28 +99,27 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit, Val
     }
 
     validate(control: AbstractControl): ValidationErrors {
-        if (!this.enforceMaxMin) {
-            return null;
+        let result: any = null;
+        if (this.enforceMaxMin) {
+            const overMax = this.value && typeof this.max !== "undefined" && this.value > +this.max;
+            const underMin = this.value && typeof this.min !== "undefined" && this.value < +this.min;
+            if (overMax) {
+                result = {
+                    overMax: {
+                        actual: +this.value,
+                        max: +this.max
+                    }
+                };
+            } else if (underMin) {
+                result = {
+                    underMin: {
+                        actual: +this.value,
+                        min: +this.min
+                    }
+                };
+            }
         }
-        const overMax = this.value && typeof this.max !== "undefined" && this.value > +this.max;
-        const underMin = this.value && typeof this.min !== "undefined" && this.value < +this.min;
-
-        if (overMax) {
-            return {
-                overMax: {
-                    actual: +this.value,
-                    max: +this.max
-                }
-            };
-        } else if (underMin) {
-            return {
-                underMin: {
-                    actual: +this.value,
-                    min: +this.min
-                }
-            };
-        }
-        return null;
+        return result;
     }
 
     registerOnValidatorChange?(fn: () => void): void {
@@ -159,14 +158,8 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit, Val
     }
     getElementClass() {
         let classes: string[] = ["ig-number-input"];
-        if (this._size && this._size === "small") {
-            classes.push("ig-input-small");
-        } else if (this._size && this._size === "medium") {
-            classes.push("ig-input-medium");
-        } else if (this._size && this._size === "large") {
-            classes.push("ig-input-large");
-        } else if (this._size && this._size === "full") {
-            classes.push("ig-input-full");
+        if (["small", "medium", "large", "full"].indexOf(this._size) !== -1) {
+            classes.push("ig-input-" + this._size);
         }
         return classes.join(" ");
     }

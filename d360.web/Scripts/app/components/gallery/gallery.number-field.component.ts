@@ -1,6 +1,12 @@
 ﻿import { Component, OnInit, ChangeDetectionStrategy, AfterContentInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { FormControl, Validators, FormGroup, ValidatorFn, AbstractControl, FormBuilder } from '@angular/forms';
 
+export class DummyformModel {
+    constructor(
+        public name: string,
+        public number: number
+    ) { }
+}
 
 @Component({
     selector: 'gallery-number-field',
@@ -71,9 +77,3 @@ export class GalleryNumberFieldComponent implements OnInit {
     get JSONERR() { return JSON.stringify(this.form.get('myNumber').errors);}
 }
 
-export class DummyformModel {
-    constructor(
-        public name: string,
-        public number: number
-    ) { }
-}

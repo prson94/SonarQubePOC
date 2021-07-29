@@ -1144,7 +1144,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
         if (this.currentInputType) {
             const checkValue2: boolean = (this.currentInputType.indexOf("multi") !== -1 && this.currentInputType !== "multi-input");
-            const checkMinMax: boolean = this.currentInputType.indexOf("number") !== -1
+            const checkMinMax: boolean = this.currentInputType.indexOf("number") !== -1;
             if (checkValue2 && this.isEmpty(this.condition.value2)) {
                 return true;
             }
@@ -1173,16 +1173,15 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     isOutsideMinMax(value: any): boolean {
-        if (Array.isArray(value) && (value as []).length > 0) {
-            return false;
+        let result = false;
+        if (value && !Array.isArray(value)) {
+            if (typeof this.numberMax !== "undefined" && value > +this.numberMax) {
+                result = true;
+            } else if (typeof this.numberMin !== "undefined" && value < +this.numberMin) {
+                result = true;
+            }
         }
-        if (value && typeof this.numberMax !== "undefined" && value > +this.numberMax) {
-            return true;
-        }
-        if (value && typeof this.numberMin !== "undefined" && value < +this.numberMin) {
-            return true;
-        }
-        return false;
+        return result;
     }
 
     @HostListener("document:click", ["$event"])
