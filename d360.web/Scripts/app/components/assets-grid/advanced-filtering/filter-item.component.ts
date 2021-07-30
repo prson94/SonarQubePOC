@@ -1173,15 +1173,18 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     isOutsideMinMax(value: any): boolean {
-        let result = false;
         if (value && !Array.isArray(value)) {
-            if (typeof this.numberMax !== "undefined" && value > +this.numberMax) {
-                result = true;
-            } else if (typeof this.numberMin !== "undefined" && value < +this.numberMin) {
-                result = true;
-            }
+            return this.isUnderMin(+value) || this.isOverMax(+value);
         }
-        return result;
+        return null;
+    }
+
+    private isOverMax(value: number): boolean {
+        return typeof this.numberMax !== "undefined" && value > +this.numberMax;
+    }
+
+    private isUnderMin(value: number): boolean {
+        return typeof this.numberMin !== "undefined" && value < +this.numberMin;
     }
 
     @HostListener("document:click", ["$event"])

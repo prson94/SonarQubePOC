@@ -101,16 +101,14 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit, Val
     validate(control: AbstractControl): ValidationErrors {
         let result: any = null;
         if (this.enforceMaxMin) {
-            const overMax = this.value && typeof this.max !== "undefined" && this.value > +this.max;
-            const underMin = this.value && typeof this.min !== "undefined" && this.value < +this.min;
-            if (overMax) {
+            if (this.isOverMax()) {
                 result = {
                     overMax: {
                         actual: +this.value,
                         max: +this.max
                     }
                 };
-            } else if (underMin) {
+            } else if (this.isUnderMin()) {
                 result = {
                     underMin: {
                         actual: +this.value,
@@ -120,6 +118,14 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit, Val
             }
         }
         return result;
+    }
+
+    private isOverMax(): boolean {
+        return this.value && typeof this.max !== "undefined" && this.value > +this.max;
+    }
+
+    private isUnderMin(): boolean {
+        return this.value && typeof this.min !== "undefined" && this.value < +this.min;
     }
 
     registerOnValidatorChange?(fn: () => void): void {
