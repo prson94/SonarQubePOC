@@ -226,6 +226,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
         var selectionElement = html.getElementsByClassName("value-selection")[0] as HTMLElement;
         selectionElement.style.removeProperty("top");
         selectionElement.style.removeProperty("left");
+        let fieldSelectionElement = html.getElementsByClassName("field-selection")[0] as HTMLElement;
+        fieldSelectionElement.style.removeProperty("left");
     }
 
     updateDynamicWidths() {
@@ -262,6 +264,16 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
             if (selectionElement) {
                 selectionElement.style.top = topPosition + "px";
+            }
+
+            const fieldSelectionLeftOffset = window.outerWidth - html.getBoundingClientRect().left - 350;
+            let fieldSelectionElement = html.getElementsByClassName("field-selection")[0] as HTMLElement;
+            if (fieldSelectionElement) {
+                if (fieldSelectionLeftOffset < 0) {
+                    fieldSelectionElement.style.left = fieldSelectionLeftOffset + "px";
+                } else {
+                    fieldSelectionElement.style.removeProperty("left");
+                }
             }
         }
         catch (ex) {
