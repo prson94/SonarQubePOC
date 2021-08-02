@@ -35,7 +35,7 @@ namespace igx.UnitTests.FilterExpressionTests
             fieldTypes.Add(new FieldType() { Name = "H1_00005", ID = 5, Type = "Text" });
             fieldTypes.Add(new FieldType() { Name = "H1_00006", ID = 6, Type = "Lookup", LookupObjectType = "ArtifactType", LookupObjectID = 1 });
             fieldTypes.Add(new FieldType() { Name = "H1_00007", ID = 7, Type = "Counter" });
-            fieldTypes.Add(new FieldType() { Name = "relationship", ID = 8, Type = "Relationship", LookupObjectType = "IntersectType", LookupObjectID = 1 });
+            fieldTypes.Add(new FieldType() { Name = "$Related:4df68f30-daa0-48da-912f-2daaea6961e0", ID = 8, Type = "Relationship", LookupObjectType = "IntersectType", LookupObjectID = 1 });
 
             var filterDataProvider = new FilterDataProvider(GetCompany());
             this.filterParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField);
