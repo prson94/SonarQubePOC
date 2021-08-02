@@ -16,6 +16,12 @@ import { StringConstants } from '../../../static/string-constants';
                         <div class="col s12">                    
                             <div class="tile tile-detail">
                                 <header>Style Customizations</header>  
+                                <ig-message-box [messagetype] = "'warning'">
+                                <span>
+                                    You can write CSS overrides to customize the branding of Data360 Govern. You should write the minimal number of rules and CSS properties necessary to achieve your desired results. Software updates are released every month, which could potentially break your CSS overrides. In some cases, CSS overrides could break updates or new features added to Govern. If you use a lot of CSS overrides, you will need to perform UI regression testing every time an update is released to your environments. Because of this, we strongly recommend that you reach out to Infogix to raise enhancement requests, instead of using CSS to remove or alter features and screen layouts.
+                                </span>
+                                </ig-message-box>
+                                 <div class="col s12">&nbsp;</div>
                                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                                 <div class="row" *ngIf="!isLoading">
                                     <div class="col s12">

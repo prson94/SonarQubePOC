@@ -7,7 +7,7 @@
         <ng-container >
             <div class="summarySection">
                 <div *ngIf="dataProfile.profileSetDate" class="effectiveDate">
-                    <span class="ig-value">Effective Date: {{dataProfile.profileSetDate | date: 'dd MMM yyyy'}}</span>
+                    <span class="ig-value">Effective Date: {{dataProfile.profileSetDate | utcDate | date: 'dd MMM yyyy'}}</span>
                 </div>
                 <div *ngIf="showSampleSummary">
                     <div>
@@ -36,7 +36,7 @@
                                 </div>
                                 <div *ngIf="hasValidCounts && dataProfile.confidence!=null" class="summaryRow">
                                     <label class="ig-label">Type Confidence: </label>
-                                    <span class="ig-value" style="margin-left:5px">{{dataProfile.confidence | percent}}</span>
+                                    <span class="ig-value" style="margin-left:5px">{{dataProfile.confidence | percent : '1.0-2'}}</span>
                                     <ng-container *ngTemplateOutlet="confidenceTooltip"></ng-container>
                                 </div>
                             </div>
@@ -56,7 +56,7 @@
                             </span>
                             <span class="qualitySampleValue">
                                 <label class="qualityValue-label" style="font-weight: 600;">{{validCount | number}}</label>
-                                <span *ngIf="dataProfile.sampleCount" class="ig-value percentage">{{validCount/dataProfile.sampleCount | percent : '1.0-2'}}</span>
+                                <span *ngIf="dataProfile.sampleCount" class="ig-value percentage" style="font-weight: 600;">{{validCount/dataProfile.sampleCount | percent : '1.0-2'}}</span>
                                 <ng-container *ngTemplateOutlet="samplePercentageTooltip;context:{numerator: validCount}"></ng-container>
                             </span>
                         </div>
@@ -77,7 +77,7 @@
                             </span>
                             <span class="qualitySampleValue">
                                 <label class="qualityValue-label" style="font-weight: 600;">{{invalidCount | number}}</label>
-                                <span *ngIf="dataProfile.sampleCount" class="ig-value percentage">{{invalidCount/dataProfile.sampleCount | percent : '1.0-2'}}</span>
+                                <span *ngIf="dataProfile.sampleCount" class="ig-value percentage" style="font-weight: 600;">{{invalidCount/dataProfile.sampleCount | percent : '1.0-2'}}</span>
                                 <ng-container *ngTemplateOutlet="samplePercentageTooltip;context:{numerator: invalidCount}"></ng-container>                                
                             </span>
                         </div>
@@ -90,7 +90,7 @@
                             </span>
                             <span class="qualitySampleValue">
                                 <label class="qualityValue-label" style="font-weight: 600;">{{nullBlankCountTotal | number}}</label>
-                                <span *ngIf="dataProfile.sampleCount" class="ig-value percentage">{{nullBlankCountTotal/dataProfile.sampleCount | percent : '1.0-2'}}</span>
+                                <span *ngIf="dataProfile.sampleCount" class="ig-value percentage" style="font-weight: 600;">{{nullBlankCountTotal/dataProfile.sampleCount | percent : '1.0-2'}}</span>
                                 <ng-container *ngTemplateOutlet="samplePercentageTooltip;context:{numerator: nullBlankCountTotal}"></ng-container>
                             </span>
                         </div>
@@ -106,13 +106,13 @@
                         <div *ngFor="let top of topSamples|slice:0:topSamplesToShow let i=index">
                             <div class="sampleRow"
                                  [style.background-size]="getBackgroundSize(top.count, topSamples[0].count)">
-                                <span class="sampleKey">
+                                <div class="sampleKey">
                                     {{top.key}}
-                                </span>
-                                <span class="sampleValue">
+                                </div>
+                                <div class="sampleValue">
                                     <span class="sampleCount">{{top.count | number}}</span>
                                     <span *ngIf="dataProfile.sampleCount" class="samplePercentage">{{top.count/dataProfile.sampleCount | percent: '1.0-2'}}</span>
-                                </span>
+                                </div>
                             </div>
                         </div>
                         <div>
@@ -133,17 +133,17 @@
                         <div *ngFor="let bottom of bottomSamples|slice:0:bottomSamplesToShow let i=index">
                             <div class="sampleRow"
                                  [style.background-size]="getBackgroundSize(bottom.count, bottomSamples[0].count)">
-                                <span class="sampleKey">
+                                <div class="sampleKey">
                                     {{bottom.key}}
-                                </span>
-                                <span class="sampleValue">
+                                </div>
+                                <div class="sampleValue">
                                     <span class="sampleCount">{{bottom.count | number}}</span>
                                     <span *ngIf="dataProfile.sampleCount" class="samplePercentage">{{bottom.count/dataProfile.sampleCount | percent: '1.0-2'}}</span>
-                                </span>
+                                </div>
                             </div>
                         </div>
                         <div>
-                            <span *ngIf="bottomSamples.length > 5 && bottomSamplesToShow < bottomSamples.length" (click)="bottomSamplesToShow = bottomSamples.length" class="showMore">Show More...</span>
+                            <span *ngIf="bottomSamples.length > 5 && bottomSamplesToShow < bottomSamples.length" (click)="bottomSamplesToShow = bottomSamples.length" class="showMore">Show more...</span>
                         </div>
                         <div>
                             <span *ngIf="bottomSamples.length > 5 && bottomSamplesToShow == bottomSamples.length" (click)="bottomSamplesToShow = 5" class="showMore">Show less...</span>
@@ -163,17 +163,17 @@
                         <div *ngFor="let outlier of dataProfile.outlierDetail|slice:0:outliersToShow let i=index">
                             <div class="sampleRow"
                                  [style.background-size]="getBackgroundSize(outlier.count, dataProfile.outlierDetail[0].count)">
-                                <span class="sampleKey">
+                                <div class="sampleKey">
                                     {{outlier.key}}
-                                </span>
-                                <span class="sampleValue">
+                                </div>
+                                <div class="sampleValue">
                                     <span class="sampleCount">{{outlier.count | number}}</span>
                                     <span *ngIf="dataProfile.sampleCount" class="samplePercentage">{{outlier.count/dataProfile.sampleCount | percent: '1.0-2'}}</span>
-                                </span>
+                                </div>
                             </div>
                         </div>
                         <div>
-                            <span *ngIf="dataProfile.outlierDetail.length > 5 && outliersToShow < dataProfile.outlierDetail.length" (click)="outliersToShow = dataProfile.outlierDetail.length" class="showMore">Show More...</span>
+                            <span *ngIf="dataProfile.outlierDetail.length > 5 && outliersToShow < dataProfile.outlierDetail.length" (click)="outliersToShow = dataProfile.outlierDetail.length" class="showMore">Show more...</span>
                         </div>
                         <div>
                             <span *ngIf="dataProfile.outlierDetail.length > 5 && outliersToShow == dataProfile.outlierDetail.length" (click)="outliersToShow = 5" class="showMore">Show less...</span>
@@ -190,17 +190,17 @@
                         <div *ngFor="let shape of dataProfile.shapesDetail|slice:0:shapesToShow let i=index">
                             <div class="sampleRow"
                                  [style.background-size]="getBackgroundSize(shape.count, dataProfile.shapesDetail[0].count)">
-                                <span class="sampleKey">
+                                <div class="sampleKey">
                                     {{shape.key}}
-                                </span>
-                                <span class="sampleValue">
+                                </div>
+                                <div class="sampleValue">
                                     <span class="sampleCount">{{shape.count | number}}</span>
                                     <span *ngIf="dataProfile.sampleCount" class="samplePercentage">{{shape.count/dataProfile.sampleCount| percent: '1.0-2'}}</span>
-                                </span>
+                                </div>
                             </div>
                         </div>
                         <div>
-                            <span *ngIf="dataProfile.shapesDetail.length > 5 && shapesToShow < dataProfile.shapesDetail.length" (click)="shapesToShow = dataProfile.shapesDetail.length" class="showMore">Show More...</span>
+                            <span *ngIf="dataProfile.shapesDetail.length > 5 && shapesToShow < dataProfile.shapesDetail.length" (click)="shapesToShow = dataProfile.shapesDetail.length" class="showMore">Show more...</span>
                         </div>
                         <div>
                             <span *ngIf="dataProfile.shapesDetail.length > 5 && shapesToShow == dataProfile.shapesDetail.length" (click)="shapesToShow = 5" class="showMore">Show less...</span>
@@ -213,66 +213,23 @@
                                    [title]="'Statistics'"
                                    [shouldBePadded]="false"
                                    [showHeaderLine]="false">
-                    <div readonly class="group">
-                        <div *ngIf="ShowBoolean">
-                            <ng-container *ngTemplateOutlet="nullCountTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="blankCountTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="regExpTemplate"></ng-container>
-                        </div>
-                        <div *ngIf="ShowNumber">
-                            <ng-container *ngTemplateOutlet="nullCountTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="blankCountTemplate"></ng-container>
+                    <div readonly class="group">                        
+                        <ng-container *ngTemplateOutlet="nullCountTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="blankCountTemplate"></ng-container>
 
-                            <ng-container *ngTemplateOutlet="minTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="maxTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="meanTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="minTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="maxTemplate"></ng-container>
 
-                            <ng-container *ngTemplateOutlet="standardDeviationTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="leadingZeroCountTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="regExpTemplate"></ng-container>
-                        </div>
-                        <div *ngIf="ShowString">
-                            <ng-container *ngTemplateOutlet="nullCountTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="blankCountTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="meanTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="standardDeviationTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="leadingZeroCountTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="minLengthTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="maxLengthTemplate"></ng-container>
 
-                            <ng-container *ngTemplateOutlet="minTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="maxTemplate"></ng-container>
-
-                            <ng-container *ngTemplateOutlet="minLengthTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="maxLengthTemplate"></ng-container>
-
-                            <ng-container *ngTemplateOutlet="multilineTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="leadingWhiteSpaceTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="trailingWhiteSpaceTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="regExpTemplate"></ng-container>
-                        </div>                        
-                        <div *ngIf="ShowDateTime">
-                            <ng-container *ngTemplateOutlet="nullCountTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="blankCountTemplate"></ng-container>
-
-                            <ng-container *ngTemplateOutlet="minTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="maxTemplate"></ng-container>
-
-                            <ng-container *ngTemplateOutlet="regExpTemplate"></ng-container>
-                        </div>
-                        <div *ngIf="ShowOther">
-                            <ng-container *ngTemplateOutlet="nullCountTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="blankCountTemplate"></ng-container>
-
-                            <ng-container *ngTemplateOutlet="minTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="maxTemplate"></ng-container>
-
-                            <ng-container *ngTemplateOutlet="meanTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="standardDeviationTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="leadingZeroCountTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="minLengthTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="maxLengthTemplate"></ng-container>
-
-                            <ng-container *ngTemplateOutlet="multilineTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="leadingWhiteSpaceTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="trailingWhiteSpaceTemplate"></ng-container>
-                            <ng-container *ngTemplateOutlet="regExpTemplate"></ng-container>
-                        </div>
+                        <ng-container *ngTemplateOutlet="multilineTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="leadingWhiteSpaceTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="trailingWhiteSpaceTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="regExpTemplate"></ng-container>
                     </div>
                 </ig-property-group>
             </div>
@@ -299,7 +256,7 @@
 </ng-template>
 
 <ng-template #nullBlankTooltip>
-    <span *ngIf="nullBlankCountTotal && dataProfile.sampleCount" class="tooltip-icon" style="margin-left:5px">
+    <span *ngIf="nullBlankCountTotal && dataProfile.sampleCount" class="tooltip-icon" style="margin-left:8px">
         <i class="fa fa-question-circle" pTooltip="{{nullBlankTooltipText}}" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
     </span>
 </ng-template>
@@ -325,7 +282,7 @@
 </ng-template>
 
 <ng-template #outlierInfoTooltip>
-    <span *ngIf="invalidCount!=null" class="tooltip-icon" style="margin-left:5px"
+    <span *ngIf="invalidCount!=null" class="tooltip-icon" style="margin-left:8px"
           pTooltip="This is a combination of invalid values and outliers. Invalid values are those that do not match the selected type. An outlier is an observation point that is distant from other observations."
           [escape]="false"
           tooltipPosition="top"

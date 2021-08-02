@@ -1,4 +1,6 @@
-﻿export class StringConstants {
+﻿/*eslint camelcase: ["error", {properties: "never"}]*/
+
+export class StringConstants {
     //object types
     static ObjectArtifact = "Artifact";
     static ObjectArtifactType = "ArtifactType";
@@ -52,4 +54,6 @@
     static Section_TechnicalAssets = "Technical Assets";
     static Section_Users = "Users";
     static Section_Workflows = "Workflows";
+
+    static MenuId_Favorites = "*Favorites";
 }

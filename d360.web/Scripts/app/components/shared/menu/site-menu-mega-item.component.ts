@@ -1,8 +1,9 @@
-﻿import { Input, Component, Output, EventEmitter, ChangeDetectionStrategy, OnInit} from '@angular/core';
+﻿import { Input, Component, Output, EventEmitter, ChangeDetectionStrategy } from "@angular/core";
 import { Router } from '@angular/router';
 import { BaseComponent } from '../base.component';
 import { SiteMenuService } from '../../../services/site-menu.service';
 import { SiteMenuItem, NavigationState } from '../../../models/site-menu.model';
+import { StringConstants } from "../../../static/string-constants";
 
 @Component({
     selector: 'd3s-site-menu-mega-item',    
@@ -86,11 +87,15 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
         if (this.item.Url == null)
             return;
 
-        if (this.item.IsLink)
+        if (this.item.IsLink) {
             window.location.href = this.item.Url;
-        else
-            this.router.navigateByUrl(this.item.Url);
-
+        } else {
+            if (this.category === StringConstants.MenuId_Favorites) {
+                this.router.navigateByUrl(this.item.Url, {state: { "invalidateKey": true }});
+            } else {
+                this.router.navigateByUrl(this.item.Url);
+            }
+        }
         this.active = false;
         this.activeChange.emit(this.active);
     }

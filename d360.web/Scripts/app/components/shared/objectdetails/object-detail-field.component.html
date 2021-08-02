@@ -10,11 +10,11 @@
         </div>
     </div>
     <div *ngIf="fieldDataType == 'tag'">
-        <ng-container >
-            <d3s-tag-view [data]="field.Values" [assetUID]="assetUID" [isEditable]="true" [allowAddTag] ="true"></d3s-tag-view>
+        <ng-container>
+            <d3s-tag-view [data]="field.Values" [assetUID]="assetUID" [isEditable]="true" [allowAddTag]="true"></d3s-tag-view>
         </ng-container>
     </div>
-</div> 
+</div>
 <ng-template [ngIf]="!isArrayValue">
     <div *ngIf="field.Value">
         <ng-container *ngIf="field.Type == DetailFieldType.Field">
@@ -55,7 +55,17 @@
                     <div class="FieldDisplayContent ql-editor small-indent" [innerHtml]="field.Value  | safeHtml" [ngStyle]="{'font-weight':(isName ? 'bold':'')}"></div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'link'">
-                    <div class="FieldDisplayContent" [innerHtml]="field.Value" [ngStyle]="{'font-weight':(isName ? 'bold':'')}"></div>
+                    <div class="FieldDisplayContent" [ngStyle]="{'font-weight':(isName ? 'bold':'')}">
+                        <div class="ig-value" *ngIf="linkData">
+                            <a [href]="linkData.url" target="_blank">
+                                {{linkData.title}}
+                                <span>
+                                    &nbsp;&nbsp;
+                                    <i class="fa fa-external-link" pTooltip="This link will open in a new tab" tooltipStyleClass="ig-tooltip" tooltipPosition="top"></i>
+                                </span>
+                            </a>
+                        </div>
+                    </div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'path'">
                     <div class="FieldDisplayContent" [innerHtml]="field.Value  | safeHtml" [ngStyle]="{'font-weight':(isName ? 'bold':'')}"></div>
@@ -83,13 +93,12 @@
                         </d3s-lookup-tooltip>
                     </ng-template>
                 </ng-template>
-                
+
             </div>
         </ng-container>
     </div>
     <div *ngIf="field.Type == DetailFieldType.LookupGrid">
-        <d3s-dynamic-lookup-grid                                  
-                                 [data]="field.Data"
+        <d3s-dynamic-lookup-grid [data]="field.Data"
                                  [hideHeader]="field.HideHeader"
                                  [hideFooter]="field.HideFooter"
                                  [hideFilter]="field.HideFilter"

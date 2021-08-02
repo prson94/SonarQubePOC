@@ -11,10 +11,11 @@ namespace d360.core.helpers
             var document = new HtmlDocument();
             document.LoadHtml(data);
 
+            // if selectnodes doesnt find any matches return an empty collection not null
+            // https://github.com/zzzprojects/html-agility-pack/issues/23
+            document.OptionEmptyCollection = true; 
 
             var nodes = new Queue<HtmlNode>(document.DocumentNode.SelectNodes("./*|./text()"));
-
-            if (nodes == null) return data;
 
             while (nodes.Count > 0)
             {

@@ -329,11 +329,18 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }
 
     selectObject(item) {
+        let isAsset: boolean = true;
+        var uid = this.isSubject ? item.Object.Uid : item.Subject.Uid;
+        if (!uid) {
+            isAsset = false;
+            uid = this.isSubject ? item.Object.AssetTypeUid : item.Subject.AssetTypeUid;
+        }
         if (item.Object != "Task") {
-            this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(item.Object, item.ObjectID, item.TypeID));
+            var url = isAsset ? ("asset/" + uid) : ("assettype/" + uid);
+            this.router.navigateByUrl(url);
         }
         else {
-            this.assetService.getProcessDiagramUrl(item.ObjectUid)
+            this.assetService.getProcessDiagramUrl(uid)
                 .subscribe((res) => {
                     this.router.navigateByUrl(res);
                 })

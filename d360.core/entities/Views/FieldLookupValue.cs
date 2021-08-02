@@ -25,5 +25,8 @@ namespace d360.core.entities
 
         [Column(Order = 6), DataMember, Key]
         public string Text { get; set; }
+
+        [Column(Order = 7), DataMember]
+        public string DisplayText { get; set; }
     }
 }

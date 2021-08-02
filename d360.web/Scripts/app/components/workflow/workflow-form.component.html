@@ -183,53 +183,51 @@
                             <div>&nbsp;</div>
                             <div class="col l3 s12">
                                 <div class="FieldName">Re-assign to:</div>
-                                <select name="reassignType"
-                                        [(ngModel)]="reassignType"
-                                        style="height:auto;width:100%;">
-                                    <option *ngFor="let opt of reassignAvailableTypes"
-                                            [value]="opt.value">
-                                        {{opt.text}}
-                                    </option>
-                                </select>
+                                <p-dropdown igDropdown
+                                             name="reassignType"
+                                            [ngModel]="reassignType"
+                                            (ngModelChange)="reassignType=$event;selectedReassignmentType=null;selectedReassignmentAsset=null;selectedReassignResource=null;"
+                                            [options]="reassignAvailableTypes"
+                                            optionValue="value"
+                                            optionLabel="text"
+                                            required>
+
+                                </p-dropdown>
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col l3 s12"
-                                 *ngIf="reassignType == 'object'">
-                                <div class="FieldName">Select object:</div>
-                                <p-autoComplete size="100"
-                                                scrollHeight="300px"
-                                                name="other"
-                                                appendTo="body"
-                                                [inputStyle]="{width:'100%'}"
-                                                [(ngModel)]="term"
-                                                [suggestions]="terms"
-                                                (completeMethod)="search($event)"
-                                                placeholder="Select an item"
-                                                field="TextPath"
-                                                [forceSelection]="true"
-                                                (onSelect)="selectItem()">
-                                    <ng-template let-item>
-                                        <span style="color:#999999;">
-                                            {{userFriendlyObjectName(item.Object)}} - <span *ngIf="item.ObjectTypeName">{{item.ObjectTypeName}} -</span>
-                                        </span>
-                                        {{item.TextPath}} <span *ngIf="item.GoverningDomain">({{item.GoverningDomain}})</span>
-                                    </ng-template>
-                                </p-autoComplete>
+                            <div class="col l3 s12" *ngIf="reassignType == 'object'">
+                                <div class="FieldName">Select Asset:</div>
+                                <p-autoComplete igAutocomplete 
+                                                placeholder="" 
+                                                name="other" 
+                                                field="Name" 
+                                                [style]="{'width': '100%' }"
+                                                [inputStyle]="{'width': '100%' }"
+                                                [(ngModel)]="selectedReassignmentAsset" 
+                                                (completeMethod)="filterItems($event)" 
+                                                [suggestions]="filteredAssets" 
+                                                (onSelect)="selectItem($event)"></p-autoComplete>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col l3 s12"
                                  *ngIf="reassignType == 'resource'">
                                 <div class="FieldName">Select user:</div>
-                                <select name="reassignResources"
-                                        [(ngModel)]="selectedReassignResource"
-                                        style="height:auto;width:100%;">
-                                    <option *ngFor="let opt of resources"
-                                            [value]="opt.ResourceID">
-                                        {{opt.FirstName}} {{opt.LastName}}
-                                    </option>
-                                </select>
+                                <p-dropdown igDropdown
+                                            name="reassignResources"
+                                            [(ngModel)]="selectedReassignResource"
+                                            [options]="resources"
+                                            optionValue="ResourceID"
+                                            filterBy="FirstName,LastName"
+                                            required>
+                                    <ng-template let-item pTemplate="selectedItem">
+                                        {{item.FirstName}} {{item.LastName}}
+                                    </ng-template>
+                                    <ng-template let-item pTemplate="item">
+                                        {{item.FirstName}} {{item.LastName}}
+                                    </ng-template>
+                                </p-dropdown>
                             </div>
                         </div>
                         <div class="row">
@@ -249,7 +247,7 @@
                                 <button pButton
                                         type="button"
                                         (click)="reassign()"
-                                        [disabled]="selectedReassignResource == null && (term == null || term.ObjectID == null)"
+                                        [disabled]="selectedReassignResource == null && selectedReassignmentAsset?.ID == null"
                                         style="width: 150px;"
                                         label="Assign"></button>
                                 <button pButton

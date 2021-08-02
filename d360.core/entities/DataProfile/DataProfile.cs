@@ -282,6 +282,20 @@ namespace d360.core.entities
         public IEnumerable<AssetDataProfileMatchingAssetsModel> items { get; set; }
     }
 
+    public class AssetDataProfileByTypeQualifierModel
+    {
+        [DataMember]
+        public Guid uid { get; set; }
+        public string path { get; set; }
+        public Decimal confidence { get; set; }
+    }
+
+    public class AssetDataProfileByTypeQualifierApiViewModel : PagedApiBaseViewModel
+    {
+        [DataMember]
+        public IEnumerable<AssetDataProfileByTypeQualifierModel> items { get; set; }
+    }
+
     public class ValidateSampleAttribute : ValidationAttribute
     {
         public ValidateSampleAttribute(int maxlength)

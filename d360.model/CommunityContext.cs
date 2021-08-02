@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.helpers;
 using d360.extensions;
 using Dapper;
 using System;
@@ -324,7 +325,7 @@ namespace d360.model
 
         public string GetCompanyConnectionString(bool skipCacheCheck = false)
         {
-            var cs = "";
+            string cs;
 
             if (Caching.ListItemExists<string, int>(CACHE_KEY_CONNECTION_STRINGS, CurrentCompanyID) && !skipCacheCheck)
             {
@@ -348,35 +349,6 @@ namespace d360.model
             }
         }
 
-        public string createRandomPassword()
-        {
-            int MinimumPasswordLength = 7;
-                        
-            string _allowedNonAlphaNumericChars = "!#$%";
-            string _allowedChars = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ0123456789" + _allowedNonAlphaNumericChars;
-            Random randNum = new Random();
-            char[] chars = new char[MinimumPasswordLength];
-
-            for (int i = 0; i < MinimumPasswordLength; i++)
-            {
-                chars[i] = _allowedChars[(int)((_allowedChars.Length) * randNum.NextDouble())];
-            }
-            
-            return new string(chars);
-        }
-
-        public string HashPassword(string value)
-        {
-            SHA1 algorithm = SHA1.Create();
-            byte[] data = algorithm.ComputeHash(Encoding.UTF8.GetBytes(value));
-            string sh1 = "";
-            for (int i = 0; i < data.Length; i++)
-            {
-                sh1 += data[i].ToString("x2").ToUpperInvariant();
-            }
-            return sh1;
-        }
-
         public bool ChangePassword(int resourceID, string oldPassword, string newPassword)
         {
             var success = false;
@@ -388,7 +360,7 @@ namespace d360.model
                     var r = GetById<Resource>(resourceID);
                     if (r != null)
                     {
-                        r.Password = HashPassword(newPassword);
+                        r.Password = PasswordHelper.HashPassword(newPassword);
                         r.UpdatedOn = DateTime.UtcNow;
                         Update<Resource>(r);
                         success = true;
@@ -412,7 +384,7 @@ namespace d360.model
         {
             Resource r = null;
 
-            password = HashPassword(password);
+            password = PasswordHelper.HashPassword(password);
             r = Filter<Resource>(i => i.Username == username && i.Password == password).SingleOrDefault();
 
             // Check that resource has access to this company.
@@ -477,7 +449,13 @@ namespace d360.model
             }
             else throw new Exception($"Invalid settings key '{key}'");
         }
-        
+
+
+        public string GetPrimaryUrlPrefix()
+        {
+            return Query<string>(@"select UrlPrefix from CompanyDomainSetting where CompanyID = @c and IsPrimary = 1", new { c = CurrentCompanyID }).FirstOrDefault();
+        }
+
         public Dictionary<string, string> GetCompanySettings()
         {
             Dictionary<string, string> settings = Caching.GetItem<Dictionary<string, string>>(SettingsCacheKey);

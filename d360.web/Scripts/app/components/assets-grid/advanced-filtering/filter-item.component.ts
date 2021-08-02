@@ -45,6 +45,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
     tableSelection: any;
 
     isLookupValuesLoading: boolean = false;
+    filterTableValue: string = "";
 
     uiCurrentOperatorsList: any[] = [];
     currentOperator: any;
@@ -61,7 +62,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
     rollbackValue1: any;
     rollbackValue2: any;
 
-    maxNumberOfFilterCharacters: number = 50;
+    maxNumberOfFilterCharacters: number = 2000;
     selectionScrollHeight: string = "34px";
 
     relationshipFieldIntersectTypeUid: string = "";
@@ -155,7 +156,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
     }
 
     filterTable($event: any) {
-        this.dataTable.filterGlobal($event.target.value, "contains");
+        this.dataTable.filterGlobal($event, "contains");
     }
 
     setSelectionVirtualScrollHeight() {
@@ -809,10 +810,14 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.multiInputRef.clearTextValue();
         }
 
+        this.resetLookupValues();
+
         this.onChange.emit();
     }
 
     cancel() {
+        this.resetLookupValues();
+
         if (!this.rollbackValue1 && !this.rollbackOperator) {
             if (this.condition.isDefaultFilter) {
                 this.resetPersistedFilter();
@@ -838,6 +843,13 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
         if (this.multiInputRef) {
             this.multiInputRef.clearTextValue();
+        }
+    }
+
+    private resetLookupValues() {
+        if (this.filterTableValue.length > 0) {
+            this.filterTableValue = "";
+            this.currentField.Values = [];
         }
     }
 

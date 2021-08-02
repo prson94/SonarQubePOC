@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { CascadingChange } from '../models/cascade.model';
+import { distinctUntilChanged } from 'rxjs/operators';
 
 @Injectable({
     providedIn: 'root'
@@ -10,7 +11,9 @@ export class CascadeService {
     private cascadeSource = new Subject<CascadingChange>();
     
     // Observable streams
-    cascadeMessage$ = this.cascadeSource.asObservable();
+    cascadeMessage$ = this.cascadeSource.asObservable().pipe(
+        distinctUntilChanged((c, p) => c.fieldTypeId === p.fieldTypeId && c.parentListItemId === p.parentListItemId)
+    );
     
     // Service message commands
     cascadeEvent(fieldTypeId: number, parentListId: string) {

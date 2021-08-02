@@ -6,6 +6,7 @@ import { CookieService } from './services/cookie.service';
 import { MessagesObservableService } from './services/messages-observable.service';
 import { MessageService } from 'primeng/api';
 import { ApplicationInsightsService } from './services/application-insights.service';
+import { ActivatedRoute } from '@angular/router';
 
 declare var CurrentResourceID;
 
@@ -22,7 +23,7 @@ declare var CurrentResourceID;
                     <d3s-right-sidebar #sidebar [menuOpen]="menuOpen" (changed)="setMaxHeight()"></d3s-right-sidebar>
                     <div class="row d3s-content-pane" [ngStyle]="{'height.px': maxContentPaneHeight}">
                         <div class="row">
-                            <div [class.maincontent]="!menuOpen" [class.maincontent-open]="menuOpen">
+                            <div [class.maincontent]="!menuOpen" [class.maincontent-open]="menuOpen" [style.margin-left]="hideNav ? '0' : null">
                                 <router-outlet></router-outlet>
                             </div>
                         </div>
@@ -34,31 +35,42 @@ declare var CurrentResourceID;
 })
 
 export class AppComponent implements AfterContentInit, OnDestroy {    
-    subscription: Subscription;
+    msgSub: Subscription;
+    errorSub: Subscription;
+    paramSub: Subscription;
     msgs: Message[];
     public menuOpen: boolean = true;
     public maxContentPaneHeight: number = 1000;
     @ViewChild('header', { static: false }) header: ElementRef;
     @ViewChild('sidebar', {static: false, read: ElementRef }) sidebar: ElementRef;
     private timer: any;
+    hideNav: boolean = false;
 
     constructor(                
         private messagesService: MessagesObservableService,        
         protected headerActionsService: HeaderActionsService,
         protected aiService: ApplicationInsightsService,
         private cookieService: CookieService,
+        private route: ActivatedRoute,
         private toastService: MessageService) {
         this.msgs = [];
         
-        this.subscription = messagesService.errorMessage$.subscribe(
+        this.errorSub = messagesService.errorMessage$.subscribe(
             errorMsg => {
                 this.toastService.add({ severity: 'error', summary: errorMsg.summary, detail: errorMsg.detail });
             });
-        this.subscription = messagesService.infoMessage$.subscribe(
+        this.msgSub = messagesService.infoMessage$.subscribe(
             infoMsg => {       
                 this.toastService.add({ severity: 'info', summary: infoMsg.summary, detail: infoMsg.detail });
             });
         this.aiService.setUserId(String(CurrentResourceID));
+
+        this.paramSub = this.route.queryParams.subscribe((params) => {
+            if (params['nonavigation'] != null) {
+                this.hideNav = params['nonavigation'].toLocaleLowerCase() === 'true';
+            }
+        });
+
     }
 
     ngAfterContentInit() {        
@@ -94,8 +106,14 @@ export class AppComponent implements AfterContentInit, OnDestroy {
     }
 
     ngOnDestroy() {
-        if (this.subscription) {
-            this.subscription.unsubscribe();
+        if (this.errorSub) {
+            this.errorSub.unsubscribe();
+        }
+        if (this.msgSub) {
+            this.msgSub.unsubscribe();
+        }
+        if (this.paramSub) {
+            this.paramSub.unsubscribe();
         }
     }
 }

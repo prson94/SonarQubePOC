@@ -11,6 +11,7 @@ import { AdminModule } from '../admin.module';
 
 import { AdminCustomizationsComponent } from './admin-customizations.component';
 import { AdminCustomizationsRoutingModule } from './admin-customizations.routes';
+import { IgMessageBoxModule } from '../../shared/controls/message-box/message-box.module';
 
 import { CodemirrorModule } from 'ng2-codemirror';
 
@@ -37,6 +38,8 @@ import { SharedModule } from 'primeng/api';
         PipesModule,        
         TilesModule,
         AdminModule,
+
+        IgMessageBoxModule,
     ],
     declarations: [
         AdminCustomizationsComponent

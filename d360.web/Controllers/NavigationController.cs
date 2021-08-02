@@ -23,7 +23,6 @@ namespace d360.web.Controllers
     [Authorize, RoutePrefix("navigation")]
     public class NavigationController : BaseController
     {
-        #region DI
         IStorageProvider Storage;
 
         public NavigationController(ICommunityContext community, ICompanyContext company, IStorageProvider storage)
@@ -32,17 +31,29 @@ namespace d360.web.Controllers
             Storage = storage;
         }
 
-        #endregion
-
-        [ValidateContracts(Ignore = true), Route("sitemenu")]
-        public JsonNetResult SiteMenu()
+        internal List<NavigationItem> parseXmlNavigationDocument(XElement xml, bool showChildren = true)
         {
-            List<TopNavigationItem> nodes = null;
+            var items = new List<NavigationItem>();
 
-            nodes = Company.Query<TopNavigationItem>("GetSiteNavigation @ResourceID", new { ResourceID = Company.CurrentResourceID }).ToList();
+            if (xml != null)
+            {
+                foreach (var el in xml.Elements("nav"))
+                {
+                    var item = new NavigationItem { Name = el.Element("name").Value, Url = el.Element("url").Value, ShowChildren = showChildren };
+                    if (el.Element("items") != null)
+                    {
+                        item.Items = parseXmlNavigationDocument(el.Element("items"),showChildren);
+                    }
+                    items.Add(item);
+                }
+            }
 
-            var techAssets = Company.Query<int>($"select count(*) from AssetType where Class = {(int)AssetTypeClass.TechnicalAsset}").First();
-            if (techAssets == 0)
+            return items;
+        }
+
+        internal List<TopNavigationItem> GenerateSiteMenu(List<TopNavigationItem> nodes, bool hasTechAssets, bool showChildren)
+        {
+            if (!hasTechAssets)
             {
                 nodes = nodes.Where(x => x.MenuID != "#Technical").ToList();
             }
@@ -56,7 +67,7 @@ namespace d360.web.Controllers
                 {
                     n.NavigationItems = (string.IsNullOrEmpty(n.Items)) ?
                         new List<NavigationItem>() :
-                        parseXmlNavigationDocument(XElement.Parse(string.Format("<nav>{0}</nav>", n.Items)));
+                        parseXmlNavigationDocument(XElement.Parse(string.Format("<nav>{0}</nav>", n.Items)),showChildren);
 
 
                     var urls = n.NavigationItems.Select(x => x.Url).ToList();
@@ -75,17 +86,28 @@ namespace d360.web.Controllers
                 });
             }
 
+            return nodes;
+        }
+
+
+        [ValidateContracts(Ignore = true), Route("sitemenu")]
+        public JsonNetResult SiteMenu()
+        {            
+            var techAssets = Company.Query<int>($"select count(*) from AssetType where Class = {(int)AssetTypeClass.TechnicalAsset}").First();
+            var showChildren = Community.GetCompanySettingByKey<bool>("ShowNavigationChildren");
 
             return new JsonNetResult
             {
                 Data = new
                 {
-                    MenuItems = nodes,
+                    MenuItems = GenerateSiteMenu(Company.Query<TopNavigationItem>("GetSiteNavigation @ResourceID", new { ResourceID = Company.CurrentResourceID }).ToList(), techAssets > 0, showChildren),
                     IsAdmin = Company.CurrentResourceIsAdmin
                 },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
+
+        
 
         [Route("GetAvailableSiteNavigation")]
         public JsonNetResult GetAvailableSiteNavigation()
@@ -443,8 +465,6 @@ namespace d360.web.Controllers
 
                     }
                 }
-
-
 
                 siteNav.Name = folder.Name;
                 siteNav.Icon = folder.Icon;
@@ -835,23 +855,6 @@ namespace d360.web.Controllers
             return string.Format("{0}{1}{2}", char.ToUpper(s[0]), s.Substring(1), "Type");
         }
         #endregion
-
-        List<NavigationItem> parseXmlNavigationDocument(XElement xml)
-        {
-            var items = new List<NavigationItem>();
-
-            foreach (var el in xml.Elements("nav"))
-            {
-                var item = new NavigationItem { Name = el.Element("name").Value, Url = el.Element("url").Value, ShowChildren = Community.GetCompanySettingByKey<bool>("ShowNavigationChildren") };
-                if (el.Element("items") != null)
-                {
-                    item.Items = parseXmlNavigationDocument(el.Element("items"));
-                }
-                items.Add(item);
-            }
-
-            return items;
-        }
 
         [HttpPost, Route("secondaryNavigationSettings")]
         public JsonNetResult GetSecondaryNavigationSettings(SecondaryNavigationPostModel model)

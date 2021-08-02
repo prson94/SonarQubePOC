@@ -119,7 +119,8 @@ namespace d360.model.DataAccessLayer
             }
             catch (Exception ex)
             {
-                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                execution.ErrorMessage = message;
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);
             }

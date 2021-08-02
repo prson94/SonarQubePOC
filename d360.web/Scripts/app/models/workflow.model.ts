@@ -795,3 +795,10 @@ export class AllocationRequestModel {
     AssetTypeUid: string
     ResponsibilityTypeUid: string[]
 }
+
+export class WorkflowReassignmentAsset {
+    ID: number;
+    Name: string;
+    Object: string;
+    ObjectID: number;
+}

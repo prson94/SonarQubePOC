@@ -148,7 +148,10 @@ namespace d360.model.DataAccessLayer.repositories
                      else if (f.Type == "Lookup" && f.AllowAllValue)
                      {
                          fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
-                         dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
+
+                         var AllowAllLabelValue = getAllowedAllValue(f.AllowAllLabel, hasColor);
+
+                         dbArgs.Add($"@F{f.ID}_AllValue", AllowAllLabelValue);
                      }
                      else if (f.Type == "Lookup" && listColorsAsJSON)
                      {
@@ -190,7 +193,10 @@ namespace d360.model.DataAccessLayer.repositories
                          {
 
                              fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) end as [{columnName}]");
-                             dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
+
+                             var AllowAllLabelValue = getAllowedAllValue(f.AllowAllLabel, hasColor);
+
+                             dbArgs.Add($"@F{f.ID}_AllValue", AllowAllLabelValue);
                          }
                          else if (f.Type == "Path")
                          {
@@ -235,7 +241,10 @@ namespace d360.model.DataAccessLayer.repositories
                          else if (f.Type == "Lookup" && f.AllowAllValue)
                          {
                              fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
-                             dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
+                             
+                             var AllowAllLabelValue = getAllowedAllValue(f.AllowAllLabel, hasColor);
+
+                             dbArgs.Add($"@F{f.ID}_AllValue", AllowAllLabelValue);
                          }
                          else if (f.Type == "Path")
                          {
@@ -930,6 +939,16 @@ namespace d360.model.DataAccessLayer.repositories
 
             return executionInfo;
         }
-
-    }    
+        protected string getAllowedAllValue(string AllowAllLabel, bool hasColor)
+        {
+            if (!hasColor)
+            {
+                return AllowAllLabel;
+            }
+            else
+            {
+                return "[{ \"name\":\"" + AllowAllLabel + "\",\"color\":\"transparent\"}]";
+            }
+        }
+    }
 }

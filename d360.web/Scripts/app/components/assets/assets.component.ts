@@ -23,11 +23,12 @@ export class AssetsComponent implements OnInit, OnDestroy {
             let assetTypeUid = params['assetTypeUid'];
 
             this.assetTypeService.getAssetTypeLegacyUri(assetTypeUid).subscribe((uri) => {
+                let behavior = { replaceUrl: true };
                 if (uri !== '') {
-                    this.router.navigate([uri]);
+                    this.router.navigate([uri], behavior);
                 }
                 else {
-                    this.router.navigate(['/home']);
+                    this.router.navigate(['/home'], behavior);
                 }
             });
         });

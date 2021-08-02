@@ -408,11 +408,12 @@ namespace d360.web.Controllers.V2
 
         }
 
-        [HttpGet,
+        [
+            HttpGet,
             Route("type/{uid}/id"),
             ApiExplorerSettings(IgnoreApi = true),
-             SwaggerResponse(HttpStatusCode.OK, "", typeof(Int32))
-            ]
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(int))
+        ]
         public IHttpActionResult GetWorkflowtypeId(Guid uid)
         {
             var prefix = "Workflow.GetWorkflowtypeId => ";
@@ -430,11 +431,12 @@ namespace d360.web.Controllers.V2
             
         }
 
-        [HttpGet,
-    Route("{uid}/legacyData"),
-    ApiExplorerSettings(IgnoreApi = true),
-     SwaggerResponse(HttpStatusCode.OK, "", typeof(Int32))
-    ]
+        [
+            HttpGet,
+            Route("{uid}/legacyData"),
+            ApiExplorerSettings(IgnoreApi = true),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(int))
+        ]
         public IHttpActionResult GetWorkflowId(Guid uid)
         {
             var prefix = "Workflow.GetWorkflowId => ";
@@ -459,5 +461,36 @@ namespace d360.web.Controllers.V2
 
         }
 
+        
+        [
+            HttpGet,
+            Route("reassignment/objects/{id:int}"),
+            ApiExplorerSettings(IgnoreApi = true),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(IEnumerable<WorkflowReassignmentAssetApiModel>))
+        ]
+        public async Task<IHttpActionResult> GetWorkflowReassignmentAssets(int id, string query)
+        {
+            var prefix = "Workflow.GetWorkflowReassignmentAssets => ";
+            var errorMessage = "";
+            try
+            {
+
+                var result = Company.WorkflowItems.FirstOrDefault(i => i.ID == id);
+
+                if (result == null)
+                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Cannot find the specified workflow instance."));
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, await workflowRepository.GetWorkflowReassignmentAssets(id, query)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix  }
+                });
+                return this.errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage);
+            }
+
+        }
     }
 }

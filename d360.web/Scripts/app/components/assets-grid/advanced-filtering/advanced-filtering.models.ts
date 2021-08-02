@@ -297,9 +297,9 @@ export class AdvancedFilterFieldCondition {
             if (this.fieldType === "Lookup" || this.fieldType === "Tag" || this.fieldType === "Relationship" || this.field === SystemFields.OwnedByFieldCode || this.isRelationship) {
                 let valueAsString = "";
                 if (Array.isArray(value)) {
-                    var arr = value as SelectItem[];
+                    let arr = value.map((v: SelectItem) => _.escape(v.title));
                     if (arr.length === 1) {
-                        return arr[0].title;
+                        return arr[0];
                     }
                     if (isForLabel === true && arr.length > 2) {
                         if (this.field === SystemFields.OwnedByFieldCode) {
@@ -312,21 +312,15 @@ export class AdvancedFilterFieldCondition {
 
                     var match = this.connectingOperator === "and" ? "(match all)" : "(match any)";
 
-                    if (arr.length <= 5) {
-                        valueAsString = arr.map((v) => v.title).join(", ");
-                        valueAsString += " " + match;
+                    valueAsString = arr.slice(0, 5).join(", ");
+                    var leftover = arr.length - 5;
+                    if (leftover === 1) {
+                        valueAsString += ", 1 other item";
                     }
-                    else {
-                        valueAsString = arr.slice(0, 5).map((v) => v.title).join(", ");
-                        var leftover = arr.length - 5;
-                        if (leftover === 1) {
-                            valueAsString += ", 1 other item";
-                        }
-                        else {
-                            valueAsString += `, ${leftover} other items`;
-                        }
-                        valueAsString += " " + match;
+                    else if(leftover > 1) {
+                        valueAsString += `, ${leftover} other items`;
                     }
+                    valueAsString += " " + match;
 
                     return valueAsString.trim();
                 }
@@ -334,11 +328,11 @@ export class AdvancedFilterFieldCondition {
 
             if (this.fieldType === "Path") {
                 if (this.operator.toString() === "StartsWith" || this.operator.toString() === "EndsWith") {
-                    return value;
+                    return _.escape(value);
                 }
 
                 let valueAsString = "";
-                var stringArr = this.value as string[];
+                var stringArr = this.value.map((v) => _.escape(v)) as string[];
                 if (stringArr.length === 1) {
                     return stringArr[0];
                 }
@@ -368,7 +362,7 @@ export class AdvancedFilterFieldCondition {
 
             }
 
-            return value;
+            return _.escape(value);
         }
         catch (ex) {
             console.warn(ex);

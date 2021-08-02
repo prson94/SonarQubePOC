@@ -6,6 +6,7 @@ import { GovernRequestInterceptor } from "../../../http-interceptors/govern-requ
 import { PropertyGroupModule } from "../controls/property-group/property-group.component";
 import { DirectivesModule } from '../../../directives/directives.module';
 import { TooltipModule } from 'primeng/tooltip';
+import { PipesModule } from '../../../pipes/pipes.module';
 
 
 @NgModule({
@@ -15,6 +16,7 @@ import { TooltipModule } from 'primeng/tooltip';
         PropertyGroupModule,
         DirectivesModule,
         TooltipModule,
+        PipesModule,
     ],
     declarations: [
         DataProfileComponent,        

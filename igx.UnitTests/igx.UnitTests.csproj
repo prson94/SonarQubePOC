@@ -73,6 +73,7 @@
     <Reference Include="System.Web.Http.WebHost, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.7\lib\net45\System.Web.Http.WebHost.dll</HintPath>
     </Reference>
+    <Reference Include="System.Web.Mvc, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -93,7 +94,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CoreEnumTests\SystemObjectsTests.cs" />
     <Compile Include="CoreTests\CompanyConnectionStringHelperTests.cs" />
+    <Compile Include="CoreEnumTests\DataTypeTests.cs" />
     <Compile Include="CoreTests\PluralServiceHelperTests.cs" />
     <Compile Include="CoreTests\SystemObjectHelperTests.cs" />
     <Compile Include="Core\BaseTestClass.cs" />
@@ -105,8 +108,13 @@
     <Compile Include="ExtensionTests\ModelExtensionTests-OwnershipLookupDefinition.cs" />
     <Compile Include="FilterParserTests\ComplexFieldsFilteringTests.cs" />
     <Compile Include="FilterParserTests\FilterTokenTests.cs" />
+    <Compile Include="ExtensionsTests\QueueSourceTests.cs" />
+    <Compile Include="ModelExtensionTests\ModelExtensionTests-ComplexLookupDefinition.cs" />
+    <Compile Include="ModelExtensionTests\ModelExtensionTests-OwnershipLookupDefinition.cs" />
     <Compile Include="FilterParserTests\FilterExpressionParserTests.cs" />
     <Compile Include="HelperTests\HtmlHelperTests.cs" />
+    <Compile Include="HelperTests\IconHelperTests.cs" />
+    <Compile Include="HelperTests\PasswordHelperTests.cs" />
     <Compile Include="LibraryTests\JsonTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScoringTests\OperatorTests-BooleanCompares.cs" />
@@ -117,6 +125,9 @@
     <Compile Include="ScoringTests\OperatorTests-DecimalCompares.cs" />
     <Compile Include="ScoringTests\OperatorTests-DateTimeCompares.cs" />
     <Compile Include="ScoringTests\OperatorTests-DateCompares.cs" />
+    <Compile Include="SearchTests\ElasticSourceTests.cs" />
+    <Compile Include="SearchTests\SearchIndexerTests.cs" />
+    <Compile Include="WebControllerTests\NavigationControllerTest.cs" />
     <Compile Include="V2ControllerTests\ActionsControllerTest.cs" />
     <Compile Include="V2ControllerTests\AssetsControllerTest.cs" />
     <Compile Include="V2ControllerTests\ExecutionsControllerTest.cs" />

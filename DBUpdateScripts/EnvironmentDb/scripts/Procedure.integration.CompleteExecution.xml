@@ -5,12 +5,22 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.integration.CompleteExecution-v1">
+  <changeSet author="Puneet Gupta" id="Procedure.integration.CompleteExecution-Drop-v1">
+  <comment>GOV-15287</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+if exists (select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'integration' and SPECIFIC_NAME = 'CompleteExecution')
+begin
+	drop procedure [integration].[CompleteExecution];
+end
+		
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [integration].[CompleteExecution]
 	@ExecutionID bigint,
 	@SynchedAssetTypeID int,
@@ -810,11 +820,6 @@ begin
 			UpdateHash = null 
 	where	SynchedAssetTypeID = @SynchedAssetTypeID;
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

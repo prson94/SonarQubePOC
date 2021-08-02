@@ -141,7 +141,7 @@ namespace d360.web.Controllers
 
                     if (itemIds.Count > 0)
                     {
-                        var lookupItems = await Company.QueryAsync<FieldLookupValue>(@"select FieldTypeID, LookupObjectType, LookupObjectID, Value, Text from fieldlookupvalue where fieldtypeid = @fId and value in @vals order by Text", new { fId = ft.ID, vals = itemIds }).ConfigureAwait(false);
+                        var lookupItems = await Company.QueryAsync<FieldLookupValue>(@"select FieldTypeID, LookupObjectType, LookupObjectID, Value, Text, DisplayText from fieldlookupvalue where fieldtypeid = @fId and value in @vals order by Text", new { fId = ft.ID, vals = itemIds }).ConfigureAwait(false);
 
                         if (lookupItems != null)
                         {
@@ -154,13 +154,12 @@ namespace d360.web.Controllers
                                     var colorData = await Company.QueryFirstOrDefaultAsync<string>($@"SELECT colorJSON FROM Asset A cross apply dbo.GetAssetColorJsonByColor(A.Color) WHERE A.ID = @ID ", new { ID = (detail != null ? detail.AssetID : 0) }).ConfigureAwait(false);
                                     var obj = JObject.Parse(colorData ?? "{}");
                                     var url = isReference && !string.IsNullOrEmpty(lookupUrl) ? lookupUrl : detail?.Url ?? "";
-                                    var text = ft.AllowMultipleValues ? item.Text : formattedValue;
 
                                     ro.Values.Add(new ReadOnlyFieldValue
                                     {
                                         TooltipContext = tooltipContext,
                                         TooltipID = item.Value,
-                                        Value = $"[{{\"name\":\"{text}\", \"color\":\"{(string)obj["Value"] ?? "transparent"}\"}}]",
+                                        Value = $"[{{\"name\":\"{item.DisplayText}\", \"color\":\"{(string)obj["Value"] ?? "transparent"}\"}}]",
                                         TooltipType = ft.LookupObjectType,
                                         TooltipUrl = url
                                     });
@@ -173,13 +172,12 @@ namespace d360.web.Controllers
                                 {
                                     var detail = Company.GetObjectDetail(ft.LookupObjectType, item.Value);
                                     var url = isReference && !string.IsNullOrEmpty(lookupUrl) ? lookupUrl : detail?.Url ?? "";
-                                    var text = ft.AllowMultipleValues ? item.Text : formattedValue;
 
                                     ro.Values.Add(new ReadOnlyFieldValue
                                     {
                                         TooltipContext = tooltipContext,
                                         TooltipID = item.Value,
-                                        Value = text,
+                                        Value = item.DisplayText,
                                         TooltipType = ft.LookupObjectType,
                                         TooltipUrl = url
                                     });

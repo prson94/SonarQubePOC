@@ -26,5 +26,7 @@ namespace d360.model.DataAccessLayer
         WorkflowItem GetWorkflowItemByUID(Guid workflowItemUid);
 
         Task<WorkflowsApiViewModel> GetWorkflows(IEnumerable<KeyValuePair<string, string>> queryParams);
+
+        Task<IEnumerable<WorkflowReassignmentAssetApiModel>> GetWorkflowReassignmentAssets(int assetTypeId, string query, int resultCount = 100);
     }
 }

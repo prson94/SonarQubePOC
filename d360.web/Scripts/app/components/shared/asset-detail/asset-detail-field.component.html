@@ -36,7 +36,7 @@
                     <div class="ig-value" [innerHtml]="field.Value | safeHtml"></div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'html'">
-                    <div class="ig-value ig-html" [innerHtml]="field.Value | safeHtml"></div>
+                    <div class="ig-value ig-html ql-editor" [innerHtml]="field.Value | safeHtml"></div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'link'">
                     <div class="ig-value"><a [href]="linkUrl" target="_blank">{{linkName}}<span style="text-decoration:none !important">&nbsp;&nbsp;<i class="fa fa-external-link" pTooltip="This link will open in a new tab" tooltipStyleClass="ig-tooltip" tooltipPosition="top"></i></span></a></div>

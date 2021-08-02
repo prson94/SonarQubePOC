@@ -37,6 +37,11 @@ namespace d360.extensions.queue
             return true;
         }
 
+        public string GetMessageIdFromEventInfo(EventInfo eventInfo)
+        {
+            return string.Empty;
+        }
+
         public void CreateTopicMessage(EventInfo e)
         {
 

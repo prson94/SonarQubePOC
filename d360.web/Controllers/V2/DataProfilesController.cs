@@ -18,6 +18,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Description;
 
 namespace d360.web.Controllers.V2
 {
@@ -504,7 +505,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250. Maximum page size is 10,000", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending and are sorted on the asset path value", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_simpleFilter", "The text or phrase you want to find within fields. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_simpleFilter", "The text or phrase you want to find within fields. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),            
         ]
         public async Task<IHttpActionResult> GetMatchingAssets(Guid assetUid, string similarType)
         {
@@ -520,9 +521,9 @@ namespace d360.web.Controllers.V2
                 {
                     return await Task.FromResult(errorMessageResponse(validationResult.StatusCode, validationResult.Error, validationResult.Message)).ConfigureAwait(false);
                 }
-              
+
                 var results = await DataProfiles.GetMatchingAssets(assetUid, similarType, queryParams).ConfigureAwait(false);
-                
+
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
             }
             catch (Exception ex)
@@ -534,6 +535,131 @@ namespace d360.web.Controllers.V2
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage)).ConfigureAwait(false);
             }
+        }
+
+        /// <summary>
+        /// Retrieves the count of assets that match a given asset.
+        /// </summary>
+        /// <param name="assetUid">The unique identifier of an asset.</param>
+        /// <param name="similarType">Type of signature to match, Data or Structure.</param>
+        /// <returns>A count of assets that match the given asset</returns>
+        [
+            HttpGet,
+            Route("{assetUid:Guid}/similar/{similarType}/count"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(long)),
+            SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that a record could not be found based on the supplied Uid, possibly due to an incorrectly formatted identifier (uid) or when a data profile record does not exist for the supplied asset.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerParameter("_simpleFilter", "The text or phrase you want to find within fields. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetMatchingAssetCount(Guid assetUid, string similarType)
+        {
+            var prefix = "DataProfiles.GetMatchingAssetCount => ";
+
+            try
+            {
+                var queryParams = Request.GetQueryNameValuePairs();
+
+                var validationResult = ValidateMatchAssetGetParameters(assetUid, similarType, queryParams);
+
+                if (validationResult.StatusCode != HttpStatusCode.OK)
+                {
+                    return await Task.FromResult(errorMessageResponse(validationResult.StatusCode, validationResult.Error, validationResult.Message)).ConfigureAwait(false);
+                }
+
+                var results = await DataProfiles.GetMatchingAssets(assetUid, similarType, queryParams, true).ConfigureAwait(false);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results.total));                
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string> {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage)).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves a list of assets of the given type with the specified confidence.
+        /// </summary>
+        /// <param name="typeQualifier"></param>
+        /// <param name="minConfidence"></param>
+        /// <returns>A list of matching asset uids associated with asset paths and confidence</returns>
+        [
+            HttpGet,
+            Route("type/{typeQualifier}/{minConfidence}"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
+            SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),            
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250. Maximum page size is 10,000", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending and are sorted on the asset path value", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by. Allowed values are 'confidence' and 'path'. By default the results are ordered by asset path value.", DataType = "string", ParameterType = "query", Required = false),
+        ]
+        public async Task<IHttpActionResult> GetAssetsByTypeQualifier(string typeQualifier, Decimal minConfidence)
+        {
+            var prefix = "DataProfiles.GetMatchingAssets => ";
+
+            try {
+                var queryParams = Request.GetQueryNameValuePairs();
+
+                var isValid = isPageSizeAndNumValid(queryParams);
+                if (!string.IsNullOrEmpty(isValid))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, isValid)).ConfigureAwait(false);
+                }
+
+                if (queryParams.Any(qp => qp.Key.ToLower() == "_direction"))
+                {
+                    string[] allowedValues = new[] { "asc", "desc" };
+                    var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value.Trim().ToLower();
+
+                    if (!allowedValues.Contains(directionFilter))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Invalid value for parameter '_direction'. Allowed values are 'desc' and 'asc'.")).ConfigureAwait(false);
+                    }
+                }
+
+                if (queryParams.Any(qp => qp.Key.ToLower() == "_order"))
+                {
+                    string[] allowedValues = new[] { "confidence", "path" };
+                    var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_order").Value.Trim().ToLower();
+
+                    if (!allowedValues.Contains(directionFilter))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Invalid value for parameter '_order'. Allowed values are 'confidence' and 'path'.")).ConfigureAwait(false);
+                    }
+                }
+
+                if (string.IsNullOrEmpty(typeQualifier) || typeQualifier.Length > 200)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Type Qualifier Parameter is invalid")).ConfigureAwait(false);
+                }
+                if (minConfidence <= 0 || minConfidence > 1)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Min Confidence Parameter is invalid")).ConfigureAwait(false);
+                }
+
+                var results = await DataProfiles.GetAssetsByTypeQualifier(typeQualifier, minConfidence, queryParams).ConfigureAwait(false);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string> {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage)).ConfigureAwait(false);
+            }            
         }
 
         public WorkHttpStatus ValidateDataProfileUpsertRequest(List<DataProfileUpsertModel> models, bool IsInsert)
@@ -596,11 +722,11 @@ namespace d360.web.Controllers.V2
                 }
             }
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
-        }
+        }        
 
         private WorkHttpStatus ValidateMatchAssetGetParameters(Guid assetUid, string similarType, IEnumerable<KeyValuePair<string, string>> queryParams)
         {            
-            var asset = AssetRepository.GetAssetByUID(assetUid);            
+            var asset = AssetRepository.GetAssetByUID(assetUid);
 
             if (asset == null)
             {

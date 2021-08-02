@@ -76,6 +76,10 @@ namespace d360.extensions.search
 
         public static string GetCategoryFromClass(AssetTypeClass? typeClass)
         {
+            if(typeClass == null || !Enum.IsDefined(typeof(AssetTypeClass), typeClass))
+            {
+                return "";
+            }
             switch(typeClass)
             {
                 case AssetTypeClass.ReferenceItemType:

@@ -5,53 +5,57 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.integration.SynchedAssetType-v1">
+  <changeSet author="Puneet Gupta" id="Table.integration.SynchedAssetType-Rename-v1">
+  <comment>GOV-15287</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'SynchedAssetType')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'SynchedAssetType')
 BEGIN
-	CREATE TABLE [integration].[SynchedAssetType](
-		[ID] [int] IDENTITY(1,1) NOT NULL,
-		[IntegrationSettingID] [int] NOT NULL,
-		[SourceAssetTypeName] [varchar](500) NOT NULL,
-		[AssetTypeID] [int] NOT NULL,
-		[Object]  AS ([integration].[GetObjectByAssetTypeId]([AssetTypeID])),
-		[ObjectID]  AS ([integration].[GetObjectIDByAssetTypeId]([AssetTypeID])),
-		[ToGovern] [bit] CONSTRAINT [DF_IntegrationAssetType_ToGovern] DEFAULT (1) NOT NULL,
-		[Active] [bit] CONSTRAINT [DF_IntegrationAssetType_Active] DEFAULT (0) NOT NULL,
-		[OptionalIDName] [varchar](50) NULL,
-		[OptionalID] [int] NULL,
-		[LastSynchOn] [datetime] NULL,
-		[LastSuccessfulCount] [int] NULL,
-		[AllowChangeDetection] [bit] CONSTRAINT [DF_IntegrationSynchedAssetType_AllowChangeDetection] DEFAULT (1) NOT NULL,
-		[Level] [int] NULL,
-		[TriggerTopicMessage] [bit] CONSTRAINT [DF_IntegrationSynchedAssetType_TriggerTopicMessage] DEFAULT (0) NOT NULL,
-		[PageSize] [int] NULL,
-		[RefreshIntervalOverride] [int] NULL,
-		[FieldPageSize] [int] NULL,
-		[RelationshipPageSize] [int] NULL,
-		[OwnershipPageSize] [int] NULL,
-		[DeleteExecutionTimeoutHours] [int] NULL,
-		[EnableAppInsightsVerboseLogging] [bit] CONSTRAINT [DF_IntegrationSynchedAssetType_EnableAppInsightsVerboseLogging] DEFAULT (0) NOT NULL,
-		[ClearFieldHashInterval] [int] NULL,
-		[ClearOwnershipHashInterval] [int] NULL,
-		[ClearRelationshipHashInterval] [int] NULL,
-		CONSTRAINT [PK_IntegrationSynchedAssetType] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
-	)
-END
+			IF EXISTS (select * 
+					   from sys.foreign_keys where name = 'FK_IntegrationExecutionAssetType_IntegrationSynchedAssetType' 
+					   and object_name(parent_object_id) = 'ExecutionAssetType' and schema_name(schema_id) = 'integration'
+					   )
+			BEGIN	
+				ALTER TABLE [integration].[ExecutionAssetType] DROP CONSTRAINT [FK_IntegrationExecutionAssetType_IntegrationSynchedAssetType]
+			END
+			
+			IF EXISTS (select * 
+					   from sys.foreign_keys where name = 'FK_IntegrationSynchedAssetTypeFieldItem_IntegrationSynchedAssetType' 
+					   and object_name(parent_object_id) = 'SynchedAssetTypeFieldItem' and schema_name(schema_id) = 'integration'
+					   )
+			BEGIN	
+				ALTER TABLE [integration].[SynchedAssetTypeFieldItem] DROP CONSTRAINT [FK_IntegrationSynchedAssetTypeFieldItem_IntegrationSynchedAssetType]
+			END
 
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_IntegrationSynchedAssetType_IntegrationSetting')
-BEGIN
-	ALTER TABLE [integration].[SynchedAssetType] WITH CHECK ADD CONSTRAINT [FK_IntegrationSynchedAssetType_IntegrationSetting] FOREIGN KEY([IntegrationSettingID]) REFERENCES [integration].[Setting] ([ID])
-	ALTER TABLE [integration].[SynchedAssetType] CHECK CONSTRAINT [FK_IntegrationSynchedAssetType_IntegrationSetting]
+			IF EXISTS (select * 
+					   from sys.foreign_keys where name = 'FK_IntegrationSynchedAssetTypeRelationItem_IntegrationSynchedAssetType' 
+					   and object_name(parent_object_id) = 'SynchedAssetTypeRelationItem' and schema_name(schema_id) = 'integration'
+					   )
+			BEGIN	
+				ALTER TABLE [integration].[SynchedAssetTypeRelationItem] DROP CONSTRAINT [FK_IntegrationSynchedAssetTypeRelationItem_IntegrationSynchedAssetType]
+			END
+			
+			IF EXISTS (select * 
+					   from sys.foreign_keys where name = 'FK_IntegrationSynchedAssetTypeRoleItem_IntegrationSynchedAssetType' 
+					   and object_name(parent_object_id) = 'SynchedAssetTypeRoleItem' and schema_name(schema_id) = 'integration'
+					   )
+			BEGIN	
+				ALTER TABLE [integration].[SynchedAssetTypeRoleItem] DROP CONSTRAINT [FK_IntegrationSynchedAssetTypeRoleItem_IntegrationSynchedAssetType]
+			END
+
+			exec sp_rename 'integration.SynchedAssetType', 'SynchedAssetType_backup';
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'SynchedAssetType_backup')
+BEGIN
+	exec sp_rename 'integration.SynchedAssetType_backup', 'SynchedAssetType';
+END
 
 		]]>
 	</rollback>

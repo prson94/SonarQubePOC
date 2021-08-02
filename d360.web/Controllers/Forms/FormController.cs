@@ -24,6 +24,7 @@ using System.Text;
 using d360.core.resources;
 using Newtonsoft.Json;
 using d360.model.DataAccessLayer;
+using d360.core.helpers;
 
 namespace d360.web.Controllers
 {
@@ -78,7 +79,7 @@ namespace d360.web.Controllers
                     ID = assetType.ID,
                     IconBackColor = backColor,
                     IconForeColor = foreColor,
-                    IconText = Company.GetIconText(objectName)
+                    IconText = IconHelper.GetIconText(objectName)
                 };
                 Company.Add(style);
             }
@@ -86,7 +87,7 @@ namespace d360.web.Controllers
             {
                 style.IconBackColor = backColor;
                 style.IconForeColor = foreColor;
-                style.IconText = Company.GetIconText(objectName);
+                style.IconText = IconHelper.GetIconText(objectName);
                 Company.Update(style);
             }
         }
@@ -317,12 +318,6 @@ namespace d360.web.Controllers
                 case "EXPORTTEMPLATE":
                     res = ExportTemplate_EditFields(oid);
                     break;
-                case "FUSION":
-                    res = Fusion_EditFields(oid);
-                    break;
-                case "FUSIONATTRIBUTE":
-                    res = FusionAttribute_EditFields(oid);
-                    break;
                 case "INTERSECTTYPE":
                     res = Relationship_EditFields(oid);
                     break;
@@ -489,12 +484,6 @@ namespace d360.web.Controllers
                 case "EXPORTTEMPLATE":
                     res = ExportTemplate_AddFields();
                     break;
-                case "FUSION":
-                    res = Fusion_AddFields(objectID.GetValueOrDefault());
-                    break;
-                case "FUSIONATTRIBUTE":
-                    res = FusionAttribute_AddFields(objectID.GetValueOrDefault(), typeID.GetValueOrDefault());
-                    break;
                 case "ISSUE":
                     res = Issue_AddFields(objectID.GetValueOrDefault());
                     break;
@@ -586,10 +575,6 @@ namespace d360.web.Controllers
                     return EditApiField(form);
                 case "ENDPOINT":
                     return EditServiceEndpoint(form);
-                case "FUSION":
-                    return EditFusion(form);
-                case "FUSIONATTRIBUTE":
-                    return EditFusionAttribute(form);
                 case "INTERSECT":
                     return EditRelationship(form);
                 case "INTERSECTTYPE":
@@ -639,8 +624,6 @@ namespace d360.web.Controllers
                     return DeleteCustomSynonym(form);
                 case "ENDPOINT":
                     return DeleteCustomAPIEndPoint(form);
-                case "FUSIONCONFIGURATION":
-                    return DeleteFusion(form);
                 case "INTERSECTTYPE":
                     IntersectType intersectType = Company.GetById<IntersectType>(objectID);
                     form.Add("IntersectTypeUid", intersectType.uid.ToString());
@@ -695,8 +678,6 @@ namespace d360.web.Controllers
                     return AddCustomSynonym(form);
                 case "ENDPOINT":
                     return AddServiceEndpoint(form);
-                case "FUSION":
-                    return AddFusion(form);
                 case "INTERSECT":
                     return AddRelationship(form);
                 case "INTERSECTTYPE":
@@ -1208,8 +1189,6 @@ namespace d360.web.Controllers
                     #region
                     sql = $@"
 select * from (
-select 'FusionType|0' as value, 'Fusion' as title
-union
 select 'ArtifactType|0' as value, '{CommonNames.AssetTypeClass_Business.CleanForSql()}' as title
 union
 select 'ArtifactType|0' as value, '{CommonNames.AssetTypeClass_Business.CleanForSql()}' as title
@@ -2564,25 +2543,29 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                     { (int)AssetTypeClass.BusinessAsset },
                     { (int)AssetTypeClass.TechnicalAsset },
                     { (int) AssetTypeClass.Rule }
-                });
+                });            
             list.Add(new EditableField { FieldName = "ID", Name = "ID", FieldType = DataType.Hidden.ToString(), Value = template.ID.ToString() });
             list.Add(new EditableField { FieldName = "Uid", Name = "Uid", FieldType = DataType.Hidden.ToString(), Value = template.Uid.ToString() });
             list.Add(new EditableField { FieldName = "IncludeFieldTypes", Name = "IncludeFieldTypes", FieldType = DataType.Hidden.ToString(), Value = template.IncludeFieldTypes == null ? template.IncludeFieldTypes.ToString() : null });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Namespace", true, "", 1, 250), Value = template.Name });
             list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = template.Description });
-            var names = Enum.GetNames(typeof(ExportView)).Select(i => new SelectListItem { Text = i, Value = i, Selected = template.ExportViewType.ToString() == i }).ToList();
+            var names = Enum.GetNames(typeof(ExportView)).Select(i => new SelectListItem { Text = i, Value = i }).ToList();            
 
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names });
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names, Value = template.ExportViewType.ToString() });
 
             var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.BusinessAsset || f.Class == AssetTypeClass.TechnicalAsset || f.Class == AssetTypeClass.Rule).ToArray()
                 .Select(i => new SelectListItem
                 {
                     Text = $"{i.Class.GetDisplayName()} : {assetPaths[i.uid]}",
-                    Value = i.uid.ToString(),
-                    Selected = template.AssetTypeID == i.ID
+                    Value = i.uid.ToString()
                 }).OrderBy(x => x.Text).ToList();
 
-            list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "AssetTypeUID", Name = "Asset Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
+            if (template.AssetTypeUID == Guid.Empty)
+            {
+                template.AssetTypeUID = Company.AssetTypes.Where(t => t.ID == template.AssetTypeID).Select(i => i.uid).FirstOrDefault();
+            }
+
+            list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "AssetTypeUID", Name = "Asset Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types, Value = template.AssetTypeUID.ToString() });
 
             list.Add(new EditableField { Row = 5, Column = 1, Required = true, FieldName = "IncludeUrl", Name = "Include Asset Url", FieldDescription = "", FieldType = DataType.Boolean.ToString(), Value = template.IncludeUrl.ToString() });
 

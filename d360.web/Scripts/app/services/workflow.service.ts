@@ -30,6 +30,7 @@ import {
     ActionEditorModel,
     AllocationAPIModel,
     AllocationRequestModel,
+    WorkflowReassignmentAsset,
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { SelectItem, FormHelper } from '../models/form.model';
@@ -39,7 +40,7 @@ import { Count } from '../models/counts.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DynamicGridResultsInData } from '../models/grid-definition.model';
 import { Observable,of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 import { AssetTypeClass } from '../models/asset.model';
 
@@ -665,5 +666,17 @@ export class WorkflowService extends BaseObservableService {
                 map(response => response),
                 catchError(err => this.handleError(err))
             );
+    }
+
+    getWorkflowReassignmentAssets(e: Observable<any>, workflowItemId: number,): Observable<WorkflowReassignmentAsset[]> {
+        return e.pipe(
+            distinctUntilChanged(),
+            switchMap((e) => {
+                return this.http.get(`api/v2/workflow/reassignment/objects/${workflowItemId}?query=${e}`)
+                    .pipe(
+                        map(response => response),
+                        catchError(err => this.handleError(err))
+                    );
+            }));
     }
 }

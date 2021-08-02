@@ -1,11 +1,11 @@
-﻿import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
+﻿import { Component, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-header',
-    template: ` <div class="navbar-fixed header-container">
+    template: ` <div class="navbar-fixed header-container" *ngIf="hideHeader == false">
                     <nav class="top">  
                         <div class="logo" routerLink="/home"> <img [src]="imageSource" alt="logo"> </div>                                 
                         <d3s-header-breadcrumb [controlWidth]="controlWidth"></d3s-header-breadcrumb>                                          
@@ -16,9 +16,11 @@ import { CompanySettingsService } from '../../../services/settings.service';
     providers: [CompanySettingsService]
 })
 
-export class HeaderComponent extends BaseComponent implements OnInit {
+export class HeaderComponent extends BaseComponent implements OnInit, OnDestroy {
     public controlWidth: number = 0;
     imageSource: string = '/Content/images/govern-small-white.svg';
+    hideHeader: boolean = false;
+    subParams: any;
 
     constructor(private router: Router,
         private route: ActivatedRoute,
@@ -32,8 +34,18 @@ export class HeaderComponent extends BaseComponent implements OnInit {
                 if (data.CurrentCompanyLogoPath != "")
                     this.imageSource = data.CurrentCompanyLogoPath;
             });
+
+        this.subParams = this.route.queryParams.subscribe((params) => {
+            if (params['noheader'] != null) {
+                this.hideHeader = params['noheader'].toLocaleLowerCase() === 'true';
+            }
+        });
     }   
 
-
+    ngOnDestroy() {
+        if (this.subParams) {
+            this.subParams.unsubscribe();
+        }
+    }
 }
 

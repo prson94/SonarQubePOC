@@ -686,23 +686,6 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             return dict;
         }
 
-        #region Fusion
-
-        public List<FusionOwnerOption> GetFusionOwnerOptions()
-        {
-            return Database.Connection.Query<FusionOwnerOption>(@"
-	select	ASTT.Name as [Type],
-			AST.ObjectID as ID,
-			ASTT.Name + ' : ' + D.DisplayValue as Name
-	from	
-			Asset AST
-			inner join AssetType ASTT on ASTT.ID = AST.AssetTypeID and ASTT.CanOwnFusion = 1 and ASTT.[Object] = 'ArtifactType'		
-            cross apply GetAssetDisplayValueById(AST.ID) D
-	order by	ASTT.Name + ' : ' + D.DisplayValue").ToList();
-        }
-
-        #endregion
-
         public AssetDetail GetAssetDetail(long id)
         {
             var model = Query<AssetDetail>(@"
@@ -1639,57 +1622,7 @@ where	I.ID is null";
 
             return returnValue;
         }
-
-        public bool SaveOrUpdateAsset(Asset asset, List<Field> fields, int parentId = -1)
-        {
-            var isUpdate = asset.ID > 0;
-
-            var fieldsJson = JsonConvert.SerializeObject(fields.Select(f => new { ID = f.FieldTypeID, Value = f.Value }));
-            bool exists = false;
-
-            if (isUpdate)
-            {
-                exists = Query<bool>("select dbo.CheckIfAssetExistsWithParent(@assetTypeID, @assetID, @f, 0) as Val", new { assetTypeID = asset.AssetTypeID, assetID = asset.ID, f = fieldsJson }).First();
-            }
-            else
-            {
-                exists = Query<bool>("select dbo.CheckIfAssetExistsWithParent(@assetTypeID, null, @f, @p) as Val", new { assetTypeID = asset.AssetTypeID, f = fieldsJson, p = parentId }).First();
-            }
-
-            if (exists)
-            {
-                throw new ArgumentException($"{asset.Object} already exists.");
-            }
-
-            bool returnValue = true;
-
-            if (isUpdate)
-            {
-                ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);
-            }
-            else
-            {
-                returnValue = Add<Asset>(asset);
-
-                //Disable eventing after adding so update event doesnt trigger and cause duplicates without changed field
-                this.IsEventingEnabled = false;
-            }
-
-            if (fields != null)
-            {
-                fields.ForEach(i =>
-                {
-                    i.ObjectID = asset.ObjectID;
-                });
-                AddOrUpdateFields(fields);
-            }
-
-            this.IsEventingEnabled = true;
-            CreateOrUpdateDisplayValue(asset.ID);
-
-            return returnValue;
-        }
-
+                
         public void CreateOrUpdateDisplayValue(long assetId, string objectType = "", int objectId = -1)
         {
             Database.Connection.Execute("exec GenerateAssetDisplayValue @assetID, @objType,@objId", new { assetID = assetId, objId = objectId, objType = new DbString { Value = objectType.Replace("Type", ""), IsFixedLength = true, Length = 20, IsAnsi = true } }, null, 2400);
@@ -1788,7 +1721,6 @@ where	I.ID is null";
                     o.UpdatedOn = DateTime.UtcNow;
                 }
                 #endregion
-
 
                 #region Business logic : Field
                 if (entry.Entity is Field)
@@ -2172,10 +2104,6 @@ select @err";
                     }
                 }
                 #endregion
-
-
-
-
 
             }
 
@@ -2922,55 +2850,6 @@ order by    S.EffectiveDate desc";
             return Query<decimal?>(sql, new { assetId, type = (int)type }).FirstOrDefault();
         }
 
-        /// <summary>
-        /// Generates the icon text shown on icons that represent the Asset 
-        /// </summary>
-        /// <param name="assetName"></param>
-        /// <returns></returns>
-        public string GetIconText(string assetName)
-        {
-            string iconText = "Tx";
-            if (string.IsNullOrEmpty(assetName))
-            {
-                return iconText;
-            }
-
-            var name = assetName.Trim();
-
-            var words = name.Split(' ');
-            if (words.Length > 1 && words[1].Length > 0)
-            {
-                if (!string.IsNullOrEmpty(words[0]))
-                {
-                    iconText = words[0][0].ToString().ToUpper();
-                }
-                else
-                {
-                    iconText = "_"; // first character is space.
-                }
-
-                if (!string.IsNullOrEmpty(words[1]))
-                {
-
-                    iconText += words[1][0].ToString().ToLower();
-                }
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(name))
-                {
-                    iconText = name[0].ToString().ToUpper();
-                    if (name.Length > 1)
-                    {
-                        iconText += name[1].ToString().ToLower();
-                    }
-                }
-            }
-
-            return iconText;
-
-        }
-
         public Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds)
         {
             var dbArgs = new DynamicParameters();
@@ -2990,38 +2869,6 @@ order by    S.EffectiveDate desc";
 new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = value }).FirstOrDefault();
         }
 
-        public bool SetStateDeleteWorkFlowType(SystemObjects type, int id)
-        {
-            try
-            {
-
-                var sql = $@"declare	@workflowType table (id int)
-
-					insert into @workflowType
-					select distinct wt.id 
-					from workflow.[type] wt
-					inner join [workflow].[EventRegistration] we
-					on we.typeid = wt.id
-					where wt.State <> 3 
-					and we.object = @Object
-					and we.objectid = @ObjectID;
-
-					update wt
-					set State = 3
-					from workflow.[type]  wt
-					inner join @workflowType wft
-					on wt.id = wft.id;";
-
-
-                Database.Connection.Execute(sql, new { Object = type.ToString(), ObjectID = id }, null, 120);
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                throw resolveToRealException(ex);
-            }
-        }
         public string GetDiagramUrlForDiagramAsset(Guid assetUid)
         {
             var diagramUrl = $@"select 

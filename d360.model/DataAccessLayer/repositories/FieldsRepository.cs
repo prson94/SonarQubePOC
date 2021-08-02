@@ -93,6 +93,10 @@ namespace d360.model.DataAccessLayer
                             workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, "Type not found", $"Asset Type not found based on Uid provided [{assetTypeUid.ToString()}].");
                         }
                     }
+                    else
+                    {
+                        workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, "Type not found", $"Invalid Asset Type Uid provided [{assetTypeUidString}].");
+                    }
                 }
             }
             if (parameters.Any(q => q.Key.ToLower() == "relationshiptypeuid"))

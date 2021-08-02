@@ -120,8 +120,9 @@ namespace d360.model.DataAccessLayer
             var dbArgs = new DynamicParameters();
             bool includeTotal = true;
             bool includeAssetPath = false;
+            bool orderByAssetPath = false;
 
-            string _orderBy = "I.IntersectTypeID";
+            string _orderBy = "I.IntersectTypeID,I.ID";
             string _orderDirection = "asc";
 
             Guid objectUid;
@@ -156,6 +157,8 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
 
                 if (queryParamsList.Any(q => q.Key.ToLower() == "relationshiptypeuid"))
                 {
+                    //if the search is by intersecttypeid we should change the default order by to I.ID for consistent results
+                    _orderBy = "I.ID";
                     var relationshipTypeUidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "relationshiptypeuid").Value;
                     if (Guid.TryParse(relationshipTypeUidString, out relationshipTypeUid))
                     {
@@ -291,10 +294,12 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 {
                     _orderBy = "ISNULL(ANDP_Object.DisplayPath,OT2.Name)";
                     isSubject = true;
+                    orderByAssetPath = true;
                 }
                 else if (orderValue == "subject.[path]")
                 {
                     _orderBy = "ISNULL(ANDP_Subject.DisplayPath,ST2.Name)";
+                    orderByAssetPath = true;
                 }
             }
 
@@ -414,7 +419,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
             });
             predicateTypeSql += " end as 'Predicate.Type', ";
 
-            if (includeAssetPath)
+            if (includeAssetPath || orderByAssetPath)
             {
                 fieldJoins.Add(" left join graph.AssetNodeDisplayPath ANDP_Object on ANDP_Object.Id = O.Id ");
                 fieldJoins.Add(" left join graph.AssetNodeDisplayPath ANDP_Subject on ANDP_Subject.Id = S.Id ");
@@ -780,7 +785,8 @@ from	IntersectType I
             }
             catch (Exception ex)
             {
-                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                execution.ErrorMessage = message;
                 execution.CompletedOn = DateTime.UtcNow;
                 companyContext.Update(execution);
             }
@@ -805,7 +811,8 @@ from	IntersectType I
             }
             catch (Exception ex)
             {
-                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                execution.ErrorMessage = message;
                 execution.CompletedOn = DateTime.UtcNow;
                 companyContext.Update(execution);
             }
@@ -849,7 +856,8 @@ from	IntersectType I
             }
             catch (Exception ex)
             {
-                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                execution.ErrorMessage = message;
                 execution.CompletedOn = DateTime.UtcNow;
                 companyContext.Update(execution);
             }
@@ -874,7 +882,8 @@ from	IntersectType I
             }
             catch (Exception ex)
             {
-                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                execution.ErrorMessage = message;
                 execution.CompletedOn = DateTime.UtcNow;
                 companyContext.Update(execution);
             }
@@ -899,7 +908,8 @@ from	IntersectType I
             }
             catch (Exception ex)
             {
-                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                execution.ErrorMessage = message;
                 execution.CompletedOn = DateTime.UtcNow;
                 companyContext.Update(execution);
             }

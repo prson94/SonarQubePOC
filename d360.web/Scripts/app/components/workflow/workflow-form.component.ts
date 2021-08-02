@@ -5,7 +5,7 @@ import { Location } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NgForm, FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
-import { SubscriptionLike as ISubscription } from 'rxjs';
+import { Subject, Subscription, SubscriptionLike as ISubscription } from 'rxjs';
 import { close } from 'fs';
 import { map } from 'rxjs/operators';
 
@@ -13,7 +13,7 @@ import { BaseComponent } from '../shared/base.component';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { WorkflowService } from '../../services/workflow.service';
-import { WorkflowFormField, WorkflowFormFieldType } from '../../models/workflow.model';
+import { WorkflowFormField, WorkflowFormFieldType, WorkflowReassignmentAsset } from '../../models/workflow.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { Tag } from '../../models/tag.model';
 import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
@@ -55,8 +55,6 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private isReassignEnabled: boolean = false;
     private reassignType: string;
     private reassignAvailableTypes = [];
-    private term: Tag;
-    private terms: Tag[] = [];
     private resources: Resource[] = [];
 
     private selectedReassignObjectId: number;
@@ -66,6 +64,11 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private searchSub: ISubscription;
     @Input() hasCloseButton: boolean = true;
     private isSetValidatior: boolean = false;
+
+    private filteredAssetsSource = new Subject<any>();
+    private filteredAssetsSub: Subscription;
+    private filteredAssets: WorkflowReassignmentAsset[] = [];
+    private selectedReassignmentAsset: WorkflowReassignmentAsset;
 
     @ViewChild('workflowForm', { static: false }) workflowFormGroup: FormGroup;
 
@@ -94,6 +97,11 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
             if (!window.history || window.history.length <= 2) this.hasCloseButton = false;
             this.load();
         });
+
+        this.filteredAssetsSub = this.workflowService.getWorkflowReassignmentAssets(this.filteredAssetsSource, this.workflowItemId)
+            .subscribe((result) => {
+                this.filteredAssets = result;
+            });
     }
 
 
@@ -126,7 +134,12 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
         if (this.sub) {
             this.sub.unsubscribe();
         }
-        if (this.searchSub) this.searchSub.unsubscribe();
+        if (this.filteredAssetsSub) {
+            this.filteredAssetsSub.unsubscribe();
+        }
+        if (this.searchSub) {
+            this.searchSub.unsubscribe();
+        }
     }
 
     get objectUrl() {
@@ -161,7 +174,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
         this.isLoading = true;
         this.workflowService.getWorkflowForm(this.workflowId, this.workflowItemStepId)
             .pipe(
-            map(res => {
+                map(res => {
                 this.title = res.Title;
                 this.description = res.Description;
                 this.fields = res.Fields;
@@ -180,8 +193,9 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                 this.objectTypeID = res.ObjectTypeID;
                 this.typeName = res.TypeName;
                 this.IsClearAssignementsAllowed = res.IsClearAssignementsAllowed;
-                if (res.AllowReassignObject)
+                if (res.AllowReassignObject) {
                     this.reassignAvailableTypes.push({ value: 'object', text: 'Object' });
+                }
                 if (res.AllowReassignResource) {
                     this.reassignAvailableTypes.push({ value: 'resource', text: 'Resource' });
                     this.loadResources(); 
@@ -212,7 +226,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private reassign() {
         this.isLoading = true;
         if (this.reassignType == 'object') {
-            this.workflowService.reassignObject(this.workflowItemId, this.workflowId, this.selectedReassignObjectId, this.selectedReassignObjectType, this.workflowItemStepId)
+            this.workflowService.reassignObject(this.workflowItemId, this.workflowId, this.selectedReassignmentAsset.ObjectID, this.selectedReassignmentAsset.Object, this.workflowItemStepId)
             .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result, 'Successfully Assigned');
                 this.isLoading = false;
@@ -231,26 +245,21 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
         }
     }
 
-    private search(event) {
-        this.searchSub = this.tagService.getTags(event.query, 'Resource').pipe(
-            debounceTime(400))
-            .subscribe(data => {
-                this.terms = data;
-            });
-    }
-
     private userFriendlyObjectName(objectType: string) {
         return D3SObjectHelpers.getObjectTypeFriendlyName(objectType);
     }
 
-    private selectItem() {
-        this.selectedReassignObjectType = this.term.Object;
-        this.selectedReassignObjectId = this.term.ObjectID;
+    private selectItem(e: any) {
+        this.selectedReassignmentAsset = e;
     }
 
     private loadResources() {
         this.resourcesService.getResources(false).subscribe(result => {
             this.resources = result;
         });
+    }
+
+    private filterItems(e: any) {
+        this.filteredAssetsSource.next(e.query);
     }
 };

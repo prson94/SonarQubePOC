@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Table.api.Execution-v5">
+  <changeSet author="sdooley" id="Table.api.Execution-v6">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -54,6 +54,19 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_Api_Execution_Resource
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_Api_Execution_ResourceID] ON [api].[Execution] ( [ResourceID] )
 END
+
+IF EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[api].[Execution]') 
+         AND name = 'ErrorMessage'
+)
+BEGIN
+update [api].[Execution]
+set  [ErrorMessage] = left(ErrorMessage, 2000);
+   
+ALTER TABLE [api].[Execution] ALTER COLUMN [ErrorMessage] nvarchar(2500);
+END
 		]]>
     </sql>
 	<rollback>
@@ -83,6 +96,16 @@ END
 IF EXISTS (select * from sys.indexes where name = 'IX_Api_Execution_ResourceID')
 BEGIN
 	DROP INDEX [IX_Api_Execution_ResourceID] ON [api].[Execution]
+END
+
+IF EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[api].[Execution]') 
+         AND name = 'ErrorMessage'
+)
+BEGIN
+    ALTER TABLE [api].[Execution] ALTER COLUMN [ErrorMessage] nvarchar(max);
 END
 		]]>
 	</rollback>

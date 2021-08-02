@@ -5,21 +5,27 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.fusion.MarkitLineageMapToBusinessItems-v2">
+  <changeSet author="sDooley" id="Table.fusion.MarkitLineageMapToBusinessItems-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'MarkitLineageMapToBusinessItems')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'MarkitLineageMapToBusinessItems_backup')
 BEGIN
-	EXEC sp_rename 'fusion.MarkitLineageMapToBusinessItems', 'MarkitLineageMapToBusinessItems_backup'
+	DROP TABLE [fusion].[MarkitLineageMapToBusinessItems_backup]
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'MarkitLineageMapToBusinessItems_backup')
+BEGIN
+	CREATE TABLE [fusion].[MarkitLineageMapToBusinessItems_backup](
+	[ObjectAssetID] [bigint] NULL,
+	[FusionAttributeID] [int] NULL
+) ON [PRIMARY]
+END
 		]]>
 	</rollback>
   </changeSet>

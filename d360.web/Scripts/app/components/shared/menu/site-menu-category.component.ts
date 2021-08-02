@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter, AfterViewInit, ViewChild } from '@angular/core';
+﻿import { Input, Component, ChangeDetectionStrategy, Output, EventEmitter, AfterViewInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../base.component';
 import { SiteMenuService } from '../../../services/site-menu.service';
@@ -7,7 +7,6 @@ import { HeaderActionsService } from '../../../services/header-actions.service';
 import { isString, isArray } from 'util';
 import * as _ from 'lodash';
 import { SearchFieldComponent } from '../controls/search-field/search-field.component';
-import { forEach } from 'lodash';
 
 @Component({
     selector: 'd3s-site-menu-category',
@@ -39,7 +38,8 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     constructor(private menuService: SiteMenuService,
         private router: Router,
         private headerActionsService: HeaderActionsService,
-        private siteMenuService: SiteMenuService) {
+        private siteMenuService: SiteMenuService
+    ) {
         super();
     }
 
@@ -47,10 +47,11 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
 
     toggleEmptyVisibility() {
         var newValue = (!this.hideEmptyItems).toString();
-        localStorage.setItem(this.storageKey, newValue);
+        localStorage.setItem(this.storageKey, newValue);        
     }
 
     hideEmptySubItems(items: SiteMenuItem[]) {
+
         items.forEach((x) => {
             if (x.Items) {
                 x.Items = x.Items.filter((y) => y.count > 0);
@@ -61,13 +62,14 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
 
     get visibleMenuItems(): SiteMenuItem[] {
         if (this.hideEmptyItems) {
-            var items = this.menu.NavigationItems.filter((x) => x.count > 0);
+            var menu = _.cloneDeep(this.menu.NavigationItems);
+            var items = menu.filter((x) => x.count > 0);
             this.hideEmptySubItems(items);
             return items;
         }
-        else {
+        else {            
             return this.menu.NavigationItems;
-        }
+        }        
     }
 
     get showVisiblityToggle(): boolean {

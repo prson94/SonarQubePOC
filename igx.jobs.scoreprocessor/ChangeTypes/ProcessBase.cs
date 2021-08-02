@@ -334,7 +334,8 @@ where   T.Uid = @Uid", executionRecord);
                     if (ex != null)
                     {
                         executionRecord.Failures += 1;
-                        executionRecord.ErrorMessage += ex.GetFullExceptionData(false);
+                        string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                        executionRecord.ErrorMessage += message;
                     }
 
                     if (completed && shouldDeleteAfterCompletion)

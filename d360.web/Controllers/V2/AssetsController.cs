@@ -1583,6 +1583,10 @@ namespace d360.web.Controllers.V2
                                 fileName += " List";
                             }
                         }
+
+                        //remove Color column from export
+                        Columns = Columns.Where(c => c.columntype != "color" && c.datafield != "Color").ToList();
+                        Fields = Fields.Where(f => f.type != "color" && f.name != "Color").ToList();
                     }
 
                     var document = new SLDocument();

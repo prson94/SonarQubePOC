@@ -180,7 +180,8 @@ namespace d360.model.DataAccessLayer
             }
             catch (Exception ex)
             {
-                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                execution.ErrorMessage = message;
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);
 
@@ -342,7 +343,8 @@ namespace d360.model.DataAccessLayer
                 }
                 catch (Exception ex)
                 {
-                    execution.ErrorMessage = ex.GetFullExceptionData(false);
+                    string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                    execution.ErrorMessage = message;
                     execution.CompletedOn = DateTime.UtcNow;
                     CompanyContext.Update(execution);
 
@@ -444,7 +446,7 @@ namespace d360.model.DataAccessLayer
                             messages.Add("CurrentPassword parameter value missing.");
                         }
 
-                        var CurrPasswordHash = CommunityContext.HashPassword(CurrPassword);
+                        var CurrPasswordHash = PasswordHelper.HashPassword(CurrPassword);
                         var existing = CommunityContext.Filter<Resource>(i => i.Password == CurrPasswordHash && i.Uid == user.uid).FirstOrDefault();
                         if (existing == null)
                         {
@@ -748,7 +750,8 @@ namespace d360.model.DataAccessLayer
                 }
                 catch (Exception ex)
                 {
-                    execution.ErrorMessage = ex.GetFullExceptionData(false);
+                    string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                    execution.ErrorMessage = message;
                     execution.CompletedOn = DateTime.UtcNow;
                     CompanyContext.Update(execution);
                     try
@@ -812,7 +815,7 @@ namespace d360.model.DataAccessLayer
                         {
                             if (string.IsNullOrEmpty(user.Password))
                             {
-                                user.Password = CommunityContext.createRandomPassword();
+                                user.Password = PasswordHelper.CreateRandomPassword();
                             }
 
                             var resource = new Resource()
@@ -821,7 +824,7 @@ namespace d360.model.DataAccessLayer
                                 LastName = user.LastName,
                                 Email = user.Username,
                                 Username = user.Username,
-                                Password = CommunityContext.HashPassword(user.Password)
+                                Password = PasswordHelper.HashPassword(user.Password)
                             };
 
                             CommunityContext.Add(resource);
@@ -859,7 +862,7 @@ namespace d360.model.DataAccessLayer
 
                                 if (!string.IsNullOrEmpty(user.Password))
                                 {
-                                    resource.Password = CommunityContext.HashPassword(user.Password);
+                                    resource.Password = PasswordHelper.HashPassword(user.Password);
                                 }
 
                                 user.uid = resource.Uid;
@@ -1094,7 +1097,8 @@ namespace d360.model.DataAccessLayer
                     {
                     }
 
-                    execution.ErrorMessage = ex.GetFullExceptionData(false);
+                    string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                    execution.ErrorMessage = message;
                     execution.CompletedOn = DateTime.UtcNow;
                     CompanyContext.Update(execution);
 
@@ -1148,7 +1152,7 @@ namespace d360.model.DataAccessLayer
                             insert into reporting.Global_Audit
                             OUTPUT INSERTED.ID
                             INTO @audit
-                            select distinct 'Resource', gr.ResourceId, gr.FirstName + ' ' + gr.LastName, @currentresourceid, GETUTCDATE(), '{logMessage}', 'Resource', gr.ResourceId, 'Resource', gr.FirstName + ' ' + gr.LastName,'Resource {logMessage}' from #auditRecords ar
+                            select distinct 'Resource', gr.ResourceId, SUBSTRING(gr.FirstName + ' ' + gr.LastName,0,250), @currentresourceid, GETUTCDATE(), '{logMessage}', 'Resource', gr.ResourceId, 'Resource', SUBSTRING(gr.FirstName + ' ' + gr.LastName,0,250),'Resource {logMessage}' from #auditRecords ar
                             inner join reporting.Global_Resource gr on gr.uid = ar.uid
 
                             insert into reporting.global_fieldaudit
@@ -1381,7 +1385,8 @@ order by	q.SortOrder";
             {
                 {0, @"\b([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})\/?" }, //UID pattern
                 {1, @"^([a-z\/]+)\/(\d+)(\/|[;a-z=]+)(\d+)$" }, // type/typeid/objectid pattern
-                {2, @"^([a-z\/]+)\/(\d+)(\/[a-z]+)?$" } // type/objectid pattern
+                {2, @"^([a-z\/]+)\/(\d+)(\/[a-z]+)?$" }, // type/objectid pattern
+                {3, @"^([a-z\/]+)\/([\d\/]+)\/([id\/]+)\/(\d+)$" } // type/typeid/ID/objectid pattern
             };
             foreach (KeyValuePair<int, string> entry in patterns)
             {
@@ -1404,6 +1409,11 @@ order by	q.SortOrder";
                             string objectType = RoutePrefixToObjectType(regex.Groups[1].ToString());
                             int oId = int.Parse(regex.Groups[2].ToString());
                             asset = CompanyContext.AssetDetails.FirstOrDefault(a => a.Object == objectType && a.ObjectID == oId);
+                            break;
+                        case 3: //type/typeid/id/objectid
+                            string objecTType = RoutePrefixToObjectType(regex.Groups[1].Value);
+                            int oID = int.Parse(regex.Groups[4].Value);
+                            asset = CompanyContext.AssetDetails.FirstOrDefault(a => a.Object == objecTType && a.ObjectID == oID);
                             break;
                     }
                 }
@@ -1430,7 +1440,8 @@ order by	q.SortOrder";
             }
             catch (Exception ex)
             {
-                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                execution.ErrorMessage = message;
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);
             }
@@ -1455,7 +1466,8 @@ order by	q.SortOrder";
             }
             catch (Exception ex)
             {
-                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                execution.ErrorMessage = message;
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);
             }
@@ -1481,7 +1493,8 @@ order by	q.SortOrder";
             }
             catch (Exception ex)
             {
-                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                execution.ErrorMessage = message;
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);
             }

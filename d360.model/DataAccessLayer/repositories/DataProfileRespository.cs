@@ -254,6 +254,7 @@ namespace d360.model.DataAccessLayer
             return results;
         }
 
+        
         public List<DataProfileUpsertResponse> UpsertDataProfiles(List<DataProfileUpsertModel> DataProfileUpsertModels, ApiExecution execution, bool isInsert)
         {
             CompanyContext.Add(execution);
@@ -271,7 +272,8 @@ namespace d360.model.DataAccessLayer
             }
             catch (Exception ex)
             {
-                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                execution.ErrorMessage = message;
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);
             }            
@@ -301,7 +303,8 @@ namespace d360.model.DataAccessLayer
             }
             catch (Exception ex)
             {
-                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                execution.ErrorMessage = message;
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);
             }
@@ -351,7 +354,7 @@ namespace d360.model.DataAccessLayer
             return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
         }
 
-        public async Task<AssetDataProfilesMatchingAssetsApiViewModel> GetMatchingAssets(Guid assetUid, string similarType, IEnumerable<KeyValuePair<string, string>> queryParams)
+        public async Task<AssetDataProfilesMatchingAssetsApiViewModel> GetMatchingAssets(Guid assetUid, string similarType, IEnumerable<KeyValuePair<string, string>> queryParams, bool onlyTotal = false)
         {
 
             var dbArgs = new DynamicParameters();
@@ -462,11 +465,11 @@ namespace d360.model.DataAccessLayer
 
                 dbArgs.Add("@userid", CompanyContext.CurrentResourceID);
             }
-            
-            dbArgs.Add("@signature", dataprofile.StructureSignature);
+                        
             dbArgs.Add("@assetId", asset.ID);
-
-            var itemsSQL = $@"
+            if (!onlyTotal)
+            {
+                var itemsSQL = $@"
                             SELECT 
                                 distinct
 	                            NDP.uid, 
@@ -475,9 +478,129 @@ namespace d360.model.DataAccessLayer
 	                            {sqlJoins}		                            
 	                            {whereConditions}
 		                    order by NDP.DisplayPath {orderDirection}
-                            {offset}";            
+                            {offset}";
 
-            results.items = await CompanyContext.QueryAsync<AssetDataProfileMatchingAssetsModel>(itemsSQL, dbArgs, ApiTimeout);
+                results.items = await CompanyContext.QueryAsync<AssetDataProfileMatchingAssetsModel>(itemsSQL, dbArgs, ApiTimeout);
+            }
+            
+
+            if (includeTotal || onlyTotal)
+            {
+                var countSQL = $@"
+                            SELECT 
+	                            Count(*)
+                            FROM                                     
+	                            {sqlJoins}		                            
+	                            {whereConditions}
+		                    ";
+                
+                results.total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSQL, dbArgs, ApiTimeout);
+            }
+            else
+            {
+                results.total = null;
+            }
+
+            return results;
+        }
+
+        public async Task<AssetDataProfileByTypeQualifierApiViewModel> GetAssetsByTypeQualifier(string typeQualifier, decimal minConfidence, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            var dbArgs = new DynamicParameters();
+            var results = new AssetDataProfileByTypeQualifierApiViewModel();
+            results.pageNum = CompanyContext.ParsePageNumber(queryParams, 1);
+            results.pageSize = CompanyContext.ParsePageSize(queryParams);
+            string offset = CompanyContext.ParsePageOffsetSql(results.pageNum, results.pageSize);
+            string whereConditions = $@"where 
+                                        ADP.typeQualifier = @typeQualifier 
+                                        AND ADP.confidence>=@minConfidence
+		                                AND ADP.ProfileSetDate = maxProfileDate.profileSetDate";
+            string sqlJoins = "";
+            bool includeTotal = true;
+            string orderDirection = "asc";
+            string orderBy = "NDP.DisplayPath";
+
+            if (string.IsNullOrEmpty(typeQualifier) || typeQualifier.Length > 200)
+            {
+                throw new GenericException(System.Net.HttpStatusCode.BadRequest, "Bad Request", "Type Qualifier Parameter is invalid.");
+            }
+            if (minConfidence <= 0 || minConfidence > 1)
+            {
+                throw new GenericException(System.Net.HttpStatusCode.BadRequest, "Bad Request", "Min Confidence Parameter is invalid.");
+            }
+
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includetotal"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includetotal").Value, out includeTotal);
+            }
+
+            if (queryParams.Any(q => q.Key == "_direction"))
+            {
+                string[] allowedValues = new[] { "asc", "desc" };
+                var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value.Trim().ToLower();
+
+                if (allowedValues.Contains(directionFilter))
+                {
+                    orderDirection = directionFilter;
+                }
+            }
+
+            if (queryParams.Any(q => q.Key == "_order"))
+            {
+                var orderFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_order").Value.Trim().ToLower();
+
+                if (orderFilter.Equals("confidence",StringComparison.InvariantCultureIgnoreCase))
+                {
+                    orderBy = "ADP.confidence";
+                }                
+            }
+
+            dbArgs.Add("@typeQualifier", typeQualifier);
+            dbArgs.Add("@minConfidence", minConfidence);
+
+            sqlJoins = $@" AssetDataProfile ADP
+                            inner join 
+		                    [graph].AssetNodeDisplayPath NDP on NDP.ID=adp.AssetID
+                            outer apply 
+			                (
+			                select 
+				                max(ProfileSetDate) profileSetDate 
+			                from 
+				                AssetDataProfile 
+			                where 
+				                AssetID = ADP.AssetID
+			                ) maxProfileDate";
+
+            if (!CompanyContext.CurrentResourceIsAdmin)
+            {
+                sqlJoins = $@"{sqlJoins}
+                              outer apply (select 1 as [value] from ResponsibilityDetail RD where resourceid = @userid and ((RD.AssetID = NDP.id and applyToType=0) or (RD.AssetID = 0 and RD.AssetTypeID=NDP.AssetTypeID)) and RD.PermissionsBitMask & {(int)Permission.ReadAsset} = 0) hasAccess";
+
+                whereConditions = $@"{whereConditions} 
+                                    and
+		                            (
+		                            hasAccess.value is null 
+		                            or 
+		                            hasAccess.value != 1	
+		                            )";
+
+                dbArgs.Add("@userid", CompanyContext.CurrentResourceID);
+            }
+
+
+            var itemsSQL = $@"
+                            SELECT 
+                                distinct
+	                            NDP.uid, 
+                                NDP.DisplayPath as [path],
+                                ADP.Confidence
+                            FROM                                     
+	                            {sqlJoins}		                            
+	                            {whereConditions}
+		                    order by {orderBy} {orderDirection}
+                            {offset}";
+
+            results.items = await CompanyContext.QueryAsync<AssetDataProfileByTypeQualifierModel>(itemsSQL, dbArgs, ApiTimeout);
 
             if (includeTotal)
             {
@@ -488,12 +611,15 @@ namespace d360.model.DataAccessLayer
 	                            {sqlJoins}		                            
 	                            {whereConditions}
 		                    ";
-                
-                results.total = results.total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSQL, dbArgs, ApiTimeout);
+
+                results.total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSQL, dbArgs, ApiTimeout);
+            }
+            else
+            {
+                results.total = null;
             }
 
             return results;
         }
-
     }
 }

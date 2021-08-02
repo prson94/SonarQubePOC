@@ -5,35 +5,33 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.integration.Setting-v1">
+  <changeSet author="Puneet Gupta" id="Table.integration.Setting-Rename-v1">
+  <comment>GOV-15287</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'Setting')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'Setting')
 BEGIN
-	CREATE TABLE [integration].[Setting](
-		[ID] [int] IDENTITY(1,1) NOT NULL,
-		[SourceUri] [nvarchar](2500) NOT NULL,
-		[SourceUser] [varchar](250) NOT NULL,
-		[SourcePassword] [varchar](250) NOT NULL,
-		[TargetResourceID] [int] NOT NULL,
-		[IntegrationSystem] [int] CONSTRAINT [DF_IntegrationSetting_IntegrationSystem] DEFAULT (1) NOT NULL,
-		[LastRefreshOn] [datetime] NULL,
-		[RefreshInterval] [int] CONSTRAINT [DF_IntegrationSetting_RefreshInterval] DEFAULT (24) NOT NULL,
-		[PageSize] [int] CONSTRAINT [IntegrationSetting_PageSize] DEFAULT (500) NOT NULL,
-		[DelayStartUntil] [datetime] NULL,
-		[DeleteExecutionTimeoutHours] [int] CONSTRAINT [DF_IntegrationSetting_DeleteExecutionTimeoutHours] DEFAULT (192) NOT NULL,
-		[AutoTrustServerCertificate] [bit] CONSTRAINT [DF_IntegrationSetting_AutoTrustServerCertificate] DEFAULT (0) NOT NULL,
-		[RemoveUriPortOnConnect] [bit] CONSTRAINT [DF_IntegrationSetting_RemoveUriPortOnConnect] DEFAULT (1) NOT NULL,
-		CONSTRAINT [PK_IntegrationSetting] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
-	)
+	IF EXISTS (select * 
+			   from sys.foreign_keys where name = 'FK_IntegrationSynchedAssetType_IntegrationSetting' 
+			   and object_name(parent_object_id) = 'SynchedAssetType' and schema_name(schema_id) = 'integration'
+			   )
+	BEGIN	
+		ALTER TABLE [integration].[SynchedAssetType] DROP CONSTRAINT [FK_IntegrationSynchedAssetType_IntegrationSetting]
+	END
+
+	exec sp_rename 'integration.Setting', 'Setting_backup';
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'Setting_backup')
+BEGIN
+	exec sp_rename 'integration.Setting_backup', 'Setting';
+END
 
 		]]>
 	</rollback>

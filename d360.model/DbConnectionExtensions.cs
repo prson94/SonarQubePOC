@@ -3,6 +3,7 @@ using d360.core.entities;
 using Dapper;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
@@ -51,6 +52,14 @@ namespace d360.model
                     DestinationTableName = tableName,
                     BulkCopyTimeout = timeout
                 };
+            }
+        }
+
+        public static async Task OpenIfClosed(this SqlConnection cnn)
+        {
+            if (cnn.State != ConnectionState.Open)
+            {
+                await cnn.OpenAsync();
             }
         }
     }

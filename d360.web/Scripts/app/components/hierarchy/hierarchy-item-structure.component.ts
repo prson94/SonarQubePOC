@@ -139,7 +139,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                     observer.next();
                 }
             });
-            
+
             obs.subscribe((r) => {
                 uriParams.obj = this.objectType;
                 uriParams.objId = this.objectTypeId;
@@ -266,6 +266,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1);
 
         this.selected = null;
+        this.selectedLevel = null;
+        this.selectedParentId = null;
         this.showDelete = false;
         this.isLoading = false;
     }
@@ -317,6 +319,9 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     private save(event) {
         this.showEditor = false;
+        this.selected = null;
+        this.selectedLevel = null;
+        this.selectedParentId = null;
         this.loadNodes();
         this.headerActionsService.emitFavoritesChange();
         this.isLoading = false;
@@ -324,6 +329,9 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     private closeEditor() {
         this.showEditor = false;
+        this.selected = null;
+        this.selectedLevel = null;
+        this.selectedParentId = null;
     }
 
     private exportExcel(level: number) {
@@ -356,11 +364,11 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         this.assetService.downloadAssetsExcel(this.assetTypeUid, params, 'Filtered ' + this.assetType.Name, () => { this.isLoading = false; });
     }
 
-    private showAdd(level: number) {
-        this.showEditor = true;
-        this.selectedParentId = (level === 0 ? undefined : (this.selected ? this.selected.data.AssetUid : undefined));
+    private showAdd(level: number, parentId: number) {
+        this.selectedParentId = parentId;
         this.selectedLevel = level;
         this.selected = null;
+        this.showEditor = true;
     }
 
     private displayChildAdd(level: number) {
@@ -557,9 +565,6 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             this.expandedNodes.splice(idx, 1);
         }
         this.saveTreeState();
-    }
-    nodeSelect($event) {
-        this.selectedParentId = $event.node.data.ParentAssetUid;
     }
 
     saveTreeState() {

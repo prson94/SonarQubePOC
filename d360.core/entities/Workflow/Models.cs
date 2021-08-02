@@ -437,5 +437,14 @@ namespace d360.core.entities.Workflow
         public Guid AssigneeUid { get; set; }
     }
 
+    public class WorkflowReassignmentAssetApiModel
+    {
+        public int ID { get; set; }   
+        public string Name { get; set; }
+        public string Object { get; set; }
+        public string ObjectID { get; set; }
+    }
+
+
     #endregion
 }

@@ -2167,19 +2167,26 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetType.ID && x.Name == fieldName);
                 if (fieldType.Type == DataType.OwnershipLookup.ToString())
                 {
+
                     if (filterName == "ResponsibilityTypeName")
                     {
+                        string whereExpression = string.Empty;
+                        if (!string.IsNullOrEmpty(filter))
+                        {
+                            whereExpression = " and rt.name like @filter";
+                            dbArgs.Add("filter", $"%{filter}%");
+                        }
 
                         var itemsQuery = $@"
                             select count(*) from ResponsibilityType rt
                             inner join ResponsibilityTypeRelation RTR on RTR.ResponsibilityTypeID = RT.ID
                             inner join AssetType at on at.Object = RTR.ObjectType  and at.objectid = rtr.objectid
-                            where at.uid = @assetTypeUid  
+                            where at.uid = @assetTypeUid {whereExpression}
                             
                             select rt.Name as 'value', rt.Name as 'title' from ResponsibilityType rt
                             inner join ResponsibilityTypeRelation RTR on RTR.ResponsibilityTypeID = RT.ID
                             inner join AssetType at on at.Object = RTR.ObjectType  and at.objectid = rtr.objectid
-                            where at.uid = @assetTypeUid";
+                            where at.uid = @assetTypeUid {whereExpression}";
 
                         dbArgs.Add("assetTypeUid", assetType.uid);
 
@@ -2205,7 +2212,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                         dbArgs.Add("assettypeid", assetType.ID);
                         dbArgs.Add("assetId", asset.ID);
 
-                        string selectSqlStatement = @"
+                        string selectSqlStatement = $@"
                                 select '[' + ResponsibilityTypeName + '] - ' + ResourceName as 'title', 
                                 ResourceName as 'value'
                                 from #OwnershipLookupAssets";
@@ -2279,10 +2286,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                         inner join asset a on rd.assetid = a.id
                         where rd.AssetTypeID = 0 and IsVisible = 1 and a.AssetTypeID = @id and a.id = @assetId;
 
-                    create index cix_OwnershipLookupAssetId on #OwnershipLookupAssets (AssetId);
-
-                        select count(*) from #OwnershipLookupAssets
-                            
+                    create index cix_OwnershipLookupAssetId on #OwnershipLookupAssets (AssetId);                            
                         {selectSqlStatement}
                         ";
 
@@ -2292,10 +2296,29 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                           commandTimeout: 60
                         ));
 
+                        var readItems = gridReader.Read<dynamic>().ToList();
+
+                        if (!string.IsNullOrEmpty(filter))
+                        {
+                            List<dynamic> filtered = new List<dynamic>();
+                            foreach (var item in readItems)
+                            {
+                                var dictData = item as IDictionary<string, object>;
+                                if (dictData.ContainsKey("title"))
+                                {
+                                    if (dictData["title"].ToString().ToLower(CultureInfo.InvariantCulture).Contains(filter.ToLower(CultureInfo.InvariantCulture)))
+                                    {
+                                        filtered.Add(item);
+                                    }
+                                }
+                            }
+                            readItems = filtered;
+                        }
+
                         var data = new
                         {
-                            count = gridReader.Read<int>().FirstOrDefault(),
-                            items = gridReader.Read<dynamic>().ToList()
+                            count = readItems.Count,
+                            items = readItems
                         };
 
                         return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, data))).ConfigureAwait(false);
@@ -2303,6 +2326,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
 
                     if (filterName == "SecurityAssetName")
                     {
+
                         var viaResources = $@"
             ; with owners as (select distinct
                     responsibilityTypeId,
@@ -2338,6 +2362,23 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                           commandTimeout: 60
                         ));
                         var readItems = gridReader.Read<dynamic>().ToList();
+
+                        if (!string.IsNullOrEmpty(filter))
+                        {
+                            List<dynamic> filtered = new List<dynamic>();
+                            foreach (var item in readItems)
+                            {
+                                var dictData = item as IDictionary<string, object>;
+                                if (dictData.ContainsKey("title"))
+                                {
+                                    if (dictData["title"].ToString().ToLower(CultureInfo.InvariantCulture).Contains(filter.ToLower(CultureInfo.InvariantCulture)))
+                                    {
+                                        filtered.Add(item);
+                                    }
+                                }
+                            }
+                            readItems = filtered;
+                        }
 
                         var data = new
                         {
@@ -2404,15 +2445,15 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 if (fieldType.Type == DataType.RefListRelationship.ToString()
                     || fieldType.Type == DataType.ComplexRelationLookup.ToString())
                 {
-                    Guid assetTypeUid = Guid.Empty;
+                    Guid? assetTypeUid = Guid.Empty;
                     var fields = FieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid, true).ToList();
                     if (fields.Count > 0)
                     {
 
                         var assettypeid = fields.Where(x => x.AssetTypeID != null).FirstOrDefault()?.AssetTypeID;
                         if (assettypeid.HasValue)
-                        {
-                            assetTypeUid = Company.AssetTypes.FirstOrDefault(x => x.ID == assettypeid).uid;
+                        {                            
+                            assetTypeUid = Company.AssetTypes.FirstOrDefault(x => x.ID == assettypeid)?.uid;
                         }
                     }
 

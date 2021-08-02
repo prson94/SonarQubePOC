@@ -39,7 +39,7 @@ import { StringConstants } from '../../../static/string-constants';
                                     <td>{{item.Name}}</td>
                                     <td>
                                         <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="selected=item;showEditor=true;showDelete=false;"><i class="fa fa-pencil"></i></a>
+                                            <a style="cursor:pointer;" (click)="openEditor($event, item)"><i class="fa fa-pencil"></i></a>
                                         </div>
                                     </td>
                                     <td> 
@@ -202,16 +202,26 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
         this.showEditor = false;
     }
 
-    public selectNode(e: any) {
+    public openEditor(e: any, item: any) {        
+        this.showEditor = false;
+        this.selected = item;        
+        this.selectNode(e, true);
+        this.showDelete = false;
+    }
+
+    public selectNode(e: any, showEditor: boolean = false) {        
         if (e == null)
             return;
         if (!this.selected.ID) {
-            this.getSelectedTemplateID();
-        }            
+            this.getSelectedTemplateID(showEditor);
+        } else {
+            this.showEditor = showEditor;
+        }
+        
     }
 
-    public getSelectedTemplateID() {
-        this.exportTemplateService.getExportTemplateId(this.selected.Uid).subscribe(item => { this.selected.ID = item });
+    public getSelectedTemplateID(showEditor: boolean = false) {
+        this.exportTemplateService.getExportTemplateId(this.selected.Uid).subscribe((item) => { this.selected.ID = item; this.showEditor = showEditor;});
     }
 
 
