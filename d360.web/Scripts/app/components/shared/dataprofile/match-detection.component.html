@@ -1,0 +1,20 @@
+﻿{{isVisible}}
+
+<d3s-modal #popupBox
+           additionalClasses="about large-dialog"
+           [showTitle]="false"
+           (onClose)="onClose.emit();"
+           [isVisible]="isVisible"
+           tabindex=-1>
+    <div class="content">
+        <div class="modal-edit-form">
+            <div class="title">
+                Match Detection
+            </div>
+        </div>
+    </div>
+    <div class="action-bar">
+        <span class="grow"></span>
+        <button igButton (click)="onClose.emit()" class="ig-button-primary" label="Close"></button>
+    </div>
+</d3s-modal>

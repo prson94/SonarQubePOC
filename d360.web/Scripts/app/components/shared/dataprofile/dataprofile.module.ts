@@ -7,6 +7,8 @@ import { PropertyGroupModule } from "../controls/property-group/property-group.c
 import { DirectivesModule } from '../../../directives/directives.module';
 import { TooltipModule } from 'primeng/tooltip';
 import { PipesModule } from '../../../pipes/pipes.module';
+import { MatchDetectionComponent } from "./match-detection.component";
+import { SiteModalModule } from "../modal/gov-modal.module";
 
 
 @NgModule({
@@ -17,9 +19,11 @@ import { PipesModule } from '../../../pipes/pipes.module';
         DirectivesModule,
         TooltipModule,
         PipesModule,
+        SiteModalModule
     ],
     declarations: [
-        DataProfileComponent,        
+        DataProfileComponent,
+        MatchDetectionComponent
     ],
     exports: [
         DataProfileComponent,

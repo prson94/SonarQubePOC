@@ -19,7 +19,7 @@ export class DataProfileService extends BaseObservableService {
         messagesService: MessagesObservableService
     ) {
         super(messagesService);
-    }    
+    }
 
     public getDataProfiles(assetUid: string, startDate: Date = null, endDate: Date = null, includeChildAssets: boolean = false, includeTotal: boolean = false): Observable<any> {
         const httpOptions = {
@@ -30,6 +30,20 @@ export class DataProfileService extends BaseObservableService {
         return this
             .http
             .get(`/api/v2/dataprofiles/${assetUid}`, httpOptions)
+            .pipe(
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err, true))
+            );
+    }
+
+    public getMatchCounts(assetUid: string, matchType: string): Observable<any> {
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+        };
+
+        return this
+            .http
+            .get(`/api/v2/dataprofiles/${assetUid}/similar/${matchType}/count`, httpOptions)
             .pipe(
                 map((response) => <any>response),
                 catchError((err) => this.handleError(err, true))

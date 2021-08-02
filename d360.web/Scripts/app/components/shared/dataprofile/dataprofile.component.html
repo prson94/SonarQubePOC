@@ -3,8 +3,8 @@
         <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
     </div>
     <div *ngIf="!isLoading" style="height:100%; display:-webkit-flex;-webkit-flex-direction: column;">
-        
-        <ng-container >
+
+        <ng-container>
             <div class="summarySection">
                 <div *ngIf="dataProfile.profileSetDate" class="effectiveDate">
                     <span class="ig-value">Effective Date: {{dataProfile.profileSetDate | utcDate | date: 'dd MMM yyyy'}}</span>
@@ -38,6 +38,46 @@
                                     <label class="ig-label">Type Confidence: </label>
                                     <span class="ig-value" style="margin-left:5px">{{dataProfile.confidence | percent : '1.0-2'}}</span>
                                     <ng-container *ngTemplateOutlet="confidenceTooltip"></ng-container>
+                                </div>
+                                <div *ngIf="dataProfile.matches!=null" class="summaryRow match-row">
+                                    <label class="ig-label">Match Detection: </label>
+                                    <ng-container *ngIf="dataProfile.matches.data && dataProfile.matches.data > 0">
+                                        <span class="ig-value" style="margin-left:5px"
+                                              pTooltip="{{getMatchTooltip('duplicates', dataProfile.matches.data)}}"
+                                              tooltipPosition="top"
+                                              tooltipStyleClass="ig-tooltip">
+                                            <a (click)="isMatchDetectionPopupVisible = true">
+                                                <div class="ig-colorfield-swatch invalidCircle"></div>
+                                                {{dataProfile.matches.data | number}} duplicates
+                                            </a>
+                                        </span>
+                                    </ng-container>
+                                    <ng-container *ngIf="!dataProfile.matches.data || dataProfile.matches.data === 0">
+                                        <span class="ig-value disabled" style="margin-left:5px">
+                                            <div class="ig-colorfield-swatch invalidCircle"></div>
+                                            No duplicates
+                                        </span>
+                                    </ng-container>
+
+
+                                    <ng-container *ngIf="dataProfile.matches.structure && dataProfile.matches.structure > 0">
+                                        <span class="ig-value" style="margin-left:5px"
+                                              pTooltip="{{getMatchTooltip('similiar', dataProfile.matches.structure)}}"
+                                              tooltipPosition="right"
+                                              tooltipStyleClass="ig-tooltip">
+                                            <a (click)="isMatchDetectionPopupVisible = true">
+                                                <div class="ig-colorfield-swatch orangeCircle"></div>
+                                                {{dataProfile.matches.structure | number}} similiar fields
+                                            </a>
+                                        </span>
+                                    </ng-container>
+                                    <ng-container *ngIf="!dataProfile.matches.structure || dataProfile.matches.structure === 0">
+                                        <span class="ig-value disabled" style="margin-left:5px">
+                                            <div class="ig-colorfield-swatch orangeCircle"></div>
+                                            No similiar fields
+                                        </span>
+                                    </ng-container>
+
                                 </div>
                             </div>
                         </ig-property-group>
@@ -78,7 +118,7 @@
                             <span class="qualitySampleValue">
                                 <label class="qualityValue-label" style="font-weight: 600;">{{invalidCount | number}}</label>
                                 <span *ngIf="dataProfile.sampleCount" class="ig-value percentage" style="font-weight: 600;">{{invalidCount/dataProfile.sampleCount | percent : '1.0-2'}}</span>
-                                <ng-container *ngTemplateOutlet="samplePercentageTooltip;context:{numerator: invalidCount}"></ng-container>                                
+                                <ng-container *ngTemplateOutlet="samplePercentageTooltip;context:{numerator: invalidCount}"></ng-container>
                             </span>
                         </div>
                         <div *ngIf="nullBlankCountTotal!=null" class="sampleQuality">
@@ -151,7 +191,7 @@
                     </div>
                 </ig-property-group>
 
-                <ig-property-group *ngIf="hasValidCounts && dataProfile.outlierDetail" 
+                <ig-property-group *ngIf="hasValidCounts && dataProfile.outlierDetail"
                                    class="outlier"
                                    [expanded]="true"
                                    [title]="'Invalid/Outliers'"
@@ -213,7 +253,7 @@
                                    [title]="'Statistics'"
                                    [shouldBePadded]="false"
                                    [showHeaderLine]="false">
-                    <div readonly class="group">                        
+                    <div readonly class="group">
                         <ng-container *ngTemplateOutlet="nullCountTemplate"></ng-container>
                         <ng-container *ngTemplateOutlet="blankCountTemplate"></ng-container>
 
@@ -374,7 +414,7 @@
         </div>
     </div>
 </ng-template>
-    
+
 <ng-template #maxLengthTemplate>
     <div *ngIf="dataProfile.maxLength!=null">
         <label class="ig-label">Maximum Length</label>
@@ -410,3 +450,7 @@
         </div>
     </div>
 </ng-template>
+
+<ng-container *ngIf="dataProfile.matches!=null">
+    <match-detection [isVisible]="isMatchDetectionPopupVisible" (onClose)="isMatchDetectionPopupVisible=false"></match-detection>
+</ng-container>

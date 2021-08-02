@@ -17,7 +17,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -863,6 +863,7 @@
     <Content Include="Scripts\app\components\shared\controls\search-field\search-field.component.html" />
     <Content Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.html" />
     <None Include="Scripts\app\components\shared\controls\switch\switch.less" />
+    <Content Include="Scripts\app\components\shared\dataprofile\match-detection.component.html" />
     <Content Include="Scripts\app\components\shared\dataprofile\dataprofile.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\settingspanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\overview.component.html" />
@@ -1054,6 +1055,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\property-group\property-group.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\search-field\search-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dataprofile\match-detection.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dataprofile\dataprofile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dataprofile\dataprofile.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\tools\overview.component.ts" />
@@ -1319,6 +1321,7 @@
     <Content Include="Scripts\tsconfig.aot.json" />
     <Content Include="Scripts\tsconfig.json" />
     <Content Include="Scripts\app\components\shared\dataprofile\dataprofile.less" />
+    <Content Include="Scripts\app\components\shared\dataprofile\match-detection.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
