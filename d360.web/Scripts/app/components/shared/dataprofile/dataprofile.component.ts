@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit } from '@angular/core';
+﻿import { Input, Component, OnInit, SimpleChanges, OnChanges } from '@angular/core';
 
 import { BaseComponent } from '../base.component';
 
@@ -8,7 +8,7 @@ import { BaseComponent } from '../base.component';
     styleUrls: ['dataprofile.less']
 })
 
-export class DataProfileComponent extends BaseComponent implements OnInit {
+export class DataProfileComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() dataProfile: any;
 
     private sampleCountPercentage: number;
@@ -46,7 +46,16 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     private invalidCount: number;
 
     ngOnInit() { 
-        
+        this.initialize();
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes['dataProfile'] && !changes['dataProfile'].firstChange) {
+            this.initialize();
+        }
+    }
+
+    initialize() {
         this.validPercentage = ((this.dataProfile.matchCount / this.dataProfile.totalCount) * 100);
 
         this.nullBlankCountTotal = ((this.dataProfile.nullCount ?? 0) + (this.dataProfile.blankCount ?? 0));

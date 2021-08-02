@@ -1,0 +1,70 @@
+﻿.side-panel-container {
+    padding: 16px 5px 6px 11px;
+}
+
+.side-panel-button {
+    z-index: 1000;
+    margin-bottom: 8px;
+    margin-right: 6px;
+
+    &.selected {
+        background: #597897;
+        color: #fff;
+    }
+
+    &.disabled {
+        color: #a0a3ad;
+    }
+}
+
+.side-panel-button-container {
+    float: right;
+}
+
+.side-panel-content {
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-left:2px;
+    padding-right:2px;
+}
+
+.side-panel-button-spacer {
+    display: inline-flex;
+    border-left: 1px solid #d7d8dc;
+    height: 22px;
+    vertical-align: middle;
+    position: relative;
+    margin-bottom: 8px;
+    margin-right: 6px;
+}
+
+.side-panel-empty-overlay {
+    .content {
+        text-align: center;
+        top: 100px;
+        position: relative;
+        max-width: 210px;
+        margin: 0 auto;
+        color: #597897;
+
+        span {
+            font-size: 14px;
+            line-height: 18px;
+        }
+
+        .icon-holder {
+            background-color: #f1f1f3;
+            height: 128px;
+            width: 128px;
+            text-align: center;
+            margin: 0 auto;
+            border-radius: 50%;
+            margin-bottom: 16px;
+
+            .fa {
+                font-size: 56px;
+                line-height: 128px;
+            }
+        }
+    }
+}

@@ -1,8 +1,21 @@
-﻿<div *ngIf="objectType && objectID">
+﻿<div *ngIf="(objectType && objectID) || (objectType && objectUID)">
     <div *ngIf="isLoading" style="width:100%; text-align:center;">
         <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
     </div>
     <div *ngIf="!isLoading">
+        <ng-container *ngIf="showHeader">
+            <div class="asset-detail-header">
+                <div class="asset-name">
+                    {{model.AssetName}}
+                </div>
+                <div class="class-name">
+                    {{model.AssetTypeName}}
+                </div>
+                <div>
+                    <a (click)="open();">Open</a> | <a (click)="open(true);">Open in New Tab</a>
+                </div>
+            </div>
+        </ng-container>
         <div *ngFor="let category of categories; let first=first">
             <ng-container *ngIf="useAccordion; else noAccordion">
                 <ig-property-group *ngIf="category.loaded && category.hasData" 

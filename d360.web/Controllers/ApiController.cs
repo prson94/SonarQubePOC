@@ -770,6 +770,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 inner join metrics.Allocation A on A.AssetTypeUid = T.[uid] and A.[State] = 1 and A.ScoreType = FT.ScoreType
                 where FT.[Object] = @type and FT.ObjectID = @id and FT.[Type] = 'Score'", new { type = type.ToString(), id }).ToList();
 
+            var hasProfiling = Company.Query<bool>("select case when exists (select 1 from AssetDataProfile P inner join AssetWithType A on A.ID = P.AssetID where A.Type = @type and A.TypeID = @id) then 1 else 0 end", new { type = type.ToString(), id }).SingleOrDefault();
+
             switch (type)
             {
                 case SystemObjects.ArtifactType:
@@ -1123,7 +1125,8 @@ where   h.ID <> @t order by h.[Level] desc;
                 FilterColumns = filterColumns,
                 TopLevelFilterColumns = topLevelFilterFields,
                 IsReadOnly = isReadOnly,
-                ScoreAllocations = scoreAllocations
+                ScoreAllocations = scoreAllocations,
+                HasProfiling = hasProfiling
             });
         }
 
@@ -2515,7 +2518,8 @@ from    (
                     objectId = Company.Tags.FirstOrDefault(x => x.uid == uid).ID;
                     return await GetObjectDetailFields(type, objectId, useSingleColumn);
                 default:
-                    return null;
+                    var asset = Company.Assets.FirstOrDefault(a => a.uid == uid);
+                    return await GetObjectDetailFields(type, asset?.ObjectID ?? -1, useSingleColumn);
             }
         }
 
@@ -2524,6 +2528,19 @@ from    (
         public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, int id, bool useSingleColumn = false)
         {
             var model = new DetailReadOnlyModel() { columns = useSingleColumn ? 1 : 2 };
+            model.Object = type.ToString();
+            model.ObjectID = id;
+
+            var metadata = Company.Query<dynamic>("select V.DisplayValue as AssetName, T.Name as AssetTypeName, T.Object as ObjectType, T.ObjectID as ObjectTypeID  from Asset A inner join AssetDisplayValue V on V.AssetID = A.ID inner join AssetType T on T.ID = A.AssetTypeID where A.ObjectID = @id and A.Object = @type", new { type = type.ToString(), id }).FirstOrDefault();
+
+            if (metadata != null)
+            {
+                model.AssetName = metadata.AssetName;
+                model.AssetTypeName = metadata.AssetTypeName;
+
+                model.ObjectType = metadata.ObjectType;
+                model.ObjectTypeID = metadata.ObjectTypeID;
+            }
 
             int row = 0;
             switch (type)
@@ -3975,6 +3992,7 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
 
                     if (taxonomy != null)
                     {
+
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,

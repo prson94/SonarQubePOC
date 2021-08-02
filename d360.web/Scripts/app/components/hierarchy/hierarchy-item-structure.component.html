@@ -1,6 +1,6 @@
 ﻿<div class="row hierarchy-grid">
-    <div class="col s12">
-        <div class="tile tile-detail">
+    <div class="col s12" style="display:flex">
+        <div class="tile tile-detail main-panel">
             <div *ngIf="!showDelete && !showEditor && assetType && assetType.Description && assetType.Description.length >0"
                  [innerHtml]="assetType.Description"
                  class="item-description"></div>
@@ -47,6 +47,8 @@
                              [rowsPerPageOptions]="defaultPagingOptions"
                              [value]="treeNodeArray"
                              selectionMode="single"
+                             [selection]="selected"
+                             (selectionChange)="selectAsset($event)"
                              styleClass="breadcrumbTree treetable"
                              [style]="{'line-height':'25px'}"
                              [globalFilterFields]="filterColumns"
@@ -64,8 +66,6 @@
                                 {{column.text}}
                                 <p-treeTableSortIcon *ngIf="column.sortable === true" [field]="column.datafield"></p-treeTableSortIcon>
                             </th>
-                            <th style="width: 40px"></th>
-                            <th style="width: 40px"></th>
                             <th style="width: 40px"></th>
                         </tr>
                     </ng-template>
@@ -93,25 +93,11 @@
                                 </ng-container>
                             </td>
                             <td>
-                                <div class="RowTools">
-                                    <a style="cursor:pointer;"
-                                       *ngIf="displayChildAdd(item?.Level)"
-                                       (click)="showAdd(item.Level, rowNode.node.data.AssetUid)"><i class="fa fa-plus"></i></a>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="RowTools"
-                                     *ngIf="item.Permissions.ModifyAsset">
-                                    <a style="cursor:pointer;"
-                                       (click)="selected = rowNode.node; showEditor = true;"><i class="fa fa-pencil"></i></a>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="RowTools"
-                                     *ngIf="item.Permissions.DeleteAsset">
-                                    <a *ngIf="!rowNode.node.children || rowNode.node.children?.length == 0"
-                                       style="cursor:pointer;"
-                                       (click)="selected = rowNode.node; showDelete=true;"><i class="fa fa-trash-o"></i></a>
+                                <div>
+                                    <a (click)="linkMenu.toggle($event)" style="padding: 8px 14px 8px 14px; color: #333">
+                                        <i class="fa fa-ellipsis-v"></i>
+                                    </a>
+                                    <ig-popup-menu (onSelect)="clickMenuItem($event, rowNode.node)" [items]="item[menuKey]" #linkMenu [tabIndex]="1"></ig-popup-menu>
                                 </div>
                             </td>
                         </tr>
@@ -142,6 +128,33 @@
                               (saveClick)="save()"
                               (closeClick)="closeEditor();"></d3s-asset-editor>
         </div>
-
+        <div class="tile tile-detail side-panel" *ngIf="!isLoading">
+            <side-panel [(expanded)]="sidePanelOpen"
+                        (selectedPanelChange)="sidePanelTab=$event"
+                        [selectedItem]="selected?.data"
+                        [panelApplies]="panelApplies"
+                        [hasProfiling]="hasProfiling"
+                        [disableProfiling]="selected?.data == null ? false : !selected?.data?.HasProfiling"
+                        hasDetail="true">
+                <ng-container *ngIf="sidePanelOpen && selected?.data != null && sidePanelLoading">
+                    <d3s-loading [isLoading]="true"></d3s-loading>
+                </ng-container>
+                <ng-container *ngIf="sidePanelOpen && selected?.data != null && !sidePanelLoading">
+                    <ng-container *ngIf="sidePanelTab === 'dataprofile' && selected?.data?.HasProfiling">
+                        <data-profile [dataProfile]="dataProfile"></data-profile>
+                    </ng-container>
+                    <ng-container *ngIf="sidePanelTab === 'detail'">
+                        <ig-asset-detail [objectUID]="selected?.data?.AssetUid"
+                                         [objectType]="object"
+                                         [useAccordion]="true"
+                                         [shouldBePadded]="false"
+                                         [tooltipAlign]="'left'"
+                                         [hasAddRelationshipsPermissions]="false"
+                                         [hasModifyRelationshipsPermissions]="false"
+                                         [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
+                    </ng-container>
+                </ng-container>
+            </side-panel>
+        </div>
     </div>
 </div>
