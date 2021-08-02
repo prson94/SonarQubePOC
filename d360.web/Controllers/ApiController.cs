@@ -130,7 +130,7 @@ namespace d360.web.Controllers
                     ro.Value = "values";
                     var items = ((!string.IsNullOrEmpty(value)) ? value.Split(',') : new string[] { });
                     var itemIds = new List<long>();
-                    var isReference = ft.LookupObjectType == "ReferenceItem";
+                    var isReference = ft.LookupObjectType == "ReferenceItem" || ft.LookupObjectType == "ReferenceItemType";
                     var tooltipContext = isReference ? TemplateAction.LookupPreview.ToString() : TemplateAction.Preview.ToString();
                     var lookupUrl = k?.LookupUrl;
 
