@@ -113,6 +113,9 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
 
     ngOnInit() {
         this.getPredicates();
+        this.setObjectInfo('Predicate', 1);
+        this.setCommonSecondaryNavTabs(true);
+        this.buildSecondaryNavigationForObject(0, 'Predicate');
     }
 
     getPredicates() {

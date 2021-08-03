@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Table.dbo.AssetType-v3.2">
+  <changeSet author="sDooley" id="Table.dbo.AssetType-v4.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -57,6 +57,36 @@ BEGIN
 ALTER TABLE [dbo].[AssetType]
 ADD [CanEditParent] bit 
 END
+
+IF NOT EXISTS (SELECT * FROM [dbo].[AssetType] 
+                   WHERE Name = 'Predicate'
+                   AND Class = 17)
+		BEGIN
+			insert into [dbo].[AssetType]([Name]
+      ,[Description]
+      ,[Class]
+      ,[DisplayFormat]
+      ,[State]
+      ,[Hierarchical]
+      ,[HierarchyPredicateID]
+      ,[HierarchyIntersectTypeID]
+      ,[HierarchyMaximumDepth]
+      ,[Object]
+      ,[ObjectID]
+      ,[CreatedOn]
+      ,[CreatedBy]
+      ,[UpdatedOn]
+      ,[UpdatedBy]
+      ,[Notes]
+      ,[uid]
+      ,[CanOwnFusion]
+      ,[AutoDisplayDescription]
+      ,[UseAsTransformation]
+      ,[FlowObjectType]
+      ,[CanEditParent]
+      ,[AutoDisplayParent])
+	  values('MetricAllocation','A Predicate',17,'{Name}',1,0,NULL,NULL,0,'Predicate',1,GETDATE(),0,GETDATE(),0,NULL,'00000001-0000-0000-0000-B00000000014',0,0,0,NULL,1,NULL)
+		END
 		]]>
     </sql>
 	<rollback>
@@ -66,6 +96,8 @@ BEGIN
 ALTER TABLE [dbo].[AssetType]
 DROP COLUMN [CanEditParent]
 END
+
+Delete from [dbo].[AssetType] where Name = 'Predicate' AND Class = 17
 		]]>
 	</rollback>
   </changeSet>

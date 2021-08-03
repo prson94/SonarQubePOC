@@ -104,4 +104,78 @@ END
 		]]>
 	</rollback>
   </changeSet>
+  <changeSet author="sDooley" id="Table.dbo.Predicate_AfterInsert-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Predicate_AfterInsert]
+	ON [dbo].[Predicate]
+	FOR INSERT
+AS
+BEGIN
+	SET NOCOUNT ON;
+		
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Add', [queue].WriteIndexXml('', 'Predicate', ID, 0), 'Predicate', ID from inserted
+END
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+DROP TRIGGER IF EXISTS [dbo].[Predicate_AfterInsert]
+		]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="sDooley" id="Table.dbo.Predicate_AfterUpdate-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Predicate_AfterUpdate]
+	ON [dbo].[Predicate]
+	FOR UPDATE
+AS
+BEGIN
+	SET NOCOUNT ON;
+		
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Update', [queue].WriteIndexXml('', 'Predicate', ID, 0), 'Predicate', ID from inserted
+END
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+DROP TRIGGER IF EXISTS [dbo].[Predicate_AfterUpdate]
+		]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="sDooley" id="Table.dbo.Predicate_AfterDelete-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Predicate_AfterDelete]
+	ON [dbo].[Predicate]
+	AFTER DELETE
+AS
+BEGIN
+	SET NOCOUNT ON;
+		
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Delete', [queue].WriteIndexXml('Removed', 'Predicate', ID, 0), 'Predicate', ID from deleted
+END
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+DROP TRIGGER IF EXISTS [dbo].[Predicate_AfterDelete]
+		]]>
+    </rollback>
+  </changeSet>
 </databaseChangeLog>

@@ -147,6 +147,9 @@ namespace d360.web.Controllers.V2
                         case "GroupType":
                             baseSql = GetBaseAuditQueryObject(SystemObjects.Group, false);
                             break;
+                        case "Predicate":
+                            baseSql = GetBaseAuditQueryObject(SystemObjects.Predicate, false);
+                            break;
                         default:
                             baseSql = GetBaseAuditQueryForAssetTypeUid(assetType?.Class == AssetTypeClass.Reference);
                             break;

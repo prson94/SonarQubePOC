@@ -87,6 +87,11 @@ namespace d360.core.enums
         ]
         Diagram = 15,
         [
+            Name("Predicate"),
+            Description("Predicate.")
+        ]
+        Predicate = 16,
+        [
             Name("Glossary-Obsolete"),
             Obsolete("Use BusinessAsset instead", false),
             Description("Obsolete - do not use.")

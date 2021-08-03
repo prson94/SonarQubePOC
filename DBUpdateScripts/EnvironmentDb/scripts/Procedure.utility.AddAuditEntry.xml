@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Procedure.utility.AddAuditEntry-v9.4">
-  <comment>GOV-14410</comment>
+  <changeSet author="sDooley" id="Procedure.utility.AddAuditEntry-v9.6">
+  <comment>GOV-14559</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -45,7 +45,8 @@ begin
 		if @DependentObject = 'Report'				begin		select @DependentObjectName = Name from Report where ID = @DependentObjectID				end
 		if @DependentObject = 'ResponsibilityType'	begin		select @DependentObjectName = Name from ResponsibilityType where ID = @DependentObjectID	end				
 		if @DependentObject = 'SurveyType'			begin		select @DependentObjectName = Name from SurveyType where ID = @DependentObjectID			end			
-		if @DependentObject = 'Tag'			        begin		select @DependentObjectName = Value from Tag where ID = @DependentObjectID			        end			
+		if @DependentObject = 'Tag'			        begin		select @DependentObjectName = Value from Tag where ID = @DependentObjectID			        end		
+    if @DependentObject = 'Predicate'			begin		select @DependentObjectName = Name from Predicate where ID = @DependentObjectID			end
 		
 		else			
 			begin	
@@ -398,6 +399,18 @@ begin
 		insert into @tbl  select 0, 'Description', Description, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject	
 		insert into @tbl  select 0, 'DisplayFormat', DisplayFormat, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject					
 	end
+  
+   if @MainObject = 'Predicate'
+	begin
+		select	@MainObjectTypeName = 'Predicate',
+				@MainObjectName = P.Name
+		from	[dbo].[Predicate] P			
+		where P.[ID] = @MainObject
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from [dbo].[Predicate] where ID = @MainObjectID		
+		insert into @tbl  select 0, 'Inverse', Inverse, 0, 0 from [dbo].[Predicate] where ID = @MainObjectID
+		insert into @tbl  select 0, 'Functional Type', Type, 0, 0 from [dbo].[Predicate] where ID = @MainObjectID
+	end
+
 
 	insert into @tbl  
 			select	FieldTypeID, 
