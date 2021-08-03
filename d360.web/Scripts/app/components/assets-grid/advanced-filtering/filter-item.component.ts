@@ -234,6 +234,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         try {
             var html = this.elRef.nativeElement as HTMLElement;
             var scrollWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0];
+            let cont: boolean = false;
             if (scrollWrapper) {
                 let width = 500;
 
@@ -247,7 +248,11 @@ export class FilterItemComponent implements OnInit, OnChanges {
                         let diff = Math.abs(width - distanceFromRight);
                         selectionElement.style.left = (html.getBoundingClientRect().left - diff - 50) + "px";
                     }
+                    cont = true;
                 }
+            }
+            if (!cont) {
+                this.stopUpdateDynamicWidths();
             }
 
         }
@@ -423,6 +428,19 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }, 25);
     }
 
+    interval;
+
+    stopUpdateDynamicWidths() {
+        if (this.interval) {
+            clearInterval(this.interval);
+        }
+    }
+    startUpdateDynamicWidths() {
+        if (!this.interval) {
+            this.interval = setInterval(() => this.updateDynamicWidths(), 20);
+        }
+    }
+
     onFieldSelected($event) {
         this.isSelectingCurrentField = false;
         this.relationshipFieldIntersectTypeUid = "";
@@ -502,16 +520,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
         this.uiTooltipValue = this.condition.getTooltipValue();
         this.updateFocus();
+        this.startUpdateDynamicWidths();
     }
 
-    interval;
     loadListLazy(event: LazyLoadEvent) {
-
-        if (this.interval) {
-            clearInterval(this.interval);
-        }
-
-        this.interval = setInterval(() => this.updateDynamicWidths(), 20);
 
         var params = { skip: event.first, take: event.rows, filter: event.globalFilter ?? "" };
         var type = this.getFieldType(this.condition);
