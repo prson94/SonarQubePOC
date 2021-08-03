@@ -227,7 +227,7 @@ BEGIN
 	SET NOCOUNT ON;
 		
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        select 'Add', [queue].WriteIndexXml('', 'MetricAllocation', ID, coalesce(UpdatedBy, 0)), 'MetricAllocation', ID from inserted
+        select 'Add', [queue].WriteIndexXml('', 'MetricAllocation', ID, coalesce(CreatedBy, 0)), 'MetricAllocation', ID from inserted
 END
 		]]>
     </sql>
@@ -263,7 +263,7 @@ DROP TRIGGER IF EXISTS [metrics].[Allocation_AfterUpdate]
     </rollback>
   </changeSet>
 
-  <changeSet author="sDooley" id="Table.metrics.Allocation-Allocation_AfterUpdate-v1">
+  <changeSet author="sDooley" id="Table.metrics.Allocation-Allocation_AfterDelete-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
