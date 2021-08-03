@@ -1,15 +1,17 @@
 <d3s-loading [isLoading]="isEditing || !isDefinitionLoaded"></d3s-loading>
 <div *ngIf="!showEditor && !showDelete && !isEditing && !hasNoListableColumns && isDefinitionLoaded">
-    <div *ngIf="showArtifactDetails && gridObject && gridObject.Description"
-         [innerHtml]="gridObject.Description | safeHtml"
-         class="tile-description"></div>
-    <span *ngIf="gridObject && gridObject.Description"
-          aria-hidden="true"
-          title="Details"
-          class="action-tile-span"
-          (click)="toggleArtifactDetail()">
-        {{showArtifactDetails ? 'Hide Description':'Show Description'}}
-    </span>
+    <div class="header-description">
+        <div *ngIf="showArtifactDetails && gridObject && gridObject.Description"
+             [innerHtml]="gridObject.Description | safeHtml"
+             class="tile-description"></div>
+        <span *ngIf="gridObject && gridObject.Description"
+              aria-hidden="true"
+              title="Details"
+              class="action-tile-span"
+              (click)="toggleArtifactDetail()">
+            {{showArtifactDetails ? 'Hide Description':'Show Description'}}
+        </span>
+    </div>
 </div>
 
 <div class="grid-actions-header {{(this.showEditor || this.showDelete || this.isEditing || !isDefinitionLoaded ? 'hidden' : '')}}">
