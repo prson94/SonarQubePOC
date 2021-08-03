@@ -47,7 +47,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
 
     toggleEmptyVisibility() {
         var newValue = (!this.hideEmptyItems).toString();
-        localStorage.setItem(this.storageKey, newValue);        
+        localStorage.setItem(this.storageKey, newValue);
     }
 
     hideEmptySubItems(items: SiteMenuItem[]) {
@@ -60,16 +60,21 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         });
     }
 
+    _visibleMenuItems: SiteMenuItem[] = [];
     get visibleMenuItems(): SiteMenuItem[] {
         if (this.hideEmptyItems) {
             var menu = _.cloneDeep(this.menu.NavigationItems);
             var items = menu.filter((x) => x.count > 0);
             this.hideEmptySubItems(items);
-            return items;
+            if (this._visibleMenuItems.length !== items.length) {
+                this._visibleMenuItems = items;
+            }
         }
-        else {            
-            return this.menu.NavigationItems;
-        }        
+        else {
+            this._visibleMenuItems = this.menu.NavigationItems;
+        }
+
+        return this._visibleMenuItems;
     }
 
     get showVisiblityToggle(): boolean {
