@@ -400,7 +400,7 @@ begin
 		insert into @tbl  select 0, 'DisplayFormat', DisplayFormat, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject					
 	end
   
-  if @MainObject = 'MetricAllocation'
+	  if @MainObject = 'MetricAllocation'
 	begin
 		select	@MainObjectTypeName = 'MetricAllocation',
 				@MainObjectName = AT.Name
@@ -409,8 +409,8 @@ begin
 		where AT.uid = MA.AssetTypeUid
 
 		insert into @tbl  select 0, 'ScoreType', ScoreType, 0, 0 from [metrics].[Allocation] where ID = @MainObjectID		
-		insert into @tbl  select 0, 'AssetTypeName', AssetTypeUid, 0, 0 from [metrics].[Allocation] where ID = @MainObjectID
-		insert into @tbl  select 0, 'IsExternallyCalculated', IsExternallyCalculated, 0, 0 from [metrics].[Allocation] where ID = @MainObjectID				
+		insert into @tbl  select 0, 'AssetTypeName', AT.Name, 0, 0 from [metrics].[Allocation] MA inner join [dbo].[AssetType] AT on AT.uid = MA.AssetTypeUid where MA.ID = @MainObjectID
+		insert into @tbl  select 0, 'IsExternallyCalculated', case when IsExternallyCalculated = 0 then 'Internal' else 'External' end, 0, 0 from [metrics].[Allocation] where ID = @MainObjectID				
 		insert into @tbl  select 0, 'LowerThreshold', LowerThreshold, 0, 0 from [metrics].[Allocation] where ID = @MainObjectID		
 		insert into @tbl  select 0, 'UpperThreshold', UpperThreshold, 0, 0 from [metrics].[Allocation] where ID = @MainObjectID
 	end
