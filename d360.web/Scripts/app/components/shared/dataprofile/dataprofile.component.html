@@ -452,5 +452,5 @@
 </ng-template>
 
 <ng-container *ngIf="dataProfile.matches!=null">
-    <match-detection [assetUid]="dataProfile.assetUid" [isVisible]="isMatchDetectionPopupVisible" (onClose)="isMatchDetectionPopupVisible=false"></match-detection>
+    <match-detection [showDuplicates]="dataProfile.matches.data > 0" [showSimilar]="dataProfile.matches.structure > 0" [assetUid]="dataProfile.assetUid" [isVisible]="isMatchDetectionPopupVisible" (onClose)="isMatchDetectionPopupVisible=false"></match-detection>
 </ng-container>

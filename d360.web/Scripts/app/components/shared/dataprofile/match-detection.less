@@ -1,8 +1,24 @@
 @import '../../../../../Content/styles/_Variables.less';
 
-.title {
-  padding-top: 24px;
-  font-size: 18px;
-  color: #202020;
-  font-weight: 600;
+.match-detection-dialog {
+  .title {
+    padding-top: 24px;
+    font-size: 18px;
+    color: #202020;
+    font-weight: 600;
+  }
+
+  .grayed-text {
+    color: @d3s-gray-3;
+    padding: 8px 0px 24px 0px;
+  }
+
+  .scrollable-content {
+    overflow: auto;
+    max-height: calc(100vh - 306px);
+  }
+
+  .search-bar {
+    padding: 8px 0px 16px 0px;
+  }
 }
