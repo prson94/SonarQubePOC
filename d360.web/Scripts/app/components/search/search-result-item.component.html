@@ -2,7 +2,7 @@
     <div class="card-row title-row">
         <div *ngIf="result?.Icon" class="d3s-icon asset-icon"><i class="fa {{result?.Icon}}"></i></div>
         <div *ngIf="result?.ImageUrl" class="d3s-icon asset-icon"><img [src]="result.ImageUrl" /></div>
-        <div (click)="navigateLink()" class="name" [innerHtml]="result?.DisplayName"></div>
+        <div (click)="navigateLink()" class="name" [innerText]="result?.DisplayName"></div>
         <d3s-simple-badge *ngIf="showStatus"
                           [badgeValue]="status"
                           [badgeType]="'Status'">
