@@ -99,6 +99,14 @@ order by RT.Name", new { id }).AsQueryable();
                 p.Selected = responsibilityAssignments.Any(i => (i & p.Value) == p.Value);
             });
 
+            //AddAsset no longer requires ApplyToType (GOV-13993). But because the ResponsibilityDetail view relies on the ...RuleResults tables,
+            //we will need to check for this permission with HasAssetTypePermission() if it has not already been selected
+            permissions
+                .Where(p => p.Value == (int)Permission.AddAsset && !p.Selected)
+                .ToList()
+                .ForEach(p => p.Selected = HasAssetTypePermission(type, typeID, Permission.AddAsset)
+            );
+
             permissions.RemoveAll(i => !i.Selected);
 
             return permissions;

@@ -100,7 +100,8 @@
         <simple-accordion header="When Filters" active="true" *ngIf="model.Object && !model.ApplyToType" >
             <div class="row">
                 <div class="col s12 form-instructions">
-                    You can define "When" filters to limit when the rule applies. Responsibilities will be applied to any items which match the Selected Type and meet the filter criteria that you specify below.
+                    You can define "When" filters to limit when the rule applies. Responsibilities will be applied to any items which match the Selected Type and meet the filter criteria that you specify below.<br />
+                    The When filters do not apply to create, only read ,modify, and remove.  The user will be able to create any asset of the asset type.
                 </div>
             </div>
             <div class="row" *ngIf="model.Object">
