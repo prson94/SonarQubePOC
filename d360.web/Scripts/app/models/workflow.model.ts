@@ -272,6 +272,7 @@ export class HTTPRequestSettings {
     Url: string;
     Body: string;
     Headers: any[] = [];
+    lookupFieldsPassedByValue: any;
 }
 
 export class HTTPResponseOutput {
