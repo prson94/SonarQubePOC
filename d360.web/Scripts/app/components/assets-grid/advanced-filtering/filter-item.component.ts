@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, OnChanges, Output, EventEmitter, HostListener, AfterViewChecked } from "@angular/core";
+﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, OnDestroy, OnChanges, Output, EventEmitter, HostListener, AfterViewChecked } from "@angular/core";
 import { LazyLoadEvent, SelectItem, SelectItemGroup } from "primeng/api";
 import * as _ from "lodash";
 import { FieldTypeAPIModelFieldCondition } from "../../../models/field-condition-grid.models";
@@ -19,7 +19,7 @@ import { AssetService } from "../../../services/asset.service";
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [FieldsObservableService, AssetTypeService, TagService, AssetService]
 })
-export class FilterItemComponent implements OnInit, OnChanges {
+export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     @Input() assetTypeUid: string = "";
     @Input() loadIdentifier: string = "";
     @Input() gridType: string = "List";
@@ -155,6 +155,10 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
     }
 
+    ngOnDestroy() {
+        this.stopUpdateDynamicWidths();
+    }
+
     filterTable($event: any) {
         this.dataTable.filterGlobal($event, "contains");
     }
@@ -234,9 +238,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
         try {
             var html = this.elRef.nativeElement as HTMLElement;
             var scrollWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0];
-            let cont: boolean = false;
             if (scrollWrapper) {
-                let width = 500;
+                let width = 500 + 60;
 
                 var tableWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0] as HTMLElement;
 
@@ -246,15 +249,12 @@ export class FilterItemComponent implements OnInit, OnChanges {
                     let distanceFromRight = window.outerWidth - html.getBoundingClientRect().left;
                     if (distanceFromRight < width) {
                         let diff = Math.abs(width - distanceFromRight);
-                        selectionElement.style.left = (html.getBoundingClientRect().left - diff - 50) + "px";
+                        selectionElement.style.left = (html.getBoundingClientRect().left - diff) + "px";
+                    } else {
+                        selectionElement.style.removeProperty("left");
                     }
-                    cont = true;
                 }
             }
-            if (!cont) {
-                this.stopUpdateDynamicWidths();
-            }
-
         }
         catch (ex) {
             console.warn(ex);
@@ -406,6 +406,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
         else {
             this.isSelectingValue = true;
+            this.startUpdateDynamicWidths();
         }
         this.updateFocus();
     }
@@ -433,6 +434,8 @@ export class FilterItemComponent implements OnInit, OnChanges {
     stopUpdateDynamicWidths() {
         if (this.interval) {
             clearInterval(this.interval);
+            this.removePositionStyling()
+            this.interval = null;
         }
     }
     startUpdateDynamicWidths() {
@@ -505,6 +508,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         //if null, this method is not called from ui
         if ((event && event.type !== "load") && !this.condition.isNew) {
             this.isSelectingValue = true;
+            this.startUpdateDynamicWidths();
         }
         this.condition.isNew = false;
 
@@ -520,7 +524,6 @@ export class FilterItemComponent implements OnInit, OnChanges {
 
         this.uiTooltipValue = this.condition.getTooltipValue();
         this.updateFocus();
-        this.startUpdateDynamicWidths();
     }
 
     loadListLazy(event: LazyLoadEvent) {
@@ -835,6 +838,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
         }
 
         this.resetLookupValues();
+        this.stopUpdateDynamicWidths();
 
         this.onChange.emit();
     }
@@ -861,6 +865,7 @@ export class FilterItemComponent implements OnInit, OnChanges {
             this.condition.value = this.rollbackValue1;
             this.condition.value2 = this.rollbackValue2;
         }
+        this.stopUpdateDynamicWidths();
 
         this.isSelectingValue = false;
 
