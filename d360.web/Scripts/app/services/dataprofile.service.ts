@@ -49,4 +49,19 @@ export class DataProfileService extends BaseObservableService {
                 catchError((err) => this.handleError(err, true))
             );
     }
+
+    public getMatchesByMatchType(assetUid: string, matchType: string, pageNum: number, pageSize: number): Observable<any> {
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+        };
+
+        let url: string = `/api/v2/dataprofiles/${assetUid}/similar/${matchType}?_pageSize=${pageSize}&_pageNum=${pageNum}`;
+        return this
+            .http
+            .get(url, httpOptions)
+            .pipe(
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err, true))
+            );
+    }
 }

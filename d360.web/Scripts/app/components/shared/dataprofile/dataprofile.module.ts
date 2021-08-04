@@ -9,6 +9,8 @@ import { TooltipModule } from 'primeng/tooltip';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { MatchDetectionComponent } from "./match-detection.component";
 import { SiteModalModule } from "../modal/gov-modal.module";
+import { TableModule } from "primeng/table";
+import { SharedGridPagingInfoModule } from "../grid-paging-info.component";
 
 
 @NgModule({
@@ -19,7 +21,9 @@ import { SiteModalModule } from "../modal/gov-modal.module";
         DirectivesModule,
         TooltipModule,
         PipesModule,
-        SiteModalModule
+        SiteModalModule,
+        TableModule,
+        SharedGridPagingInfoModule
     ],
     declarations: [
         DataProfileComponent,

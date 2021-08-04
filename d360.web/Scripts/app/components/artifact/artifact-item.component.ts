@@ -103,7 +103,6 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
                                     this.dataProfileService.getMatchCounts(this.artifact.Uid, 'Structure'),
                                     this.dataProfileService.getMatchCounts(this.artifact.Uid, 'Data')
                                 ).subscribe((res) => {
-                                    res[0] = 16987123;
                                     this.dataProfile['matches'] = {
                                         structure: res[0],
                                         data: res[1]
