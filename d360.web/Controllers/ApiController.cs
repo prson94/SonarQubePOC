@@ -1477,20 +1477,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                             inner join [Intersect] I on ( (I.Object = 'Artifact' and ASS.ObjectID = I.ObjectID and I.IntersectTypeID = @intersectTypeId) ) 
                             cross apply [dbo].GetAssetDisplayValueById(ASS.ID) disp
                             order by disp.DisplayValue";
-                    break;
-                case SystemObjects.FusionAttributeType:
-                    sql = @"select distinct A.TextPath as Name, A.ID, 'FusionAttribute' as [Type] , ASS.Uid
-                            from FusionAttribute A 
-                            inner join [Intersect] I on A.FusionAttributeTypeID = @id and ( I.Subject = 'FusionAttribute' and A.ID = I.SubjectID ) and I.IntersectTypeID = @intersectTypeId
-                            inner join Asset ASS on ASS.Object = 'FusionAttribute' and ASS.ObjectID = A.ID
-                            union 
-                            select distinct A.TextPath as Name, A.ID, 'FusionAttribute' as [Type] , ASS.Uid
-                            from FusionAttribute A 
-                            inner join [Intersect] I on A.FusionAttributeTypeID = @id and ( (I.Object = 'FusionAttribute' and A.ID = I.ObjectID) ) and I.IntersectTypeID = @intersectTypeId
-                            inner join Asset ASS on ASS.Object = 'FusionAttribute' and ASS.ObjectID = A.ID
-                            order by A.TextPath
-                            ";
-                    break;
+                    break;                
                 case SystemObjects.IntersectType:
                     sql = @"select distinct iname.Name as Name, A.ID, 'Intersect' as [Type] , I.Uid
                             from [Intersect] A 
@@ -2527,16 +2514,7 @@ from    (
                             }
                         });
 
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField> {
-                                new ReadOnlyField { Name = Fields.CanOwnFusion_Name, FieldName = "ArtifactTypeCanOwnFusion", FieldDescription = Fields.CanOwnFusion_Description, Value = artifactType.CanOwnFusion.FormatBooleanReadOnlyValue() }
-                            }
-                        });
-
-                    }
-                    artifactType = null;
+                    }                    
                     break;
                 #endregion
                 case SystemObjects.Group:
@@ -3419,10 +3397,7 @@ from    (
                                 break;
                             case "TaxonomyType":
                                 sql = "select 'Model Type : ' + Name from AssetType where objectid = @id and [Object]='TaxonomyType'";
-                                break;
-                            case "FusionType":
-                                sql = "select 'Fusion Type : ' + Name from AssetType where objectid = @id and [Object]='FusionType'";
-                                break;
+                                break;                            
                         }
 
                         var objectName = (!string.IsNullOrEmpty(sql)) ?
@@ -3972,9 +3947,7 @@ where v.id = {0}", id)).FirstOrDefault();
 
             var sql = "";
 
-            if (obj == SystemObjects.FusionAttribute)
-                sql = string.Format(QueryConstants.FusionAttributeRelationshipAllCountsWithZero, disallowEditFilter);
-            else if (obj == SystemObjects.ReferenceItemType)
+            if (obj == SystemObjects.ReferenceItemType)
                 sql = string.Format(QueryConstants.ReferenceListTypeRelationshipsAllCountsWithZero, disallowEditFilter);
             else
                 sql = string.Format(QueryConstants.ObjectRelationshipAllCountsWithZero, disallowEditFilter, string.Join(",", excludedPredicateTypes));
@@ -4073,8 +4046,7 @@ where v.id = {0}", id)).FirstOrDefault();
             var isTargetObject = intersectType.Object == sTargetType && intersectType.ObjectID == targetID;
             var isTargetSubjectSame = intersectType.Object == intersectType.Subject && intersectType.ObjectID == intersectType.SubjectID;
             var isTargetReferenceItemType = targetType.ToString() == "ReferenceItemType" && targetID == 0;
-            var isTargetFusion = targetType.ToString().StartsWith("Fusion");
-
+            
             var innerSql = "";
             var assetJoin = "";
 
@@ -4735,14 +4707,6 @@ SELECT (
                         $"Order By ad.DisplayValue";
 
             return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, typeId = objectId, search = $"{q}%" });
-        }
-
-        [Route("breadcrumb/typeaheadForFusion")]
-        public async Task<IEnumerable<BreadcrumbTypeAheadModel>> GetFusionTypeahead(string q, int num)
-        {
-            var sql = $"SELECT top {num} Name, 'fusion/' + CAST(ID as varchar) as Url FROM Fusion WHERE name like @search " +
-                        $"Order By Name";
-            return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { search = $"%{q}%", });
         }
 
         [Route("breadcrumb/typeaheadfortype")]
