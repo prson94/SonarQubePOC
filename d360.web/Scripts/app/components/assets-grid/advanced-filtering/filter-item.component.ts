@@ -434,7 +434,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     stopUpdateDynamicWidths() {
         if (this.interval) {
             clearInterval(this.interval);
-            this.removePositionStyling()
+            this.removePositionStyling();
             this.interval = null;
         }
     }
