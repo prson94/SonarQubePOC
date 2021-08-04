@@ -19,6 +19,6 @@ export class AssetPathWidgetComponent {
 
     formatKey(section: SearchPathComponent): string {
         let keyseparator: string = '<span class="assetkeyseparator">/</span>';
-        return section.Key.map((v) => escape(v)).join(keyseparator)
+        return section.Key.map((v) => escape(v)).join(keyseparator);
     }
 }
