@@ -269,10 +269,6 @@ namespace d360.web.Controllers
 
                     switch (@class)
                     {
-                        case AssetTypeClass.FusionAttribute:
-                            var f = Company.GetById<FusionAttributeType>(assetType.ObjectID);
-                            model.AssetType.Name = f.Name;
-                            break;
                         case AssetTypeClass.BusinessAsset:
                         case AssetTypeClass.TechnicalAsset:
                             model.AssetType.CanOwnFusion = (@class == AssetTypeClass.BusinessAsset) ? assetType.CanOwnFusion : false;

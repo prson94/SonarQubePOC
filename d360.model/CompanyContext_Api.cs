@@ -4685,22 +4685,7 @@ where   ExecutionID = @ExecutionID
                             parentObjectID = it.SubjectID;
                             intersectTypeUid = it.uid;
                             intersectTypeID = it.ID;
-                        }
-                        else
-                        {
-                            if (at.Object == "FusionAttributeType")
-                            {
-                                var fusionAttributeType = GetById<FusionAttributeType>(at.ObjectID);
-                                if (fusionAttributeType != null)
-                                {
-                                    if (fusionAttributeType.ParentID.HasValue)
-                                    {
-                                        parentObject = "FusionAttributeType";
-                                        parentObjectID = fusionAttributeType.ParentID;
-                                    }
-                                }
-                            }
-                        }
+                        }                        
                     }
                     AddMeasurement(metrics, "Get predicateType.HasValue", sw.ElapsedMilliseconds, ++step);
                     sw.Restart();
