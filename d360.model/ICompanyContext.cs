@@ -234,8 +234,8 @@ namespace d360.model
         bool IsUserFollowing(SystemObjects type, int objectID, int? resourceID);
         bool IsUserFollowingParent(SystemObjects type, int objectID, int? resourceID);
         Task<int> MarkStepAsCompleteAndContinue(WorkflowItemStep itemStep, long itemID, EventObjectInfo objectInfo);
-        Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true, bool forJson = false);
-        Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml, bool forJson);
+        Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true, bool forJson = false, bool lookupFieldsPassedByValue = false);
+        Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml, bool forJson, bool lookupFieldsPassedByValue);
         Task ProcessResponsibilityRelationRules(int? ruleID = null, int timeout = 7200);
         IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90);
         Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90);
