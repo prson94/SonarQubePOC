@@ -322,17 +322,10 @@ namespace d360.web.Controllers
 
             #region Resolve Type
 
-            if (type == SystemObjects.FusionAttribute)
-            {
-                objectTypeID = Company.FusionAttributes.Where(x => x.ID == objectId).Single().FusionAttributeTypeID;
-                parentType = "FusionAttributeType";
-            }
-            else
-            {
-                var obj = Company.GetObjectDetail(type.ToString(), objectId);
-                objectTypeID = obj.TypeID;
-                parentType = obj.Type;
-            }
+            var obj = Company.GetObjectDetail(type.ToString(), objectId);
+            objectTypeID = obj.TypeID;
+            parentType = obj.Type;
+            
 
             if (objectTypeID <= 0 || string.IsNullOrEmpty(parentType) || relationshipType == null)
             {

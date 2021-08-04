@@ -348,22 +348,7 @@ from	[Load] L
 
         private int getAssetIDFieldIndex(string objectType, string objectName, int objectId, List<LoadColumn> columns)
         {
-            if (objectType == "FusionAttributeType")
-            {
-                //get the fusionattributetype name
-                var fusionAttributeType = FusionAttributeTypes.Where(x => x.ID == objectId).FirstOrDefault();
-
-                if (fusionAttributeType == null)
-                    throw new Exception($"BULK LOAD INTERSECT CANNOT COMPLETE AS SUBJECT REFERENCES INVALID FUSION ATTRIBUTE TYPE ID {objectId}");
-
-                var col = columns.OrderBy(x => x.ColumnIndex).Where(x => string.Compare(x.Name, fusionAttributeType.TextPath, true) == 0).First();
-                var index = col.ColumnIndex;
-
-                columns.Remove(col);
-
-                return index;
-            }
-            else if (objectType == "IntersectType")
+            if (objectType == "IntersectType")
             {
                 var col = columns.OrderBy(x => x.ColumnIndex).Where(x => string.Compare($"{objectName}", x.Name, true) == 0).FirstOrDefault();
 
