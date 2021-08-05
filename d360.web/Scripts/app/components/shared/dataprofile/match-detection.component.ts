@@ -131,7 +131,6 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
 
     get duplicateRows() {
         var savedVal = localStorage.getItem("duplicate-rows");
-        console.log(savedVal);
         return savedVal ? +savedVal : 10;
     }
 
