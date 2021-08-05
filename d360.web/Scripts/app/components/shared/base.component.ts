@@ -872,6 +872,10 @@ export class BaseComponent {
         if (objectName == 'Tag')
             return true;
 
+        if (objectName = 'MetricAllocation') {
+            return true;
+        }
+
         if (objectName.length <= 4)
             return false;
         if (objectName.substr(objectName.length - 4).toLowerCase() == "type") {

@@ -46,16 +46,13 @@ export class ScoringIndexComponent extends AdminBaseComponent implements OnInit,
         this.areaName = StringConstants.Section_Scoring;
         this.tabTitle = StringConstants.Section_Scoring;
         this.setCommonItems();
-        this.setCommonSecondaryNavTabs(false);
         this.selection = new ScoreTypeAllocation();
         this.selection.scoreType = ScoreType.Governance;
+        this.buildSecondaryNavigationForObject(0, 'MetricAllocation');
     }
 
     ngOnInit() {
         this.load();
-        this.setObjectInfo('MetricAllocation', 1);
-        this.setCommonSecondaryNavTabs(true);
-        this.buildSecondaryNavigationForObject(0, 'MetricAllocation');
         this.theDeleteCallback = this.deleteAllocation.bind(this);
     }
 
