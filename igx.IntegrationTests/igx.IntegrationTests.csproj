@@ -120,39 +120,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApiTests\AssetControllerIntTest.cs" />
-    <Compile Include="ApiTests\CrossReferenceIntegrationTests.cs" />
-    <Compile Include="ApiTests\FieldsControllerIntegrationTests.cs" />
-    <Compile Include="ApiTests\MetricsControllerIntegrationTests.cs" />
-    <Compile Include="ApiTests\RelationshipControllerTests.cs" />
-    <Compile Include="ApiTests\TagControllerIntegrationTests.cs" />
-    <Compile Include="ApiTests\ResponsibilitiesControllerTests.cs" />
-    <Compile Include="ApiTests\WorkflowControllerTests.cs" />
-    <Compile Include="Core\BaseIntegrationTestClass.cs" />
-    <Compile Include="Core\JsonHelper.cs" />
-    <Compile Include="Core\Settings.cs" />
-    <Compile Include="Core\SimpleCollectionComparer.cs" />
-    <Compile Include="Core\URIHelper.cs" />
-    <Compile Include="Core\XMsg.cs" />
-    <Compile Include="TestData\AssetTestData.cs" />
-    <Compile Include="TestData\AssetTypeTestData.cs" />
-    <Compile Include="TestData\RelationshipTestData.cs" />
-    <Compile Include="TestData\BulkTestData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestData\FieldsTestData.cs" />
-    <Compile Include="TestData\MetricsData.cs" />
-    <Compile Include="TestData\ResponsibilitesTestData.cs" />
-    <Compile Include="TestData\TagTestData.cs" />
-    <Compile Include="TestData\WorkflowTestData.cs" />
-    <Compile Include="TestData\XRefTestData.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\packages\xunit.analyzers.0.10.0\analyzers\dotnet\cs\xunit.analyzers.dll" />
