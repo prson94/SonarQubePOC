@@ -8157,7 +8157,7 @@ where	    A.AssetTypeID = @ID;
                 {
                     string CreateFieldTempData = $@"
 	drop table if exists #Keys;
-	CREATE TABLE #Keys (AssetID bigint primary key clustered, ParentAssetUID uniqueidentifier null, 
+	CREATE TABLE #Keys (AssetID bigint, ParentAssetUID uniqueidentifier null, 
                         KeyValue nvarchar(max) null, ActiveKey varchar(32) null);
 
 	insert into #Keys WITH(TABLOCK)
@@ -8165,7 +8165,9 @@ where	    A.AssetTypeID = @ID;
 	from		Asset A 
 			left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
 			left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID	
-	where		A.AssetTypeID = @ID
+	where		A.AssetTypeID = @ID;
+
+    create clustered index idx_key_assetid on #keys(AssetID);
 
 	if (select count(1) from fieldtype ft 
 		inner join assettype att on att.id = ft.AssetTypeID 
