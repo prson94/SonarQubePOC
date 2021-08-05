@@ -7,6 +7,7 @@ import { HeaderActionsService } from '../../../services/header-actions.service';
 import { isString, isArray } from 'util';
 import * as _ from 'lodash';
 import { SearchFieldComponent } from '../controls/search-field/search-field.component';
+import { forEach } from 'core-js/core/array';
 
 @Component({
     selector: 'd3s-site-menu-category',
@@ -66,7 +67,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
             var menu = _.cloneDeep(this.menu.NavigationItems);
             var items = menu.filter((x) => x.count > 0);
             this.hideEmptySubItems(items);
-            if (this._visibleMenuItems.length !== items.length) {
+            if (this.getTreeCount(this._visibleMenuItems) !== this.getTreeCount(items)) {
                 this._visibleMenuItems = items;
             }
         }
@@ -75,6 +76,16 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         }
 
         return this._visibleMenuItems;
+    }
+
+    getTreeCount(items: SiteMenuItem[]) {
+        var cnt = items.length;
+        items.forEach((node) => {
+            if (node.Items) {
+                cnt += this.getTreeCount(node.Items);
+            }
+        });
+        return cnt;
     }
 
     get showVisiblityToggle(): boolean {
