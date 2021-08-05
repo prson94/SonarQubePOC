@@ -90,7 +90,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
                 artifact => {
                     this.artifact = artifact;
 
-                    this.buildSecondaryNavigation(this.artifact.Uid);
+                    this.buildSecondaryNavigation(this.artifact.Uid, null, null, null, null, null, null, this.artifact.DisplayValue);
 
                     this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
                     this.dataProfileService.getDataProfiles(this.artifact.Uid).subscribe(
