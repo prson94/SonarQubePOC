@@ -137,13 +137,11 @@
     <Compile Include="DataAccessLayer\IIssueRepository.cs" />
     <Compile Include="DataAccessLayer\IMembershipRepository.cs" />
     <Compile Include="DataAccessLayer\IRelationshipRepository.cs" />
-    <Compile Include="DataAccessLayer\IFusionRepository.cs" />
     <Compile Include="DataAccessLayer\IResourceRepository.cs" />
     <Compile Include="DataAccessLayer\IResponsibilityRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\BaseRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\CommentRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\DataProfileRespository.cs" />
-    <Compile Include="DataAccessLayer\repositories\FusionRepository.cs" />
     <Compile Include="DataAccessLayer\IMetricsRepository.cs" />
     <Compile Include="DataAccessLayer\IScoringRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\GraphFilterRepository.cs" />
