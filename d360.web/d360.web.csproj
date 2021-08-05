@@ -400,7 +400,6 @@
     <Compile Include="Controllers\V2\Filter\CompanyStateValidator.cs" />
     <Compile Include="Controllers\V2\ExecutionsController.cs" />
     <Compile Include="Controllers\V2\Filter\ModelValidation.cs" />
-    <Compile Include="Controllers\V2\FusionController.cs" />
     <Compile Include="Controllers\V2\ActionsController.cs" />
     <Compile Include="Controllers\V2\BrowserController.cs" />
     <Compile Include="Controllers\V2\HealthController.cs" />
