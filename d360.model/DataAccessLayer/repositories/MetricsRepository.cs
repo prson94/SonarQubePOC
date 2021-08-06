@@ -2211,14 +2211,14 @@ for json path";
             if (!string.IsNullOrEmpty(_simpleFilter))
             {
                 parameters.Add("@simpleFilterLike", Company.GetEscapedFilterString(_simpleFilter, true));
-                parameters.Add("@simpleFilter",_simpleFilter);
+                parameters.Add("@simpleFilter",_simpleFilter.ToLower());
                  
                 simpleFilterWhereConditions.Add("R.EffectiveDate like @simpleFilterLike");
                 simpleFilterWhereConditions.Add("R.FailCount like @simpleFilterLike");
                 simpleFilterWhereConditions.Add("R.PassCount like @simpleFilterLike");
                 simpleFilterWhereConditions.Add("R.PassFraction like @simpleFilterLike");
                 simpleFilterWhereConditions.Add("R.TotalCount like @simpleFilterLike");
-                simpleFilterWhereConditions.Add("R.Segments.exist('/path/segment[contains(.,sql:variable(\"@simpleFilter\"))]') = 1");
+                simpleFilterWhereConditions.Add("R.Segments.exist('/path/segment[contains(lower-case(.),sql:variable(\"@simpleFilter\"))]') = 1");
 
                 var classes = AssetTypeClass.BusinessAsset.GetAsList();
                 var match = classes.Where(x => x.Name.ToLower(CultureInfo.InvariantCulture).Contains(_simpleFilter.ToLower(CultureInfo.InvariantCulture).Trim('\''))
