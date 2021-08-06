@@ -225,15 +225,15 @@ namespace d360.model.helpers
                     throw new Exception($"Operator '{@operator}' is not valid for '{filter.SqlFieldType.ToString().ToLower()}' on field {field}");
                 }
 
-            if (!this.IsNullValue)
-            {
-                ValidateTokenForType(filter);
-                CheckFieldValue(filter);
-                value = value.ToString().Trim('\'');
-                if (this.@operator == "ct" || this.@operator == "nct")
+                if (!this.IsNullValue)
                 {
-                    value = $"%{wildcardValue(escapeForSQLLike(value.ToString()))}%";
-                }
+                    ValidateTokenForType(filter);
+                    CheckFieldValue(filter);
+                    value = value.ToString().Trim('\'');
+                    if (this.@operator == "ct" || this.@operator == "nct")
+                    {
+                        value = $"%{wildcardValue(escapeForSQLLike(value.ToString()))}%";
+                    }
 
                     stringBuilder.Clear();
 
