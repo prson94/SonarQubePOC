@@ -21,7 +21,6 @@ declare var CompanySettings;
 export class HeaderProfileComponent implements OnInit, OnDestroy {
 
     public active: boolean = false;
-    private hideHandle: number = 0;
     public resourceId: number = CurrentResourceID;
     public resourceUid: string = CurrentResourceUid;
     public singleSignOn: boolean = SingleSignOn;
@@ -63,11 +62,6 @@ export class HeaderProfileComponent implements OnInit, OnDestroy {
     }
 
     show(item) {
-        // check for any pending hides and cancel them
-        if (this.hideHandle > 0) {
-            window.clearTimeout(this.hideHandle);
-            this.hideHandle = 0;
-        }
         let menuPanel = item.children[1].nextElementSibling;
         let minimizedMenuItem = item.children[0].nextElementSibling;
         let dims = minimizedMenuItem.getBoundingClientRect();
@@ -86,13 +80,8 @@ export class HeaderProfileComponent implements OnInit, OnDestroy {
     }
 
     hide(item) {
-        if (this.hideHandle > 0) return; //pending hide ignore new request
-        //queue up a request to hide the window.
-        this.hideHandle = window.setTimeout(() => {
-            this.active = false;
-            this.ref.markForCheck();
-        },
-            500);
+        this.active = false;
+        this.ref.markForCheck();
     }
 
 }

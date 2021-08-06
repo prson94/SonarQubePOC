@@ -225,15 +225,15 @@ namespace d360.model.helpers
                     throw new Exception($"Operator '{@operator}' is not valid for '{filter.SqlFieldType.ToString().ToLower()}' on field {field}");
                 }
 
-                if (!this.IsNullValue)
+            if (!this.IsNullValue)
+            {
+                ValidateTokenForType(filter);
+                CheckFieldValue(filter);
+                value = value.ToString().Trim('\'');
+                if (this.@operator == "ct" || this.@operator == "nct")
                 {
-                    CheckFieldValue(filter);
-
-                    value = value.ToString().Trim('\'');
-                    if (this.@operator == "ct" || this.@operator == "nct")
-                    {
-                        value = $"%{wildcardValue(escapeForSQLLike(value.ToString()))}%";
-                    }
+                    value = $"%{wildcardValue(escapeForSQLLike(value.ToString()))}%";
+                }
 
                     stringBuilder.Clear();
 
@@ -771,17 +771,19 @@ namespace d360.model.helpers
             }
         }
 
-        private void ValidateTokenForType()
+        private void ValidateTokenForType(DefaultFilter defaultFilter = null)
         {
+            string type = defaultFilter == null ? fieldType.Type : defaultFilter.SqlFieldType.ToString();
+
             bool hasApostrophe = value.ToString().First() == '\'' && value.ToString().Last() == '\'';
-            if (!hasApostrophe && !(fieldType.Type == "Number" || fieldType.Type == "Decimal" || fieldType.Type == "Boolean" || fieldType.Type == "Score" || fieldType.Type == "Counter"))
+            if (!hasApostrophe && !(type == "Number" || type == "Decimal" || type == "Boolean" || type == "Score" || type == "Counter"))
             {
                 throw new Exception("Text values should be placed within quotations.");
             }
 
-            if (!IsValidOperatorForFieldType())
+            if (defaultFilter == null && !IsValidOperatorForFieldType())
             {
-                throw new Exception($"Operator '{@operator}' is not valid for '{fieldType.Type}' on field {field}");
+                throw new Exception($"Operator '{@operator}' is not valid for '{type}' on field {field}");
             }
         }
 

@@ -62,6 +62,31 @@
         </div>
     </div>
     <div class="gallery-section">
+        <h4>Basic with sizes</h4>
+        <div class="row">
+            <div class="row">
+                <label>
+                    <input type="radio" name="demoSize" [(ngModel)]="demoSize" value="small">
+                    small(150px)
+                </label>&nbsp;
+                <label>
+                    <input type="radio" name="demoSize" [(ngModel)]="demoSize" value="medium">
+                    medium(308px)
+                </label>&nbsp;
+                <label>
+                    <input type="radio" name="demoSize" [(ngModel)]="demoSize" value="large">
+                    large(624px)
+                </label>&nbsp;
+                <label>
+                    <input type="radio" name="demoSize" [(ngModel)]="demoSize" value="full">
+                    full(100%)
+                </label>
+            </div>
+            <div class="row">&nbsp;</div>
+            <ig-number-input [igSize]="demoSize"></ig-number-input>
+        </div>
+    </div>
+    <div class="gallery-section">
         <h4>Validation</h4>
         <div>
             Form validation.
@@ -80,6 +105,29 @@
                     <div class="row">&nbsp;</div>
                     <div class="row">
                         <button igButton type="submit" [disabled]="!myForm.valid" label="Save"></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div>
+            <form #enforeForm="ngForm" (ngSubmit)="submitTemplateForm(enforceForm)">
+                <div class="row">
+                    <b>Template driven forms with min/max enforcement</b>
+                    <p>
+                        Because min/max validation for the underlying HTML element is done by a validation function for reactive forms, custom min/max validation has been added to the template
+                        driven element. The <i>enforceMaxMin</i> property must be set to true, and the two errors are <i>overMax</i> and <i>underMin</i>. Min is set to -3 and max is set to 3.
+                    </p>
+                    <p>template model: {{enforcediagnostic}}</p>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <ig-number-input [(ngModel)]="enforcemodel.number" id="enforcenumber" name="enforcenumber" #enforcenumber="ngModel" min="-3" max="3" [enforceMaxMin]="true" required="true" [ngModelOptions]="{ updateOn: 'blur' }"></ig-number-input>
+                    </div>
+                    <div class="row"><pre>valid: {{enforcenumber.valid}}, errors: {{enforcenumber.errors|json}}</pre></div>
+                    <div class="row">&nbsp;</div>
+                    <div class="row">
+                        <button igButton type="submit" [disabled]="!enforeForm.valid" label="Save"></button>
                     </div>
                 </div>
             </form>
