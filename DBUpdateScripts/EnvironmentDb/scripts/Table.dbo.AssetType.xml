@@ -85,7 +85,7 @@ IF NOT EXISTS (SELECT * FROM [dbo].[AssetType]
       ,[FlowObjectType]
       ,[CanEditParent]
       ,[AutoDisplayParent])
-	  values('MetricAllocation','A Predicate',17,'{Name}',1,0,NULL,NULL,0,'Predicate',1,GETDATE(),0,GETDATE(),0,NULL,'00000001-0000-0000-0000-B00000000014',0,0,0,NULL,1,NULL)
+	  values('Predicate','A Predicate',17,'{Name}',1,0,NULL,NULL,0,'Predicate',1,GETDATE(),0,GETDATE(),0,NULL,'00000001-0000-0000-0000-B00000000014',0,0,0,NULL,1,NULL)
 		END
 		]]>
     </sql>

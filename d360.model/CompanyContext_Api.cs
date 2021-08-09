@@ -7708,10 +7708,11 @@ where	ExecutionID = @ExecutionID and [Type] in ({differentLineageVersionIdList})
 										update  
 											set P.Name = S.Name,
 											P.Inverse = S.Inverse,
-											P.Type = S.Type
+											P.Type = S.Type,
+                                            P.UpdatedBy = {CurrentResourceID}
                                         when not matched then
-	                                        insert (Uid, Name, Inverse, Type, IsSystem)
-	                                        values (S.Uid, S.Name,S.Inverse, S.Type, 0)
+	                                        insert (Uid, Name, Inverse, Type, IsSystem,CreatedBy,UpdatedBy)
+	                                        values (S.Uid, S.Name,S.Inverse, S.Type, 0, {CurrentResourceID},{CurrentResourceID})
 	                                    output inserted.ID, inserted.Uid, S.ExecutionItemUid into #mergeResultTable;
 
                                         update EP
