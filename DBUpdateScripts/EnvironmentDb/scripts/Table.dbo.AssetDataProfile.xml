@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfile-v10">
+  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfile-v11">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -27,7 +27,7 @@
 			[MaximumLength] INT NULL,
 			[StandardDeviation] FLOAT NULL,		
 			[Multiline] BIT NULL,
-			[RegExp] NVARCHAR(200) NULL,
+			[RegExp] NVARCHAR(MAX) NULL,
 			[Confidence] DECIMAL(28,4) NULL,
 			[Type] NVARCHAR(200) NULL,
 			[TypeQualifier] NVARCHAR(200) NULL,		
@@ -137,7 +137,15 @@
 	BEGIN
 		ALTER TABLE [dbo].[AssetDataProfile] ADD [DecimalSeparator] NCHAR(1) NULL
 	END
-
+	
+	ALTER table dbo.AssetDataProfile
+	ALTER COLUMN [RegExp] NVARCHAR(MAX); 
+	
+	ALTER table dbo.AssetDataProfile
+	ALTER COLUMN [StandardDeviation] FLOAT; 
+	
+	ALTER table dbo.AssetDataProfile
+	ALTER COLUMN [MeanValue] FLOAT; 
 		]]>
     </sql>
 	<rollback>
