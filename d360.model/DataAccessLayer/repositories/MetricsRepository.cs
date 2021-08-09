@@ -2178,29 +2178,22 @@ for json path";
             var result = new DataQualityGetResultModel();
             var parameters = new DynamicParameters();
 
-            string cteSql = "",
-                    columnSql = "",
-                    fromSql = "",
-                    whereSql = "",
-                    whereCteEvaluatedBySql = "",
-                    whereResultCteSql = "",
-                    orderSql = "EffectiveDate",
-                    pagingSql = "offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only";
+            List<string> simpleFilterWhereConditions = new List<string>();
+            List<string> whereConditions = new List<string>();
+
+            parameters.Add("@evaluatedAssetUid", evaluatedAssetUid);
+            parameters.Add("@owningAssetUid", owningAssetUid);
 
             if (effectiveDateStart.HasValue)
             {
-                whereResultCteSql = " and EffectiveDate >= @effectiveStartDate";
+                whereConditions.Add("R.EffectiveDate >= @effectiveStartDate");
                 parameters.Add("@effectiveStartDate", effectiveDateStart.Value);
             }
+            
             if (effectiveDateEnd.HasValue)
             {
-                whereResultCteSql += $@" and EffectiveDate <= @effectiveEndDate";
+                whereConditions.Add("R.EffectiveDate <= @effectiveEndDate");
                 parameters.Add("@effectiveEndDate", effectiveDateEnd.Value);
-            }
-            if (evaluatedAssetUid.HasValue)
-            {
-                whereCteEvaluatedBySql = " and AE.Uid = @evaluatedAssetUid";
-                whereSql += (string.IsNullOrEmpty(whereSql) ? "where" : "and") + " EvaluatedAssetUid = @evaluatedAssetUid";
             }
 
             if (!string.IsNullOrEmpty(_filter))
@@ -2215,25 +2208,20 @@ for json path";
                 {
                     parameters.Add(item.Key, item.Value);
                 }
-                whereSql += (string.IsNullOrEmpty(whereSql) ? " where " : " and ") + query;
+                whereConditions.Add(query);
             }
 
             if (!string.IsNullOrEmpty(_simpleFilter))
             {
-                
-                var allFields = new [] {
-                "EffectiveDate",
-                 "FailCount",
-                 "PassCount",
-                 "PassFraction",
-                 "RunDate",
-                 "TotalCount",
-                "EvaluatedAssetDisplayPath",
-                "EvaluatedAssetTypePath"
-                };
-
-                parameters.Add("@simpleFilter", Company.GetEscapedFilterString(_simpleFilter,true));
-                var simpleQuery = string.Join(" or ", allFields.Select(x => $"({x} like @simpleFilter)").ToList());
+                parameters.Add("@simpleFilterLike", Company.GetEscapedFilterString(_simpleFilter, true));
+                parameters.Add("@simpleFilter",_simpleFilter.ToLower());
+                 
+                simpleFilterWhereConditions.Add("R.EffectiveDate like @simpleFilterLike");
+                simpleFilterWhereConditions.Add("R.FailCount like @simpleFilterLike");
+                simpleFilterWhereConditions.Add("R.PassCount like @simpleFilterLike");
+                simpleFilterWhereConditions.Add("R.PassFraction like @simpleFilterLike");
+                simpleFilterWhereConditions.Add("R.TotalCount like @simpleFilterLike");
+                simpleFilterWhereConditions.Add("R.Segments.exist('/path/segment[contains(lower-case(.),sql:variable(\"@simpleFilter\"))]') = 1");
 
                 var classes = AssetTypeClass.BusinessAsset.GetAsList();
                 var match = classes.Where(x => x.Name.ToLower(CultureInfo.InvariantCulture).Contains(_simpleFilter.ToLower(CultureInfo.InvariantCulture).Trim('\''))
@@ -2241,13 +2229,30 @@ for json path";
 
                 if (match.Count > 0)
                 {
-                    var query = $" or (EvaluatedAssetTypeClass in ({string.Join(",", match.Select(x => (int)x.ID))}))";
-                    simpleQuery += query;
+                    simpleFilterWhereConditions.Add($"(R.Class in ({string.Join(", ", match.Select(x => (int)x.ID))}))");
                 }
-
-                whereSql += (string.IsNullOrEmpty(whereSql) ? " where " : " and ") + $"({simpleQuery})";
             }
 
+            string whereStatement = "";
+            if (whereConditions.Count > 0 || simpleFilterWhereConditions.Count > 0)
+            {
+                whereStatement = "where ";
+            }
+
+            if (whereConditions.Count > 0)
+            {
+                whereStatement += string.Join(" and ", whereConditions);
+            }
+
+            if (simpleFilterWhereConditions.Count > 0)
+            {
+                whereStatement += (whereConditions.Count > 0) ? " and " : "";
+                whereStatement += "(" + string.Join(" or ", simpleFilterWhereConditions) + ")";
+            }
+
+            #region ordering selection logic
+
+            string orderSql = "EffectiveDate";
             if (!string.IsNullOrWhiteSpace(sort))
             {
                 switch (sort.Trim())
@@ -2283,86 +2288,98 @@ for json path";
             }
             orderSql = $"order by {orderSql} {direction ?? ""}";
 
-            columnSql = @" R.ResultUid, R.OwningAssetUid, E.EvaluatedAssetUid, E.EvaluatedAssetPath, E.EvaluatedAssetDisplayPath, E.EvaluatedAssetSegments, P.[Path] as EvaluatedAssetTypePath, E.EvaluatedAssetTypeClass, R.EffectiveDate, R.RunDate, R.PassCount, R.FailCount, R.TotalCount, R.PassFraction, R.Passed";
-            if (includeDuplicateFlag)
+            #endregion
+
+            if (pageNum <= 0)
             {
-                columnSql += @", case when ROW_NUMBER() over (partition by R.OwningAssetUid, coalesce(E.EvaluatedAssetUid, newid()), R.EffectiveDate order by R.RunDate desc) = 1 then cast(0 as bit) else cast(1 as bit) end as IsDuplicate";
+                pageNum = 1;
             }
 
-            cteSql = $@"with 
-	E as	(
-			select	R.Uid as ResultUid,
-					AE.Uid as EvaluatedAssetUid,
-					EDP.DisplayPath as EvaluatedAssetDisplayPath,
-                    EKP.KeyPath as EvaluatedAssetPath,
-					EDP.Segments as EvaluatedAssetSegments,
-					AE.AssetTypeID,
-					EDP.Class as EvaluatedAssetTypeClass
-			from	AssetResult R,
-					AssetResultEdge EO,
-					graph.AssetNode AO,
-					AssetResultEdge EE,
-					graph.AssetNode AE,
-					[graph].[AssetNodeDisplayPath] EDP,
-                    [graph].[AssetNodeKeyPath] EKP
-			where	match(AO-(EO)->R)
-					and EO.Class = 1 -- Owns
-					and match(AE-(EE)->R)
-					and EE.Class = 2 -- Evals
-					and EDP.ID = AE.ID
-					and EKP.ID = AE.ID
-					and	AO.Uid = @owningAssetUid {whereCteEvaluatedBySql}
-			),
-	R as	(
-			select	R.Uid as ResultUid,
-					A.Uid as OwningAssetUid,
-					R.EffectiveDate,
-					R.RunDate,
-					R.PassCount,
-					R.FailCount,
-					R.TotalCount,
-					RU.Threshold,
-					R.PassFraction,
-					case 
-						when R.PassCount = 0 and R.FailCount = 0 then null 
-						when RU.Threshold <= R.PassFraction then cast(1 as bit) --R.Passed 
-						else cast(0 as bit)
-					end as Passed
-			from	AssetResult R,
-					AssetResultEdge O,
-					graph.AssetNode A,
-					Asset AA,
-					[Rule] RU
-			where	match(A-(O)->R)
-					and AA.ID = A.ID
-					and RU.ID = AA.ObjectID
-					and O.Class = 1 --Owns
-					and	A.Uid = @owningAssetUid {whereResultCteSql}
-			)";
-
-            fromSql = $" from R left join E on R.ResultUid = E.ResultUid outer apply dbo.GetAssetTypeTextPathById(E.AssetTypeID, ' > ') P";
+            if (pageSize <= 0 || pageSize > 1000)
+            {
+                pageSize = 25;
+            }
 
             result.pageNum = pageNum;
             result.pageSize = pageSize;
 
-            parameters.Add("@evaluatedAssetUid", evaluatedAssetUid);
-            parameters.Add("@owningAssetUid", owningAssetUid);
             parameters.Add("@pageNum", result.pageNum);
             parameters.Add("@pageSize", result.pageSize);
 
-            var countQuery = $@"{cteSql}, Results as (select {columnSql} {fromSql}) select count(1) from results {whereSql}";
+            var cteQuery = @"with R as (
+	select	R.Uid as ResultUid,
+			O.Uid as OwningAssetUid,
+			E.ID as EvaluatedAssetId,
+			E.Uid as EvaluatedAssetUid,
+			E.Segments,
+			E.Class,
+			P.[Path] as EvaluatedAssetTypePath, 
+			R.EffectiveDate, 
+			R.RunDate, 
+			R.PassCount, 
+			R.FailCount, 
+			R.TotalCount, 
+			R.PassFraction, 
+			case 
+				when R.PassCount = 0 and R.FailCount = 0 then null 
+				when Ru.Threshold <= R.PassFraction then cast(1 as bit) 
+				else cast(0 as bit)
+			end as Passed, 
+			case 
+				when ROW_NUMBER() over (partition by O.Uid, coalesce(E.Uid, newid()), R.EffectiveDate order by R.RunDate desc) = 1 then cast(0 as bit) 
+				else cast(1 as bit) 
+			end as IsDuplicate 
+	from	AssetResult R
+			inner join AssetResultEdge Oe on Oe.$to_id = R.$node_id and Oe.Class = 1
+			inner join graph.AssetNode O on O.$node_id = Oe.$from_id and O.Uid = @owningAssetUid
+			inner join Asset Oa on Oa.ID = O.ID
+			inner join [Rule] Ru on Ru.ID = Oa.ObjectID
+			left join AssetResultEdge Ee on Ee.$to_id = R.$node_id and Ee.Class = 2
+			left join graph.AssetNode E on E.$node_id = Ee.$from_id and (@evaluatedAssetUid is null or (@evaluatedAssetUid is not null and E.Uid = @evaluatedAssetUid))
+			outer apply dbo.GetAssetTypeTextPathById(E.AssetTypeID, ' > ') P
+)";
+
+            var countQuery = $@"
+{cteQuery}
+select	count(1)
+from	R
+{whereStatement}";
 
             result.total = Company.Query<int>(countQuery, parameters, ApiTimeout).FirstOrDefault();
 
-            var itemsQuery = $@"{cteSql}, 
-                    Results as (select {columnSql} {fromSql}) 
-			        select * from results
-                    {whereSql} 
-                    {orderSql} 
-                    {pagingSql}";
+            var dupeColumnReference = "";
+            if (includeDuplicateFlag)
+            {
+                dupeColumnReference = ", R.IsDuplicate";
+            }
+
+            var itemsQuery = $@"
+{cteQuery}
+
+select	R.ResultUid,
+		R.OwningAssetUid,
+		R.EvaluatedAssetUid,
+		EKP.KeyPath as EvaluatedAssetPath,
+		EDP.DisplayPath as EvaluatedAssetDisplayPath,
+		R.Segments as EvaluatedAssetSegments,
+		R.EvaluatedAssetTypePath,
+		R.Class as EvaluatedAssetTypeClass,
+		R.EffectiveDate,
+		R.RunDate, 
+		R.PassCount, 
+		R.FailCount, 
+		R.TotalCount, 
+		R.PassFraction, 
+		R.Passed{dupeColumnReference}
+from	R 
+        left join[graph].[AssetNodeDisplayPath] EDP on EDP.ID = R.EvaluatedAssetId 
+        left join[graph].[AssetNodeKeyPath] EKP on EKP.ID = R.EvaluatedAssetId 
+{whereStatement} 
+{orderSql} 
+offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
 
             result.items = Company.Query<DataQualityGetResultItem>(itemsQuery, parameters, ApiTimeout).ToList();
-
+            
             if (result.items == null)
             {
                 result.items = new List<DataQualityGetResultItem>();

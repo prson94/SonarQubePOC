@@ -2432,31 +2432,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     }
 
                     #endregion
-                    break;
-                case AssetTypeClass.FusionAttribute:
-
-                    int? parentId = parentAssetType?.ObjectID;
-                    int fusionTypeId = model.FusionID.Value;
-
-                    var fusionAttrType = new FusionAttributeType
-                    {
-                        Name = model.Name,
-                        ParentID = parentId,
-                        ScanEnabled = true,
-                        FusionTypeID = fusionTypeId
-                    };
-
-                    CompanyContext.Add(fusionAttrType);
-                    model.ObjectID = fusionAttrType.ID;
-                    model.Object = SystemObjects.FusionAttributeType.ToString();
-
-                    var fatAssetType = CompanyContext.Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).SingleOrDefault();
-                    if (fatAssetType != null)
-                    {
-                        fatAssetType.Description = model.Description;
-                        CompanyContext.Update(fatAssetType);
-                    }
-                    break;
+                    break;                
                 case AssetTypeClass.Diagram:
                     #region
                     var diagram = new AssetType
@@ -2645,27 +2621,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     assetType.CanEditParent = model.CanEditParent;
 
                     #endregion
-                    break;
-                case AssetTypeClass.FusionAttribute:
-                    #region
-
-                    var fusionAttributeType = CompanyContext.GetById<FusionAttributeType>(model.ObjectID);
-                    if (fusionAttributeType == null)
-                    {
-                        return new Tuple<HttpStatusCode, string, string>(
-                            HttpStatusCode.BadRequest,
-                            $"Wrong {AssetTypeClass.FusionAttribute.ToString()}",
-                            $"Not valid {AssetTypeClass.FusionAttribute.ToString()} provided. {AssetTypeErrors.CheckRequest}"
-                        );
-                    }
-
-                    assetType.Description = model.Description;
-
-                    fusionAttributeType.Name = model.Name;
-                    CompanyContext.Update(fusionAttributeType);
-
-                    #endregion
-                    break;
+                    break;                
             }
 
             var parentType = SystemObjectHelper.GetSystemObjects(model.Class).ToString();

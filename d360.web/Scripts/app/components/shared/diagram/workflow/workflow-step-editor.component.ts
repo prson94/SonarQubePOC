@@ -196,6 +196,13 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                 this.step.settings.HTTPRequest.Headers = [];
             }
 
+            if (this.step.settings.HTTPRequest.lookupFieldsPassedByValue == null) {
+                this.step.settings.HTTPRequest.lookupFieldsPassedByValue = false;
+            }
+            else {
+                this.step.settings.HTTPRequest.lookupFieldsPassedByValue = this.step.settings.HTTPRequest.lookupFieldsPassedByValue.toString().toLowerCase() === "true" ? true : false;
+            }
+
             this.workflowFieldsService.pushHttpFields(this.step);
             this.filterHttpFields();
 

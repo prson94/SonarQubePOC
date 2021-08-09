@@ -1,5 +1,6 @@
 ﻿import { Component, Input } from '@angular/core';
 import { SearchPathComponent } from '../../../models/search-result.model';
+import { escape } from "lodash/";
 
 @Component({
     selector: 'asset-path-widget',
@@ -18,6 +19,6 @@ export class AssetPathWidgetComponent {
 
     formatKey(section: SearchPathComponent): string {
         let keyseparator: string = '<span class="assetkeyseparator">/</span>';
-        return section.Key.join(keyseparator)
+        return section.Key.map((v) => escape(v)).join(keyseparator);
     }
 }

@@ -2290,6 +2290,24 @@ div.home-image-title-text {
             }
         }
 
+        &.condensed-table {
+          .p-datatable {
+            padding-right: 16px;
+
+            table {
+              th, td {
+                height: 32px;
+                padding: .25em .5em;
+
+                button {
+                  position: relative;
+                  right: -7px;
+                }
+              }
+            }
+          }
+        }
+
         .p-checkbox {
             .p-checkbox-box.p-highlight {
                 color: black;
@@ -6951,16 +6969,6 @@ table {
     }
 }
 
-.comment-box {
-    ul {
-        padding-inline-start: 40px;
-    }
-
-    ul, li {
-        list-style: inherit !important;
-    }
-}
-
 .front-elide {
   white-space: nowrap;
   overflow: hidden;
@@ -7045,9 +7053,6 @@ table {
                 margin-right: 8px;
             }
 
-            .ig-button-container {
-                left: 76px;
-            }
         }
     }
 

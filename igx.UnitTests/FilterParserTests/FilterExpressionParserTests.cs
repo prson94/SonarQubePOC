@@ -379,6 +379,46 @@ namespace igx.UnitTests.FilterExpressionTests
             Assert.True(sql.ToLower().Replace(Environment.NewLine, "") == expectedQuery.ToLower().Replace(Environment.NewLine, ""));
 
         }
+
+
+        [Theory]
+        [InlineData("text_field eq 'Data'", "sql_expression = @filter_1")]
+        [InlineData("text_field ct 'Data'", "sql_expression like @filter_1")]
+        [InlineData("text_field ne 'Data'", "(sql_expression <> @filter_1 or sql_expression is null)")]
+        public void CheckDefaultFilterStringValidation(string expression, string expectedQuery)
+        {
+            var filterExpressionParser = new FilterExpressionParser(GetCompany(), FilterExpressionParseType.CustomFields, false);
+            filterExpressionParser.OverrideAllowedDefaultFields(new List<DefaultFilter> { new DefaultFilter("text_field", "sql_expression", SqlFieldType.Text) });
+            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+            var value = filterExpressionParser.Parse(expression, out sqlParams, out _);
+
+            Assert.True(expectedQuery == value);
+            Assert.True(sqlParams.Count == 1);
+        }
+
+        [Theory]
+        [InlineData("text_field eq Data")]
+        [InlineData("text_field ct Data")]
+        [InlineData("text_field ne Data")]
+        public void CheckDefaultFilterStringValidationShouldThrowError(string expression)
+        {
+            var filterExpressionParser = new FilterExpressionParser(GetCompany(), FilterExpressionParseType.CustomFields, false);
+            filterExpressionParser.OverrideAllowedDefaultFields(new List<DefaultFilter> { new DefaultFilter("text_field", "sql_expression", SqlFieldType.Text) });
+            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+            bool didThrow = false;
+            try
+            {
+                var value = filterExpressionParser.Parse(expression, out sqlParams, out _);
+            }
+            catch
+            {
+                didThrow = true;
+            }
+
+            Assert.True(didThrow);
+        }
+
+
     }
 
 }
