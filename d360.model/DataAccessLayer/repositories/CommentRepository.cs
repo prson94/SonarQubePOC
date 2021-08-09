@@ -98,10 +98,14 @@ namespace d360.model.DataAccessLayer
 
             if (!assetId.HasValue)
             {
-                commentAsset = CompanyContext.Filter<Asset>(a => a.uid == comment.AssetUid).FirstOrDefault();
+                commentAsset = CompanyContext.Filter<Asset>(a => a.uid == comment.AssetUid, a => a.AssetType).FirstOrDefault();
                 if (commentAsset == null)
                 {
                     throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Asset with provided Uid does not exist.");
+                }
+                if (!commentAsset.AssetType.Class.AsInfoModel().AllowCommentsOnAsset)
+                {
+                    throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Comments may not be created on asset with provided Uid.");
                 }
                 assetId = commentAsset.ID;
             }
