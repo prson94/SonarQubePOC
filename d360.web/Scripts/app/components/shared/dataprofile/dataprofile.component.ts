@@ -211,7 +211,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
     getMatchTooltip(type: string, count: number): string {
         let assetCountStr: string = count > 1 ? `${count} assets` : '1 asset';
-        let descStr: string = type === 'duplicates' ? 'same type and identical data' : 'same type but different data';
-        return `${assetCountStr} detected which have the ${descStr}.\nClick to investigate and add tags.`;
+        let descStr: string = type === 'duplicates' ? 'same type and matching data' : 'same type but different data';
+        return `${assetCountStr} detected which have the ${descStr}.\nClick to investigate.`;
     }
 }
