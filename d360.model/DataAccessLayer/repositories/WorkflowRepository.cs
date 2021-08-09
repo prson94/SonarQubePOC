@@ -11,6 +11,7 @@ using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Threading;
 
 namespace d360.model.DataAccessLayer
 {
@@ -874,13 +875,18 @@ namespace d360.model.DataAccessLayer
             return model;
         }
 
-        public async Task<IEnumerable<WorkflowReassignmentAssetApiModel>> GetWorkflowReassignmentAssets(int workflowItemId, string query, int resultCount = 1000)
+        public async Task<IEnumerable<WorkflowReassignmentAssetApiModel>> GetWorkflowReassignmentAssets(int workflowItemId, string query, int resultCount = 100, CancellationToken? cancellationToken = null)
         {
             if (!string.IsNullOrEmpty(query))
             {
                 query = query.Replace("%", "[%]");
                 query = query.Replace("[", "[[]");
                 query = query.Replace("_", "[_]");
+            }
+
+            if (cancellationToken == null)
+            {
+                cancellationToken = CancellationToken.None;
             }
 
             var allowedAssetTypeClasses = new List<AssetTypeClass>
@@ -938,7 +944,11 @@ namespace d360.model.DataAccessLayer
                             cross apply dbo.GetAssetTypeTextPathById(AT.ID,' > ') ATP
                             where I.ID = @id and IC.IssueObject is null and {assetTypeClassSql}";
 
-            var assetTypes = await CompanyContext.QueryAsync<int>(assetTypeSql, new { id = workflowItemId });
+            var assetTypes = await CompanyContext.Database.Connection.QueryAsync<int>
+                            (new CommandDefinition(assetTypeSql,
+                              cancellationToken: cancellationToken.Value,
+                              parameters: new { id = workflowItemId }
+                            ));
 
             var sql = $@"select top {resultCount} A.ID, 
                                 T.TextPath as Name, 
@@ -950,7 +960,10 @@ namespace d360.model.DataAccessLayer
                         {(string.IsNullOrWhiteSpace(query) ? "" : "and (A.DisplayValue like @query + '%' or A.DisplayValue like '%' + @query + '%')")}
                         order by A.DisplayValue";
 
-            return await CompanyContext.QueryAsync<WorkflowReassignmentAssetApiModel>(sql, new { query });
+            return await CompanyContext.Database.Connection.QueryAsync<WorkflowReassignmentAssetApiModel>
+                        (new CommandDefinition(sql,
+                        cancellationToken: cancellationToken.Value,
+                        parameters: new { query }));
         }
     }
 }
