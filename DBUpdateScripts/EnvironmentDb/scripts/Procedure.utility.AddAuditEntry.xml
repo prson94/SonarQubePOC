@@ -538,12 +538,10 @@ begin
 			select @scoreType = case when ScoreType = 1 then 'Governance' else 'Data Quality' end from [metrics].[Allocation] where ID = @MainObjectID
 			select @isExterallyCalculated = case when IsExternallyCalculated = 0 then 'Internal' else 'External' end from [metrics].[Allocation] where ID = @MainObjectID
 			select @assetTypeName = AT.Name from [metrics].[Allocation] MA inner join [dbo].[AssetType] AT on AT.uid = MA.AssetTypeUid where MA.ID = @MainObjectID
-			set @MainDescription = @scoreType+ '/ '+ @assetTypeName + '/ ' + @isExterallyCalculated + ' removed'
+			set @MainObjectName = @scoreType+ ' '+ @assetTypeName + ' {' + @isExterallyCalculated + 'ly calculated' + '}'
 		END
-		else
-		Begin
-			set @MainDescription = @ConvertMainObjectTypeName + ' removed'
-		end
+
+		set @MainDescription = @ConvertMainObjectTypeName + ' removed'
 	end
 	if @Action = 'Updated'
 	begin
