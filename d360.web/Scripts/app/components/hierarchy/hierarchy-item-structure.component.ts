@@ -208,17 +208,17 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     clickMenuItem(event: any, item: any) {
         let key = event.value.toLowerCase();
 
-        if (key == 'open') {
+        if (key === 'open') {
             this.showHierarchy(item.data);
-        } else if (key == 'open in new tab') {
+        } else if (key === 'open in new tab') {
             this.showHierarchy(item.data, true);
-        } else if (key == 'edit') {
+        } else if (key === 'edit') {
             this.selectAsset(item);
             this.showEditor = true;
-        } else if (key == 'delete') {
+        } else if (key === 'delete') {
             this.selectAsset(item);
             this.showDelete = true;
-        } else if (key == 'add child') {
+        } else if (key === 'add child') {
             this.showAdd(item.data.Level, item.data.AssetUid);
 
         }
@@ -309,7 +309,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
             let children = (this.buildTreeNodeArray(hierarchies, levelNumber + 1, root.AssetUid));
 
-            if (root.Permissions.DeleteAsset && (!children || children?.length == 0)) {
+            if (root.Permissions.DeleteAsset && (!children || children?.length === 0)) {
                 root[this.menuKey].push({ title: 'Delete' });
             }
 
@@ -318,7 +318,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 label: root.Path,
                 expanded: isExpanded,
                 data: root,
-                children: children
+                children
             });
         }
         return res;

@@ -1,4 +1,5 @@
 ﻿import { Input, Component, EventEmitter, Output, SimpleChanges } from '@angular/core';
+import { SidePanelButton } from '../../../models/side-panel.model';
 import { BaseComponent } from '../base.component';
 
 @Component({
@@ -37,10 +38,10 @@ export class SidePanelComponent extends BaseComponent {
 
     ngOnChanges(changes: SimpleChanges) {
         let loadButtons = false;
-        if (changes['hasProfiling'] && !changes['hasProfiling'].isFirstChange() && changes['hasProfiling'].currentValue != changes['hasProfiling'].previousValue) {
+        if (changes['hasProfiling'] && !changes['hasProfiling'].isFirstChange() && changes['hasProfiling'].currentValue !== changes['hasProfiling'].previousValue) {
             loadButtons = true;
         }
-        if (changes['hasDetail'] && !changes['hasDetail'].isFirstChange() && changes['hasDetail'].currentValue != changes['hasDetail'].previousValue) {
+        if (changes['hasDetail'] && !changes['hasDetail'].isFirstChange() && changes['hasDetail'].currentValue !== changes['hasDetail'].previousValue) {
             loadButtons = true;
         }
 
@@ -48,9 +49,9 @@ export class SidePanelComponent extends BaseComponent {
             this.initButtons();
         }
 
-        if (changes['disableProfiling'] && !changes['disableProfiling'].isFirstChange() && changes['disableProfiling'].currentValue != changes['disableProfiling'].previousValue) {
+        if (changes['disableProfiling'] && !changes['disableProfiling'].isFirstChange() && changes['disableProfiling'].currentValue !== changes['disableProfiling'].previousValue) {
             if (this.hasProfiling) {
-                this.buttons.find(b => b.key === 'dataprofile').disabled = this.disableProfiling;
+                this.buttons.find((b) => b.key === 'dataprofile').disabled = this.disableProfiling;
             }
         }
     }
@@ -94,7 +95,7 @@ export class SidePanelComponent extends BaseComponent {
 
     clickButton(b: SidePanelButton) {
         if (!b.disabled) {
-            if (this.selectedPanel != b.key) {
+            if (this.selectedPanel !== b.key) {
                 this.selectedPanel = b.key;
                 this.selectedPanelChange.emit(b.key);
             }
@@ -136,7 +137,7 @@ export class SidePanelComponent extends BaseComponent {
 
     get panelButton(): SidePanelButton {
         if (this.selectedPanel.length > 0) {
-            let ix = this.buttons.findIndex(b => b.key === this.selectedPanel);
+            let ix = this.buttons.findIndex((b) => b.key === this.selectedPanel);
             if (ix > -1) {
                 return this.buttons[ix];
             } else {
@@ -151,16 +152,4 @@ export class SidePanelComponent extends BaseComponent {
         this.expanded = false;
         this.expandedChange.emit(false);
     }
-}
-
-export class SidePanelButton {
-    label: string;
-    tooltip: string;
-    disabledTooltip: string;
-    nothingSelectedMessage: string;
-    notApplicableMessage: string;
-    key: string;
-    icon: string;
-    disabled: boolean = false;
-    visible: boolean = true;
 }

@@ -167,13 +167,13 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     clickMenuItem(event: any, item: any) {
         let key = event.value.toLowerCase();
 
-        if (key == 'open') {
+        if (key === 'open') {
             this.selectArtifact(item);
-        } else if (key == 'open in new tab') {
+        } else if (key === 'open in new tab') {
             this.selectArtifact(item, true);
-        } else if (key == 'edit') {
+        } else if (key === 'edit') {
             this.onEdit(item);
-        } else if (key == 'delete') {
+        } else if (key === 'delete') {
             this.onDelete(item);
         }
     }
@@ -390,7 +390,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                     }
 
                     if (this.selected != null && !selectedItemStillExists) {
-                        if (i.AssetId == this.selected.AssetId) {
+                        if (i.AssetId === this.selected.AssetId) {
                             this.selectRow(i);
                             selectedItemStillExists = true;
                         }
