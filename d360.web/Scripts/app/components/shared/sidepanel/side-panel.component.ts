@@ -124,7 +124,7 @@ export class SidePanelComponent extends BaseComponent {
 
     get panelLabel(): string {
         if (this.selectedPanel.length > 0) {
-            let ix = this.buttons.findIndex(b => b.key === this.selectedPanel);
+            let ix = this.buttons.findIndex((b) => b.key === this.selectedPanel);
             if (ix > -1) {
                 return this.buttons[ix].label;
             } else {
