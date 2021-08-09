@@ -55,7 +55,7 @@ namespace d360.core
 
     public class AllowCommentsOnAssetAttribute : Attribute
     {
-        public bool Allowed { get; private set; } = false;
+        public bool Allowed { get; private set; }
         public AllowCommentsOnAssetAttribute()
         {
             Allowed = true;
