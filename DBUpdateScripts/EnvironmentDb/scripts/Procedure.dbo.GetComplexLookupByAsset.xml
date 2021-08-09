@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.dbo.GetComplexLookupByAsset-v58">
-  <comment>GOV-15361</comment>
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.GetComplexLookupByAsset-v59">
+  <comment>GOV-15460-TDuric,GOV-15361</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -221,7 +221,7 @@ set nocount on;
 									when 'Decimal' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as float)'
 									when 'Number' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as int)'
 									when 'Boolean' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as bit)'
-									when 'Counter' then  '('''+F.CounterPrefix+'''' + ' + try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as nvarchar(20)))'
+									when 'Counter' then  '('''+isnull(F.CounterPrefix,'')+'''' + ' + try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as nvarchar(20)))'
 									else 'H' + F.RRN + '_F' + F.FT + '.FormattedValue'
 								end							
 							when F.FieldTypeID = 0 and F.FieldTypeName = 'DisplayValue' then 'H' + F.RRN + '_DV.DisplayValue'
@@ -1191,7 +1191,7 @@ set nocount on;
 									when 'Decimal' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as float)'
 									when 'Number' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as int)'
 									when 'Boolean' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as bit)'
-									when 'Counter' then  '('''+F.CounterPrefix+'''' + ' + try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as nvarchar(20)))'
+									when 'Counter' then  '('''+isnull(F.CounterPrefix,'')+'''' + ' + try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as nvarchar(20)))'
 									else 'H' + F.RRN + '_F' + F.FT + '.FormattedValue'
 								end							
 							when F.FieldTypeID = 0 and F.FieldTypeName = 'DisplayValue' then 'H' + F.RRN + '_DV.DisplayValue'
