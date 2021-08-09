@@ -48,6 +48,16 @@ namespace d360.web.Models
         public List<DetailReadOnlyRowModel> rows { get; set; }
     }
 
+    public class LookupDataReadOnlyModel
+    {
+        public int FieldTypeId { get; set; }
+        public long Value { get; set; }
+        public long AssetId { get; set; }
+        public string Url { get; set; }
+        public string ColorJson { get; set; }
+        public string DisplayText { get; set; }
+    }
+
     public class DetailReadOnlyRowModel
     {
         public DetailReadOnlyRowModel()

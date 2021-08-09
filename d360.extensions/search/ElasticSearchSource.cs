@@ -874,7 +874,8 @@ namespace d360.extensions.search
                                     },
                                     InnerHits = new InnerHits {
                                         Highlight = new Highlight {
-                                            Fields = new Dictionary<Nest.Field, IHighlightField> { { fldTag, new HighlightField { } } }
+                                            Fields = new Dictionary<Nest.Field, IHighlightField> { { fldTag, new HighlightField { } } },
+                                            Encoder = HighlighterEncoder.Html
                                         }
                                     }
                                 }
@@ -892,7 +893,8 @@ namespace d360.extensions.search
                         PostTags = new [] { "</em>" },
                         NumberOfFragments = 0
                     } } },
-                    RequireFieldMatch = false
+                    RequireFieldMatch = false,
+                    Encoder = HighlighterEncoder.Html
                 },
                 From = from,
                 Size = size
@@ -1283,7 +1285,8 @@ namespace d360.extensions.search
                     {
                         Highlight = new Highlight
                         {
-                            Fields = new Dictionary<Nest.Field, IHighlightField> { { fldTag, new HighlightField { } } }
+                            Fields = new Dictionary<Nest.Field, IHighlightField> { { fldTag, new HighlightField { } } },
+                            Encoder = HighlighterEncoder.Html
                         }
                     }
                 };
@@ -1372,7 +1375,8 @@ namespace d360.extensions.search
                         PostTags = new [] { "</em>" },
                         NumberOfFragments = 0
                     } } },
-                    RequireFieldMatch = false
+                    RequireFieldMatch = false,
+                    Encoder = HighlighterEncoder.Html
                 },
                 From = queryRequest.From,
                 Size = queryRequest.Size
@@ -1820,7 +1824,8 @@ namespace d360.extensions.search
                                     },
                                     InnerHits = new InnerHits {
                                         Highlight = new Highlight {
-                                            Fields = new Dictionary<Nest.Field, IHighlightField> { { fldTag, new HighlightField { } } }
+                                            Fields = new Dictionary<Nest.Field, IHighlightField> { { fldTag, new HighlightField { } } },
+                                            Encoder = HighlighterEncoder.Html
                                         }
                                     }
                                 }
@@ -1907,7 +1912,8 @@ namespace d360.extensions.search
                                     },
                                     InnerHits = new InnerHits {
                                         Highlight = new Highlight {
-                                            Fields = new Dictionary<Nest.Field, IHighlightField> { { fldTag, new HighlightField { } } }
+                                            Fields = new Dictionary<Nest.Field, IHighlightField> { { fldTag, new HighlightField { } } },
+                                            Encoder = HighlighterEncoder.Html
                                         }
                                     }
                                 }

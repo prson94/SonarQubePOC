@@ -26,6 +26,7 @@ export class GalleryMessageBoxComponent implements OnInit {
     ngOnInit(): void {
         this.properties = new Array();
         this.properties.push({ Name: "content", Type: "string", Description: "Text content to be displayed in the message box.", Default: "" });
+        this.properties.push({ Name: "messagetype", Type: "string", Description: "String value for the type of message.[information, warning] are the options.", Default: "information" });
     }
 
    

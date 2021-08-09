@@ -79,7 +79,6 @@ declare var VersionNumber: string;
 
 export class HeaderHelpComponent implements OnInit {
     public active: boolean = false;
-    private hideHandle: number = 0;
     display: boolean = false;
     isLoading: boolean = false;
     customHelpResources: HelpResource[] = null;
@@ -125,11 +124,6 @@ export class HeaderHelpComponent implements OnInit {
 
 
     show(item) {
-        // check for any pending hides and cancel them
-        if (this.hideHandle > 0) {
-            window.clearTimeout(this.hideHandle);
-            this.hideHandle = 0;
-        }
         let panel = item.children[0].nextElementSibling;
         if (panel) {
             this.active = true;
@@ -160,13 +154,8 @@ export class HeaderHelpComponent implements OnInit {
     }
 
     hide(item) {
-        if (this.hideHandle > 0) return; //pending hide ignore new request
-        //queue up a request to hide the window.
-        this.hideHandle = window.setTimeout(() => {
-            this.active = false;
-            this.ref.markForCheck();
-        },
-            500);
+        this.active = false;
+        this.ref.markForCheck();
     }
 
     checkKey(event) {

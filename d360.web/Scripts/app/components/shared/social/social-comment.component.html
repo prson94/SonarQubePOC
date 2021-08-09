@@ -22,7 +22,8 @@
                     <a class="comment-tool-item-mid" (click)="doVote('ThumbsDown');"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'down'" [icon]="'thumbs-o-down'" [iconColor]="'#646464'"></d3s-tooltip> {{downVotes}}</a>
                 </div>
             </div>
-            <div class="col s12 comment-box" [innerHtml]="comment.Body"></div>
+            <div class="col s12 ql-editor" [innerHtml]="comment.Body">
+            </div>
             <div class="col s12" *ngIf="comment.Tags && comment.Tags.length > 0">
                 <i class="fa fa-tag" aria-hidden="true"></i>
                 Comment Tags:

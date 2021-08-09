@@ -36,7 +36,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
     private showSampleSummary: boolean = false;
     private showSampleQuality: boolean = false;
     private showStatistics: boolean;
-    private nullBlankTooltipText: string;    
+    private nullBlankTooltipText: string;
     private baseType: string;
     private hasValidCounts: boolean = true;
     private maxValue: any;
@@ -44,6 +44,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
     private validCount: number;
     private distinctCount: number;
     private invalidCount: number;
+
+    isMatchDetectionPopupVisible: boolean = false;
 
     ngOnInit() { 
         this.initialize();
@@ -121,7 +123,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             if (retval.length > 0) {
                 retval = retval + "<br/>";
             }
-            retval = retval + `Blank: ${this.dataProfile.blankCount.toLocaleString()} <span style="color: gray;">${((this.dataProfile.blankCount / this.dataProfile.sampleCount) * 100).toPrecision(2) }%</span>`;
+            retval = retval + `Blank: ${this.dataProfile.blankCount.toLocaleString()} <span style="color: gray;">${((this.dataProfile.blankCount / this.dataProfile.sampleCount) * 100).toPrecision(2)}%</span>`;
         }
 
         return retval;
@@ -147,19 +149,18 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
         } else {
             if (this.dataProfile.matchCount != null) {
                 outlierBar += `var(--otherbar) ${matchPercentage}%,`;
-            }            
+            }
         }
-        
-        return { "background-image": `linear-gradient(to right, ${validBar} ${outlierBar} var(--otherbar) 100%)` };      
+
+        return { "background-image": `linear-gradient(to right, ${validBar} ${outlierBar} var(--otherbar) 100%)` };
     }
 
-    private checkVisibility() {         
+    private checkVisibility() {
         if (!this.dataProfile.totalCount && !this.dataProfile.sampleCount) {
             this.hasValidCounts = false;
         }
 
-        if (this.dataProfile.totalCount != null || this.dataProfile.sampleCount != null || this.dataProfile.type || this.dataProfile.typeQualifier || this.dataProfile.confidence != null)
-        {
+        if (this.dataProfile.totalCount != null || this.dataProfile.sampleCount != null || this.dataProfile.type || this.dataProfile.typeQualifier || this.dataProfile.confidence != null) {
             this.showSampleSummary = true;
         }
 
@@ -172,7 +173,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             this.dataProfile.leadingZeroCount != null || this.dataProfile.minLength != null || this.dataProfile.maxLength != null ||
             this.dataProfile.multiline != null || this.dataProfile.leadingWhiteSpace != null || this.dataProfile.trailingWhiteSpace != null)) {
             this.showStatistics = true;
-        }                 
+        }
     }
 
     private setBaseTypeText() {
@@ -210,10 +211,16 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
         } else {
             this.maxValue = this.dataProfile?.max;
             this.minValue = this.dataProfile?.min;
-        } 
+        }
     }
 
-    private capitaliseBoolean(str:any) {
+    private capitaliseBoolean(str: any) {
         return str.toString()[0].toUpperCase() + str.toString().slice(1);
+    }
+
+    getMatchTooltip(type: string, count: number): string {
+        let assetCountStr: string = count > 1 ? `${count} assets` : '1 asset';
+        let descStr: string = type === 'duplicates' ? 'same type and matching data' : 'same type but different data';
+        return `${assetCountStr} detected which have the ${descStr}.\nClick to investigate.`;
     }
 }
