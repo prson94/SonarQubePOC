@@ -53,6 +53,15 @@ namespace d360.core
         }
     }
 
+    public class AllowCommentsOnAssetAttribute : Attribute
+    {
+        public bool Allowed { get; private set; } = false;
+        public AllowCommentsOnAssetAttribute()
+        {
+            Allowed = true;
+        }
+    }
+
     public class AllowOwnershipAttribute : Attribute
     {
         public bool Allowed { get; private set; } = true;
