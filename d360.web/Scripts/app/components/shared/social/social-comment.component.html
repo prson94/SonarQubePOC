@@ -47,7 +47,7 @@
     <div class="col s10">
         <div>
             <span class="user"><d3s-preview-tooltip [objectType]="'Resource'" [objectId]="response.CreatedBy">{{response.ResourceName}}</d3s-preview-tooltip></span>&nbsp;<span class="postDate">{{response.CreatedOn | date:'medium'}}</span>
-            <div [innerHtml]="response.Body"></div>
+            <div class=" ql-editor" [innerHtml]="response.Body"></div>
             <d3s-preview-tooltip *ngFor="let tag of response.Tags" class="comment-tag" (click)="changeUrl(tag.Url)" [uid]="tag.AssetUid" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">
                 {{getTagName(tag)}}
             </d3s-preview-tooltip>
