@@ -142,6 +142,9 @@ export class SiteUrlHelpers {
         if (objectType.toLowerCase() === "grouptype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_GROUPS}`;
         }
+        if (objectType.toLowerCase() === "metricallocation") {
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}`;
+        }
         return SiteUrlHelpers.getObjectUrl(objectType, objectId, parentId);
     }
 
