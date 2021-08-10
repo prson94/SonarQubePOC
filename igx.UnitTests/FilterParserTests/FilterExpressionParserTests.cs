@@ -387,7 +387,9 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("text_field ne 'Data'", "(sql_expression <> @filter_1 or sql_expression is null)")]
         public void CheckDefaultFilterStringValidation(string expression, string expectedQuery)
         {
-            var filterExpressionParser = new FilterExpressionParser(GetCompany(), FilterExpressionParseType.CustomFields, false);
+            var filterDataProvider = new FilterDataProvider(GetCompany());
+
+            var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CustomFields, false);
             filterExpressionParser.OverrideAllowedDefaultFields(new List<DefaultFilter> { new DefaultFilter("text_field", "sql_expression", SqlFieldType.Text) });
             Dictionary<string, object> sqlParams = new Dictionary<string, object>();
             var value = filterExpressionParser.Parse(expression, out sqlParams, out _);
@@ -402,7 +404,9 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("text_field ne Data")]
         public void CheckDefaultFilterStringValidationShouldThrowError(string expression)
         {
-            var filterExpressionParser = new FilterExpressionParser(GetCompany(), FilterExpressionParseType.CustomFields, false);
+            var filterDataProvider = new FilterDataProvider(GetCompany());
+
+            var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CustomFields, false);
             filterExpressionParser.OverrideAllowedDefaultFields(new List<DefaultFilter> { new DefaultFilter("text_field", "sql_expression", SqlFieldType.Text) });
             Dictionary<string, object> sqlParams = new Dictionary<string, object>();
             bool didThrow = false;

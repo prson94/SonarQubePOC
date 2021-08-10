@@ -7,6 +7,7 @@ using Xunit;
 using d360.model.validators;
 using d360.core.entities;
 using d360.model.helpers;
+using d360.model.helpers.filters;
 
 namespace igx.UnitTests.FilterExpressionTests
 {
@@ -26,7 +27,9 @@ namespace igx.UnitTests.FilterExpressionTests
 
         public RuleResultTests()
         {
-            this.filterParser = new FilterExpressionParser(GetCompany(), FilterExpressionParseType.RuleResults);
+            var filterDataProvider = new FilterDataProvider(GetCompany());
+
+            this.filterParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.RuleResults);
         }
 
         [Theory]

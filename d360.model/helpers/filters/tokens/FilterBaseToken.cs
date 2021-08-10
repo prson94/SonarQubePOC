@@ -448,6 +448,19 @@ namespace d360.model.helpers.filters
                 return fieldColumn.Substring(0, fieldColumn.LastIndexOf(" as "));
             }
         }
+        public void ValidateTokenForType()
+        {
+            bool hasApostrophe = value.ToString().First() == '\'' && value.ToString().Last() == '\'';
+            if (!hasApostrophe && !(fieldType.Type == "Number" || fieldType.Type == "Decimal" || fieldType.Type == "Boolean" || fieldType.Type == "Score" || fieldType.Type == "Counter"))
+            {
+                throw new Exception("Text values should be placed within quotations.");
+            }
+
+            if (!IsValidOperatorForFieldType())
+            {
+                throw new Exception($"Operator '{@operator}' is not valid for '{fieldType.Type}' on field {field}");
+            }
+        }
     }
 
     public enum FilterExpressionParseType

@@ -104,8 +104,6 @@
     <Compile Include="Core\Helpers.cs" />
     <Compile Include="Core\MessagesHelper.cs" />
     <Compile Include="Core\SqlConstants.cs" />
-    <Compile Include="ExtensionTests\ModelExtensionTests-ComplexLookupDefinition.cs" />
-    <Compile Include="ExtensionTests\ModelExtensionTests-OwnershipLookupDefinition.cs" />
     <Compile Include="FilterParserTests\ComplexFieldsFilteringTests.cs" />
     <Compile Include="FilterParserTests\FilterTokenTests.cs" />
     <Compile Include="ExtensionsTests\QueueSourceTests.cs" />
@@ -177,6 +175,9 @@
       <Project>{df57be56-958b-4c4d-b82c-6b61297434ab}</Project>
       <Name>d360.web</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ExtensionTests\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

@@ -37,6 +37,7 @@ namespace d360.model.helpers.filters
 
             if (!this.IsNullValue)
             {
+                ValidateTokenForType(filter);
                 CheckFieldValue(filter);
 
                 value = value.ToString().Trim('\'');
