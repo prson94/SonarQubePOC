@@ -36,6 +36,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
     private showSocialScoreBar: boolean = true;
     private showDataProfile: boolean = false;
     private dataProfile: any;
+    private sidePanelOpen: boolean = false;
 
     constructor(
         private route: ActivatedRoute,

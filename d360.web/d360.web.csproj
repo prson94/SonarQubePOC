@@ -1321,6 +1321,7 @@
     <Content Include="Scripts\tsconfig.json" />
     <Content Include="Scripts\app\components\shared\dataprofile\dataprofile.less" />
     <Content Include="Scripts\app\components\shared\dataprofile\match-detection.less" />
+    <Content Include="Scripts\app\components\shared\sidepanel\side-panel.component.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1329,6 +1330,7 @@
     </None>
     <TypeScriptCompile Include="Scripts\app\guards\redirect.guard.ts" />
     <TypeScriptCompile Include="Scripts\app\models\search-admin.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\side-panel.model.ts" />
     <TypeScriptCompile Include="Scripts\app\services\dataprofile.service.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.prod.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.ts" />

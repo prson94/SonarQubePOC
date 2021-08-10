@@ -37,6 +37,13 @@ namespace d360.web.Models
             rows = new List<DetailReadOnlyRowModel>();
         }
 
+        public int ObjectID { get; set; }
+        public string Object { get; set; }
+        public int ObjectTypeID { get; set; }
+        public string ObjectType { get; set; }
+        public string AssetName { get; set; }
+        public string AssetTypeName { get; set; }
+
         public int columns { get; set; }
         public List<DetailReadOnlyRowModel> rows { get; set; }
     }
