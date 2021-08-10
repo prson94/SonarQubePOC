@@ -95,7 +95,7 @@ namespace d360.web.Controllers.V2
 
             var asset = AssetRepository.GetAssetByUID(assetUid);
 
-            if (asset == null)
+            if (asset == null || (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset))
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"AssetUid {assetUid} is invalid");
             }
@@ -692,6 +692,11 @@ namespace d360.web.Controllers.V2
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"AssetUid {model.assetUid} is invalid");
                 }
 
+                if (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"The asset class {asset.AssetType.Class} does not support data profiling. Profiling data can only be associated with Business or Technical Asset types.");
+                }
+
                 var profileSetDate = model.profileSetDate.Date;                
                 var recordExists = Company.AssetDataProfile.Any(x => x.AssetId == asset.ID && DbFunctions.TruncateTime(x.ProfileSetDate) == profileSetDate);
                 //check insert
@@ -728,7 +733,7 @@ namespace d360.web.Controllers.V2
         {            
             var asset = AssetRepository.GetAssetByUID(assetUid);
 
-            if (asset == null)
+            if (asset == null || (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset))
             {
                 return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, $"AssetUid {assetUid} is invalid");
             }

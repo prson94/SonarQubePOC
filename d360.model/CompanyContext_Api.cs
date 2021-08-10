@@ -11190,6 +11190,17 @@ EG.GroupUid
 
                         update	EDP
                         set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'Profiling data can only be associated with Business or Technical Asset types'
+                        from
+                            api.ExecutionAssetDataProfile EDP
+                            inner Join
+                            Asset A on EDP.AssetUid = A.Uid
+                            inner join 
+                            AssetType AST on A.AssetTypeId = AST.ID
+                        where	ExecutionID = @ExecutionID and AST.Class not in (1, 8);
+
+                        update	EDP
+                        set		Success = 0,
 		                        [Message] = coalesce([Message] + '; ', '') + 'Record does not exist with AssetUid '+ convert(nvarchar(36), EDP.AssetUid) +' and profileSetDate '+ convert(varchar, EDP.ProfileSetDate, 23)
                         from
                             api.ExecutionAssetDataProfile EDP
