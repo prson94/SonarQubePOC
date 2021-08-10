@@ -1,8 +1,9 @@
 <div class="row">
-    <div class="col s12" style="display: flex">
+    <div class="col s12" *ngIf="isLoading">
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
-        <div class="tile tile-detail main-panel"
-             *ngIf="!isLoading">
+    </div>
+    <div class="col s12" style="display: flex" *ngIf="!isLoading">       
+        <div class="tile tile-detail main-panel">
             <d3s-asset-grid [gridObject]="gridObject" (selectedChange)="selectAsset($event)" (hasProfilingChange)="hasProfiling=$event"></d3s-asset-grid>
         </div>
         <div class="tile tile-detail side-panel" *ngIf="!isLoading">
