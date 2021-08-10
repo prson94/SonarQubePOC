@@ -448,17 +448,19 @@ namespace d360.model.helpers.filters
                 return fieldColumn.Substring(0, fieldColumn.LastIndexOf(" as "));
             }
         }
-        public void ValidateTokenForType()
+        public void ValidateTokenForType(DefaultFilter defaultFilter = null)
         {
+            string type = defaultFilter == null ? fieldType.Type : defaultFilter.SqlFieldType.ToString();
+
             bool hasApostrophe = value.ToString().First() == '\'' && value.ToString().Last() == '\'';
-            if (!hasApostrophe && !(fieldType.Type == "Number" || fieldType.Type == "Decimal" || fieldType.Type == "Boolean" || fieldType.Type == "Score" || fieldType.Type == "Counter"))
+            if (!hasApostrophe && !(type == "Number" || type == "Decimal" || type == "Boolean" || type == "Score" || type == "Counter"))
             {
                 throw new Exception("Text values should be placed within quotations.");
             }
 
-            if (!IsValidOperatorForFieldType())
+            if (defaultFilter == null && !IsValidOperatorForFieldType())
             {
-                throw new Exception($"Operator '{@operator}' is not valid for '{fieldType.Type}' on field {field}");
+                throw new Exception($"Operator '{@operator}' is not valid for '{type}' on field {field}");
             }
         }
     }
@@ -475,7 +477,7 @@ namespace d360.model.helpers.filters
 
     public enum SqlFieldType
     {
-        Text, Boolean, Number, Decimal, Date, DateTime, Guid, AssetTypeClass
+        Text, Boolean, Number, Decimal, Date, DateTime, Guid, AssetTypeClass, Xml
     }
 
     public class DefaultFilter
