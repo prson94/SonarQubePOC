@@ -490,6 +490,30 @@ namespace igx.UnitTests.FilterExpressionTests
 
             }
         }
+
+        [Theory]
+        [InlineData("CreatedOn eq '2021-08-10'", "A.CreatedOn = @filter_1")]
+        [InlineData("CreatedOn ne '2021-08-10'", "(A.CreatedOn <> @filter_1 or A.CreatedOn is null)")]
+        [InlineData("CreatedOn le '2021-08-10'", "A.CreatedOn <= @filter_1")]
+        [InlineData("CreatedOn lt '2021-08-10'", "A.CreatedOn < @filter_1")]
+        [InlineData("CreatedOn gt '2021-08-10'", "A.CreatedOn > @filter_1")]
+        [InlineData("CreatedOn ge '2021-08-10'", "A.CreatedOn >= @filter_1")]
+        [InlineData("CreatedOn ct '2021-08-10'", "CONVERT(VARCHAR,A.CreatedOn,120) like @filter_1")]
+        [InlineData("UpdatedOn eq '2021-08-10'", "A.UpdatedOn = @filter_1")]
+        [InlineData("UpdatedOn ne '2021-08-10'", "(A.UpdatedOn <> @filter_1 or A.UpdatedOn is null)")]
+        [InlineData("UpdatedOn le '2021-08-10'", "A.UpdatedOn <= @filter_1")]
+        [InlineData("UpdatedOn lt '2021-08-10'", "A.UpdatedOn < @filter_1")]
+        [InlineData("UpdatedOn gt '2021-08-10'", "A.UpdatedOn > @filter_1")]
+        [InlineData("UpdatedOn ge '2021-08-10'", "A.UpdatedOn >= @filter_1")]
+        [InlineData("UpdatedOn ct '2021-08-10'", "CONVERT(VARCHAR,A.UpdatedOn,120) like @filter_1")]
+        public void SystemFieldsTest(string expression, string expected)
+        {
+
+            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+            List<int> filteredFields = new List<int>();
+            var sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
+            Assert.True(sql == expected);
+        }
     }
 
 }
