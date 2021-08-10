@@ -10,7 +10,7 @@ namespace d360.model.helpers.filters
     public class DefaultFieldToken : FilterBaseToken, IFilterToken
     {
         private DefaultFilter filter;
-        public DefaultFieldToken(FilterDataProvider fdp, string field, string op, object value, DefaultFilter @default, int? paramIdx = null)
+        public DefaultFieldToken(IFilterDataProvider fdp, string field, string op, object value, DefaultFilter @default, int? paramIdx = null)
         {
             this.dataProvider = fdp;
             parameterIdx = paramIdx ?? -1;

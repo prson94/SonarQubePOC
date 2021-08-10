@@ -14,7 +14,7 @@ namespace d360.model.helpers.filters
         private AssetType assetType { get; set; }
         private IntersectType intersectType { get; set; }
 
-        public RelationshipFieldToken(FilterDataProvider fdp, string field, string op, object value, int? paramIdx = null)
+        public RelationshipFieldToken(IFilterDataProvider fdp, string field, string op, object value, int? paramIdx = null)
         {
             this.dataProvider = fdp;
             parameterIdx = paramIdx ?? -1;
@@ -30,7 +30,7 @@ namespace d360.model.helpers.filters
 
         public string GetSqlExpression(Dictionary<string, object> sqlParams)
         {
-            if (assetType == null || intersectType == null)
+            if ((assetType == null && !IsNullValue) || intersectType == null)
             {
                 throw new MethodAccessException("Method can be used only when Intersect Type and Asset Type are loaded. Use LoadRelationshipData() method before.");
             }

@@ -8,6 +8,7 @@ using d360.model.validators;
 using d360.core.entities;
 using d360.model.helpers;
 using d360.model.helpers.filters;
+using igx.UnitTests.Core;
 
 namespace igx.UnitTests.FilterExpressionTests
 {
@@ -37,7 +38,7 @@ namespace igx.UnitTests.FilterExpressionTests
             fieldTypes.Add(new FieldType() { Name = "H1_00007", ID = 7, Type = "Counter" });
             fieldTypes.Add(new FieldType() { Name = "$Related:4df68f30-daa0-48da-912f-2daaea6961e0", ID = 8, Type = "Relationship", LookupObjectType = "IntersectType", LookupObjectID = 1 });
 
-            var filterDataProvider = new FilterDataProvider(GetCompany());
+            var filterDataProvider = GetFilterDataProvider();
             this.filterParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField);
             this.filterParser.LoadFieldTypes(fieldTypes, null);
 
@@ -146,13 +147,20 @@ namespace igx.UnitTests.FilterExpressionTests
         }
 
         [Theory]
-        [InlineData("$Related:4df68f30-daa0-48da-912f-2daaea6961e0 eq '6f5cd34d-1bf4-45be-9ab2-d34dec9b64dd'", "")]
-        public void RelationshipTests(string input, string expectedOutput)
+        [InlineData("$related:f8bf1431-0d7b-4381-9cec-dd32c05e0158 eq f8bf1431-0d7b-4381-9cec-dd32c05e0159")]
+        public void ValidRelationshipsTestsEquals(string expression)
         {
-            Dictionary<string, object> parameters = new Dictionary<string, object>();
-            var result = this.filterParser.Parse(input, out parameters, out _);
-            Assert.True(result == expectedOutput);
-            Assert.True(parameters.Count == 0);
+            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+
+            List<int> filteredFields = new List<int>();
+            string sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
+            Assert.True(sqlParams.Count == 2);
+            Assert.True(sqlParams["@intersectFilter1"].ToString() == DataConstants.ValidGUID);
+            Assert.True(sqlParams["@intersectAssetFilter1"].ToString() == DataConstants.ValidGUID2);
+            Assert.Contains(@"IntersectTypeUid = @intersectFilter1", sql);
+            Assert.Contains(@"O.Uid = @intersectAssetFilter1", sql);
+            Assert.Contains(@"MATCH(S <- (E) - O)", sql);
+            Assert.Contains(@"MATCH(S - (E) -> O)", sql);
         }
 
         [Theory]

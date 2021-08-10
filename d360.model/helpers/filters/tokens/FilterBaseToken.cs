@@ -11,7 +11,7 @@ namespace d360.model.helpers.filters
 {
     public abstract class FilterBaseToken
     {
-        protected FilterDataProvider dataProvider;
+        protected IFilterDataProvider dataProvider;
         protected bool isLookupField { get; set; }
 
         protected int parameterIdx { get; set; }

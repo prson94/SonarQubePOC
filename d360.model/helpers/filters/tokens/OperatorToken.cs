@@ -9,7 +9,7 @@ namespace d360.model.helpers.filters
 {
     public class OperatorToken : FilterBaseToken, IFilterToken
     {
-        public OperatorToken(FilterDataProvider fdp, string field, string op, object value, int? paramIdx = null)
+        public OperatorToken(IFilterDataProvider fdp, string field, string op, object value, int? paramIdx = null)
         {
             this.dataProvider = fdp;
             parameterIdx = paramIdx ?? -1;

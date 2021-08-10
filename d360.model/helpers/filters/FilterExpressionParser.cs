@@ -10,7 +10,7 @@ namespace d360.model.helpers
 {
     public class FilterExpressionParser
     {
-        private FilterDataProvider dataProvider;
+        private IFilterDataProvider dataProvider;
         private List<FieldType> fieldTypes = new List<FieldType>();
         private List<string> fieldColumns = new List<string>();
         private List<int> filteredFieldIDs = new List<int>();
@@ -21,7 +21,7 @@ namespace d360.model.helpers
         private bool registerTokensAsFields = false;
 
         public FilterExpressionParser(
-            FilterDataProvider fdp,
+            IFilterDataProvider fdp,
             FilterExpressionParseType type = FilterExpressionParseType.CustomFields,
             bool includeParent = false,
             bool useUserDefaultFields = false,
@@ -234,7 +234,7 @@ namespace d360.model.helpers
             return ret;
         }
 
-        private IFilterToken GetFilterForTokens(FilterDataProvider fdp, string field, string op, object value, int? paramIdx = null)
+        private IFilterToken GetFilterForTokens(IFilterDataProvider fdp, string field, string op, object value, int? paramIdx = null)
         {
             var fieldName = field.ToLower(System.Globalization.CultureInfo.InvariantCulture);
             var fieldType = this.fieldTypes.FirstOrDefault(x => x.Name.ToLower() == fieldName);
@@ -362,19 +362,24 @@ namespace d360.model.helpers
                     throw new Exception($"Invalid Relationship Type UID Provided ({token.Field}).");
                 }
 
-                if (!Guid.TryParse(token.ValueAsString, out assetUid))
+                if (!token.IsNullValue && !Guid.TryParse(token.ValueAsString, out assetUid))
                 {
                     throw new Exception($"Invalid Asset UID Provided ({token.ValueAsString}).");
                 }
 
                 IntersectUids.Add(intersectUid);
-                AssetUids.Add(assetUid);
+
+                if (!token.IsNullValue)
+                {
+                    AssetUids.Add(assetUid);
+                }
             }
 
             List<IntersectType> intersectTypes;
             List<Asset> filterAssets;
             List<AssetType> filterAssetTypes;
-            this.dataProvider.GetDataForRelationshipsParsing(IntersectUids, AssetUids, out intersectTypes, out filterAssets, out filterAssetTypes);
+
+            (intersectTypes, filterAssets, filterAssetTypes) = this.dataProvider.GetDataForRelationshipsParsing(IntersectUids, AssetUids);
 
             foreach (var itUid in IntersectUids)
             {

@@ -26,6 +26,7 @@ using d360.core;
 using System.Dynamic;
 using Newtonsoft.Json.Linq;
 using System.Threading;
+using d360.model.helpers.filters;
 
 namespace igx.UnitTests
 {
@@ -635,6 +636,39 @@ namespace igx.UnitTests
         public IWorkflowApiModelValidator GetWorkflowApiModelValidator()
         {
             return new WorkflowApiModelValidator(GetAssetRepository(), GetIssueRepository(), GetRelationshipRepository(), GetWorkflowRepository());
+        }
+
+        public IFilterDataProvider GetFilterDataProvider()
+        {
+            var mock = new Mock<IFilterDataProvider>();
+
+            mock.Setup(x => x.GetDataForRelationshipsParsing(
+                It.IsAny<List<Guid>>(),
+                It.IsAny<List<Guid>>()))
+                .Returns((List<Guid> itList, List<Guid> assetList) =>
+                {
+                    if (itList.Contains(Guid.Parse(DataConstants.ValidGUID))
+                    || assetList.Contains(Guid.Parse(DataConstants.ValidGUID2)))
+                    {
+                        return
+                        (new List<IntersectType> {
+                        new IntersectType{ uid= Guid.Parse(DataConstants.ValidGUID) },
+                        }, new List<Asset> {
+                    new Asset{uid=Guid.Parse(DataConstants.ValidGUID2), AssetType = new AssetType()}
+                        }, new List<AssetType>());
+                    }
+
+                    return (new List<IntersectType>(), new List<Asset>(), new List<AssetType>());
+                });
+
+            mock.Setup(x => x.GetFieldLookupValue(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
+                .Returns((string s, int a, int b, string value) =>
+                {
+                    return value == "validlookupvalue" ? 2 : 0;
+                }
+                );
+
+            return mock.Object;
         }
         #endregion
     }

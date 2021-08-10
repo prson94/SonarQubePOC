@@ -13,7 +13,7 @@ namespace d360.model.helpers.filters
     {
         List<FieldType> fieldTypes = new List<FieldType>();
 
-        public RelationshipComplexFieldToken(FilterDataProvider fdp, string field, string op, object value, List<FieldType> types)
+        public RelationshipComplexFieldToken(IFilterDataProvider fdp, string field, string op, object value, List<FieldType> types)
         {
             this.dataProvider = fdp;
             this.fieldTypes = types;

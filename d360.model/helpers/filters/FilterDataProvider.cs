@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace d360.model.helpers.filters
 {
-    public class FilterDataProvider
+    public class FilterDataProvider : IFilterDataProvider
     {
         private ICompanyContext companyContext;
 
@@ -33,11 +33,12 @@ namespace d360.model.helpers.filters
         }
 
 
-        public void GetDataForRelationshipsParsing(List<Guid> IntersectUids, List<Guid> AssetUids, out List<IntersectType> intersectTypes, out List<Asset> filterAssets, out List<AssetType> filterAssetTypes)
+        public (List<IntersectType>, List<Asset>, List<AssetType>) GetDataForRelationshipsParsing(List<Guid> IntersectUids, List<Guid> AssetUids)
         {
-            intersectTypes = this.companyContext.IntersectTypes.Where(x => IntersectUids.Contains(x.uid)).AsNoTracking().ToList();
-            filterAssets = this.companyContext.Assets.Where(x => AssetUids.Contains(x.uid)).Include(x => x.AssetType).AsNoTracking().ToList();
-            filterAssetTypes = this.companyContext.AssetTypes.Where(x => AssetUids.Contains(x.uid)).AsNoTracking().ToList();
+            var intersectTypes = this.companyContext.IntersectTypes.Where(x => IntersectUids.Contains(x.uid)).AsNoTracking().ToList();
+            var filterAssets = this.companyContext.Assets.Where(x => AssetUids.Contains(x.uid)).Include(x => x.AssetType).AsNoTracking().ToList();
+            var filterAssetTypes = this.companyContext.AssetTypes.Where(x => AssetUids.Contains(x.uid)).AsNoTracking().ToList();
+            return (intersectTypes, filterAssets, filterAssetTypes);
         }
     }
 }

@@ -110,7 +110,7 @@
     <Compile Include="FilterParserTests\RuleResultTests.cs" />
     <Compile Include="ModelExtensionTests\ModelExtensionTests-ComplexLookupDefinition.cs" />
     <Compile Include="ModelExtensionTests\ModelExtensionTests-OwnershipLookupDefinition.cs" />
-    <Compile Include="FilterParserTests\FilterExpressionParserTests.cs" />
+    <Compile Include="FilterParserTests\AssetsGridFilteringTests.cs" />
     <Compile Include="HelperTests\HtmlHelperTests.cs" />
     <Compile Include="HelperTests\IconHelperTests.cs" />
     <Compile Include="HelperTests\PasswordHelperTests.cs" />

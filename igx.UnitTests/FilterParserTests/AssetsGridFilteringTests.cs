@@ -8,11 +8,12 @@ using d360.model.validators;
 using d360.core.entities;
 using d360.model.helpers;
 using d360.model.helpers.filters;
+using igx.UnitTests.Core;
 
 namespace igx.UnitTests.FilterExpressionTests
 {
-    [Trait("Unit tests", "Filter expression parser")]
-    public class FilterExpressionParserTests : BaseTest
+    [Trait("Unit tests", "Assets Grid Filtering Tests")]
+    public class AssetsGridFilteringTests : BaseTest
     {
         private FilterExpressionParser filterParser;
 
@@ -25,7 +26,7 @@ namespace igx.UnitTests.FilterExpressionTests
           (string sql, string param) => { return sql.Contains(param) && sql.IndexOf(param) != sql.LastIndexOf(param); };
 
 
-        public FilterExpressionParserTests()
+        public AssetsGridFilteringTests()
         {
             List<FieldType> fieldTypes = new List<FieldType>();
             List<string> columns = new List<string>();
@@ -44,7 +45,7 @@ namespace igx.UnitTests.FilterExpressionTests
             });
 
 
-            var filterDataProvider = new FilterDataProvider(GetCompany());
+            var filterDataProvider = GetFilterDataProvider();
             this.filterParser = new FilterExpressionParser(filterDataProvider);
             this.filterParser.LoadFieldTypes(fieldTypes, columns);
 
@@ -264,7 +265,7 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("relationship eq 'relationshipassetvalue'")]
         [InlineData("relationship ne 'relationshipassetvalue'")]
         [InlineData("relationship ct 'relationshipassetvalue'")]
-        public void ValidRelationshipTests(string expression)
+        public void ValidRelationshipFieldsTests(string expression)
         {
             Dictionary<string, object> sqlParams = new Dictionary<string, object>();
 
@@ -423,6 +424,72 @@ namespace igx.UnitTests.FilterExpressionTests
         }
 
 
+
+        [Theory]
+        [InlineData("$related:f8bf1431-0d7b-4381-9cec-dd32c05e0158 eq f8bf1431-0d7b-4381-9cec-dd32c05e0159", "")]
+        [InlineData("$related:f8bf1431-0d7b-4381-9cec-dd32c05e0158 ne f8bf1431-0d7b-4381-9cec-dd32c05e0159", "not exists")]
+        public void ValidRelationshipsTests(string expression, string additionalTest)
+        {
+            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+
+            List<int> filteredFields = new List<int>();
+            string sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
+            Assert.True(sqlParams.Count == 2);
+            Assert.True(sqlParams["@intersectFilter1"].ToString() == DataConstants.ValidGUID);
+            Assert.Contains(@"IntersectTypeUid = @intersectFilter1", sql);
+            Assert.Contains(@"MATCH(S <- (E) - O)", sql);
+            Assert.Contains(@"MATCH(S - (E) -> O)", sql);
+            Assert.True(sqlParams["@intersectAssetFilter1"].ToString() == DataConstants.ValidGUID2);
+            Assert.Contains(@"O.Uid = @intersectAssetFilter1", sql);
+            if (!string.IsNullOrEmpty(additionalTest))
+
+            {
+                Assert.Contains(additionalTest, sql);
+            }
+        }
+
+        [Theory]
+        [InlineData("$related:f8bf1431-0d7b-4381-9cec-dd32c05e0158 eq null", "not exist")]
+        [InlineData("$related:f8bf1431-0d7b-4381-9cec-dd32c05e0158 ne null", "exists")]
+        public void ValidRelationshipsNullTests(string expression, string additionalTest)
+        {
+            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+
+            List<int> filteredFields = new List<int>();
+            string sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
+            Assert.True(sqlParams.Count == 1);
+            Assert.True(sqlParams["@intersectFilter1"].ToString() == DataConstants.ValidGUID);
+            Assert.Contains(@"IntersectTypeUid = @intersectFilter1", sql);
+            Assert.Contains(@"MATCH(S <- (E) - O)", sql);
+            if (!string.IsNullOrEmpty(additionalTest))
+            {
+                Assert.Contains(additionalTest, sql);
+            }
+        }
+
+        [Theory]
+        [InlineData("$related:f8bf1431-0d7b-4381-9cec-dd32c05e0157 eq f8bf1431-0d7b-4381-9cec-dd32c05e0159", "Relationship Type with UID 'f8bf1431-0d7b-4381-9cec-dd32c05e0157'")]
+        [InlineData("$related:f8bf1431-0d7b-4381-9cec-dd32c05e0158 ne f8bf1431-0d7b-4381-9cec-dd32c05e0158", "Asset with UID 'f8bf1431-0d7b-4381-9cec-dd32c05e0158'")]
+        [InlineData("$related:f8bf1431-0d7b-4381-9cec-dd32c05e0157 eq null", "Relationship Type with UID 'f8bf1431-0d7b-4381-9cec-dd32c05e0157'")]
+        [InlineData("$related:f8bf1431-0d7b-4381-9cec-dd32c05e0156 ne null", "Relationship Type with UID 'f8bf1431-0d7b-4381-9cec-dd32c05e0156'")]
+        [InlineData("$related:f8bf1431-0d7b-4381-9cec-dd32c05e0158 gt f8bf1431-0d7b-4381-9cec-dd32c05e0159", "Operator 'gt' is not valid")]
+        [InlineData("$related:f8bf1431-0d7b-4381-9cec-dd32c05e0158 ct f8bf1431-0d7b-4381-9cec-dd32c05e0159", "Operator 'ct' is not valid")]
+        public void InValidRelationshipsNullTests(string expression, string additionalTest)
+        {
+            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+
+            List<int> filteredFields = new List<int>();
+            string sql = "";
+            try
+            {
+                sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
+            }
+            catch (Exception ex)
+            {
+                Assert.Contains(additionalTest, ex.Message);
+
+            }
+        }
     }
 
 }

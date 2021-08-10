@@ -11,7 +11,7 @@ namespace d360.model.helpers.filters
 {
     public class ComplexFieldToken : FilterBaseToken, IFilterToken
     {
-        public ComplexFieldToken(FilterDataProvider fdp, string field, string op, object value, int? paramIdx = null)
+        public ComplexFieldToken(IFilterDataProvider fdp, string field, string op, object value, int? paramIdx = null)
         {
             this.dataProvider = fdp;
             parameterIdx = paramIdx ?? -1;
