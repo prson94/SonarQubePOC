@@ -11,8 +11,6 @@ import { BaseComponent } from '../base.component';
 export class SidePanelComponent extends BaseComponent {
     @Input() height = 'calc(100vh - 250px)';
 
-    @Input() dataProfile: any = null /*TODO: remove*/
-
     @Input() hasDetail: boolean = false;
     @Input() hasProfiling: boolean = false;
     @Input() disableProfiling: boolean = false;

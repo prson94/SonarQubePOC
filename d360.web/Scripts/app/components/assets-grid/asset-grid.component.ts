@@ -399,7 +399,11 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 });     
 
                 if (!selectedItemStillExists) {
-                    this.selectRow(null);
+                    if (this.items && this.items.length > 0) {
+                        this.selectRow(this.items[0]);
+                    } else {
+                        this.selectRow(null);
+                    }
                 }
 
                 this.statusHasColor = this.items.filter(x => {
