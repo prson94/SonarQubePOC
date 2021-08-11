@@ -427,6 +427,7 @@ namespace igx.UnitTests.FilterExpressionTests
 
         [Theory]
         [InlineData("$related:f8bf1431-0d7b-4381-9cec-dd32c05e0158 eq f8bf1431-0d7b-4381-9cec-dd32c05e0159", "")]
+        [InlineData("$related:f8bf1431-0d7b-4381-9cec-dd32c05e0158 eq f8bf1431-0d7b-4381-9cec-dd32c05e0159 and $related:f8bf1431-0d7b-4381-9cec-dd32c05e0158 ne f8bf1431-0d7b-4381-9cec-dd32c05e015", "")]
         [InlineData("$related:f8bf1431-0d7b-4381-9cec-dd32c05e0158 ne f8bf1431-0d7b-4381-9cec-dd32c05e0159", "not exists")]
         public void ValidRelationshipsTests(string expression, string additionalTest)
         {
@@ -514,6 +515,50 @@ namespace igx.UnitTests.FilterExpressionTests
             var sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
             Assert.True(sql == expected);
         }
+
+        [Theory]
+        [InlineData("$OwnedBy eq '7b2c88a6-fb2b-45ea-b9db-5d8cb176b778'", "exists")]
+        [InlineData("$OwnedBy ne '7b2c88a6-fb2b-45ea-b9db-5d8cb176b778'", "not exists")]
+        public void SystemFieldsOwnedByTest(string expression, string additionalExpectation)
+        {
+
+            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+            List<int> filteredFields = new List<int>();
+            var sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
+
+            Assert.Contains("rd.SecurityAssetUid = @filter_1", sql);
+            Assert.Contains("[dbo].[ResponsibilityDetail]", sql);
+            if (!string.IsNullOrEmpty(additionalExpectation))
+            {
+                Assert.Contains(additionalExpectation.ToLower(), sql.ToLower());
+            }
+        }
+
+        //EXISTS(
+        //                                    SELECT 1 
+        //                                    FROM
+        //                                        [dbo].[ResponsibilityDetail] rd
+        //                                    WHERE
+        //                                        rd.SecurityAssetUid = @filter_1
+        //                                        and
+        //                                        a.ID= rd.AssetID
+        //                                        and
+        //                                        rd.isVisible = 1
+        //                                    UNION
+        //                                    SELECT 1 
+        //                                    FROM
+        //                                        [dbo].[ResponsibilityDetail] rd
+        //                                    WHERE
+        //                                        rd.SecurityAssetUid = @filter_1
+        //                                        and
+        //                                        rd.ApplyToType = 1
+        //                                        and
+        //                                        rd.AssetID = 0
+        //                                        and
+        //                                        rd.AssetTypeId= a.AssetTypeId
+        //                                        and
+        //                                        rd.isVisible = 1
+        //                                    )
     }
 
 }
