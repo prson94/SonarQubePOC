@@ -458,7 +458,7 @@ export class AdvancedFilteringComponent implements OnChanges {
         if (str.length !== 36) {
             return false;
         }
-        const regex: RegExp = /^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
+        const regex: RegExp = /^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i;
         return regex.test(str);
     }
 
