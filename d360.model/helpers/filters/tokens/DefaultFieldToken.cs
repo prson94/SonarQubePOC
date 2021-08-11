@@ -1,4 +1,5 @@
-﻿using System;
+﻿using d360.model.helpers.filters.program;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -9,7 +10,8 @@ namespace d360.model.helpers.filters
 {
     public class DefaultFieldToken : FilterBaseToken, IFilterToken
     {
-        private DefaultFilter filter;
+        IFieldValueValidator fieldValueValidator;
+
         public DefaultFieldToken(IFilterDataProvider fdp, string field, string op, object value, DefaultFilter @default, int? paramIdx = null)
         {
             this.dataProvider = fdp;
@@ -17,12 +19,13 @@ namespace d360.model.helpers.filters
             this.field = field;
             @operator = op;
             this.value = value;
-            this.filter = @default;
+            this.defaultFilter = @default;
 
             if (this.value != null && this.value.ToString().ToLower(CultureInfo.InvariantCulture) == "null")
             {
                 this.IsNullValue = true;
             }
+            this.fieldValueValidator = GetValueValidator();
         }
 
 
@@ -31,7 +34,7 @@ namespace d360.model.helpers.filters
             this.sqlParamsRef = sqlParams;
 
 
-            if (filter.SqlFieldType == SqlFieldType.Xml)
+            if (defaultFilter.SqlFieldType == SqlFieldType.Xml)
             {
                 if (value.ToString().StartsWith("'"))
                 {
@@ -108,21 +111,27 @@ namespace d360.model.helpers.filters
                         }
                         break;
                 }
-                stringBuilder.AppendFormat(formattedSql, filter.SqlExpression, pName);
+                stringBuilder.AppendFormat(formattedSql, defaultFilter.SqlExpression, pName);
 
                 sqlParamsRef.Add(pName, value);
             }
             else
             {
-                if (!IsValidOperatorForFieldType(filter))
+                if (!IsValidOperatorForFieldType())
                 {
-                    throw new Exception($"Operator '{@operator}' is not valid for '{filter.SqlFieldType.ToString().ToLower()}' on field {field}");
+                    throw new Exception($"Operator '{@operator}' is not valid for '{defaultFilter.SqlFieldType.ToString().ToLower()}' on field {field}");
                 }
 
                 if (!this.IsNullValue)
                 {
-                    ValidateTokenForType(filter);
-                    CheckFieldValue(filter);
+                    ValidateTokenForType(defaultFilter);
+
+                    var valueValidation = this.fieldValueValidator.CheckValue(this.value, this.field, this.@operator);
+                    if (!valueValidation.Status)
+                    {
+                        throw new FormatException(valueValidation.Message);
+                    }
+                    this.value = valueValidation.UpdatedValue;
 
                     value = value.ToString().Trim('\'');
                     if (this.@operator == "ct" || this.@operator == "nct")
@@ -132,18 +141,18 @@ namespace d360.model.helpers.filters
 
                     stringBuilder.Clear();
 
-                    if (this.convertToNVarChar)
+                    if (ConvertToNvarChar)
                     {
-                        filter.SqlExpression = $"CONVERT(VARCHAR,{filter.SqlExpression},120)";
+                        defaultFilter.SqlExpression = $"CONVERT(VARCHAR,{defaultFilter.SqlExpression},120)";
                     }
 
-                    stringBuilder.Append(filter.SqlExpression);
+                    stringBuilder.Append(defaultFilter.SqlExpression);
                     stringBuilder.Append(GetSQLOperator(@operator));
                     stringBuilder.Append($"@filter_{parameterIdx}");
 
                     sqlParamsRef.Add($"@filter_{parameterIdx}", value);
 
-                    this.AppendNullOperatorForNotOperators(filter.SqlExpression);
+                    this.AppendNullOperatorForNotOperators(defaultFilter.SqlExpression);
                 }
                 else
                 {
@@ -151,7 +160,7 @@ namespace d360.model.helpers.filters
                     {
                         throw new FormatException($"NULL value filter can be used only with 'eq' and 'ne' operator!");
                     }
-                    stringBuilder.Append(filter.SqlExpression);
+                    stringBuilder.Append(defaultFilter.SqlExpression);
                     stringBuilder.Append(GetSQLNullOperator(@operator));
                 }
             }

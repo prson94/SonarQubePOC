@@ -427,7 +427,6 @@ namespace igx.UnitTests.FilterExpressionTests
 
         [Theory]
         [InlineData("$related:f8bf1431-0d7b-4381-9cec-dd32c05e0158 eq f8bf1431-0d7b-4381-9cec-dd32c05e0159", "")]
-        [InlineData("$related:f8bf1431-0d7b-4381-9cec-dd32c05e0158 eq f8bf1431-0d7b-4381-9cec-dd32c05e0159 and $related:f8bf1431-0d7b-4381-9cec-dd32c05e0158 ne f8bf1431-0d7b-4381-9cec-dd32c05e015", "")]
         [InlineData("$related:f8bf1431-0d7b-4381-9cec-dd32c05e0158 ne f8bf1431-0d7b-4381-9cec-dd32c05e0159", "not exists")]
         public void ValidRelationshipsTests(string expression, string additionalTest)
         {

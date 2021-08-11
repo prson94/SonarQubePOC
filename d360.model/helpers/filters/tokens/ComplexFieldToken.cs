@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.model.helpers.filters.program;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -11,6 +12,7 @@ namespace d360.model.helpers.filters
 {
     public class ComplexFieldToken : FilterBaseToken, IFilterToken
     {
+        IFieldValueValidator fieldValueValidator;
         public ComplexFieldToken(IFilterDataProvider fdp, string field, string op, object value, int? paramIdx = null)
         {
             this.dataProvider = fdp;
@@ -29,6 +31,13 @@ namespace d360.model.helpers.filters
         {
             if (!IsNullValue)
             {
+                var valueValidation = this.fieldValueValidator.CheckValue(this.value, this.field, this.@operator);
+                if (!valueValidation.Status)
+                {
+                    throw new FormatException(valueValidation.Message);
+                }
+                this.value = valueValidation.UpdatedValue;
+
                 UpdateTokenValueForType(true);
                 return $"( {Field} {GetSQLOperator(@operator)} '{EscapedValueAsString}')";
             }
@@ -50,6 +59,8 @@ namespace d360.model.helpers.filters
             {
                 fieldColumn = fieldColumns.FirstOrDefault(x => x.Contains($"F" + fieldType.ID));
             }
+
+            this.fieldValueValidator = GetValueValidator();
         }
 
     }

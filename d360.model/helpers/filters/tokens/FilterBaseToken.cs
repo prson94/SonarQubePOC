@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.model.helpers.filters.program;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -19,11 +20,20 @@ namespace d360.model.helpers.filters
         public string @operator { get; set; }
         protected object value { get; set; }
         public bool IsNullValue { get; set; }
-        protected FieldType fieldType { get; set; }
         protected string fieldColumn { get; set; }
         protected StringBuilder stringBuilder = new StringBuilder();
         protected Dictionary<string, object> sqlParamsRef;
-        protected bool convertToNVarChar = false;
+
+        protected FieldType fieldType { get; set; }
+        protected DefaultFilter defaultFilter { get; set; }
+
+        public string CurrentFieldType
+        {
+            get
+            {
+                return defaultFilter == null ? fieldType.Type.ToLower() : defaultFilter.SqlFieldType.ToString().ToLower();
+            }
+        }
 
         public string Field
         {
@@ -49,121 +59,19 @@ namespace d360.model.helpers.filters
             }
         }
 
-        protected void CheckFieldValue(DefaultFilter filter = null)
+        public bool ConvertToNvarChar
         {
-            string ft = filter == null ? fieldType.Type : filter.SqlFieldType.ToString();
-            switch (ft.ToLower())
+            get
             {
-                case "number":
-                case "counter":
-                    int number = 0;
-                    if (!int.TryParse(value.ToString(), NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out number))
-                    {
-                        //parsing of thousands seperator fails on - symbol
-                        if (!int.TryParse(value.ToString(), out number))
-                        {
-                            throw new FormatException($"Invalid numeric value for field '{field}'");
-                        }
-                    }
-                    value = number;
-                    break;
-                case "decimal":
-                    decimal dnumber = 0;
-                    if (!decimal.TryParse(value.ToString(), out dnumber))
-                    {
-                        throw new FormatException($"Invalid decimal value for field '{field}'");
-                    }
-                    value = dnumber;
-                    break;
-                case "boolean":
-                    bool boolean = false;
-                    var stringValue = value.ToString().ToLower().Trim();
-                    if (stringValue == "0") stringValue = "false";
-                    if (stringValue == "1") stringValue = "true";
-
-                    if ("true".Contains(stringValue))
-                    {
-                        stringValue = "true";
-                    }
-                    if ("false".Contains(stringValue))
-                    {
-                        stringValue = "false";
-                    }
-
-                    if (!bool.TryParse(stringValue, out boolean))
-                    {
-                        throw new FormatException($"Invalid boolean value for field '{field}'");
-                    }
-                    value = boolean;
-                    break;
-                case "date":
-                case "datetime":
-                    DateTime date = new DateTime();
-                    if (!DateTime.TryParse(value.ToString().Trim('\''), out date))
-                    {
-                        if (@operator == "ct" || @operator == "nct")
-                        {
-                            value = value.ToString().Trim('\'').Replace("&apos;", "'");
-                            this.convertToNVarChar = true;
-                        }
-                        else
-                        {
-                            throw new FormatException($"Invalid date value for field '{field}'");
-                        }
-                    }
-                    else
-                    {
-                        value = date;
-                        if (@operator == "ct" || @operator == "nct")
-                        {
-                            this.convertToNVarChar = true;
-
-                            if (date == date.Date)
-                            {
-                                value = date.ToString("yyyy-MM-dd");
-                            }
-                        }
-
-                        if (filter != null && @operator == "le" && ft.ToLower(CultureInfo.InvariantCulture) == "datetime"
-                            && (filter.ApiName == "CreatedOn" || filter.ApiName == "UpdatedOn"))
-                        {
-                            //CreatedOn and UpdatedOn system fields are DateTime, but UI filtering is treating them as
-                            //date fields. In case of "Less or Equal" we need to update date to take into account equal dates
-                            date = date.AddHours(23);
-                            date = date.AddMinutes(59);
-                            date = date.AddSeconds(59);
-                            date = date.AddMilliseconds(999);
-                            value = date;
-                        }
-                    }
-
-                    break;
-                case "assettypeclass":
-                    var classes = AssetTypeClass.BusinessAsset.GetAsList();
-                    var match = classes.FirstOrDefault(x => x.Name.ToLower(CultureInfo.InvariantCulture) == value.ToString().ToLower(CultureInfo.InvariantCulture).Trim('\'')
-                    || x.Value.ToLower(CultureInfo.InvariantCulture) == value.ToString().ToLower(CultureInfo.InvariantCulture).Trim('\''));
-
-                    if (match == null)
-                    {
-                        throw new FormatException($"Invalid AssetTypeClass value for field '{field}'");
-                    }
-
-                    value = (int)match.ID;
-                    break;
-                default:
-
-
-                    value = value.ToString().Trim('\'').Replace("&apos;", "'");
-                    break;
+                return (@operator == "ct" || @operator == "nct") && CurrentFieldType.Contains("date");
             }
         }
 
-        protected bool IsValidOperatorForFieldType(DefaultFilter defaultFilter = null)
+        protected bool IsValidOperatorForFieldType()
         {
             var operand = @operator.ToLower();
-            string fType = defaultFilter == null ? fieldType.Type.ToLower() : defaultFilter.SqlFieldType.ToString().ToLower();
 
-            switch (fType)
+            switch (CurrentFieldType)
             {
                 case "boolean":
                 case "lookup":
@@ -249,8 +157,6 @@ namespace d360.model.helpers.filters
 
         protected void UpdateTokenValueForType(bool skipLookupCheck = false)
         {
-            CheckFieldValue();
-
             if (@operator == "ct" || @operator == "nct")
             {
                 bool isStartWith = value.ToString().Last() == '*';
@@ -301,7 +207,7 @@ namespace d360.model.helpers.filters
             {
                 var fieldSql = GetColumnValueSyntax(fieldType.ID);
 
-                if (this.convertToNVarChar)
+                if (this.ConvertToNvarChar)
                 {
                     fieldSql = $"CONVERT(VARCHAR,{fieldSql},120)";
                 }
@@ -461,6 +367,33 @@ namespace d360.model.helpers.filters
             if (defaultFilter == null && !IsValidOperatorForFieldType())
             {
                 throw new Exception($"Operator '{@operator}' is not valid for '{type}' on field {field}");
+            }
+        }
+
+
+        protected IFieldValueValidator GetValueValidator()
+        {
+            string ft = defaultFilter == null ? fieldType.Type : defaultFilter.SqlFieldType.ToString();
+            switch (ft.ToLower())
+            {
+                case "number":
+                case "counter":
+                    return new NumberFieldValidator();
+                case "decimal":
+                    return new DecimalFieldValidator();
+                case "boolean":
+                    return new BooleanFieldValidator();
+                case "date":
+                case "datetime":
+                    if (defaultFilter != null && (defaultFilter.ApiName == "CreatedOn" || defaultFilter.ApiName == "UpdatedOn"))
+                    {
+                        return new SystemDateFieldValidator();
+                    }
+                    return new DateFieldValidator();
+                case "assettypeclass":
+                    return new AssetTypeClassFieldValidator();
+                default:
+                    return new TextFieldValidator();
             }
         }
     }
