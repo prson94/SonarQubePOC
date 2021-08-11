@@ -12,7 +12,6 @@
                         [selectedItem]="selection"
                         [panelApplies]="panelApplies"
                         [hasProfiling]="hasProfiling"
-                        [disableProfiling]="selection == null ? false : !selection.HasProfiling"
                         hasDetail="true">
                 <ng-container *ngIf="sidePanelOpen && selection != null && sidePanelLoading">
                     <d3s-loading [isLoading]="true"></d3s-loading>
@@ -27,6 +26,8 @@
                                          [useAccordion]="true"
                                          [shouldBePadded]="false"
                                          [showHeader]="true"
+                                         [showHeaderLine]="false"
+                                         [spacerHeight]="'16px'"
                                          [tooltipAlign]="'left'"
                                          [hasAddRelationshipsPermissions]="false"
                                          [hasModifyRelationshipsPermissions]="false"

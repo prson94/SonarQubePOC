@@ -11,7 +11,6 @@
                         [selectedItem]="selection"
                         [panelApplies]="panelApplies"
                         [hasProfiling]="hasProfiling"
-                        [disableProfiling]="selection == null ? false : !selection.HasProfiling"
                         hasDetail="true">
                 <ng-container *ngIf="sidePanelOpen && selection != null && sidePanelLoading">
                     <d3s-loading [isLoading]="true"></d3s-loading>
@@ -26,6 +25,8 @@
                                          [useAccordion]="true"
                                          [shouldBePadded]="false"
                                          [tooltipAlign]="'left'"
+                                         [showHeaderLine]="false"
+                                         [spacerHeight]="'16px'"
                                          [hasAddRelationshipsPermissions]="false"
                                          [hasModifyRelationshipsPermissions]="false"
                                          [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
