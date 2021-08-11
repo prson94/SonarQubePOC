@@ -53,7 +53,7 @@ namespace d360.web.Controllers
 
         #region Field Data
 
-        async Task<List<DetailReadOnlyRowModel>> loadDynamicDisplayField(FieldType ft, List<FieldWithRelation> fields, ObjectDetail details, SystemObjects type, int id)
+        async Task<List<DetailReadOnlyRowModel>> loadDynamicDisplayField(FieldType ft, List<FieldWithRelation> fields, ObjectDetail details, SystemObjects type, int id, List<LookupDataReadOnlyModel> lookupFieldData)
         {
             var list = new List<DetailReadOnlyRowModel>();
 
@@ -130,7 +130,7 @@ namespace d360.web.Controllers
                     ro.Value = "values";
                     var items = ((!string.IsNullOrEmpty(value)) ? value.Split(',') : new string[] { });
                     var itemIds = new List<long>();
-                    var isReference = ft.LookupObjectType == "ReferenceItem";
+                    var isReference = ft.LookupObjectType == "ReferenceItem" || ft.LookupObjectType == "ReferenceItemType";
                     var tooltipContext = isReference ? TemplateAction.LookupPreview.ToString() : TemplateAction.Preview.ToString();
                     var lookupUrl = k?.LookupUrl;
 
@@ -141,47 +141,28 @@ namespace d360.web.Controllers
 
                     if (itemIds.Count > 0)
                     {
-                        var lookupItems = await Company.QueryAsync<FieldLookupValue>(@"select FieldTypeID, LookupObjectType, LookupObjectID, Value, Text, DisplayText from fieldlookupvalue where fieldtypeid = @fId and value in @vals order by Text", new { fId = ft.ID, vals = itemIds }).ConfigureAwait(false);
-
-                        if (lookupItems != null)
+                        if (lookupFieldData.Count > 0)
                         {
-                            if (LookupFieldHasColorItem(ft))
+                            foreach (var item in lookupFieldData)
                             {
-                                foreach (var item in lookupItems)
+                                string fieldValue = item.DisplayText;
+                                var url = isReference && !string.IsNullOrEmpty(lookupUrl) ? lookupUrl : item?.Url ?? "";
+
+                                if (!string.IsNullOrEmpty(item.ColorJson))
                                 {
                                     ro.DataType = "color";
-                                    var detail = Company.GetObjectDetail(ft.LookupObjectType, item.Value);
-                                    var colorData = await Company.QueryFirstOrDefaultAsync<string>($@"SELECT colorJSON FROM Asset A cross apply dbo.GetAssetColorJsonByColor(A.Color) WHERE A.ID = @ID ", new { ID = (detail != null ? detail.AssetID : 0) }).ConfigureAwait(false);
-                                    var obj = JObject.Parse(colorData ?? "{}");
-                                    var url = isReference && !string.IsNullOrEmpty(lookupUrl) ? lookupUrl : detail?.Url ?? "";
-
-                                    ro.Values.Add(new ReadOnlyFieldValue
-                                    {
-                                        TooltipContext = tooltipContext,
-                                        TooltipID = item.Value,
-                                        Value = $"[{{\"name\":\"{item.DisplayText}\", \"color\":\"{(string)obj["Value"] ?? "transparent"}\"}}]",
-                                        TooltipType = ft.LookupObjectType,
-                                        TooltipUrl = url
-                                    });
-
+                                    var obj = JObject.Parse(item.ColorJson ?? "{}");
+                                    fieldValue = $"[{{\"name\":\"{item.DisplayText}\", \"color\":\"{(string)obj["Value"] ?? "transparent"}\"}}]";
                                 }
-                            }
-                            else
-                            {
-                                foreach (var item in lookupItems)
+
+                                ro.Values.Add(new ReadOnlyFieldValue
                                 {
-                                    var detail = Company.GetObjectDetail(ft.LookupObjectType, item.Value);
-                                    var url = isReference && !string.IsNullOrEmpty(lookupUrl) ? lookupUrl : detail?.Url ?? "";
-
-                                    ro.Values.Add(new ReadOnlyFieldValue
-                                    {
-                                        TooltipContext = tooltipContext,
-                                        TooltipID = item.Value,
-                                        Value = item.DisplayText,
-                                        TooltipType = ft.LookupObjectType,
-                                        TooltipUrl = url
-                                    });
-                                }
+                                    TooltipContext = tooltipContext,
+                                    TooltipID = item.Value,
+                                    Value = fieldValue,
+                                    TooltipType = ft.LookupObjectType,
+                                    TooltipUrl = url
+                                });
                             }
                         }
                     }
@@ -419,9 +400,23 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 var fields = Company.GetFieldRelationsByObject(type, id).ToList();
                 var fieldTypes = Company.Filter<FieldType>(i => i.Object == details.Type && i.ObjectID == details.TypeID && i.IsDisplayable).OrderBy(i => i.ColumnOrder).ToList();
 
+                var lookupData = await Company.QueryAsync<LookupDataReadOnlyModel>($@"select ft.id as FieldTypeId, trim(Val.Value) as Value, od.AssetId, od.Url, Color.ColorJson, flv.DisplayText from asset a
+                    inner join fieldtype ft on ft.assettypeid = a.AssetTypeID
+                    inner join Field f on f.AssetID = a.ID and f.FieldTypeID = ft.ID
+                    cross apply (select * from STRING_SPLIT(f.Value,','))Val
+                    outer apply utility.ObjectDetail(ft.LookupObjectType, trim(Val.Value))OD
+                    left join Asset refAsset on refAsset.ID = od.AssetID
+                    outer apply dbo.GetAssetColorJsonByColor(refAsset.Color)Color
+                    left join fieldlookupvalue flv on flv.fieldtypeid = ft.id and flv.value = trim(Val.Value)
+                    where a.uid = @uid 
+                    and (ft.LookupObjectType <> '' or ft.LookupObjectType is not null)
+                    and (ft.LookupObjectID <> '' or ft.LookupObjectID is not null)
+                    and (ft.AllowAllValue <> 1 or ft.AllowAllValue is null)", new { uid = details.UID });
+
                 foreach (var ft in fieldTypes)
                 {
-                    list.AddRange(await loadDynamicDisplayField(ft, fields, details, type, id).ConfigureAwait(false));
+                    var listData = lookupData.Where(x => x.FieldTypeId == ft.ID).ToList();
+                    list.AddRange(await loadDynamicDisplayField(ft, fields, details, type, id, listData).ConfigureAwait(false));
                 }
             }
 
@@ -730,21 +725,6 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
         [HttpGet, Route("{type}/{id:int}/grid/definition")]
         public HttpResponseMessage GetGridDefinitionByType(SystemObjects type, int id)
         {
-            #region Resolve to underlying types
-            switch (type)
-            {
-                case SystemObjects.Fusion:
-                    var fusionType = Company.GetById<Fusion>(id);
-                    if (fusionType != null)
-                    {
-                        type = SystemObjects.FusionType;
-                        id = fusionType.FusionTypeID;
-                        fusionType = null;
-                    }
-                    break;
-            }
-            #endregion
-
             var sType = type.ToString();
             var skippedFieldTypes = DataType.Text.GetNonlistableFields();
 
@@ -769,6 +749,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 inner join AssetType T on T.Id = FT.AssetTypeID
                 inner join metrics.Allocation A on A.AssetTypeUid = T.[uid] and A.[State] = 1 and A.ScoreType = FT.ScoreType
                 where FT.[Object] = @type and FT.ObjectID = @id and FT.[Type] = 'Score'", new { type = type.ToString(), id }).ToList();
+
+            var hasProfiling = Company.Query<bool>("select case when exists (select 1 from AssetDataProfile P inner join AssetWithType A on A.ID = P.AssetID where A.Type = @type and A.TypeID = @id) then 1 else 0 end", new { type = type.ToString(), id }).SingleOrDefault();
 
             switch (type)
             {
@@ -947,106 +929,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     });
 
                     break;
-                #endregion  
-                case SystemObjects.FusionAttributeType:
-                    #region
-
-                    remainingWidth = 75;
-
-                    detail = Company.GetObjectDetail(type.ToString(), id);
-
-                    #region Parents
-
-                    var parentSql = @"
-with h as	(
-			select	ID,
-					ParentID,
-                    Name,
-					0 as [Level]
-			from	FusionAttributeType
-			where	ID = @t
-			union all
-			select	P.ID,
-					P.ParentID,
-                    P.Name,
-					C.[Level] + 1 as [Level]
-			from	FusionAttributeType P
-					inner join h as C on C.ParentID = P.ID
-			)
-
-select  T.* 
-from    h
-        inner join FusionAttributeType T on T.ID = h.ID 
-where   h.ID <> @t order by h.[Level] desc;
-";
-                    var parents = Company.Query<FusionAttributeType>(parentSql, new { t = id }).ToList();
-
-                    int fusionID = 0;
-                    bool fusionIDPresent = false;
-                    if (!string.IsNullOrEmpty(Request.GetQueryString("targetID")))
-                    {
-                        fusionIDPresent = int.TryParse(Request.GetQueryString("targetID"), out fusionID);
-                    }
-
-                    //Parent columns have be listed in DESC order by Level.
-                    parents.ForEach(i =>
-                    {
-                        if (fusionIDPresent)
-                        {
-                            var parentFilterValues = Company.Query<string>(@"select Name from FusionAttribute where FusionID = @f and FusionAttributeTypeID = @t and Deleted = 0 group by Name order by Name", new { f = fusionID, t = i.ID }).ToList();
-                            filterColumns.Add(new GridFilterColumn { text = i.Name, datafield = $"Parent{i.ID}", filtertype = GridColumn.COLUMN_TYPE_DROPDOWN, columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filteritems = parentFilterValues });
-                            columns.Add(new GridColumn { text = i.Name, datafield = $"Parent{i.ID}", filteritems = new List<string>() });
-                        }
-                        else
-                        {
-                            columns.Add(new GridColumn { text = i.Name, datafield = $"Parent{i.ID}", filteritems = new List<string>() });
-                        }
-                        fields.Add(new GridField { name = $"Parent{i.ID}", type = "string" });
-                    });
-
-                    #endregion
-
-                    dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
-
-                    filterColumns.Add(new GridFilterColumn { text = "ID", datafield = "ID", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
-                    filterColumns.Add(new GridFilterColumn { text = detail.Name, datafield = "Name", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
-                    columns.Add(new GridColumn { text = detail.Name, datafield = "Name", filteritems = new List<string>() });
-                    fields.Add(new GridField { name = "AssetID", type = "number" });
-                    fields.Add(new GridField { name = "ID", type = "number" });
-                    fields.Add(new GridField { name = "Name", type = "string" });
-
-                    parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
-
-                    items.ForEach(i =>
-                    {
-                        GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, dynamicFieldWidth, true));
-
-                        col.id = i.ID.ToString();
-                        col.hiddenfield = false;
-
-                        filterColumns.Add(col);
-                    });
-
-                    break;
-                #endregion
-                case SystemObjects.FusionType:
-                    #region
-
-                    remainingWidth = 61;
-                    dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
-
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name" });
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Enabled_Name, columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, datafield = "Enabled" });
-                    columns.Add(new GridColumn { text = "Owners", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.COLUMN_TYPE_STRING, datafield = "Owners" });
-
-                    parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
-
-                    fields.Add(new GridField { name = "ID", type = "number" });
-                    fields.Add(new GridField { name = "Name", type = "string" });
-                    fields.Add(new GridField { name = "Enabled", type = "boolean" });
-                    fields.Add(new GridField { name = "Owners", type = "string" });
-                    break;
-                #endregion
+                #endregion                  
                 case SystemObjects.ResourceType:
                     #region
 
@@ -1123,7 +1006,8 @@ where   h.ID <> @t order by h.[Level] desc;
                 FilterColumns = filterColumns,
                 TopLevelFilterColumns = topLevelFilterFields,
                 IsReadOnly = isReadOnly,
-                ScoreAllocations = scoreAllocations
+                ScoreAllocations = scoreAllocations,
+                HasProfiling = hasProfiling
             });
         }
 
@@ -1264,39 +1148,6 @@ where   h.ID <> @t order by h.[Level] desc;
                 parent = followParent
             };
 
-        }
-
-        #endregion
-
-        #region Fusion
-
-        [Route("fusion")]
-        public IQueryable<FusionType> GetFusionTypes()
-        {
-            return Company.Table<FusionType>();
-        }
-
-        [Route("fusion/{typeID:int}")]
-        public FusionType GetFusionType(int typeID)
-        {
-            var model = Company.GetById<FusionType>(typeID);
-
-            if (model == null)
-                throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
-
-            return model;
-        }
-
-        [Route("fusion/{typeID:int}/configurations")]
-        public IQueryable<Fusion> GetFusionConfigurationsByType(int typeID)
-        {
-            return Company.Filter<Fusion>(i => i.FusionTypeID == typeID);
-        }
-
-        [Route("fusion/{typeID:int}/configurations/{id:int}")]
-        public Fusion GetFusionConfiguration(int typeID, int id)
-        {
-            return Company.GetById<Fusion>(id, i => i.FusionType);
         }
 
         #endregion
@@ -1624,19 +1475,6 @@ where   h.ID <> @t order by h.[Level] desc;
                             inner join [Intersect] I on ( (I.Object = 'Artifact' and ASS.ObjectID = I.ObjectID and I.IntersectTypeID = @intersectTypeId) ) 
                             cross apply [dbo].GetAssetDisplayValueById(ASS.ID) disp
                             order by disp.DisplayValue";
-                    break;
-                case SystemObjects.FusionAttributeType:
-                    sql = @"select distinct A.TextPath as Name, A.ID, 'FusionAttribute' as [Type] , ASS.Uid
-                            from FusionAttribute A 
-                            inner join [Intersect] I on A.FusionAttributeTypeID = @id and ( I.Subject = 'FusionAttribute' and A.ID = I.SubjectID ) and I.IntersectTypeID = @intersectTypeId
-                            inner join Asset ASS on ASS.Object = 'FusionAttribute' and ASS.ObjectID = A.ID
-                            union 
-                            select distinct A.TextPath as Name, A.ID, 'FusionAttribute' as [Type] , ASS.Uid
-                            from FusionAttribute A 
-                            inner join [Intersect] I on A.FusionAttributeTypeID = @id and ( (I.Object = 'FusionAttribute' and A.ID = I.ObjectID) ) and I.IntersectTypeID = @intersectTypeId
-                            inner join Asset ASS on ASS.Object = 'FusionAttribute' and ASS.ObjectID = A.ID
-                            order by A.TextPath
-                            ";
                     break;
                 case SystemObjects.IntersectType:
                     sql = @"select distinct iname.Name as Name, A.ID, 'Intersect' as [Type] , I.Uid
@@ -2021,28 +1859,6 @@ from    ResponsibilityTypeRelationRule R
                 );
         }
 
-        [Route("ownership/fusion/{id:int}/fusionresponsibilitytypes")]
-        public HttpResponseMessage GetFusionTypeResponsibilityByFusion(int id)
-        {
-            var fusion = Company.GetById<Fusion>(id);
-            if (fusion == null)
-                id = -1;
-            else
-                id = fusion.FusionTypeID;
-
-            return Request.CreateResponse(HttpStatusCode.OK,
-                Company.Filter<ResponsibilityTypeRelation>(i => i.ObjectID == id && i.ObjectType == "FusionType", i => i.ResponsibilityType)
-                .Select(i => new
-                {
-                    i.ResponsibilityTypeID,
-                    i.ObjectID,
-                    i.ObjectType,
-                    i.ResponsibilityType.Name,
-                    i.ResponsibilityType.Description
-                })
-                );
-        }
-
         #endregion
 
         #region Policies
@@ -2418,7 +2234,7 @@ from    (
         {
             return Company.GetObjectDetail(type.ToString(), id);
         }
-     
+
         [Route("{type}/{id:int}/fieldName/{fieldName}/{useFriendlyName}")]
         public string GetObjectFieldColorAndValue(SystemObjects type, int id, string fieldName, bool useFriendlyName = true)
         {
@@ -2426,10 +2242,11 @@ from    (
             //check if there is a matching field for this type
             var fieldType = Company.FieldTypes.Where(x => x.Object == objectDetail.Type && x.ObjectID == objectDetail.TypeID && ((useFriendlyName && string.Compare(x.FriendlyName, fieldName, true) == 0) || (!useFriendlyName && string.Compare(x.Name, fieldName, false) == 0))).FirstOrDefault();
 
-            if (fieldType == null || (!useFriendlyName && !fieldType.Name.Equals(fieldName))) {
+            if (fieldType == null || (!useFriendlyName && !fieldType.Name.Equals(fieldName)))
+            {
                 return null;
             }
-            
+
 
             var sql = "select FormattedValue from field where objecttype = @obj and objectid = @id and fieldtypeid = @fieldId";
             if (fieldType?.LookupObjectType == SystemObjects.ReferenceItem.ToString() && !LookupFieldHasColorItem(fieldType))
@@ -2515,7 +2332,8 @@ from    (
                     objectId = Company.Tags.FirstOrDefault(x => x.uid == uid).ID;
                     return await GetObjectDetailFields(type, objectId, useSingleColumn);
                 default:
-                    return null;
+                    var asset = Company.Assets.FirstOrDefault(a => a.uid == uid);
+                    return await GetObjectDetailFields(type, asset?.ObjectID ?? -1, useSingleColumn);
             }
         }
 
@@ -2524,6 +2342,19 @@ from    (
         public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, int id, bool useSingleColumn = false)
         {
             var model = new DetailReadOnlyModel() { columns = useSingleColumn ? 1 : 2 };
+            model.Object = type.ToString();
+            model.ObjectID = id;
+
+            var metadata = Company.Query<dynamic>("select V.DisplayValue as AssetName, T.Name as AssetTypeName, T.Object as ObjectType, T.ObjectID as ObjectTypeID  from Asset A inner join AssetDisplayValue V on V.AssetID = A.ID inner join AssetType T on T.ID = A.AssetTypeID where A.ObjectID = @id and A.Object = @type", new { type = type.ToString(), id }).FirstOrDefault();
+
+            if (metadata != null)
+            {
+                model.AssetName = metadata.AssetName;
+                model.AssetTypeName = metadata.AssetTypeName;
+
+                model.ObjectType = metadata.ObjectType;
+                model.ObjectTypeID = metadata.ObjectTypeID;
+            }
 
             int row = 0;
             switch (type)
@@ -2696,16 +2527,7 @@ from    (
                             }
                         });
 
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField> {
-                                new ReadOnlyField { Name = Fields.CanOwnFusion_Name, FieldName = "ArtifactTypeCanOwnFusion", FieldDescription = Fields.CanOwnFusion_Description, Value = artifactType.CanOwnFusion.FormatBooleanReadOnlyValue() }
-                            }
-                        });
-
                     }
-                    artifactType = null;
                     break;
                 #endregion
                 case SystemObjects.Group:
@@ -2953,213 +2775,7 @@ from    (
                     }
                     fieldType = null;
                     break;
-                #endregion
-                case SystemObjects.Fusion:
-                    #region Fields
-                    var fusion = Company.GetById<Fusion>(id);
-
-                    if (fusion != null)
-                    {
-                        var fusionFields = Company.GetFieldRelationsByObject(SystemObjects.Fusion, id);
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = fusion.GetName(i => i.ID), FieldName = "FusionID", FieldDescription = fusion.GetDescription(i => i.ID), Value = fusion.ID.ToString() }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = fusion.GetName(i => i.Name), FieldName = "FusionName", FieldDescription = fusion.GetDescription(i => i.Name), Value = fusion.Name }
-                            }
-                        });
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = fusion.GetName(i => i.Description), FieldName = "FusionDescription", FieldDescription = fusion.GetDescription(i => i.Description), DataType = "Html",  Value = string.IsNullOrEmpty(fusion.Description) ? "None provided" : fusion.Description }
-                            }
-                        });
-
-                        row = 3;
-                        foreach (var k in fusionFields)
-                        {
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField>
-                                {
-                                    new ReadOnlyField { Name = k.FriendlyName, FieldName = "Fusion" + k.Name, FieldDescription = k.DisplayDescription, Value = k.FormattedValue }
-                                }
-                            });
-                            row++;
-                        }
-                    }
-
-                    fusion = null;
-                    break;
-                #endregion
-                case SystemObjects.FusionAttribute:
-                    #region Fields
-                    var fusionAttribute = Company.GetById<FusionAttribute>(id);
-                    var fusionAttDetail = Company.GetObjectDetail("FusionAttribute", id);
-                    if (fusionAttribute != null)
-                    {
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = fusionAttribute.GetName(i => i.Name), FieldName = "FAName", FieldDescription = fusionAttribute.GetDescription(i => i.Name), Value = fusionAttribute.Name }
-                            }
-                        });
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = fusionAttDetail.UID.ToString()  }
-                            }
-                        });
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = fusionAttribute.GetName(i => i.TextPath), FieldName = "FATextPath", FieldDescription = fusionAttribute.GetDescription(i => i.TextPath), Value = fusionAttribute.TextPath }
-                            }
-                        });
-
-                        model.rows.AddRange(await loadDynamicDisplayFields(type, id).ConfigureAwait(false));
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = fusionAttribute.GetName(i => i.ID), FieldName = "FAID", FieldDescription = fusionAttribute.GetDescription(i => i.ID), Value = $"{fusionAttribute.ID}" }
-                                }
-                        });
-                    }
-                    fusionAttribute = null;
-                    break;
-                #endregion
-                case SystemObjects.FusionAttributeType:
-                    #region Fields
-                    var fusionAttributeType = Company.GetById<FusionAttributeType>(id, i => i.FusionType);
-                    if (fusionAttributeType != null)
-                    {
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = fusionAttributeType.GetName(i => i.Name), FieldName = "FATName", FieldDescription = fusionAttributeType.GetDescription(i => i.Name), Value = fusionAttributeType.Name }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = fusionAttributeType.GetName(i => i.ID), FieldName = "FATID", FieldDescription = fusionAttributeType.GetDescription(i => i.ID), Value = fusionAttributeType.ID.ToString() }
-                            }
-                        });
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = fusionAttributeType.GetName(i => i.FusionType), FieldName = "FATFusionType", FieldDescription = fusionAttributeType.GetDescription(i => i.FusionType), Value = fusionAttributeType.FusionType.Name }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = fusionAttributeType.GetName(i => i.TextPath), FieldName = "FATTextPath", FieldDescription = fusionAttributeType.GetDescription(i => i.TextPath), Value = fusionAttributeType.TextPath }
-                            }
-                        });
-                    }
-                    fusionAttributeType = null;
-                    break;
-                #endregion
-                case SystemObjects.FusionExecution:
-                    #region Fields
-                    var fusionExecution = Company.GetById<FusionExecution>(id);
-                    if (fusionExecution != null)
-                    {
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = "Date Started", FieldName = "DateStarted", Value = fusionExecution.DateStarted.HasValue ? JsonConvert.SerializeObject(fusionExecution.DateStarted.Value) : "Not started" }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = "Date Completed", FieldName = "DateCompleted", Value = fusionExecution.DateCompleted.HasValue ? JsonConvert.SerializeObject(fusionExecution.DateCompleted.Value) : "Not completed" }
-                            }
-                        });
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = "# Added", FieldName = "Adds", Value = fusionExecution.Adds.HasValue ? fusionExecution.Adds.Value.ToString() : ""}
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = "# Updated", FieldName = "Updates", Value = fusionExecution.Updates.HasValue ? fusionExecution.Updates.Value.ToString() : "" }
-                            }
-                        });
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = "# Deleted", FieldName = "Deletes", Value = fusionExecution.Deletes.HasValue ? fusionExecution.Deletes.Value.ToString() : "" }
-                            }
-                        });
-                    }
-                    fusionExecution = null;
-                    break;
-                #endregion
-                case SystemObjects.FusionType:
-                    #region Fields
-                    var fusionType = Company.Filter<AssetType>(i => i.ObjectID == id && i.Object == "FusionType").SingleOrDefault();
-                    var fusionDetail = Company.GetObjectDetail("FusionType", id);
-                    if (fusionType != null)
-                    {
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Fields.Name_Name, FieldName = "FusionTypeName", FieldDescription =Fields.Name_Description, Value = fusionType.Name }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Fields.ID_Name, FieldName = "FusionTypeID", FieldDescription = Fields.ID_Description, Value = fusionType.ObjectID.ToString() }
-                            }
-                        });
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = fusionDetail.UID.ToString()  }
-                            }
-                        });
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name =Fields.Description_Name, FieldName = "FusionTypeDescription", FieldDescription = Fields.Description_Description, DataType = "Html", Value = string.IsNullOrEmpty(fusionType.Description) ? "None provided" : fusionType.Description }
-                            }
-                        });
-                    }
-                    fusionType = null;
-                    break;
-                #endregion
+                #endregion                                
                 case SystemObjects.Intersect:
                     #region Fields                    
                     var intersect = Company.GetById<Intersect>(id);
@@ -3795,9 +3411,6 @@ from    (
                             case "TaxonomyType":
                                 sql = "select 'Model Type : ' + Name from AssetType where objectid = @id and [Object]='TaxonomyType'";
                                 break;
-                            case "FusionType":
-                                sql = "select 'Fusion Type : ' + Name from AssetType where objectid = @id and [Object]='FusionType'";
-                                break;
                         }
 
                         var objectName = (!string.IsNullOrEmpty(sql)) ?
@@ -3975,6 +3588,7 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
 
                     if (taxonomy != null)
                     {
+
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
@@ -4347,9 +3961,7 @@ where v.id = {0}", id)).FirstOrDefault();
 
             var sql = "";
 
-            if (obj == SystemObjects.FusionAttribute)
-                sql = string.Format(QueryConstants.FusionAttributeRelationshipAllCountsWithZero, disallowEditFilter);
-            else if (obj == SystemObjects.ReferenceItemType)
+            if (obj == SystemObjects.ReferenceItemType)
                 sql = string.Format(QueryConstants.ReferenceListTypeRelationshipsAllCountsWithZero, disallowEditFilter);
             else
                 sql = string.Format(QueryConstants.ObjectRelationshipAllCountsWithZero, disallowEditFilter, string.Join(",", excludedPredicateTypes));
@@ -4448,7 +4060,6 @@ where v.id = {0}", id)).FirstOrDefault();
             var isTargetObject = intersectType.Object == sTargetType && intersectType.ObjectID == targetID;
             var isTargetSubjectSame = intersectType.Object == intersectType.Subject && intersectType.ObjectID == intersectType.SubjectID;
             var isTargetReferenceItemType = targetType.ToString() == "ReferenceItemType" && targetID == 0;
-            var isTargetFusion = targetType.ToString().StartsWith("Fusion");
 
             var innerSql = "";
             var assetJoin = "";
@@ -5110,14 +4721,6 @@ SELECT (
                         $"Order By ad.DisplayValue";
 
             return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, typeId = objectId, search = $"{q}%" });
-        }
-
-        [Route("breadcrumb/typeaheadForFusion")]
-        public async Task<IEnumerable<BreadcrumbTypeAheadModel>> GetFusionTypeahead(string q, int num)
-        {
-            var sql = $"SELECT top {num} Name, 'fusion/' + CAST(ID as varchar) as Url FROM Fusion WHERE name like @search " +
-                        $"Order By Name";
-            return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { search = $"%{q}%", });
         }
 
         [Route("breadcrumb/typeaheadfortype")]

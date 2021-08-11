@@ -538,7 +538,7 @@ begin
 			select @scoreType = case when ScoreType = 1 then 'Governance' else 'Data Quality' end from [metrics].[Allocation] where ID = @MainObjectID
 			select @isExterallyCalculated = case when IsExternallyCalculated = 0 then 'Internal' else 'External' end from [metrics].[Allocation] where ID = @MainObjectID
 			select @assetTypeName = AT.Name from [metrics].[Allocation] MA inner join [dbo].[AssetType] AT on AT.uid = MA.AssetTypeUid where MA.ID = @MainObjectID
-			set @MainObjectName = @scoreType+ ' '+ @assetTypeName + ' {' + @isExterallyCalculated + 'ly calculated' + '}'
+			set @MainObjectName = @scoreType+ ' '+ @assetTypeName + ' (' + @isExterallyCalculated + 'ly calculated' + ')'
 		END
 
 		set @MainDescription = @ConvertMainObjectTypeName + ' removed'
@@ -1262,6 +1262,7 @@ begin
 			if @updated = 1
 			begin
 				insert into [reporting].[Global_FieldAudit] 
+				(AuditID,FieldTypeID,FieldName,Version,Value)
 				values	(
 						@auditID, 
 						@fieldTypeID, 

@@ -299,6 +299,9 @@ namespace d360.model.DataAccessLayer
             bool simpleFilterOwnershipOnSecurityAsset = false;
             bool isForTreeGrid = false;
             bool useTempTableForResults = false;
+            string profilingCheckSql = "";
+            string profilingCheckFields = "";
+            bool includeProfilingCheck = false;
 
             Dictionary<string, string> ownershipPropertiesMapping = new Dictionary<string, string>();
 
@@ -396,6 +399,11 @@ namespace d360.model.DataAccessLayer
                 bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "isfortreegrid").Value, out isForTreeGrid);
             }
 
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includeprofilingcheck"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includeprofilingcheck").Value, out includeProfilingCheck);
+            }
+
             //check for asset path fields now after include fields have been filtered
             if (fieldTypes.Any(x => x.Type == "Path"))
             {
@@ -422,6 +430,12 @@ namespace d360.model.DataAccessLayer
             //The sql for OwnershipLookup fields will be added below at the includeOwnershipLookup conditional
             getFieldSql(fieldTypes.Where(f => f.Type != "OwnershipLookup").ToList(), dbArgs, fieldJoins, fieldColumns, "A.[Object]", "A.[ObjectId]", listColorsAsJSON);
             List<string> countJoins = new List<string>(fieldJoins);
+
+            if (includeProfilingCheck)
+            {
+                profilingCheckSql = $"cross apply (select case when exists (select 1 from AssetDataProfile where AssetID = A.ID) then cast(1 as bit) else cast(0 as bit) end as HasProfiling) Profiling";
+                profilingCheckFields = $"Profiling.HasProfiling as HasProfiling,";
+            }
 
             if (includeRelationships)
             {
@@ -566,7 +580,6 @@ namespace d360.model.DataAccessLayer
                 fieldJoins.Add(joinSql);
                 countJoins.Add(joinCountSql);
             }
-
 
             if (includeRelationships)
             {
@@ -1246,12 +1259,13 @@ namespace d360.model.DataAccessLayer
                     {(includeParent ? parentFieldSQL : "")}
                     {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
                     {(includeColor ? "ACJ.ColorJson as Color," : "")}
+                    {(includeProfilingCheck ? profilingCheckFields : "")}
                     {(includeSegments ? "Node.Segments," : "")}
                     KP.KeyPath as [Path]
                     {(assetType.Object == "FusionAttributeType" ? " , FA.SourceID, FA.Name, FA.TextPath" : "")} 
                     {(fusionAttributeWithParent ? " , ATP.uid as ParentUid" : "")}
                     {fieldsSql}
-                    {(includePermissionDetails ? includePermissionFields : "")}
+                    {(includePermissionDetails ? includePermissionFields : "")} 
                     {hierarchyParentUidCol}
                 {(useTempTableForResults ? " into #results " : "")}
                 from Asset A
@@ -1265,6 +1279,7 @@ namespace d360.model.DataAccessLayer
                 {(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
                 {(includeColor ? "cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
                 {(includePermissionDetails ? permissionDetailSQL : "")}
+                {(includeProfilingCheck ? profilingCheckSql : "")}
                 {hierarchyParentUidSelect}
                 {(includeParent ? parentApplySQL : "")}
                 {whereSql}
@@ -2428,31 +2443,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     }
 
                     #endregion
-                    break;
-                case AssetTypeClass.FusionAttribute:
-
-                    int? parentId = parentAssetType?.ObjectID;
-                    int fusionTypeId = model.FusionID.Value;
-
-                    var fusionAttrType = new FusionAttributeType
-                    {
-                        Name = model.Name,
-                        ParentID = parentId,
-                        ScanEnabled = true,
-                        FusionTypeID = fusionTypeId
-                    };
-
-                    CompanyContext.Add(fusionAttrType);
-                    model.ObjectID = fusionAttrType.ID;
-                    model.Object = SystemObjects.FusionAttributeType.ToString();
-
-                    var fatAssetType = CompanyContext.Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).SingleOrDefault();
-                    if (fatAssetType != null)
-                    {
-                        fatAssetType.Description = model.Description;
-                        CompanyContext.Update(fatAssetType);
-                    }
-                    break;
+                    break;                
                 case AssetTypeClass.Diagram:
                     #region
                     var diagram = new AssetType
@@ -2641,27 +2632,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     assetType.CanEditParent = model.CanEditParent;
 
                     #endregion
-                    break;
-                case AssetTypeClass.FusionAttribute:
-                    #region
-
-                    var fusionAttributeType = CompanyContext.GetById<FusionAttributeType>(model.ObjectID);
-                    if (fusionAttributeType == null)
-                    {
-                        return new Tuple<HttpStatusCode, string, string>(
-                            HttpStatusCode.BadRequest,
-                            $"Wrong {AssetTypeClass.FusionAttribute.ToString()}",
-                            $"Not valid {AssetTypeClass.FusionAttribute.ToString()} provided. {AssetTypeErrors.CheckRequest}"
-                        );
-                    }
-
-                    assetType.Description = model.Description;
-
-                    fusionAttributeType.Name = model.Name;
-                    CompanyContext.Update(fusionAttributeType);
-
-                    #endregion
-                    break;
+                    break;                
             }
 
             var parentType = SystemObjectHelper.GetSystemObjects(model.Class).ToString();

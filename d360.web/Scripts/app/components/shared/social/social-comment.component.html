@@ -22,7 +22,8 @@
                     <a class="comment-tool-item-mid" (click)="doVote('ThumbsDown');"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'down'" [icon]="'thumbs-o-down'" [iconColor]="'#646464'"></d3s-tooltip> {{downVotes}}</a>
                 </div>
             </div>
-            <div class="col s12 comment-box" [innerHtml]="comment.Body"></div>
+            <div class="col s12 ql-editor" [innerHtml]="comment.Body">
+            </div>
             <div class="col s12" *ngIf="comment.Tags && comment.Tags.length > 0">
                 <i class="fa fa-tag" aria-hidden="true"></i>
                 Comment Tags:
@@ -46,7 +47,7 @@
     <div class="col s10">
         <div>
             <span class="user"><d3s-preview-tooltip [objectType]="'Resource'" [objectId]="response.CreatedBy">{{response.ResourceName}}</d3s-preview-tooltip></span>&nbsp;<span class="postDate">{{response.CreatedOn | date:'medium'}}</span>
-            <div [innerHtml]="response.Body"></div>
+            <div class=" ql-editor" [innerHtml]="response.Body"></div>
             <d3s-preview-tooltip *ngFor="let tag of response.Tags" class="comment-tag" (click)="changeUrl(tag.Url)" [uid]="tag.AssetUid" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">
                 {{getTagName(tag)}}
             </d3s-preview-tooltip>

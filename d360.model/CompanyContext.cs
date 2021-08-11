@@ -122,18 +122,7 @@ namespace d360.model
         public DbSet<Follow> Follows { get; set; }
 
         public DbSet<FollowDetail> FollowDetails { get; set; }                                  /* VIEW */
-
-        public DbSet<FusionExecution> FusionExecutions { get; set; }
-
-        public DbSet<Fusion> FusionTypeConfigurations { get; set; }
-
-        public DbSet<FusionAttribute> FusionAttributes { get; set; }
-
-        public DbSet<FusionAttributeType> FusionAttributeTypes { get; set; }
-        
-
-        public DbSet<FusionType> FusionTypes { get; set; }        
-
+                        
         public DbSet<GraphFilter> GraphFilters { get; set; }
 
         public DbSet<HelpResource> HelpResources { get; set; }
@@ -1514,10 +1503,7 @@ where	I.ID is null";
 
             modelBuilder.Entity<core.entities.Rule>().Property(x => x.Threshold).HasPrecision(4, 3);
 
-            modelBuilder.Entity<Fusion>().HasMany<Asset>(i => i.FusionOwners).WithMany(i => i.OwnedFusions).Map(i =>
-            {
-                i.MapLeftKey("FusionID").MapRightKey("AssetID").ToTable("FusionOwner");
-            });
+            
             modelBuilder.Entity<Question>().HasMany<QuestionTypeOption>(i => i.QuestionTypeOptions).WithMany(i => i.Questions).Map(i =>
             {
                 i.MapLeftKey("QuestionID").MapRightKey("QuestionTypeOptionID").ToTable("QuestionOption");
@@ -1780,71 +1766,7 @@ where	I.ID is null";
                     }
                 }
                 #endregion
-
-                #region Business logic : FusionAttributeType
-                if (entry.Entity is FusionAttributeType)
-                {
-                    var o = entry.Entity as FusionAttributeType;
-
-                    if (entry.State == EntityState.Added)
-                    {
-                        if (Any<FusionAttributeType>(i => i.FusionTypeID == o.FusionTypeID && i.ParentID == o.ParentID && i.Name == o.Name))
-                        {
-                            throw new ArgumentException(Messages.Error_NameTaken);
-                        }
-                    }
-                    if (entry.State == EntityState.Modified)
-                    {
-                        if (Any<FusionAttributeType>(i => i.FusionTypeID == o.FusionTypeID && i.Name == o.Name && i.ParentID == o.ParentID && i.ID != o.ID))
-                        {
-                            throw new ArgumentException(Messages.Error_NameTaken);
-                        }
-                    }
-                }
-                #endregion
-
-                #region Business logic : Fusion
-                if (entry.Entity is Fusion)
-                {
-                    var o = entry.Entity as Fusion;
-                    if (entry.State == EntityState.Added)
-                    {
-                        if (Any<Fusion>(i => i.Name == o.Name))
-                        {
-                            throw new ArgumentException(Messages.Error_NameTaken);
-                        }
-                    }
-                    if (entry.State == EntityState.Modified)
-                    {
-                        if (Any<Fusion>(i => i.Name == o.Name && i.ID != o.ID))
-                        {
-                            throw new ArgumentException(Messages.Error_NameTaken);
-                        }
-                    }
-                }
-                #endregion
-
-                #region Business logic : FusionType
-                if (entry.Entity is FusionType)
-                {
-                    var o = entry.Entity as FusionType;
-                    if (entry.State == EntityState.Added)
-                    {
-                        if (Any<FusionType>(i => i.Name == o.Name))
-                        {
-                            throw new ArgumentException(Messages.Error_NameTaken);
-                        }
-                    }
-                    if (entry.State == EntityState.Modified)
-                    {
-                        if (Any<FusionType>(i => i.Name == o.Name && i.ID != o.ID))
-                        {
-                            throw new ArgumentException(Messages.Error_NameTaken);
-                        }
-                    }
-                }
-                #endregion
-
+                                
                 #region Business logic : Group
                 if (entry.Entity is Group)
                 {

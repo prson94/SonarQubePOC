@@ -58,6 +58,36 @@ ALTER TABLE [dbo].[AssetType]
 ADD [CanEditParent] bit 
 END
 
+    IF NOT EXISTS (SELECT * FROM [dbo].[AssetType] 
+                   WHERE Name = 'MetricAllocation'
+                   AND Class = 16)
+		BEGIN
+			insert into [dbo].[AssetType]([Name]
+      ,[Description]
+      ,[Class]
+      ,[DisplayFormat]
+      ,[State]
+      ,[Hierarchical]
+      ,[HierarchyPredicateID]
+      ,[HierarchyIntersectTypeID]
+      ,[HierarchyMaximumDepth]
+      ,[Object]
+      ,[ObjectID]
+      ,[CreatedOn]
+      ,[CreatedBy]
+      ,[UpdatedOn]
+      ,[UpdatedBy]
+      ,[Notes]
+      ,[uid]
+      ,[CanOwnFusion]
+      ,[AutoDisplayDescription]
+      ,[UseAsTransformation]
+      ,[FlowObjectType]
+      ,[CanEditParent]
+      ,[AutoDisplayParent])
+	  values('MetricAllocation','A Metric Allocation',16,'{Name}',1,0,NULL,NULL,0,'MetricAllocation',1,GETDATE(),0,GETDATE(),0,NULL,'00000001-0000-0000-0000-B00000000013',0,0,0,NULL,1,NULL)
+		END
+
 IF NOT EXISTS (SELECT * FROM [dbo].[AssetType] 
                    WHERE Name = 'Predicate'
                    AND Class = 17)
@@ -96,6 +126,8 @@ BEGIN
 ALTER TABLE [dbo].[AssetType]
 DROP COLUMN [CanEditParent]
 END
+
+  Delete from [dbo].[AssetType] where Name = 'MetricAllocation' AND Class = 16
 
 Delete from [dbo].[AssetType] where Name = 'Predicate' AND Class = 17
 		]]>

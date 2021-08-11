@@ -144,6 +144,7 @@ export class GridDefinition {
     TopLevelFilterColumns: GridFilterColumn[];
     IsReadOnly: boolean;
     ScoreAllocations: GridScoreAllocation[];
+    HasProfiling: boolean;
 }
 
 export class GridScoreAllocation {

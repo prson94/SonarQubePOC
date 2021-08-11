@@ -16,12 +16,14 @@ namespace d360.core.enums
         [
             Name("Business Asset"), 
             Description("Business assets."),
-            IsAllowedAutoDisplayParent(true)
+            IsAllowedAutoDisplayParent(true), 
+            AllowCommentsOnAsset
         ]
         BusinessAsset = 1,
         [
             Name("Model"),
-            Description("Model assets.")
+            Description("Model assets."),
+            AllowCommentsOnAsset
         ]
         Model = 2,
         [
@@ -36,18 +38,21 @@ namespace d360.core.enums
         FusionAttribute = 4,        
         [
             Name("Policy"),
-            Description("Policy asset.")
+            Description("Policy asset."),
+            AllowCommentsOnAsset
         ]
         Policy = 6,
         [
             Name("Rule"),
-            Description("Rule asset.")
+            Description("Rule asset."),
+            AllowCommentsOnAsset
         ]
         Rule = 7,
         [
             Name("Technical Asset"),
             Description("Technical asset that replaces fusion attribute types."),
-            IsAllowedAutoDisplayParent(true)
+            IsAllowedAutoDisplayParent(true),
+            AllowCommentsOnAsset
         ]
         TechnicalAsset = 8,
         [
@@ -87,6 +92,11 @@ namespace d360.core.enums
         ]
         Diagram = 15,
         [
+            Name("MetricAllocation"),
+            Description("Metric Allocation.")
+        ]
+        MetricAllocation = 16,
+        [
             Name("Predicate"),
             Description("Predicate.")
         ]
@@ -105,6 +115,7 @@ namespace d360.core.enums
         public string Value { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
+        public bool AllowCommentsOnAsset { get; set; }
     }
 
     public static class AssetTypeClassExtensions
@@ -146,10 +157,11 @@ namespace d360.core.enums
 
                     list.Add(new AssetTypeClassInfo
                     {
-                        Name = ((NameAttribute)tm.GetCustomAttribute(typeof(NameAttribute))).Name,
-                        Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
+                        Name = tm.GetCustomAttribute<NameAttribute>().Name,
+                        Description = tm.GetCustomAttribute<DescriptionAttribute>().Description,
                         ID = enumValue,
-                        Value = enumValue.ToString()
+                        Value = enumValue.ToString(),
+                        AllowCommentsOnAsset = tm.IsDefined(typeof(AllowCommentsOnAssetAttribute)) ? tm.GetCustomAttribute<AllowCommentsOnAssetAttribute>().Allowed : false
                     });
                 }
             }
@@ -165,6 +177,7 @@ namespace d360.core.enums
 
             info.Description = member.GetCustomAttribute<DescriptionAttribute>().Description;
             info.Name = member.GetCustomAttribute<NameAttribute>().Name;
+            info.AllowCommentsOnAsset = member.IsDefined(typeof(AllowCommentsOnAssetAttribute)) ? member.GetCustomAttribute<AllowCommentsOnAssetAttribute>().Allowed : false;
             info.ID = type;
             info.Value = type.ToString();
             return info;

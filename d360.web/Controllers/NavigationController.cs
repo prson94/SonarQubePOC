@@ -1050,6 +1050,16 @@ namespace d360.web.Controllers
                     responseModel.Items.HasAudit = true;
                 }
 
+                if (model.ObjectType == SystemObjects.MetricAllocation.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.MetricAllocation.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.DisplayValue = "Scoring Definitions";
+                    responseModel.MainTabTitle = "Scoring Definitions";
+                    responseModel.Items.HasAudit = true;
+                }
+
                 if (model.ObjectType == SystemObjects.Predicate.ToString())
                 {
                     execProcedure = false;

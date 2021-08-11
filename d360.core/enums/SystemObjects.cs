@@ -86,6 +86,8 @@ namespace d360.core
         PolicyType,
         [Description("Rule"), AllowSurvey(false), IsType(false)]
         Rule,
+        [Description("Metric Allocation"), AllowSurvey(false), IsType(false)]
+        MetricAllocation,
         [Description("Rule Type"), AllowSurvey(false), IsType(true)]
         RuleType,
         [Description("Fusion Execution"), AllowSurvey(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]

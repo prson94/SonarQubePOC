@@ -43,6 +43,10 @@ import { AssetGridModule } from '../assets-grid/asset-grid.module';
 import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score.module';
 import { SearchFieldModule } from '../shared/controls/search-field/search-field.component';
 import { AdvancedFiltersModule } from '../assets-grid/advanced-filtering/advanced-filtering.module';
+import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
+import { AssetDetailModule } from '../shared/asset-detail/asset-detail.module';
+import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
+
 
 @NgModule({
     imports: [
@@ -74,6 +78,9 @@ import { AdvancedFiltersModule } from '../assets-grid/advanced-filtering/advance
         D3SSharedModule,
         PipesModule,
         TilesModule,
+        SidePanelModule,
+        AssetDetailModule,
+        DataProfileModule,
         
         SharedGridPagingInfoModule,
         SharedDeleteFormModule,        

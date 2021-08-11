@@ -4685,22 +4685,7 @@ where   ExecutionID = @ExecutionID
                             parentObjectID = it.SubjectID;
                             intersectTypeUid = it.uid;
                             intersectTypeID = it.ID;
-                        }
-                        else
-                        {
-                            if (at.Object == "FusionAttributeType")
-                            {
-                                var fusionAttributeType = GetById<FusionAttributeType>(at.ObjectID);
-                                if (fusionAttributeType != null)
-                                {
-                                    if (fusionAttributeType.ParentID.HasValue)
-                                    {
-                                        parentObject = "FusionAttributeType";
-                                        parentObjectID = fusionAttributeType.ParentID;
-                                    }
-                                }
-                            }
-                        }
+                        }                        
                     }
                     AddMeasurement(metrics, "Get predicateType.HasValue", sw.ElapsedMilliseconds, ++step);
                     sw.Restart();
@@ -8173,7 +8158,7 @@ where	    A.AssetTypeID = @ID;
                 {
                     string CreateFieldTempData = $@"
 	drop table if exists #Keys;
-	CREATE TABLE #Keys (AssetID bigint primary key clustered, ParentAssetUID uniqueidentifier null, 
+	CREATE TABLE #Keys (AssetID bigint, ParentAssetUID uniqueidentifier null, 
                         KeyValue nvarchar(max) null, ActiveKey varchar(32) null);
 
 	insert into #Keys WITH(TABLOCK)
@@ -8181,7 +8166,9 @@ where	    A.AssetTypeID = @ID;
 	from		Asset A 
 			left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
 			left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID	
-	where		A.AssetTypeID = @ID
+	where		A.AssetTypeID = @ID;
+
+    create clustered index idx_key_assetid on #keys(AssetID);
 
 	if (select count(1) from fieldtype ft 
 		inner join assettype att on att.id = ft.AssetTypeID 
@@ -11201,6 +11188,17 @@ EG.GroupUid
                             left Join
                             Asset A on EDP.AssetUid = A.Uid
                         where	ExecutionID = @ExecutionID and A.Uid is null;
+
+                        update	EDP
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'Profiling data can only be associated with Business or Technical Asset types'
+                        from
+                            api.ExecutionAssetDataProfile EDP
+                            inner Join
+                            Asset A on EDP.AssetUid = A.Uid
+                            inner join 
+                            AssetType AST on A.AssetTypeId = AST.ID
+                        where	ExecutionID = @ExecutionID and AST.Class not in (1, 8);
 
                         update	EDP
                         set		Success = 0,

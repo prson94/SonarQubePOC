@@ -47,12 +47,5 @@ export class TypeaheadSearchService extends BaseObservableService {
                 map(response => <SearchResult[]>response),
                 catchError(err => this.handleError(err))
             );
-    }
-    getFusionObjectItems(size: number, term: string) {
-        return this.http.get(`api/breadcrumb/typeaheadForFusion?q=${term}&num=${size}`)
-            .pipe(
-                map(response => <SearchResult[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
+    }    
 }
