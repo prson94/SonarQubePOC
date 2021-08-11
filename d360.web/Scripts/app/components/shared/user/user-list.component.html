@@ -1,17 +1,42 @@
 ﻿<header *ngIf="!showEditor && !showDelete && !showResetPwd">
     {{UserListHeading}}
-    <d3s-tile-actions [hasAdd]="hasAddAssetPermissions() && IsReadOnly()" (addClick)="add()" hasFilterMode="true"
-                      [(filterMode)]="showSimpleFilter" hasExport="true"
-                      [isExportDisabled]="!canExportRecords()"
-                      [exportDisabledMessage]="'Export not available for over ' + maxExportRows + ' rows'"
-                      [IsExportInProgress] ="Isexportinprogress"
-                      (exportClick)="export()"></d3s-tile-actions>
 </header>
-<d3s-loading [isLoading]="isLoading && IsReadOnly()"></d3s-loading>
-    <span *ngIf="!showDelete && !showEditor && !showResetPwd">
-        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100"
-               (input)="$event.target.value;dt.filterGlobal($event.target.value, 'contains')"
-               placeholder="Search..." class="grid-simple-filter">
+<d3s-loading [isLoading]="isLoading && IsReadOnly() && (showDelete || showEditor || showResetPwd)"></d3s-loading>
+<div *ngIf="!showDelete && !showEditor && !showResetPwd">
+    <div class="grid-actions-header">
+        <div class="simple-search">
+            <ig-search-field mode="Keypress"
+                             [debounce]="600"
+                             (onSearch)="getData()"
+                             [(ngModel)]="simpleFilter"
+                             [infoTooltip]="simpleSearchTooltipHTML">
+            </ig-search-field>
+        </div>
+        <advanced-filtering [loadIdentifier]="getLoadIdentifier()" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+        <div class="grid-action-buttons">
+            <button *ngIf="hasAddAssetPermissions() && IsReadOnly()"
+                    igButton
+                    pTooltip="Add new user"
+                    tooltipPosition="top"
+                    tooltipStyleClass="ig-tooltip"
+                    class="ig-button-primary"
+                    icon="fa-plus"
+                    (click)="add()">
+            </button>
+
+            <div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+                    tooltipPosition="left"
+                    tooltipStyleClass="ig-tooltip">
+                <button igButton
+                        [disabled]="!canExportRecords() || isExportInProgress"
+                        icon="fa-download"
+                        [loading]="isExportInProgress"
+                        (click)="export()">
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="grid-table-wrapper">
         <p-table #dt [loading]="isLoading" loadingIcon="fa fa-spinner" [scrollable]="true"
                  scrollWidth="100%" [lazy]="true" (onLazyLoad)="lazyLoadUsers($event)"
                  [totalRecords]="totalRecords" [value]="items" selectionMode="single"
@@ -24,7 +49,7 @@
 
                     <th *ngFor="let column of columns"
                         [pSortableColumn]="column.sortable ? column.datafield : null"
-                        [style.width] = "setStyleWidth(column.datafield)">
+                        [style.width]="setStyleWidth(column.datafield)">
                         {{column.text}}
                         <d3s-sortIcon *ngIf="column.sortable" [field]="column.datafield"></d3s-sortIcon>
                     </th>
@@ -32,19 +57,11 @@
                     <th style="width: 40px" *ngIf="hasDeleteAssetPermissions() && IsReadOnly()"></th>
                     <th style="width: 40px" *ngIf="hasModifyAssetPermissions() && allowPasswordReset  && IsReadOnly()"></th>
                 </tr>
-                <tr [hidden]="showSimpleFilter">
-                    <th *ngFor="let column of columns"  [style.width] = "setStyleWidth(column.datafield)">
-                        <d3s-column-filter [field]="column.datafield"></d3s-column-filter>
-                    </th>
-                    <th *ngIf="hasModifyAssetPermissions() && IsReadOnly()"></th>
-                    <th *ngIf="hasDeleteAssetPermissions() && IsReadOnly()"></th>
-                    <th *ngIf="hasModifyAssetPermissions() && allowPasswordReset && IsReadOnly()"></th>
-                </tr>
             </ng-template>
             <ng-template pTemplate="body" let-item>
                 <tr [pSelectableRow]="item">
 
-                    <td *ngFor="let column of columns"  [style.width] = "setStyleWidth(column.datafield)">
+                    <td *ngFor="let column of columns" [style.width]="setStyleWidth(column.datafield)">
                         <a *ngIf="column.datafield=='FirstName'"
                            (click)="openResource(item)">{{item.FirstName}}</a>
                         <d3s-dynamic-field-value *ngIf="column.datafield!='FirstName'" [column]="column"
@@ -79,7 +96,8 @@
                                       [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
             </ng-template>
         </p-table>
-    </span>
+    </div>
+</div>
     <span *ngIf="showResetPwd  && !isLoading  && IsReadOnly()">
         <header>Reset Users Password</header>
         <div class="row">

@@ -15,6 +15,7 @@ export class GridColumn {
     type: string;
     description: string;
     columnWidth: number;
+    fieldType: string;
 }
 
 export class GridRelationshipFilterExpression {

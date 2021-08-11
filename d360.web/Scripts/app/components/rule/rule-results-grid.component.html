@@ -12,7 +12,7 @@
                          [infoTooltip]="simpleSearchTooltipHTML">
         </ig-search-field>
     </div>
-    <advanced-filtering [loadIdentifier]="'RuleResults_' + ruleUid" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+    <advanced-filtering [loadIdentifier]="'RuleResults_' + ruleUid" (onLoad)="onFiltersLoaded()" [fieldsObserver]="getFieldsObs()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
     <div class="grid-action-buttons">
         <div pTooltip="Export to Excel"
              tooltipPosition="left"
