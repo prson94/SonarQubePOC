@@ -892,11 +892,7 @@ export class BaseComponent {
         if (objectName == 'Tag')
             return true;
 
-        if (objectName = 'MetricAllocation') {
-            return true;
-        }
-
-        if (objectName = 'Predicate') {
+        if (objectName == 'MetricAllocation' || objectName == 'Predicate') {
             return true;
         }
 

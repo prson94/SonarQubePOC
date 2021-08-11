@@ -100,7 +100,7 @@ namespace d360.core.enums
             Name("Predicate"),
             Description("Predicate.")
         ]
-        Predicate = 16,
+        Predicate = 17,
         [
             Name("Glossary-Obsolete"),
             Obsolete("Use BusinessAsset instead", false),
