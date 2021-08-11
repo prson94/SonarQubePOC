@@ -18,6 +18,7 @@ import { SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 import { AssetGridObject } from '../assets-grid/asset-grid.model';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { DataProfileService } from '../../services/dataprofile.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
     selector: 'd3s-rule-list',
@@ -114,6 +115,16 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                 (r) => {
                     if (r && r.items && r.items.length > 0 && r.items[0].sampleCount != null) {
                         this.dataProfile = r.items[0];
+
+                        forkJoin(
+                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
+                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
+                        ).subscribe((res) => {
+                            this.dataProfile['matches'] = {
+                                structure: res[0],
+                                data: res[1]
+                            };
+                        });
                     }
                     this.sidePanelLoading = false;
                 });
