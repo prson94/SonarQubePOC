@@ -498,14 +498,14 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("CreatedOn lt '2021-08-10'", "A.CreatedOn < @filter_1")]
         [InlineData("CreatedOn gt '2021-08-10'", "A.CreatedOn > @filter_1")]
         [InlineData("CreatedOn ge '2021-08-10'", "A.CreatedOn >= @filter_1")]
-        [InlineData("CreatedOn ct '2021-08-10'", "CONVERT(VARCHAR,A.CreatedOn,120) like @filter_1")]
+        [InlineData("CreatedOn ct '2021-08-10'", "CONVERT(VARCHAR,A.CreatedOn,120) like @filter_1")] //UI can use contains on date
         [InlineData("UpdatedOn eq '2021-08-10'", "A.UpdatedOn = @filter_1")]
         [InlineData("UpdatedOn ne '2021-08-10'", "(A.UpdatedOn <> @filter_1 or A.UpdatedOn is null)")]
         [InlineData("UpdatedOn le '2021-08-10'", "A.UpdatedOn <= @filter_1")]
         [InlineData("UpdatedOn lt '2021-08-10'", "A.UpdatedOn < @filter_1")]
         [InlineData("UpdatedOn gt '2021-08-10'", "A.UpdatedOn > @filter_1")]
         [InlineData("UpdatedOn ge '2021-08-10'", "A.UpdatedOn >= @filter_1")]
-        [InlineData("UpdatedOn ct '2021-08-10'", "CONVERT(VARCHAR,A.UpdatedOn,120) like @filter_1")]
+        [InlineData("UpdatedOn ct '2021-08-10'", "CONVERT(VARCHAR,A.UpdatedOn,120) like @filter_1")] //UI can use contains on date
         public void SystemFieldsTest(string expression, string expected)
         {
 
