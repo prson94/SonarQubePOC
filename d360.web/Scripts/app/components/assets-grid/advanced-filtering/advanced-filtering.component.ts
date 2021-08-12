@@ -454,16 +454,12 @@ export class AdvancedFilteringComponent implements OnChanges {
         this.cdRef.markForCheck();
     }
 
-    private isValidGUID(str: string): boolean{
-        if (str.length !== 36) {
+    get isAssetType() {
+        if (this.loadIdentifier.length !== 36) {
             return false;
         }
-        const regex: RegExp = /^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/iu;
-        return regex.test(str);
-    }
-
-    get isAssetType() {
-        return this.isValidGUID(this.loadIdentifier);
+        const regex: RegExp = /^[\da-f\-]{36}$/iu;
+        return regex.test(this.loadIdentifier);
     }
 
     get isRuleResults() {
