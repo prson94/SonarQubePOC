@@ -21,17 +21,18 @@
                         <data-profile [dataProfile]="dataProfile"></data-profile>
                     </ng-container>
                     <ng-container *ngIf="sidePanelTab === 'detail'">
-                        <ig-asset-detail [objectUID]="selection.AssetUid"
-                                         objectType="artifact"
-                                         [useAccordion]="true"
-                                         [shouldBePadded]="false"
-                                         [showHeader]="true"
-                                         [showHeaderLine]="false"
-                                         [spacerHeight]="'16px'"
-                                         [tooltipAlign]="'left'"
-                                         [hasAddRelationshipsPermissions]="false"
-                                         [hasModifyRelationshipsPermissions]="false"
-                                         [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
+                            <ig-asset-detail [objectUID]="selection.AssetUid"
+                                             objectType="artifact"
+                                             [useAccordion]="true"
+                                             [shouldBePadded]="false"
+                                             [showHeader]="true"
+                                             [showHeaderLine]="false"
+                                             [spacerHeight]="'16px'"
+                                             [paddingLeft]="'11px'"
+                                             [tooltipAlign]="'left'"
+                                             [hasAddRelationshipsPermissions]="false"
+                                             [hasModifyRelationshipsPermissions]="false"
+                                             [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
                     </ng-container>
                 </ng-container>
             </side-panel>
