@@ -17,7 +17,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -764,6 +764,7 @@
     <Content Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.html" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.back-button.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.input-group.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.multi-input-field.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.radio-button.component.html" />
@@ -987,6 +988,7 @@
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.back-button.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.input-group.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.multi-input-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.radio-button.component.ts" />
