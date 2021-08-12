@@ -2339,7 +2339,6 @@ from    (
         {
             var model = new DetailReadOnlyModel() { columns = useSingleColumn ? 1 : 2 };
 
-            int row = 0;
             switch (type)
             {
                 case SystemObjects.Artifact:
