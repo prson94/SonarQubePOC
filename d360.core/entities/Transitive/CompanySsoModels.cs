@@ -28,6 +28,7 @@ namespace d360.core.entities
     {
         public string type { get; set; }
         public string baseUri { get; set; }
+        public string discoveryUri { get; set; }
         public string clientId { get; set; }
         public string clientSecret { get; set; }
         public string audience { get; set; }

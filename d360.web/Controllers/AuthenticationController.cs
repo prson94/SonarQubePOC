@@ -394,7 +394,7 @@ namespace d360.web.Controllers
 
                     try
                     {
-                        var resourceTypeFields = Company.Filter<FieldType>(i => i.Object == "ResourceType" && i.ObjectID == 1 && !i.IsEditable).ToList();
+                        var resourceTypeFields = Company.Filter<FieldType>(i => i.Object == "ResourceType").ToList();
                         var resourceFields = Company.Filter<Field>(i => i.ObjectType == "Resource" && i.ObjectID == resource.ID).ToList();
                         var shouldSaveFields = false;
 
@@ -784,6 +784,8 @@ namespace d360.web.Controllers
             var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
             var token = handler.ReadJwtToken(response.IdentityToken);
 
+            var accessToken = handler.ReadJwtToken(response.AccessToken);
+
             var incomingNonce = token.Claims.SingleOrDefault(c => c.Type == "nonce").Value.ToString();
             if (openIdRequest.Nonce != incomingNonce)
             {
@@ -798,20 +800,21 @@ namespace d360.web.Controllers
             string lastName = null;
             try
             {
-                var userInfo = await client.GetUserInfoAsync(new UserInfoRequest
+                //var userInfo = await client.GetUserInfoAsync(new UserInfoRequest
+                //{
+                //    Address = $"{baseUri}/userinfo",
+                //    Token = response.AccessToken
+                //});
+                foreach(var prop in accessToken.Claims)
+                //foreach (Newtonsoft.Json.Linq.JProperty prop in userInfo.Json.Properties())
                 {
-                    Address = $"{baseUri}/userinfo",
-                    Token = response.AccessToken
-                });
-
-                foreach (Newtonsoft.Json.Linq.JProperty prop in userInfo.Json.Properties())
-                {
-                    switch (prop.Name)
+                    switch (prop.Type) //prop.Name
                     {
                         case "amr":
                         case "aud":
                         case "at_hash":
                         case "auth_time":
+                        case "cid":
                         case "exp":
                         case "iat":
                         case "idp":
@@ -820,20 +823,26 @@ namespace d360.web.Controllers
                         case "name":
                         case "nonce":
                         case "preferred_username":
-                        case "sub":
+                        case "scp":
                         case "ver":
+                        case "uid":
                             break;
+                        case "sub":
                         case "email":
                             userName = prop.Value.ToString();
                             break;
+                        case "givenname":
                         case "given_name":
+                        case "firstname":
                             firstName = prop.Value.ToString();
                             break;
                         case "family_name":
+                        case "lastname":
+                        case "surname":
                             lastName = prop.Value.ToString();
                             break;
                         default:
-                            customClaims.Add(prop.Name, prop.Value.ToString());
+                            customClaims.Add(prop.Type, prop.Value.ToString());
                             break;
                     }
                 }
@@ -847,15 +856,17 @@ namespace d360.web.Controllers
 
             try
             {
-                var disco = new DiscoveryCache(baseUri);
-                var discoDoc = await disco.GetAsync();
+                var discoveryUri = string.IsNullOrEmpty(authenticationSettings.discoveryUri) ? baseUri : authenticationSettings.discoveryUri;
+                var disco = new DiscoveryCache(discoveryUri, new DiscoveryPolicy { RequireHttps = true, ValidateEndpoints = false });
+                var discoDoc = disco.GetAsync().Result;
+
 
                 var keySet = await client.GetJsonWebKeySetAsync($"{baseUri}/keys");
 
                 var user = response.IdentityToken.ValidateJwtIdentityToken(authenticationSettings.nameClaimType,
-                    authenticationSettings.audience, true, 
-                    discoDoc.Issuer, false, 
-                    keySet.KeySet.Keys, false, true, false, false);
+                    authenticationSettings.audience, false, 
+                    discoDoc.Issuer, true, 
+                    keySet.KeySet.Keys, true, true, true, false);
 
                 System.Action addOpenIdTokenToContext = () => {
                     var properties = new Microsoft.Owin.Security.AuthenticationProperties();
