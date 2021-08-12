@@ -20,7 +20,7 @@ import { TreeTable } from 'primeng/treetable';
 import { V2ApiFilters } from '../../models/asset-search.model';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { Filters } from '../assets-grid/advanced-filtering/advanced-filtering.models';
-import { Observable, Subscription } from 'rxjs';
+import { forkJoin, Observable, Subscription } from 'rxjs';
 import { DataProfileService } from '../../services/dataprofile.service';
 
 @Component({
@@ -189,6 +189,16 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 (r) => {
                     if (r && r.items && r.items.length > 0 && r.items[0].sampleCount != null) {
                         this.dataProfile = r.items[0];
+
+                        forkJoin(
+                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
+                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
+                        ).subscribe((res) => {
+                            this.dataProfile['matches'] = {
+                                structure: res[0],
+                                data: res[1]
+                            };
+                        });
                     }
                     this.sidePanelLoading = false;
                 });

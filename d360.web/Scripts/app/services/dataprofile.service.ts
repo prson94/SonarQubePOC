@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpClientJsonpModule } from '@angular/common/http';
-import { Observable, throwError } from "rxjs";
+import { Observable, of, throwError } from "rxjs";
 import { catchError, map, debounceTime } from "rxjs/operators";
 
 import { JsonResult } from '../models/jsonresult.model';
@@ -46,7 +46,12 @@ export class DataProfileService extends BaseObservableService {
             .get(`/api/v2/dataprofiles/${assetUid}/similar/${matchType}/count`, httpOptions)
             .pipe(
                 map((response) => <any>response),
-                catchError((err) => this.handleError(err, true))
+                catchError((err) => {
+                    if ((err?.error?.message as string).indexOf('signature not found') !== -1) {
+                        return of(0);
+                    }
+                    return this.handleError(err, true);
+                })
             );
     }
 

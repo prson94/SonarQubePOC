@@ -13,7 +13,7 @@ import { Artifact } from '../../models/artifacts.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { debounce, debounceTime } from 'rxjs/operators';
 import { AssetTypeClass } from '../../models/asset.model';
-import { Subscription } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
 import { AssetGridObject } from '../assets-grid/asset-grid.model';
 import { DataProfileService } from '../../services/dataprofile.service';
@@ -157,6 +157,16 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
                 (r) => {
                     if (r && r.items && r.items.length > 0 && r.items[0].sampleCount != null) {
                         this.dataProfile = r.items[0];
+
+                        forkJoin(
+                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
+                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
+                        ).subscribe((res) => {
+                            this.dataProfile['matches'] = {
+                                structure: res[0],
+                                data: res[1]
+                            };
+                        });
                     }
                     this.sidePanelLoading = false;
                 }); 

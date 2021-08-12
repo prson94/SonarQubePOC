@@ -101,8 +101,8 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
                                 this.dataProfile = r.items[0];
 
                                 forkJoin(
-                                    this.dataProfileService.getMatchCounts(this.artifact.Uid, 'Structure'),
-                                    this.dataProfileService.getMatchCounts(this.artifact.Uid, 'Data')
+                                    this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
+                                    this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
                                 ).subscribe((res) => {
                                     this.dataProfile['matches'] = {
                                         structure: res[0],
