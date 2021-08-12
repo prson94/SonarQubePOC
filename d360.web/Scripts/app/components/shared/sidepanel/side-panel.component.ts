@@ -21,7 +21,7 @@ export class SidePanelComponent extends BaseComponent {
     @Output() buttonClick = new EventEmitter<string>();
 
     @Input() panelApplies: boolean = true;
-    @Input() selectedItem: any;
+    @Input() selectedItem: any = {};
     @Input() selectedPanel: string = '';
     @Output() selectedPanelChange = new EventEmitter<string>();
 
