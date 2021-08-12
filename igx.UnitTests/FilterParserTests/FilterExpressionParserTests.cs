@@ -36,6 +36,7 @@ namespace igx.UnitTests.FilterExpressionTests
             fieldTypes.Add(new FieldType() { Name = "lookup", ID = 6, Type = "Lookup", LookupObjectType = "ArtifactType", LookupObjectID = 1 });
             fieldTypes.Add(new FieldType() { Name = "relationship", ID = 6, Type = "Relationship", LookupObjectType = "IntersectType", LookupObjectID = 1 });
             fieldTypes.Add(new FieldType() { Name = "counter", ID = 7, Type = "Counter" });
+            fieldTypes.Add(new FieldType() { Name = "PathField", ID = 10, Type = "Path" });
 
             fieldTypes.ForEach(x =>
             {
@@ -414,6 +415,22 @@ namespace igx.UnitTests.FilterExpressionTests
             }
 
             Assert.True(didThrow);
+        }
+
+        [Theory]
+        [InlineData("PathField ct 'Action test' and PathField ct 'GC 1'", "Node.Segments.exist('/path/segment[contains(.,sql:variable(\"@filter_1\"))]') = 1 and Node.Segments.exist('/path/segment[contains(.,sql:variable(\"@filter_2\"))]') = 1")]
+        [InlineData("PathField ct 'Action test' or PathField ct 'GC 565'", "Node.Segments.exist('/path/segment[contains(.,sql:variable(\"@filter_1\"))]') = 1 or Node.Segments.exist('/path/segment[contains(.,sql:variable(\"@filter_2\"))]') = 1")]
+        [InlineData("PathField nct 'SON'", "Node.Segments.exist('/path/segment[contains(.,sql:variable(\"@filter_1\"))]') = 0")]
+        [InlineData("PathField eq 'Action test > SON > GC 1'", "Node.Segments.exist('/path/segment[1][.=sql:variable(\"@filter_1_0\")]') = 1 and Node.Segments.exist('/path/segment[2][.=sql:variable(\"@filter_1_1\")]') = 1 and Node.Segments.exist('/path/segment[3][.=sql:variable(\"@filter_1_2\")]') = 1")]
+        [InlineData("PathField ne 'Action test > SON > GC 1'", "Node.Segments.exist('/path/segment[1][.=sql:variable(\"@filter_1_0\")]') = 0 and Node.Segments.exist('/path/segment[2][.=sql:variable(\"@filter_1_1\")]') = 0 and Node.Segments.exist('/path/segment[3][.=sql:variable(\"@filter_1_2\")]') = 0")]
+        [InlineData("PathField ct 'Action test*'", "Node.Segments.exist('/path/segment[1][contains(.,sql:variable(\"@filter_1\"))]') = 1")]
+        [InlineData("PathField ct '*GC 103'", "Node.Segments.exist('/path/segment[last()][contains(.,sql:variable(\"@filter_1\"))]') = 1")]
+        public void TestAssetPathFields(string expression, string expectedQuery)
+        {
+            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+            var value = filterParser.Parse(expression, out sqlParams, out _);
+
+            Assert.True(value == expectedQuery);
         }
 
 
