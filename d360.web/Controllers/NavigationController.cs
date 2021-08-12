@@ -1059,6 +1059,16 @@ namespace d360.web.Controllers
                     responseModel.MainTabTitle = "Scoring Definitions";
                     responseModel.Items.HasAudit = true;
                 }
+
+                if (model.ObjectType == SystemObjects.Predicate.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.Predicate.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.DisplayValue = "Predicates";
+                    responseModel.MainTabTitle = "Predicates";
+                    responseModel.Items.HasAudit = true;
+                }
             }
 
 

@@ -150,6 +150,9 @@ namespace d360.web.Controllers.V2
                         case "MetricAllocation":
                             baseSql = GetBaseAuditQueryObject(SystemObjects.MetricAllocation, false);
                             break;
+                        case "Predicate":
+                            baseSql = GetBaseAuditQueryObject(SystemObjects.Predicate, false);
+                            break;
                         default:
                             baseSql = GetBaseAuditQueryForAssetTypeUid(assetType?.Class == AssetTypeClass.Reference);
                             break;

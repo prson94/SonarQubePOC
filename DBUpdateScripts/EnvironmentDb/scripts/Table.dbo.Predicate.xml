@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.Predicate-v2">
+  <changeSet author="sDooley" id="Table.dbo.Predicate-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -38,11 +38,41 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_Predicate_Type')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_Predicate_Type] ON [dbo].[Predicate] ( [Type] ASC )
 END
+
+  if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Predicate' and COLUMN_NAME = 'UpdatedBy')
+begin
+	  ALTER TABLE [dbo].[Predicate]
+    ADD UpdatedBy int NOT NULL 
+    CONSTRAINT DF_Predicate_updatedBy DEFAULT 0;
+end
+
+if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Predicate' and COLUMN_NAME = 'CreatedBy')
+begin
+	  ALTER TABLE [dbo].[Predicate]
+    ADD CreatedBy int NOT NULL 
+    CONSTRAINT DF_Predicate_createdBy DEFAULT 0;
+end
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
+if exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Predicate' and COLUMN_NAME = 'UpdatedBy')
+begin
+	ALTER TABLE [dbo].[Predicate]
+	DROP CONSTRAINT [DF_Predicate_updatedBy];
+	
+	ALTER TABLE [dbo].[Predicate]
+	DROP COLUMN [UpdatedBy];
+end
 
+if exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Predicate' and COLUMN_NAME = 'CreatedBy')
+begin
+	ALTER TABLE [dbo].[Predicate]
+	DROP CONSTRAINT [DF_Predicate_createdBy];
+	
+	ALTER TABLE [dbo].[Predicate]
+	DROP COLUMN [CreatedBy];
+end
 		]]>
 	</rollback>
   </changeSet>
@@ -103,5 +133,79 @@ BEGIN
 END
 		]]>
 	</rollback>
+  </changeSet>
+  <changeSet author="sDooley" id="Table.dbo.Predicate_AfterInsert-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Predicate_AfterInsert]
+	ON [dbo].[Predicate]
+	AFTER INSERT
+AS
+BEGIN
+	SET NOCOUNT ON;
+		
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Add', [queue].WriteIndexXml('', 'Predicate', ID, coalesce(CreatedBy, 0)), 'Predicate', ID from inserted
+END
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+DROP TRIGGER IF EXISTS [dbo].[Predicate_AfterInsert]
+		]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="sDooley" id="Table.dbo.Predicate_AfterUpdate-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Predicate_AfterUpdate]
+	ON [dbo].[Predicate]
+	AFTER UPDATE
+AS
+BEGIN
+	SET NOCOUNT ON;
+		
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Update', [queue].WriteIndexXml('', 'Predicate', ID, coalesce(UpdatedBy, 0)), 'Predicate', ID from inserted
+END
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+DROP TRIGGER IF EXISTS [dbo].[Predicate_AfterUpdate]
+		]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="sDooley" id="Table.dbo.Predicate_AfterDelete-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Predicate_AfterDelete]
+	ON [dbo].[Predicate]
+	AFTER DELETE
+AS
+BEGIN
+	SET NOCOUNT ON;
+		
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Delete', [queue].WriteIndexXml('', 'Predicate', ID, coalesce(UpdatedBy, 0)), 'Predicate', ID from deleted
+END
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+DROP TRIGGER IF EXISTS [dbo].[Predicate_AfterDelete]
+		]]>
+    </rollback>
   </changeSet>
 </databaseChangeLog>

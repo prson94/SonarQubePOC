@@ -145,6 +145,9 @@ export class SiteUrlHelpers {
         if (objectType.toLowerCase() === "metricallocation") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}`;
         }
+        if (objectType.toLowerCase() === "predicate") {
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_PREDICATES}`;
+        }
         return SiteUrlHelpers.getObjectUrl(objectType, objectId, parentId);
     }
 

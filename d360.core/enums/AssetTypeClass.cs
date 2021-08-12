@@ -97,6 +97,11 @@ namespace d360.core.enums
         ]
         MetricAllocation = 16,
         [
+            Name("Predicate"),
+            Description("Predicate.")
+        ]
+        Predicate = 17,
+        [
             Name("Glossary-Obsolete"),
             Obsolete("Use BusinessAsset instead", false),
             Description("Obsolete - do not use.")
