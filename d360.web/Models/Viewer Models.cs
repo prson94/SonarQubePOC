@@ -10,15 +10,6 @@ using System.Web.Mvc;
 
 namespace d360.web.Models
 {
-    [DataContract(Name = "artifacts", Namespace = constants.NAMESPACE)]
-    public class ArtifactModelRequestList : List<ArtifactModelRequest> { }
-
-    [DataContract(Name = "artifact", Namespace = constants.NAMESPACE)]
-    [Serializable]
-    public class ArtifactModelRequest : Dictionary<string, object> { }
-
-
-
     public class CountModel
     {
         public string Name { get; set; }
