@@ -1391,7 +1391,7 @@ when not matched then
     insert (ExecutionID, ChangeType, RowNumber, State, Payload) 
     values (S.ExecutionID, S.ChangeType, S.RowNumber, 0, S.Payload);
 
-truncate table #ExecutionItem;", transaction: trans);
+truncate table #ExecutionItem;", transaction: trans, commandTimeout: timeout);
 
                         trans.Commit();
                     }
