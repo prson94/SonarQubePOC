@@ -101,7 +101,7 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
                     }
                     if (object.actionObject === "Predicate" && object.field === "Functional Type") {
                         object.newValue = this.getPredicateTypeStringValue(object.newValue);
-                        if (object.previousValue != undefined) {
+                        if (object.previousValue !== undefined) {
                             object.previousValue = this.getPredicateTypeStringValue(object.previousValue);
                         }
                     }
