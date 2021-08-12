@@ -28,6 +28,8 @@ export class AssetDetailComponent implements OnChanges {
     @Input() tooltipAlign: string;
     @Input() showHeader: boolean = false;
     @Input() showTabs: boolean = false;
+    @Input() showHeaderLine: boolean = true;
+    @Input() spacerHeight: string = '32px';
     assetUID: string;
     assetTypeUID: string;
     isLoading = false;

@@ -134,7 +134,6 @@
                         [selectedItem]="selected?.data"
                         [panelApplies]="panelApplies"
                         [hasProfiling]="hasProfiling"
-                        [disableProfiling]="selected?.data == null ? false : !selected?.data?.HasProfiling"
                         hasDetail="true">
                 <ng-container *ngIf="sidePanelOpen && selected?.data != null && sidePanelLoading">
                     <d3s-loading [isLoading]="true"></d3s-loading>
@@ -148,6 +147,8 @@
                                          [objectType]="object"
                                          [useAccordion]="true"
                                          [shouldBePadded]="false"
+                                         [showHeaderLine]="false"
+                                         [spacerHeight]="'16px'"
                                          [tooltipAlign]="'left'"
                                          [hasAddRelationshipsPermissions]="false"
                                          [hasModifyRelationshipsPermissions]="false"
