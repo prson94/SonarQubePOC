@@ -1,0 +1,36 @@
+﻿<div class="tile tile-detail">
+    <header>Back Button</header>
+    <p>A control that allows adding and selecting tags.</p>
+</div>
+
+<div class="tile tile-detail">
+    <header>Examples</header>
+    <div class="gallery-section">
+        <h4>Back Button</h4>
+        <button igButton label="Open Modal" (click)="m1State = true" tabindex="3"></button>&nbsp;&nbsp;&nbsp;
+        <d3s-modal title="Modal 1" additionalClasses="medium-dialog" (onClose)="m1State = false" [isVisible]="m1State">
+            <div class="content">
+                Text of modal 1<br />
+
+                <button igButton label="Open Modal2" (click)="m2State = true" tabindex="3"></button>&nbsp;&nbsp;&nbsp;
+                <button igButton label="Close Modal" (click)="m1State = false" tabindex="3"></button>
+                <d3s-modal title="Modal 2" additionalClasses="medium-dialog" (onClose)="m2State = false" [isVisible]="m2State">
+                    <div class="content">
+                        Text of modal 2<br />
+
+                        <button igButton label="Open Modal 3" (click)="m3State = true" tabindex="3"></button>&nbsp;&nbsp;&nbsp;
+                        <button igButton label="Close Modal 2" (click)="m2State = false" tabindex="3"></button>
+                        <d3s-modal title="Modal 3" additionalClasses="medium-dialog" (onClose)="m3State = false" [isVisible]="m3State">
+                            <div class="content">
+                                Text of modal 3<br />
+                                <button igButton label="Close Modal 3" (click)="m3State = false" tabindex="3"></button>
+                            </div>
+                        </d3s-modal>
+                    </div>
+                </d3s-modal>
+            </div>
+
+
+        </d3s-modal>
+    </div>
+</div>
