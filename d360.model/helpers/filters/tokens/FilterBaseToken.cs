@@ -67,30 +67,7 @@ namespace d360.model.helpers.filters
             }
         }
 
-        protected bool IsValidOperatorForFieldType()
-        {
-            var operand = @operator.ToLower();
-
-            switch (CurrentFieldType)
-            {
-                case "boolean":
-                case "lookup":
-                case "relationship":
-                    return new[] { "eq", "ne", "ct" }.Contains(operand);
-                case "number":
-                case "decimal":
-                case "score":
-                case "counter":
-                    return !(new[] { "ct", "nct" }.Contains(operand));
-                case "date":
-                case "datetime":
-                    return true;
-                case "assettypeclass":
-                    return new[] { "eq", "ne" }.Contains(operand);
-                default:
-                    return new[] { "eq", "ne", "ct", "nct" }.Contains(operand);
-            }
-        }
+       
 
         protected string GetSQLOperator(string value)
         {
@@ -354,22 +331,6 @@ namespace d360.model.helpers.filters
                 return fieldColumn.Substring(0, fieldColumn.LastIndexOf(" as "));
             }
         }
-        public void ValidateTokenForType(DefaultFilter defaultFilter = null)
-        {
-            string type = defaultFilter == null ? fieldType.Type : defaultFilter.SqlFieldType.ToString();
-
-            bool hasApostrophe = value.ToString().First() == '\'' && value.ToString().Last() == '\'';
-            if (!hasApostrophe && !(type == "Number" || type == "Decimal" || type == "Boolean" || type == "Score" || type == "Counter"))
-            {
-                throw new Exception("Text values should be placed within quotations.");
-            }
-
-            if (defaultFilter == null && !IsValidOperatorForFieldType())
-            {
-                throw new Exception($"Operator '{@operator}' is not valid for '{type}' on field {field}");
-            }
-        }
-
 
         protected IFieldValueValidator GetValueValidator()
         {

@@ -173,7 +173,7 @@
     <Compile Include="helpers\filters\FilterToken.cs" />
     <Compile Include="helpers\filters\IFilterDataProvider.cs" />
     <Compile Include="helpers\filters\program\FieldValueValidator.cs" />
-    <Compile Include="helpers\filters\program\FilterStaticHelpers.cs" />
+    <Compile Include="helpers\filters\program\FilterHelpers.cs" />
     <Compile Include="helpers\filters\tokens\DefaultFieldToken.cs" />
     <Compile Include="helpers\filters\tokens\FilterBaseToken.cs" />
     <Compile Include="helpers\filters\FilterDataProvider.cs" />

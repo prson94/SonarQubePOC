@@ -117,14 +117,14 @@ namespace d360.model.helpers.filters
             }
             else
             {
-                if (!IsValidOperatorForFieldType())
+                if (!FilterHelpers.IsValidOperatorForFieldType(this.CurrentFieldType, @operator))
                 {
-                    throw new Exception($"Operator '{@operator}' is not valid for '{defaultFilter.SqlFieldType.ToString().ToLower()}' on field {field}");
+                    throw new Exception($"Operator '{@operator}' is not valid for '{this.CurrentFieldType}' on field {field}");
                 }
 
                 if (!this.IsNullValue)
                 {
-                    ValidateTokenForType(defaultFilter);
+                    FilterHelpers.ValidateValueForType(this.CurrentFieldType, value);
 
                     var valueValidation = this.fieldValueValidator.CheckValue(this.value, this.field, this.@operator);
                     if (!valueValidation.Status)

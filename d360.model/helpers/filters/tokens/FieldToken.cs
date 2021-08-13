@@ -38,7 +38,12 @@ namespace d360.model.helpers.filters
             stringBuilder.Clear();
             if (!this.IsNullValue)
             {
-                ValidateTokenForType();
+                if (!FilterHelpers.IsValidOperatorForFieldType(this.CurrentFieldType, @operator))
+                {
+                    throw new Exception($"Operator '{@operator}' is not valid for '{this.CurrentFieldType}' on field {field}");
+                }
+
+                FilterHelpers.ValidateValueForType(this.CurrentFieldType, value);
 
                 var valueValidation = this.fieldValueValidator.CheckValue(this.value, this.field, this.@operator);
                 if (!valueValidation.Status)
