@@ -139,7 +139,7 @@ namespace d360.model.helpers
 
             if (filter.SqlFieldType == SqlFieldType.Xml)
             {
-                value = value.ToString().ToLower();
+                value = value.ToString().ToLower(CultureInfo.InvariantCulture);
                 if (value.ToString().StartsWith("'"))
                 {
                     value = ((string)value).TrimStart('\'');
