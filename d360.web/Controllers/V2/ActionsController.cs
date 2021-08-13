@@ -808,7 +808,6 @@ for json path";
         ]
         public async Task<IHttpActionResult> CreateAction(Guid actionTypeUid, List<ActionUpsertRequest> models, bool lookupFieldsPassedByValue = false)
         {
-            var prefix = "Issues.CreateAction => ";
             try
             {
                 bool isWriteActionDescriptionEnabled = IsWriteActionDescriptionEnabled();
@@ -907,7 +906,7 @@ for json path";
             }
             catch (BaseException ex)
             {
-                return await Task.FromResult(errorMessageResponse(ex.StatusCode, ApiMessages.BadRequest, ex.StatusDescription));
+                return await Task.FromResult(errorMessageResponse(ex.StatusCode, ApiMessages.BadRequest, ex.StatusDescription)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
