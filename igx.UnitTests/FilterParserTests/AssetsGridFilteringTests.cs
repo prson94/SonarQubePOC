@@ -532,32 +532,6 @@ namespace igx.UnitTests.FilterExpressionTests
                 Assert.Contains(additionalExpectation.ToLower(), sql.ToLower());
             }
         }
-
-        //EXISTS(
-        //                                    SELECT 1 
-        //                                    FROM
-        //                                        [dbo].[ResponsibilityDetail] rd
-        //                                    WHERE
-        //                                        rd.SecurityAssetUid = @filter_1
-        //                                        and
-        //                                        a.ID= rd.AssetID
-        //                                        and
-        //                                        rd.isVisible = 1
-        //                                    UNION
-        //                                    SELECT 1 
-        //                                    FROM
-        //                                        [dbo].[ResponsibilityDetail] rd
-        //                                    WHERE
-        //                                        rd.SecurityAssetUid = @filter_1
-        //                                        and
-        //                                        rd.ApplyToType = 1
-        //                                        and
-        //                                        rd.AssetID = 0
-        //                                        and
-        //                                        rd.AssetTypeId= a.AssetTypeId
-        //                                        and
-        //                                        rd.isVisible = 1
-        //                                    )
     }
 
 }
