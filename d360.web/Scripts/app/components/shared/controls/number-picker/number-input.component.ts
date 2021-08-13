@@ -69,6 +69,7 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit, Val
                     value = this.min;
                     this.el.nativeElement.value = value;
                 }
+                obj = value;
             }
         }
         else {
@@ -100,22 +101,20 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit, Val
 
     validate(control: AbstractControl): ValidationErrors {
         let result: any = null;
-        if (this.enforceMaxMin) {
-            if (this.isOverMax()) {
-                result = {
-                    overMax: {
-                        actual: +this.value,
-                        max: +this.max
-                    }
-                };
-            } else if (this.isUnderMin()) {
-                result = {
-                    underMin: {
-                        actual: +this.value,
-                        min: +this.min
-                    }
-                };
-            }
+        if (this.isOverMax()) {
+            result = {
+                overMax: {
+                    actual: +this.value,
+                    max: +this.max
+                }
+            };
+        } else if (this.isUnderMin()) {
+            result = {
+                underMin: {
+                    actual: +this.value,
+                    min: +this.min
+                }
+            };
         }
         return result;
     }

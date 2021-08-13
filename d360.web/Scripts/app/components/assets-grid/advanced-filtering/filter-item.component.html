@@ -73,7 +73,7 @@
                         <ig-number-input igSize="full" [(ngModel)]="condition.value2" [required]="true" [min]="numberMin" [max]="numberMax" [enforceMaxMin]="true" #condvaltwo="ngModel"></ig-number-input>
                         <div *ngIf="condvaltwo.invalid && (condvaltwo.dirty || condvaltwo.touched)">
                             <div *ngIf="condvaltwo.errors.underMin" class="ig-text-required">Please enter a value of {{condvaltwo.errors.underMin.min}} or higher</div>
-                            <div *ngIf="condvaltwo.errors.overMax">Please enter a value of {{condvaltwo.errors.overMax.max}} or lower</div>
+                            <div *ngIf="condvaltwo.errors.overMax" class="ig-text-required">Please enter a value of {{condvaltwo.errors.overMax.max}} or lower</div>
                         </div>
                     </ng-container>
 

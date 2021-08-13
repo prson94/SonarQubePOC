@@ -8,6 +8,14 @@ export class DummyformModel {
     ) { }
 }
 
+export class DummyenforceModel {
+    constructor(
+        public name: string,
+        public number: number,
+        public enforce: boolean
+    ) { }
+}
+
 @Component({
     selector: 'gallery-number-field',
     templateUrl: './gallery.number-field.component.html',
@@ -28,7 +36,7 @@ export class GalleryNumberFieldComponent implements OnInit {
     properties: Array<any>;
     sampleUsage: string = '<ig-number-input></ig-number-input>';
     model: DummyformModel = new DummyformModel("name", 0);
-    enforcemodel: DummyformModel = new DummyformModel("enforce", 0);
+    enforcemodel: DummyenforceModel = new DummyenforceModel("enforcemodel", 0, true);
     form: FormGroup = null;
     demoSize: string = "small";
 
