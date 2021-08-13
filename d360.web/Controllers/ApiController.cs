@@ -2356,7 +2356,6 @@ from    (
                 model.ObjectTypeID = metadata.ObjectTypeID;
             }
 
-            int row = 0;
             switch (type)
             {
                 case SystemObjects.Artifact:
