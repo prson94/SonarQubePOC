@@ -77,11 +77,11 @@
                                 <p-treeTableToggler [rowNode]="rowNode" *ngIf="i === 0"></p-treeTableToggler>
                                 <ng-container *ngIf="i === 0">
                                     <a (click)="showHierarchy(item)"
-                                       [ngStyle]="setTreeNodeStyles(rowNode.node)"
-                                       class="link">
+                                       [ngStyle]="setTreeNodeStyles(rowNode.node)">
                                         <d3s-dynamic-field-value [column]="column"
                                                                  [fields]="fields"
                                                                  [useApiName]="true"
+                                                                 styleClass="cell-link"
                                                                  [item]="item"></d3s-dynamic-field-value>
                                     </a>
                                 </ng-container>
