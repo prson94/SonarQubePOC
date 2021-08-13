@@ -139,6 +139,7 @@ namespace d360.model.helpers
 
             if (filter.SqlFieldType == SqlFieldType.Xml)
             {
+                value = value.ToString().ToLower(CultureInfo.InvariantCulture);
                 if (value.ToString().StartsWith("'"))
                 {
                     value = ((string)value).TrimStart('\'');
@@ -180,16 +181,16 @@ namespace d360.model.helpers
                         formattedSql = "{0}.exist('/path/segment[. < sql:variable(\"{1}\")]') = 1";
                         break;
                     case "sw":
-                        formattedSql = "{0}.exist('/path/segment[1][contains(.,sql:variable(\"{1}\"))]') = 1";
+                        formattedSql = "{0}.exist('/path/segment[1][contains(lower-case(.),sql:variable(\"{1}\"))]') = 1";
                         break;
                     case "ew":
-                        formattedSql = "{0}.exist('/path/segment[last()][contains(.,sql:variable(\"{1}\"))]') = 1";
+                        formattedSql = "{0}.exist('/path/segment[last()][contains(lower-case(.),sql:variable(\"{1}\"))]') = 1";
                         break;
                     case "ct":
-                        formattedSql = "{0}.exist('/path/segment[contains(.,sql:variable(\"{1}\"))]') = 1";
+                        formattedSql = "{0}.exist('/path/segment[contains(lower-case(.),sql:variable(\"{1}\"))]') = 1";
                         break;
                     case "nct":
-                        formattedSql = "{0}.exist('/path/segment[contains(.,sql:variable(\"{1}\"))]') = 0";
+                        formattedSql = "{0}.exist('/path/segment[contains(lower-case(.),sql:variable(\"{1}\"))]') = 0";
                         break;
                     default: //default is eq
                         string resultValue = "1";
