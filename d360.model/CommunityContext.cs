@@ -54,8 +54,7 @@ namespace d360.model
         public DbSet<CompanySetting> CompanySettings { get; set; }
         public DbSet<DatabaseServer> DatabaseServers { get; set; }
         public DbSet<DomainCertificate> DomainCertificates { get; set; }
-        public DbSet<DomainSetting> DomainSettings { get; set; }
-        public DbSet<GenericCommand> GenericCommands { get; set; }        
+        public DbSet<DomainSetting> DomainSettings { get; set; }        
         public DbSet<Resource> Resources { get; set; }
         public DbSet<Setting> Settings { get; set; }
         
