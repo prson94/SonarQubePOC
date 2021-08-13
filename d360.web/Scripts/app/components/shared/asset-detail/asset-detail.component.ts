@@ -30,6 +30,7 @@ export class AssetDetailComponent implements OnChanges {
     @Input() showTabs: boolean = false;
     @Input() showHeaderLine: boolean = true;
     @Input() spacerHeight: string = '32px';
+    @Input() paddingLeft: string;
     assetUID: string;
     assetTypeUID: string;
     isLoading = false;
