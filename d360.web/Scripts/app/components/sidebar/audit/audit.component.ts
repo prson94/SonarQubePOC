@@ -57,6 +57,9 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
                     this.objectID = res.ObjectId;
                     this.objectType = res.Object;
 
+                    if (this.objectName === "MetricAllocation") {
+                        this.objectName = "Score Definition";
+                    }
                     let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
 
                     //do not reload 2nd navigation for audit page as both grid pages and config pages share same URL
