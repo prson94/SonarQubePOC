@@ -104,6 +104,7 @@
     <Compile Include="Core\Helpers.cs" />
     <Compile Include="Core\MessagesHelper.cs" />
     <Compile Include="Core\SqlConstants.cs" />
+    <Compile Include="ExtensionsTests\HttpRequestMessageExtensionsTests.cs" />
     <Compile Include="ExtensionsTests\QueueSourceTests.cs" />
     <Compile Include="FilterParserTests\RuleResultTests.cs" />
     <Compile Include="ModelExtensionTests\ModelExtensionTests-ComplexLookupDefinition.cs" />
