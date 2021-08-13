@@ -12,7 +12,8 @@
                         [selectedItem]="selection"
                         [panelApplies]="panelApplies"
                         [hasProfiling]="hasProfiling"
-                        hasDetail="true">
+                        hasDetail="true"
+                        [storageKey]="sidePanelStorageKey">
                 <ng-container *ngIf="sidePanelOpen && selection != null && sidePanelLoading">
                     <d3s-loading [isLoading]="true"></d3s-loading>
                 </ng-container>
