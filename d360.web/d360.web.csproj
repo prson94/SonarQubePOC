@@ -473,7 +473,6 @@
     <Compile Include="Models\SwaggerExampleModelLogic.cs" />
     <Compile Include="Models\Viewer Models.cs" />
     <Compile Include="Models\Attributes\FileDownloadAttribute.cs" />
-    <Compile Include="Models\Formatters\DictionaryXmlMediaTypeFormatter.cs" />
     <Compile Include="Models\ModelMetadataExtensions.cs" />
     <Compile Include="Models\Workflow Models.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -1376,6 +1375,7 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>FieldInfo.Designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
