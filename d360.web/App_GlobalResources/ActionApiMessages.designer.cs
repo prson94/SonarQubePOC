@@ -61,6 +61,33 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to New {0} Raised..
+        /// </summary>
+        internal static string ActionAssetCommentBody {
+            get {
+                return ResourceManager.GetString("ActionAssetCommentBody", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Action Created.
+        /// </summary>
+        internal static string ActionCreatedMsg {
+            get {
+                return ResourceManager.GetString("ActionCreatedMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Action Type with Uid {0} could not be found..
+        /// </summary>
+        internal static string ActionTypeUidIsNotValid {
+            get {
+                return ResourceManager.GetString("ActionTypeUidIsNotValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Allocations added successfully.
         /// </summary>
         internal static string AddAllocationsSuccessful {

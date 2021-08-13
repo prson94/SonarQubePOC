@@ -818,14 +818,14 @@ for json path";
 
                 if (actionTypeUid == null || actionTypeUid == Guid.Empty)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Invalid ActionTypeUid provided.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.InvalidActionTypeUid)).ConfigureAwait(false);
                 }
 
                 var issueType = Company.Filter<IssueType>(i => i.uid == actionTypeUid).SingleOrDefault();
 
                 if (issueType == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Not Found", $"Action Type with Uid {actionTypeUid} could not be found.")).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.NotFound, string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid.ToString()))).ConfigureAwait(false);
                 }
 
                 WorkHttpStatus validationStatus = PopulateRequest(models, ref issueModels, issueType, lookupFieldsPassedByValue);
@@ -851,7 +851,7 @@ for json path";
                             var comment = new CommentApiPostModel
                             {
                                 AssetUid = actionAsset.uid,
-                                Body = issueModel.Comment ?? $"New {issueType.Name} Raised.",
+                                Body = issueModel.Comment ?? string.Format(ActionApiMessages.ActionAssetCommentBody, issueType.Name),
                                 Tags = new List<Guid> { actionAsset.uid }       // Add relation to current artifact
                             };
                             var dtl = await commentRepository.AddComment(comment, CommentType.Issue);
@@ -897,7 +897,7 @@ for json path";
                         Company.AddOrUpdateFields(issueModel.fields);
                     }
 
-                    response.Add(new ApiStatusResponse { Uid = issueModel.Issue.UID.Value, Message = "Action Created", Success = true });
+                    response.Add(new ApiStatusResponse { Uid = issueModel.Issue.UID.Value, Message = ActionApiMessages.ActionCreatedMsg, Success = true });
                 }
 
                 Company.CreateEventsForAddedActions(issueModels.Select(x => x.Issue).ToList());
