@@ -2250,21 +2250,36 @@ from    (
             var sql = "select FormattedValue from field where objecttype = @obj and objectid = @id and fieldtypeid = @fieldId";
             if (fieldType?.LookupObjectType == SystemObjects.ReferenceItem.ToString() && !LookupFieldHasColorItem(fieldType))
             {
-                sql = $@"select 
+                var joincondition = " ";
+                var joinconditionField = " ";
+                var adddisitnct = " ";
+
+                if ((bool)fieldType?.AllowMultipleValues)
+                {
+                    joincondition = $@" cross apply STRING_SPLIT(F.Value, ',') SPF ";
+                    joinconditionField = "SPF.value";
+                    adddisitnct = " distinct ";
+                }
+                else
+                {
+                    joinconditionField = "F.value";
+                }
+
+                sql = $@"select {adddisitnct} 
                             F.FormattedValue as name
                             , FD.FormattedValue as description
                             , FPL.FormattedValue as profilelevel
                         from 
                             field F
                             inner join FieldType ft on ft.ID = f.FieldTypeID
-                            cross apply STRING_SPLIT(F.Value, ',') SPF
-							inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID = SPF.value     
-                            outer apply (select FormattedValue from field FD1 inner join FieldType FT1 on FD1.FieldTypeID = FT1.ID where FT1.[Type]='{DataType.Text}' and LOWER(FT1.FriendlyName)='description' and FD1.ObjectID = F.Value and FD1.AssetID=ACF.ID) FD
-							outer apply (select FormattedValue from field FD2 inner join FieldType FT2 on FD2.FieldTypeID = FT2.ID where FD2.ObjectType='{SystemObjects.ReferenceItem}' and FT2.[Type]='{DataType.Text}' and LOWER(FT2.FriendlyName)='profile level' and FD2.ObjectID = F.Value and FD2.AssetID=ACF.ID) FPL
+                            {joincondition}
+							inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID = try_cast({joinconditionField} as int)   
+                            outer apply (select FormattedValue from field FD1 inner join FieldType FT1 on FD1.FieldTypeID = FT1.ID where FT1.[Type]='{DataType.Text}' and FT1.FriendlyName='description' and FD1.ObjectID = try_cast({joinconditionField} as int) and FD1.AssetID=ACF.ID) FD
+							outer apply (select FormattedValue from field FD2 inner join FieldType FT2 on FD2.FieldTypeID = FT2.ID where FD2.ObjectType='{SystemObjects.ReferenceItem}' and FT2.[Type]='{DataType.Text}' and FT2.FriendlyName='profile level' and FD2.ObjectID = try_cast({joinconditionField} as int) and FD2.AssetID=ACF.ID) FPL
                         where 
                             F.objecttype = @obj 
                             and F.objectid = @id 
-                            and F.fieldtypeid = @fieldId FOR JSON PATH"; ;
+                            and F.fieldtypeid = @fieldId FOR JSON PATH";
             }
             string value = Company.Query<string>(sql, new { obj = new DbString { Value = type.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, id = id, fieldId = fieldType.ID }).FirstOrDefault();
             if (string.IsNullOrEmpty(value) && !string.IsNullOrEmpty(fieldType.DefaultFormattedValue))
