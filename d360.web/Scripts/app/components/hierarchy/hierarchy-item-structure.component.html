@@ -75,7 +75,7 @@
                         <tr [ttSelectableRow]="rowNode">
                             <td class="no-text-overflow" *ngFor="let column of columns; let i = index">
                                 <p-treeTableToggler [rowNode]="rowNode" *ngIf="i === 0"></p-treeTableToggler>
-                                <ng-container *ngIf="i === 0">
+                                <ng-container *ngIf="i === linkColumnIndex">
                                     <a (click)="showHierarchy(item)"
                                        [ngStyle]="setTreeNodeStyles(rowNode.node)">
                                         <d3s-dynamic-field-value [column]="column"
@@ -85,7 +85,7 @@
                                                                  [item]="item"></d3s-dynamic-field-value>
                                     </a>
                                 </ng-container>
-                                <ng-container *ngIf="i !== 0">
+                                <ng-container *ngIf="i !== linkColumnIndex">
                                     <d3s-dynamic-field-value [column]="column"
                                                              [fields]="fields"
                                                              [useApiName]="true"
