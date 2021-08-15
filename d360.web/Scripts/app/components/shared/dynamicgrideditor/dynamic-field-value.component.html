@@ -21,7 +21,7 @@
         <span *ngIf="fieldValue && isDateUTC">{{fieldValue | date:'medium'}}</span>
         <span *ngIf="fieldValue && !isDateUTC">{{fieldValue | utcDate | date:'medium'}}</span>
     </span>
-    <span *ngSwitchCase="'number'">{{formatAsNumber()}}</span>
+    <span *ngSwitchCase="'number'" [class]="styleClass">{{formatAsNumber()}}</span>
     <span *ngSwitchCase="'bool'">
         <i *ngIf="fieldValue == 'TRUE'"
            class="fa fa-check enabled"
@@ -44,9 +44,9 @@
                [innerText]="fieldValue"></a>
         </d3s-preview-tooltip>
     </span>
-    <span *ngSwitchCase="'path'" innerHtml="{{formatAsPath()}}"></span>
+    <span *ngSwitchCase="'path'" innerHtml="{{formatAsPath()}}" [class]="styleClass"></span>
     <span *ngSwitchCase="'score'" innerHtml="{{fieldValue}}"></span>
-    <span *ngSwitchCase="'string'" [innerText]="fieldValue"></span>
+    <span *ngSwitchCase="'string'" [innerText]="fieldValue" [class]="styleClass"></span>
     <span *ngSwitchCase="'JSON'">
         <span *ngIf="GetJSON(field.Value) == 'Error'; else showJSON">{{field.Value}}</span>
         <ng-template #showJSON>
@@ -77,7 +77,7 @@
         <d3s-ownership-list [list]="fieldValue"></d3s-ownership-list>
     </span>
     <ng-template ngSwitchDefault>
-        <span *ngIf="fieldValue != null"
+        <span *ngIf="fieldValue != null" [class]="styleClass"
               [innerText]="fieldValue"></span>
     </ng-template>
 </span>
