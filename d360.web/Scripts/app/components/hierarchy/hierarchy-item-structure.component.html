@@ -129,12 +129,13 @@
                               (closeClick)="closeEditor();"></d3s-asset-editor>
         </div>
         <div class="tile tile-detail side-panel" *ngIf="!isLoading">
-            <side-panel [(expanded)]="sidePanelOpen"
+            <side-panel (expandedChange)="sidePanelOpen=$event"
                         (selectedPanelChange)="sidePanelTab=$event"
                         [selectedItem]="selected?.data"
                         [panelApplies]="panelApplies"
                         [hasProfiling]="hasProfiling"
-                        hasDetail="true">
+                        hasDetail="true"
+                        [storageKey]="sidePanelStorageKey">
                 <ng-container *ngIf="sidePanelOpen && selected?.data != null && sidePanelLoading">
                     <d3s-loading [isLoading]="true"></d3s-loading>
                 </ng-container>

@@ -60,7 +60,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         this.sub = this.route.params.subscribe(params => {
             let artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
 
-            this.sidePanelStorageKey = 'list_artifacttype_' + artifactTypeId + '_' + CurrentResourceID;
+            
             this.isLoading = true;
             this.artifactTypeHierarchy = [];
             this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', artifactTypeId);
@@ -76,6 +76,8 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
                         folderName = '#Technical';
                         this.areaLink = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
                     }
+
+                    this.sidePanelStorageKey = 'list_' + AssetTypeClass[artifactType.Class] + '_' + CurrentResourceID;
 
                     this.headerBreadcrumbService.getFolderTitle(folderName).then((res) => {
                         this.headerBreadcrumbService.clearBreadcrumbs();

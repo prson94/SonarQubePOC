@@ -35,11 +35,15 @@ export class SidePanelComponent extends BaseComponent {
 
     ngOnInit() {
         this.initButtons();
-        this.loadState();
+
+        this.selectedPanelChange.emit(this.selectedPanel);
+        this.expandedChange.emit(this.expanded);
     }
 
     ngOnChanges(changes: SimpleChanges) {
         let loadButtons = false;
+        let loadState = false;
+
         if (changes['hasProfiling'] && !changes['hasProfiling'].isFirstChange() && changes['hasProfiling'].currentValue !== changes['hasProfiling'].previousValue) {
             loadButtons = true;
         }
@@ -56,6 +60,20 @@ export class SidePanelComponent extends BaseComponent {
                 this.buttons.find((b) => b.key === 'dataprofile').disabled = this.disableProfiling;
             }
         }
+
+        if (changes['storageKey'] && changes['storageKey'].isFirstChange() && changes['storageKey'].currentValue !== changes['storageKey'].previousValue) {
+            loadState = true;
+            
+        }
+
+        if (loadState || loadButtons) {
+            this.loadState();
+
+            this.selectedPanelChange.emit(this.selectedPanel);
+            this.expandedChange.emit(this.expanded);
+        }
+
+
     }
 
     private loadState() {
@@ -72,15 +90,16 @@ export class SidePanelComponent extends BaseComponent {
                 if (state != null) {
                     if (state.expanded != null) {
                         this.expanded = state.expanded;
-                        this.expandedChange.emit(this.expanded);
+
                     }
 
-                    if (this.expanded === true && state.selectedPanel != null && state.selectedPanel.length > 0) {
+                    if (state.selectedPanel != null && state.selectedPanel.length > 0) {
                         let b = this.buttons.find((b) => b.key === state.selectedPanel);
-                        if (b && !b.disabled) {
+
+                        if (b) {
                             this.selectedPanel = state.selectedPanel;
-                            this.selectedPanelChange.emit(this.selectedPanel);
-                        } 
+
+                        }
                     }
                 }
 
