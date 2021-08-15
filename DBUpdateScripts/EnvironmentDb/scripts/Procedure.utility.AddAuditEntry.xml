@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="sDooley" id="Procedure.utility.AddAuditEntry-v11">
+  <changeSet author="sDooley" id="Procedure.utility.AddAuditEntry-v12">
   <comment>GOV-14559</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -530,7 +530,7 @@ begin
 	   end
 	else if @MainObjectTypeName = 'MetricAllocation'
 	begin
-		set @ConvertMainObjectTypeName = 'Scoring Definition';
+		set @ConvertMainObjectTypeName = 'Score Definition';
 	end
 	else
 		begin
@@ -731,7 +731,8 @@ begin
 		if @DependentObject = 'SurveyType'			begin		select @DependentObjectName = Name from SurveyType where ID = @DependentObjectID			end			
 		if @DependentObject = 'Tag'			        begin		select @DependentObjectName = Value from Tag where ID = @DependentObjectID			        end			
 		if @DependentObject = 'MetricAllocation'	begin		select @DependentObjectName = @MainObject											end	
-		
+		if @DependentObject = 'Predicate'			begin		select @DependentObjectName = @MainObject			end
+
 		else			
 			begin	
 				select @DependentObjectName = D.[Name]
@@ -1066,6 +1067,31 @@ begin
 		insert into @tbl  select 0, 'LowerThreshold', LowerThreshold, 0, 0 from [metrics].[Allocation] where ID = @MainObjectID		
 		insert into @tbl  select 0, 'UpperThreshold', UpperThreshold, 0, 0 from [metrics].[Allocation] where ID = @MainObjectID
 	end
+
+	if @MainObject = 'Predicate'
+	begin
+		declare @predicateName varchar(2000);
+		select @predicateName = [Name] from [dbo].[Predicate] where ID = @MainObjectID;
+		if(@predicateName is null or @predicateName ='')
+		begin
+		select @predicateName =   [ActionObjectName] from (
+				select
+					[ID],
+					[Date],
+					[ActionObjectName],
+					row_number() over(partition by [ObjectName] order by [Date] desc) as rn
+				from
+					[reporting].[Global_Audit] where [Object] = @MainObject and [ObjectID] =  @MainObjectID
+				) t
+				where t.rn = 1
+		end
+		select	@MainObjectTypeName = 'Predicate',
+				@MainObjectName = coalesce(@predicateName,'Predicate')
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from [dbo].[Predicate] where ID = @MainObjectID		
+		insert into @tbl  select 0, 'Inverse', Inverse, 0, 0 from [dbo].[Predicate] where ID = @MainObjectID
+		insert into @tbl  select 0, 'Functional Type', Type, 0, 0 from [dbo].[Predicate] where ID = @MainObjectID
+	end
+
 	insert into @tbl  
 			select	FieldTypeID, 
 					FieldName as FriendlyName, 
@@ -1164,6 +1190,8 @@ begin
 	end
 	if @Action = 'Removed'
 	begin
+		set @MainDescription = @ConvertMainObjectTypeName + ' removed'
+			
 		IF (@MainObjectTypeName = 'MetricAllocation')
 		BEGIN
 			declare @scoreType varchar(30);
@@ -1172,9 +1200,8 @@ begin
 			select @scoreType = case when ScoreType = 1 then 'Governance' else 'Data Quality' end from [metrics].[Allocation] where ID = @MainObjectID
 			select @isExterallyCalculated = case when IsExternallyCalculated = 0 then 'Internal' else 'External' end from [metrics].[Allocation] where ID = @MainObjectID
 			select @assetTypeName = AT.Name from [metrics].[Allocation] MA inner join [dbo].[AssetType] AT on AT.uid = MA.AssetTypeUid where MA.ID = @MainObjectID
-			set @MainObjectName = @scoreType+ ' '+ @assetTypeName + ' (' + @isExterallyCalculated + 'ly calculated' + ')'
+			set @MainObjectName = @scoreType+ ' '+ @assetTypeName + '{' + @isExterallyCalculated + 'ly calculated' + '}'
 		END
-		set @MainDescription = @ConvertMainObjectTypeName + ' removed'
 	end
 	if @Action = 'Updated'
 	begin
@@ -1222,7 +1249,7 @@ begin
 			set @MainDescription = 'Updating company settings'
 		end
 		declare @updateAuditId int;
-		if(@Action = 'Updated' and @MainObjectTypeName = 'MetricAllocation')
+		if(@Action = 'Updated' and (@MainObjectTypeName = 'MetricAllocation' or @MainObjectTypeName = 'Predicate'))
 		begin
 		select @updateAuditId =   [ID] from (
 				select
@@ -1271,7 +1298,7 @@ begin
 			end
 			if @updated = 1
 			begin
-				if(@Action = 'Updated' and @MainObjectTypeName = 'MetricAllocation')
+				if(@Action = 'Updated' and (@MainObjectTypeName = 'MetricAllocation' or @MainObjectTypeName = 'Predicate'))
 				begin
 					select @previousValue = Value FROM [reporting].[Global_FieldAudit] where [AuditID] = @updateAuditId and [FieldName] = @fieldName and [FieldTypeID] = @fieldTypeID;
 					insert into [reporting].[Global_FieldAudit] 
