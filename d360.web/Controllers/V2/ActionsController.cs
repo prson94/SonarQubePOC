@@ -1,4 +1,5 @@
 ﻿using d360.core.entities;
+using d360.core.exceptions;
 using d360.model;
 using d360.model.DataAccessLayer;
 using d360.web.Filters;
@@ -807,99 +808,112 @@ for json path";
         ]
         public async Task<IHttpActionResult> CreateAction(Guid actionTypeUid, List<ActionUpsertRequest> models, bool lookupFieldsPassedByValue = false)
         {
-            bool isWriteActionDescriptionEnabled = IsWriteActionDescriptionEnabled();
-
-            List<ApiStatusResponse> response = new List<ApiStatusResponse>();
-
-            List<IssueInsertAPIModel> issueModels = new List<IssueInsertAPIModel>();
-
-            if (actionTypeUid == null || actionTypeUid == Guid.Empty)
+            try
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Invalid ActionTypeUid provided.")).ConfigureAwait(false);
-            }
+                bool isWriteActionDescriptionEnabled = IsWriteActionDescriptionEnabled();
 
-            var issueType = Company.Filter<IssueType>(i => i.uid == actionTypeUid).SingleOrDefault();
+                List<ApiStatusResponse> response = new List<ApiStatusResponse>();
 
-            if (issueType == null)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Not Found", $"Action Type with Uid {actionTypeUid} could not be found.")).ConfigureAwait(false);
-            }
+                List<IssueInsertAPIModel> issueModels = new List<IssueInsertAPIModel>();
 
-            WorkHttpStatus validationStatus = PopulateRequest(models, ref issueModels, issueType, lookupFieldsPassedByValue);
-            if (validationStatus.StatusCode != HttpStatusCode.OK)
-            {
-                return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message)).ConfigureAwait(false);
-            }
-
-            foreach (var issueModel in issueModels)
-            {
-                var assetType = Company.AssetTypes.FirstOrDefault(i => i.Object== issueModel.Issue.ObjectType && i.ObjectID == issueModel.Issue.ObjectTypeID);
-               
-                if (!Company.CurrentResourceIsAdmin && !Company.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))
+                if (actionTypeUid == null || actionTypeUid == Guid.Empty)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ActionApiMessages.AssetTypeAddActionPermissionsDenied)).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.InvalidActionTypeUid)).ConfigureAwait(false);
                 }
-                if (isWriteActionDescriptionEnabled)
-                {
-                    var resourceAsset = assetRepository.GetAssetByObjectId(SystemObjects.Resource.ToString(), Company.CurrentResourceID);
-                    var actionAsset = assetRepository.GetAssetByObjectId(issueModel.Issue.Object, issueModel.Issue.ObjectID);
 
-                    if (actionAsset != null && resourceAsset != null) 
+                var issueType = Company.Filter<IssueType>(i => i.uid == actionTypeUid).SingleOrDefault();
+
+                if (issueType == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.NotFound, string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid.ToString()))).ConfigureAwait(false);
+                }
+
+                WorkHttpStatus validationStatus = PopulateRequest(models, ref issueModels, issueType, lookupFieldsPassedByValue);
+                if (validationStatus.StatusCode != HttpStatusCode.OK)
+                {
+                    return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message)).ConfigureAwait(false);
+                }
+
+                foreach (var issueModel in issueModels)
+                {
+                    var assetType = Company.AssetTypes.FirstOrDefault(i => i.Object == issueModel.Issue.ObjectType && i.ObjectID == issueModel.Issue.ObjectTypeID);
+
+                    if (!Company.CurrentResourceIsAdmin && !Company.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))
                     {
-                         var comment = new CommentApiPostModel { 
-                            AssetUid = resourceAsset.uid,                           
-                            Body = issueModel.Comment ?? $"New {issueType.Name} Raised.",
-                            Tags = new List<Guid> { actionAsset.uid }       // Add relation to current artifact
-                         };
-                        var dtl = await commentRepository.AddComment(comment, CommentType.Issue);
-                        issueModel.Issue.CommentID = dtl.ID;
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ActionApiMessages.AssetTypeAddActionPermissionsDenied)).ConfigureAwait(false);
                     }
-                }
-
-                var insertSQL = $@"INSERT INTO [dbo].[Issue]
-                                               ([IssueTypeID]
-                                               ,[Object]
-                                               ,[ObjectID]
-                                               ,[ObjectType]
-                                               ,[ObjectTypeID]
-                                               ,[CreatedOn]
-                                               ,[CreatedBy]
-                                               ,[UpdatedOn]
-                                               ,[UpdatedBy]
-                                               ,[CommentID])
-                                        OUTPUT inserted.Uid, inserted.ID
-                                           VALUES
-                                               (@issueTypeID
-                                               ,@object
-                                               ,@objectID
-                                               ,@objectType
-                                               ,@objectTypeID
-                                               ,GETDATE()
-                                               ,@userId
-                                               ,GETDATE()
-                                               ,@userId
-                                               ,@commentId)";
-
-                var res = await Company.Database.Connection.QueryAsync<(Guid uid, int id)>(insertSQL, new { issueTypeID = issueType.ID, @object = issueModel.Issue.Object, objectID = issueModel.Issue.ObjectID, objectType = issueModel.Issue.ObjectType, objectTypeID = issueModel.Issue.ObjectTypeID, userId = Company.CurrentResourceID, commentId = issueModel.Issue.CommentID });
-
-                issueModel.Issue.ID = res.FirstOrDefault().id;
-                issueModel.Issue.UID = res.FirstOrDefault().uid;
-
-                if (issueModel.fields != null && issueModel.fields.Count > 0)
-                {
-                    issueModel.fields.ForEach(i =>
+                    if (isWriteActionDescriptionEnabled)
                     {
-                        i.ObjectID = issueModel.Issue.ID;
-                    });
-                    Company.AddOrUpdateFields(issueModel.fields);
+                        var actionAsset = assetRepository.GetAssetByObjectId(issueModel.Issue.Object, issueModel.Issue.ObjectID);
+
+                        if (actionAsset != null)
+                        {
+                            var comment = new CommentApiPostModel
+                            {
+                                AssetUid = actionAsset.uid,
+                                Body = issueModel.Comment ?? string.Format(ActionApiMessages.ActionAssetCommentBody, issueType.Name),
+                                Tags = new List<Guid> { actionAsset.uid }       // Add relation to current artifact
+                            };
+                            var dtl = await commentRepository.AddComment(comment, CommentType.Issue);
+                            issueModel.Issue.CommentID = dtl.ID;
+                        }
+                    }
+
+                    var insertSQL = $@"INSERT INTO [dbo].[Issue]
+                                                   ([IssueTypeID]
+                                                   ,[Object]
+                                                   ,[ObjectID]
+                                                   ,[ObjectType]
+                                                   ,[ObjectTypeID]
+                                                   ,[CreatedOn]
+                                                   ,[CreatedBy]
+                                                   ,[UpdatedOn]
+                                                   ,[UpdatedBy]
+                                                   ,[CommentID])
+                                            OUTPUT inserted.Uid, inserted.ID
+                                               VALUES
+                                                   (@issueTypeID
+                                                   ,@object
+                                                   ,@objectID
+                                                   ,@objectType
+                                                   ,@objectTypeID
+                                                   ,GETDATE()
+                                                   ,@userId
+                                                   ,GETDATE()
+                                                   ,@userId
+                                                   ,@commentId)";
+
+                    var res = await Company.Database.Connection.QueryAsync<(Guid uid, int id)>(insertSQL, new { issueTypeID = issueType.ID, @object = issueModel.Issue.Object, objectID = issueModel.Issue.ObjectID, objectType = issueModel.Issue.ObjectType, objectTypeID = issueModel.Issue.ObjectTypeID, userId = Company.CurrentResourceID, commentId = issueModel.Issue.CommentID });
+
+                    issueModel.Issue.ID = res.FirstOrDefault().id;
+                    issueModel.Issue.UID = res.FirstOrDefault().uid;
+
+                    if (issueModel.fields != null && issueModel.fields.Count > 0)
+                    {
+                        issueModel.fields.ForEach(i =>
+                        {
+                            i.ObjectID = issueModel.Issue.ID;
+                        });
+                        Company.AddOrUpdateFields(issueModel.fields);
+                    }
+
+                    response.Add(new ApiStatusResponse { Uid = issueModel.Issue.UID.Value, Message = ActionApiMessages.ActionCreatedMsg, Success = true });
                 }
 
-                response.Add(new ApiStatusResponse { Uid = issueModel.Issue.UID.Value, Message = "Action Created", Success = true });
+                Company.CreateEventsForAddedActions(issueModels.Select(x => x.Issue).ToList());
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
             }
+            catch (BaseException ex)
+            {
+                return await Task.FromResult(errorMessageResponse(ex.StatusCode, ApiMessages.BadRequest, ex.StatusDescription)).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 
-            Company.CreateEventsForAddedActions(issueModels.Select(x => x.Issue).ToList());
-
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
+            }
         }
 
         private WorkHttpStatus ValidateRequest(IssueType issueType, ActionUpsertRequest model, out Asset asset, out AssetType assetType, bool lookupFieldsPassedByValue = false)
