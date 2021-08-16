@@ -17,7 +17,7 @@ import { AssetService } from '../../../services/asset.service';
 })
 export class AssetScoreComponent extends BaseComponent implements OnChanges, AfterViewChecked {
     @Input() uid: string;
-    @Input() objectName: string;
+    @Input() objectName: string;    
     assetTypeUid: string;
 
     assetTypeName: string = "";
@@ -31,6 +31,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     scoresPointSelected: SelectItem;
     scorePointsMaxHeight: number = 200;
     panelHeight: number = 200;
+    sidePanelHeight: number = 200;
 
     averageScore: number;
     scoreDate: string = null;
@@ -507,9 +508,11 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
         //height - to top of the screen - to bottom of the screen - padding
         this.panelHeight = window.innerHeight - 180;
-        this.scorePointsMaxHeight = this.panelHeight - 100 - 18;
+        this.scorePointsMaxHeight = this.panelHeight - 100 - 18;        
         if (this.scorePointsMaxHeight < 100)
             this.scorePointsMaxHeight = 100;
+
+        this.sidePanelHeight = this.panelHeight - 70;
 
         this.setDropdownHeader();
         this.cdRef.detectChanges();
