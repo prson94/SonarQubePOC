@@ -1,4 +1,5 @@
 ﻿import { Component, Input, Output, HostListener, EventEmitter, OnChanges, SimpleChanges, ViewChild, ElementRef, AfterContentInit, OnDestroy } from '@angular/core';
+import { PopupBackButtonService } from '../../../services/popup.service';
 
 
 @Component({
@@ -22,12 +23,22 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
     @ViewChild('popupBox', { static: false }) modalDiv: ElementRef;
 
     private display: boolean = false;
+    private modalUid: string = '';
+
+    constructor(private popupBackButtonService: PopupBackButtonService) {
+        this.modalUid = this.randomUid();
+
+        popupBackButtonService.backButtonClicked.subscribe((uuid) => {
+            if (uuid === this.modalUid) {
+                this.closePopUp();
+            }
+        });
+    }
 
     ngAfterContentInit() {
         if (this.appendToBody) {
             setTimeout(() => {
                 document.body.append(this.modalDiv.nativeElement);
-
             });
         }
     }
@@ -50,17 +61,6 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
         }
     }
 
-
-    checkKey(event: KeyboardEvent) {
-        if (event.keyCode) {
-            if (event.keyCode == 27) {
-                if (!event.defaultPrevented)
-                    this.closePopUp();
-            }
-        }
-    }
-
-
     @HostListener('wheel', ['$event'])
     handleWheelEvent(event) {
         let path: any[] = event.path;
@@ -76,6 +76,7 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
     }
 
     showPopUp() {
+        this.popupBackButtonService.addState(this.modalUid);
         this.display = true;
         if (this.modalDiv) {
             this.modalDiv.nativeElement.className = "modal-overlay";
@@ -93,6 +94,7 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
             }.bind(this), 250);
 
             this.display = false;
+            this.popupBackButtonService.popState(this.modalUid);
         }
 
     }
@@ -100,6 +102,13 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
     confirm() {
         this.onConfirm.emit('confirm');
         this.closePopUp();
+    }
+
+    randomUid() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
     }
 }
 
