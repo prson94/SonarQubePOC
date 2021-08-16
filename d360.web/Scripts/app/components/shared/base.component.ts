@@ -27,6 +27,8 @@ export class BaseComponent {
 
     readonly resourceTypeUid = '00000001-0000-0000-0000-A00000000011';
     readonly groupTypeUid = '00000001-0000-0000-0000-B00000000012';
+    readonly metricAllocationUid = '00000001-0000-0000-0000-B00000000013';
+    readonly predicateUid = '00000001-0000-0000-0000-B00000000014';
 
     // current object info
     uid: string;
@@ -482,6 +484,14 @@ export class BaseComponent {
             return `/${this.objectType}/${this.groupTypeUid}`;
         }
 
+        if (this.objectType === "MetricAllocation") {
+            return `/${this.objectType}/${this.metricAllocationUid}`;
+        }
+
+        if (this.objectType === "Predicate") {
+            return `/${this.objectType}/${this.predicateUid}`;
+        }
+
         //Tag needs to be part of the URL for the header to behave
         if (this.objectType == 'Tag') {
             if (this.uid && this.uid != blankUid) {
@@ -722,6 +732,7 @@ export class BaseComponent {
 
     private isSidebarLoadedForCurrentObject(loadData: SecondaryNavPostModel): boolean {
         //this is fullpage refresh, invalidate key to recreate navigation
+        var checkdisplayvalue = false;
         if (!this.secondaryNavService["isSidebarCreated"]) {
             this.secondaryNavService.invalidateKey();
             return false;
@@ -729,11 +740,22 @@ export class BaseComponent {
 
 
         var currentData = JSON.parse(this.secondaryNavService.getLoadedKey());
+
+        if (loadData.DisplayValue != null) {
+            checkdisplayvalue = true
+        }
+
         if (loadData.ObjectType == currentData.Object && loadData.ObjectId == currentData.ObjectId)
             return true;
 
-        if (loadData.AssetUid == currentData.Uid)
-            return true;
+        if (checkdisplayvalue) {
+            if (loadData.AssetUid == currentData.Uid && currentData.DisplayValue == loadData.DisplayValue)
+                return true;
+        }
+        else {
+            if (loadData.AssetUid == currentData.Uid)
+                return true;
+        }
 
         if (loadData.AssetId == currentData.AssetId)
             return true;
@@ -745,12 +767,15 @@ export class BaseComponent {
         this.secondaryNavService.refreshStats();
     }
 
-    buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid: string = null, buildBreadcrumbOverride: Function = null, assetClass: AssetTypeClass = null) {
+    buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid: string = null, buildBreadcrumbOverride: Function = null, assetClass: AssetTypeClass = null, DisplayValue: string = null) {
         var data = new SecondaryNavPostModel();
         data.PreloadData = false;
         data.Class = assetClass;
         if (assetUid != null)
             data.AssetUid = assetUid.toString().toLowerCase();
+
+        if (DisplayValue != null)
+            data.DisplayValue = DisplayValue;
 
         if (objectId) {
             data.ObjectId = objectId;
@@ -794,7 +819,7 @@ export class BaseComponent {
             this.objectType = r.Object;
             this.objectID = r.ObjectID;
 
-            var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID });
+            var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID, DisplayValue: r.DisplayValue });
             this.secondaryNavService.setLoadedKey(_key);
 
             this.clearSidebar();
@@ -866,6 +891,10 @@ export class BaseComponent {
     private IsType(objectName: string): boolean {
         if (objectName == 'Tag')
             return true;
+
+        if (objectName == 'MetricAllocation' || objectName == 'Predicate') {
+            return true;
+        }
 
         if (objectName.length <= 4)
             return false;

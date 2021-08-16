@@ -97,6 +97,8 @@
   <include file="scripts/GOV-14640.xml"/>  <!-- Removing dbo.Company synchagentlog column-->
   <include file="scripts/GOV-11731.xml"/>  <!-- Removing Rename Fusion definitions tables in previous sprint-->
   <include file="scripts/GOV-15329.xml"/>  <!-- Drop tables dbo.CompanyHelpResource and dbo.HelpResource-->
+  <include file="scripts/GOV-13879.xml"/>  <!-- Drop tables rename in Community schema-->
+  <include file="scripts/GOV-15479.xml"/>  <!-- Create Index On table Resource-->
 	<!-- Tables -->
   <include file="scripts/Table.dbo.CompanyDomainGroup.xml"/>
 </databaseChangeLog>

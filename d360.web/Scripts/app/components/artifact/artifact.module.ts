@@ -34,7 +34,8 @@ import { GovernRequestInterceptor } from "../../http-interceptors/govern-request
 import { AssetGridModule } from '../assets-grid/asset-grid.module';
 import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score.module';
 import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
-
+import { AssetDetailModule } from "../shared/asset-detail/asset-detail.module";
+import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
 
 @NgModule({
     imports: [
@@ -71,7 +72,9 @@ import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
         TilesModule,
         WorkflowModule,
         AssetGridModule,
-        SidePanelModule
+        SidePanelModule,
+        AssetDetailModule,
+        DataProfileModule,
     ],
     declarations: [        
         ArtifactComponent,

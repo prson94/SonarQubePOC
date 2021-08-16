@@ -3,6 +3,8 @@ import { DetailRow, DetailField, DetailFieldType, NymType, Category, ComplexLook
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetService } from '../../../services/asset.service';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { Router } from '@angular/router';
 
 declare var CurrentResourceID;
 
@@ -24,6 +26,11 @@ export class AssetDetailComponent implements OnChanges {
     @Input() useAccordion: boolean = false;
     @Input() shouldBePadded: boolean = true;
     @Input() tooltipAlign: string;
+    @Input() showHeader: boolean = false;
+    @Input() showTabs: boolean = false;
+    @Input() showHeaderLine: boolean = true;
+    @Input() spacerHeight: string = '32px';
+    @Input() paddingLeft: string;
     assetUID: string;
     assetTypeUID: string;
     isLoading = false;
@@ -33,11 +40,15 @@ export class AssetDetailComponent implements OnChanges {
     readonly noCategory: string = "None";
     readonly defaultCategory: string = "General";
 
+    model: any;
+    tab: string = 'detail';
     categories: Category[] = new Array<Category>();
     systemPropertiesCategory: Category = new Category(this.systemProperties);
 
     rows = new Array<DetailRow>();
-    constructor(private objectDetailService: ObjectDetailService,
+    constructor(
+        private router: Router,
+        private objectDetailService: ObjectDetailService,
         protected messagesService: MessagesObservableService,
         private assetService: AssetService,
         private cdRef: ChangeDetectorRef) { }
@@ -50,17 +61,33 @@ export class AssetDetailComponent implements OnChanges {
             if (p === 'objectID') {
                 this.objectID = changes['objectID'].currentValue;
             }
+            if (p === 'objectUID') {
+                this.objectUID = changes['objectUID'].currentValue;
+            }
         }
 
         this.load();
     }
 
     public load(): void {
+        let detailSub = null;
+
         if (this.objectType && this.objectID) {
+            detailSub = this.objectDetailService.getObjectDetail(this.objectID, this.objectType, true);
+        }
+
+        if (this.objectType && this.objectUID) {
+            detailSub = this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType, true);
+        }
+
+        if (detailSub) {
             this.isLoading = true;
-            this.objectDetailService.getObjectDetail(this.objectID, this.objectType, true)
+            detailSub
                 .subscribe((data) => {
+                    this.model = data;
                     this.rows = data.rows;
+                    this.objectID = data.ObjectID;
+                    this.objectType = data.Object;
                     this.categories = [];
                     for (var i = 0; i < this.rows.length; i++) {
                         if (this.rows[i].Category == null || this.rows[i].Category === "" || this.rows[i].Category === this.noCategory) {
@@ -261,5 +288,15 @@ export class AssetDetailComponent implements OnChanges {
 
         this.systemPropertiesCategory.hasData = this.systemPropertiesCategory.rows.length > 0;
         this.systemPropertiesCategory.loaded = true;
+    }
+
+    open(newTab: boolean = false) {
+        let url = SiteUrlHelpers.getObjectUrl(this.model.Object, this.model.ObjectID, this.model.ObjectTypeID);
+
+        if (newTab) {
+            window.open(url, '_blank');
+        } else {
+            this.router.navigateByUrl(url);
+        }
     }
 }

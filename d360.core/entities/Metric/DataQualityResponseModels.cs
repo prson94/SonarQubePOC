@@ -73,4 +73,20 @@ namespace d360.core.entities.Metric
         public bool Success { get; set; } = false;
         public string Message { get; set; }
     }
+
+    public class ExecutionDeletedAssetResult 
+    {
+        public Guid ExecutionID { get; set; }
+        public int ItemNumber { get; set; }
+        public Guid Uid { get; set; }
+        public Guid ExecutionItemUid { get; set; }
+        public Guid OwningAssetUid { get; set; }
+        public Guid EvaluatedAssetUid { get; set; }
+        public DateTime? EffectiveDateStart { get; set; }
+        public DateTime? EffectiveDateEnd { get; set; }
+        public DateTime? RunDateStart { get; set; }
+        public DateTime? RunDateEnd { get; set; }
+        public string Message { get; set; }
+        public bool? Success { get; set; }
+    }
 }

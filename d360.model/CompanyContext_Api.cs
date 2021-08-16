@@ -4685,22 +4685,7 @@ where   ExecutionID = @ExecutionID
                             parentObjectID = it.SubjectID;
                             intersectTypeUid = it.uid;
                             intersectTypeID = it.ID;
-                        }
-                        else
-                        {
-                            if (at.Object == "FusionAttributeType")
-                            {
-                                var fusionAttributeType = GetById<FusionAttributeType>(at.ObjectID);
-                                if (fusionAttributeType != null)
-                                {
-                                    if (fusionAttributeType.ParentID.HasValue)
-                                    {
-                                        parentObject = "FusionAttributeType";
-                                        parentObjectID = fusionAttributeType.ParentID;
-                                    }
-                                }
-                            }
-                        }
+                        }                        
                     }
                     AddMeasurement(metrics, "Get predicateType.HasValue", sw.ElapsedMilliseconds, ++step);
                     sw.Restart();
@@ -7708,10 +7693,11 @@ where	ExecutionID = @ExecutionID and [Type] in ({differentLineageVersionIdList})
 										update  
 											set P.Name = S.Name,
 											P.Inverse = S.Inverse,
-											P.Type = S.Type
+											P.Type = S.Type,
+                                            P.UpdatedBy = {CurrentResourceID}
                                         when not matched then
-	                                        insert (Uid, Name, Inverse, Type, IsSystem)
-	                                        values (S.Uid, S.Name,S.Inverse, S.Type, 0)
+	                                        insert (Uid, Name, Inverse, Type, IsSystem,CreatedBy,UpdatedBy)
+	                                        values (S.Uid, S.Name,S.Inverse, S.Type, 0, {CurrentResourceID},{CurrentResourceID})
 	                                    output inserted.ID, inserted.Uid, S.ExecutionItemUid into #mergeResultTable;
 
                                         update EP
@@ -8172,7 +8158,7 @@ where	    A.AssetTypeID = @ID;
                 {
                     string CreateFieldTempData = $@"
 	drop table if exists #Keys;
-	CREATE TABLE #Keys (AssetID bigint primary key clustered, ParentAssetUID uniqueidentifier null, 
+	CREATE TABLE #Keys (AssetID bigint, ParentAssetUID uniqueidentifier null, 
                         KeyValue nvarchar(max) null, ActiveKey varchar(32) null);
 
 	insert into #Keys WITH(TABLOCK)
@@ -8180,7 +8166,9 @@ where	    A.AssetTypeID = @ID;
 	from		Asset A 
 			left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
 			left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID	
-	where		A.AssetTypeID = @ID
+	where		A.AssetTypeID = @ID;
+
+    create clustered index idx_key_assetid on #keys(AssetID);
 
 	if (select count(1) from fieldtype ft 
 		inner join assettype att on att.id = ft.AssetTypeID 
@@ -8453,7 +8441,7 @@ insert into #Items
 	from	#Raw
 	where	EvaluatedAssetTypeUid = AllocationAssetTypeUid;
 
-select * from #Items", transaction: trans).ToList();
+select * from #Items", transaction: trans, commandTimeout: timeout).ToList();
             }
 
             var structuredMeasures = rawMeasures
@@ -9081,7 +9069,8 @@ select * from #Items", transaction: trans).ToList();
                         results.AddRange(
                             Query<DataQualityDeleteResponseModel>(
                                 $"select ExecutionItemUid, Success, Message from api.ExecutionDeleteAssetResult where ExecutionID = @ExecutionID and ItemNumber <= {currentLocation.HighestItemNumberProcessed}",
-                                new { execution.ExecutionID }
+                                new { execution.ExecutionID }, 
+                                timeout
                             )
                         );
                     }
@@ -9370,78 +9359,76 @@ select * from #Items", transaction: trans).ToList();
 
                 if (generalChecksCompleted)
                 {
-                    int loopSize = 250;
-                    int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
-                    int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
-                    int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
+                    var executionDeleteAssetResults = Query<ExecutionDeletedAssetResult>(
+                        $"select * from api.ExecutionDeleteAssetResult where ExecutionID = @ExecutionID and ItemNumber > {currentLocation.HighestItemNumberProcessed} order by ItemNumber asc", execution, timeout
+                        ).ToList();
 
-                    string ruleResultWhereClause = $@"from AssetResult AR, assetResultedge ARE, graph.AssetNode AN, API.[ExecutionDeleteAssetResult] DAR 
-where 
-DAR.ExecutionID = @executionID 
-and DAR.Success is null 
+                    List<AssetMeasureModel> assetMeasures = new List<AssetMeasureModel>();
 
-and Match (AN -(ARE)-> AR) 
-and (
-    (DAR.Uid is null or DAR.Uid ='00000000-0000-0000-0000-000000000000') 
-    or AR.Uid = DAR.Uid
-    )
-and (
-        (DAR.OwningAssetUid is null or DAR.OwningAssetUid ='00000000-0000-0000-0000-000000000000') 
-        or AR.Uid in    (
-                        select  AR1.Uid
-                        from    AssetResult AR1, assetResultedge ARE1, graph.AssetNode AN1					
-			            where   Match (AN1 -(ARE1)-> AR1)
-				                and AN1.Uid = DAR.owningAssetUid
-				                and ARE1.Class = {(int)ResultRelationClass.Owns}
-		                )
-	) 
-and (
-        (DAR.EvaluatedAssetUid is null or DAR.EvaluatedAssetUid ='00000000-0000-0000-0000-000000000000')  
-        or AR.Uid in    (
-			            select  AR2.Uid
-			            from    AssetResult AR2, assetResultedge ARE2, graph.AssetNode AN2					
-			            where   Match (AN2 -(ARE2)-> AR2)
-				                and AN2.Uid = DAR.evaluatedAssetUid
-				                and ARE2.Class = {(int)ResultRelationClass.EvaluatedBy}
-		                )
-    ) 
-and (
-        (
-            (DAR.EvaluatedAssetUid is null or DAR.EvaluatedAssetUid ='00000000-0000-0000-0000-000000000000')
-		)
-		or  (DAR.EvaluatedAssetUid is not null and ARE.class =  {(int)ResultRelationClass.EvaluatedBy})
-	) 
-and (DAR.EffectiveDateStart is null or DAR.EffectiveDateStart <= AR.EffectiveDate) 
-and (DAR.EffectiveDateEnd is null or DAR.EffectiveDateEnd >= AR.EffectiveDate) 
-and (DAR.RunDateStart is null or AR.RunDate >= DAR.RunDateStart) 
-and (DAR.RunDateEnd is null or AR.RunDate <= DAR.RunDateEnd) ";
-                    string itemNumberRangeSql = "ItemNumber between @beginItemNumber and @endItemNumber";
+                    executionDeleteAssetResults.ForEach(dr =>
+                    {
+                        if (!dr.Success.HasValue)
+                        {
+                            List<string> wheres = new List<string>();
 
-                    string deleteAssetResultSQL = $@"
-    create table #uids ([uid] uniqueidentifier, ItemNumber int);
+                            if (dr.Uid != Guid.Empty)
+                            {
+                                wheres.Add("AR.Uid = @Uid");
+                            }
+                            else
+                            {
+                                if (dr.OwningAssetUid != Guid.Empty)
+                                {
+                                    wheres.Add($@"AR.Uid in (select r.Uid from AssetResult r, assetResultedge e, graph.AssetNode n where match(n-(e)->r) and n.Uid = @OwningAssetUid and e.Class = { (int)ResultRelationClass.Owns})");
+                                }
+                                if (dr.EvaluatedAssetUid != Guid.Empty)
+                                {
+                                    wheres.Add($@"AR.Uid in (select r.Uid from AssetResult r, assetResultedge e, graph.AssetNode n where match(n-(e)->r) and n.Uid = @EvaluatedAssetUid and e.Class = { (int)ResultRelationClass.EvaluatedBy})");
+                                }
+                                if (dr.EffectiveDateStart.HasValue)
+                                {
+                                    wheres.Add("AR.EffectiveDate >= @EffectiveDateStart");
+                                }
+                                if (dr.EffectiveDateEnd.HasValue)
+                                {
+                                    wheres.Add("AR.EffectiveDate <= @EffectiveDateEnd");
+                                }
+                                if (dr.RunDateStart.HasValue)
+                                {
+                                    wheres.Add("AR.RunDate >= @RunDateStart");
+                                }
+                                if (dr.RunDateEnd.HasValue)
+                                {
+                                    wheres.Add("AR.RunDate <= @RunDateEnd");
+                                }
+                            }
+                            
+                            string ruleResultWhereClause = "from AssetResult AR ";
+                            if (wheres.Count > 0)
+                            {
+                                ruleResultWhereClause += "where " + string.Join(" and ", wheres);
+                            }
+
+                            string deleteAssetResultSQL = $@"
+    create table #uids ([uid] uniqueidentifier);
     CREATE NONCLUSTERED INDEX IX_Tempuids_Uid ON #uids ( Uid ASC );
-    CREATE NONCLUSTERED INDEX IX_Tempuids_ItemNumber ON #uids ( ItemNumber ASC );
     
-    insert into #uids (Uid, ItemNumber)
-        select  distinct
-                AR.Uid, 
-                DAR.ItemNumber 
-        {ruleResultWhereClause}
-        and DAR.{itemNumberRangeSql};
+    insert into #uids (Uid)
+        select  distinct AR.Uid {ruleResultWhereClause};
 
     delete  T
     from    AssetResultEdge T
             inner join AssetResult R on R.$node_id = T.$to_id
-            inner join #uids S on S.Uid = R.Uid and S.{itemNumberRangeSql};
+            inner join #uids S on S.Uid = R.Uid;
 
     delete  T
     from    AssetResult T
-            inner join #uids S on S.Uid = T.Uid and S.{itemNumberRangeSql};
+            inner join #uids S on S.Uid = T.Uid;
 
     update  T 
     set     T.Success = iif(C.[Count] = 0, 1, 0) 
     from    api.ExecutionDeleteAssetResult T 
-            inner join #uids S on S.ItemNumber = T.ItemNumber 
+            inner join #uids S on 1=1
             cross apply (
                 select  count(1) as [Count]
                 from    AssetResult
@@ -9449,70 +9436,62 @@ and (DAR.RunDateEnd is null or AR.RunDate <= DAR.RunDateEnd) ";
             ) C
     where   T.Success is null 
             and T.ExecutionID = @ExecutionID 
-            and T.{itemNumberRangeSql}";
+            and T.ItemNumber = @ItemNumber";
 
-                    // Find out which items we need to update scores for. Do this first!
-                    var ruleResultUids = Query<Guid>($@"select distinct AR.Uid {ruleResultWhereClause}", new { execution.ExecutionID }).ToList();
-                    List<AssetMeasureModel> assetMeasures = null;
-                    if (ruleResultUids.Count > 0)
-                    {
-                        assetMeasures = GetAssetMeasuresFromRuleResults(ruleResultUids);
-                    }
-
-                    for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
-                    {
-                        bool runCompleted = false;
-                        int retryCount = 0;
-                        while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
-                        {
-                            using (var trans = Connection.BeginTransaction())
+                            // Find out which items we need to update scores for. Do this first!
+                            var ruleResultUids = Query<Guid>($@"select distinct AR.Uid {ruleResultWhereClause}", dr, timeout).ToList();
+                            
+                            if (ruleResultUids.Count > 0)
                             {
-
-                                try
-                                {
-                                    Connection.Execute(deleteAssetResultSQL, new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                    trans.Commit();
-                                    runCompleted = true;
-
-                                }
-                                catch (Exception ex)
-                                {
-                                    try
-                                    {
-                                        if (trans != null)
-                                        {
-                                            trans.Rollback();
-                                        }
-                                    }
-                                    catch
-                                    {
-                                    }
-
-                                    retryCount++;
-
-                                    if (retryCount > API_V2_RETRY_LIMIT)
-                                    {
-                                        LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionDeleteAssetResult", ex.GetFullExceptionData(false), timeout);
-                                    }
-                                }
+                                assetMeasures.AddRange(GetAssetMeasuresFromRuleResults(ruleResultUids));
                             }
+
+                            // Now perform the delete.
+                            try
+                            {
+                                Connection.Execute(deleteAssetResultSQL, dr, commandTimeout: timeout);
+                                dr.Success = true;
+                                dr.Message = "Successfully removed results in this range.";
+                            }
+                            catch (Exception ex)
+                            {
+                                dr.Success = false;
+                                dr.Message = ex.GetFullExceptionData(false);
+                            }
+                            results.Add(new DataQualityDeleteResponseModel { ExecutionItemUid = dr.ExecutionItemUid, Message = dr.Message, Success = dr.Success ?? false });
                         }
-
-                        results.AddRange(
-                            Query<DataQualityDeleteResponseModel>(
-                                $"select ExecutionItemUid, Success, Message from api.ExecutionDeleteAssetResult where ExecutionID = @ExecutionID and {itemNumberRangeSql}",
-                                    new { execution.ExecutionID, beginItemNumber, endItemNumber }
-                                )
-                            );
-
-                        beginItemNumber += loopSize;
-                        endItemNumber += loopSize;
-                    }
+                    });
 
                     // Now that results are deleted, send the score events to re-process scores for impacted assets.
-                    if (assetMeasures != null)
+                    if (assetMeasures.Count > 0)
                     {
-                        CreateMeasureChangedResultExecution(assetMeasures, execution.ExecutionID);
+                        var newAssetMeasures = new List<AssetMeasureModel>();
+
+                        // Filter through and see if there are any duplicates based on the possible dupe logic above.
+                        while (assetMeasures.Count > 0)
+                        {
+                            var existingAssetMeasure = assetMeasures.First();
+
+                            var newAssetMeasure = newAssetMeasures.FirstOrDefault(n => n.AssetUid == existingAssetMeasure.AssetUid && n.EffectiveDate == existingAssetMeasure.EffectiveDate);
+                            if (newAssetMeasure != null)
+                            {
+                                existingAssetMeasure.Measures.ForEach(e => {
+                                    if (!newAssetMeasure.Measures.Any(n => n.MetricAssetVersionUid == e.MetricAssetVersionUid))
+                                    {
+                                        newAssetMeasure.Measures.Add(e);
+                                    }
+                                });
+                            }
+                            else
+                            {
+                                newAssetMeasures.Add(existingAssetMeasure.CloneThis());
+                            }
+
+                            assetMeasures.RemoveAt(0);
+                        }
+
+                        // Send to queue.
+                        CreateMeasureChangedResultExecution(newAssetMeasures, execution.ExecutionID);
                     }
                 }
             }
@@ -11200,6 +11179,17 @@ EG.GroupUid
                             left Join
                             Asset A on EDP.AssetUid = A.Uid
                         where	ExecutionID = @ExecutionID and A.Uid is null;
+
+                        update	EDP
+                        set		Success = 0,
+		                        [Message] = coalesce([Message] + '; ', '') + 'Profiling data can only be associated with Business or Technical Asset types'
+                        from
+                            api.ExecutionAssetDataProfile EDP
+                            inner Join
+                            Asset A on EDP.AssetUid = A.Uid
+                            inner join 
+                            AssetType AST on A.AssetTypeId = AST.ID
+                        where	ExecutionID = @ExecutionID and AST.Class not in (1, 8);
 
                         update	EDP
                         set		Success = 0,

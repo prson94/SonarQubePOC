@@ -400,7 +400,6 @@
     <Compile Include="Controllers\V2\Filter\CompanyStateValidator.cs" />
     <Compile Include="Controllers\V2\ExecutionsController.cs" />
     <Compile Include="Controllers\V2\Filter\ModelValidation.cs" />
-    <Compile Include="Controllers\V2\FusionController.cs" />
     <Compile Include="Controllers\V2\ActionsController.cs" />
     <Compile Include="Controllers\V2\BrowserController.cs" />
     <Compile Include="Controllers\V2\HealthController.cs" />
@@ -441,6 +440,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Controllers\TaxonomyController.cs" />
+    <Compile Include="Extensions\HttpRequestMessageExtensions.cs" />
     <Compile Include="Extensions\PowerBI.cs" />
     <Compile Include="Filters\AjaxValidationAntiForgeryTokenAttribute.cs" />
     <Compile Include="Filters\ExceptionHandlingAttribute.cs" />
@@ -474,7 +474,6 @@
     <Compile Include="Models\SwaggerExampleModelLogic.cs" />
     <Compile Include="Models\Viewer Models.cs" />
     <Compile Include="Models\Attributes\FileDownloadAttribute.cs" />
-    <Compile Include="Models\Formatters\DictionaryXmlMediaTypeFormatter.cs" />
     <Compile Include="Models\ModelMetadataExtensions.cs" />
     <Compile Include="Models\Workflow Models.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -863,6 +862,7 @@
     <Content Include="Scripts\app\components\shared\controls\search-field\search-field.component.html" />
     <Content Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.html" />
     <None Include="Scripts\app\components\shared\controls\switch\switch.less" />
+    <Content Include="Scripts\app\components\shared\dataprofile\match-detection.component.html" />
     <Content Include="Scripts\app\components\shared\dataprofile\dataprofile.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\settingspanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\overview.component.html" />
@@ -1054,6 +1054,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\property-group\property-group.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\search-field\search-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dataprofile\match-detection.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dataprofile\dataprofile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dataprofile\dataprofile.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\tools\overview.component.ts" />
@@ -1319,6 +1320,8 @@
     <Content Include="Scripts\tsconfig.aot.json" />
     <Content Include="Scripts\tsconfig.json" />
     <Content Include="Scripts\app\components\shared\dataprofile\dataprofile.less" />
+    <Content Include="Scripts\app\components\shared\dataprofile\match-detection.less" />
+    <Content Include="Scripts\app\components\shared\sidepanel\side-panel.component.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1327,6 +1330,7 @@
     </None>
     <TypeScriptCompile Include="Scripts\app\guards\redirect.guard.ts" />
     <TypeScriptCompile Include="Scripts\app\models\search-admin.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\side-panel.model.ts" />
     <TypeScriptCompile Include="Scripts\app\services\dataprofile.service.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.prod.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.ts" />
@@ -1372,6 +1376,7 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>FieldInfo.Designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -2046,10 +2051,11 @@
     <DebugSymbols>true</DebugSymbols>
     <DefineConstants>TRACE;DEBUG</DefineConstants>
     <DocumentationFile>App_Data\Documentation.XML</DocumentationFile>
-    <NoWarn>1591</NoWarn>
+    <NoWarn>1591,1573,1572</NoWarn>
     <PublishDatabases>false</PublishDatabases>
     <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
+    <WarningLevel>2</WarningLevel>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets')" />

@@ -2290,6 +2290,24 @@ div.home-image-title-text {
             }
         }
 
+        &.condensed-table {
+          .p-datatable {
+            padding-right: 16px;
+
+            table {
+              th, td {
+                height: 32px;
+                padding: .25em .5em;
+
+                button {
+                  position: relative;
+                  right: -7px;
+                }
+              }
+            }
+          }
+        }
+
         .p-checkbox {
             .p-checkbox-box.p-highlight {
                 color: black;
@@ -6949,16 +6967,6 @@ table {
     }
 }
 
-.comment-box {
-    ul {
-        padding-inline-start: 40px;
-    }
-
-    ul, li {
-        list-style: inherit !important;
-    }
-}
-
 .front-elide {
   white-space: nowrap;
   overflow: hidden;
@@ -7077,6 +7085,48 @@ table {
     top: -18px;
     left: 3px;
   }
+}
+
+.asset-detail-header {
+    padding: 19px 8px 4px 0;
+    margin: 0;
+
+    .asset-name {
+        height: 24px;
+        font-size: 18px;
+        font-weight: 600;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: 0.89;
+        letter-spacing: normal;
+        color: @ig-slate;
+        word-break: break-word;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding-right: 8px;
+    }
+
+    .class-name {
+        height: 24px;
+        font-size: 14px;
+        font-weight: normal;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: 1.14;
+        letter-spacing: normal;
+        color: @ig-grey;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        padding-right: 8px;
+    }
+}
+
+.cell-link {
+    color: @d3s-blue-2;
+    &:hover {
+        text-decoration: underline;
+    }
 }
 
 //Fixes issue with PrimeNG editor adding "auto" to width and height to the Quill style

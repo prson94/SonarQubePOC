@@ -15,6 +15,7 @@ import { finalize } from 'rxjs/operators';
 import { SiteMenuService } from '../../services/site-menu.service';
 import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
 import { DataProfileService } from '../../services/dataprofile.service';
+import { forkJoin } from 'rxjs';
 
 declare var CompanySettings;
 
@@ -35,6 +36,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
     private showSocialScoreBar: boolean = true;
     private showDataProfile: boolean = false;
     private dataProfile: any;
+    private sidePanelOpen: boolean = false;
 
     constructor(
         private route: ActivatedRoute,
@@ -54,7 +56,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
         this.sub = this.route.params.subscribe(params => {
             let artifactId = +params['artifactId']; // (+) converts string 'id' to a number
             this.artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
-            this.headerBreadcrumbService.setCurrentObjectInfo('Artifact', artifactId); 
+            this.headerBreadcrumbService.setCurrentObjectInfo('Artifact', artifactId);
             this.logAction('open', 'Artifact', artifactId);
             this.isLoading = true;
             this.messages = [];
@@ -90,16 +92,27 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
                 artifact => {
                     this.artifact = artifact;
 
-                    this.buildSecondaryNavigation(this.artifact.Uid);
+                    this.buildSecondaryNavigation(this.artifact.Uid, null, null, null, null, null, null, this.artifact.DisplayValue);
 
                     this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
                     this.dataProfileService.getDataProfiles(this.artifact.Uid).subscribe(
                         (r) => {
                             if (r && r.items && r.items.length > 0 && r.items[0].totalCount != null && r.items[0].sampleCount != null) {
                                 this.dataProfile = r.items[0];
+
+                                forkJoin(
+                                    this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
+                                    this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
+                                ).subscribe((res) => {
+                                    this.dataProfile['matches'] = {
+                                        structure: res[0],
+                                        data: res[1]
+                                    };
+                                });
+
                                 this.showDataProfile = true;
                             }
-                        }); 
+                        });
                 },
                 err => {
                     this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);

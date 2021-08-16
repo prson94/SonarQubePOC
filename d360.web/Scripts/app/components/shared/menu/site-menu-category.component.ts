@@ -7,6 +7,7 @@ import { HeaderActionsService } from '../../../services/header-actions.service';
 import { isString, isArray } from 'util';
 import * as _ from 'lodash';
 import { SearchFieldComponent } from '../controls/search-field/search-field.component';
+import { forEach } from 'core-js/core/array';
 
 @Component({
     selector: 'd3s-site-menu-category',
@@ -47,7 +48,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
 
     toggleEmptyVisibility() {
         var newValue = (!this.hideEmptyItems).toString();
-        localStorage.setItem(this.storageKey, newValue);        
+        localStorage.setItem(this.storageKey, newValue);
     }
 
     hideEmptySubItems(items: SiteMenuItem[]) {
@@ -60,16 +61,31 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         });
     }
 
+    _visibleMenuItems: SiteMenuItem[] = [];
     get visibleMenuItems(): SiteMenuItem[] {
         if (this.hideEmptyItems) {
             var menu = _.cloneDeep(this.menu.NavigationItems);
             var items = menu.filter((x) => x.count > 0);
             this.hideEmptySubItems(items);
-            return items;
+            if (this.getTreeCount(this._visibleMenuItems) !== this.getTreeCount(items)) {
+                this._visibleMenuItems = items;
+            }
         }
-        else {            
-            return this.menu.NavigationItems;
-        }        
+        else {
+            this._visibleMenuItems = this.menu.NavigationItems;
+        }
+
+        return this._visibleMenuItems;
+    }
+
+    getTreeCount(items: SiteMenuItem[]) {
+        var cnt = items.length;
+        items.forEach((node) => {
+            if (node.Items) {
+                cnt += this.getTreeCount(node.Items);
+            }
+        });
+        return cnt;
     }
 
     get showVisiblityToggle(): boolean {

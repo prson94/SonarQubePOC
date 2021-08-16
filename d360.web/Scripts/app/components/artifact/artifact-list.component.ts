@@ -13,14 +13,15 @@ import { Artifact } from '../../models/artifacts.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { debounce, debounceTime } from 'rxjs/operators';
 import { AssetTypeClass } from '../../models/asset.model';
-import { Subscription } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
 import { AssetGridObject } from '../assets-grid/asset-grid.model';
+import { DataProfileService } from '../../services/dataprofile.service';
 
 @Component({
     selector: 'd3s-artifact-list',
     templateUrl: './artifact-list.component.html',
-    providers: [ArtifactTypeService],
+    providers: [ArtifactTypeService, DataProfileService],
 })
 
 export class ArtifactListComponent extends AssetGridBaseComponent implements OnInit, OnDestroy {
@@ -33,6 +34,12 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     private navigationItemsSubs: Subscription[] = [];
     private currentAreaName: string;
 
+    private selection: any = null;
+    private sidePanelOpen: boolean = false;
+    private sidePanelLoading: boolean = false;
+    private sidePanelTab: string;
+    private hasProfiling: boolean = false;
+    dataProfile: any;
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -40,6 +47,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         headerBreadcrumbService: HeaderBreadcrumbService,
         private titleService: Title,
         webAnalyticsService: WebAnalyticsService,
+        private dataProfileService: DataProfileService,
         secondaryNavService: SecondaryNavService) {
         super(headerBreadcrumbService, secondaryNavService, webAnalyticsService);
     }
@@ -138,6 +146,40 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
                     this.navigationItemsSubs.push(breadCrumbsSub);
                 });
 
+    }
+
+    selectAsset(event: any) {
+        this.selection = event;
+
+        if (this.selection && this.selection.HasProfiling) {
+            this.sidePanelLoading = true;
+            this.dataProfileService.getDataProfiles(this.selection.AssetUid).subscribe(
+                (r) => {
+                    if (r && r.items && r.items.length > 0 && r.items[0].sampleCount != null) {
+                        this.dataProfile = r.items[0];
+
+                        forkJoin(
+                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
+                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
+                        ).subscribe((res) => {
+                            this.dataProfile['matches'] = {
+                                structure: res[0],
+                                data: res[1]
+                            };
+                        });
+                    }
+                    this.sidePanelLoading = false;
+                }); 
+        }
+    }
+
+    get panelApplies(): boolean {
+        if (this.selection == null || this.sidePanelTab === 'detail') {
+            return true;
+        }
+        if (this.selection != null && this.sidePanelTab === 'dataprofile') {
+            return this.selection.HasProfiling;
+        }
     }
 
     ngOnDestroy() {

@@ -1011,7 +1011,8 @@ namespace d360.model
 
                 if (!string.IsNullOrEmpty(requestSettings.Body))
                 {
-                    var body = await ProcessMessageTokens(requestSettings.Body, info, prefix, item, false, true);
+                    var lookupfieldspassedbyvalue = requestSettings.LookupFieldsPassedByValue;
+                    var body = await ProcessMessageTokens(requestSettings.Body, info, prefix, item, false, true, lookupfieldspassedbyvalue );
                     var contentArray = Encoding.UTF8.GetBytes(body);
                     request.Content = new ByteArrayContent(contentArray);
                 }
@@ -2483,12 +2484,12 @@ namespace d360.model
 
         }
 
-        public async Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true, bool forJson = false)
+        public async Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true, bool forJson = false, bool lookupFieldsPassedByValue = false)
         {
-            return await ProcessMessageTokens(bodyTemplate, objectInfo.ObjectID, objectInfo.Object, prefix, itemStep, supportHtml, forJson);
+            return await ProcessMessageTokens(bodyTemplate, objectInfo.ObjectID, objectInfo.Object, prefix, itemStep, supportHtml, forJson, lookupFieldsPassedByValue);
         }
 
-        public async Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml, bool forJson)
+        public async Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml, bool forJson, bool lookupFieldsPassedByValue)
         {
             if (string.IsNullOrEmpty(bodyTemplate)) return string.Empty;
 
@@ -2841,7 +2842,28 @@ namespace d360.model
                                 }
                                 else if (forJson)
                                 {
-                                    fieldValue = JsonConvert.ToString(fieldRecord.FormattedValue);
+                                    var fieldValuetemp = "";
+                                    if (type == "Lookup")
+                                    {
+                                        if (lookupFieldsPassedByValue)
+                                        {
+                                            fieldValuetemp = fieldRecord.Value;
+                                        }
+                                        else
+                                        {
+                                            fieldValuetemp = fieldRecord.FormattedValue;
+                                        }
+
+                                        if (string.IsNullOrEmpty(fieldValuetemp))
+                                        {
+                                            fieldValuetemp = fieldRecord.FormattedValue;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        fieldValuetemp = fieldRecord.FormattedValue;
+                                    }
+                                    fieldValue = JsonConvert.ToString(fieldValuetemp);
                                     if (!string.IsNullOrEmpty(fieldValue))
                                     {
                                         fieldValue = fieldValue.Substring(1, fieldValue.Length - 2);

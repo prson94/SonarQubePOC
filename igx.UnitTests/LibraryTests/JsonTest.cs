@@ -35,5 +35,17 @@ namespace igx.UnitTests
             Assert.True(list.Count > 0,"Json not parsed successfully!");
         }
 
+
+        [Theory]
+        [InlineData(33.2,1)]
+        [InlineData(1,0)]
+        [InlineData(4322.323232, 6)]
+        [InlineData(4322.333333, 6)]
+        public void JsonNumberDecimal(decimal num, int result)
+        {
+            int decimals = num.GetNumberOfDecimalPlaces();
+
+            Assert.Equal(decimals, result);
+        }
     }
 }

@@ -56,10 +56,7 @@
 
 <div class="row asset-grid-wrapper" *ngIf="!showDelete && !showEditor && !isEditing && !hasNoListableColumns">
     <div #rightMenu
-         [ngClass]="{
-      'artifact-context-menu': isMenuOpen,
-      'artifact-context-menu-closed': !isMenuOpen
-    }">
+         [ngClass]="{ 'artifact-context-menu': isMenuOpen, 'artifact-context-menu-closed': !isMenuOpen }">
         <a [href]="itemUrl" target="_blank">Open in new window</a>
     </div>
     <d3s-asset-grid-custom-export *ngIf="showCustomExport && canExportRecords()"
@@ -86,7 +83,8 @@
                  [paginator]="true"
                  [rows]="rowsPerPage"
                  [rowsPerPageOptions]="defaultPagingOptions"
-                 [(selection)]="selected"
+                 [selection]="selected"
+                 (selectionChange)="selectRow($event)"
                  [lazy]="true"
                  (onLazyLoad)="loadArtifactsLazy($event)"
                  [totalRecords]="totalRecords"
@@ -99,9 +97,7 @@
                     <col *ngFor="let col of columns"
                          [style.width]="col.columnWidth ? col.columnWidth + 'px' : null" />
                     <col style="width: 30px" />
-                    <col style="width: 30px" />
-                    <col style="width: 30px" />
-                    <col style="width: 30px" />
+                    <col style="width: 48px" />
                 </colgroup>
             </ng-template>
             <ng-template pTemplate="header">
@@ -115,60 +111,50 @@
                     </th>
                     <th style="width: 30px"></th>
                     <th style="width: 30px"></th>
-                    <th style="width: 35px"></th>
-                    <th style="width: 30px"></th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-item>
                 <tr (dblclick)="selectArtifact(item)" [pSelectableRow]="item">
-                    <td *ngFor="let col of columns">
-                        <a (contextmenu)="onRightClick($event, rightMenu, item, dt)"
-                           (click)="selectArtifact(item)"
-                           style="display:block; word-wrap:break-word">
-                            <d3s-dynamic-field-value [column]="col"
-                                                     [fields]="fields"
-                                                     [item]="item"
-                                                     [useApiName]="true"
-                                                     [isDateUTC]="true"></d3s-dynamic-field-value>
-                        </a>
+                    <td *ngFor="let col of columns; let i=index">
+                        <ng-container *ngIf="i > 0; else linked">
+                            <div
+                                 style="display:block; word-wrap:break-word">
+                                <d3s-dynamic-field-value [column]="col"
+                                                         [fields]="fields"
+                                                         [item]="item"
+                                                         [useApiName]="true"
+                                                         [isDateUTC]="true"></d3s-dynamic-field-value>
+                            </div>
+                        </ng-container>
+                        <ng-template #linked>
+                            <a
+                               (click)="selectArtifact(item)"
+                               style="word-wrap:break-word;">
+                                <d3s-dynamic-field-value [column]="col"
+                                                         [fields]="fields"
+                                                         [item]="item"
+                                                         [useApiName]="true"
+                                                         styleClass="cell-link"
+                                                         [isDateUTC]="true"></d3s-dynamic-field-value>
+                            </a>
+                        </ng-template>
+
                     </td>
                     <td>
                         <div class="RowTools"
-                             *ngIf="
-                item[certificationStatusIndex] != null &&
-                item[certificationStatusIndex] != '' &&
-                 !statusHasColor
-              ">
+                             *ngIf="item[certificationStatusIndex] != null && item[certificationStatusIndex] != '' && !statusHasColor">
                             <i [pTooltip]="'Status: ' + item[certificationStatusIndex]"
-                               [style.color]="
-                  getCertificationStatusColor(item[certificationStatusIndex])
-                "
+                               [style.color]="getCertificationStatusColor(item[certificationStatusIndex])"
                                class="fa fa-certificate"
                                style="margin: 0 10px 0 5px"></i>
                         </div>
                     </td>
                     <td>
-                        <div class="RowTools" *ngIf="item.Permissions.ModifyAsset">
-                            <a style="cursor:pointer;"
-                               (click)="onEdit(item)">
-                                <i class="fa fa-pencil"></i>
+                        <div>
+                            <a (click)="linkMenu.toggle($event)" style="padding: 0 14px 0 14px; color: #333">
+                                <i class="fa fa-ellipsis-v"></i>
                             </a>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="RowTools" *ngIf="item.Permissions.DeleteAsset">
-                            <a style="cursor:pointer;"
-                               (click)="onDelete(item);">
-                                <i class="fa fa-trash-o"></i>
-                            </a>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="RowTools">
-                            <d3s-preview-tooltip objectType="Artifact"
-                                                 [uid]="item.AssetUid"
-                                                 (click)="selectArtifact(item)"
-                                                 icon="info"></d3s-preview-tooltip>
+                            <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #linkMenu [tabIndex]="1"></ig-popup-menu>
                         </div>
                     </td>
                 </tr>

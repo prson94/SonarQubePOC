@@ -12,8 +12,8 @@ import { CommonModule } from '@angular/common';
     selector: '[igButton]'
 })
 export class ButtonDirective implements AfterViewInit, OnDestroy {
-
     @Input() tooltip: string;
+    @Input() darkMode: boolean = false;
 
     public _label: string;
     public _icon: string;
@@ -34,6 +34,9 @@ export class ButtonDirective implements AfterViewInit, OnDestroy {
         let styleClass = 'ig-button';
         if (!this.label) {
             styleClass = styleClass + ' ig-button-icon-only';
+        }
+        if (this.darkMode) {
+            styleClass += ' ig-button-dark';
         }
         return styleClass;
     }

@@ -17,10 +17,12 @@ import { MessagesObservableService } from '../../services/messages-observable.se
 import { SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 import { AssetGridObject } from '../assets-grid/asset-grid.model';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
+import { DataProfileService } from '../../services/dataprofile.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
     selector: 'd3s-rule-list',
-    providers: [GridDefinitionService, RulesService, PermissionsService, WebAnalyticsService],
+    providers: [GridDefinitionService, RulesService, PermissionsService, WebAnalyticsService, DataProfileService],
     templateUrl: './rule-list.component.html'
 })
 
@@ -32,6 +34,13 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     gridObject: AssetGridObject;
     ruleType: RuleType;
 
+    private selection: any = null;
+    private sidePanelOpen: boolean = false;
+    private sidePanelLoading: boolean = false;
+    private sidePanelTab: string;
+    private hasProfiling: boolean = false;
+    dataProfile: any;
+
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -40,6 +49,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
         protected messagesService: MessagesObservableService,
         private gridDefinitionService: GridDefinitionService,
         private headerActionsService: HeaderActionsService,
+        private dataProfileService: DataProfileService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
         secondaryNavService: SecondaryNavService,
@@ -95,6 +105,41 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                 });
         });
     }
+
+    selectAsset(event: any) {
+        this.selection = event;
+
+        if (this.selection && this.selection.HasProfiling) {
+            this.sidePanelLoading = true;
+            this.dataProfileService.getDataProfiles(this.selection.AssetUid).subscribe(
+                (r) => {
+                    if (r && r.items && r.items.length > 0 && r.items[0].sampleCount != null) {
+                        this.dataProfile = r.items[0];
+
+                        forkJoin(
+                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
+                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
+                        ).subscribe((res) => {
+                            this.dataProfile['matches'] = {
+                                structure: res[0],
+                                data: res[1]
+                            };
+                        });
+                    }
+                    this.sidePanelLoading = false;
+                });
+        }
+    }
+
+    get panelApplies(): boolean {
+        if (this.selection == null || this.sidePanelTab === 'detail') {
+            return true;
+        }
+        if (this.selection != null && this.sidePanelTab === 'dataprofile') {
+            return this.selection.HasProfiling;
+        }
+    }
+
 
     ngOnDestroy() {
         this.clearSidebar();

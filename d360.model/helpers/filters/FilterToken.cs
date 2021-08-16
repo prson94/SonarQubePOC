@@ -136,51 +136,133 @@ namespace d360.model.helpers
         {
             this.sqlParamsRef = sqlParams;
 
-            if (!IsValidOperatorForFieldType(filter))
-            {
-                throw new Exception($"Operator '{@operator}' is not valid for '{filter.SqlFieldType.ToString().ToLower()}' on field {field}");
-            }
 
-            if (!this.IsNullValue)
+            if (filter.SqlFieldType == SqlFieldType.Xml)
             {
-                CheckFieldValue(filter);
-
-                value = value.ToString().Trim('\'');
-                if (this.@operator == "ct" || this.@operator == "nct")
+                value = value.ToString().ToLower(CultureInfo.InvariantCulture);
+                if (value.ToString().StartsWith("'"))
                 {
-                    value = $"%{wildcardValue(escapeForSQLLike(value.ToString()))}%";
+                    value = ((string)value).TrimStart('\'');
+                }
+                if (value.ToString().EndsWith("'"))
+                {
+                    value = ((string)value).TrimEnd('\'');
+                }
+                var values = value.ToString().Split('>').ToList();
+                for (int i = 0; i < values.Count; i++)
+                {
+                    values[i] = values[i].Trim();
+                }
+                if (value.ToString().EndsWith("*") && @operator == "ct")
+                {
+                    value = ((string)value).TrimEnd('*');
+                    @operator = "sw";
+                }
+                if (value.ToString().StartsWith("*") && @operator == "ct")
+                {
+                    value = ((string)value).TrimStart('*');
+                    @operator = "ew";
                 }
 
-                stringBuilder.Clear();
-
-                if (this.convertToNVarChar)
+                string pName = $"@filter_{ parameterIdx}";
+                string formattedSql = "";
+                switch (@operator)
                 {
-                    filter.SqlExpression = $"CONVERT(VARCHAR,{filter.SqlExpression},120)";
+                    case "ge":
+                        formattedSql = "{0}.exist('/path/segment[. >= sql:variable(\"{1}\")]') = 1";
+                        break;
+                    case "gt":
+                        formattedSql = "{0}.exist('/path/segment[. > sql:variable(\"{1}\")]') = 1";
+                        break;
+                    case "le":
+                        formattedSql = "{0}.exist('/path/segment[. <= sql:variable(\"{1}\")]') = 1";
+                        break;
+                    case "lt":
+                        formattedSql = "{0}.exist('/path/segment[. < sql:variable(\"{1}\")]') = 1";
+                        break;
+                    case "sw":
+                        formattedSql = "{0}.exist('/path/segment[1][contains(lower-case(.),sql:variable(\"{1}\"))]') = 1";
+                        break;
+                    case "ew":
+                        formattedSql = "{0}.exist('/path/segment[last()][contains(lower-case(.),sql:variable(\"{1}\"))]') = 1";
+                        break;
+                    case "ct":
+                        formattedSql = "{0}.exist('/path/segment[contains(lower-case(.),sql:variable(\"{1}\"))]') = 1";
+                        break;
+                    case "nct":
+                        formattedSql = "{0}.exist('/path/segment[contains(lower-case(.),sql:variable(\"{1}\"))]') = 0";
+                        break;
+                    default: //default is eq
+                        string resultValue = "1";
+                        if (@operator == "ne")
+                        {
+                            resultValue = "0";
+                        }
+                        if (values.Count > 1)
+                        {
+                            var segmentFilterList = new List<string>();
+                            for (int i = 0; i < values.Count; i++)
+                            {
+                                values[i] = values[i].Trim();
+                                segmentFilterList.Add("{0}" + $".exist('/path/segment[{i+1}][.=sql:variable(\"{pName}_{i}\")]') = {resultValue}");
+                                sqlParamsRef.Add($"{pName}_{i}", values[i]);
+                            }
+                            formattedSql = string.Join(" and ", segmentFilterList);
+                        }
+                        else
+                        {
+                            formattedSql = "{0}.exist('/path/segment[.=sql:variable(\"{1}\")]') = " + resultValue;
+                        }
+                        break;
                 }
+                stringBuilder.AppendFormat(formattedSql, filter.SqlExpression, pName);
 
-                stringBuilder.Append(filter.SqlExpression);
-                stringBuilder.Append(GetSQLOperator(@operator));
-                stringBuilder.Append($"@filter_{parameterIdx}");
-
-                sqlParamsRef.Add($"@filter_{parameterIdx}", value);
-
-                this.AppendNullOperatorForNotOperators(filter.SqlExpression);
-                return stringBuilder.ToString();
+                sqlParamsRef.Add(pName, value);
             }
             else
-            {
-                if (!(new[] { "eq", "ne" }.Contains(@operator)))
+            { 
+                if (!IsValidOperatorForFieldType(filter))
                 {
-                    throw new FormatException($"NULL value filter can be used only with 'eq' and 'ne' operator!");
+                    throw new Exception($"Operator '{@operator}' is not valid for '{filter.SqlFieldType.ToString().ToLower()}' on field {field}");
                 }
-                stringBuilder.Append(filter.SqlExpression);
-                stringBuilder.Append(GetSQLNullOperator(@operator));
 
-                return stringBuilder.ToString();
+                if (!this.IsNullValue)
+                {
+                    ValidateTokenForType(filter);
+                    CheckFieldValue(filter);
+                    value = value.ToString().Trim('\'');
+                    if (this.@operator == "ct" || this.@operator == "nct")
+                    {
+                        value = $"%{wildcardValue(escapeForSQLLike(value.ToString()))}%";
+                    }
+
+                    stringBuilder.Clear();
+
+                    if (this.convertToNVarChar)
+                    {
+                        filter.SqlExpression = $"CONVERT(VARCHAR,{filter.SqlExpression},120)";
+                    }
+
+                    stringBuilder.Append(filter.SqlExpression);
+                    stringBuilder.Append(GetSQLOperator(@operator));
+                    stringBuilder.Append($"@filter_{parameterIdx}");
+
+                    sqlParamsRef.Add($"@filter_{parameterIdx}", value);
+
+                    this.AppendNullOperatorForNotOperators(filter.SqlExpression);
+                }
+                else
+                {
+                    if (!(new[] { "eq", "ne" }.Contains(@operator)))
+                    {
+                        throw new FormatException($"NULL value filter can be used only with 'eq' and 'ne' operator!");
+                    }
+                    stringBuilder.Append(filter.SqlExpression);
+                    stringBuilder.Append(GetSQLNullOperator(@operator));
+                }            
             }
 
-
-
+            return stringBuilder.ToString();
         }
 
         private void AppendNullOperatorForNotOperators(string fieldName)
@@ -690,17 +772,19 @@ namespace d360.model.helpers
             }
         }
 
-        private void ValidateTokenForType()
+        private void ValidateTokenForType(DefaultFilter defaultFilter = null)
         {
+            string type = defaultFilter == null ? fieldType.Type : defaultFilter.SqlFieldType.ToString();
+
             bool hasApostrophe = value.ToString().First() == '\'' && value.ToString().Last() == '\'';
-            if (!hasApostrophe && !(fieldType.Type == "Number" || fieldType.Type == "Decimal" || fieldType.Type == "Boolean" || fieldType.Type == "Score" || fieldType.Type == "Counter"))
+            if (!hasApostrophe && !(type == "Number" || type == "Decimal" || type == "Boolean" || type == "Score" || type == "Counter"))
             {
                 throw new Exception("Text values should be placed within quotations.");
             }
 
-            if (!IsValidOperatorForFieldType())
+            if (defaultFilter == null && !IsValidOperatorForFieldType())
             {
-                throw new Exception($"Operator '{@operator}' is not valid for '{fieldType.Type}' on field {field}");
+                throw new Exception($"Operator '{@operator}' is not valid for '{type}' on field {field}");
             }
         }
 

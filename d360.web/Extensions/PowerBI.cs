@@ -31,9 +31,13 @@ namespace d360.web.Extensions
 
         /// <summary>
         /// Imports a Power BI Desktop file (pbix) into the Power BI Embedded service
-        /// </summary>        
-        /// <param name="datasetName">The dataset name to apply to the uploaded dataset</param>
-        /// <param name="filePath">A local file path on your computer</param>
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="pwd"></param>
+        /// <param name="clientId"></param>
+        /// <param name="groupId"></param>
+        /// <param name="datasetName"></param>
+        /// <param name="fileStream"></param>
         /// <returns></returns>
         public static async Task<Import> ImportPbix(string user, string pwd, string clientId, string groupId, string datasetName, Stream fileStream)
         {
@@ -59,8 +63,12 @@ namespace d360.web.Extensions
 
         /// <summary>
         /// Removes a published dataset from a given workspace.
-        /// </summary>        
-        /// <param name="datasetId">The Power BI dataset to delete</param>
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="pwd"></param>
+        /// <param name="clientId"></param>
+        /// <param name="groupId"></param>
+        /// <param name="datasetId"></param>
         /// <returns></returns>
         public static async Task DeleteDataset(string user, string pwd, string clientId, string groupId, string datasetId)
         {

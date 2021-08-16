@@ -64,20 +64,27 @@
                 <div class="textarea-editor" style="border-bottom: none;">
                     <d3s-workflow-template-tool [step]="step"
                                                 [diagram]="diagram"
-                                                [issueObject]="issueObject" 
-                                                [objectType]="objectType" 
-                                                [objectId]="objectId" 
-                                                (onItemClick)="append($event)" ></d3s-workflow-template-tool>
+                                                [issueObject]="issueObject"
+                                                [objectType]="objectType"
+                                                [objectId]="objectId"
+                                                (onItemClick)="append($event)"></d3s-workflow-template-tool>
                 </div>
                 <textarea [ngModel]="step.settings.HTTPRequest.Body" (ngModelChange)="step.settings.HTTPRequest.Body = $event; stepChange.emit(step)" class="textarea-editor" style="height: 8em"></textarea>
             </div>
-    </div>
-    <div class="row">
-        <div class="col s12">
-            <div class="FieldName">Request Timeout</div>
-            <div>
-                <input type="number" style="width: 95%" [ngModel]="step.settings.HTTPRequest.Timeout" (ngModelChange)="step.settings.HTTPRequest.Timeout = $event; stepChange.emit(step)" />
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <div>
+                    <input type="checkbox" [ngModel]="step.settings.HTTPRequest.lookupFieldsPassedByValue" (ngModelChange)="step.settings.HTTPRequest.lookupFieldsPassedByValue = $event; stepChange.emit(step)" /> Pass lookup fields by value
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <div class="FieldName">Request Timeout</div>
+                <div>
+                    <input type="number" style="width: 95%" [ngModel]="step.settings.HTTPRequest.Timeout" (ngModelChange)="step.settings.HTTPRequest.Timeout = $event; stepChange.emit(step)" />
+                </div>
             </div>
         </div>
     </div>
-</div>

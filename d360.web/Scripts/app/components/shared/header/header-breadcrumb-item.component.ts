@@ -156,7 +156,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
             return;
         }
 
-        if (this.breadcrumb.isType && this.breadcrumb.objectType !== 'Fusion') {
+        if (this.breadcrumb.isType) {
             if (this.breadcrumb.hasParent) {
                 this.typeaheadSearchService.getObjectTypeItemsFromParent(10, q, this.breadcrumb.objectType, this.breadcrumb.objectId).pipe(
                     debounceTime(400))
@@ -174,15 +174,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
                         this.ref.markForCheck();
                     });
             }
-        } else if (this.breadcrumb.isType && this.breadcrumb.objectType === 'Fusion') {
-            this.searchSub = this.typeaheadSearchService.getFusionObjectItems(10, q).pipe(
-                debounceTime(400))
-                .subscribe(data => {
-                    this.results = data;
-                    this.searchingTypeahed = false;
-                    this.ref.markForCheck();
-                });
-        }
+        } 
         else {
             this.searchSub = this.typeaheadSearchService.getObjectItems(10, q, this.breadcrumb.objectType, this.breadcrumb.objectId).pipe(
                 debounceTime(400))
