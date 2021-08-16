@@ -64,7 +64,7 @@ export class AdminRelationshipsEditor {
 
                     if (this.editedRelationship.PredicateType >= 3 &&  this.editedRelationship.PredicateType  <=4)
                     {
-                        if (this.editedRelationship.SubjectCardinality == 1 && this.editedRelationship.ObjectCardinality  == 2) {
+                        if (this.editedRelationship.SubjectCardinality === 1 && this.editedRelationship.ObjectCardinality  === 2) {
                                 this.canChangeCardinality = false;
                             }
                     }
