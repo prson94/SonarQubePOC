@@ -28,6 +28,7 @@ export class AdminRelationshipsEditor {
     isLoadingItem: boolean = false;
     isLoadingCardinality: boolean = false;
     canChangePredicate: boolean = true;
+    canChangeCardinality: boolean = true;
     canChangeObject: boolean = true;
     selectedPredicate: any;
 
@@ -59,6 +60,13 @@ export class AdminRelationshipsEditor {
 
                     if (this.editedRelationship.Predicate != undefined && this.editedRelationship.LimitedChangesOnly) {
                         this.canChangePredicate = false;
+                    }
+
+                    if (this.editedRelationship.PredicateType >= 3 &&  this.editedRelationship.PredicateType  <=4)
+                    {
+                        if (this.editedRelationship.SubjectCardinality == 1 && this.editedRelationship.ObjectCardinality  == 2) {
+                                this.canChangeCardinality = false;
+                            }
                     }
                 }
                 else {
