@@ -1,6 +1,8 @@
-﻿import { Input, Component, OnInit, SimpleChanges, OnChanges } from '@angular/core';
+﻿import { Input, Component, OnInit, SimpleChanges, OnChanges, AfterViewInit, LOCALE_ID } from '@angular/core';
 
 import { BaseComponent } from '../base.component';
+
+import * as Highcharts from 'highcharts';
 
 @Component({
     selector: 'data-profile',
@@ -8,7 +10,7 @@ import { BaseComponent } from '../base.component';
     styleUrls: ['dataprofile.less']
 })
 
-export class DataProfileComponent extends BaseComponent implements OnInit, OnChanges {
+export class DataProfileComponent extends BaseComponent implements OnInit, OnChanges, AfterViewInit {
     @Input() dataProfile: any;
 
     private sampleCountPercentage: number;
@@ -35,6 +37,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
     private ShowOther: boolean = false;
     private showSampleSummary: boolean = false;
     private showSampleQuality: boolean = false;
+    private showSampleDistribution: boolean = false;
     private showStatistics: boolean;
     private nullBlankTooltipText: string;
     private baseType: string;
@@ -47,6 +50,10 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
 
     isMatchDetectionPopupVisible: boolean = false;
 
+    sampleDistributionChart: Highcharts.Chart;
+    sampleChartXLabel: string = '';
+
+
     ngOnInit() { 
         this.initialize();
     }
@@ -54,7 +61,12 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
     ngOnChanges(changes: SimpleChanges) {
         if (changes['dataProfile'] && !changes['dataProfile'].firstChange) {
             this.initialize();
+            setTimeout(() => this.renderSampleDistributionChart(), 10);
         }
+    }
+
+    ngAfterViewInit() {
+        setTimeout(() => this.renderSampleDistributionChart(), 10);
     }
 
     initialize() {
@@ -174,6 +186,10 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             this.dataProfile.multiline != null || this.dataProfile.leadingWhiteSpace != null || this.dataProfile.trailingWhiteSpace != null)) {
             this.showStatistics = true;
         }
+
+        if (this.hasValidCounts && this.dataProfile.cardinalityDetail && this.dataProfile.cardinalityDetail.length > 0 && ['long', 'boolean', 'double', 'datetme', 'date', 'localdatetime', 'localdate', 'string'].indexOf(this.dataProfile.type.toLowerCase()) !== -1) {
+            this.showSampleDistribution = true;
+        }
     }
 
     private setBaseTypeText() {
@@ -222,5 +238,359 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
         let assetCountStr: string = count > 1 ? `${count} assets` : '1 asset';
         let descStr: string = type === 'duplicates' ? 'same type and matching data' : 'same type but different data';
         return `${assetCountStr} detected which have the ${descStr}.\nClick to investigate.`;
+    }
+
+    public renderSampleDistributionChart() {
+        console.log(this.dataProfile, this.showSampleDistribution);
+
+        if (this.showSampleDistribution === false)
+            return;
+
+
+        //use of var here is to allow access to the dataProfile object inside Highcharts specific functions
+        var dataProfile: any = this.dataProfile;
+
+        var nullColor: string = '#b2c1cf';
+        var validColor: string = '#2e9b61';
+        var invalidColor: string = '#d73961';
+
+        let dataProfileType: string = this.dataProfile.type.toLowerCase();
+        let categories: string[] = [];
+        let data: any[] = [];
+        let colors: string[] = [];
+
+        var blankNullLabel: string = 'Blank/Null';
+        var invalidOutlierLabel: string = 'Invalid/Outliers';
+
+        let maxSampleCount: number = 24;
+        let maxNumberCount: number = 6;
+        let showXAxisLabel: boolean = true;
+        let pointPadding: number = 0.1;
+        let maxPointWidth: number = null;
+        let xAxisStep: number = 0;
+        let spacingTop: number = 10;
+        let includeStatsWidget: boolean = false;
+        let index: number = 0;
+
+        var meanIndex = 0;
+        var meanPercentInterval = 0;
+        var interval = 0;
+
+        let testCardinality: string = this.dataProfile.cardinalityDetail[0].key;
+
+        this.sampleChartXLabel = '';
+
+
+        //add common null/invalid columns 
+        if (this.dataProfile.outlierCount && this.dataProfile.outlierCount > 0) {
+            categories.push(invalidOutlierLabel);
+            data.push(this.invalidCount);
+            colors.push(invalidColor);
+            index++;
+        }
+
+        if ((this.dataProfile.nullCount && this.dataProfile.nullCount > 0) || (this.dataProfile.blankCount && this.dataProfile.blankCount > 0)) {
+            categories.push(blankNullLabel);
+            data.push(this.nullBlankCountTotal);
+            colors.push(nullColor);
+            index++;
+        }
+
+
+
+        if (dataProfileType === 'boolean') {           
+            pointPadding = 0.05;
+            showXAxisLabel = true;
+
+            if (this.dataProfile.matchCount && this.dataProfile.matchCount > 0) {
+                this.dataProfile.cardinalityDetail.forEach((c) => {
+                    categories.push(c.key);
+                    data.push(c.count);
+                    colors.push(validColor);
+                });
+            }
+
+        } else if (dataProfileType === 'long' || dataProfileType === 'double') {
+            //test a record to make sure we're dealing with clean data, otherwise we can't continue
+            if (isNaN(+testCardinality)) {
+                this.showSampleDistribution = false;
+                return;
+            }
+
+            showXAxisLabel = true;
+            pointPadding = 0.15;
+            maxPointWidth = 15;
+            meanIndex = 0;
+            //draw the stats widget as long as we have at least a mean value
+            includeStatsWidget = this.dataProfile.mean != null && !isNaN(+this.dataProfile.mean);
+            spacingTop = includeStatsWidget ? 50 : 10; 
+
+            //calculate buckets based on data
+            //range of numbers available based on min/max
+            let range = +this.dataProfile.max - +this.dataProfile.min;
+            let fixedLen = range < 10 ? 1 : 0;
+            let current = +this.dataProfile.min;
+            let lower = current;
+            let sampleCount = Math.min(maxNumberCount, this.dataProfile.cardinalityDetail.length);
+
+            //number interval for each bar
+            interval = range / sampleCount;
+            
+            //fill interval buckets and keep track of index where mean widget will be drawn
+            while (current < this.dataProfile.max) {               
+                current += interval;
+                let upper = current;
+
+                if (this.dataProfile.mean != null) {
+                    if (+this.dataProfile.mean >= lower && +this.dataProfile.mean < upper) {
+                        meanIndex = index;
+                        meanPercentInterval = ((interval - (upper - +this.dataProfile.mean)) / interval);
+                    }
+                }
+
+                categories.push(`${lower.toFixed(fixedLen)} - ${upper.toFixed(fixedLen)}`);
+                let count = this.dataProfile.cardinalityDetail
+                    .filter((c) => +c.key >= lower && +c.key < upper)
+                    .reduce((count, r) => count += r.count, 0);
+
+                data.push(count);
+                colors.push(validColor);
+
+                index++;
+                lower = current;
+            }
+
+        } else if (dataProfileType === 'date' || dataProfileType === 'datetime' || dataProfileType === 'localdate' || dataProfileType === 'localdatetime') {
+            //test to see if we can parse these date values
+            if (isNaN(Date.parse(testCardinality))) {
+                this.showSampleDistribution = false;
+                return;
+            }
+
+            pointPadding = 0.1;
+            
+
+            let minDate = new Date(this.dataProfile.min);
+            let maxDate = new Date(this.dataProfile.max);
+            let difference = maxDate.getTime() - minDate.getTime();
+            let sampleCount = Math.min(maxSampleCount, this.dataProfile.cardinalityDetail.length);
+
+            interval = difference / sampleCount;
+
+            if (sampleCount > 18) {
+                xAxisStep = 4;
+            } else if (sampleCount > 9) {
+                xAxisStep = 2;
+            }
+
+            let current = new Date(this.dataProfile.min);
+            let lower = new Date(current);
+
+            while (lower < maxDate) {
+                current = new Date(current.getTime() + interval);
+                let upper = current;
+                let count = this.dataProfile.cardinalityDetail
+                    .filter((c) => new Date(c.key) >= lower && new Date(c.key) < upper)
+                    .reduce((count, r) => count += r.count, 0);
+
+                let opts = { month: 'short', year: '2-digit' };
+                let dateString = new Intl.DateTimeFormat(navigator.language, opts).format(lower);
+
+                categories.push(dateString);
+                data.push(count);
+                colors.push(validColor);
+                lower = new Date(current);
+            }
+
+        } else {
+            showXAxisLabel = false;
+            pointPadding = 0.1;
+            this.sampleChartXLabel = this.distinctCount.toLocaleString() + ' distinct values';
+
+            if (this.dataProfile.matchCount && this.dataProfile.matchCount > 0) {
+                let i = 0;
+                let max = Math.min(maxSampleCount, this.dataProfile.cardinalityDetail.length);
+                let c = this.dataProfile.cardinalityDetail;
+                while (i < max) {
+                    i++;
+                    categories.push(c[i].key);
+                    data.push(c[i].count);
+                    colors.push(validColor);
+                }
+            }
+        }
+
+        
+        let tooltipFormatter = function () {
+            let formatString = '';
+
+            if (this.x === blankNullLabel) {
+                formatString += `<div>Null: ${dataProfile.nullCount} <span style="color: #818385">${Math.round((dataProfile.nullCount / dataProfile.totalCount) * 100)}%</span></div>`;
+                formatString += `<div>Blank: ${dataProfile.blankCount} <span style="color: #818385">${Math.round((dataProfile.blankCount / dataProfile.totalCount) * 100)}%</span></div>`;
+            } else {
+                formatString = `<div>${this.x}: ${this.y} <span style="color: #818385">${Math.round((this.y / dataProfile.totalCount) * 100)}%</span></div>`;
+            }
+
+            return formatString;
+        };
+
+        let renderStatsWidget = function (chart) {
+            //include Std Dev bar if available
+            let drawStd = dataProfile.standardDeviation != null && !isNaN(+dataProfile.standardDeviation);
+
+            //get X position of bars surrounding the mean value and interval between them in pixels
+            let lowerX = chart.series[0].data[meanIndex].plotX;
+            let upperX = (meanIndex === chart.series[0].data.length - 1) ? 0 : chart.series[0].data[meanIndex + 1].plotX;
+            let pixelInterval = upperX - lowerX;
+
+            //calculate position of mean line
+            let xPos = chart.plotLeft + lowerX + (pixelInterval * meanPercentInterval); 
+
+
+            chart.renderer.path([
+                'M', xPos, chart.plotTop + chart.plotHeight,
+                'L', xPos, chart.plotTop + 25
+            ]).attr({
+                stroke: nullColor,
+                'stroke-width': 1
+            }).add();
+
+            chart.renderer.text(
+                'Mean',
+                xPos,
+                chart.plotTop - 10
+            ).attr({
+                align: 'center',
+                zIndex: 5
+            }).add();
+
+            chart.renderer.text(
+                dataProfile.mean.toFixed(2),
+                xPos,
+                chart.plotTop + 4
+            ).attr({
+                align: 'center',
+                zIndex: 5
+            }).css({
+                color: nullColor,
+            }).add();
+
+            if (drawStd) {
+                //calculate length of horizonal std dev line
+                let stdLen = (+dataProfile.standardDeviation / interval) * pixelInterval;
+
+                chart.renderer.path([
+                    'M', xPos - stdLen, chart.plotTop + 25,
+                    'L', xPos + stdLen, chart.plotTop + 25
+                ]).attr({
+                    stroke: nullColor,
+                    'stroke-dasharray': '2,2',
+                    'stroke-width': 1
+                }).add();
+
+                chart.renderer.path([
+                    'M', xPos - stdLen, chart.plotTop + 15,
+                    'L', xPos - stdLen, chart.plotTop + 35
+                ]).attr({
+                    stroke: nullColor,
+                    'stroke-width': 1
+                }).add();
+
+                chart.renderer.path([
+                    'M', xPos + stdLen, chart.plotTop + 15,
+                    'L', xPos + stdLen, chart.plotTop + 35
+                ]).attr({
+                    stroke: nullColor,
+                    'stroke-width': 1
+                }).add();
+
+                chart.renderer.text(
+                    'Std Dev',
+                    xPos + stdLen + 5,
+                    chart.plotTop + 15,
+                ).attr({
+                    zIndex: 5
+                }).add();
+
+                chart.renderer.text(
+                    +dataProfile.standardDeviation.toFixed(2),
+                    xPos + stdLen + 5,
+                    chart.plotTop + 29,
+                ).attr({
+                    zIndex: 5
+                }).css({
+                    color: nullColor,
+                }).add();
+            }
+        }
+
+        let chartOptions: any = {
+            chart: {
+                type: 'column',
+                height: 300,
+                spacingTop
+            },
+            title: {
+                text: '',
+                reserveSpace: false
+            },
+            xAxis: {
+                categories,
+                labels: {
+                    enabled: showXAxisLabel,
+                    reserveSpace: showXAxisLabel,
+                    step: xAxisStep
+                },
+                crosshair: false,   
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: '',
+                    reserveSpace: false
+                },
+                gridLineWidth: 0,
+                labels: {
+                    enabled: false,
+                    reserveSpace: false
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            tooltip: {
+                formatter: tooltipFormatter,
+                shared: true,
+                useHTML: true,
+                style: {
+                    background: 'white',
+                    borderRadius: 5,
+                    opacity: 1,
+                    border: '1px solid transparent'
+                }
+            },
+            plotOptions: {
+                column: {
+                    pointPadding: pointPadding,
+                    borderWidth: 0,
+                    groupPadding: 0,
+                    pointWidth: undefined,
+                    colorByPoint: true,
+                    colors
+                }
+            },
+            series: [{
+                name: '',
+                data,
+                maxPointWidth,
+                minPointLength: 3
+            }]
+        };
+
+        if (this.sampleDistributionChart)
+            this.sampleDistributionChart.destroy();
+
+        this.sampleDistributionChart = Highcharts.chart('sampleChart', chartOptions, includeStatsWidget ? renderStatsWidget : null);
+
     }
 }

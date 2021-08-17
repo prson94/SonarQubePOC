@@ -1,154 +1,160 @@
 @import '../../../../../Content/styles/_Variables.less';
 
 .summarySection {
-  padding: 16px 11px 6px 11px;
-  overflow-y: auto;
-  -webkit-flex: 1 1 auto;
-  height: calc(100vh - 255px);
-
-  .ig-value {
-    margin-bottom: 10px;
-  }
-
-  .tooltip-icon {
-    width: 32px;
-    color: @ig-midblue;
-    text-align: center;
-    cursor: pointer;
-    padding-top: 1px;
-  }
-
-  .group {
-    padding-top: 10px;
-    padding-bottom: 20px;
-    --validbar: @ig-green-t1;
-    --invalidbar: @ig-red-t1;
-    --otherbar: @ig-slate-t3;
-    --orangebar: @ig-orange;
-
-    .validCircle {
-      background-color: var(--validbar);
-    }
-
-    .invalidCircle {
-      background-color: var(--invalidbar);
-    }
-
-    .otherCircle {
-      background-color: var(--otherbar);
-    }
-
-    .orangeCircle {
-      background-color: var(--orangebar);
-    }
-
-    .sampleRow {
-      background-image: linear-gradient(to right, #9edae5, #9edae5);
-      background-size: 1% 100%;
-      background-repeat: no-repeat;
-      margin-bottom: 5px;
-      display: flex;
-      width: 100%;
-      line-height: 18px;
-
-      .sampleKey {
-        padding-left: 10px;
-        flex: 1;
-        display: table;
-        table-layout: fixed;
-        width: 100%;
-        word-wrap: break-word;
-      }
-
-      .sampleValue {
-        float: right;
-        padding-right: 10px;
-        padding-left: 16px;
-        flex: 0;
-
-        .sampleCount {
-          color: @ig-black;
-        }
-
-        .samplePercentage {
-          padding-left: 8px;
-          color: @d3s-gray-2;
-        }
-      }
-    }
-
-    .sampleQuality {
-      margin: 5px 0px 5px 0px;
-
-      .quality-label {
-        display: inline;
-        color: @ig-black;
-        margin-top: 4px;
-        line-height: 16px;
-        word-break: break-all;
-      }
-
-      .qualitySampleValue {
-        float: right;
-
-        .qualityValue-label {
-          color: @ig-black;
-        }
-      }
-    }
-
-    .showMore {
-      color: #006fba;
-      cursor: pointer;
-    }
-
-    .sampleBarChart {
-      border-radius: 12px;
-      height: 12px;
-      width: 100%;
-    }
-
-    .percentage {
-      color: @d3s-gray-2;
-      margin-left: 5px;
-    }
-  }
-
-  .summaryRow {
-    display: flex;
-    flex-direction: row;
-
-    .ig-label {
-      word-break: break-word;
-    }
-  }
-
-  .effectiveDate {
-    float: right;
-    padding-top: 6px;
-    color: @d3s-gray-2;
-    margin-left: 5px;
-  }
-
-  .match-row {
-    display: inline-block;
-
-    .ig-colorfield-swatch {
-      margin-right: 2px;
-    }
-
-    .ig-label {
-      display: inline-block;
-    }
+    padding: 16px 11px 6px 11px;
+    overflow-y: auto;
+    -webkit-flex: 1 1 auto;
+    height: calc(100vh - 255px);
 
     .ig-value {
-      margin-right: 4px;
+        margin-bottom: 10px;
     }
 
-    .disabled {
-      pointer-events: none;
-      color: inherit;
-      opacity: 0.33;
+    .tooltip-icon {
+        width: 32px;
+        color: @ig-midblue;
+        text-align: center;
+        cursor: pointer;
+        padding-top: 1px;
     }
-  }
+
+    .group {
+        padding-top: 10px;
+        padding-bottom: 20px;
+        --validbar: @ig-green-t1;
+        --invalidbar: @ig-red-t1;
+        --otherbar: @ig-slate-t3;
+        --orangebar: @ig-orange;
+
+        .validCircle {
+            background-color: var(--validbar);
+        }
+
+        .invalidCircle {
+            background-color: var(--invalidbar);
+        }
+
+        .otherCircle {
+            background-color: var(--otherbar);
+        }
+
+        .orangeCircle {
+            background-color: var(--orangebar);
+        }
+
+        .sampleRow {
+            background-image: linear-gradient(to right, #9edae5, #9edae5);
+            background-size: 1% 100%;
+            background-repeat: no-repeat;
+            margin-bottom: 5px;
+            display: flex;
+            width: 100%;
+            line-height: 18px;
+
+            .sampleKey {
+                padding-left: 10px;
+                flex: 1;
+                display: table;
+                table-layout: fixed;
+                width: 100%;
+                word-wrap: break-word;
+            }
+
+            .sampleValue {
+                float: right;
+                padding-right: 10px;
+                padding-left: 16px;
+                flex: 0;
+
+                .sampleCount {
+                    color: @ig-black;
+                }
+
+                .samplePercentage {
+                    padding-left: 8px;
+                    color: @d3s-gray-2;
+                }
+            }
+        }
+
+        .sampleQuality {
+            margin: 5px 0px 5px 0px;
+
+            .quality-label {
+                display: inline;
+                color: @ig-black;
+                margin-top: 4px;
+                line-height: 16px;
+                word-break: break-all;
+            }
+
+            .qualitySampleValue {
+                float: right;
+
+                .qualityValue-label {
+                    color: @ig-black;
+                }
+            }
+        }
+
+        .showMore {
+            color: #006fba;
+            cursor: pointer;
+        }
+
+        .sampleBarChart {
+            border-radius: 12px;
+            height: 12px;
+            width: 100%;
+        }
+
+        .percentage {
+            color: @d3s-gray-2;
+            margin-left: 5px;
+        }
+    }
+
+    .summaryRow {
+        display: flex;
+        flex-direction: row;
+
+        .ig-label {
+            word-break: break-word;
+        }
+    }
+
+    .effectiveDate {
+        float: right;
+        padding-top: 6px;
+        color: @d3s-gray-2;
+        margin-left: 5px;
+    }
+
+    .match-row {
+        display: inline-block;
+
+        .ig-colorfield-swatch {
+            margin-right: 2px;
+        }
+
+        .ig-label {
+            display: inline-block;
+        }
+
+        .ig-value {
+            margin-right: 4px;
+        }
+
+        .disabled {
+            pointer-events: none;
+            color: inherit;
+            opacity: 0.33;
+        }
+    }
+
+    .sampleChart {
+        &.x-label {
+            color: @d3s-gray-2;
+        }
+    }
 }
