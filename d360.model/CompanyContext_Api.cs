@@ -6103,7 +6103,7 @@ from	api.ExecutionRelationship T
 			                outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
 	                where	(
 			                (P.AssetID = A.ID) 
-			                or P.AssetID is null
+			                or P.AssetTypeID is null
 			                )
 			                and (
 				                (P.PermissionsBitMask is not null and P.PermissionsBitMask & @p <> @p) 
@@ -6124,7 +6124,7 @@ from	api.ExecutionRelationship T
 			                outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
 	                where	(
 			                (P.AssetID = A.ID) 
-			                or P.AssetID is null
+			                or P.AssetTypeID is null
 			                )
 			                and (
 				                (P.PermissionsBitMask is not null and P.PermissionsBitMask & @p <> @p) 
