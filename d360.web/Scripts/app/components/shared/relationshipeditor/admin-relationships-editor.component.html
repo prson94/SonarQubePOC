@@ -24,13 +24,13 @@
             <div class="col l4 m4 s12">
                 <d3s-loading [isLoading]="isLoadingCardinality"></d3s-loading>
                 <div *ngIf="!isLoadingCardinality" class="FieldName">Subject Cardinality</div>
-                <p-dropdown igDropdown igSize="full" placeholder="Select Cardinality" *ngIf="!isLoadingCardinality" panelStyleClass="dropdown-z-correction" filter="true" name="subjectCardinality" #subjectCardinality="ngModel" [options]="subjectCardinalityOptions" [(ngModel)]="editedRelationship.SubjectCardinality" required></p-dropdown>
+                <p-dropdown igDropdown igSize="full" placeholder="Select Cardinality" *ngIf="!isLoadingCardinality" panelStyleClass="dropdown-z-correction" filter="true" name="subjectCardinality" #subjectCardinality="ngModel" [options]="subjectCardinalityOptions" [(ngModel)]="editedRelationship.SubjectCardinality" [disabled]="!canChangeCardinality" required></p-dropdown>
             </div>
             <div class="col l4 m4 s12" style="text-align: center">&nbsp;<br />to</div>
             <div class="col l4 m4 s12">
                 <d3s-loading [isLoading]="isLoadingCardinality"></d3s-loading>
                 <div *ngIf="!isLoadingCardinality" class="FieldName">Object Cardinality</div>
-                <p-dropdown igDropdown igSize="full" placeholder="Select Cardinality" *ngIf="!isLoadingCardinality" filter="true" name="objectCardinality" #objectCardinality="ngModel" [options]="objectCardinalityOptions" [(ngModel)]="editedRelationship.ObjectCardinality" required></p-dropdown>
+                <p-dropdown igDropdown igSize="full" placeholder="Select Cardinality" *ngIf="!isLoadingCardinality" filter="true" name="objectCardinality" #objectCardinality="ngModel" [options]="objectCardinalityOptions" [(ngModel)]="editedRelationship.ObjectCardinality" [disabled]="!canChangeCardinality" required></p-dropdown>
             </div>
         </div>
 
