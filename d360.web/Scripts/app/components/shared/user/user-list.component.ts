@@ -165,7 +165,6 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     setAdvancedFilterFields(columns: GridColumn[], customFields: FieldTypeAPIModelField[]) {
         let output: AdvancedFilterFieldType[] = columns.map((c) => {
             const apiName = this.getApiName(c.datafield);
-            const customIdx = customFields.findIndex((o) => o.Name === apiName);
             if (c.datafield === "State") {
                 return {
                     Name: apiName,
@@ -175,8 +174,8 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
                     ValueList: [{ value: "Active", title: "Active" }, { value: "Inactive", title: "Inactive" }],
                     RemovePopulatedOperator: true
                 }
-            } else if (customIdx !== -1) {
-                return customFields[customIdx] as AdvancedFilterFieldType;
+            } else if (customFields.findIndex((o) => o.Name === apiName) !== -1) {
+                return customFields.find((o) => o.Name === apiName) as AdvancedFilterFieldType;
             } else {
                 return {
                     Name: apiName,
