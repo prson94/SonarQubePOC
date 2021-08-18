@@ -45,7 +45,7 @@
         </d3s-preview-tooltip>
     </span>
     <span *ngSwitchCase="'path'" innerHtml="{{formatAsPath()}}" [class]="styleClass"></span>
-    <span *ngSwitchCase="'score'" innerHtml="{{fieldValue}}"></span>
+    <span *ngSwitchCase="'score'" innerHtml="{{fieldValue}}" [class]="styleClass"></span>
     <span *ngSwitchCase="'string'" [innerText]="fieldValue" [class]="styleClass"></span>
     <span *ngSwitchCase="'JSON'">
         <span *ngIf="GetJSON(field.Value) == 'Error'; else showJSON">{{field.Value}}</span>
