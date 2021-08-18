@@ -311,12 +311,13 @@ export class AssetDetailComponent implements OnChanges {
     setThresholdClass(score: any) {
         if (score != null && score.UpperThreshold != null && score.LowerThreshold != null) {
             let v = score.Value * 100;
-            if (v <= score.LowerThreshold)
+            if (v <= score.LowerThreshold) {
                 score.Class = 'poor';
-            else if (v > score.LowerThreshold && v <= score.UpperThreshold)
+            } else if (v > score.LowerThreshold && v <= score.UpperThreshold) {
                 score.Class = 'average';
-            else
-                score.Class = 'good';           
+            } else {
+                score.Class = 'good';
+            }
         }
     }
 }
