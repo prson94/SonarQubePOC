@@ -39,7 +39,7 @@ namespace d360.model.helpers.filters
                 this.value = valueValidation.UpdatedValue;
 
                 UpdateTokenValueForType(true);
-                return $"( {Field} {GetSQLOperator(@operator)} '{EscapedValueAsString}')";
+                return $"( {Field} {FilterHelpers.GetSQLOperator(@operator)} '{EscapedValueAsString}')";
             }
             else
             {
@@ -48,7 +48,7 @@ namespace d360.model.helpers.filters
                     throw new FormatException($"NULL value filter can be used only with 'eq' and 'ne' operator!");
                 }
 
-                return $"( {Field} { GetSQLNullOperator(@operator)})";
+                return $"( {Field} { FilterHelpers.GetSQLNullOperator(@operator)})";
             }
         }
 

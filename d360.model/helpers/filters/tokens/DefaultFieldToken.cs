@@ -136,7 +136,7 @@ namespace d360.model.helpers.filters
                     value = value.ToString().Trim('\'');
                     if (this.@operator == "ct" || this.@operator == "nct")
                     {
-                        value = $"%{wildcardValue(escapeForSQLLike(value.ToString()))}%";
+                        value = $"%{FilterHelpers.WildcardValue(FilterHelpers.EscapeForSQLLike(value.ToString()))}%";
                     }
 
                     stringBuilder.Clear();
@@ -147,7 +147,7 @@ namespace d360.model.helpers.filters
                     }
 
                     stringBuilder.Append(defaultFilter.SqlExpression);
-                    stringBuilder.Append(GetSQLOperator(@operator));
+                    stringBuilder.Append(FilterHelpers.GetSQLOperator(@operator));
                     stringBuilder.Append($"@filter_{parameterIdx}");
 
                     sqlParamsRef.Add($"@filter_{parameterIdx}", value);
@@ -161,7 +161,7 @@ namespace d360.model.helpers.filters
                         throw new FormatException($"NULL value filter can be used only with 'eq' and 'ne' operator!");
                     }
                     stringBuilder.Append(defaultFilter.SqlExpression);
-                    stringBuilder.Append(GetSQLNullOperator(@operator));
+                    stringBuilder.Append(FilterHelpers.GetSQLNullOperator(@operator));
                 }
             }
 

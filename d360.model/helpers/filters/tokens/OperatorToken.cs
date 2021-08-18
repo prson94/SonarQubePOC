@@ -1,4 +1,5 @@
-﻿using System;
+﻿using d360.model.helpers.filters.program;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -28,23 +29,13 @@ namespace d360.model.helpers.filters
             stringBuilder.Clear();
             if (@operator != "(" && @operator != ")")
             {
-                stringBuilder.Append(GetLogicalOperator(@operator));
+                stringBuilder.Append(FilterHelpers.GetLogicalOperator(@operator));
             }
             else
             {
                 stringBuilder.Append(@operator);
             }
             return stringBuilder.ToString();
-        }
-
-        private string GetLogicalOperator(string value)
-        {
-            switch (value)
-            {
-                case "and": return " and ";
-                case "or": return " or ";
-                default: throw new Exception($"Invalid logical operator '{value}'");
-            }
         }
     }
 }

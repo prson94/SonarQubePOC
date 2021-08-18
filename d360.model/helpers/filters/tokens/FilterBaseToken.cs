@@ -67,59 +67,6 @@ namespace d360.model.helpers.filters
             }
         }
 
-       
-
-        protected string GetSQLOperator(string value)
-        {
-            switch (value)
-            {
-                case "eq": return " = ";
-                case "ne": return " <> ";
-                case "gt": return " > ";
-                case "ge": return " >= ";
-                case "lt": return " < ";
-                case "le": return " <= ";
-                case "ct": return " like ";
-                case "nct": return " not like ";
-                default: throw new Exception($"Invalid comparison operator '{value}'");
-            }
-        }
-
-        protected string GetSQLNullOperator(string value)
-        {
-            switch (value)
-            {
-                case "eq": return " is null";
-                case "ne": return " is not null";
-                default: throw new Exception($"Invalid comparison operator '{value}'");
-            }
-        }
-
-        protected string wildcardValue(string value)
-        {
-            value = value.Replace("*", "%").Replace("?", "_");
-            return value;
-        }
-
-        protected string escapeForSQLLike(string value)
-        {
-            char[] escapeChars = new char[] { '%', '_', '^', '[' };
-            string escapedValue = "";
-
-            foreach (char c in value)
-            {
-                if (escapeChars.Contains(c))
-                {
-                    escapedValue += $"[{c}]";
-                }
-                else
-                {
-                    escapedValue += c;
-                }
-            }
-            return escapedValue;
-        }
-
         protected void AppendNullOperatorForNotOperators(string fieldName)
         {
             if (this.@operator == "ne" || this.@operator == "nct")
@@ -142,12 +89,12 @@ namespace d360.model.helpers.filters
 
                 if (isBoth)
                 {
-                    value = $"%{wildcardValue(escapeForSQLLike(value.ToString()))}%";
+                    value = $"%{FilterHelpers.WildcardValue(FilterHelpers.EscapeForSQLLike(value.ToString()))}%";
                 }
                 else
                 {
                     //Wildcard will be present from request
-                    value = $"{wildcardValue(escapeForSQLLike(value.ToString()))}";
+                    value = $"{FilterHelpers.WildcardValue(FilterHelpers.EscapeForSQLLike(value.ToString()))}";
                 }
             }
 
@@ -195,7 +142,7 @@ namespace d360.model.helpers.filters
                 }
 
                 stringBuilder.Append(fieldSql);
-                stringBuilder.Append(GetSQLOperator(@operator));
+                stringBuilder.Append(FilterHelpers.GetSQLOperator(@operator));
                 stringBuilder.Append($"@filter_{parameterIdx}");
 
                 this.AppendNullOperatorForNotOperators(fieldSql);

@@ -115,6 +115,128 @@ namespace igx.UnitTests.FilterExpressionTests
 
             Assert.True(didThrow, "This expression should throw an error!");
         }
+
+        [Theory]
+        [InlineData("eq", " = ")]
+        [InlineData("ne", " <> ")]
+        [InlineData("gt", " > ")]
+        [InlineData("ge", " >= ")]
+        [InlineData("lt", " < ")]
+        [InlineData("le", " <= ")]
+        [InlineData("ct", " like ")]
+        [InlineData("nct", " not like ")]
+        public void GetSQLOperatorValidTests(string value, string expectedValue)
+        {
+            var result = FilterHelpers.GetSQLOperator(value);
+            Assert.True(result == expectedValue);
+        }
+
+
+        [Theory]
+        [InlineData("text")]
+        [InlineData("1")]
+        public void GetSQLOperatorInValidTests(string value)
+        {
+
+            bool didThrow = false;
+            try
+            {
+
+                var result = FilterHelpers.GetSQLOperator(value);
+            }
+            catch
+            {
+                didThrow = true;
+            }
+
+            Assert.True(didThrow, "This expression should throw an error!");
+        }
+
+        [Theory]
+        [InlineData("eq", " is null")]
+        [InlineData("ne", " is not null")]
+
+        public void GetSQLNullOperatorValidTests(string value, string expectedValue)
+        {
+            var result = FilterHelpers.GetSQLNullOperator(value);
+            Assert.True(result == expectedValue);
+        }
+
+
+        [Theory]
+        [InlineData("text")]
+        [InlineData("1")]
+        public void GetSQLNullOperatorInValidTests(string value)
+        {
+
+            bool didThrow = false;
+            try
+            {
+
+                var result = FilterHelpers.GetSQLNullOperator(value);
+            }
+            catch
+            {
+                didThrow = true;
+            }
+
+            Assert.True(didThrow, "This expression should throw an error!");
+        }
+
+        [Theory]
+        [InlineData("normal text", "normal text")]
+        [InlineData("te*st", "te%st")]
+        [InlineData("*test*", "%test%")]
+        [InlineData("*t?st*", "%t_st%")]
+
+        public void wildcardValueValidTests(string value, string expectedValue)
+        {
+            var result = FilterHelpers.WildcardValue(value);
+            Assert.True(result == expectedValue);
+        }
+
+        [Theory]
+        [InlineData("normal text", "normal text")]
+        [InlineData("%", "[%]")]
+        [InlineData("_", "[_]")]
+        [InlineData("^", "[^]")]
+        [InlineData("[", "[[]")]
+        [InlineData("te%_^[", "te[%][_][^][[]")]
+        public void EscapeForSQLLikeValidTests(string value, string expectedValue)
+        {
+            var result = FilterHelpers.EscapeForSQLLike(value);
+            Assert.True(result == expectedValue);
+        }
+
+
+        [Theory]
+        [InlineData("and", " and ")]
+        [InlineData("or", " or ")]
+        public void GetLogicalOperatorValidTests(string value, string expectedValue)
+        {
+            var result = FilterHelpers.GetLogicalOperator(value);
+            Assert.True(result == expectedValue);
+        }
+
+        [Theory]
+        [InlineData("text")]
+        [InlineData("1")]
+        public void GetLogicalOperatorInValidTests(string value)
+        {
+
+            bool didThrow = false;
+            try
+            {
+
+                var result = FilterHelpers.GetLogicalOperator(value);
+            }
+            catch
+            {
+                didThrow = true;
+            }
+
+            Assert.True(didThrow, "This expression should throw an error!");
+        }
     }
 
 }

@@ -153,7 +153,7 @@ namespace d360.model.helpers.filters
             var fieldSql = GetColumnValueSyntax(fieldType.ID);
 
             stringBuilder.Append(fieldSql);
-            stringBuilder.Append(GetSQLNullOperator(@operator));
+            stringBuilder.Append(FilterHelpers.GetSQLNullOperator(@operator));
         }
 
         public void LoadFieldType(FieldType ft, List<string> fieldColumns)
