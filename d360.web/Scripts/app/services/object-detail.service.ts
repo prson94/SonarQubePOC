@@ -26,8 +26,8 @@ export class ObjectDetailService extends BaseObservableService {
         super(messagesService);
     }
 
-    getObjectDetailByUid(uid: string, objectType: string, useSingleColumn: boolean = false): Observable<any> {
-        return this.http.get(`api/${objectType}/${uid}/detail?useSingleColumn=${useSingleColumn}`)
+    getObjectDetailByUid(uid: string, objectType: string, useSingleColumn: boolean = false, includeHeader: boolean = false): Observable<any> {
+        return this.http.get(`api/${objectType}/${uid}/detail?useSingleColumn=${useSingleColumn}&includeHeader=${includeHeader}`)
             .pipe(
                 map(response => <any>response),
                 catchError(err => this.handleError(err))
@@ -37,9 +37,10 @@ export class ObjectDetailService extends BaseObservableService {
     getObjectDetail(
         objectID: number,
         objectType: string,
-        useSingleColumn: boolean = false
+        useSingleColumn: boolean = false,
+        includeHeader: boolean = false
     ): Observable<any> {
-        return this.http.get(`api/${objectType}/${objectID}/detail?useSingleColumn=${useSingleColumn}`)
+        return this.http.get(`api/${objectType}/${objectID}/detail?useSingleColumn=${useSingleColumn}&includeHeader=${includeHeader}`)
             .pipe(
                 map(response => <any>response),
                 catchError(err => this.handleError(err))
