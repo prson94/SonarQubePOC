@@ -28,6 +28,8 @@ import { SharedGridPagingInfoModule } from './grid-paging-info.component';
 import { SharedDeleteFormModule } from './delete.form';
 import { SimpleAccordionModule } from './simple-accordion.part';
 import { SharedObjectDetailsModule } from './objectdetails/shared-object-details.module';
+import { AdvancedFiltersModule } from "../assets-grid/advanced-filtering/advanced-filtering.module";
+import { SearchFieldModule } from "../shared/controls/search-field/search-field.component";
 
 import { GroupMembersComponent } from './group-members.component';
 import { MessagesBarComponent } from './messages-bar.component';
@@ -93,6 +95,8 @@ import { AssetDetailModule } from './asset-detail/asset-detail.module';
         TilesModule,
         SiteModalModule,
         AssetDetailModule,
+        AdvancedFiltersModule,
+        SearchFieldModule,
     ],
     providers: [
         {

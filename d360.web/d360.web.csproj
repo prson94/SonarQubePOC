@@ -1322,6 +1322,7 @@
     <Content Include="Scripts\tsconfig.aot.json" />
     <Content Include="Scripts\tsconfig.json" />
     <Content Include="Scripts\app\components\shared\dataprofile\dataprofile.less" />
+    <Content Include="Scripts\app\components\shared\user\user-list.component.less" />
     <Content Include="Scripts\app\components\shared\dataprofile\match-detection.less" />
     <Content Include="Scripts\app\components\shared\sidepanel\side-panel.component.less" />
     <None Include="Web.Debug.config">
@@ -1330,6 +1331,7 @@
     <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
+    <TypeScriptCompile Include="Scripts\app\components\shared\user\user-list.module.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\redirect.guard.ts" />
     <TypeScriptCompile Include="Scripts\app\models\search-admin.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\side-panel.model.ts" />
