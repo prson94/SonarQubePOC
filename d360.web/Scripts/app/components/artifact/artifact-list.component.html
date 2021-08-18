@@ -3,9 +3,7 @@
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
     </div>
     <div class="col s12" style="display: flex" *ngIf="!isLoading">
-        zz{{showEditor}}, {{selection == null}}zz
         <div class="tile tile-detail main-panel">
-
             <d3s-asset-grid [gridObject]="gridObject" (selectedChange)="selectAsset($event)" (hasProfilingChange)="hasProfiling=$event" (showEditorChange)="showEditor=$event"></d3s-asset-grid>
         </div>
         <div class="tile tile-detail side-panel" *ngIf="!isLoading && (!showEditor || (showEditor && selection != null))">
