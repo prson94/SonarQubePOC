@@ -23,6 +23,8 @@ import { Filters } from '../assets-grid/advanced-filtering/advanced-filtering.mo
 import { forkJoin, Observable, Subscription } from 'rxjs';
 import { DataProfileService } from '../../services/dataprofile.service';
 
+declare var CurrentResourceID;
+
 @Component({
     selector: 'd3s-hierarchy-item-structure',
     providers: [
@@ -86,6 +88,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     private sidePanelOpen: boolean = false;
     private sidePanelLoading: boolean = false;
     private sidePanelTab: string;
+    private sidePanelStorageKey: string;
+
     private hasProfiling: boolean = false;
     dataProfile: any;
 
@@ -136,6 +140,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 this.showDiagram = false;
                 break;
         }
+
+        this.sidePanelStorageKey = 'list_' + AssetTypeClass[this.assetTypeClass] + '_' + CurrentResourceID;
 
         this.routeSub = this.route.params.subscribe((params) => {
             this.objectTypeId = +params['typeId'];

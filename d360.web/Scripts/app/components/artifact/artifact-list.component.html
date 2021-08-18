@@ -7,12 +7,13 @@
             <d3s-asset-grid [gridObject]="gridObject" (selectedChange)="selectAsset($event)" (hasProfilingChange)="hasProfiling=$event"></d3s-asset-grid>
         </div>
         <div class="tile tile-detail side-panel" *ngIf="!isLoading">
-            <side-panel [(expanded)]="sidePanelOpen" 
+            <side-panel (expandedChange)="sidePanelOpen=$event" 
                         (selectedPanelChange)="sidePanelTab=$event" 
                         [selectedItem]="selection"
                         [panelApplies]="panelApplies"
                         [hasProfiling]="hasProfiling"
-                        hasDetail="true">
+                        hasDetail="true"
+                        [storageKey]="sidePanelStorageKey">
                 <ng-container *ngIf="sidePanelOpen && selection != null && sidePanelLoading">
                     <d3s-loading [isLoading]="true"></d3s-loading>
                 </ng-container>
