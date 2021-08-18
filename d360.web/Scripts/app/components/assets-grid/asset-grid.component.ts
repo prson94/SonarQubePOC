@@ -91,6 +91,12 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     isLoading: boolean = false;
     isDefinitionLoaded: boolean = false;
     hasNoListableColumns: boolean = false;
+    linkColumnIndex: number = -1;
+    readonly excludedLinkColumnTypes = [
+        'Tag',
+        'OwnershipLookup',
+        'Boolean'
+    ];
 
     selected: any = null;
     itemUrl: string;
@@ -256,6 +262,13 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 }
                 else {
                     this.hasNoListableColumns = false;
+
+                    for (let i = 0; i < this.columns.length; i++) {
+                        if (this.excludedLinkColumnTypes.findIndex((e) => e === (this.columns[i] as any).fieldType) === -1) {
+                            this.linkColumnIndex = i;
+                            break;
+                        }
+                    }
                 }
 
                 setTimeout(() => this.showAssetListPage(), 3000);

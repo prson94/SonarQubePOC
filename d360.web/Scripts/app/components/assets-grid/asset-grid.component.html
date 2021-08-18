@@ -116,7 +116,7 @@
             <ng-template pTemplate="body" let-item>
                 <tr (dblclick)="selectArtifact(item)" [pSelectableRow]="item">
                     <td *ngFor="let col of columns; let i=index">
-                        <ng-container *ngIf="i > 0; else linked">
+                        <ng-container *ngIf="i != linkColumnIndex; else linked">
                             <div
                                  style="display:block; word-wrap:break-word">
                                 <d3s-dynamic-field-value [column]="col"

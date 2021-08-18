@@ -77,6 +77,12 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     filterColumns: string[] = ['Path'];
     totalRecords: number = 0;
     totalRecordsFiltered: number = 0;
+    linkColumnIndex: number = -1;
+    readonly excludedLinkColumnTypes = [
+        'Tag',
+        'OwnershipLookup',
+        'Boolean'
+    ];
 
     @ViewChild("treeTable", { static: false }) treeTable: TreeTable;
     @ViewChild("inputBox", { static: false }) filterText: any;
@@ -292,6 +298,13 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 this.fields = result.Fields;
                 var filterfields = this.fields.filter(function (item) { return item.apiName && item.name.startsWith("Field") });
                 this.filterColumns = this.filterColumns.concat(filterfields.map(({ name }) => name));
+
+                for (let i = 0; i < this.columns.length; i++) {
+                    if (this.excludedLinkColumnTypes.findIndex((e) => e === (this.columns[i] as any).fieldType) === -1) {
+                        this.linkColumnIndex = i;
+                        break;
+                    }
+                }
             }
         );
     }
