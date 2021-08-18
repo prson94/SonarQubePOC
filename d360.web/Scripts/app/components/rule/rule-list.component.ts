@@ -38,6 +38,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     ruleType: RuleType;
 
     private selection: any = null;
+    showEditor: boolean = false;
     private sidePanelOpen: boolean = false;
     private sidePanelLoading: boolean = false;
     private sidePanelTab: string;

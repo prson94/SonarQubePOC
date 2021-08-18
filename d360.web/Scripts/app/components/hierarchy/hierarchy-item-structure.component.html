@@ -128,8 +128,8 @@
                               (saveClick)="save()"
                               (closeClick)="closeEditor();"></d3s-asset-editor>
         </div>
-        <div class="tile tile-detail side-panel" *ngIf="!isLoading">
-            <side-panel (expandedChange)="sidePanelOpen=$event"
+        <div class="tile tile-detail side-panel" *ngIf="!isLoading && (!showEditor || (showEditor && selected != null))">
+            <side-panel [(expanded)]="sidePanelOpen"
                         (selectedPanelChange)="sidePanelTab=$event"
                         [selectedItem]="selected?.data"
                         [panelApplies]="panelApplies"
