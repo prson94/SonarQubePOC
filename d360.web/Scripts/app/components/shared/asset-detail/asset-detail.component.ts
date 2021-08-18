@@ -31,6 +31,8 @@ export class AssetDetailComponent implements OnChanges {
     @Input() showHeaderLine: boolean = true;
     @Input() spacerHeight: string = '32px';
     @Input() paddingLeft: string;
+    @Input() isSidePanel: boolean = false;
+
     assetUID: string;
     assetTypeUID: string;
     isLoading = false;
