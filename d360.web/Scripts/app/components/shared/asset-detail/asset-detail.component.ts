@@ -141,7 +141,7 @@ export class AssetDetailComponent implements OnChanges {
                     if (this.showHeader && this.model.Scores != null) {
                         this.model.Scores.forEach((s) => {
                             this.setThresholdClass(s);
-                        })
+                        });
                     }
 
                     this.rows = displayRows;
