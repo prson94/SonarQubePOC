@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.dbo.GetComplexLookupByAsset-v58">
-  <comment>GOV-15460</comment>
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.GetComplexLookupByAsset-v59">
+  <comment>GOV-15460-TDuric,GOV-15361</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -30,7 +30,8 @@ as
 begin
 set nocount on;
 	declare @assetId bigint,
-			@type varchar(50)
+			@type varchar(50);
+
 	select top 1 @assetId = ID from Asset where Object = @object and ObjectID = @objectId
 	select top 1 @type = [Type] from FieldType where ID = @fieldTypeId
 
@@ -224,6 +225,7 @@ set nocount on;
 									else 'H' + F.RRN + '_F' + F.FT + '.FormattedValue'
 								end							
 							when F.FieldTypeID = 0 and F.FieldTypeName = 'DisplayValue' then 'H' + F.RRN + '_DV.DisplayValue'
+							when F.FieldTypeID = 0 and F.FieldTypeName = 'Code' then 'H' + F.RRN + '_CODE.Code'
 							else null
 						end as ColumnName,
 						F.DataField as Alias
@@ -477,6 +479,7 @@ set nocount on;
 							when T.FieldDataType = 'Score' then 'left join FieldType HFT'+T.RRN+'_F'+T.FT +' on HFT'+T.RRN+'_F'+T.FT+'.ID = ' + T.FT + '
 								     outer apply dbo.GetAssetScoreById(H'+T.RRN +'.ID, HFT'+T.RRN+'_F'+T.FT+'.scoretype) H'+T.RRN+'_F'+T.FT
 							when T.FieldTypeID = 0 and T.FieldTypeName = 'DisplayValue' then ' left join AssetDisplayValue H'+T.RRN+'_DV on H'+T.RRN+'_DV.AssetID = H'+T.RRN+'.ID'
+							when T.FieldTypeID = 0 and T.FieldTypeName = 'Code' then ' left join Asset H'+T.RRN+'_Code on H'+T.RRN+'_Code.ID = H'+T.RRN+'.ID'
 						end
 			from	@fields T 
 					left join IntersectType I on T.FieldTypeName like 'Related Item.%' and I.ID = T.FieldTypeID;
@@ -1188,7 +1191,7 @@ set nocount on;
 									when 'Decimal' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as float)'
 									when 'Number' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as int)'
 									when 'Boolean' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as bit)'
-									when 'Counter' then  '('''+F.CounterPrefix+'''' + ' + try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as nvarchar(20)))'
+									when 'Counter' then  '('''+isnull(F.CounterPrefix,'')+'''' + ' + try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as nvarchar(20)))'
 									else 'H' + F.RRN + '_F' + F.FT + '.FormattedValue'
 								end							
 							when F.FieldTypeID = 0 and F.FieldTypeName = 'DisplayValue' then 'H' + F.RRN + '_DV.DisplayValue'

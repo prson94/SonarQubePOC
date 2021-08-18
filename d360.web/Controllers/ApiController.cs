@@ -410,8 +410,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     left join fieldlookupvalue flv on flv.fieldtypeid = ft.id and flv.value = trim(Val.Value)
                     where a.uid = @uid 
                     and (ft.LookupObjectType <> '' or ft.LookupObjectType is not null)
-                    and (ft.LookupObjectID <> '' or ft.LookupObjectID is not null)
-                    and (ft.AllowAllValue <> 1 or ft.AllowAllValue is null)", new { uid = details.UID });
+                    and (ft.LookupObjectID <> '' or ft.LookupObjectID is not null)", new { uid = details.UID });
 
                 foreach (var ft in fieldTypes)
                 {
@@ -750,6 +749,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 inner join metrics.Allocation A on A.AssetTypeUid = T.[uid] and A.[State] = 1 and A.ScoreType = FT.ScoreType
                 where FT.[Object] = @type and FT.ObjectID = @id and FT.[Type] = 'Score'", new { type = type.ToString(), id }).ToList();
 
+            var hasProfiling = Company.Query<bool>("select case when exists (select 1 from AssetDataProfile P inner join AssetWithType A on A.ID = P.AssetID where A.Type = @type and A.TypeID = @id) then 1 else 0 end", new { type = type.ToString(), id }).SingleOrDefault();
+
             switch (type)
             {
                 case SystemObjects.ArtifactType:
@@ -1004,7 +1005,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 FilterColumns = filterColumns,
                 TopLevelFilterColumns = topLevelFilterFields,
                 IsReadOnly = isReadOnly,
-                ScoreAllocations = scoreAllocations
+                ScoreAllocations = scoreAllocations,
+                HasProfiling = hasProfiling
             });
         }
 
@@ -2248,21 +2250,36 @@ from    (
             var sql = "select FormattedValue from field where objecttype = @obj and objectid = @id and fieldtypeid = @fieldId";
             if (fieldType?.LookupObjectType == SystemObjects.ReferenceItem.ToString() && !LookupFieldHasColorItem(fieldType))
             {
-                sql = $@"select 
+                var joincondition = " ";
+                var joinconditionField = " ";
+                var adddisitnct = " ";
+
+                if ((bool)fieldType?.AllowMultipleValues)
+                {
+                    joincondition = $@" cross apply STRING_SPLIT(F.Value, ',') SPF ";
+                    joinconditionField = "SPF.value";
+                    adddisitnct = " distinct ";
+                }
+                else
+                {
+                    joinconditionField = "F.value";
+                }
+
+                sql = $@"select {adddisitnct} 
                             F.FormattedValue as name
                             , FD.FormattedValue as description
                             , FPL.FormattedValue as profilelevel
                         from 
                             field F
                             inner join FieldType ft on ft.ID = f.FieldTypeID
-                            cross apply STRING_SPLIT(F.Value, ',') SPF
-							inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID = SPF.value     
-                            outer apply (select FormattedValue from field FD1 inner join FieldType FT1 on FD1.FieldTypeID = FT1.ID where FT1.[Type]='{DataType.Text}' and LOWER(FT1.FriendlyName)='description' and FD1.ObjectID = F.Value and FD1.AssetID=ACF.ID) FD
-							outer apply (select FormattedValue from field FD2 inner join FieldType FT2 on FD2.FieldTypeID = FT2.ID where FD2.ObjectType='{SystemObjects.ReferenceItem}' and FT2.[Type]='{DataType.Text}' and LOWER(FT2.FriendlyName)='profile level' and FD2.ObjectID = F.Value and FD2.AssetID=ACF.ID) FPL
+                            {joincondition}
+							inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID = try_cast({joinconditionField} as int)   
+                            outer apply (select FormattedValue from field FD1 inner join FieldType FT1 on FD1.FieldTypeID = FT1.ID where FT1.[Type]='{DataType.Text}' and FT1.FriendlyName='description' and FD1.ObjectID = try_cast({joinconditionField} as int) and FD1.AssetID=ACF.ID) FD
+							outer apply (select FormattedValue from field FD2 inner join FieldType FT2 on FD2.FieldTypeID = FT2.ID where FD2.ObjectType='{SystemObjects.ReferenceItem}' and FT2.[Type]='{DataType.Text}' and FT2.FriendlyName='profile level' and FD2.ObjectID = try_cast({joinconditionField} as int) and FD2.AssetID=ACF.ID) FPL
                         where 
                             F.objecttype = @obj 
                             and F.objectid = @id 
-                            and F.fieldtypeid = @fieldId FOR JSON PATH"; ;
+                            and F.fieldtypeid = @fieldId FOR JSON PATH";
             }
             string value = Company.Query<string>(sql, new { obj = new DbString { Value = type.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, id = id, fieldId = fieldType.ID }).FirstOrDefault();
             if (string.IsNullOrEmpty(value) && !string.IsNullOrEmpty(fieldType.DefaultFormattedValue))
@@ -2329,7 +2346,8 @@ from    (
                     objectId = Company.Tags.FirstOrDefault(x => x.uid == uid).ID;
                     return await GetObjectDetailFields(type, objectId, useSingleColumn);
                 default:
-                    return null;
+                    var asset = Company.Assets.FirstOrDefault(a => a.uid == uid);
+                    return await GetObjectDetailFields(type, asset?.ObjectID ?? -1, useSingleColumn);
             }
         }
 
@@ -2338,8 +2356,20 @@ from    (
         public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, int id, bool useSingleColumn = false)
         {
             var model = new DetailReadOnlyModel() { columns = useSingleColumn ? 1 : 2 };
+            model.Object = type.ToString();
+            model.ObjectID = id;
 
-            int row = 0;
+            var metadata = Company.Query<dynamic>("select V.DisplayValue as AssetName, T.Name as AssetTypeName, T.Object as ObjectType, T.ObjectID as ObjectTypeID  from Asset A inner join AssetDisplayValue V on V.AssetID = A.ID inner join AssetType T on T.ID = A.AssetTypeID where A.ObjectID = @id and A.Object = @type", new { type = type.ToString(), id }).FirstOrDefault();
+
+            if (metadata != null)
+            {
+                model.AssetName = metadata.AssetName;
+                model.AssetTypeName = metadata.AssetTypeName;
+
+                model.ObjectType = metadata.ObjectType;
+                model.ObjectTypeID = metadata.ObjectTypeID;
+            }
+
             switch (type)
             {
                 case SystemObjects.Artifact:
@@ -3571,6 +3601,7 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
 
                     if (taxonomy != null)
                     {
+
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,

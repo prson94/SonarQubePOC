@@ -43,6 +43,7 @@ export class RelationshipDetail {
     ID: number;
     LimitedChangesOnly: boolean;
     Predicate: number;
+    PredicateType: number;
     Subject: string;
     SubjectDisplayText: string;
     SubjectCardinality: number;

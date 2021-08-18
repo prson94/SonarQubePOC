@@ -18,6 +18,7 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Threading.Tasks;
 using System.Web.Http.Description;
+using System.Threading;
 
 namespace d360.web.Controllers.V2
 {
@@ -468,7 +469,7 @@ namespace d360.web.Controllers.V2
             ApiExplorerSettings(IgnoreApi = true),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(IEnumerable<WorkflowReassignmentAssetApiModel>))
         ]
-        public async Task<IHttpActionResult> GetWorkflowReassignmentAssets(int id, string query)
+        public async Task<IHttpActionResult> GetWorkflowReassignmentAssets(int id, string query, CancellationToken cancellationToken)
         {
             var prefix = "Workflow.GetWorkflowReassignmentAssets => ";
             var errorMessage = "";
@@ -480,11 +481,11 @@ namespace d360.web.Controllers.V2
                 if (result == null)
                     return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Cannot find the specified workflow instance."));
 
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, await workflowRepository.GetWorkflowReassignmentAssets(id, query)));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, await workflowRepository.GetWorkflowReassignmentAssets(id, query, cancellationToken: cancellationToken)));
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+               errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", prefix  }
                 });

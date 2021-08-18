@@ -10,4 +10,5 @@ export class AssetDetailCategoryComponent {
     @Input() category: Category;
     @Input() assetUID: string;
     @Input() tooltipAlign: string;
+    @Input() spacerHeight: string = '32px';
 }

@@ -9,8 +9,10 @@ import { GridColumn, GridFilterColumn, GridFilterExpression, GridRelationshipFil
 import { RuleColumnFilterComponent } from './rule-column-filter.component'
 import { Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { Filters } from '../assets-grid/advanced-filtering/advanced-filtering.models';
+import { AdvancedFilterFieldType, Filters } from '../assets-grid/advanced-filtering/advanced-filtering.models';
 import { ActivatedRoute } from '@angular/router';
+import { FieldType } from "../../models/fieldtype-api.model";
+import { Observable, of } from "rxjs";
 
 @Component({
     selector: 'd3s-rule-results-grid',
@@ -150,5 +152,46 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
     advancedFiltersChanged($event) {
         this.newAdvancedFilters = $event;
         this.getData();
+    }
+
+    getFieldsObs(): Observable<AdvancedFilterFieldType[]> {
+        var fields: AdvancedFilterFieldType[] = [];
+        fields.push({
+            Name: "EvaluatedAssetClass", FriendlyName: "Asset Class", Type: new FieldType("Lookup"), Category: "", RemovePopulatedOperator: true
+        });
+        fields.push({
+            Name: "EvaluatedAssetTypePath", FriendlyName: "Asset Type", Type: new FieldType("Path"), Category: ""
+        });
+        fields.push({
+            Name: "EvaluatedAssetDisplayPath", FriendlyName: "Asset", Type: new FieldType("Path"), Category: ""
+        });
+        fields.push({
+            Name: "RunDate", FriendlyName: "Run Date", Type: new FieldType("DateTime"), Category: ""
+        });
+        fields.push({
+            Name: "EffectiveDate", FriendlyName: "Effective Date", Type: new FieldType("Date"), Category: ""
+        });
+        let passFraction = new FieldType("Decimal");
+        passFraction.Decimal.Validation.MinimumValue = 0;
+        passFraction.Decimal.Validation.MaximumValue = 1;
+        fields.push({
+            Name: "PassFraction", FriendlyName: "Pass Fraction", Type: passFraction, Category: ""
+        });
+        let notNegativeNumber = new FieldType("Number");
+        notNegativeNumber.Number.Validation.MinimumValue = 0;
+        fields.push({
+            Name: "PassCount", FriendlyName: "Rows Passed", Type: notNegativeNumber, Category: ""
+        });
+        fields.push({
+            Name: "FailCount", FriendlyName: "Rows Failed", Type: notNegativeNumber, Category: ""
+        });
+        fields.push({
+            Name: "TotalCount", FriendlyName: "Total Rows", Type: notNegativeNumber, Category: ""
+        });
+        fields.push({
+            Name: "Outdated", FriendlyName: "Outdated Rule Result", Type: new FieldType("Boolean"), Category: ""
+        });
+        var staticObs = of(fields);
+        return staticObs;
     }
 }

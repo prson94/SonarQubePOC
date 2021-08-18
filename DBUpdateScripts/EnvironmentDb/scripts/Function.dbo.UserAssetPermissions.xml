@@ -5,9 +5,10 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Function.dbo.UserAssetPermissions-v3">
+  <changeSet author="tklok" id="Function.dbo.UserAssetPermissions-v4">
     <comment>GOV-10280</comment>
     <comment>GOV-10511</comment>
+    <comment>GOV-13993</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -93,6 +94,30 @@ RETURN
 			inner join dbo.[Group] G on G.ID = oride.SecurityAssetID and oride.SecurityAsset = 'G'
 			inner join dbo.ResourceGroup RG on RG.GroupID = G.ID and a.AssetTypeID = @AssetTypeID		
 	where	a.AssetTypeID = @AssetTypeID and RG.ResourceID = @ResourceID
+	union
+	--The following two select statements mimics AssetType-wide AddAsset permissions where the responsibility relation does not ApplyToType
+	--AssetID is NULL to prevent these virtual rules from blocking read permissions
+	select	2 as PermissionsBitMask,
+			null as AssetID,
+			att.id as AssetTypeID
+	from	[dbo].[responsibilitytyperelationrule] r
+			inner join [dbo].[ResponsibilityTypeRelation] rel on (r.ResponsibilityTypeID = rel.ResponsibilityTypeID and r.[Object] = rel.[ObjectType] and r.ObjectID = rel.ObjectID)
+			inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
+			inner join [dbo].[AssetType] att on att.[Object] = rel.ObjectType and att.objectid = rel.objectid
+	where	r.ApplyToType = 0 and rel.PermissionsBitMask & 2 = 2
+			and rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID and att.id = @AssetTypeID
+	union
+	select	2 as PermissionsBitMask,
+			null as AssetID,
+			att.id as AssetTypeID
+	from	[dbo].[responsibilitytyperelationrule] r
+			inner join [dbo].[ResponsibilityTypeRelation] rel on (r.ResponsibilityTypeID = rel.ResponsibilityTypeID and r.[Object] = rel.[ObjectType] and r.ObjectID = rel.ObjectID)
+			inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
+			inner join [dbo].[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G'
+			inner join [dbo].[ResourceGroup] RG on RG.GroupID = G.ID 	
+			inner join [dbo].[AssetType] att on att.[Object] = rel.ObjectType and att.objectid = rel.objectid
+	where	r.ApplyToType = 0 and rel.PermissionsBitMask & 2 = 2
+			and RG.ResourceID = @ResourceID and att.id = @AssetTypeID
 )
 		]]>
     </sql>
@@ -117,13 +142,13 @@ RETURN
 		on (rasset.AssetID = a.ID)
 		where a.AssetTypeID = @AssetTypeID
 		union 
-		select a.AssetTypeID,
+		select att.ID as AssetTypeID,
 			   rasset.AssetID,
 			   rasset.RuleID
-		from  [dbo].[asset] a
+		from  [dbo].[assettype] att
 		inner join [dbo].[ResponsibilityRuleResultAsset] rasset
 		on (rasset.AssetID = 0 and rasset.AssetTypeID = @AssetTypeID)
-		where a.AssetTypeID = @AssetTypeID
+		where att.ID = @AssetTypeID
 	)
 	select	rel.PermissionsBitMask,
 			rasset.AssetID,

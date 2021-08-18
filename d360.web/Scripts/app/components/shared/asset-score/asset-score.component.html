@@ -100,7 +100,7 @@
                 <button *ngIf="!isExternallyCalculated" igButton label="Calculation" class="ig-button {{(activeTab=='Calculation' ? 'ig-state-active' : '')}}" (click)="activeTab='Calculation'"></button>
                 <button igButton label="Definition" class="ig-button {{(activeTab=='Definition' ? 'ig-state-active' : '')}}" (click)="activeTab='Definition'"></button>
             </div>
-            <div [hidden]="!(activeTab=='History')">
+            <div [hidden]="!(activeTab=='History')" [style.height.px]="sidePanelHeight" class="panel-container">
                 <score-history #scoreHistory
                                 [selectedPoint]="selectedPoint"
                                 [assetUid]="uid"
@@ -110,7 +110,7 @@
                                 (datePointChanged)="dateChanged($event)"
                                 (measurePointsChanged)="measurePoints=$event"></score-history>
             </div>
-            <div [hidden]="!(activeTab=='Calculation')">
+            <div [hidden]="!(activeTab=='Calculation')" [style.height.px]="sidePanelHeight" class="panel-container">
                 <score-calculation 
                                    [scoreType]="selectedScoreType" 
                                    [formattedCheck]="defTab.getPassCheckValue()" 
@@ -122,7 +122,7 @@
                                    [definition]="selectedMetric?.Definition">
                 </score-calculation>
             </div>
-            <div [hidden]="!(activeTab=='Definition')">
+            <div [hidden]="!(activeTab=='Definition')" [style.height.px]="sidePanelHeight" class="panel-container">
                 <score-definition #defTab 
                                   [isExternallyCalculated]="isExternallyCalculated" 
                                   [selectedMetric]="selectedMetric" 

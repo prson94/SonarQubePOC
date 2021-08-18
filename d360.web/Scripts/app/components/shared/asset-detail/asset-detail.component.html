@@ -1,18 +1,31 @@
-﻿<div *ngIf="objectType && objectID">
+﻿<div *ngIf="(objectType && objectID) || (objectType && objectUID)" [style.padding-left]="paddingLeft">
     <div *ngIf="isLoading" style="width:100%; text-align:center;">
         <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
     </div>
     <div *ngIf="!isLoading">
+        <ng-container *ngIf="showHeader">
+            <div class="asset-detail-header">
+                <div class="asset-name">
+                    {{model.AssetName}}
+                </div>
+                <div class="class-name">
+                    {{model.AssetTypeName}}
+                </div>
+                <div>
+                    <a (click)="open();">Open</a> | <a (click)="open(true);">Open in New Tab</a>
+                </div>
+            </div>
+        </ng-container>
         <div *ngFor="let category of categories; let first=first">
             <ng-container *ngIf="useAccordion; else noAccordion">
                 <ig-property-group *ngIf="category.loaded && category.hasData" 
                                    [expanded]="category.active" 
                                    (expandedChange)="category.active = $event; saveState()"
                                    [title]="category.name" 
-                                   [showHeaderLine]="!first" 
+                                   [showHeaderLine]="!first && showHeaderLine" 
                                    [shouldBePadded]="shouldBePadded">
                     <div readonly>
-                        <ig-asset-detail-category [category]="category" [assetUID]="assetUID" [tooltipAlign]="tooltipAlign"></ig-asset-detail-category>
+                        <ig-asset-detail-category [category]="category" [assetUID]="assetUID" [tooltipAlign]="tooltipAlign" [spacerHeight]="spacerHeight"></ig-asset-detail-category>
                     </div>
                 </ig-property-group>
             </ng-container>
@@ -20,13 +33,15 @@
                 <div style="line-height: 10px">&nbsp;</div>
                 <ig-asset-detail-category [category]="category" 
                                           [assetUID]="assetUID"
-                                          [tooltipAlign]="tooltipAlign"></ig-asset-detail-category>
+                                          [tooltipAlign]="tooltipAlign"
+                                          [spacerHeight]="spacerHeight"></ig-asset-detail-category>
             </ng-template>
         </div>
         <div>
             <ig-property-group *ngFor="let nym of nymTypes" 
                                [expanded]="false" 
                                title="{{ nym.Name }} ({{ synonyms.itemCount }})"
+                               [showHeaderLine]="!first && showHeaderLine"
                                [shouldBePadded]="shouldBePadded">
                 <div readonly>
                     <d3s-synonyms-tile #synonyms
@@ -45,11 +60,12 @@
             </ig-property-group>
             <ig-property-group *ngIf="systemPropertiesCategory.loaded && systemPropertiesCategory.hasData" 
                                [title]="systemPropertiesCategory.name" 
+                               [showHeaderLine]="!first && showHeaderLine"
                                [expanded]="systemPropertiesCategory.active" 
                                (expandedChange)="systemPropertiesCategory.active = $event; saveState()"
                                [shouldBePadded]="shouldBePadded">
                 <div readonly>
-                    <ig-asset-detail-category [category]="systemPropertiesCategory" assetUID="assetUID" [tooltipAlign]="tooltipAlign"></ig-asset-detail-category>
+                    <ig-asset-detail-category [category]="systemPropertiesCategory" assetUID="assetUID" [tooltipAlign]="tooltipAlign" [spacerHeight]="spacerHeight"></ig-asset-detail-category>
                 </div>
             </ig-property-group>
         </div>

@@ -18,6 +18,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Hosting;
 using System.Text.Json;
 using System.Data;
+using d360.core.resources;
 
 namespace igx.jobs.databasetaskprocessor
 {
@@ -318,7 +319,7 @@ from    [queue].[Task] T
                                                                     CommentNotification notification = JsonSerializer.Deserialize<CommentNotification>(q.Custom);
                                                                     if (notification != null)
                                                                     {
-                                                                        var displayValue = companyConnection.Query<string>("Select DisplayValue from AssetDetail A where A.ID = @AssetID", new { AssetID = comment.AssetID }).FirstOrDefault();
+                                                                        var displayValue = companyConnection.Query<string>("Select DisplayValue from AssetDetail A where A.ID = @AssetID", new { AssetID = notification.CommentedOnAssetId ?? comment.AssetID }).FirstOrDefault();
 
                                                                         var rootUrl = $"https://{c.UrlPrefix}.data3sixty.com";
 
@@ -377,13 +378,13 @@ from    [queue].[Task] T
                                                                                     </head>
                                                                                     <body>
                                                                                         <div class='header'>
-                                                                                            {notification.CommenterName} tagged you in a comment
+                                                                                            {string.Format(Notifications.TaggedCommentMailHeader, notification.CommenterName)}
                                                                                         </div>
                                                                                         <div class='content'>
-                                                                                            {notification.CommenterName} tagged you in a comment on <a href='{rootUrl}{notification.AssetUrl}' class='link'>{displayValue}</a> at {comment.CommentDate.Value:hh:mm tt 'UTC' 'on' dd MMM yyyy}.
+                                                                                            {string.Format(Notifications.TaggedCommentMailBody, notification.CommenterName, rootUrl, notification.AssetUrl, displayValue, comment.CommentDate.Value.ToString("hh:mm tt 'UTC' 'on' dd MMM yyyy"))}                                                                                            
                                                                                         <br />
                                                                                         <br />
-                                                                                        <a href='{rootUrl}{notification.CommentUrl}' class='button'>&nbsp;&nbsp;View Comment&nbsp;&nbsp;</a>
+                                                                                        <a href='{rootUrl}{notification.CommentUrl}' class='button'>&nbsp;&nbsp;{Notifications.TaggedCommentMailCommentLink}&nbsp;&nbsp;</a>
                                                                                     </div>
                                                                                         <div class='footer'>
                                                                                             <img src ='{rootUrl}/Content/images/logo.mail.small.png' alt='D360 Govern' style='border-style:none;'> 
@@ -391,7 +392,7 @@ from    [queue].[Task] T
                                                                                     </body>
                                                                                     </html>                                                                                        
                                                                                     ";
-                                                                        SimpleMessage.SendMessage("D360 Govern", notification.Subject, notification.RecipientEmail, notification.RecipientName, mailBody, notification.IsHtml);
+                                                                        SimpleMessage.SendMessage(Notifications.TaggedCommentMailSender, notification.Subject, notification.RecipientEmail, notification.RecipientName, mailBody, notification.IsHtml);
                                                                     }
                                                                 }
                                                             }

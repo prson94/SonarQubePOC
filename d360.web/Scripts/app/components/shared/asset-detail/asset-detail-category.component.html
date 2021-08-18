@@ -17,7 +17,7 @@
                 </label>
                 <ig-asset-detail-field [field]="field" [assetUid]="assetUID" [tooltipAlign]="tooltipAlign"></ig-asset-detail-field>
             </div>
-            <div *ngIf="last" style="height: 32px">
+            <div *ngIf="last" [style.height]="spacerHeight">
                 &nbsp;
             </div>
         </div>

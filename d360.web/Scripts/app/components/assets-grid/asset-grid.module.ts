@@ -13,6 +13,7 @@ import { SharedGridPagingInfoModule } from "../shared/grid-paging-info.component
 import { SharedDeleteFormModule } from "../shared/delete.form";
 import { SharedDynamicGridEditorModule } from "../shared/dynamicgrideditor/shared-dynamic-grid-editor.module";
 import { SharedAssetEditorsModule } from "../shared/asseteditors/shared-asset-editor.module";
+import { PopupMenuModule } from "../shared/controls/popup-menu/popup-menu.component";
 
 import { SharedModule } from "primeng/api";
 import { ButtonModule } from "primeng/button";
@@ -56,6 +57,7 @@ import { SearchFieldModule } from "../shared/controls/search-field/search-field.
         D3SSharedModule,
         CoreModule,
         PipesModule,
+        PopupMenuModule,
 
         SharedDeleteFormModule,
         SharedGridPagingInfoModule,

@@ -98,6 +98,10 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
             this.load();
         });
 
+        if (this.filteredAssetsSub) {
+            this.filteredAssetsSub.unsubscribe();
+        }
+
         this.filteredAssetsSub = this.workflowService.getWorkflowReassignmentAssets(this.filteredAssetsSource, this.workflowItemId)
             .subscribe((result) => {
                 this.filteredAssets = result;

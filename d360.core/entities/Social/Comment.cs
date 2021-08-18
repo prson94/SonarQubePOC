@@ -140,6 +140,7 @@ namespace d360.core.entities
         public string Subject { get; set; }
         public string CommentUrl { get; set; }
         public string AssetUrl { get; set; }
+        public long? CommentedOnAssetId { get; set; }
         public bool IsHtml { get; set; }
     }
 }

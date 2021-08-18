@@ -19,6 +19,8 @@ using Swashbuckle.Swagger.Annotations;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.core.enums;
+using d360.core.exceptions;
+using d360.core.entities.Metric;
 using d360.model.helpers.filters;
 
 namespace d360.web.Controllers.V2
@@ -125,7 +127,9 @@ namespace d360.web.Controllers.V2
                     !Company.Any<IssueType>(i => i.uid == assetUid) &&
                     !Company.Any<IntersectType>(i => i.uid == assetUid) &&
                     !Company.Any<ResponsibilityType>(i => i.UID == assetUid) &&
-                    !Company.Any<Report>(i => i.uid == assetUid))
+                    !Company.Any<Report>(i => i.uid == assetUid) &&
+                    !Company.Any<MetricAllocation>(i => i.Uid == assetUid) &&
+                    !Company.Any<Predicate>(i => i.UID == assetUid))
                 {
                     assetType = Company.Filter<AssetType>(i => i.uid == assetUid).SingleOrDefault();
                     if (assetType == null)
@@ -144,6 +148,12 @@ namespace d360.web.Controllers.V2
                             break;
                         case "GroupType":
                             baseSql = GetBaseAuditQueryObject(SystemObjects.Group, false);
+                            break;
+                        case "MetricAllocation":
+                            baseSql = GetBaseAuditQueryObject(SystemObjects.MetricAllocation, false);
+                            break;
+                        case "Predicate":
+                            baseSql = GetBaseAuditQueryObject(SystemObjects.Predicate, false);
                             break;
                         default:
                             baseSql = GetBaseAuditQueryForAssetTypeUid(assetType?.Class == AssetTypeClass.Reference);
@@ -615,6 +625,10 @@ namespace d360.web.Controllers.V2
                 select uid, name as DisplayName, 'ResponsibilityType' as Object, id as ObjectID, null as AssetTypeClass from dbo.ResponsibilityType where uid = @uid
                 union
                 select uid, name as DisplayName, 'Report' as Object, id as ObjectID, null as AssetTypeClass from dbo.[Report] where uid = @uid
+                union
+                select MA.uid, AT.Name as DisplayName, 'MetricAllocation' as Object, MA.ID as ObjectID, null as AssetTypeClass from metrics.Allocation MA inner join [dbo].[AssetType] AT on AT.uid = MA.AssetTypeUid where MA.uid = @uid
+                union
+				select uid, name as DisplayName, 'Predicate' as Object, id as ObjectID, null as AssetTypeClass from dbo.[Predicate] where uid = @uid
 			) AD on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID and AD.uid = @uid";
 
             return querySql;

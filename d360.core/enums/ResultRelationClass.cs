@@ -11,5 +11,4 @@ namespace d360.core.enums
         Owns = 1,
         EvaluatedBy = 2
     }
-
 }

@@ -9,7 +9,9 @@ import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
 
-    OnDestroy
+    OnDestroy,
+    EventEmitter,
+    Output
 } from "@angular/core";
 import { LazyLoadEvent } from "primeng/api";
 import { Table } from "primeng/table";
@@ -51,6 +53,7 @@ import { Filters } from "./advanced-filtering/advanced-filtering.models";
 export class AssetGridComponent extends BaseComponent implements OnChanges, OnDestroy {
     @Input() rowID: string = 'ObjectID';
     @Input() gridObject: AssetGridObject;
+    @Output() selectedChange = new EventEmitter();
 
     @Input() titlePostfix: string = ''; // added to end of header title.
     @Input() rowsPerPage: number = 25;
@@ -80,15 +83,29 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     filtercolumns: GridFilterColumn[] = [];
     topLevelFilters: GridFilterColumn[] = [];
     scoreAllocations: GridScoreAllocation[] = [];
+    hasProfiling: boolean = false;
+    @Output() hasProfilingChange = new EventEmitter<boolean>();
 
     showDelete: boolean = false;
     showEditor: boolean = false;
     isLoading: boolean = false;
     isDefinitionLoaded: boolean = false;
     hasNoListableColumns: boolean = false;
+    linkColumnIndex: number = -1;
+    readonly excludedLinkColumnTypes = [
+        'Tag',
+        'OwnershipLookup',
+        'Boolean'
+    ];
 
     selected: any = null;
     itemUrl: string;
+
+    readonly menuKey = '~menu';
+    baseMenuItems: any[] = [
+        { title: "Open" },
+        { title: "Open in New Tab" },
+    ];
 
     public simpleSearch = new Subject<any>();
     private assetSearchSub: Subscription;
@@ -146,6 +163,25 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     showAssetListPage() {
         this.isDefinitionLoaded = true;
         this.changeDetectorRef.markForCheck();
+    }
+
+    selectRow(row: any) {
+        this.selected = row;
+        this.selectedChange.emit(row);
+    }
+
+    clickMenuItem(event: any, item: any) {
+        let key = event.value.toLowerCase();
+
+        if (key === 'open') {
+            this.selectArtifact(item);
+        } else if (key === 'open in new tab') {
+            this.selectArtifact(item, true);
+        } else if (key === 'edit') {
+            this.onEdit(item);
+        } else if (key === 'delete') {
+            this.onDelete(item);
+        }
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -211,6 +247,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 this.fields = result.Fields;
                 this.topLevelFilters = result.TopLevelFilterColumns;
                 this.scoreAllocations = result.ScoreAllocations;
+                this.hasProfiling = result.HasProfiling;
+                this.hasProfilingChange.emit(this.hasProfiling);
 
                 statusField = this.fields.find(x => x.apiName != null && x.apiName.toLowerCase() == "status");
 
@@ -224,6 +262,13 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 }
                 else {
                     this.hasNoListableColumns = false;
+
+                    for (let i = 0; i < this.columns.length; i++) {
+                        if (this.excludedLinkColumnTypes.findIndex((e) => e === (this.columns[i] as any).fieldType) === -1) {
+                            this.linkColumnIndex = i;
+                            break;
+                        }
+                    }
                 }
 
                 setTimeout(() => this.showAssetListPage(), 3000);
@@ -244,6 +289,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         params._pageSize = this.rowsPerPage;
         params._pageNum = this.stateService.artifactTypeFilters.currentPageNumber + 1;
         params._listColorsAsJSON = true;
+        params._includeProfilingCheck = true;
 
         if (this.stateService.artifactTypeFilters.sortField) {
             params._order = this.getFieldAPINameByOldName(this.stateService.artifactTypeFilters.sortField);
@@ -332,13 +378,45 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
             .subscribe(res => {
                 this.items = res.items;
 
+                let selectedItemStillExists = false;
+                let hasScoring = this.scoreAllocations && this.scoreAllocations.length > 0;
 
-                if (this.scoreAllocations && this.scoreAllocations.length > 0) {
-                    this.items.forEach(i => {
-                        this.scoreAllocations.forEach(s => {
+                this.items.forEach((i) => {
+
+                    i[this.menuKey] = [
+                        { title: 'Open' },
+                        { title: 'Open in New Tab' },
+                    ];
+
+                    if (i.Permissions.ModifyAsset) {
+                        i[this.menuKey].push({ title: 'Edit' });
+                    }
+
+                    if (i.Permissions.DeleteAsset) {
+                        i[this.menuKey].push({ title: 'Delete' });
+                    }
+
+                    if (hasScoring) {
+                        this.scoreAllocations.forEach((s) => {
                             i[s.Name + '_threshold'] = this.getThreshold(i[s.Name], s.LowerThreshold, s.UpperThreshold);
                         });
-                    });
+                    }
+
+                    if (this.selected != null && !selectedItemStillExists) {
+                        if (i.AssetId === this.selected.AssetId) {
+                            this.selectRow(i);
+                            selectedItemStillExists = true;
+                        }
+                    }
+
+                });     
+
+                if (!selectedItemStillExists) {
+                    if (this.items && this.items.length > 0) {
+                        this.selectRow(this.items[0]);
+                    } else {
+                        this.selectRow(null);
+                    }
                 }
 
                 this.statusHasColor = this.items.filter(x => {
@@ -463,7 +541,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         this.changeDetectorRef.markForCheck();
     }
 
-    selectArtifact(artifact) {
+    selectArtifact(artifact, newTab: boolean = false) {
 
         this.assetService.getUIDetailsForAssetUID(artifact.AssetUid)
             .subscribe(res => {
@@ -476,8 +554,11 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 else {
                     console.warn("onRightClick => Invalid object type");
                 }
-
-                this.router.navigateByUrl(this.itemUrl);
+                if (newTab) {
+                    window.open(this.itemUrl, '_blank');
+                } else {
+                    this.router.navigateByUrl(this.itemUrl);
+                }
             });
 
     }

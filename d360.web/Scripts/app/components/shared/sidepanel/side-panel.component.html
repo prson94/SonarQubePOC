@@ -1,16 +1,44 @@
-﻿<div *ngIf="!showSidePanel">
-    <div style="padding: 16px 11px 6px 11px;">
-        <button igButton *ngIf="dataProfile" icon="fa-bar-chart" (click)="showDataProfilePanel()" tooltip="Profiling" style="float:right;z-index:1000"></button>
+﻿<div *ngIf="expanded === false">
+    <div class="side-panel-container">
+        <button *ngFor="let b of visibleButtons" igButton [disabled]="b.disabled" [icon]="b.icon" (click)="clickButton(b)" [tooltip]="getButtonTooltip(b)" class="side-panel-button"></button>
     </div>
 </div>
-<div *ngIf="showSidePanel">
+<div *ngIf="expanded === true" [style.min-width]="minWidth" [style.max-width]="maxWidth">
     <div>
-        <div style="padding: 16px 11px 6px 11px; margin: 0;">
+        <div class="side-panel-container" style="margin: 0;">
             <div class="panel-header">
-                <span class="header-label">{{activePanelName}}</span>
-                <button igButton icon="fa-arrow-circle-right" (click)="hideSidePanel()" tooltip="Hide Side Panel" style="float:right;z-index:1000"></button>
+                <span class="header-label">{{panelLabel}}</span>
+                <div class="side-panel-button-container">
+                    <ng-container *ngIf="buttonCount > 1">
+                        <button *ngFor="let b of visibleButtons" igButton [icon]="b.icon" (click)="clickButton(b)" [tooltip]="getButtonTooltip(b)" class="side-panel-button" [class.selected]="selectedPanel === b.key" [disabled]="b.disabled"></button>
+                        <div class="side-panel-button-spacer"></div>
+                    </ng-container>
+                    <button igButton icon="fa-arrow-circle-right" (click)="collapseSidePanel()" tooltip="Hide Side Panel" class="side-panel-button"></button>
+                </div>
             </div>
-        </div>        
-        <data-profile *ngIf="showDataProfile && dataProfile" [dataProfile]="dataProfile"></data-profile>
+        </div>
+        <div class="side-panel-content" [style.height]="height">
+            <ng-content></ng-content>
+            <ng-container *ngIf="expanded && selectedItem == null">
+                <div class="side-panel-empty-overlay">
+                    <div class="content">
+                        <div class="icon-holder">
+                            <i [class]="'fa ' + panelButton?.icon"></i>
+                        </div>
+                        <span>{{panelButton?.nothingSelectedMessage}}</span>
+                    </div>
+                </div>
+            </ng-container>
+            <ng-container *ngIf="expanded && selectedItem != null && !panelApplies">
+                <div class="side-panel-empty-overlay">
+                    <div class="content">
+                        <div class="icon-holder">
+                            <i [class]="'fa ' + panelButton?.icon"></i>
+                        </div>
+                        <span>{{panelButton?.notApplicableMessage}}</span>
+                    </div>
+                </div>
+            </ng-container>
+        </div>
     </div>
 </div>        

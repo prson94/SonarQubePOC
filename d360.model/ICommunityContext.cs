@@ -20,8 +20,7 @@ namespace d360.model
         CompanySsoModel CurrentCompanySsoModel { get; set; }
         DbSet<DatabaseServer> DatabaseServers { get; set; }
         DbSet<DomainCertificate> DomainCertificates { get; set; }
-        DbSet<DomainSetting> DomainSettings { get; set; }                
-        DbSet<GenericCommand> GenericCommands { get; set; }        
+        DbSet<DomainSetting> DomainSettings { get; set; }                        
         DbSet<Resource> Resources { get; set; }
         DbSet<Setting> Settings { get; set; }
 

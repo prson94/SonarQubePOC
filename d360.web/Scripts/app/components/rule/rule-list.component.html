@@ -1,11 +1,40 @@
 <div class="row">
-    <div class="col s12">
-        <div class="tile tile-detail">
-            <div class="row">
-                <div class="col s12" *ngIf="ruleType">
-                    <d3s-asset-grid [gridObject]="gridObject"></d3s-asset-grid>
-                </div>
-            </div>
+    <div class="col s12" style="display: flex">
+        <d3s-loading [isLoading]="isLoading"></d3s-loading>
+        <div class="tile tile-detail main-panel"
+             *ngIf="!isLoading">
+            <d3s-asset-grid [gridObject]="gridObject" (selectedChange)="selectAsset($event)" (hasProfilingChange)="hasProfiling=$event"></d3s-asset-grid>
+        </div>
+        <div class="tile tile-detail side-panel" *ngIf="!isLoading">
+            <side-panel (expandedChange)="sidePanelOpen=$event"
+                        (selectedPanelChange)="sidePanelTab=$event"
+                        [selectedItem]="selection"
+                        [panelApplies]="panelApplies"
+                        [hasProfiling]="hasProfiling"
+                        hasDetail="true"
+                        [storageKey]="sidePanelStorageKey">
+                <ng-container *ngIf="sidePanelOpen && selection != null && sidePanelLoading">
+                    <d3s-loading [isLoading]="true"></d3s-loading>
+                </ng-container>
+                <ng-container *ngIf="sidePanelOpen && selection != null && !sidePanelLoading">
+                    <ng-container *ngIf="sidePanelTab === 'dataprofile' && selection?.HasProfiling">
+                        <data-profile [dataProfile]="dataProfile"></data-profile>
+                    </ng-container>
+                    <ng-container *ngIf="sidePanelTab === 'detail'">
+                        <ig-asset-detail [objectUID]="selection.AssetUid"
+                                         objectType="rule"
+                                         [useAccordion]="true"
+                                         [shouldBePadded]="false"
+                                         [tooltipAlign]="'left'"
+                                         [showHeaderLine]="false"
+                                         [spacerHeight]="'16px'"
+                                         [paddingLeft]="'11px'"
+                                         [hasAddRelationshipsPermissions]="false"
+                                         [hasModifyRelationshipsPermissions]="false"
+                                         [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
+                    </ng-container>
+                </ng-container>
+            </side-panel>
         </div>
     </div>
 </div>

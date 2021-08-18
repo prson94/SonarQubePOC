@@ -34,7 +34,7 @@ drop view if exists graph.AssetNodeDisplayPath
 	</rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="Index.graph.AssetNodeDisplayPath-v3">
+  <changeSet author="TDuric" id="Index.graph.AssetNodeDisplayPath-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"

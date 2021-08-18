@@ -439,7 +439,7 @@ namespace d360.model.DataAccessLayer
 
             sqlJoins = $@" AssetDataProfile ADP	 
 	                        inner join 
-		                    [graph].AssetNodeDisplayPath NDP on {structureCondition} and NDP.ID=adp.AssetID and adp.AssetId != @assetId {simpleFilterSQL}
+		                    [graph].AssetNodeDisplayPath NDP WITH (NOEXPAND) on {structureCondition} and NDP.ID=adp.AssetID and adp.AssetId != @assetId {simpleFilterSQL}
                             outer apply 
 			                (
 			                select 

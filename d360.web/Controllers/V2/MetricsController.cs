@@ -1452,6 +1452,11 @@ namespace d360.web.Controllers.V2
 
             var execution = getApiExecution(1);
             var responseList = await Task.FromResult(MetricsRepository.DeleteDataQualityResult(new List<DataQualityDeleteModel> { model }, execution));
+            if (responseList == null)
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error removing rule results", ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+
             var responseModel = responseList.FirstOrDefault();
             if (responseModel != null)
             {

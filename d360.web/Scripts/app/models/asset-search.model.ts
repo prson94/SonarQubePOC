@@ -92,4 +92,5 @@ export class V2ApiFilters {
     _includeOwnershipLookup: boolean;
     _listColorsAsJSON: boolean;
     _isHierachyItem: boolean;
+    _includeProfilingCheck: boolean;
 }
