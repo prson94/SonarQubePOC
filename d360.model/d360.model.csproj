@@ -170,7 +170,6 @@
     <Compile Include="DataAccessLayer\repositories\WorkflowRepository.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="helpers\CustomJSONContract.cs" />
-    <Compile Include="helpers\filters\FilterToken.cs" />
     <Compile Include="helpers\filters\IFilterDataProvider.cs" />
     <Compile Include="helpers\filters\program\FieldValueValidator.cs" />
     <Compile Include="helpers\filters\program\FilterHelpers.cs" />
