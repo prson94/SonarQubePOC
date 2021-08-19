@@ -86,7 +86,7 @@ export class GalleryModalComponent implements OnInit {
         const display = $event === null ? "null" : JSON.stringify($event);
         this.firedEvents.push(new FiredEvent(type, display));
 
-        setTimeout(() => { this.firedEvents.shift(); this.ref.markForCheck() }, 4000);
+        setTimeout(() => { this.firedEvents.shift(); this.ref.markForCheck(); }, 4000);
     }
 
     public getLorem(times: number = 1): string {
