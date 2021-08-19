@@ -241,10 +241,10 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
     }
 
     public renderSampleDistributionChart() {
-        console.log(this.dataProfile, this.showSampleDistribution);
 
-        if (this.showSampleDistribution === false)
+        if (this.showSampleDistribution === false) {
             return;
+        }
 
 
         //use of var here is to allow access to the dataProfile object inside Highcharts specific functions
@@ -444,7 +444,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             let pixelInterval = upperX - lowerX;
 
             //calculate position of mean line
-            let xPos = chart.plotLeft + lowerX + (pixelInterval * meanPercentInterval); 
+            let xPos = chart.plotLeft + lowerX + (pixelInterval * meanPercentInterval);
 
 
             chart.renderer.path([
@@ -522,7 +522,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
                     color: nullColor,
                 }).add();
             }
-        }
+        };
 
         let chartOptions: any = {
             chart: {
@@ -571,7 +571,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             },
             plotOptions: {
                 column: {
-                    pointPadding: pointPadding,
+                    pointPadding,
                     borderWidth: 0,
                     groupPadding: 0,
                     pointWidth: undefined,
