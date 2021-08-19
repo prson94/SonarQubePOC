@@ -468,20 +468,7 @@ namespace d360.model.DataAccessLayer
 
             dbArgs.Add("@assetId", asset.ID);
 
-            string countQuery = "";
-            if (includeTotal || onlyTotal)
-            {
-                countQuery = $@"
-                            SELECT 
-	                            Count(*)
-                            FROM                                     
-                                #tempdata2
-                            {simpleFilterSQL}
-		                    ";
-            }
-
-            var itemsSQL = $@"
-                            drop table if exists #tempadpid;
+            string tempTablesSQL = $@"drop table if exists #tempadpid;
                             create table #tempadpid (Assetid bigint,ProfileSetDate date)
 
                             insert into #tempadpid
@@ -499,7 +486,33 @@ namespace d360.model.DataAccessLayer
                             into #tempdata2
                             FROM #tempadpid adp          
 	                            {sqlJoins}		     
-                                {whereConditions}
+                                {whereConditions}";
+
+            string countQuery = $@"
+                            SELECT 
+	                            Count(*)
+                            FROM                                     
+                                #tempdata2
+                            {simpleFilterSQL}
+		                    ";
+
+            if (onlyTotal)
+            {
+                var onlyTotalSQL = $@"{tempTablesSQL}
+                            {countQuery}
+                            ";
+
+                results.total = await CompanyContext.QueryFirstOrDefaultAsync<int?>(onlyTotalSQL, dbArgs, ApiTimeout);
+                return results;
+            }
+
+            if (!includeTotal)
+            {
+                countQuery = "";
+
+            }
+
+            var itemsSQL = $@"{tempTablesSQL}
 
                             select * from #tempdata2
                             {simpleFilterSQL}
@@ -512,7 +525,7 @@ namespace d360.model.DataAccessLayer
             var multiQuery = await CompanyContext.QueryMultipleAsync(itemsSQL, dbArgs, ApiTimeout);
             results.items = multiQuery.Read<AssetDataProfileMatchingAssetsModel>().ToList();
 
-            if (includeTotal || onlyTotal)
+            if (includeTotal)
             {
                 results.total = multiQuery.Read<int?>().FirstOrDefault();
             }
