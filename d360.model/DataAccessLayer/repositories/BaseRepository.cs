@@ -443,24 +443,26 @@ namespace d360.model.DataAccessLayer.repositories
                             for xml path (''), TYPE).value('.','NVARCHAR(MAX)'), 1, 1, '')
                          ){tableAlias}(FormattedValue) ");
                  }
-                 else if (f.Type == "Lookup" && listColorsAsJSON && hasColor)
+                 else if (f.Type == "Lookup")
                  {
-                     string lookupValueJoinCriteria;
-                     string displayName;
-
-                     if (f.AllowMultipleValues)
+                     if (listColorsAsJSON && hasColor)
                      {
-                         displayName = $@"ADV{tableAlias}.DisplayValue";
-                         lookupValueJoinCriteria = $"cross apply GetAssetDisplayValueByID(ACF{tableAlias}.ID) ADV{tableAlias} cross apply STRING_SPLIT(F{tableAlias}.Value, ',') SPF{tableAlias} where ACF{tableAlias}.Object = FT{tableAlias}.LookupObjectType and ACF{tableAlias}.ObjectID = SPF{tableAlias}.value ";
-                     }
-                     else
-                     {
-                         displayName = $@"F{tableAlias}.formattedValue";
-                         lookupValueJoinCriteria = $" where ACF{tableAlias}.Object = FT{tableAlias}.LookupObjectType and ACF{tableAlias}.[ObjectID] = try_cast(F{tableAlias}.[Value] as int)";
-                     }
+                         string lookupValueJoinCriteria;
+                         string displayName;
+
+                         if (f.AllowMultipleValues)
+                         {
+                             displayName = $@"ADV{tableAlias}.DisplayValue";
+                             lookupValueJoinCriteria = $"cross apply GetAssetDisplayValueByID(ACF{tableAlias}.ID) ADV{tableAlias} cross apply STRING_SPLIT(F{tableAlias}.Value, ',') SPF{tableAlias} where ACF{tableAlias}.Object = FT{tableAlias}.LookupObjectType and ACF{tableAlias}.ObjectID = SPF{tableAlias}.value ";
+                         }
+                         else
+                         {
+                             displayName = $@"F{tableAlias}.formattedValue";
+                             lookupValueJoinCriteria = $" where ACF{tableAlias}.Object = FT{tableAlias}.LookupObjectType and ACF{tableAlias}.[ObjectID] = try_cast(F{tableAlias}.[Value] as int)";
+                         }
 
 
-                     string sql = $@"
+                         string sql = $@"
                                 left join Field F{tableAlias} on F{tableAlias}.FieldTypeID = {f.ID} and F{tableAlias}.ObjectType = {objectSql} and F{tableAlias}.ObjectID = {objectIdSql}
                                 left join FieldType FT{tableAlias} on FT{tableAlias}.ID = F{tableAlias}.FieldTypeID
                                 outer apply(
@@ -472,13 +474,13 @@ namespace d360.model.DataAccessLayer.repositories
                                 {lookupValueJoinCriteria} FOR JSON PATH),
                                 [Value] = F{tableAlias}.[Value]
                             ){tableAlias}(FormattedValue, [Value]) ";
-                     fieldJoins.Add(sql);
+                         fieldJoins.Add(sql);
 
-                     if (!string.IsNullOrEmpty(f.DefaultValue))
-                     {
+                         if (!string.IsNullOrEmpty(f.DefaultValue))
+                         {
 
-                         string type = f.LookupObjectType == "ReferenceItem" ? f.LookupObjectType + "Type" : f.LookupObjectType;
-                         string defaultSql = $@"
+                             string type = f.LookupObjectType == "ReferenceItem" ? f.LookupObjectType + "Type" : f.LookupObjectType;
+                             string defaultSql = $@"
                             outer apply(
                             select FormattedValue = 
                             (SELECT COALESCE(JSON_VALUE(DFColor{tableAlias}.ColorJSON,'$.Value'), 'transparent') as color, 
@@ -487,7 +489,16 @@ namespace d360.model.DataAccessLayer.repositories
 					                            cross apply dbo.GetAssetColorJsonByColor(A.Color) DFColor{tableAlias}
 					                            WHERE AT.Object = '{type}' and AT.ObjectID = {f.LookupObjectID} and A.ObjectID = {f.DefaultValue} FOR JSON PATH)
                             ) defaultColorValue{tableAlias}(color)";
-                         fieldJoins.Add(defaultSql);
+                             fieldJoins.Add(defaultSql);
+                         }
+                     }
+                     else
+                     {
+                         fieldJoins.Add($@"outer apply (select string_agg(flv.DisplayText,',') as FormattedValue, string_agg(f.Value,',') as Value 
+                            from Field F
+                            cross apply string_split(F.Value, ',') V	
+                            left join FieldLookupValue flv on flv.fieldtypeid = {f.ID}  and flv.Value = V.Value
+                            where F.FieldTypeId = {f.ID} and [ObjectType] = {objectSql} and [ObjectID]={objectIdSql})F{f.ID}");
                      }
                  }
                  else if (f.Type == "ComplexRelationLookup" || f.Type == "OwnershipLookup")
