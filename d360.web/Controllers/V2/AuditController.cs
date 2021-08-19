@@ -448,74 +448,12 @@ namespace d360.web.Controllers.V2
 
         private string getPredicateTypeStringValue(string type)
         {
-            if (type == "1")
+            string predicateType = "";
+            if(Enum.TryParse((string)type, out PredicateType pType))
             {
-                return PredicateType.DataLineage.ToString();
+                predicateType = pType.ToString();
             }
-            else if (type == "2")
-            {
-                return PredicateType.Evaluation.ToString();
-            }
-            else if (type == "3")
-            {
-                return PredicateType.InterTypeHierarchy.ToString();
-            }
-            else if (type == "4")
-            {
-                return PredicateType.IntraTypeHierarchy.ToString();
-            }
-            else if (type == "5")
-            {
-                return PredicateType.UserOwnership.ToString();
-            }
-            else if (type == "6")
-            {
-                return PredicateType.Grammar.ToString();
-            }
-            else if (type == "7")
-            {
-                return PredicateType.Simple.ToString();
-            }
-            else if (type == "8")
-            {
-                return PredicateType.FusionMapping.ToString();
-            }
-            else if (type == "9")
-            {
-                return PredicateType.SeeAlso.ToString();
-            }
-            else if (type == "10")
-            {
-                return PredicateType.Usage.ToString();
-            }
-            else if (type == "11")
-            {
-                return PredicateType.ObjectOwnerhip.ToString();
-            }
-            else if (type == "12")
-            {
-                return PredicateType.Transformation.ToString();
-            }
-            else if (type == "13")
-            {
-                return PredicateType.BusinessToTechnical.ToString();
-            }
-            else if (type == "14")
-            {
-                return PredicateType.SemanticRelation.ToString();
-            }
-            else if (type == "15")
-            {
-                return PredicateType.Diagram.ToString();
-            }
-            else if (type == "16")
-            {
-                return PredicateType.DiagramUse.ToString();
-            }
-            else
-            {
-                return PredicateType.DiagramReference.ToString();
-            }
+            return predicateType;
         }
 
         private string getBaseAuditQueryForId(SystemObjects type, bool auditingByType = false)
