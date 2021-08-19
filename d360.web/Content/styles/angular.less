@@ -7129,6 +7129,36 @@ table {
     }
 }
 
+.score-badge-container {
+    display: inline-block;
+    margin-right: 8px;
+
+    .score-badge {
+        border-radius: 10px;
+        margin-bottom: 4px;
+        padding-left: 8px;
+        padding-right: 8px;
+        line-height: 18px;
+        color: @ig-white;
+
+        &.average {
+            background: @ig-orange;
+        }
+
+        &.good {
+            background: @ig-green;
+        }
+
+        &.poor {
+            background: @ig-red;
+        }
+
+        .score-value {
+            font-weight: 700;
+        }
+    }
+}
+
 //Fixes issue with PrimeNG editor adding "auto" to width and height to the Quill style
 .p-editor-container .p-editor-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-options .ql-picker-item {
     min-height: 16px;

@@ -2,13 +2,13 @@
     <div class="col s12" *ngIf="isLoading">
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
     </div>
-    <div class="col s12" style="display: flex" *ngIf="!isLoading">       
+    <div class="col s12" style="display: flex" *ngIf="!isLoading">
         <div class="tile tile-detail main-panel">
-            <d3s-asset-grid [gridObject]="gridObject" (selectedChange)="selectAsset($event)" (hasProfilingChange)="hasProfiling=$event"></d3s-asset-grid>
+            <d3s-asset-grid [gridObject]="gridObject" (selectedChange)="selectAsset($event)" (hasProfilingChange)="hasProfiling=$event" (showEditorChange)="showEditor=$event"></d3s-asset-grid>
         </div>
-        <div class="tile tile-detail side-panel" *ngIf="!isLoading">
-            <side-panel (expandedChange)="sidePanelOpen=$event" 
-                        (selectedPanelChange)="sidePanelTab=$event" 
+        <div class="tile tile-detail side-panel" *ngIf="!isLoading && (!showEditor || (showEditor && selection != null))">
+            <side-panel (expandedChange)="sidePanelOpen=$event"
+                        (selectedPanelChange)="sidePanelTab=$event"
                         [selectedItem]="selection"
                         [panelApplies]="panelApplies"
                         [hasProfiling]="hasProfiling"
@@ -22,18 +22,19 @@
                         <data-profile [dataProfile]="dataProfile"></data-profile>
                     </ng-container>
                     <ng-container *ngIf="sidePanelTab === 'detail'">
-                            <ig-asset-detail [objectUID]="selection.AssetUid"
-                                             objectType="artifact"
-                                             [useAccordion]="true"
-                                             [shouldBePadded]="false"
-                                             [showHeader]="true"
-                                             [showHeaderLine]="false"
-                                             [spacerHeight]="'16px'"
-                                             [paddingLeft]="'11px'"
-                                             [tooltipAlign]="'left'"
-                                             [hasAddRelationshipsPermissions]="false"
-                                             [hasModifyRelationshipsPermissions]="false"
-                                             [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
+                        <ig-asset-detail [objectUID]="selection.AssetUid"
+                                         objectType="artifact"
+                                         [useAccordion]="true"
+                                         [shouldBePadded]="false"
+                                         [showHeader]="true"
+                                         [showHeaderLine]="false"
+                                         [spacerHeight]="'16px'"
+                                         [paddingLeft]="'11px'"
+                                         [tooltipAlign]="'left'"
+                                         [isSidePanel]="true"
+                                         [hasAddRelationshipsPermissions]="false"
+                                         [hasModifyRelationshipsPermissions]="false"
+                                         [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
                     </ng-container>
                 </ng-container>
             </side-panel>

@@ -2337,38 +2337,60 @@ from    (
         }
 
         [Route("{type}/{uid}/detail")]
-        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, Guid uid, bool useSingleColumn = false)
+        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, Guid uid, bool useSingleColumn = false, bool includeHeader = false)
         {
             int objectId = -1;
             switch (type)
             {
                 case SystemObjects.Tag:
                     objectId = Company.Tags.FirstOrDefault(x => x.uid == uid).ID;
-                    return await GetObjectDetailFields(type, objectId, useSingleColumn);
+                    return await GetObjectDetailFields(type, objectId, useSingleColumn, includeHeader);
                 default:
                     var asset = Company.Assets.FirstOrDefault(a => a.uid == uid);
-                    return await GetObjectDetailFields(type, asset?.ObjectID ?? -1, useSingleColumn);
+                    return await GetObjectDetailFields(type, asset?.ObjectID ?? -1, useSingleColumn, includeHeader);
             }
         }
 
 
         [Route("{type}/{id:int}/detail")]
-        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, int id, bool useSingleColumn = false)
+        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, int id, bool useSingleColumn = false, bool includeHeader = false)
         {
             var model = new DetailReadOnlyModel() { columns = useSingleColumn ? 1 : 2 };
             model.Object = type.ToString();
             model.ObjectID = id;
 
-            var metadata = Company.Query<dynamic>("select V.DisplayValue as AssetName, T.Name as AssetTypeName, T.Object as ObjectType, T.ObjectID as ObjectTypeID  from Asset A inner join AssetDisplayValue V on V.AssetID = A.ID inner join AssetType T on T.ID = A.AssetTypeID where A.ObjectID = @id and A.Object = @type", new { type = type.ToString(), id }).FirstOrDefault();
-
-            if (metadata != null)
+            if (includeHeader)
             {
-                model.AssetName = metadata.AssetName;
-                model.AssetTypeName = metadata.AssetTypeName;
+                var metadata = Company.Query<dynamic>("select V.DisplayValue as AssetName, T.Name as AssetTypeName, T.Object as ObjectType, T.ObjectID as ObjectTypeID  from Asset A inner join AssetDisplayValue V on V.AssetID = A.ID inner join AssetType T on T.ID = A.AssetTypeID where A.ObjectID = @id and A.Object = @type", new { type = type.ToString(), id }).FirstOrDefault();
+                model.Scores = Company.Query<dynamic>(@"select	*
+from	(
+		select  S.EffectiveDate,
+				S.EndDate,
+				S.RunDate,
+				case 
+					when AL.ScoreType = 1 then 'GV'
+					when AL.ScoreType = 2 then 'DQ'
+				end as ScoreType,
+				ROW_NUMBER() OVER(PARTITION BY AL.ScoreType ORDER BY S.EffectiveDate DESC) as RowNum,
+				S.Value, 
+				AL.LowerThreshold, 
+				AL.UpperThreshold 
+		from    metrics.Score S
+				inner join Asset A on A.Uid = S.AssetUid and A.Object = @Object and A.ObjectID = @ObjectID and S.EffectiveDate <= @date 
+				inner join metrics.Allocation AL on AL.Uid = S.AllocationUid
+		) O
+where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow }).ToList();
 
-                model.ObjectType = metadata.ObjectType;
-                model.ObjectTypeID = metadata.ObjectTypeID;
+                if (metadata != null)
+                {
+                    model.AssetName = metadata.AssetName;
+                    model.AssetTypeName = metadata.AssetTypeName;
+
+                    model.ObjectType = metadata.ObjectType;
+                    model.ObjectTypeID = metadata.ObjectTypeID;
+                }
             }
+
 
             switch (type)
             {
