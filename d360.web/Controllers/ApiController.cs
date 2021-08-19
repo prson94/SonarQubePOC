@@ -2370,6 +2370,10 @@ from	(
 				case 
 					when AL.ScoreType = 1 then 'GV'
 					when AL.ScoreType = 2 then 'DQ'
+				end as ShortName,
+				case 
+					when AL.ScoreType = 1 then 'Governance'
+					when AL.ScoreType = 2 then 'Data Quality'
 				end as ScoreType,
 				ROW_NUMBER() OVER(PARTITION BY AL.ScoreType ORDER BY S.EffectiveDate DESC) as RowNum,
 				S.Value, 
