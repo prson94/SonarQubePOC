@@ -953,18 +953,18 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     {
                         remainingWidth = 27;
                         dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
-                        columns.Add(new GridColumn { text = Fields.FirstName_Name, datafield = "FirstName", fieldType = "Text" });
-                        columns.Add(new GridColumn { text = Fields.LastName_Name, datafield = "LastName", fieldType = "Text" });
-                        columns.Add(new GridColumn { text = Fields.Email_Name, datafield = "Email", fieldType = "Text" });
+                        columns.Add(new GridColumn { text = Fields.FirstName_Name, datafield = "FirstName", fieldType = DataType.Text.ToString() });
+                        columns.Add(new GridColumn { text = Fields.LastName_Name, datafield = "LastName", fieldType = DataType.Text.ToString() });
+                        columns.Add(new GridColumn { text = Fields.Email_Name, datafield = "Email", fieldType = DataType.Text.ToString() });
                         parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
-                        columns.Add(new GridColumn { text = Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F", fieldType = "DateTime" });
-                        columns.Add(new GridColumn { text = "Administrator?", datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, fieldType = "Boolean" });
+                        columns.Add(new GridColumn { text = Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F", fieldType = DataType.DateTime.ToString() });
+                        columns.Add(new GridColumn { text = "Administrator?", datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, fieldType = DataType.Boolean.ToString() });
                         columns.Add(new GridColumn
                         {
                             text = d360.core.resources.Fields.Status_Name,
                             datafield = "State",
                             filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST,
-                            fieldType = "Text",
+                            fieldType = DataType.Text.ToString(),
                             filteritems = new List<string>() {
                             CompanyResourceState.Active.ToString(),
                             CompanyResourceState.Inactive.ToString(),
@@ -982,8 +982,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     {
                         remainingWidth = 27;
                         dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
-                        columns.Add(new GridColumn { text = "Name", datafield = "FirstName", fieldType = "Text" });
-                        columns.Add(new GridColumn { text = "Owned items", datafield = "OwnedItemCount", fieldType = "number" });
+                        columns.Add(new GridColumn { text = "Name", datafield = "FirstName", fieldType = DataType.Text.ToString() });
+                        columns.Add(new GridColumn { text = "Owned items", datafield = "OwnedItemCount", fieldType = DataType.Number.ToString() });
                         parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
 
                         fields.Add(new GridField { name = "FirstName", type = "string", apiName = "FirstName" });
