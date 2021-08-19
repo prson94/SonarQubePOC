@@ -79,10 +79,10 @@ namespace d360.model.DataAccessLayer
             else
             {
                 AssetDataProfile dataprofile = CompanyContext.AssetDataProfile.Where(x => x.AssetId == asset.ID).OrderByDescending(x => x.ProfileSetDate).FirstOrDefault();
-                if(dataprofile != null)
+                if (dataprofile != null)
                 {
                     startDate = endDate = dataprofile.ProfileSetDate;
-                }                
+                }
             }
 
             var descendantsSQL = $@"with descendants as (select @assetID as AssetID)";
@@ -100,7 +100,7 @@ namespace d360.model.DataAccessLayer
 		                                    [utility].[ArtifactAssetParent] AAP on d.AssetID = AAP.ParentAssetID
                                     )";
             }
-                        
+
             var dataProfileIdsSql = $@"
                                     drop table if exists #assetdataprofileids
                                     create table #assetdataprofileids (
@@ -215,7 +215,7 @@ namespace d360.model.DataAccessLayer
                                                             lower(SampleType) = 'topk'
                                                         for json path
                                                         ) as [value]
-                                                ) topK ";            
+                                                ) topK ";
 
             dbArgs.Add("@startDate", startDate.Date);
             dbArgs.Add("@endDate", endDate.Date);
@@ -231,7 +231,7 @@ namespace d360.model.DataAccessLayer
             var jsonStrings = await CompanyContext.QueryAsync<string>(sql, dbArgs, ApiTimeout);
             var json = string.Join("", jsonStrings);
 
-            results.items = JsonConvert.DeserializeObject<List<DataProfileModel>>(string.IsNullOrEmpty(json) ? "[]" : json);            
+            results.items = JsonConvert.DeserializeObject<List<DataProfileModel>>(string.IsNullOrEmpty(json) ? "[]" : json);
 
             if (includeTotal)
             {
@@ -250,17 +250,17 @@ namespace d360.model.DataAccessLayer
             {
                 results.total = null;
             }
-            
+
             return results;
         }
 
-        
+
         public List<DataProfileUpsertResponse> UpsertDataProfiles(List<DataProfileUpsertModel> DataProfileUpsertModels, ApiExecution execution, bool isInsert)
         {
             CompanyContext.Add(execution);
 
             List<DataProfileUpsertResponse> results = null;
-            
+
             try
             {
                 results = CompanyContext.UpsertDataProfiles(DataProfileUpsertModels, execution, isInsert);
@@ -276,17 +276,17 @@ namespace d360.model.DataAccessLayer
                 execution.ErrorMessage = message;
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);
-            }            
+            }
 
             return results;
         }
 
         public List<DataProfileDeleteResponse> DeleteDataProfiles(Asset asset, DateTime startDate, DateTime endDate, ApiExecution execution, bool cascade = false)
-        {            
+        {
             CompanyContext.Add(execution);
-            
+
             var assetDataProfileDeleteModel = new AssetDataProfileDeleteModel { AssetUid = asset.uid, StartDate = startDate, EndDate = endDate, Cascade = cascade };
-            
+
             List<AssetDataProfileDeleteModel> models = new List<AssetDataProfileDeleteModel>();
             models.Add(assetDataProfileDeleteModel);
 
@@ -388,19 +388,20 @@ namespace d360.model.DataAccessLayer
             }
             else
             {
-                string[] allowedValues = new [] { "structure", "data" };
+                string[] allowedValues = new[] { "structure", "data" };
 
                 if (allowedValues.Contains(similarType.ToLowerInvariant()))
                 {
-                    if(similarType.ToLowerInvariant() == "structure")
+                    if (similarType.ToLowerInvariant() == "structure")
                     {
                         dbArgs.Add("@signature", dataprofile.StructureSignature);
                         structureCondition = "ADP.StructureSignature = @signature";
                     }
-                    else {
+                    else
+                    {
                         dbArgs.Add("@signature", dataprofile.DataSignature);
                         structureCondition = "ADP.DataSignature = @signature";
-                    }                    
+                    }
                 }
                 else
                 {
@@ -415,7 +416,7 @@ namespace d360.model.DataAccessLayer
 
             if (queryParams.Any(q => q.Key == "_direction"))
             {
-                string[] allowedValues = new [] { "asc", "desc" };
+                string[] allowedValues = new[] { "asc", "desc" };
                 var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value.Trim().ToLower();
 
                 if (allowedValues.Contains(directionFilter))
@@ -433,13 +434,12 @@ namespace d360.model.DataAccessLayer
 
                     dbArgs.Add("@simpleFilter", simpleFilter);
 
-                    simpleFilterSQL = $@"AND NDP.DisplayPath like @simpleFilter";                    
+                    simpleFilterSQL = $@"where [Path] like @simpleFilter";
                 }
             }
 
-            sqlJoins = $@" AssetDataProfile ADP	 
-	                        inner join 
-		                    [graph].AssetNodeDisplayPath NDP WITH (NOEXPAND) on {structureCondition} and NDP.ID=adp.AssetID and adp.AssetId != @assetId {simpleFilterSQL}
+            sqlJoins = $@"  inner join 
+		                    [graph].AssetNodeDisplayPath NDP WITH (NOEXPAND) on NDP.ID=adp.AssetID and adp.AssetId != @assetId
                             outer apply 
 			                (
 			                select 
@@ -465,36 +465,56 @@ namespace d360.model.DataAccessLayer
 
                 dbArgs.Add("@userid", CompanyContext.CurrentResourceID);
             }
-                        
+
             dbArgs.Add("@assetId", asset.ID);
-            if (!onlyTotal)
-            {
-                var itemsSQL = $@"
-                            SELECT 
-                                distinct
-	                            NDP.uid, 
-                                NDP.DisplayPath as [path]
-                            FROM                                     
-	                            {sqlJoins}		                            
-	                            {whereConditions}
-		                    order by NDP.DisplayPath {orderDirection}
-                            {offset}";
 
-                results.items = await CompanyContext.QueryAsync<AssetDataProfileMatchingAssetsModel>(itemsSQL, dbArgs, ApiTimeout);
-            }
-            
-
+            string countQuery = "";
             if (includeTotal || onlyTotal)
             {
-                var countSQL = $@"
+                countQuery = $@"
                             SELECT 
 	                            Count(*)
                             FROM                                     
-	                            {sqlJoins}		                            
-	                            {whereConditions}
+                                #tempdata2
+                            {simpleFilterSQL}
 		                    ";
-                
-                results.total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSQL, dbArgs, ApiTimeout);
+            }
+
+            var itemsSQL = $@"
+                            drop table if exists #tempadpid;
+                            create table #tempadpid (Assetid bigint,ProfileSetDate date)
+
+                            insert into #tempadpid
+                            select ADP.Assetid,max(ProfileSetDate) profileSetDate
+                            from AssetDataProfile ADP
+                            where {structureCondition} and adp.AssetId != @assetId                       
+                            group by ADP.Assetid;
+
+                            create index idx_tempadid on #tempadpid(Assetid);
+                            drop table if exists #tempdata2;
+
+                            SELECT 
+	                            NDP.uid, 
+                                NDP.DisplayPath as [path]
+                            into #tempdata2
+                            FROM #tempadpid adp          
+	                            {sqlJoins}		     
+                                {whereConditions}
+
+                            select * from #tempdata2
+                            {simpleFilterSQL}
+                            order by [path] {orderDirection}
+                             {offset}
+
+                            {countQuery}
+                            ";
+
+            var multiQuery = await CompanyContext.QueryMultipleAsync(itemsSQL, dbArgs, ApiTimeout);
+            results.items = multiQuery.Read<AssetDataProfileMatchingAssetsModel>().ToList();
+
+            if (includeTotal || onlyTotal)
+            {
+                results.total = multiQuery.Read<int?>().FirstOrDefault();
             }
             else
             {
@@ -549,10 +569,10 @@ namespace d360.model.DataAccessLayer
             {
                 var orderFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_order").Value.Trim().ToLower();
 
-                if (orderFilter.Equals("confidence",StringComparison.InvariantCultureIgnoreCase))
+                if (orderFilter.Equals("confidence", StringComparison.InvariantCultureIgnoreCase))
                 {
                     orderBy = "ADP.confidence";
-                }                
+                }
             }
 
             dbArgs.Add("@typeQualifier", typeQualifier);
