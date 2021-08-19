@@ -412,6 +412,15 @@ namespace d360.web.Controllers.V2
             foreach (var row in query)
             {
                 rowIndex++;
+                
+                if(row.actionObject == "Predicate" && row.field == "Functional Type")
+                {
+                    row.newValue = getPredicateTypeStringValue(row.newValue);
+                    if(row.previousValue != null)
+                    {
+                        row.previousValue = getPredicateTypeStringValue(row.previousValue);
+                    }
+                }
 
                 document.SetCellValue(rowIndex, 1, row.resourceName);
                 document.SetCellValue(rowIndex, 2, (((DateTime)row.date)));
@@ -435,6 +444,78 @@ namespace d360.web.Controllers.V2
 
 
             return document;
+        }
+
+        private string getPredicateTypeStringValue(string type)
+        {
+            if (type == "1")
+            {
+                return PredicateType.DataLineage.ToString();
+            }
+            else if (type == "2")
+            {
+                return PredicateType.Evaluation.ToString();
+            }
+            else if (type == "3")
+            {
+                return PredicateType.InterTypeHierarchy.ToString();
+            }
+            else if (type == "4")
+            {
+                return PredicateType.IntraTypeHierarchy.ToString();
+            }
+            else if (type == "5")
+            {
+                return PredicateType.UserOwnership.ToString();
+            }
+            else if (type == "6")
+            {
+                return PredicateType.Grammar.ToString();
+            }
+            else if (type == "7")
+            {
+                return PredicateType.Simple.ToString();
+            }
+            else if (type == "8")
+            {
+                return PredicateType.FusionMapping.ToString();
+            }
+            else if (type == "9")
+            {
+                return PredicateType.SeeAlso.ToString();
+            }
+            else if (type == "10")
+            {
+                return PredicateType.Usage.ToString();
+            }
+            else if (type == "11")
+            {
+                return PredicateType.ObjectOwnerhip.ToString();
+            }
+            else if (type == "12")
+            {
+                return PredicateType.Transformation.ToString();
+            }
+            else if (type == "13")
+            {
+                return PredicateType.BusinessToTechnical.ToString();
+            }
+            else if (type == "14")
+            {
+                return PredicateType.SemanticRelation.ToString();
+            }
+            else if (type == "15")
+            {
+                return PredicateType.Diagram.ToString();
+            }
+            else if (type == "16")
+            {
+                return PredicateType.DiagramUse.ToString();
+            }
+            else
+            {
+                return PredicateType.DiagramReference.ToString();
+            }
         }
 
         private string getBaseAuditQueryForId(SystemObjects type, bool auditingByType = false)
