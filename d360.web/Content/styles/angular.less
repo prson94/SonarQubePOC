@@ -1703,6 +1703,13 @@ chart {
     white-space: nowrap;
 }
 
+/*use high z-index when dropdown-panel is direct child of body (usage of appendToBody) 
+  !important is needed to override inline styles
+*/
+body > .p-dropdown-panel {
+  z-index: 20000 !important;
+}
+
 .hide-datatable-header > p-dataTable > div > .p-datatable-tablewrapper > table > thead {
     display: none !important;
 }
