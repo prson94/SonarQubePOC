@@ -120,11 +120,11 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit, Val
     }
 
     private isOverMax(): boolean {
-        return this.value && typeof this.max !== "undefined" && this.value > +this.max;
+        return this.value !== null && typeof this.max !== "undefined" && this.value > +this.max;
     }
 
     private isUnderMin(): boolean {
-        return this.value && typeof this.min !== "undefined" && this.value < +this.min;
+        return this.value !== null && typeof this.min !== "undefined" && this.value < +this.min;
     }
 
     registerOnValidatorChange?(fn: () => void): void {
