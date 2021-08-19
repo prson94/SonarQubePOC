@@ -77,6 +77,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     assetAction: AssetAction;
     dataClassification: string;
     showDataClassification: boolean = false;
+    assetActionWidth: number = 0;
 
     //keep record of previous url, sometimes we dont need to clear all items (ie. asset -> asset audit page)
     private previousUrl: string = '';
@@ -309,6 +310,19 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             this.assetAction = res;
             if (this.assetAction && this.assetAction.type == "CONNECTORLABEL") {
                 this.showOnlyMainTab = true;
+            }
+            if (this.assetAction && this.assetAction.type == "TAG") {
+                var AssetActionwidthCalc = 0;
+                if (this.assetAction.showBack) {
+                    AssetActionwidthCalc = AssetActionwidthCalc + 110;
+                }
+                if (this.assetAction.showDelete) {
+                    AssetActionwidthCalc = AssetActionwidthCalc + 110;
+                }
+                if (this.assetAction.showEdit) {
+                    AssetActionwidthCalc = AssetActionwidthCalc + 110;
+                }
+                this.assetActionWidth = AssetActionwidthCalc;
             }
         });
 
