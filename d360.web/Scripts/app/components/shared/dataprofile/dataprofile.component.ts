@@ -587,8 +587,9 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             }]
         };
 
-        if (this.sampleDistributionChart)
+        if (this.sampleDistributionChart) {
             this.sampleDistributionChart.destroy();
+        }
 
         this.sampleDistributionChart = Highcharts.chart('sampleChart', chartOptions, includeStatsWidget ? renderStatsWidget : null);
 
