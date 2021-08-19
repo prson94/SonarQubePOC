@@ -75,10 +75,12 @@ export class ScoreBadgeComponent implements OnInit, OnChanges {
     }
 
     getScoreCSSClass(): string {
-        if (this.score.Value <= this.lowerThreshold / 100)
+        if (this.score.Value <= this.lowerThreshold / 100) {
             return 'poor'; //red
-        if (this.score.Value <= this.upperThreshold / 100)
+        }
+        if (this.score.Value <= this.upperThreshold / 100) {
             return 'average'; //yellow
+        }
         return 'good'; //green
     }
 
