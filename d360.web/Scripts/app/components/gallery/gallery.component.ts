@@ -51,6 +51,7 @@ export class GalleryComponent implements OnInit {
         { label: "Search Field", key: "search-field", type: "Govern Components"},
         { label: "Multi Input Field", key: "multi-input-field", type: "Govern Components"},
         { label: "Input Group", key: "input-group", type: "Form"},
+        { label: "Modal", key: "modal", type: "Overlay" },
     ];
 
     categories: any[] = [];

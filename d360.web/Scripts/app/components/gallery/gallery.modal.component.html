@@ -1,0 +1,109 @@
+﻿<div class="tile tile-detail">
+    <header>Modal component</header>
+    <div class="gallery-section">
+        <p>Govern modal UI component.</p>
+        <p>The modal component opens as a dialog. Default actions are Cancel and Confirm, for any other actions, the buttons must be implemented as part of the content of the modal.</p>
+        <p>The modal can always be dismissed by pressing the ESC button.</p>
+        <p>The size of the modal is set with the additionalClasses property. 4 default sizes are defined in the stylesheet, which controls the width of the modal.</p>
+    </div>
+</div>
+
+<div class="tile tile-detail">
+    <header>Interactive Example</header>
+    <div class="gallery-section">
+        <p>Settings for the modal can be changed in the form below.</p>
+        <button igButton label="Open Modal" (click)="modalBasic.isVisible = true" tabindex="3"></button><br />
+        <d3s-modal [title]="modalBasic.title"
+                   [subtitle]="modalBasic.subtitle"
+                   [isVisible]="modalBasic.isVisible"
+                   [showConfirm]="modalBasic.showConfirm"
+                   [additionalClasses]="modalBasic.additionalClasses"
+                   (onClose)="registerEvent('onClose', $event); modalBasic.isVisible = false"
+                   (onConfirm)="registerEvent('onConfirm', $event)">
+            <div class="content" [innerHTML]="getLorem(loremRepeat)">
+            </div>
+        </d3s-modal>
+        <div class="eventoutput ig-lightblue-t4" *ngIf="firedEvents.length > 0">
+            <div *ngFor="let ev of firedEvents">
+                {{ev.type}} event fired. $event: <div class="value">{{ev.event}}</div>
+            </div>
+        </div>
+        <br /><br />
+
+        <ig-property-group title="Modal settings" [expanded]="false">
+            <div inputs>
+                <div class="row">
+                    <label for="title">title</label><br />
+                    <input igInput type="text" name="title" [(ngModel)]="modalBasic.title" />
+                </div>
+                <div class="row">
+                    <label for="subtitle">subtitle</label><br />
+                    <input igInput type="text" name="subtitle" [(ngModel)]="modalBasic.subtitle" />
+                </div>
+                <div class="row">
+                    <label for="showTitle">showTitle</label><br />
+                    <ig-switch id="showTitle" trueLabel="True" falseLabel="False" [(ngModel)]="modalBasic.showTitle"></ig-switch>
+                </div>
+                <div class="row">
+                    <label for="showConfirm">showConfirm</label><br />
+                    <ig-switch id="showConfirm" trueLabel="True" falseLabel="False" [(ngModel)]="modalBasic.showConfirm"></ig-switch>
+                </div>
+                <div class="row">
+                    <label for="additionalClasses">additionalClasses</label><br />
+                    <p-dropdown igDropdown
+                                id="additionalClasses"
+                                required
+                                igSize="small"
+                                [appendTo]="'body'"
+                                [(ngModel)]="modalBasic.additionalClasses"
+                                [options]="classOptions"></p-dropdown>
+                </div>
+                <div class="row">
+                    <p>The content of this example modal dialog is the <i>lorem ipsum</i> text.</p>
+                    <label for="loremRepeat">Lorem text repetitions</label><br />
+                    <ig-number-input id="loremRepeat" required="true" [step]="1" min="1" max="20" [enforceMaxMin]="true" [(ngModel)]="loremRepeat"></ig-number-input>
+                </div>
+            </div>
+        </ig-property-group>
+    </div>
+</div>
+
+<div class="tile tile-detail">
+    <header>Properties</header>
+    <p-table [value]="properties">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<div class="tile tile-detail">
+    <header>Events</header>
+    <p-table [value]="events">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-event>
+            <tr>
+                <td>{{event.Name}}</td>
+                <td>{{event.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
