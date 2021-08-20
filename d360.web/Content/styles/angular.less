@@ -2240,6 +2240,8 @@ div.home-image-title-text {
     transform: scale(0.8);
     transform-origin: center top;
     transition: transform 200ms ease;
+    max-height: calc(100vh - 80px);
+    max-width: calc(100vw - 80px);
 
     &.small-dialog {
         width: 100%;
@@ -2298,21 +2300,21 @@ div.home-image-title-text {
         }
 
         &.condensed-table {
-          .p-datatable {
-            padding-right: 16px;
+            .p-datatable {
+                padding-right: 16px;
 
-            table {
-              th, td {
-                height: 32px;
-                padding: .25em .5em;
+                table {
+                    th, td {
+                        height: 32px;
+                        padding: .25em .5em;
 
-                button {
-                  position: relative;
-                  right: -7px;
+                        button {
+                            position: relative;
+                            right: -7px;
+                        }
+                    }
                 }
-              }
             }
-          }
         }
 
         .p-checkbox {
