@@ -51,6 +51,12 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     @ViewChildren(SiteMenuCategoryComponent) menuRefs: QueryList<SiteMenuCategoryComponent>;
     @ViewChild("menu", { static: false }) menu: ElementRef;
+    isMenuActive: boolean;
+
+    @HostListener('document:click', ['$event'])
+    documentClick(event: MouseEvent) {
+            this.isMenuActive = false;        
+    }
 
     constructor(
         private ref: ChangeDetectorRef,
@@ -366,12 +372,20 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     changeActiveMenu($event) {
-        this.menuRefs.forEach((item) => {
-            if ($event.item.title != item.title) {
-                if (item.menu)
-                    item.menu.isActiveItem = false;
-            }
-        });
+        this.isMenuActive = false;
+
+        if ($event) {
+            this.menuRefs.forEach((item) => {
+                if ($event.item.title != item.title) {
+                    if (item.menu)
+                        item.menu.isActiveItem = false;
+                } else {
+                    if (item.menu.NavigationItems && item.menu.NavigationItems.length > 0) {
+                        this.isMenuActive = true;
+                    }
+                }
+            });
+        }        
         this.ref.detectChanges();
     }    
 
