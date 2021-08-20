@@ -5,8 +5,8 @@
     <div *ngIf="!isLoading">
         <ng-container *ngIf="showHeader">
             <div class="asset-detail-header">
-                <div class="score-badge-container right">
-                    <div *ngFor="let score of model?.Scores" [class]="'score-badge ' + score.Class">{{score.ScoreType}} <span class="score-value">{{score.Value | scoreDisplay:1}}</span></div>
+                <div class="right d3s-score-container">
+                    <d3s-score-badge *ngFor="let score of model?.Scores" [score]="score" [precision]="1" [useMiniBadge]="true"></d3s-score-badge>
                 </div>
                 <div class="asset-name">
                     {{model.AssetName}}

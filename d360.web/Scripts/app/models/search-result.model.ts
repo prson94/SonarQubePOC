@@ -147,6 +147,7 @@ export class AssetScore {
     EndDate: string;
     Value: number;
     ScoreType: string;
+    ShortName: string;
     RunDate: string;
     LowerThreshold: number;
     UpperThreshold: number;

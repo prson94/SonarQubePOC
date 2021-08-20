@@ -26,5 +26,8 @@
             <strong class="gov-bold">Last Run Date</strong> {{lastRunDate | date:'shortDate'}}
         </span>
     </div>
-    <ig-badge [text]="getBadgeText()" [variant]="getScoreVariantColor()"></ig-badge>
+    <ig-badge *ngIf="!useMiniBadge" [text]="getBadgeText()" [variant]="getScoreVariantColor()"></ig-badge>
+    <div *ngIf="useMiniBadge" class="score-badge-container">
+        <div  [class]="'score-badge ' + getScoreCSSClass()">{{score.ShortName}} <span class="score-value">{{score.Value | scoreDisplay:1}}</span></div>
+    </div>
 </div>
