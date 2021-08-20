@@ -187,7 +187,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             this.showStatistics = true;
         }
 
-        if (this.hasValidCounts && this.dataProfile.cardinalityDetail && this.dataProfile.cardinalityDetail.length > 0 && ['long', 'boolean', 'double', 'datetme', 'date', 'localdatetime', 'localdate', 'string'].indexOf(this.dataProfile.type.toLowerCase()) !== -1) {
+        if (this.hasValidCounts && this.dataProfile.cardinalityDetail && this.dataProfile.cardinalityDetail.length > 0 && ['long', 'boolean', 'double', 'datetime', 'date', 'localdatetime', 'localdate', 'string'].indexOf(this.dataProfile.type.toLowerCase()) !== -1) {
             this.showSampleDistribution = true;
         }
     }
