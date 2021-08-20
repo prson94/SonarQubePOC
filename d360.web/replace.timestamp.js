@@ -6,6 +6,7 @@ const options = {
     allowEmptyPaths: false,
 };
 
+/* eslint-disable no-console */
 try {
     let changedFiles = replace.sync(options);
     console.log('Build version set: ' + new Date().toLocaleString());
@@ -13,3 +14,4 @@ try {
 catch (error) {
     console.error('Error occurred:', error);
 }
+/* eslint-enable */
