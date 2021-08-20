@@ -136,7 +136,15 @@
                         </div>
                     </div>
                 </ig-property-group>
-
+                <ig-property-group *ngIf="showSampleDistribution"
+                                   [expanded]="true"
+                                   [title]="'Sample Distribution'"
+                                   [shouldBePadded]="false"
+                                   [showHeaderLine]="false">
+                    <div readonly class="group">
+                        <ng-container *ngTemplateOutlet="sampleDistributionTemplate"></ng-container>
+                    </div>
+                </ig-property-group>
                 <ig-property-group *ngIf="hasValidCounts && topSamples && topSamples.length>0"
                                    [expanded]="true"
                                    [title]="'Top Values'"
@@ -270,16 +278,6 @@
                         <ng-container *ngTemplateOutlet="leadingWhiteSpaceTemplate"></ng-container>
                         <ng-container *ngTemplateOutlet="trailingWhiteSpaceTemplate"></ng-container>
                         <ng-container *ngTemplateOutlet="regExpTemplate"></ng-container>
-                    </div>
-                </ig-property-group>
-
-                <ig-property-group *ngIf="showSampleDistribution"
-                                   [expanded]="true"
-                                   [title]="'Sample Distribution'"
-                                   [shouldBePadded]="false"
-                                   [showHeaderLine]="false">
-                    <div readonly class="group">
-                        <ng-container *ngTemplateOutlet="sampleDistributionTemplate"></ng-container>
                     </div>
                 </ig-property-group>
             </div>
