@@ -449,7 +449,7 @@ namespace d360.web.Controllers.V2
         private string getPredicateTypeStringValue(string type)
         {
             string predicateType = "";
-            if(Enum.TryParse((string)type, out PredicateType pType))
+            if(Enum.TryParse(type, out PredicateType pType))
             {
                 predicateType = pType.ToString();
             }
