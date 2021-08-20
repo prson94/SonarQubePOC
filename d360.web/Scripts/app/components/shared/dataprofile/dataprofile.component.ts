@@ -187,7 +187,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             this.showStatistics = true;
         }
 
-        if (this.hasValidCounts && this.dataProfile.cardinalityDetail && this.dataProfile.cardinalityDetail.length > 0 && ['long', 'boolean', 'double', 'datetme', 'date', 'localdatetime', 'localdate', 'string'].indexOf(this.dataProfile.type.toLowerCase()) !== -1) {
+        if (this.hasValidCounts && this.dataProfile.cardinalityDetail && this.dataProfile.cardinalityDetail.length > 0) {
             this.showSampleDistribution = true;
         }
     }
@@ -302,21 +302,13 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             pointPadding = 0.05;
             showXAxisLabel = true;
 
-            if (this.dataProfile.matchCount && this.dataProfile.matchCount > 0) {
                 this.dataProfile.cardinalityDetail.forEach((c) => {
                     categories.push(c.key);
                     data.push(c.count);
                     colors.push(validColor);
                 });
-            }
 
-        } else if (dataProfileType === 'long' || dataProfileType === 'double') {
-            //test a record to make sure we're dealing with clean data, otherwise we can't continue
-            if (isNaN(+testCardinality)) {
-                this.showSampleDistribution = false;
-                return;
-            }
-
+        } else if ((dataProfileType === 'long' || dataProfileType === 'double') && !isNaN(+testCardinality)) {
             showXAxisLabel = true;
             pointPadding = 0.15;
             maxPointWidth = 15;
@@ -360,15 +352,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
                 lower = current;
             }
 
-        } else if (dataProfileType === 'date' || dataProfileType === 'datetime' || dataProfileType === 'localdate' || dataProfileType === 'localdatetime') {
-            //test to see if we can parse these date values
-            if (isNaN(Date.parse(testCardinality))) {
-                this.showSampleDistribution = false;
-                return;
-            }
-
-            pointPadding = 0.1;
-            
+        } else if ((dataProfileType === 'date' || dataProfileType === 'datetime' || dataProfileType === 'localdate' || dataProfileType === 'localdatetime') && !isNaN(Date.parse(testCardinality))) {
+            pointPadding = 0.1;          
 
             let minDate = new Date(this.dataProfile.min);
             let maxDate = new Date(this.dataProfile.max);
@@ -407,16 +392,14 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             pointPadding = 0.1;
             this.sampleChartXLabel = this.distinctCount.toLocaleString() + ' distinct values';
 
-            if (this.dataProfile.matchCount && this.dataProfile.matchCount > 0) {
-                let i = 0;
-                let max = Math.min(maxSampleCount, this.dataProfile.cardinalityDetail.length);
-                let c = this.dataProfile.cardinalityDetail;
-                while (i < max) {
-                    i++;
-                    categories.push(c[i].key);
-                    data.push(c[i].count);
-                    colors.push(validColor);
-                }
+            let i = 0;
+            let max = Math.min(maxSampleCount, this.dataProfile.cardinalityDetail.length);
+            let c = this.dataProfile.cardinalityDetail;
+            while (i < max) {
+                i++;
+                categories.push(c[i].key);
+                data.push(c[i].count);
+                colors.push(validColor);
             }
         }
 
@@ -446,10 +429,9 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             //calculate position of mean line
             let xPos = chart.plotLeft + lowerX + (pixelInterval * meanPercentInterval);
 
-
             chart.renderer.path([
                 'M', xPos, chart.plotTop + chart.plotHeight,
-                'L', xPos, chart.plotTop + 25
+                'L', xPos, chart.plotTop + 5
             ]).attr({
                 stroke: nullColor,
                 'stroke-width': 1
@@ -458,7 +440,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             chart.renderer.text(
                 'Mean',
                 xPos,
-                chart.plotTop - 10
+                chart.plotTop - 30
             ).attr({
                 align: 'center',
                 zIndex: 5
@@ -467,12 +449,12 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             chart.renderer.text(
                 dataProfile.mean.toFixed(2),
                 xPos,
-                chart.plotTop + 4
+                chart.plotTop - 16
             ).attr({
                 align: 'center',
                 zIndex: 5
             }).css({
-                color: nullColor,
+                color: '#898d99',
             }).add();
 
             if (drawStd) {
@@ -480,8 +462,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
                 let stdLen = (+dataProfile.standardDeviation / interval) * pixelInterval;
 
                 chart.renderer.path([
-                    'M', xPos - stdLen, chart.plotTop + 25,
-                    'L', xPos + stdLen, chart.plotTop + 25
+                    'M', xPos - stdLen, chart.plotTop + 5,
+                    'L', xPos + stdLen, chart.plotTop + 5
                 ]).attr({
                     stroke: nullColor,
                     'stroke-dasharray': '2,2',
@@ -489,16 +471,16 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
                 }).add();
 
                 chart.renderer.path([
-                    'M', xPos - stdLen, chart.plotTop + 15,
-                    'L', xPos - stdLen, chart.plotTop + 35
+                    'M', xPos - stdLen, chart.plotTop - 5,
+                    'L', xPos - stdLen, chart.plotTop + 15
                 ]).attr({
                     stroke: nullColor,
                     'stroke-width': 1
                 }).add();
 
                 chart.renderer.path([
-                    'M', xPos + stdLen, chart.plotTop + 15,
-                    'L', xPos + stdLen, chart.plotTop + 35
+                    'M', xPos + stdLen, chart.plotTop - 5,
+                    'L', xPos + stdLen, chart.plotTop + 15
                 ]).attr({
                     stroke: nullColor,
                     'stroke-width': 1
@@ -507,7 +489,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
                 chart.renderer.text(
                     'Std Dev',
                     xPos + stdLen + 5,
-                    chart.plotTop + 15,
+                    chart.plotTop - 5,
                 ).attr({
                     zIndex: 5
                 }).add();
@@ -515,11 +497,11 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
                 chart.renderer.text(
                     +dataProfile.standardDeviation.toFixed(2),
                     xPos + stdLen + 5,
-                    chart.plotTop + 29,
+                    chart.plotTop + 9,
                 ).attr({
                     zIndex: 5
                 }).css({
-                    color: nullColor,
+                    color: '#898d99',
                 }).add();
             }
         };
@@ -527,8 +509,11 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
         let chartOptions: any = {
             chart: {
                 type: 'column',
-                height: 300,
+                height: 200,
                 spacingTop
+            },
+            credits: {
+                enabled: false
             },
             title: {
                 text: '',
