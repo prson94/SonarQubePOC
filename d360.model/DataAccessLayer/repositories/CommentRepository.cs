@@ -1,5 +1,6 @@
 ﻿using d360.core.entities;
 using d360.core.enums;
+using d360.core.resources;
 using d360.core.exceptions;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
@@ -71,6 +72,8 @@ namespace d360.model.DataAccessLayer
 		{
 			validateComment(comment);
 
+            long? commentedOnAssetId = null;
+
             int? parentId = null;
             long? assetId = null;
             Asset commentAsset = null;
@@ -83,6 +86,7 @@ namespace d360.model.DataAccessLayer
                 }
                 else
                 {
+                    commentedOnAssetId = CompanyContext.Filter<Asset>(a => a.uid == comment.AssetUid).FirstOrDefault().ID;                    
                     parentId = parentComment.ID;
                     comment.AssetUid = parentComment.Asset.uid;
                     assetId = parentComment.Asset.ID;
@@ -146,7 +150,7 @@ namespace d360.model.DataAccessLayer
 
 					await CompanyContext.SaveChangesAsync();
 
-					SendCommentNotification(taggedAssets, dbComment);
+					SendCommentNotification(taggedAssets, dbComment, commentedOnAssetId);
 				}
 				CompanyContext.Connection.Execute("delete C from CommentRelation C left join Asset A on A.ID = C.AssetID where C.CommentID = @commentId and A.ID is null", new { commentId });
 
@@ -784,7 +788,7 @@ order by V.Emoji";
             }
         }
 
-		private void SendCommentNotification(List<Asset> taggedAssets, Comment comment)
+		private void SendCommentNotification(List<Asset> taggedAssets, Comment comment, long? commentedOnAssetId = null)
         {		
 			if (taggedAssets.Any(a => a.Object == core.SystemObjects.Resource.ToString() || a.Object == core.SystemObjects.Group.ToString()))
 			{
@@ -792,8 +796,10 @@ order by V.Emoji";
 
 				if (commentCreator != null)
 				{
-					var assetDetail = CompanyContext.Connection.Query<AssetDetail>("Select * from AssetDetail A where A.ID = @AssetID", new { comment.AssetID }).FirstOrDefault();
-					if (assetDetail != null)
+                    
+                    var assetDetail = CompanyContext.Connection.Query<AssetDetail>("Select * from AssetDetail A where A.ID = @AssetID", new { AssetID = commentedOnAssetId ?? comment.AssetID }).FirstOrDefault();
+
+                    if (assetDetail != null)
                     {                    
 						string resourceSQL = $@"select distinct * from (Select 
                                                                         GR.*
@@ -827,9 +833,10 @@ order by V.Emoji";
 
 					CommentNotification notification = new CommentNotification {
 						CommenterName = commentCreator,
-						Subject = $"{commentCreator} tagged you in a comment on {assetDetail.DisplayValue}",
-						IsHtml = true
-					};
+						Subject = string.Format(Notifications.TaggedCommentMailSubject, commentCreator, assetDetail.DisplayValue),
+						IsHtml = true,
+                        CommentedOnAssetId = commentedOnAssetId
+                    };
 
 					resourcesToNotify.ForEach(r =>
 					{

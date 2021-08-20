@@ -25,6 +25,9 @@ export class SidePanelComponent extends BaseComponent {
     @Input() selectedPanel: string = '';
     @Output() selectedPanelChange = new EventEmitter<string>();
 
+    @Input() storageKey: string = null;
+    readonly storageKeyPrefix: string = 'side_panel_';
+
     buttons: SidePanelButton[] = [];
 
     readonly minWidth = '400px';
@@ -32,10 +35,15 @@ export class SidePanelComponent extends BaseComponent {
 
     ngOnInit() {
         this.initButtons();
+
+        this.selectedPanelChange.emit(this.selectedPanel);
+        this.expandedChange.emit(this.expanded);
     }
 
     ngOnChanges(changes: SimpleChanges) {
         let loadButtons = false;
+        let loadState = false;
+
         if (changes['hasProfiling'] && !changes['hasProfiling'].isFirstChange() && changes['hasProfiling'].currentValue !== changes['hasProfiling'].previousValue) {
             loadButtons = true;
         }
@@ -51,6 +59,61 @@ export class SidePanelComponent extends BaseComponent {
             if (this.hasProfiling) {
                 this.buttons.find((b) => b.key === 'dataprofile').disabled = this.disableProfiling;
             }
+        }
+
+        if (changes['storageKey'] && changes['storageKey'].isFirstChange() && changes['storageKey'].currentValue !== changes['storageKey'].previousValue) {
+            loadState = true;
+            
+        }
+
+        if (loadState || loadButtons) {
+            this.loadState();
+
+            this.selectedPanelChange.emit(this.selectedPanel);
+            this.expandedChange.emit(this.expanded);
+        }
+
+
+    }
+
+    private loadState() {
+        if (this.storageKey != null && this.storageKey.length > 0) {
+            let stateString = localStorage.getItem(this.storageKeyPrefix + this.storageKey);
+            if (stateString != null && stateString.length > 0) {
+                let state;
+                try {
+                    state = JSON.parse(stateString);
+                } catch {
+                    console.warn('State for key ' + this.storageKey + ' could not be parsed');
+                }
+
+                if (state != null) {
+                    if (state.expanded != null) {
+                        this.expanded = state.expanded;
+
+                    }
+
+                    if (state.selectedPanel != null && state.selectedPanel.length > 0) {
+                        let b = this.buttons.find((b) => b.key === state.selectedPanel);
+
+                        if (b) {
+                            this.selectedPanel = state.selectedPanel;
+
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    private saveState() {
+        if (this.storageKey != null && this.storageKey.length > 0) {
+            let state: any = {};
+            state.expanded = this.expanded;
+            state.selectedPanel = this.selectedPanel;
+
+            localStorage.setItem(this.storageKeyPrefix + this.storageKey, JSON.stringify(state));
         }
     }
 
@@ -101,6 +164,8 @@ export class SidePanelComponent extends BaseComponent {
 
             this.expanded = true;
             this.expandedChange.emit(true);
+
+            this.saveState();
         }
     }
 
@@ -149,5 +214,8 @@ export class SidePanelComponent extends BaseComponent {
     collapseSidePanel() {
         this.expanded = false;
         this.expandedChange.emit(false);
+
+        this.saveState();
+
     }
 }

@@ -109,16 +109,16 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     ngOnInit() {
         this.allFieldsDropdown = [];
 
+        if (this.fields && this.fields.length > 0) {
+            let assetFieldGroup: SelectItemGroup = { value: "asset-field", label: "Asset Fields", items: [] };
+            this.allFieldsDropdown.push(assetFieldGroup);
+
+            this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
+                assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
+            });
+        }
+
         if (this.isAssetType) {
-            if (this.fields && this.fields.length > 0) {
-                let assetFieldGroup: SelectItemGroup = { value: "asset-field", label: "Asset Fields", items: [] };
-                this.allFieldsDropdown.push(assetFieldGroup);
-
-                this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
-                    assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
-                });
-            }
-
             var systemFields = SystemFields.GetSystemFieldDefinition(this.gridType);
             if (systemFields.length > 0) {
                 let systemFieldsGroup: SelectItemGroup = { value: "system-field", label: "System Fields", items: [] };
@@ -137,21 +137,6 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
                     relationshipGroup.items.push({ value: f.Name, label: f.FriendlyName });
                 });
             }
-        }
-
-        if (this.isRuleResults) {
-            let assetFieldGroup: SelectItemGroup = { value: "rule-results-field", label: "Asset Fields", items: [] };
-            this.allFieldsDropdown.push(assetFieldGroup);
-            this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
-                assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
-            });
-        }
-        if (this.isComplexField) {
-            let assetFieldGroup: SelectItemGroup = { value: "rule-results-field", label: "Asset Fields", items: [] };
-            this.allFieldsDropdown.push(assetFieldGroup);
-            this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
-                assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
-            });
         }
     }
 
@@ -357,11 +342,6 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             ft.Operators[1].label = "does not contain";
         }
 
-        if (this.isRuleResults) {
-            if (ft.Name !== "EvaluatedAssetClass") {
-                ft.Operators = ft.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
-            }
-        }
 
         if (this.isComplexField && this.complexFieldDefinition.FieldType === 'OwnershipLookup') {
             ft.Operators = ft.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
@@ -1313,7 +1293,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     getFieldsDropdownClass(): string {
-        if (this.isRuleResults || this.isComplexField) {
+        if (this.allFieldsDropdown.length <= 1) {
             return "ig-dropdown-hide-groups";
         }
         else {

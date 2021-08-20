@@ -35,6 +35,7 @@ namespace d360.web.Models
         public string AssetName { get; set; }
         public string AssetTypeName { get; set; }
 
+        public List<dynamic> Scores { get; set; }
         public int columns { get; set; }
         public List<DetailReadOnlyRowModel> rows { get; set; }
     }

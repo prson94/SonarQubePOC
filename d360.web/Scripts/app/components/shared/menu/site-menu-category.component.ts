@@ -1,4 +1,4 @@
-﻿import { Input, Component, ChangeDetectionStrategy, Output, EventEmitter, AfterViewInit, ViewChild } from '@angular/core';
+﻿import { Input, Component, ChangeDetectionStrategy, Output, EventEmitter, AfterViewInit, ViewChild, HostListener, OnChanges, SimpleChanges } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../base.component';
 import { SiteMenuService } from '../../../services/site-menu.service';
@@ -15,7 +15,7 @@ import { forEach } from 'core-js/core/array';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class SiteMenuCategoryComponent extends BaseComponent implements AfterViewInit {
+export class SiteMenuCategoryComponent extends BaseComponent implements AfterViewInit, OnChanges {
 
     @Input() url: string;
     @Input() title: string;
@@ -25,9 +25,24 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     @Input() expanded: boolean;
     @Input() imageUrl: string;
     @Input() countData: any[];
+    @Input() isActive: boolean = false;
 
     @Output() clearClick = new EventEmitter();
     @Output() clearSearchesEvent = new EventEmitter();
+    @Output() activeItemChanged = new EventEmitter();
+
+    @HostListener('document:click', ['$event'])
+    documentClick(event: MouseEvent) {
+        if (this.menu) {
+            this.menu.isActiveItem = false;
+        }        
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        if (!this.isActive && this.menu) {
+            this.menu.isActiveItem = false;
+        }
+    }
 
     public showing: boolean = false;
     private viewReady: boolean;
@@ -130,7 +145,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
 
         }
     }
-    navigateToUrl(url) {
+    navigateToUrl(url) {        
         if (url) {
             this.router.navigateByUrl(url);
         }
@@ -143,8 +158,10 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         }
     }
     show(item) {
-        if (this.menu && this.menu.isActiveItem)
+        this.activeItemChanged.emit({ item: this });
+        if (this.menu && this.menu.isActiveItem) {            
             return;
+        }
         this.positionMenu(null, item);
     }
 
@@ -156,7 +173,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
             let submenu = item.children[0].nextElementSibling;
             if (submenu) {
                 var dims = item.getBoundingClientRect();
-                this.menu.isActiveItem = true;
+                this.menu.isActiveItem = true;                
                 submenu.style.zIndex = ++SiteNav.zindex;
                 submenu.style.top = dims.top + 'px';
                 submenu.style.left = item.offsetWidth + 'px';

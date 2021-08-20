@@ -2180,19 +2180,19 @@ for json path";
             List<string> simpleFilterWhereConditions = new List<string>();
             List<string> whereConditions = new List<string>();
 
-            parameters.Add("@evaluatedAssetUid", evaluatedAssetUid);
-            parameters.Add("@owningAssetUid", owningAssetUid);
+            parameters.Add("@evaluatedAssetUid", evaluatedAssetUid, DbType.Guid, ParameterDirection.Input);
+            parameters.Add("@owningAssetUid", owningAssetUid, DbType.Guid, ParameterDirection.Input);
 
             if (effectiveDateStart.HasValue)
             {
                 whereConditions.Add("R.EffectiveDate >= @effectiveStartDate");
-                parameters.Add("@effectiveStartDate", effectiveDateStart.Value);
+                parameters.Add("@effectiveStartDate", effectiveDateStart.Value, DbType.DateTime2, ParameterDirection.Input);
             }
             
             if (effectiveDateEnd.HasValue)
             {
                 whereConditions.Add("R.EffectiveDate <= @effectiveEndDate");
-                parameters.Add("@effectiveEndDate", effectiveDateEnd.Value);
+                parameters.Add("@effectiveEndDate", effectiveDateEnd.Value, DbType.DateTime2, ParameterDirection.Input);
             }
 
             if (!string.IsNullOrEmpty(_filter))
@@ -2210,8 +2210,8 @@ for json path";
 
             if (!string.IsNullOrEmpty(_simpleFilter))
             {
-                parameters.Add("@simpleFilterLike", Company.GetEscapedFilterString(_simpleFilter, true));
-                parameters.Add("@simpleFilter",_simpleFilter.ToLower());
+                parameters.Add("@simpleFilterLike", Company.GetEscapedFilterString(_simpleFilter, true), DbType.String, ParameterDirection.Input);
+                parameters.Add("@simpleFilter",_simpleFilter.ToLower(), DbType.String, ParameterDirection.Input);
                  
                 simpleFilterWhereConditions.Add("R.EffectiveDate like @simpleFilterLike");
                 simpleFilterWhereConditions.Add("R.FailCount like @simpleFilterLike");
@@ -2300,8 +2300,8 @@ for json path";
             result.pageNum = pageNum;
             result.pageSize = pageSize;
 
-            parameters.Add("@pageNum", result.pageNum);
-            parameters.Add("@pageSize", result.pageSize);
+            parameters.Add("@pageNum", result.pageNum, DbType.Int32, ParameterDirection.Input);
+            parameters.Add("@pageSize", result.pageSize, DbType.Int32, ParameterDirection.Input);
 
             var cteQuery = @"with R as (
 	select	R.Uid as ResultUid,
@@ -2342,7 +2342,7 @@ select	count(1)
 from	R
 {whereStatement}";
 
-            result.total = Company.Query<int>(countQuery, parameters, ApiTimeout).FirstOrDefault();
+            result.total = Company.Query<int>(countQuery, parameters).Single();
 
             var dupeColumnReference = "";
             if (includeDuplicateFlag)

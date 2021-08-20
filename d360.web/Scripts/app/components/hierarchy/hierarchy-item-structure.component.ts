@@ -23,6 +23,8 @@ import { Filters } from '../assets-grid/advanced-filtering/advanced-filtering.mo
 import { forkJoin, Observable, Subscription } from 'rxjs';
 import { DataProfileService } from '../../services/dataprofile.service';
 
+declare var CurrentResourceID;
+
 @Component({
     selector: 'd3s-hierarchy-item-structure',
     providers: [
@@ -75,6 +77,12 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     filterColumns: string[] = ['Path'];
     totalRecords: number = 0;
     totalRecordsFiltered: number = 0;
+    linkColumnIndex: number = -1;
+    readonly excludedLinkColumnTypes = [
+        'Tag',
+        'OwnershipLookup',
+        'Boolean'
+    ];
 
     @ViewChild("treeTable", { static: false }) treeTable: TreeTable;
     @ViewChild("inputBox", { static: false }) filterText: any;
@@ -86,6 +94,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     private sidePanelOpen: boolean = false;
     private sidePanelLoading: boolean = false;
     private sidePanelTab: string;
+    private sidePanelStorageKey: string;
+
     private hasProfiling: boolean = false;
     dataProfile: any;
 
@@ -136,6 +146,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 this.showDiagram = false;
                 break;
         }
+
+        this.sidePanelStorageKey = 'list_' + AssetTypeClass[this.assetTypeClass] + '_' + CurrentResourceID;
 
         this.routeSub = this.route.params.subscribe((params) => {
             this.objectTypeId = +params['typeId'];
@@ -286,6 +298,13 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 this.fields = result.Fields;
                 var filterfields = this.fields.filter(function (item) { return item.apiName && item.name.startsWith("Field") });
                 this.filterColumns = this.filterColumns.concat(filterfields.map(({ name }) => name));
+
+                for (let i = 0; i < this.columns.length; i++) {
+                    if (this.excludedLinkColumnTypes.findIndex((e) => e === (this.columns[i] as any).fieldType) === -1) {
+                        this.linkColumnIndex = i;
+                        break;
+                    }
+                }
             }
         );
     }
@@ -309,7 +328,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 { title: 'Open in New Tab' },
             ];
 
-            if (this.displayChildAdd(levelNumber)) {
+            if (this.displayChildAdd(levelNumber) && this.hasAddAssetPermissions()) {
                 root[this.menuKey].push({ title: 'Add Child' });
             }
 
@@ -613,6 +632,9 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 this.totalRecords += result.total;
                 this.hierarchy = result.items;
                 this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1, undefined);
+                if (this.treeNodeArray.length > 0) {
+                    this.selectAsset(this.treeNodeArray[0]);
+                }
                 this.buildScoreAllocationThresholds();
                 this.isLoading = false;
             });

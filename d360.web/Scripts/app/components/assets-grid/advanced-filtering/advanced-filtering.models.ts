@@ -6,6 +6,11 @@ import { ScoreTypeAllocation } from "../../../models/metrics.model";
 import { Operator } from "../../../models/operator.model";
 import { RelationshipType } from "../../../models/relationship.model";
 
+export class AdvancedFilterFieldType extends FieldTypeAPIModelField {
+    RemovePopulatedOperator?: boolean = false;
+    ValueList?: SelectItem[] = null;
+}
+
 export class FieldTypeAPIModelFieldCondition extends FieldTypeAPIModelField {
     Values: SelectItem[];
     Operators: SelectItem[];

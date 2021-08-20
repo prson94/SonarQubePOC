@@ -16,8 +16,10 @@ import { SiteMenuService } from '../../services/site-menu.service';
 import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { forkJoin } from 'rxjs';
+import { AssetTypeClass } from '../../models/asset.model';
 
 declare var CompanySettings;
+declare var CurrentResourceID;
 
 @Component({
     selector: 'd3s-artifact-item',
@@ -37,6 +39,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
     private showDataProfile: boolean = false;
     private dataProfile: any;
     private sidePanelOpen: boolean = false;
+    private sidePanelStorageKey;
 
     constructor(
         private route: ActivatedRoute,
@@ -93,6 +96,9 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
                     this.artifact = artifact;
 
                     this.buildSecondaryNavigation(this.artifact.Uid, null, null, null, null, null, null, this.artifact.DisplayValue);
+
+
+                    this.sidePanelStorageKey = 'detail_' + AssetTypeClass[artifact.Class] + '_' + CurrentResourceID;
 
                     this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
                     this.dataProfileService.getDataProfiles(this.artifact.Uid).subscribe(

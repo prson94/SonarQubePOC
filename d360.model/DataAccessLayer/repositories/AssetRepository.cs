@@ -895,7 +895,11 @@ namespace d360.model.DataAccessLayer
                     {
                         var fieldType = allFieldTypes.FirstOrDefault(x => x.ID == fieldTypeId);
 
-                        if (fieldType != null && fieldType.Type == "Path") includeAssetPathInCount = true;
+                        if (fieldType != null && fieldType.Type == "Path")
+                        {
+                            includeSegments = true;
+                            includeAssetPathInCount = true;
+                        }
                     }
 
                     if (includeOnlyListableFields || includeFieldsList.Any())

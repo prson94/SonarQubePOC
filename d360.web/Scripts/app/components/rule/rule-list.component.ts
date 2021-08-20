@@ -19,6 +19,9 @@ import { AssetGridObject } from '../assets-grid/asset-grid.model';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { forkJoin } from 'rxjs';
+import { AssetTypeClass } from '../../models/asset.model';
+
+declare var CurrentResourceID;
 
 @Component({
     selector: 'd3s-rule-list',
@@ -35,9 +38,11 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     ruleType: RuleType;
 
     private selection: any = null;
+    showEditor: boolean = false;
     private sidePanelOpen: boolean = false;
     private sidePanelLoading: boolean = false;
     private sidePanelTab: string;
+    private sidePanelStorageKey: string;
     private hasProfiling: boolean = false;
     dataProfile: any;
 
@@ -81,6 +86,8 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                     this.gridObject = RuleType.AsGridObject(this.ruleType);
 
                     this.setObjectInfo('RuleType', this.ruleType.ID);
+
+                    this.sidePanelStorageKey = 'list_' + AssetTypeClass[AssetTypeClass.Rule] + '_' + CurrentResourceID;
                     
                     this.headerBreadcrumbService.getFolderTitle('#Data Quality').then((res) => {
                         this.headerBreadcrumbService.clearBreadcrumbs();

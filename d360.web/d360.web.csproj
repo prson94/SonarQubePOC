@@ -764,8 +764,8 @@
     <Content Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.html" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
-    <Content Include="Scripts\app\components\gallery\gallery.back-button.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.input-group.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.modal.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.multi-input-field.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.radio-button.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.property-group.component.html" />
@@ -988,8 +988,8 @@
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.back-button.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.input-group.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.modal.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.multi-input-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.radio-button.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.propery-group.component.ts" />
@@ -1322,6 +1322,7 @@
     <Content Include="Scripts\tsconfig.aot.json" />
     <Content Include="Scripts\tsconfig.json" />
     <Content Include="Scripts\app\components\shared\dataprofile\dataprofile.less" />
+    <Content Include="Scripts\app\components\shared\user\user-list.component.less" />
     <Content Include="Scripts\app\components\shared\dataprofile\match-detection.less" />
     <Content Include="Scripts\app\components\shared\sidepanel\side-panel.component.less" />
     <None Include="Web.Debug.config">

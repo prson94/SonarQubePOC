@@ -412,6 +412,15 @@ namespace d360.web.Controllers.V2
             foreach (var row in query)
             {
                 rowIndex++;
+                
+                if(row.actionObject == "Predicate" && row.field == "Functional Type")
+                {
+                    row.newValue = getPredicateTypeStringValue(row.newValue);
+                    if(row.previousValue != null)
+                    {
+                        row.previousValue = getPredicateTypeStringValue(row.previousValue);
+                    }
+                }
 
                 document.SetCellValue(rowIndex, 1, row.resourceName);
                 document.SetCellValue(rowIndex, 2, (((DateTime)row.date)));
@@ -435,6 +444,16 @@ namespace d360.web.Controllers.V2
 
 
             return document;
+        }
+
+        private string getPredicateTypeStringValue(string type)
+        {
+            string predicateType = "";
+            if(Enum.TryParse(type, out PredicateType pType))
+            {
+                predicateType = pType.ToString();
+            }
+            return predicateType;
         }
 
         private string getBaseAuditQueryForId(SystemObjects type, bool auditingByType = false)

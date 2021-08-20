@@ -71,7 +71,7 @@ namespace d360.model.helpers
             {
                 allowedDefaultFields.Clear();
                 allowedDefaultFields.Add(new DefaultFilter("FirstName", "gr.FirstName + ' ' + gr.LastName", SqlFieldType.Text));
-                allowedDefaultFields.Add(new DefaultFilter("OwnedItemCount", "OC.OwnedItemCount", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("OwnedItemCount", "OC.OwnedItemCount", SqlFieldType.Number));
                 allowedDefaultFields.Add(new DefaultFilter("State", @"(CASE gr.state 
                     WHEN 1 THEN 'Active'
                     WHEN 2 THEN 'InActive'

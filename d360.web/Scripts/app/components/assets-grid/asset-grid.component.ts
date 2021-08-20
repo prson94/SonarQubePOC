@@ -85,12 +85,19 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     scoreAllocations: GridScoreAllocation[] = [];
     hasProfiling: boolean = false;
     @Output() hasProfilingChange = new EventEmitter<boolean>();
+    @Output() showEditorChange = new EventEmitter<boolean>();
 
     showDelete: boolean = false;
     showEditor: boolean = false;
     isLoading: boolean = false;
     isDefinitionLoaded: boolean = false;
     hasNoListableColumns: boolean = false;
+    linkColumnIndex: number = -1;
+    readonly excludedLinkColumnTypes = [
+        'Tag',
+        'OwnershipLookup',
+        'Boolean'
+    ];
 
     selected: any = null;
     itemUrl: string;
@@ -256,6 +263,13 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 }
                 else {
                     this.hasNoListableColumns = false;
+
+                    for (let i = 0; i < this.columns.length; i++) {
+                        if (this.excludedLinkColumnTypes.findIndex((e) => e === (this.columns[i] as any).fieldType) === -1) {
+                            this.linkColumnIndex = i;
+                            break;
+                        }
+                    }
                 }
 
                 setTimeout(() => this.showAssetListPage(), 3000);
@@ -484,11 +498,15 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     closeEditor() {
         this.showEditor = false;
+        this.showEditorChange.emit(false);
     }
 
     add() {
         this.selected = null;
         this.showEditor = true;
+        this.showEditorChange.emit(true);
+        this.selectedChange.emit(null);
+
     }
 
     export(listableOnly) {
@@ -525,6 +543,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         this.getData();
         this.isLoading = false;
         this.showEditor = false;
+        this.showEditorChange.emit(false);
         this.changeDetectorRef.markForCheck();
     }
 
@@ -619,6 +638,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     private onEdit(item) {
         this.selected = item;
         this.showEditor = true;
+        this.showEditorChange.emit(true);
         this.changeDetectorRef.markForCheck();
     }
 

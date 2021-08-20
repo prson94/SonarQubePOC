@@ -1,4 +1,4 @@
-﻿<li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" (mouseenter)="show(item); clearSearches(null, item);" (mouseleave)="hide(item);" (click)="navigateToUrl(url)" style="cursor: pointer;">
+﻿<li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" (mouseenter)="show(item); clearSearches(null, item);" (click)="navigateToUrl(url)" style="cursor: pointer;">
     <div class="menu-category-box">
         <img class="d3s-gov-icon" *ngIf="rootIconName && rootIconName.indexOf('/Content') != -1" [src]="rootIconName" />
         <i *ngIf="rootIconName && rootIconName.indexOf('/Content') == -1" [class]="'fa ' + rootIconName"></i>
@@ -26,10 +26,10 @@
             <div class="row megamenu-items" [ngStyle]="{'max-height': getMaxHeight()}">
                 <div class="col s12 megamenu-items-container" *ngFor="let item of visibleMenuItems | simpleSearch: searchText">
                     <ul class="menu-group">
-                        <d3s-site-menu-mega-item [category]="menu.MenuID" [item]="item" [level]="0" [searchText]="searchText" [(active)]="menu.isActiveItem" [count]="item.count"></d3s-site-menu-mega-item>
+                        <d3s-site-menu-mega-item [category]="menu.MenuID" [item]="item" [level]="0" [searchText]="searchText" [(active)]="menu.isActiveItem" [count]="item.count" (activeChange)="activeItemChanged.emit();"></d3s-site-menu-mega-item>
                     </ul>
                 </div>
             </div>
         </div>
     </div>
-</li>        
+</li>       

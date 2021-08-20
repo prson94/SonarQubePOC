@@ -18,6 +18,8 @@ import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component
 import { AssetGridObject } from '../assets-grid/asset-grid.model';
 import { DataProfileService } from '../../services/dataprofile.service';
 
+declare var CurrentResourceID;
+
 @Component({
     selector: 'd3s-artifact-list',
     templateUrl: './artifact-list.component.html',
@@ -26,20 +28,23 @@ import { DataProfileService } from '../../services/dataprofile.service';
 
 export class ArtifactListComponent extends AssetGridBaseComponent implements OnInit, OnDestroy {
 
-    private gridObject: AssetGridObject;
-    private artifactType: ArtifactType;
-    private artifactTypeHierarchy: ArtifactType[];
-    private sub: any;
-    private currentAreaNameSubscription: any;
-    private navigationItemsSubs: Subscription[] = [];
-    private currentAreaName: string;
+    gridObject: AssetGridObject;
+    artifactType: ArtifactType;
+    artifactTypeHierarchy: ArtifactType[];
+    sub: any;
+    currentAreaNameSubscription: any;
+    navigationItemsSubs: Subscription[] = [];
+    currentAreaName: string;
 
-    private selection: any = null;
-    private sidePanelOpen: boolean = false;
-    private sidePanelLoading: boolean = false;
-    private sidePanelTab: string;
-    private hasProfiling: boolean = false;
+    selection: any = null;
+    showEditor: boolean = false;
+    sidePanelOpen: boolean = false;
+    sidePanelLoading: boolean = false;
+    sidePanelTab: string;
+    sidePanelStorageKey: string;
+    hasProfiling: boolean = false;
     dataProfile: any;
+    
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -56,6 +61,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         this.sub = this.route.params.subscribe(params => {
             let artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
 
+            
             this.isLoading = true;
             this.artifactTypeHierarchy = [];
             this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', artifactTypeId);
@@ -71,6 +77,8 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
                         folderName = '#Technical';
                         this.areaLink = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
                     }
+
+                    this.sidePanelStorageKey = 'list_' + AssetTypeClass[artifactType.Class] + '_' + CurrentResourceID;
 
                     this.headerBreadcrumbService.getFolderTitle(folderName).then((res) => {
                         this.headerBreadcrumbService.clearBreadcrumbs();

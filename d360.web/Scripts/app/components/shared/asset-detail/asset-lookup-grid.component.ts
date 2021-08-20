@@ -18,13 +18,14 @@ declare var CurrentResourceID;
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class AssetLookupGridComponent extends BaseComponent implements OnDestroy {
+export class AssetLookupGridComponent extends BaseComponent implements OnDestroy, OnInit {
     @Input() data: LookupGrid;
     @Input() field: DetailField;
     @Input() hideFooter = false;
     @Input() hideHeader = false;
     @Input() hideFilter = true;
     @Input() assetUid: string = '';
+    @Input() isSidePanel: boolean = false;
 
     isReferenceListFromRelationship = false;
     showDescription = false;
@@ -54,7 +55,11 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         private cdRef: ChangeDetectorRef
     ) {
         super();
-        this.showAdvancedFilterField = !this.router.url.startsWith("/sidebar/visualization/");
+
+    }
+
+    ngOnInit() {
+        this.showAdvancedFilterField = !this.router.url.startsWith("/sidebar/visualization/") && !this.isSidePanel;
         this.areFiltersLoaded = true;
     }
 
