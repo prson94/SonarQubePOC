@@ -272,10 +272,26 @@
                         <ng-container *ngTemplateOutlet="regExpTemplate"></ng-container>
                     </div>
                 </ig-property-group>
+
+                <ig-property-group *ngIf="showSampleDistribution"
+                                   [expanded]="true"
+                                   [title]="'Sample Distribution'"
+                                   [shouldBePadded]="false"
+                                   [showHeaderLine]="false">
+                    <div readonly class="group">
+                        <ng-container *ngTemplateOutlet="sampleDistributionTemplate"></ng-container>
+                    </div>
+                </ig-property-group>
             </div>
         </ng-container>
     </div>
 </div>
+
+
+<ng-template #sampleDistributionTemplate>
+    <div id="sampleChart"></div>
+    <div class="sampleChart x-label">{{sampleChartXLabel}}</div>
+</ng-template>
 
 <ng-template #sampleCountTooltip>
     <span *ngIf="dataProfile.totalCount" class="tooltip-icon">
