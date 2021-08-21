@@ -30,6 +30,18 @@ export class AssetDeleteEditorComponent extends BaseComponent {
         this.theDeleteCallback = this.deleteAsset.bind(this);
     }
 
+    private getDisplayValue(): string {
+        if (this.displayValue && this.displayValue !== "ERROR:KEY_FIELDS_NULL") {
+            return `[${this.displayValue}]`;
+        }
+        return null;
+    }
+
+    public getPrompt(): string {
+        const value = this.getDisplayValue() ?? "the selected item";
+        return `Are you sure you want to delete ${value} ?`;
+    }
+
     public deleteAsset(id: number): void {
         this.assetService.deleteAsset(this.assetTypeUid, this.uid)
             .subscribe(

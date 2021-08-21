@@ -2,6 +2,6 @@
                  [callback]="theDeleteCallback"
                  [itemId]="0"
                  method="callback"
-                 [prompt]="'Are you sure you want to delete ' +(displayValue ? ('['+ displayValue + ']') : 'the selected item') +'?'" 
+                 [prompt]="getPrompt()" 
                  (onCancel)="onCancel.emit();">
 </d3s-delete-form>
