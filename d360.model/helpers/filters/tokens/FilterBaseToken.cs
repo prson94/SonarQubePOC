@@ -1,6 +1,5 @@
 ﻿using d360.core;
 using d360.core.entities;
-using d360.core.enums;
 using d360.model.helpers.filters.program;
 using System;
 using System.Collections.Generic;
@@ -31,7 +30,7 @@ namespace d360.model.helpers.filters
         {
             get
             {
-                return defaultFilter == null ? fieldType.Type.ToLower() : defaultFilter.SqlFieldType.ToString().ToLower();
+                return defaultFilter == null ? fieldType.Type.ToLower(CultureInfo.InvariantCulture) : defaultFilter.SqlFieldType.ToString().ToLower(CultureInfo.InvariantCulture);
             }
         }
 
@@ -104,7 +103,7 @@ namespace d360.model.helpers.filters
             {
                 if (fieldType.LookupObjectID == null)
                 {
-                    throw new Exception("Lookup field type is missing LookupObjectID value!");
+                    throw new FilterExpressionParserException("Lookup field type is missing LookupObjectID value!");
                 }
                 this.isLookupField = true;
                 if (skipLookupCheck)
@@ -208,7 +207,9 @@ namespace d360.model.helpers.filters
 
                     int lookupValue = this.dataProvider.GetFieldLookupValue(lookupObjectType, lookupObjectId, fieldTypeIdForLookupValue, value.ToString());
                     if (lookupValue <= 0)
-                        throw new Exception($"Invalid lookup value '{value}' for field '{field}'");
+                    {
+                        throw new FilterExpressionParserException($"Invalid lookup value '{value}' for field '{field}'");
+                    }
 
                     if (!isFieldFromRel)
                     {
@@ -282,7 +283,7 @@ namespace d360.model.helpers.filters
         protected IFieldValueValidator GetValueValidator()
         {
             string ft = defaultFilter == null ? fieldType.Type : defaultFilter.SqlFieldType.ToString();
-            switch (ft.ToLower())
+            switch (ft.ToLowerInvariant())
             {
                 case "number":
                 case "counter":

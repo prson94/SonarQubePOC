@@ -80,7 +80,7 @@ namespace d360.model.helpers.filters
 
             if (!new[] { "eq", "ne" }.Contains(@operator))
             {
-                throw new Exception($"Operator '{@operator}' is not valid when filtering relationship. Use 'eq' or 'ne'.");
+                throw new FilterExpressionParserException($"Operator '{@operator}' is not valid when filtering relationship. Use 'eq' or 'ne'.");
             }
 
             sqlParams.Add($"@intersectFilter{this.parameterIdx}", Guid.Parse(field));
@@ -168,7 +168,9 @@ namespace d360.model.helpers.filters
                 return SplitFilterCriteriaRelationship.Object;
             }
             else
+            {
                 return SplitFilterCriteriaRelationship.Subject;
+            }
 
         }
 

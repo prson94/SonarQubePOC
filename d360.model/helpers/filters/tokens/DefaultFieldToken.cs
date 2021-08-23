@@ -3,14 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace d360.model.helpers.filters
 {
     public class DefaultFieldToken : FilterBaseToken, IFilterToken
     {
-        IFieldValueValidator fieldValueValidator;
+        readonly IFieldValueValidator fieldValueValidator;
 
         public DefaultFieldToken(IFilterDataProvider fdp, string field, string op, object value, DefaultFilter @default, int? paramIdx = null)
         {
@@ -119,7 +117,7 @@ namespace d360.model.helpers.filters
             {
                 if (!FilterHelpers.IsValidOperatorForFieldType(this.CurrentFieldType, @operator))
                 {
-                    throw new Exception($"Operator '{@operator}' is not valid for '{this.CurrentFieldType}' on field {field}");
+                    throw new FilterExpressionParserException($"Operator '{@operator}' is not valid for '{this.CurrentFieldType}' on field {field}");
                 }
 
                 if (!this.IsNullValue)

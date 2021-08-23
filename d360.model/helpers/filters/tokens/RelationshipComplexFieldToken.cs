@@ -1,17 +1,13 @@
 ﻿using d360.core.entities;
-using d360.core.enums;
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace d360.model.helpers.filters
 {
     public class RelationshipComplexFieldToken : FilterBaseToken, IFilterToken
     {
-        List<FieldType> fieldTypes = new List<FieldType>();
+        readonly List<FieldType> fieldTypes = new List<FieldType>();
 
         public RelationshipComplexFieldToken(IFilterDataProvider fdp, string field, string op, object value, List<FieldType> types)
         {

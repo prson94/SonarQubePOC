@@ -10,7 +10,7 @@ namespace d360.model.helpers
 {
     public class FilterExpressionParser
     {
-        private IFilterDataProvider dataProvider;
+        private readonly IFilterDataProvider dataProvider;
         private List<FieldType> fieldTypes = new List<FieldType>();
         private List<string> fieldColumns = new List<string>();
         private List<int> filteredFieldIDs = new List<int>();
@@ -123,7 +123,7 @@ namespace d360.model.helpers
             try
             {
                 fieldIds = this.filteredFieldIDs;
-                List<IFilterToken> filterTokens = new List<IFilterToken>();
+                
                 sqlParams = new Dictionary<string, object>();
                 if (string.IsNullOrEmpty(filterString))
                 {
@@ -134,7 +134,7 @@ namespace d360.model.helpers
 
                 StringBuilder sb = new StringBuilder();
 
-                filterTokens = Tokenize(filterString);
+                List<IFilterToken> filterTokens = Tokenize(filterString);
 
                 this.LoadRelationshipDataForTokens(filterTokens);
 
@@ -148,6 +148,10 @@ namespace d360.model.helpers
             catch (IndexOutOfRangeException)
             {
                 throw new FilterExpressionParserException("Invalid filter expression: ", new Exception("One or more filter expressions has missing operator or value."));
+            }
+            catch (FilterExpressionParserException ex)
+            {
+                throw new FilterExpressionParserException("Invalid filter expression: " + ex.Message);
             }
             catch (Exception ex)
             {
@@ -241,14 +245,14 @@ namespace d360.model.helpers
 
             if (fieldType != null && disallowedFieldTypes.Contains(fieldType.Type))
             {
-                throw new Exception("Field with name '" + fieldName + "' is not supported (" + fieldType.Type + ")!");
+                throw new FilterExpressionParserException("Field with name '" + fieldName + "' is not supported (" + fieldType.Type + ")!");
             }
 
             if (fieldType == null)
             {
-                if (allowedDefaultFields.Any(x => x.ApiName.ToLower() == fieldName.ToLower()))
+                if (allowedDefaultFields.Any(x => x.ApiName.ToLower(System.Globalization.CultureInfo.InvariantCulture) == fieldName.ToLower()))
                 {
-                    var val = allowedDefaultFields.FirstOrDefault(x => x.ApiName.ToLower() == fieldName.ToLower());
+                    var val = allowedDefaultFields.FirstOrDefault(x => x.ApiName.ToLower(System.Globalization.CultureInfo.InvariantCulture) == fieldName.ToLower());
                     return new DefaultFieldToken(fdp, field, op, value, val, paramIdx);
                 }
                 else if (this.registerTokensAsFields == true)
@@ -267,7 +271,7 @@ namespace d360.model.helpers
                 }
                 else
                 {
-                    throw new Exception("Field with name '" + fieldName + "' does not exist!");
+                    throw new FilterExpressionParserException("Field with name '" + fieldName + "' does not exist!");
                 }
             }
             else
@@ -359,12 +363,12 @@ namespace d360.model.helpers
 
                 if (!Guid.TryParse(token.Field, out intersectUid))
                 {
-                    throw new Exception($"Invalid Relationship Type UID Provided ({token.Field}).");
+                    throw new FilterExpressionParserException($"Invalid Relationship Type UID Provided ({token.Field}).");
                 }
 
                 if (!token.IsNullValue && !Guid.TryParse(token.ValueAsString, out assetUid))
                 {
-                    throw new Exception($"Invalid Asset UID Provided ({token.ValueAsString}).");
+                    throw new FilterExpressionParserException($"Invalid Asset UID Provided ({token.ValueAsString}).");
                 }
 
                 IntersectUids.Add(intersectUid);
@@ -385,7 +389,7 @@ namespace d360.model.helpers
             {
                 if (!intersectTypes.Any(x => x.uid == itUid))
                 {
-                    throw new Exception($"Relationship Type with UID '{itUid.ToString()}' does not exist.");
+                    throw new FilterExpressionParserException($"Relationship Type with UID '{itUid.ToString()}' does not exist.");
                 }
             }
 
@@ -393,7 +397,7 @@ namespace d360.model.helpers
             {
                 if (!filterAssets.Any(x => x.uid == assetUid) && !filterAssetTypes.Any(x => x.uid == assetUid))
                 {
-                    throw new Exception($"Asset with UID '{assetUid.ToString()}' does not exist.");
+                    throw new FilterExpressionParserException($"Asset with UID '{assetUid.ToString()}' does not exist.");
                 }
             }
 

@@ -3,14 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace d360.model.helpers.filters
 {
     public class FilterDataProvider : IFilterDataProvider
     {
-        private ICompanyContext companyContext;
+        private readonly ICompanyContext companyContext;
 
         public FilterDataProvider(ICompanyContext ctx)
         {

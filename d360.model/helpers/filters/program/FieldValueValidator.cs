@@ -1,10 +1,7 @@
 ﻿using d360.core.enums;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace d360.model.helpers.filters.program
 {
@@ -68,9 +65,16 @@ namespace d360.model.helpers.filters.program
             result.Status = true;
 
             bool boolean = false;
-            var stringValue = value.ToString().ToLower().Trim();
-            if (stringValue == "0") stringValue = "false";
-            if (stringValue == "1") stringValue = "true";
+            var stringValue = value.ToString().ToLower(CultureInfo.InvariantCulture).Trim();
+            if (stringValue == "0")
+            {
+                stringValue = "false";
+            }
+
+            if (stringValue == "1")
+            {
+                stringValue = "true";
+            }
 
             if ("true".Contains(stringValue))
             {
@@ -100,7 +104,7 @@ namespace d360.model.helpers.filters.program
             var result = new FieldValueValidatorResult();
             result.Status = true;
 
-            DateTime date = new DateTime();
+            DateTime date;
             if (!DateTime.TryParse(value.ToString().Trim('\''), out date))
             {
                 if (@operator == "ct" || @operator == "nct")

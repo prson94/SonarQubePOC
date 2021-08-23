@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 
 namespace d360.model.helpers.filters.program
 {
-    public class FilterHelpers
+    public static class FilterHelpers
     {
         public static bool IsValidOperatorForFieldType(string fieldType, string operand)
         {
@@ -71,21 +72,21 @@ namespace d360.model.helpers.filters.program
 
         public static string EscapeForSQLLike(string value)
         {
-            char[] escapeChars = new char[] { '%', '_', '^', '[' };
-            string escapedValue = "";
+            char[] escapeChars = new[] { '%', '_', '^', '[' };
+            StringBuilder escapedValue = new StringBuilder();
 
             foreach (char c in value)
             {
                 if (escapeChars.Contains(c))
                 {
-                    escapedValue += $"[{c}]";
+                    escapedValue.Append($"[{c}]");
                 }
                 else
                 {
-                    escapedValue += c;
+                    escapedValue.Append(c);
                 }
             }
-            return escapedValue;
+            return escapedValue.ToString();
         }
 
 
