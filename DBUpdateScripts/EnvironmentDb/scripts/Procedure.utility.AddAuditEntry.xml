@@ -439,6 +439,11 @@ begin
 		insert into @tbl  select 0, 'Inverse', Inverse, 0, 0 from [dbo].[Predicate] where ID = @MainObjectID
 		insert into @tbl  select 0, 'Functional Type', Type, 0, 0 from [dbo].[Predicate] where ID = @MainObjectID
 	end
+  
+  if (@Action = 'Created' and @DependentObject = 'MetricAllocation')
+	begin
+		delete from [reporting].[Global_Audit] where [Object] = 'MetricAllocation' and [ObjectID] = @DependentObjectID;
+	end
 
 	insert into @tbl  
 			select	FieldTypeID, 
@@ -1195,7 +1200,7 @@ begin
 	select	@max = max(ID) from @tbl
 
 	-- test if there is a previous created entry in global audit for this then it cant be a create change to update..
-	if @Action = 'Created' and exists(select 1 from reporting.Global_Audit where [Object] = @DependentObject and [ObjectID] = @DependentObjectID)
+	if (@Action = 'Created' and exists(select 1 from reporting.Global_Audit where [Object] = @DependentObject and [ObjectID] = @DependentObjectID) and (@DependentObject != 'MetricAllocation'))
 	begin
 		set @Action = 'Updated';
 	end
