@@ -270,6 +270,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
         let xAxisStep: number = 0;
         let spacingTop: number = 10;
         let includeStatsWidget: boolean = false;
+        let maxYValue = 0;
         let index: number = 0;
 
         var meanIndex = 0;
@@ -286,6 +287,9 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             categories.push(invalidOutlierLabel);
             data.push(this.invalidCount);
             colors.push(invalidColor);
+            if (this.invalidCount > maxYValue) {
+                maxYValue = this.invalidCount;
+            }
             index++;
         }
 
@@ -293,6 +297,9 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             categories.push(blankNullLabel);
             data.push(this.nullBlankCountTotal);
             colors.push(nullColor);
+            if (this.nullBlankCountTotal > maxYValue) {
+                maxYValue = this.nullBlankCountTotal;
+            }
             index++;
         }
 
@@ -306,6 +313,9 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
                     categories.push(c.key);
                     data.push(c.count);
                     colors.push(validColor);
+                    if (c.count > maxYValue) {
+                        maxYValue = c.count
+                    }
                 });
 
         } else if ((dataProfileType === 'long' || dataProfileType === 'double') && !isNaN(+testCardinality)) {
@@ -348,6 +358,10 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
                 data.push(count);
                 colors.push(validColor);
 
+                if (count > maxYValue) {
+                    maxYValue = count
+                }
+
                 index++;
                 lower = current;
             }
@@ -383,6 +397,11 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
 
                 categories.push(dateString);
                 data.push(count);
+
+                if (count > maxYValue) {
+                    maxYValue = count
+                }
+
                 colors.push(validColor);
                 lower = new Date(current);
             }
@@ -399,6 +418,11 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
                 categories.push(c[i].key);
                 data.push(c[i].count);
                 colors.push(validColor);
+
+                if (c[i].count > maxYValue) {
+                    maxYValue = c[i].count;
+                }
+
                 i++;
             }
         }
@@ -518,7 +542,9 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             chart: {
                 type: 'column',
                 height: 200,
-                spacingTop
+                spacingTop,
+                marginLeft: 0,
+                spacingLeft: 0
             },
             credits: {
                 enabled: false
@@ -529,6 +555,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             },
             xAxis: {
                 categories,
+                minPadding: 0,
+                maxPadding: 0,
                 labels: {
                     enabled: showXAxisLabel,
                     reserveSpace: showXAxisLabel,
@@ -538,6 +566,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             },
             yAxis: {
                 min: 0,
+                max: maxYValue,
                 title: {
                     text: '',
                     reserveSpace: false
