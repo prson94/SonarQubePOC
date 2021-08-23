@@ -461,6 +461,11 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             if (drawStd) {
                 //calculate length of horizonal std dev line
                 let stdLen = (+dataProfile.standardDeviation / interval) * pixelInterval;
+                let drawLeft = false;
+                //figure out if we need to draw on the left
+                if (Math.abs((xPos + stdLen) - (chart.plotLeft + chart.plotWidth)) < 50) {
+                    drawLeft = true;
+                }
 
                 chart.renderer.path([
                     'M', xPos - stdLen, chart.plotTop + 5,
@@ -489,18 +494,20 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
 
                 chart.renderer.text(
                     'Std Dev',
-                    xPos + stdLen + 5,
+                    xPos + ((stdLen + 5) * (drawLeft ? -1 : 1)),
                     chart.plotTop - 5,
                 ).attr({
-                    zIndex: 5
+                    zIndex: 5,
+                    align: drawLeft ? 'right' : 'left'
                 }).add();
 
                 chart.renderer.text(
                     +dataProfile.standardDeviation.toFixed(2),
-                    xPos + stdLen + 5,
+                    xPos + ((stdLen + 5) * (drawLeft ? -1 : 1)),
                     chart.plotTop + 9,
                 ).attr({
-                    zIndex: 5
+                    zIndex: 5,
+                    align: drawLeft ? 'right' : 'left'
                 }).css({
                     color: '#898d99',
                 }).add();
