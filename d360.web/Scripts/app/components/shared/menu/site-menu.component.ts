@@ -332,7 +332,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     getAllCounts(items, arr: any[]) {        
-        if (_.isString(items.Name) && _.isString(items.Url) && items.Url.indexOf('/') != -1) {
+        if (_.isString(items.Name) && _.isString(items.Url) && items.Url.indexOf('/') !== -1) {
             //get count for item
             var id = _.findIndex(arr, function (o) {
                 let currentURL = items.Url.toLowerCase();
