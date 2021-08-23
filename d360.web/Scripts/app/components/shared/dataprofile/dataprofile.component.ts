@@ -396,10 +396,10 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             let max = Math.min(maxSampleCount, this.dataProfile.cardinalityDetail.length);
             let c = this.dataProfile.cardinalityDetail;
             while (i < max) {
-                i++;
                 categories.push(c[i].key);
                 data.push(c[i].count);
                 colors.push(validColor);
+                i++;
             }
         }
 
