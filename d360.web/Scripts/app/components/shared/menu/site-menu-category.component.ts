@@ -4,10 +4,8 @@ import { BaseComponent } from '../base.component';
 import { SiteMenuService } from '../../../services/site-menu.service';
 import { SiteMenu, SiteMenuItem, SiteNav } from '../../../models/site-menu.model';
 import { HeaderActionsService } from '../../../services/header-actions.service';
-import { isString, isArray } from 'util';
 import * as _ from 'lodash';
 import { SearchFieldComponent } from '../controls/search-field/search-field.component';
-import { forEach } from 'core-js/core/array';
 
 @Component({
     selector: 'd3s-site-menu-category',
@@ -197,7 +195,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     }
 
     getAllCounts(items, arr: any[]) {
-        if (isString(items.Name) && isString(items.Url) && items.Url.indexOf('/') != -1) {
+        if (_.isString(items.Name) && _.isString(items.Url) && items.Url.indexOf('/') != -1) {
             //get count for item
             var id = _.findIndex(arr, function (o) {
                 let currentURL = items.Url.toLowerCase();
@@ -214,7 +212,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         }
 
         //check if sub items exist
-        if (isArray(items.Items)) {
+        if (_.isArray(items.Items)) {
             //recursively check sub items
             items.Items.forEach((item) => this.getAllCounts(item, arr));
         }

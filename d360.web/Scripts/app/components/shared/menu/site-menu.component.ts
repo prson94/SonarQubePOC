@@ -8,7 +8,6 @@ import { SiteMenuService } from '../../../services/site-menu.service';
 import { SiteMenu, SiteMenuItem, SiteMenuModel, NavigationState } from '../../../models/site-menu.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import * as _ from 'lodash';
-import { isString, isArray } from 'util';
 import { SiteMenuCategoryComponent } from './site-menu-category.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from "../../../static/string-constants";
@@ -333,7 +332,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     getAllCounts(items, arr: any[]) {        
-        if (isString(items.Name) && isString(items.Url) && items.Url.indexOf('/') != -1) {
+        if (_.isString(items.Name) && _.isString(items.Url) && items.Url.indexOf('/') != -1) {
             //get count for item
             var id = _.findIndex(arr, function (o) {
                 let currentURL = items.Url.toLowerCase();
@@ -350,7 +349,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         }
 
         //check if sub items exist
-        if (isArray(items.Items)) {
+        if (_.isArray(items.Items)) {
             //recursively check sub items
             items.Items.forEach((item) => this.getAllCounts(item, arr));
         }
