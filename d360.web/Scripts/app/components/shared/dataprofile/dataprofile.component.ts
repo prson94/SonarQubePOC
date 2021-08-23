@@ -399,7 +399,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
                 data.push(count);
 
                 if (count > maxYValue) {
-                    maxYValue = count
+                    maxYValue = count;
                 }
 
                 colors.push(validColor);
