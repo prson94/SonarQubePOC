@@ -45,7 +45,7 @@ namespace d360.model.helpers.filters
 
             if (!new[] { "eq", "ne" }.Contains(@operator))
             {
-                throw new Exception($"Operator '{@operator}' is not valid when filtering relationship. Use 'eq' or 'ne'.");
+                throw new FilterExpressionParserException($"Operator '{@operator}' is not valid when filtering relationship. Use 'eq' or 'ne'.");
             }
 
             var condition = @operator == "eq" ? " exists" : " not exists";

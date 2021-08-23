@@ -250,9 +250,9 @@ namespace d360.model.helpers
 
             if (fieldType == null)
             {
-                if (allowedDefaultFields.Any(x => x.ApiName.ToLower(System.Globalization.CultureInfo.InvariantCulture) == fieldName.ToLower()))
+                if (allowedDefaultFields.Any(x => x.ApiName.ToLowerInvariant() == fieldName.ToLowerInvariant()))
                 {
-                    var val = allowedDefaultFields.FirstOrDefault(x => x.ApiName.ToLower(System.Globalization.CultureInfo.InvariantCulture) == fieldName.ToLower());
+                    var val = allowedDefaultFields.FirstOrDefault(x => x.ApiName.ToLowerInvariant() == fieldName.ToLowerInvariant());
                     return new DefaultFieldToken(fdp, field, op, value, val, paramIdx);
                 }
                 else if (this.registerTokensAsFields == true)

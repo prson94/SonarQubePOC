@@ -35,7 +35,7 @@ namespace d360.model.helpers.filters.program
             bool hasApostrophe = value.ToString().First() == '\'' && value.ToString().Last() == '\'';
             if (!hasApostrophe && !(type == "number" || type == "decimal" || type == "boolean" || type == "score" || type == "counter"))
             {
-                throw new Exception("Text values should be placed within quotations.");
+                throw new FilterExpressionParserException("Text values should be placed within quotations.");
             }
         }
 
@@ -51,7 +51,7 @@ namespace d360.model.helpers.filters.program
                 case "le": return " <= ";
                 case "ct": return " like ";
                 case "nct": return " not like ";
-                default: throw new Exception($"Invalid comparison operator '{value}'");
+                default: throw new FilterExpressionParserException($"Invalid comparison operator '{value}'");
             }
         }
 
@@ -61,7 +61,7 @@ namespace d360.model.helpers.filters.program
             {
                 case "eq": return " is null";
                 case "ne": return " is not null";
-                default: throw new Exception($"Invalid comparison operator '{value}'");
+                default: throw new FilterExpressionParserException($"Invalid comparison operator '{value}'");
             }
         }
 
@@ -96,7 +96,7 @@ namespace d360.model.helpers.filters.program
             {
                 case "and": return " and ";
                 case "or": return " or ";
-                default: throw new Exception($"Invalid logical operator '{value}'");
+                default: throw new FilterExpressionParserException($"Invalid logical operator '{value}'");
             }
         }
     }

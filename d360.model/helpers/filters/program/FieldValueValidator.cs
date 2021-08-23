@@ -144,7 +144,7 @@ namespace d360.model.helpers.filters.program
         {
             var result = new FieldValueValidatorResult();
             result.Status = true;
-            DateTime date = new DateTime();
+            DateTime date;
             if (!DateTime.TryParse(value.ToString().Trim('\''), out date))
             {
                 if (@operator == "ct" || @operator == "nct")
