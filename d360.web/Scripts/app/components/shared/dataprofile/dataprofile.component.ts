@@ -314,7 +314,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
                     data.push(c.count);
                     colors.push(validColor);
                     if (c.count > maxYValue) {
-                        maxYValue = c.count
+                        maxYValue = c.count;
                     }
                 });
 
@@ -359,7 +359,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
                 colors.push(validColor);
 
                 if (count > maxYValue) {
-                    maxYValue = count
+                    maxYValue = count;
                 }
 
                 index++;
