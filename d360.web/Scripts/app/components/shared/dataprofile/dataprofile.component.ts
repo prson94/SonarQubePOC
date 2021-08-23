@@ -418,6 +418,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
         };
 
         let renderStatsWidget = function (chart) {
+            let strokeColor = '#bdbfc6';
             //include Std Dev bar if available
             let drawStd = dataProfile.standardDeviation != null && !isNaN(+dataProfile.standardDeviation);
 
@@ -433,7 +434,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
                 'M', xPos, chart.plotTop + chart.plotHeight,
                 'L', xPos, chart.plotTop + 5
             ]).attr({
-                stroke: nullColor,
+                stroke: strokeColor,
                 'stroke-width': 1
             }).add();
 
@@ -465,7 +466,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
                     'M', xPos - stdLen, chart.plotTop + 5,
                     'L', xPos + stdLen, chart.plotTop + 5
                 ]).attr({
-                    stroke: nullColor,
+                    stroke: strokeColor,
                     'stroke-dasharray': '2,2',
                     'stroke-width': 1
                 }).add();
@@ -474,7 +475,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
                     'M', xPos - stdLen, chart.plotTop - 5,
                     'L', xPos - stdLen, chart.plotTop + 15
                 ]).attr({
-                    stroke: nullColor,
+                    stroke: strokeColor,
                     'stroke-width': 1
                 }).add();
 
@@ -482,7 +483,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
                     'M', xPos + stdLen, chart.plotTop - 5,
                     'L', xPos + stdLen, chart.plotTop + 15
                 ]).attr({
-                    stroke: nullColor,
+                    stroke: strokeColor,
                     'stroke-width': 1
                 }).add();
 
