@@ -106,7 +106,6 @@
     <Compile Include="Core\SqlConstants.cs" />
     <Compile Include="FilterParserTests\ComplexFieldsFilteringTests.cs" />
     <Compile Include="FilterParserTests\FieldHelpersTests.cs" />
-    <Compile Include="FilterParserTests\FilterTokenTests.cs" />
     <Compile Include="ExtensionsTests\HttpRequestMessageExtensionsTests.cs" />
     <Compile Include="ExtensionsTests\QueueSourceTests.cs" />
     <Compile Include="FilterParserTests\FieldValidatorsTests.cs" />
