@@ -410,7 +410,8 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     left join fieldlookupvalue flv on flv.fieldtypeid = ft.id and flv.value = trim(Val.Value)
                     where a.uid = @uid 
                     and (ft.LookupObjectType <> '' or ft.LookupObjectType is not null)
-                    and (ft.LookupObjectID <> '' or ft.LookupObjectID is not null)", new { uid = details.UID });
+                    and (ft.LookupObjectID <> '' or ft.LookupObjectID is not null)
+                    and Val.Value is not null and Val.value <> ''", new { uid = details.UID });
 
                 foreach (var ft in fieldTypes)
                 {
