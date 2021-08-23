@@ -39,6 +39,7 @@ namespace igx.UnitTests.FilterExpressionTests
             fieldTypes.Add(new FieldType() { Name = "relationship", ID = 6, Type = "Relationship", LookupObjectType = "IntersectType", LookupObjectID = 1 });
             fieldTypes.Add(new FieldType() { Name = "counter", ID = 7, Type = "Counter" });
             fieldTypes.Add(new FieldType() { Name = "PathField", ID = 10, Type = "Path" });
+
             fieldTypes.ForEach(x =>
             {
                 columns.Add($"F{x.ID}.FormattedValue");

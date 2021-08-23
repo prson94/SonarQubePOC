@@ -85,6 +85,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     scoreAllocations: GridScoreAllocation[] = [];
     hasProfiling: boolean = false;
     @Output() hasProfilingChange = new EventEmitter<boolean>();
+    @Output() showEditorChange = new EventEmitter<boolean>();
 
     showDelete: boolean = false;
     showEditor: boolean = false;
@@ -497,11 +498,15 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     closeEditor() {
         this.showEditor = false;
+        this.showEditorChange.emit(false);
     }
 
     add() {
         this.selected = null;
         this.showEditor = true;
+        this.showEditorChange.emit(true);
+        this.selectedChange.emit(null);
+
     }
 
     export(listableOnly) {
@@ -538,6 +543,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         this.getData();
         this.isLoading = false;
         this.showEditor = false;
+        this.showEditorChange.emit(false);
         this.changeDetectorRef.markForCheck();
     }
 
@@ -632,12 +638,12 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     private onEdit(item) {
         this.selected = item;
         this.showEditor = true;
+        this.showEditorChange.emit(true);
         this.changeDetectorRef.markForCheck();
     }
 
     private onDelete(item) {
-        var path = item['Path'].split('].[');
-        this.deleteName = path[path.length - 1].replace('[', '').replace(']', '');
+        this.deleteName = item['Path'].slice(1,-1);
         this.selected = item;
         this.showDelete = true;
         this.changeDetectorRef.markForCheck();

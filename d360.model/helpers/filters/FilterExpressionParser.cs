@@ -78,10 +78,10 @@ namespace d360.model.helpers
             if (parseType == FilterExpressionParseType.RuleResults)
             {
                 allowedDefaultFields.Clear();
-                allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetClass", "R.Class", SqlFieldType.AssetTypeClass));
-                allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetTypePath", "R.EvaluatedAssetTypePath", SqlFieldType.Text));
-                allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetPath", "R.Segments", SqlFieldType.Xml));
-                allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetDisplayPath", "R.Segments", SqlFieldType.Xml));
+                allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetClass", "E.Class", SqlFieldType.AssetTypeClass));
+                allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetTypePath", "P.Path", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetPath", "E.Segments", SqlFieldType.Xml));
+                allowedDefaultFields.Add(new DefaultFilter("EvaluatedAssetDisplayPath", "E.Segments", SqlFieldType.Xml));
 
                 allowedDefaultFields.Add(new DefaultFilter("EffectiveDate", "R.EffectiveDate", SqlFieldType.Date));
                 allowedDefaultFields.Add(new DefaultFilter("RunDate", "R.RunDate", SqlFieldType.DateTime));
@@ -91,7 +91,7 @@ namespace d360.model.helpers
                 allowedDefaultFields.Add(new DefaultFilter("TotalCount", "R.TotalCount", SqlFieldType.Number));
                 allowedDefaultFields.Add(new DefaultFilter("PassFraction", "R.PassFraction", SqlFieldType.Decimal));
 
-                allowedDefaultFields.Add(new DefaultFilter("Outdated", "R.IsDuplicate", SqlFieldType.Boolean));
+                allowedDefaultFields.Add(new DefaultFilter("Outdated", "coalesce(E.IsDuplicate, R.IsDuplicate)", SqlFieldType.Boolean));
             }
 
             if (parseType == FilterExpressionParseType.RelationshipCustomFields)

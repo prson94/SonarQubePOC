@@ -11,4 +11,5 @@ export class AssetDetailCategoryComponent {
     @Input() assetUID: string;
     @Input() tooltipAlign: string;
     @Input() spacerHeight: string = '32px';
+    @Input() isSidePanel: boolean = false;
 }

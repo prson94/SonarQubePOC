@@ -46,6 +46,7 @@
                              [rows]="rowsPerPage"
                              [rowsPerPageOptions]="defaultPagingOptions"
                              [value]="treeNodeArray"
+                             [metaKeySelection]="true"
                              selectionMode="single"
                              [selection]="selected"
                              (selectionChange)="selectAsset($event)"
@@ -72,7 +73,7 @@
                     <ng-template pTemplate="body"
                                  let-rowNode
                                  let-item="rowData">
-                        <tr [ttSelectableRow]="rowNode">
+                        <tr [ttRow]="rowNode" [ttSelectableRow]="rowNode" (focus)="selectAsset(rowNode.node)">
                             <td class="no-text-overflow" *ngFor="let column of columns; let i = index">
                                 <p-treeTableToggler [rowNode]="rowNode" *ngIf="i === 0"></p-treeTableToggler>
                                 <ng-container *ngIf="i === linkColumnIndex">
@@ -94,7 +95,7 @@
                             </td>
                             <td>
                                 <div>
-                                    <a (click)="linkMenu.toggle($event)" style="padding: 0 14px 0 14px; color: #333">
+                                    <a (click)="selectAsset(rowNode.node);linkMenu.toggle($event)" style="padding: 0 14px 0 14px; color: #333">
                                         <i class="fa fa-ellipsis-v"></i>
                                     </a>
                                     <ig-popup-menu (onSelect)="clickMenuItem($event, rowNode.node)" [items]="item[menuKey]" #linkMenu [tabIndex]="1"></ig-popup-menu>
@@ -128,8 +129,8 @@
                               (saveClick)="save()"
                               (closeClick)="closeEditor();"></d3s-asset-editor>
         </div>
-        <div class="tile tile-detail side-panel" *ngIf="!isLoading">
-            <side-panel (expandedChange)="sidePanelOpen=$event"
+        <div class="tile tile-detail side-panel" *ngIf="!isLoading && (!showEditor || (showEditor && selected != null))">
+            <side-panel [(expanded)]="sidePanelOpen"
                         (selectedPanelChange)="sidePanelTab=$event"
                         [selectedItem]="selected?.data"
                         [panelApplies]="panelApplies"
@@ -149,9 +150,11 @@
                                          [useAccordion]="true"
                                          [shouldBePadded]="false"
                                          [showHeaderLine]="false"
+                                         [showHeader]="true"
                                          [spacerHeight]="'16px'"
                                          [paddingLeft]="'11px'"
                                          [tooltipAlign]="'left'"
+                                         [isSidePanel]="true"
                                          [hasAddRelationshipsPermissions]="false"
                                          [hasModifyRelationshipsPermissions]="false"
                                          [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>

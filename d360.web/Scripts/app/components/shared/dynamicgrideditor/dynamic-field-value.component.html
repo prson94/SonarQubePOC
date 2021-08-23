@@ -63,7 +63,7 @@
     <span *ngSwitchCase="'Color'">
         <span class="ref-list-color" *ngIf="hasColor">
             <span class="ig-colorfield-swatch" [ngStyle]="{'background-color': fieldValue}"></span>
-            <span>{{colorText}}</span>
+            <span [class]="styleClass">{{colorText}}</span>
         </span>
         <span class="ref-list-color" *ngIf="!hasColor">
             <span class="ig-colorfield-swatch empty"></span>
@@ -71,7 +71,7 @@
         </span>
     </span>
     <span *ngSwitchCase="'ListColor'">
-        <d3s-color-display [colorsJSON]="fieldValue"></d3s-color-display>
+        <d3s-color-display [colorsJSON]="fieldValue" [styleClass]="styleClass == null ? 'grid' : styleClass + ' grid'"></d3s-color-display>
     </span>
     <span *ngSwitchCase="'ownershiplookup'">
         <d3s-ownership-list [list]="fieldValue"></d3s-ownership-list>

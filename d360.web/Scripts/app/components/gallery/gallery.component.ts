@@ -21,7 +21,7 @@
 })
 
 export class GalleryComponent implements OnInit {
-    activeControl: string = "back-button";
+    activeControl: string = "number-field";
     controls = [
         { label: "Switch Input", key: "switch", type: "Form" },
         { label: "Button Directive", key: "button", type: "Form" },
@@ -51,7 +51,7 @@ export class GalleryComponent implements OnInit {
         { label: "Search Field", key: "search-field", type: "Govern Components"},
         { label: "Multi Input Field", key: "multi-input-field", type: "Govern Components"},
         { label: "Input Group", key: "input-group", type: "Form"},
-        { label: "Back Button", key: "back-button", type: "Overlay"},
+        { label: "Modal", key: "modal", type: "Overlay" },
     ];
 
     categories: any[] = [];

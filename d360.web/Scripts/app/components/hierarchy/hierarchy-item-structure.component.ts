@@ -328,7 +328,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 { title: 'Open in New Tab' },
             ];
 
-            if (this.displayChildAdd(levelNumber)) {
+            if (this.displayChildAdd(levelNumber) && this.hasAddAssetPermissions()) {
                 root[this.menuKey].push({ title: 'Add Child' });
             }
 

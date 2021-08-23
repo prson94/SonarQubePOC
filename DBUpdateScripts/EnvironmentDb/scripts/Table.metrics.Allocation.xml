@@ -238,7 +238,7 @@ DROP TRIGGER IF EXISTS [metrics].[Allocation_AfterInsert]
     </rollback>
   </changeSet>
 
-  <changeSet author="sDooley" id="Table.metrics.Allocation-Allocation_AfterUpdate-v1">
+  <changeSet author="sDooley" id="Table.metrics.Allocation-Allocation_AfterUpdate-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -251,6 +251,31 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 		
+	declare @action varchar(20);
+	declare @state int;
+	declare @oldState int;
+	select @state = State from inserted;
+	select @oldState = State from deleted;
+	IF (@state = 3 )
+	BEGIN
+	  select @action = 'Delete';
+	END
+	Else IF(@state = 1 and @oldState = 3)
+	BEGIN
+		select @action = 'Add';
+	END
+	else
+	Begin
+		select @action = 'Update';
+	end
+		
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select @action, [queue].WriteIndexXml('', 'MetricAllocation', ID, coalesce(UpdatedBy, 0)), 'MetricAllocation', ID from inserted
+END
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
 	declare @action varchar(20);
 	declare @state int;
 	select @state = State from inserted;
@@ -266,11 +291,6 @@ BEGIN
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
         select @action, [queue].WriteIndexXml('', 'MetricAllocation', ID, coalesce(UpdatedBy, 0)), 'MetricAllocation', ID from inserted
 END
-		]]>
-    </sql>
-    <rollback>
-      <![CDATA[	
-DROP TRIGGER IF EXISTS [metrics].[Allocation_AfterUpdate]
 		]]>
     </rollback>
   </changeSet>

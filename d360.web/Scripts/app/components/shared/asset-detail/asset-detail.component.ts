@@ -31,6 +31,8 @@ export class AssetDetailComponent implements OnChanges {
     @Input() showHeaderLine: boolean = true;
     @Input() spacerHeight: string = '32px';
     @Input() paddingLeft: string;
+    @Input() isSidePanel: boolean = false;
+
     assetUID: string;
     assetTypeUID: string;
     isLoading = false;
@@ -73,11 +75,11 @@ export class AssetDetailComponent implements OnChanges {
         let detailSub = null;
 
         if (this.objectType && this.objectID) {
-            detailSub = this.objectDetailService.getObjectDetail(this.objectID, this.objectType, true);
+            detailSub = this.objectDetailService.getObjectDetail(this.objectID, this.objectType, true, this.showHeader);
         }
 
         if (this.objectType && this.objectUID) {
-            detailSub = this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType, true);
+            detailSub = this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType, true, this.showHeader);
         }
 
         if (detailSub) {
@@ -135,6 +137,12 @@ export class AssetDetailComponent implements OnChanges {
 
                         return 0;
                     });
+
+                    if (this.showHeader && this.model.Scores != null) {
+                        this.model.Scores.forEach((s) => {
+                            this.setThresholdClass(s);
+                        });
+                    }
 
                     this.rows = displayRows;
                     this.loadCategory();
@@ -297,6 +305,19 @@ export class AssetDetailComponent implements OnChanges {
             window.open(url, '_blank');
         } else {
             this.router.navigateByUrl(url);
+        }
+    }
+
+    setThresholdClass(score: any) {
+        if (score != null && score.UpperThreshold != null && score.LowerThreshold != null) {
+            let v = score.Value * 100;
+            if (v <= score.LowerThreshold) {
+                score.Class = 'poor';
+            } else if (v > score.LowerThreshold && v <= score.UpperThreshold) {
+                score.Class = 'average';
+            } else {
+                score.Class = 'good';
+            }
         }
     }
 }
