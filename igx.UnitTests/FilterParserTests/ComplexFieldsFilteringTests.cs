@@ -128,7 +128,7 @@ namespace igx.UnitTests.FilterExpressionTests
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             var result = this.filterParser.Parse(input, out parameters, out _);
-            Assert.True(result == expectedOutput);
+            Assert.True(result == expectedOutput, "Failed:" + result);
             Assert.True(parameters.Count == 0);
         }
 
