@@ -256,7 +256,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
                 selectionElement.style.top = topPosition + "px";
             }
 
-            const fieldSelectionLeftOffset = window.outerWidth - html.getBoundingClientRect().left - 350;
+            const fieldSelectionLeftOffset = window.innerWidth - html.getBoundingClientRect().left - 350;
             let fieldSelectionElement = html.getElementsByClassName("field-selection")[0] as HTMLElement;
             if (fieldSelectionElement) {
                 if (fieldSelectionLeftOffset < 0) {
