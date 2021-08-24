@@ -122,7 +122,7 @@ namespace d360.model.helpers.filters.program
             }
             else
             {
-                value = DateTime.ParseExact(date.ToString(), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+                value = date;
                 if (@operator == "ct" || @operator == "nct")
                 {
                     if (date == date.Date)
