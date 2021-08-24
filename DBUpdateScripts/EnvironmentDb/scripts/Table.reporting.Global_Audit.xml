@@ -42,33 +42,4 @@ END
 		]]>
 	</rollback>
   </changeSet>
-  
-    <changeSet author="sDooley" id="Table.reporting.Global_Audit_AfterDelete-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-CREATE OR ALTER TRIGGER [reporting].[Global_Audit_AfterDelete]
-	ON [reporting].[Global_Audit]
-	AFTER DELETE
-AS
-BEGIN
-	SET NOCOUNT ON;
-		declare @auditID bigint;
-
-		select @auditID = [ID] from deleted where [Object] = 'MetricAllocation';
-
-		DELETE FROM [reporting].[Global_FieldAudit] where [AuditID] = @auditID
-	
-END
-		]]>
-    </sql>
-    <rollback>
-      <![CDATA[	
-DROP TRIGGER IF EXISTS [reporting].[Global_Audit_AfterDelete]
-		]]>
-    </rollback>
-  </changeSet>
-
 </databaseChangeLog>

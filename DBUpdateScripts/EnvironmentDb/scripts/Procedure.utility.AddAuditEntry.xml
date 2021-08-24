@@ -440,9 +440,15 @@ begin
 		insert into @tbl  select 0, 'Functional Type', Type, 0, 0 from [dbo].[Predicate] where ID = @MainObjectID
 	end
   
-  if (@Action = 'Created' and @DependentObject = 'MetricAllocation')
+	if (@Action = 'Created' and @DependentObject = 'MetricAllocation')
 	begin
-		delete from [reporting].[Global_Audit] where [Object] = 'MetricAllocation' and [ObjectID] = @DependentObjectID;
+		declare @deletedAuditIds table ([ID] bigint)
+		delete from [reporting].[Global_Audit] 
+		Output deleted.ID into @deletedAuditIds
+		where [Object] = 'MetricAllocation' and [ObjectID] = @DependentObjectID;
+
+		Delete FA 
+		from [reporting].[Global_FieldAudit] FA inner join @deletedAuditIds DA on FA.AuditID=DA.ID
 	end
 
 	insert into @tbl  
