@@ -13,7 +13,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                     <div class="tile tile-detail">
-                       <d3s-responsibility-relations queryType="A" [id]="assetTypeId" [showAddButton]="false" [showDeleteButton]="showControls" [showEditButton]="showControls"></d3s-responsibility-relations>                        
+                       <d3s-responsibility-relations queryType="A" [uid]="assetTypeUId" [showAddButton]="false" [showDeleteButton]="showControls" [showEditButton]="showControls"></d3s-responsibility-relations>                        
                     </div>
                 </div>
             </div>
@@ -23,7 +23,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 
 export class PermissionsComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
-    assetTypeId: number;    
+    assetTypeUId: string;    
     title: string;
     showControls: boolean;
 
@@ -41,7 +41,7 @@ export class PermissionsComponent extends BaseComponent implements OnInit, OnDes
 
     ngOnInit() {
         this.sub = this.route.params.subscribe((params) => {
-            this.assetTypeId = +params['assetTypeId'];
+            this.assetTypeUId = params['assetTypeUId'];
    
         });
         this.checkSecondaryNavLocalStorage();
