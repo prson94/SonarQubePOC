@@ -102,12 +102,6 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
                             object.actionDescription = object.actionDescription.replace("Artifact", "Technical Asset");
                         }
                     }
-                    if (object.actionObject === "Predicate" && object.field === "Functional Type") {
-                        object.newValue = this.getPredicateTypeStringValue(object.newValue);
-                        if (object.previousValue !== undefined) {
-                            object.previousValue = this.getPredicateTypeStringValue(object.previousValue);
-                        }
-                    }
                 });
                 this.audits = <Audit[]>result.items;
                 this.totalRecords = result.total;
@@ -154,60 +148,6 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
                 this.getParams(),
                 fileName
             );
-    }
-
-    getPredicateTypeStringValue(id: string) {
-        if (id === '1') {
-            return PredicateFriendlyType.DataLineage;
-        }
-        else if (id === '2') {
-            return PredicateFriendlyType.Evaluation;
-        }
-        else if (id === '3') {
-            return PredicateFriendlyType.InterTypeHierarchy;
-        }
-        else if (id === '4') {
-            return PredicateFriendlyType.IntraTypeHierarchy;
-        }
-        else if (id ==='5') {
-            return PredicateFriendlyType.UserOwnership;
-        }
-        else if (id === '6') {
-            return PredicateFriendlyType.Grammar;
-        }
-        else if (id === '7') {
-            return PredicateFriendlyType.Simple;
-        }
-        else if (id === '8') {
-            return PredicateFriendlyType.FusionMapping;
-        }
-        else if (id === '9') {
-            return PredicateFriendlyType.SeeAlso;
-        }
-        else if (id === '10') {
-            return PredicateFriendlyType.Usage;
-        }
-        else if (id === '11') {
-            return PredicateFriendlyType.ObjectOwnerhip;
-        }
-        else if (id === '12') {
-            return PredicateFriendlyType.Transformation;
-        }
-        else if (id === '13') {
-            return PredicateFriendlyType.BusinessToTechnical;
-        }
-        else if (id === '14') {
-            return PredicateFriendlyType.SemanticRelation;
-        }
-        else if (id === '15') {
-            return PredicateFriendlyType.Diagram;
-        }
-        else if (id === '16') {
-            return PredicateFriendlyType.DiagramUse;
-        }
-        else if (id === '17') {
-            return PredicateFriendlyType.DiagramReference;
-        }
     }
 
     private getParams() {
