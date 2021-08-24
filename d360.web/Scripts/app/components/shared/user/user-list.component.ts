@@ -145,7 +145,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
             this.fieldsService.getFieldsV2(this.resourceTypeUid, null, null)
         ).subscribe((forkResult) => {
             const result = forkResult[0];
-            const customFields = forkResult[1];
+            const customFields = forkResult[1] ?? [];
 
             this.columns = result.Columns;
             this.fields = result.Fields;
