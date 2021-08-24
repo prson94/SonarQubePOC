@@ -91,6 +91,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     showEditor: boolean = false;
     isLoading: boolean = false;
     isDefinitionLoaded: boolean = false;
+    areFiltersLoaded: boolean = false;
     hasNoListableColumns: boolean = false;
     linkColumnIndex: number = -1;
     readonly excludedLinkColumnTypes = [
@@ -158,7 +159,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     onFiltersLoaded() {
-        this.showAssetListPage();
+        this.areFiltersLoaded = true;
+        this.changeDetectorRef.markForCheck();
     }
 
     showAssetListPage() {
