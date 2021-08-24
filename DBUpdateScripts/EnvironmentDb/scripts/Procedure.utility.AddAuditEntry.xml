@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="sDooley" id="Procedure.utility.AddAuditEntry-v13">
-  <comment>GOV-14559</comment>
+  <changeSet author="sDooley" id="Procedure.utility.AddAuditEntry-v15">
+  <comment>GOV-15574</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -438,6 +438,17 @@ begin
 		insert into @tbl  select 0, 'Name', Name, 0, 0 from [dbo].[Predicate] where ID = @MainObjectID		
 		insert into @tbl  select 0, 'Inverse', Inverse, 0, 0 from [dbo].[Predicate] where ID = @MainObjectID
 		insert into @tbl  select 0, 'Functional Type', Type, 0, 0 from [dbo].[Predicate] where ID = @MainObjectID
+	end
+  
+	if (@Action = 'Created' and @DependentObject = 'MetricAllocation')
+	begin
+		declare @deletedAuditIds table ([ID] bigint)
+		delete from [reporting].[Global_Audit] 
+		Output deleted.ID into @deletedAuditIds
+		where [Object] = 'MetricAllocation' and [ObjectID] = @DependentObjectID;
+
+		Delete FA 
+		from [reporting].[Global_FieldAudit] FA inner join @deletedAuditIds DA on FA.AuditID=DA.ID
 	end
 
 	insert into @tbl  
@@ -1195,7 +1206,7 @@ begin
 	select	@max = max(ID) from @tbl
 
 	-- test if there is a previous created entry in global audit for this then it cant be a create change to update..
-	if @Action = 'Created' and exists(select 1 from reporting.Global_Audit where [Object] = @DependentObject and [ObjectID] = @DependentObjectID)
+	if (@Action = 'Created' and exists(select 1 from reporting.Global_Audit where [Object] = @DependentObject and [ObjectID] = @DependentObjectID) and (@DependentObject != 'MetricAllocation'))
 	begin
 		set @Action = 'Updated';
 	end
