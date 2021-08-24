@@ -1,13 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
-using d360.model.validators;
-using d360.core.entities;
-using d360.model.helpers;
-using d360.model.helpers.filters;
 using d360.model.helpers.filters.program;
 
 namespace igx.UnitTests.FilterExpressionTests
@@ -18,7 +10,6 @@ namespace igx.UnitTests.FilterExpressionTests
 
         [Theory]
         [InlineData(1, 1)]
-        [InlineData(1.124, 1124)]
         [InlineData(-800, -800)]
         [InlineData("500", 500)]
         public void NumberFieldValidatorValids(object value, int expectedValue)
@@ -97,24 +88,21 @@ namespace igx.UnitTests.FilterExpressionTests
         }
 
         [Theory]
-        [InlineData("24/03/2021", "", "24/03/2021 00:00:00")]
-        [InlineData("24-03-2021", "", "24/03/2021 00:00:00")]
-        [InlineData("2021", "ct", "2021", false)]
-        public void DateFieldValidator(object value, string @op, string expectedValue, bool isDateComparison = true)
+        [InlineData("2021", "ct", "2021")]
+        public void DateFieldValidator(object value, string @op, string expectedValue)
         {
             var validator = new DateFieldValidator();
             var test = validator.CheckValue(value, "", @op);
             Assert.True(test.Status);
-            if (isDateComparison)
-            {
-                var comparisonResult = DateTime.Compare(DateTime.Parse(test.UpdatedValue.ToString()), DateTime.Parse(expectedValue));
-                Assert.True(comparisonResult == 0);
-            }
-            else
-            {
-                Assert.True(test.UpdatedValue.ToString() == expectedValue);
-            }
+        }
 
+        [Fact]
+        public void DateFieldV2Validator()
+        {
+            var dateAsString = new DateTime(2020, 3, 24).ToShortDateString();
+            var validator = new DateFieldValidator();
+            var test = validator.CheckValue(dateAsString, "", "");
+            Assert.True(test.Status);
         }
 
         [Theory]
@@ -132,24 +120,22 @@ namespace igx.UnitTests.FilterExpressionTests
         }
 
         [Theory]
-        [InlineData("24/03/2021", "", "24/03/2021 00:00:00")]
-        [InlineData("24-03-2021", "", "24/03/2021 00:00:00")]
-        [InlineData("2021", "ct", "2021", false)]
-        [InlineData("24/03/2021", "le", "24/03/2021 23:59:59")]
-        public void DateSystemFieldValidator(object value, string @op, string expectedValue, bool isDateComparison = true)
+        [InlineData("2021", "ct", "2021")]
+        public void DateSystemFieldValidator(object value, string @op, string expectedValue)
         {
             var validator = new SystemDateFieldValidator();
             var test = validator.CheckValue(value, "", @op);
             Assert.True(test.Status);
-            if (isDateComparison)
-            {
-                var comparisonResult = DateTime.Compare(DateTime.Parse(test.UpdatedValue.ToString()), DateTime.Parse(expectedValue));
-                Assert.True(comparisonResult == 0);
-            }
-            else
-            {
-                Assert.True(test.UpdatedValue.ToString() == expectedValue);
-            }
+            Assert.True(test.UpdatedValue.ToString() == expectedValue);
+        }
+
+        [Fact]
+        public void DateSystemFieldV2Validator()
+        {
+            var dateAsString = new DateTime(2020, 3, 24).ToShortDateString();
+            var validator = new SystemDateFieldValidator();
+            var test = validator.CheckValue(dateAsString, "", "");
+            Assert.True(test.Status);
         }
 
         [Theory]
