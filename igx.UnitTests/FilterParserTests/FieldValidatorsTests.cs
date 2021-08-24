@@ -99,13 +99,22 @@ namespace igx.UnitTests.FilterExpressionTests
         [Theory]
         [InlineData("24/03/2021", "", "24/03/2021 00:00:00")]
         [InlineData("24-03-2021", "", "24/03/2021 00:00:00")]
-        [InlineData("2021", "ct", "2021")]
-        public void DateFieldValidator(object value, string @op, string expectedValue)
+        [InlineData("2021", "ct", "2021", false)]
+        public void DateFieldValidator(object value, string @op, string expectedValue, bool isDateComparison = true)
         {
             var validator = new DateFieldValidator();
             var test = validator.CheckValue(value, "", @op);
             Assert.True(test.Status);
-            Assert.True(test.UpdatedValue.ToString().ToLower() == expectedValue.ToString().ToLower());
+            if (isDateComparison)
+            {
+                var comparisonResult = DateTime.Compare(DateTime.Parse(test.UpdatedValue.ToString()), DateTime.Parse(expectedValue));
+                Assert.True(comparisonResult == 0);
+            }
+            else
+            {
+                Assert.True(test.UpdatedValue.ToString() == expectedValue);
+            }
+
         }
 
         [Theory]
@@ -125,14 +134,22 @@ namespace igx.UnitTests.FilterExpressionTests
         [Theory]
         [InlineData("24/03/2021", "", "24/03/2021 00:00:00")]
         [InlineData("24-03-2021", "", "24/03/2021 00:00:00")]
-        [InlineData("2021", "ct", "2021")]
+        [InlineData("2021", "ct", "2021", false)]
         [InlineData("24/03/2021", "le", "24/03/2021 23:59:59")]
-        public void DateSystemFieldValidator(object value, string @op, string expectedValue)
+        public void DateSystemFieldValidator(object value, string @op, string expectedValue, bool isDateComparison = true)
         {
             var validator = new SystemDateFieldValidator();
             var test = validator.CheckValue(value, "", @op);
             Assert.True(test.Status);
-            Assert.True(test.UpdatedValue.ToString().ToLower() == expectedValue.ToString().ToLower());
+            if (isDateComparison)
+            {
+                var comparisonResult = DateTime.Compare(DateTime.Parse(test.UpdatedValue.ToString()), DateTime.Parse(expectedValue));
+                Assert.True(comparisonResult == 0);
+            }
+            else
+            {
+                Assert.True(test.UpdatedValue.ToString() == expectedValue);
+            }
         }
 
         [Theory]
@@ -152,7 +169,7 @@ namespace igx.UnitTests.FilterExpressionTests
         [Theory]
         [InlineData("test", "test")]
         [InlineData("'test'", "test")]
-        public void TextFieldValidator(object value,  string expectedValue)
+        public void TextFieldValidator(object value, string expectedValue)
         {
             var validator = new TextFieldValidator();
             var test = validator.CheckValue(value, "", "");

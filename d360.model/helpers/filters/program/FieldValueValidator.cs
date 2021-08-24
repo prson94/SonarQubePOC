@@ -24,6 +24,7 @@ namespace d360.model.helpers.filters.program
             var result = new FieldValueValidatorResult();
             result.Status = true;
             int number = 0;
+            string escapedValue = value.ToString().Replace(".", "").Replace(",", "");
             if (!int.TryParse(value.ToString(), NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out number))
             {
                 //parsing of thousands seperator fails on - symbol
