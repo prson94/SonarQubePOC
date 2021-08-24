@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="sDooley" id="Procedure.utility.AddAuditEntry-v13">
-  <comment>GOV-14559</comment>
+  <changeSet author="sDooley" id="Procedure.utility.AddAuditEntry-v14">
+  <comment>GOV-15574</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
