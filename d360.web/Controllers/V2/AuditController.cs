@@ -183,7 +183,19 @@ namespace d360.web.Controllers.V2
 
                 sql += " " + orderBySql + " " + offsetSql;
 
-                var query = Company.Query<AssetAuditApiItemModel>(sql, dbArgs, ApiTimeout);
+                var query = Company.Query<AssetAuditApiItemModel>(sql, dbArgs, ApiTimeout).ToList();
+
+                query.ToList().ForEach(x =>
+                {
+                    if (x.actionObject == "Predicate" && x.field == "Functional Type")
+                    {
+                        x.newValue = getPredicateTypeStringValue(x.newValue);
+                        if (x.previousValue != null)
+                        {
+                            x.previousValue = getPredicateTypeStringValue(x.previousValue);
+                        }
+                    }
+                });
 
                 if (isStreamResponse)
                 {
@@ -412,15 +424,6 @@ namespace d360.web.Controllers.V2
             foreach (var row in query)
             {
                 rowIndex++;
-                
-                if(row.actionObject == "Predicate" && row.field == "Functional Type")
-                {
-                    row.newValue = getPredicateTypeStringValue(row.newValue);
-                    if(row.previousValue != null)
-                    {
-                        row.previousValue = getPredicateTypeStringValue(row.previousValue);
-                    }
-                }
 
                 document.SetCellValue(rowIndex, 1, row.resourceName);
                 document.SetCellValue(rowIndex, 2, (((DateTime)row.date)));
