@@ -496,8 +496,8 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,            
             Route("{assetUid:Guid}/similar/{similarType}/"),
-            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
-            SwaggerProduces("application/json", "text/json", "application/xml", "text/xml", "application/octet-stream"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetDataProfilesMatchingAssetsApiViewModel)),
+            SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that a record could not be found based on the supplied Uid, possibly due to an incorrectly formatted identifier (uid) or when a data profile record does not exist for the supplied asset.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),            
@@ -505,7 +505,8 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250. Maximum page size is 10,000", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending and are sorted on the asset path value", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_simpleFilter", "The text or phrase you want to find within fields. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),            
+            SwaggerParameter("_simpleFilter", "The text or phrase you want to find within path field or tags. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by. Allowed values are 'path' and 'tags'. By default the results are ordered by asset path value.", DataType = "string", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetMatchingAssets(Guid assetUid, string similarType)
         {
@@ -735,12 +736,12 @@ namespace d360.web.Controllers.V2
 
             if (asset == null || (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset))
             {
-                return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, $"AssetUid {assetUid} is invalid");
+                return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ApiMessages.InvalidAssetUid, assetUid));
             }
 
             if (!Company.HasAssetPermission(asset.Object, asset.ObjectID, Permission.ReadAsset))
             {
-                return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, $"AssetUid {assetUid} is invalid");
+                return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ApiMessages.InvalidAssetUid, assetUid));
             }
 
             var isValid = isPageSizeAndNumValid(queryParams);
@@ -754,7 +755,18 @@ namespace d360.web.Controllers.V2
             {
                 if (!bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value, out bool includeTotal))
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Invalid _includeTotal provided");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidIncludeTotal);
+                }
+            }
+
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_order"))
+            {
+                string[] allowedValues = new[] { "path", "tags" };
+                var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_order").Value.Trim().ToLower();
+
+                if (!allowedValues.Contains(directionFilter))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, DataProfileAPIMessages.InvalidOrder);
                 }
             }
 
@@ -765,7 +777,7 @@ namespace d360.web.Controllers.V2
 
                 if (!allowedValues.Contains(directionFilter))
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Invalid value for parameter '_direction'. Allowed values are 'desc' and 'asc'.");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidDirection);
                 }
             }
 
@@ -775,18 +787,18 @@ namespace d360.web.Controllers.V2
 
                 if (!allowedValues.Contains(similarType.ToLowerInvariant()))
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"'{similarType}' is an invalid similar type.");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(DataProfileAPIMessages.InvalidSimilarType, similarType));
                 }
             }
             else
             {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"similarType is a required field.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, DataProfileAPIMessages.RequiredSimilarType);
             }
 
             AssetDataProfile dataprofile = Company.AssetDataProfile.Where(x => x.AssetId == asset.ID).OrderByDescending(x => x.ProfileSetDate).FirstOrDefault();
             if (dataprofile == null || similarType.ToLowerInvariant() == "structure" && dataprofile.StructureSignature == null || similarType.ToLowerInvariant() == "data" && dataprofile.DataSignature == null)
             {
-                return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, $"{similarType} signature not found for AssetUid {assetUid}");
+                return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(DataProfileAPIMessages.NoSimilarTypeForAssetUid, similarType, assetUid));
             }
 
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");

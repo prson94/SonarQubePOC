@@ -364,9 +364,37 @@ namespace d360.model.DataAccessLayer
             string offset = CompanyContext.ParsePageOffsetSql(results.pageNum, results.pageSize);
             string whereConditions = $@"where 
 		                                 ADP.ProfileSetDate = maxProfileDate.profileSetDate";
-            string sqlJoins = "";
+            string sqlJoins = $@"  inner join 
+		                    [graph].AssetNodeDisplayPath NDP WITH (NOEXPAND) on NDP.ID=adp.AssetID and adp.AssetId != @assetId
+                            outer apply 
+			                (
+			                select 
+				                max(ProfileSetDate) profileSetDate 
+			                from 
+				                AssetDataProfile 
+			                where 
+				                AssetID = ADP.AssetID
+			                ) maxProfileDate
+                            outer apply
+                            (
+                                Select  (                                                                                                                
+                                    Select                                     
+	                                    T.Value
+                                    from 
+	                                    AssetTag AT
+	                                    inner join 
+	                                    Tag T on AT.TagId = T.Id
+                                    where 
+                                        AT.AssetID = adp.AssetID
+                                    order by T.Value
+                                    For Json Path
+                                    ) as [value]
+                            ) Tags
+                            left Join FieldType F on f.AssetTypeID = NDP.AssetTypeID and F.[Type] = 'tag'";
+
             bool includeTotal = true;
             string orderDirection = "asc";
+            string orderByField = "[path]";
             string simpleFilterSQL = "";
             string structureCondition = "";
 
@@ -414,6 +442,16 @@ namespace d360.model.DataAccessLayer
                 bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includetotal").Value, out includeTotal);
             }
 
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_order"))
+            {                
+                var orderBy = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_order").Value.Trim().ToLower();
+
+                if (orderBy == "tags")
+                {                    
+                    orderByField = $@"JSON_VALUE('{{""tags"":'+ISNULL(tagsJson, '[]')+'}}', '$.tags[0]')";
+                }
+            }
+
             if (queryParams.Any(q => q.Key == "_direction"))
             {
                 string[] allowedValues = new[] { "asc", "desc" };
@@ -434,21 +472,15 @@ namespace d360.model.DataAccessLayer
 
                     dbArgs.Add("@simpleFilter", simpleFilter);
 
-                    simpleFilterSQL = $@"where [Path] like @simpleFilter";
+                    simpleFilterSQL = $@"where 
+                                        (
+                                            [Path] like @simpleFilter 
+                                            or                                             
+                                            exists (select 1 from OPENJSON(tagsJson) where Value like @simpleFilter)
+                                        )";                                
                 }
             }
 
-            sqlJoins = $@"  inner join 
-		                    [graph].AssetNodeDisplayPath NDP WITH (NOEXPAND) on NDP.ID=adp.AssetID and adp.AssetId != @assetId
-                            outer apply 
-			                (
-			                select 
-				                max(ProfileSetDate) profileSetDate 
-			                from 
-				                AssetDataProfile 
-			                where 
-				                AssetID = ADP.AssetID
-			                ) maxProfileDate";
 
             if (!CompanyContext.CurrentResourceIsAdmin)
             {
@@ -483,9 +515,11 @@ namespace d360.model.DataAccessLayer
                             SELECT 
 	                            NDP.uid, 
                                 NDP.DisplayPath as [path]
+                                ,JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(tags.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as tagsJson 
+                                ,case when F.id is null then 0 else 1 end as hasTagField
                             into #tempdata2
-                            FROM #tempadpid adp          
-	                            {sqlJoins}		     
+                            FROM #tempadpid adp 
+                                {sqlJoins}		     
                                 {whereConditions}";
 
             string countQuery = $@"
@@ -498,9 +532,9 @@ namespace d360.model.DataAccessLayer
 
             if (onlyTotal)
             {
-                var onlyTotalSQL = $@"{tempTablesSQL}
-                            {countQuery}
-                            ";
+                var onlyTotalSQL = $@"{tempTablesSQL}                                                 
+                                        {countQuery}
+                                        ";
 
                 results.total = await CompanyContext.QueryFirstOrDefaultAsync<int?>(onlyTotalSQL, dbArgs, ApiTimeout);
                 return results;
@@ -516,7 +550,7 @@ namespace d360.model.DataAccessLayer
 
                             select * from #tempdata2
                             {simpleFilterSQL}
-                            order by [path] {orderDirection}
+                            order by {orderByField} {orderDirection}
                              {offset}
 
                             {countQuery}
