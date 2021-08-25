@@ -5,24 +5,30 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Table.fusion.StagingRelationUnresolved-Rename-v1">
-  <comment>GOV-15289</comment>
+  <changeSet author="Puneet Gupta" id="Table.fusion.StagingRelationUnresolved-Drop-v1">
+  <comment>GOV-15290</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'StagingRelationUnresolved')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'StagingRelationUnresolved_backup')
 BEGIN
-	exec sp_rename 'fusion.StagingRelationUnresolved', 'StagingRelationUnresolved_backup';
+	drop table fusion.StagingRelationUnresolved_backup;
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'StagingRelationUnresolved_backup')
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'StagingRelationUnresolved_backup')
 BEGIN
-	exec sp_rename 'fusion.StagingRelationUnresolved_backup', 'StagingRelationUnresolved'
+	CREATE TABLE [fusion].[StagingRelationUnresolved_backup](
+		[ID] [bigint] IDENTITY(1,1) NOT NULL,
+		[StartID] [varchar](500) NOT NULL,
+		[EndID] [varchar](500) NOT NULL,
+		[CreatedOn] [datetime] CONSTRAINT [DF_FusionStagingRelationUnresolved_CreatedOn] DEFAULT (getutcdate()) NOT NULL,
+		CONSTRAINT [PK_FusionStagingRelationUnresolved] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+	)
 END
 		]]>
 	</rollback>
