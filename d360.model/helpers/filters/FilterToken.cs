@@ -313,9 +313,21 @@ namespace d360.model.helpers
                     ValidateTokenForType(filter);
                     CheckFieldValue(filter);
                     value = value.ToString().Trim('\'');
-                    if (this.@operator == "ct" || this.@operator == "nct")
+                    if (@operator == "ct" || @operator == "nct")
                     {
-                        value = $"%{wildcardValue(escapeForSQLLike(value.ToString()))}%";
+                        bool isStartWith = value.ToString().Last() == '*';
+                        bool isEndWith = value.ToString().First() == '*';
+                        bool isBoth = (isStartWith && isEndWith) || (!isStartWith && !isEndWith);
+
+                        if (isBoth)
+                        {
+                            value = $"%{wildcardValue(escapeForSQLLike(value.ToString()))}%";
+                        }
+                        else
+                        {
+                            //Wildcard will be present from request
+                            value = $"{wildcardValue(escapeForSQLLike(value.ToString()))}";
+                        }
                     }
 
                     stringBuilder.Clear();
