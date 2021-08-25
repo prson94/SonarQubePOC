@@ -272,6 +272,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
         let includeStatsWidget: boolean = false;
         let maxYValue = 0;
         let index: number = 0;
+        let leftPadding: number = 10;
 
         var meanIndex = 0;
         var meanPercentInterval = 0;
@@ -308,6 +309,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
         if (dataProfileType === 'boolean') {           
             pointPadding = 0.05;
             showXAxisLabel = true;
+            leftPadding = 0;
 
                 this.dataProfile.cardinalityDetail.forEach((c) => {
                     categories.push(c.key);
@@ -409,6 +411,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
         } else {
             showXAxisLabel = false;
             pointPadding = 0.1;
+            leftPadding = 0;
             this.sampleChartXLabel = this.distinctCount.toLocaleString() + ' distinct values';
 
             let i = 0;
@@ -543,8 +546,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
                 type: 'column',
                 height: 200,
                 spacingTop,
-                marginLeft: 0,
-                spacingLeft: 0
+                marginLeft: leftPadding,
+                spacingLeft: leftPadding
             },
             credits: {
                 enabled: false
