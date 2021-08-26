@@ -134,7 +134,6 @@ namespace d360.model.helpers.filters
                     value = value.ToString().Trim('\'');
                     if (@operator == "ct" || @operator == "nct")
                     {
-                        value = $"%{FilterHelpers.WildcardValue(FilterHelpers.EscapeForSQLLike(value.ToString()))}%";
                         bool isStartWith = value.ToString().Last() == '*';
                         bool isEndWith = value.ToString().First() == '*';
                         bool isBoth = (isStartWith && isEndWith) || (!isStartWith && !isEndWith);
