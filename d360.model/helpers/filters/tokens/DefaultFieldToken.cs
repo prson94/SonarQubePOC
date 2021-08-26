@@ -132,9 +132,22 @@ namespace d360.model.helpers.filters
                     this.value = valueValidation.UpdatedValue;
 
                     value = value.ToString().Trim('\'');
-                    if (this.@operator == "ct" || this.@operator == "nct")
+                    if (@operator == "ct" || @operator == "nct")
                     {
                         value = $"%{FilterHelpers.WildcardValue(FilterHelpers.EscapeForSQLLike(value.ToString()))}%";
+                        bool isStartWith = value.ToString().Last() == '*';
+                        bool isEndWith = value.ToString().First() == '*';
+                        bool isBoth = (isStartWith && isEndWith) || (!isStartWith && !isEndWith);
+
+                        if (isBoth)
+                        {
+                            value = $"%{FilterHelpers.WildcardValue(FilterHelpers.EscapeForSQLLike(value.ToString()))}%";
+                        }
+                        else
+                        {
+                            //Wildcard will be present from request
+                            value = $"{FilterHelpers.WildcardValue(FilterHelpers.EscapeForSQLLike(value.ToString()))}";
+                        }
                     }
 
                     stringBuilder.Clear();
