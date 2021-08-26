@@ -420,7 +420,7 @@ namespace d360.model.DataAccessLayer
 
             fieldJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID");
 
-            dbArgs.Add("@assetTypeID", assetTypeID);
+            dbArgs.Add("@assetTypePassedID", assetTypeID);
             whereStatements.Add("A.AssetTypeID = @assetTypeID");
 
             dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
@@ -1297,7 +1297,7 @@ namespace d360.model.DataAccessLayer
                 model.total = null;
             }
 
-            var getAllQuery = $"{populatePremissionAssetTableSQL} {populateOwnershipLookupTableSQL} {countSql} {sql} ";
+            var getAllQuery = $"declare @assetTypeID int = (select @assetTypePassedId); {populatePremissionAssetTableSQL} {populateOwnershipLookupTableSQL} {countSql} {sql} ";
 
             if (!string.IsNullOrEmpty(selectOwnershipSQL))
             {
