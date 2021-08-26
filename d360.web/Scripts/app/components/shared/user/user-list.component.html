@@ -65,7 +65,7 @@
                         <a *ngIf="column.datafield=='FirstName'"
                            (click)="openResource(item)">{{item.FirstName}}</a>
                         <d3s-dynamic-field-value *ngIf="column.datafield!='FirstName'" [column]="column"
-                                                 [fields]="fields" [item]="item" [useApiName]="true"></d3s-dynamic-field-value>
+                                                 [fields]="fields" [item]="item" [useApiName]="true" [isDateUTC]="true"></d3s-dynamic-field-value>
                     </td>
                     <td *ngIf="hasModifyAssetPermissions()  && IsReadOnly()" style="width: 40px">
                         <div class="RowTools" *ngIf="item.ResourceID > 0">
