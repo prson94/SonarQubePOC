@@ -5,32 +5,38 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Table.integration.SynchedAssetTypeRelationItem-Rename-v1">
-  <comment>GOV-15287</comment>
+  <changeSet author="Puneet Gupta" id="Table.integration.SynchedAssetTypeRelationItem-Drop-v1">
+  <comment>GOV-15288</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'SynchedAssetTypeRelationItem')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'SynchedAssetTypeRelationItem_backup')
 BEGIN
-	IF EXISTS (select * 
-			   from sys.foreign_keys where name = 'FK_IntegrationSynchedAssetTypeRelationItem_IntegrationSynchedAssetTypeRelationItem' 
-			   and object_name(parent_object_id) = 'SynchedAssetTypeRelationItemTarget' and schema_name(schema_id) = 'integration'
-			   )
-	BEGIN	
-		ALTER TABLE [integration].[SynchedAssetTypeRelationItemTarget] DROP CONSTRAINT [FK_IntegrationSynchedAssetTypeRelationItem_IntegrationSynchedAssetTypeRelationItem]
-	END
-
-	exec sp_rename 'integration.SynchedAssetTypeRelationItem', 'SynchedAssetTypeRelationItem_backup';
+	drop table integration.SynchedAssetTypeRelationItem_backup;
 END
 	]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'SynchedAssetTypeRelationItem_backup')
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'SynchedAssetTypeRelationItem_backup')
 BEGIN
-	exec sp_rename 'integration.SynchedAssetTypeRelationItem_backup', 'SynchedAssetTypeRelationItem';
+	CREATE TABLE [integration].[SynchedAssetTypeRelationItem_backup](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[SynchedAssetTypeID] [int] NOT NULL,
+		[IncludeInPropertyRequest] [bit] CONSTRAINT [DF_IntegrationSynchedAssetTypeRelationItem_IncludeInPropertyRequest] DEFAULT (1) NOT NULL,
+		[SourceField] [varchar](250) NOT NULL,
+		[PredicateType] [int] NOT NULL,
+		[IsSubject] [bit] CONSTRAINT [DF_IntegrationSynchedAssetTypeRelationItem_IsSubject] DEFAULT (0) NOT NULL,
+		[Active] [bit] CONSTRAINT [DF_IntegrationSynchedAssetTypeRelationItem_Active] DEFAULT (1) NOT NULL,
+		CONSTRAINT [PK_IntegrationSynchedAssetTypeRelationItem] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'CIX_IntegrationSynchedAssetTypeRelationItem')
+BEGIN
+	CREATE CLUSTERED INDEX [CIX_IntegrationSynchedAssetTypeRelationItem] ON [integration].[SynchedAssetTypeRelationItem_backup] ( [SynchedAssetTypeID] ASC, [SourceField] ASC )
 END
 
 		]]>
