@@ -19,6 +19,7 @@
                                [showHeaderLine]="false"
                                [shouldBePadded]="false"
                                [showMoreInfo]="true"
+                               [expanded]="matchType=='data'" 
                                [moreInfoHtml]="'Data is determined to be a match if the total row count, and a small representative sample from each data set are found to be matching.'">
                 <div readonly>
                     <div class="search-bar">
@@ -84,7 +85,8 @@
             <ig-property-group *ngIf="showSimilar"
                                [title]="'Similar Fields (Same Type)'"
                                [showHeaderLine]="false"
-                               [shouldBePadded]="false">
+                               [shouldBePadded]="false"
+                               [expanded]="matchType=='similar'">
                 <div readonly>
                     <div class="search-bar">
                         <ig-search-field mode="Keypress"
