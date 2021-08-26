@@ -270,7 +270,9 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
         let xAxisStep: number = 0;
         let spacingTop: number = 10;
         let includeStatsWidget: boolean = false;
+        let maxYValue = 0;
         let index: number = 0;
+        let leftPadding: number = 10;
 
         var meanIndex = 0;
         var meanPercentInterval = 0;
@@ -286,6 +288,9 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             categories.push(invalidOutlierLabel);
             data.push(this.invalidCount);
             colors.push(invalidColor);
+            if (this.invalidCount > maxYValue) {
+                maxYValue = this.invalidCount;
+            }
             index++;
         }
 
@@ -293,6 +298,9 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             categories.push(blankNullLabel);
             data.push(this.nullBlankCountTotal);
             colors.push(nullColor);
+            if (this.nullBlankCountTotal > maxYValue) {
+                maxYValue = this.nullBlankCountTotal;
+            }
             index++;
         }
 
@@ -301,11 +309,15 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
         if (dataProfileType === 'boolean') {           
             pointPadding = 0.05;
             showXAxisLabel = true;
+            leftPadding = 0;
 
                 this.dataProfile.cardinalityDetail.forEach((c) => {
                     categories.push(c.key);
                     data.push(c.count);
                     colors.push(validColor);
+                    if (c.count > maxYValue) {
+                        maxYValue = c.count;
+                    }
                 });
 
         } else if ((dataProfileType === 'long' || dataProfileType === 'double') && !isNaN(+testCardinality)) {
@@ -348,6 +360,10 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
                 data.push(count);
                 colors.push(validColor);
 
+                if (count > maxYValue) {
+                    maxYValue = count;
+                }
+
                 index++;
                 lower = current;
             }
@@ -383,6 +399,11 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
 
                 categories.push(dateString);
                 data.push(count);
+
+                if (count > maxYValue) {
+                    maxYValue = count;
+                }
+
                 colors.push(validColor);
                 lower = new Date(current);
             }
@@ -390,16 +411,22 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
         } else {
             showXAxisLabel = false;
             pointPadding = 0.1;
+            leftPadding = 0;
             this.sampleChartXLabel = this.distinctCount.toLocaleString() + ' distinct values';
 
             let i = 0;
             let max = Math.min(maxSampleCount, this.dataProfile.cardinalityDetail.length);
             let c = this.dataProfile.cardinalityDetail;
             while (i < max) {
-                i++;
                 categories.push(c[i].key);
                 data.push(c[i].count);
                 colors.push(validColor);
+
+                if (c[i].count > maxYValue) {
+                    maxYValue = c[i].count;
+                }
+
+                i++;
             }
         }
 
@@ -418,6 +445,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
         };
 
         let renderStatsWidget = function (chart) {
+            let strokeColor = '#bdbfc6';
             //include Std Dev bar if available
             let drawStd = dataProfile.standardDeviation != null && !isNaN(+dataProfile.standardDeviation);
 
@@ -433,7 +461,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
                 'M', xPos, chart.plotTop + chart.plotHeight,
                 'L', xPos, chart.plotTop + 5
             ]).attr({
-                stroke: nullColor,
+                stroke: strokeColor,
                 'stroke-width': 1
             }).add();
 
@@ -460,12 +488,17 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             if (drawStd) {
                 //calculate length of horizonal std dev line
                 let stdLen = (+dataProfile.standardDeviation / interval) * pixelInterval;
+                let drawLeft = false;
+                //figure out if we need to draw on the left
+                if (Math.abs((xPos + stdLen) - (chart.plotLeft + chart.plotWidth)) < 50) {
+                    drawLeft = true;
+                }
 
                 chart.renderer.path([
                     'M', xPos - stdLen, chart.plotTop + 5,
                     'L', xPos + stdLen, chart.plotTop + 5
                 ]).attr({
-                    stroke: nullColor,
+                    stroke: strokeColor,
                     'stroke-dasharray': '2,2',
                     'stroke-width': 1
                 }).add();
@@ -474,7 +507,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
                     'M', xPos - stdLen, chart.plotTop - 5,
                     'L', xPos - stdLen, chart.plotTop + 15
                 ]).attr({
-                    stroke: nullColor,
+                    stroke: strokeColor,
                     'stroke-width': 1
                 }).add();
 
@@ -482,24 +515,26 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
                     'M', xPos + stdLen, chart.plotTop - 5,
                     'L', xPos + stdLen, chart.plotTop + 15
                 ]).attr({
-                    stroke: nullColor,
+                    stroke: strokeColor,
                     'stroke-width': 1
                 }).add();
 
                 chart.renderer.text(
                     'Std Dev',
-                    xPos + stdLen + 5,
+                    xPos + ((stdLen + 5) * (drawLeft ? -1 : 1)),
                     chart.plotTop - 5,
                 ).attr({
-                    zIndex: 5
+                    zIndex: 5,
+                    align: drawLeft ? 'right' : 'left'
                 }).add();
 
                 chart.renderer.text(
                     +dataProfile.standardDeviation.toFixed(2),
-                    xPos + stdLen + 5,
+                    xPos + ((stdLen + 5) * (drawLeft ? -1 : 1)),
                     chart.plotTop + 9,
                 ).attr({
-                    zIndex: 5
+                    zIndex: 5,
+                    align: drawLeft ? 'right' : 'left'
                 }).css({
                     color: '#898d99',
                 }).add();
@@ -510,7 +545,9 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             chart: {
                 type: 'column',
                 height: 200,
-                spacingTop
+                spacingTop,
+                marginLeft: leftPadding,
+                spacingLeft: leftPadding
             },
             credits: {
                 enabled: false
@@ -521,6 +558,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             },
             xAxis: {
                 categories,
+                minPadding: 0,
+                maxPadding: 0,
                 labels: {
                     enabled: showXAxisLabel,
                     reserveSpace: showXAxisLabel,
@@ -530,6 +569,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
             },
             yAxis: {
                 min: 0,
+                max: maxYValue,
                 title: {
                     text: '',
                     reserveSpace: false

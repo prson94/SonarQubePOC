@@ -215,7 +215,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
             this.ownershipSidebar.title = 'Responsibilities'
             this.ownershipSidebar.url = '/sidebar/responsibilities'
             this.ownershipSidebar.orderPriority = 4;
-            this.ownershipSidebar.url = `/sidebar/responsibilities/${this.selectedReferenceItemType.AssetTypeID}`;
+            this.ownershipSidebar.url = `/sidebar/responsibilities/${this.selectedReferenceListUid}`;
         }
     }
 };

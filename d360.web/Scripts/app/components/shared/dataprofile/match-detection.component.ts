@@ -23,7 +23,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
 
     @Output() onClose = new EventEmitter();
 
-    private assetPathText: string = '';
+    assetPathText: string = '';
 
     duplicatesData: any[] = [];
     duplicatesDataTotalCount: number = 0;

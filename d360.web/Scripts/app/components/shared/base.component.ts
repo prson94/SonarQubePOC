@@ -297,16 +297,22 @@ export class BaseComponent {
             }
 
             if (hasOwnership && CompanySettings.ShowOwnersSidebar != 'false') {
-                var urlPart = 'ownership';
-                if (this.objectType == 'ReferenceItemType')
-                    urlPart = 'responsibilities';
-
-                this.ownershipSidebar = new SecondaryNavItem(
-                    'Responsibilities',
-                    urlPart,
-                    ['fa-user'],
-                    `/sidebar/${urlPart}/${this.assetID}`, null, 25
-                );
+                if (this.objectType == 'ReferenceItemType') {
+                    this.ownershipSidebar = new SecondaryNavItem(
+                        'Responsibilities',
+                        'responsibilities',
+                        ['fa-user'],
+                        `/sidebar/responsibilities${this.auditContextUrl()}`, null, 25
+                    );
+                }
+                else {
+                    this.ownershipSidebar = new SecondaryNavItem(
+                        'Responsibilities',
+                        'ownership',
+                        ['fa-user'],
+                        `/sidebar/ownership/${this.assetID}`, null, 25
+                    );
+                }
                 this.secondaryNavService.showItem(this.ownershipSidebar);
             }
 

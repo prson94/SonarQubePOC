@@ -37,7 +37,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     gridObject: AssetGridObject;
     ruleType: RuleType;
 
-    private selection: any = null;
+    selection: any = null;
     showEditor: boolean = false;
     private sidePanelOpen: boolean = false;
     private sidePanelLoading: boolean = false;
