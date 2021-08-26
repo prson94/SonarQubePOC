@@ -7,7 +7,6 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { GridFilterExpression, GridFilterFieldType } from '../../models/grid-definition.model';
-import { isNull } from 'util';
 
 @Component({
     selector: 'd3s-monitor',
