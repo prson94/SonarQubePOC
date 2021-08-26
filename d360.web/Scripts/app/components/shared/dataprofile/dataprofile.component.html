@@ -46,7 +46,7 @@
                                               pTooltip="{{getMatchTooltip('duplicates', dataProfile.matches.data)}}"
                                               tooltipPosition="top"
                                               tooltipStyleClass="ig-tooltip">
-                                            <a (click)="isMatchDetectionPopupVisible = true">
+                                            <a (click)="isMatchDetectionPopupVisible = true; matchType = 'data'">
                                                 <div class="ig-colorfield-swatch invalidCircle"></div>
                                                 {{dataProfile.matches.data | number}} duplicates
                                             </a>
@@ -65,7 +65,7 @@
                                               pTooltip="{{getMatchTooltip('similiar', dataProfile.matches.structure)}}"
                                               tooltipPosition="left"
                                               tooltipStyleClass="ig-tooltip">
-                                            <a (click)="isMatchDetectionPopupVisible = true">
+                                            <a (click)="isMatchDetectionPopupVisible = true; matchType = 'similar'">
                                                 <div class="ig-colorfield-swatch orangeCircle"></div>
                                                 {{dataProfile.matches.structure | number}} similiar fields
                                             </a>
@@ -466,5 +466,5 @@
 </ng-template>
 
 <ng-container *ngIf="dataProfile.matches!=null">
-    <match-detection [showDuplicates]="dataProfile.matches.data > 0" [showSimilar]="dataProfile.matches.structure > 0" [assetUid]="dataProfile.assetUid" [isVisible]="isMatchDetectionPopupVisible" (onClose)="isMatchDetectionPopupVisible=false"></match-detection>
+    <match-detection [showDuplicates]="dataProfile.matches.data > 0" [showSimilar]="dataProfile.matches.structure > 0" [assetUid]="dataProfile.assetUid" [isVisible]="isMatchDetectionPopupVisible" [matchType]="matchType" (onClose)="isMatchDetectionPopupVisible=false"></match-detection>
 </ng-container>

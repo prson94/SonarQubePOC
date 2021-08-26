@@ -49,6 +49,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
     private invalidCount: number;
 
     isMatchDetectionPopupVisible: boolean = false;
+    matchType: string = "";
 
     sampleDistributionChart: Highcharts.Chart;
     sampleChartXLabel: string = '';
