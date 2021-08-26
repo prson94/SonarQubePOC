@@ -587,13 +587,13 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Retrieves a list of assets of the given type with the specified confidence.
         /// </summary>
-        /// <param name="typeQualifier"></param>
-        /// <param name="minConfidence"></param>
+        /// <param name="typeQualifier">Semantic Type to retrive results for.</param>
+        /// <param name="minConfidence">Minimum Confidence that profile records must match or exceed.</param>
         /// <returns>A list of matching asset uids associated with asset paths and confidence</returns>
         [
             HttpGet,
             Route("type/{typeQualifier}/{minConfidence}"),
-            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetDataProfileByTypeQualifierApiViewModel)),
             SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),            
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
