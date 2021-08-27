@@ -125,6 +125,18 @@
                                     (ngModelChange)="model.FieldType.Type[currentType].IsDisplayable=$event;onShowDetailChange($event);"
                                     [disabled]="isSettingDisabled('IsDisplayable')">
                         </p-checkbox>
+
+                        <div *ngIf="model.FieldType.Type[currentType].IsDisplayable && showDisplayInColumn" style="margin-left: 16px;">
+                            <p-checkbox
+                                        binary="true"
+                                        [(ngModel)]="model.FieldType.Type[currentType].DisplayInColumn"
+                                        label="Display In Column"
+                                        [ngModelOptions]="{standalone: true}"
+                                        (ngModelChange)="model.FieldType.Type[currentType].IsDisplayable=$event;"
+                                        [disabled]="isSettingDisabled('DisplayInColumn')">
+                            </p-checkbox>
+                        </div>
+
                     </div>
                     <div *ngIf="showIsEditable">
                         <p-checkbox binary="true"
