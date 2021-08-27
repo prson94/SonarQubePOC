@@ -1220,6 +1220,10 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             if (!el.parentElement) {
                 return false;
             }
+            const datepickerEl = document.querySelector("div.p-datepicker.p-component");
+            if (datepickerEl && datepickerEl.contains(el)) {
+                return true;
+            }
 
             return this.isInBodyElement(el.parentElement);
         }
