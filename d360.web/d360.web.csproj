@@ -1325,6 +1325,7 @@
     <Content Include="Scripts\app\components\shared\user\user-list.component.less" />
     <Content Include="Scripts\app\components\shared\dataprofile\match-detection.less" />
     <Content Include="Scripts\app\components\shared\sidepanel\side-panel.component.less" />
+    <Content Include="Scripts\app\components\sidebar\audit\audit.component.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

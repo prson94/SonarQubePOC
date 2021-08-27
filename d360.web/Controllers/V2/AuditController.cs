@@ -283,6 +283,46 @@ namespace d360.web.Controllers.V2
             return result;
         }
 
+        /// <summary>
+        /// Gets lists of User, Action and ActionObject values in change log for the asset yuid to use in advanced filter lists
+        /// </summary>
+        /// <param name="assetUid">The asset Uid</param>
+        /// <returns></returns>
+        [
+            HttpGet, MapToApiVersion("2.0"), Route("filterlists/{assetUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(Object)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public dynamic GetFilterLists(Guid assetUid)
+        {
+            dynamic objectInfo = GetLegacyObjectDetails(assetUid);
+            dynamic result = new System.Dynamic.ExpandoObject();
+
+            result.resourceName = Company.Query<dynamic>($@"select distinct
+	                CASE WHEN R.State = 3 THEN
+		                R.FirstName + ' ' + R.LastName + ' (deleted)'
+	                ELSE
+		                R.FirstName + ' ' + R.LastName
+	                END as val
+                from reporting.global_audit ga
+                inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
+			    where ga.[Object] = @Object and ga.ObjectId = @ObjectId", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => x.val).ToList();
+
+            result.action = Company.Query<dynamic>($@"select distinct ga.action as val
+                from reporting.global_audit ga
+			    where ga.[Object] = @Object and ga.ObjectId = @ObjectId", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => x.val).ToList();
+
+            result.actionObject = Company.Query<dynamic>($@"select distinct
+                case when ga.ActionObject = 'Intersect' then 'Relationship'
+                     when ga.ActionObject = 'IntersectType' then 'RelationshipType'
+                     else ga.ActionObject end val
+                from reporting.global_audit ga
+			    where ga.[Object] = @Object and ga.ObjectId = @ObjectId", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => x.val).ToList();
+
+            return result;
+        }
+
 
         [
             HttpGet,

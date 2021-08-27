@@ -3,9 +3,7 @@ import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {Observable} from "rxjs";
 import {catchError, map} from "rxjs/operators";
 
-import { AuditResults, AuditObject } from '../models/audit.model';
-import {SortOrder} from '../models/enums.model';
-import {GridFilterExpression} from '../models/grid-definition.model';
+import { AuditResults, AuditObject, AuditFilterLists } from "../models/audit.model";
 
 import {BaseObservableService} from './baseObservable.service';
 import {MessagesObservableService} from './messages-observable.service';
@@ -44,6 +42,16 @@ export class AuditService extends BaseObservableService {
             .get(`/api/v2/audit/objectdetail/${assetUid}`)
             .pipe(
                 map(response => <AuditObject>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    public getFilterLists(assetUid: string): Observable<AuditFilterLists> {
+        return this
+            .http
+            .get(`/api/v2/audit/filterlists/${assetUid}`)
+            .pipe(
+                map(response => <AuditFilterLists>response),
                 catchError(err => this.handleError(err))
             );
     }
