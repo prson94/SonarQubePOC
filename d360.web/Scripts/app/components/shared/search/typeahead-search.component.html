@@ -11,6 +11,7 @@
                         [minLength]="1"
                         maxlength="255"
                         (onBlur)="clearValue()"
+                        (onClear)="clearValue()"
                         (onSelect)="selectItem(ac)"
                         (onKeyUp)="syncSearchText($event)">
             <ng-template let-result pTemplate="item">
