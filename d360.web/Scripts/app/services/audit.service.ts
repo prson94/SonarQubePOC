@@ -22,17 +22,18 @@ export class AuditService extends BaseObservableService {
     public getAuditData(assetUid: string, params: any): Observable<AuditResults> {
         var qString = '';
         if (params) {
-            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
-            if (qString)
+            qString = Object.keys(params).map((key) => key + '=' + params[`${key}`]).join('&');
+            if (qString) {
                 qString = '?' + qString;
+            }
         }
 
         return this
             .http
             .get(`/api/v2/audit/${assetUid}${qString}`)
             .pipe(
-                map(response => <AuditResults>response),
-                catchError(err => this.handleError(err))
+                map((response) => <AuditResults>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -41,8 +42,8 @@ export class AuditService extends BaseObservableService {
             .http
             .get(`/api/v2/audit/objectdetail/${assetUid}`)
             .pipe(
-                map(response => <AuditObject>response),
-                catchError(err => this.handleError(err))
+                map((response) => <AuditObject>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -51,8 +52,8 @@ export class AuditService extends BaseObservableService {
             .http
             .get(`/api/v2/audit/filterlists/${assetUid}`)
             .pipe(
-                map(response => <AuditFilterLists>response),
-                catchError(err => this.handleError(err))
+                map((response) => <AuditFilterLists>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -64,14 +65,15 @@ export class AuditService extends BaseObservableService {
 
         var qString = '';
         if (params) {
-            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
-            if (qString)
+            qString = Object.keys(params).map((key) => key + '=' + params[`${key}`]).join('&');
+            if (qString) {
                 qString = '?' + qString;
+            }
         }
         this.
             http
             .get(`/api/v2/audit/${assetUid}${qString}`, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
-            .subscribe(data => this.downloadFile(data, fileName));
+            .subscribe((data) => this.downloadFile(data, fileName));
     }
 
     downloadFile(

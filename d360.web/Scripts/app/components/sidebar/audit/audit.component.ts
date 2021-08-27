@@ -222,7 +222,7 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
                     Type: lists[c.datafield] ? new FieldType("Lookup") : new FieldType(c.fieldType),
                     Category: "",
                     RemovePopulatedOperator: ["newValue", "previousValue"].indexOf(c.datafield) === -1
-                }
+                };
                 if (lists[c.datafield]) {
                     field.ValueList = lists[c.datafield].map((l) => {
                         return {value: l, title: l};
