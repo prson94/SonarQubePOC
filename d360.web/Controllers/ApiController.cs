@@ -25,6 +25,7 @@ using System.Web.Http.Description;
 using System.Xml.Linq;
 using d360.core.resources;
 using d360.model.DataAccessLayer;
+using d360.web.Extensions;
 
 namespace d360.web.Controllers
 {
@@ -3798,6 +3799,17 @@ where v.id = {0}", id)).FirstOrDefault();
                     }
                 });
             }
+
+            var fcmap = (await Company.QueryAsync<FieldColumnMapping>(@"
+                select ft.Name, DisplayInColumn from asset a
+                inner join fieldtype ft on ft.assettypeid = a.assettypeid
+                where a.object = @type and a.objectid = @objectid
+                and ft.isdisplayable = 1
+                order by ColumnOrder", new { type = type.ToString(), objectid = id })).ToList();
+
+            fcmap.TransformRowsAndCols();
+
+            model.fieldColumnMappings = fcmap;
 
             return model;
         }

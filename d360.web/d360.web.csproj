@@ -17,7 +17,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -440,6 +440,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Controllers\TaxonomyController.cs" />
+    <Compile Include="Extensions\FieldColumnMappingExtensions.cs" />
     <Compile Include="Extensions\HttpRequestMessageExtensions.cs" />
     <Compile Include="Extensions\PowerBI.cs" />
     <Compile Include="Filters\AjaxValidationAntiForgeryTokenAttribute.cs" />
