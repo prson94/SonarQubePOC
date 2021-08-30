@@ -1,6 +1,8 @@
 ﻿using d360.core.entities;
 using d360.model;
 using d360.model.workflow;
+using d360.web.Extensions;
+using d360.web.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace igx.UnitTests.HtmlHelperTests
+namespace igx.UnitTests.FieldsHelperTests
 {
     [Trait("Unit tests", "Fields - Show In Column Tests")]
     public class ShowInColumnTests : BaseTest
@@ -18,33 +20,195 @@ namespace igx.UnitTests.HtmlHelperTests
         public void PropertyTests()
         {
 
-            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeBooleanApiViewModel(), true));
-            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeComputedOwnershipLookupApiViewModel(), true));
-            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeComputedRelationshipFieldApiViewModel(), true));
-            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeComputedRelationshipLookupApiViewModel(), false));
-            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeComputedRelationshipReferenceListApiViewModel(), false));
-            Assert.True(IsPropAssumptionCorrect(new FieldTypeCounterApiViewModel(), true));
-            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeDateApiViewModel(), true));
-            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeDateTimeApiViewModel(), true));
-            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeDecimalApiViewModel(), true));
-            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeHtmlApiViewModel(), true));
-            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeJsonApiViewModel(), false));
-            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeJsonElementApiViewModel(), false));
-            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeLinkApiViewModel(), true));
-            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeLookupApiViewModel(), true));
-            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeNumberApiViewModel(), true));
-            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypePathApiViewModel(), true));
-            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeRelationshipApiViewModel(), false));
-            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeTextApiViewModel(), true));
-            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeTagApiViewModel(), true));
-            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeComputedScoreApiViewModel(), true));
+            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeBooleanApiViewModel(), true), "Boolean property check failed");
+            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeComputedOwnershipLookupApiViewModel(), true), "Ownership Lookup property check failed");
+            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeComputedRelationshipFieldApiViewModel(), true), "Relationship Field property check failed");
+            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeComputedRelationshipLookupApiViewModel(), false), "Relation Lookup property check failed");
+            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeComputedRelationshipReferenceListApiViewModel(), false), "Relation Reference List property check failed");
+            Assert.True(IsPropAssumptionCorrect(new FieldTypeCounterApiViewModel(), true), "Counter property check failed");
+            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeDateApiViewModel(), true), "Date property check failed");
+            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeDateTimeApiViewModel(), true), "Date Time property check failed");
+            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeDecimalApiViewModel(), true), "Decimal property check failed");
+            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeHtmlApiViewModel(), true), "HTML property check failed");
+            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeJsonApiViewModel(), false), "JSON property check failed");
+            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeJsonElementApiViewModel(), false), "JSON Element property check failed");
+            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeLinkApiViewModel(), true), "Link property check failed");
+            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeLookupApiViewModel(), true), "Lookup property check failed");
+            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeNumberApiViewModel(), true), "Number property check failed");
+            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypePathApiViewModel(), true), "Path property check failed");
+            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeRelationshipApiViewModel(), false), "Relationship property check failed");
+            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeTextApiViewModel(), true), "Text property check failed");
+            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeTagApiViewModel(), false), "Tag property check failed");
+            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeComputedScoreApiViewModel(), true), "Score property check failed");
 
         }
 
         private bool IsPropAssumptionCorrect(object obj, bool expectProp)
         {
-            obj.get
+            var hasProp = obj.GetType().GetProperty("DisplayInColumn") != null;
+            return hasProp == expectProp;
         }
 
+        [Fact]
+        public void TestAllInRows()
+        {
+            var fcmap = new List<FieldColumnMapping>();
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = false });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = null });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = false });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = false });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = null });
+
+            fcmap.TransformRowsAndCols();
+            Assert.True(fcmap[0].Row == 1);
+            Assert.True(fcmap[0].Col == 1);
+
+            Assert.True(fcmap[1].Row == 2);
+            Assert.True(fcmap[1].Col == 1);
+
+            Assert.True(fcmap[2].Row == 3);
+            Assert.True(fcmap[2].Col == 1);
+
+            Assert.True(fcmap[3].Row == 4);
+            Assert.True(fcmap[3].Col == 1);
+
+            Assert.True(fcmap[4].Row == 5);
+            Assert.True(fcmap[4].Col == 1);
+        }
+
+        [Fact]
+        public void TestAllInRowsWithDisplayInColumns()
+        {
+            var fcmap = new List<FieldColumnMapping>();
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = null });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = false });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
+
+            fcmap.TransformRowsAndCols();
+            Assert.True(fcmap[0].Row == 1);
+            Assert.True(fcmap[0].Col == 1);
+
+            Assert.True(fcmap[1].Row == 2);
+            Assert.True(fcmap[1].Col == 1);
+
+            Assert.True(fcmap[2].Row == 3);
+            Assert.True(fcmap[2].Col == 1);
+
+            Assert.True(fcmap[3].Row == 4);
+            Assert.True(fcmap[3].Col == 1);
+
+            Assert.True(fcmap[4].Row == 5);
+            Assert.True(fcmap[4].Col == 1);
+        }
+
+        [Fact]
+        public void TestAllInOneRow()
+        {
+            var fcmap = new List<FieldColumnMapping>();
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
+
+            fcmap.TransformRowsAndCols();
+            Assert.True(fcmap[0].Row == 1);
+            Assert.True(fcmap[0].Col == 1);
+
+            Assert.True(fcmap[1].Row == 1);
+            Assert.True(fcmap[1].Col == 2);
+
+            Assert.True(fcmap[2].Row == 1);
+            Assert.True(fcmap[2].Col == 3);
+
+            Assert.True(fcmap[3].Row == 1);
+            Assert.True(fcmap[3].Col == 4);
+
+            Assert.True(fcmap[4].Row == 1);
+            Assert.True(fcmap[4].Col == 5);
+        }
+
+        [Fact]
+        public void Test2Rows()
+        {
+            var fcmap = new List<FieldColumnMapping>();
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = false });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
+
+            fcmap.TransformRowsAndCols();
+            Assert.True(fcmap[0].Row == 1);
+            Assert.True(fcmap[0].Col == 1);
+
+            Assert.True(fcmap[1].Row == 1);
+            Assert.True(fcmap[1].Col == 2);
+
+            Assert.True(fcmap[2].Row == 2);
+            Assert.True(fcmap[2].Col == 1);
+
+            Assert.True(fcmap[3].Row == 3);
+            Assert.True(fcmap[3].Col == 1);
+
+            Assert.True(fcmap[4].Row == 3);
+            Assert.True(fcmap[4].Col == 2);
+        }
+
+        [Fact]
+        public void TestAllInLastRow()
+        {
+            var fcmap = new List<FieldColumnMapping>();
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = null });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
+
+            fcmap.TransformRowsAndCols();
+            Assert.True(fcmap[0].Row == 1);
+            Assert.True(fcmap[0].Col == 1);
+
+            Assert.True(fcmap[1].Row == 2);
+            Assert.True(fcmap[1].Col == 1);
+
+            Assert.True(fcmap[2].Row == 2);
+            Assert.True(fcmap[2].Col == 2);
+
+            Assert.True(fcmap[3].Row == 2);
+            Assert.True(fcmap[3].Col == 3);
+
+            Assert.True(fcmap[4].Row == 2);
+            Assert.True(fcmap[4].Col == 4);
+        }
+
+        [Fact]
+        public void TestAllInFirstRow()
+        {
+            var fcmap = new List<FieldColumnMapping>();
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { DisplayInColumn = false });
+
+            fcmap.TransformRowsAndCols();
+            Assert.True(fcmap[0].Row == 1);
+            Assert.True(fcmap[0].Col == 1);
+
+            Assert.True(fcmap[1].Row == 1);
+            Assert.True(fcmap[1].Col == 2);
+
+            Assert.True(fcmap[2].Row == 1);
+            Assert.True(fcmap[2].Col == 3);
+
+            Assert.True(fcmap[3].Row == 1);
+            Assert.True(fcmap[3].Col == 4);
+
+            Assert.True(fcmap[4].Row == 2);
+            Assert.True(fcmap[4].Col == 1);
+        }
     }
 }

@@ -12,12 +12,19 @@ namespace d360.web.Extensions
         {
             int row = 1;
             int col = 1;
+            bool currentDisplayState = false;
             foreach (var item in fcMap)
             {
                 bool displayInColumn = item.DisplayInColumn.HasValue && item.DisplayInColumn.Value == true;
+
+                if (displayInColumn != currentDisplayState && !(row == 1 && col == 1))
+                {
+                    row++;
+                }
+
                 if (!displayInColumn)
                 {
-                    item.Row = row++;
+                    item.Row = row;
                     item.Col = 1;
                     col = 1;
                 }
@@ -26,6 +33,8 @@ namespace d360.web.Extensions
                     item.Row = row;
                     item.Col = col++;
                 }
+
+                currentDisplayState = displayInColumn;
             }
         }
     }

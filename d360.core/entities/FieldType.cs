@@ -371,8 +371,6 @@ namespace d360.core.entities
         public bool ShowIfEmpty { get; set; }
         [DataMember]
         public bool DisplayRefListDescription { get; set; }
-        [DataMember]
-        public bool? DisplayInColumn { get; set; }
     }
 
     public class FieldTypeDataTypeComputedScoreApiViewModel
@@ -628,8 +626,6 @@ namespace d360.core.entities
         public bool IsPrimaryFilter { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_Search Search { get; set; }
-        [DataMember]
-        public bool? DisplayInColumn { get; set; }
     }
 
     public class FieldTypeDataTypeTextApiViewModel : FieldTypeEditableApiViewModel
