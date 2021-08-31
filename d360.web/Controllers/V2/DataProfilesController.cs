@@ -485,7 +485,7 @@ namespace d360.web.Controllers.V2
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
             }
-        }        
+        }
 
         /// <summary>
         /// Retrieves a list of assets that match a given asset.
@@ -506,6 +506,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending and are sorted on the asset path value", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_simpleFilter", "The text or phrase you want to find within path field or tags. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by. Allowed values are 'path' and 'tags'. By default the results are ordered by asset path value.", DataType = "string", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetMatchingAssets(Guid assetUid, string similarType)

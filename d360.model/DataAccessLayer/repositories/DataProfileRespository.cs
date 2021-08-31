@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using d360.core.queue;
 using d360.extensions;
 using d360.core.enums;
+using d360.model.helpers;
 
 namespace d360.model.DataAccessLayer
 {
@@ -395,8 +396,11 @@ namespace d360.model.DataAccessLayer
             bool includeTotal = true;
             string orderDirection = "asc";
             string orderByField = "[path]";
-            string simpleFilterSQL = "";
+            string filterSQL = "";
             string structureCondition = "";
+            string filterJoinSQL = "";
+
+            List<string> filters = new List<string>();
 
             var asset = CompanyContext.Filter<Asset>(o => o.uid == assetUid).FirstOrDefault();
             if (asset == null)
@@ -442,6 +446,35 @@ namespace d360.model.DataAccessLayer
                 bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includetotal").Value, out includeTotal);
             }
 
+            if (queryParams.Any(q => q.Key == "_filter"))
+            {
+                var filterValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
+                List<DefaultFilter> fieldList = new List<DefaultFilter>
+                {
+                new DefaultFilter("Tag", "T.tagString", SqlFieldType.Text),
+                new DefaultFilter("Path", "[Segments]", SqlFieldType.Xml),
+                };
+
+                if (!string.IsNullOrEmpty(filterValue))
+                {
+                    var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, false, true);
+                    filterExpressionParser.OverrideAllowedDefaultFields(fieldList);
+                    Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                    List<int> filteredFieldIds = new List<int>();
+                    filters.Add(filterExpressionParser.Parse(filterValue, out sqlParams, out filteredFieldIds));                    
+
+                    foreach (var item in sqlParams)
+                    {
+                        dbArgs.Add(item.Key, item.Value);
+                    }
+
+                    filterJoinSQL = $@"outer Apply (
+								Select tagString = STRING_AGG( value ,'|')
+								 From  OpenJSON(tagsJson)
+							 ) T";
+                }
+            }
+
             if (queryParams.Any(qp => qp.Key.ToLower() == "_order"))
             {                
                 var orderBy = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_order").Value.Trim().ToLower();
@@ -472,15 +505,18 @@ namespace d360.model.DataAccessLayer
 
                     dbArgs.Add("@simpleFilter", simpleFilter);
 
-                    simpleFilterSQL = $@"where 
-                                        (
-                                            [Path] like @simpleFilter 
-                                            or                                             
-                                            exists (select 1 from OPENJSON(tagsJson) where Value like @simpleFilter)
-                                        )";                                
+                    filters.Add($@"(
+                                    [Path] like @simpleFilter 
+                                    or                                             
+                                    exists (select 1 from OPENJSON(tagsJson) where Value like @simpleFilter)
+                                )");                                
                 }
             }
 
+            if (filters.Any())
+            {
+                filterSQL = $"where {string.Join(" and ", filters)}";
+            }               
 
             if (!CompanyContext.CurrentResourceIsAdmin)
             {
@@ -517,6 +553,7 @@ namespace d360.model.DataAccessLayer
                                 NDP.DisplayPath as [path]
                                 ,JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(tags.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as tagsJson 
                                 ,case when F.id is null then 0 else 1 end as hasTagField
+                                ,[Segments]
                             into #tempdata2
                             FROM #tempadpid adp 
                                 {sqlJoins}		     
@@ -527,7 +564,8 @@ namespace d360.model.DataAccessLayer
 	                            Count(*)
                             FROM                                     
                                 #tempdata2
-                            {simpleFilterSQL}
+                            {filterJoinSQL}
+                            {filterSQL}
 		                    ";
 
             if (onlyTotal)
@@ -549,7 +587,8 @@ namespace d360.model.DataAccessLayer
             var itemsSQL = $@"{tempTablesSQL}
 
                             select * from #tempdata2
-                            {simpleFilterSQL}
+                            {filterJoinSQL}
+                            {filterSQL}
                             order by {orderByField} {orderDirection}
                              {offset}
 
