@@ -396,8 +396,8 @@ namespace d360.model.DataAccessLayer
                                 vs.Fields as FieldsXml,
                                 itemstep.Settings as ItemSettings,
                                 itemstep.Fields as ItemFields,
-                                item.StartedOn,
-                                item.CompletedOn,
+                                itemstep.StartedOn,
+                                itemstep.CompletedOn,
                                 R.uid as StartedByUid,
                                 R1.uid as CompletedByUid
                                 from workflow.[version]  v 
@@ -407,8 +407,8 @@ namespace d360.model.DataAccessLayer
                                 itemstep.StepID = vs.id
                                 inner join [workflow].[Item] item on
                                 item.VersionID =v.id and itemstep.ItemID = item.id
-                                left outer join reporting.Global_Resource R on R.ResourceID = item.StartedBy
-                                left outer join reporting.Global_Resource R1 on R1.ResourceID = item.CompletedBy
+                                left outer join reporting.Global_Resource R on R.ResourceID = itemstep.StartedBy
+                                left outer join reporting.Global_Resource R1 on R1.ResourceID = itemstep.CompletedBy
                                  where item.uid=@uid";
 
             var workflowInstances = await CompanyContext.QueryAsync<WorkflowInstanceApiViewModel>(sql, dbArgs, ApiTimeout);

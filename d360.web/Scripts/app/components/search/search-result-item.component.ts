@@ -11,7 +11,6 @@ import { Tag, TagItem } from '../../models/tag.model';
 import { ObjectStatisticsService } from '../../services/object-statistics.service';
 import { MenuItem } from 'primeng/api';
 import { Menu } from 'primeng/menu';
-import { isUndefined } from 'util';
 import { DatePipe } from '@angular/common';
 
 declare var CompanySettings;
