@@ -102,7 +102,7 @@ namespace d360.web.Controllers.V2
                     new DefaultFilter("field", "A.field", SqlFieldType.Text),
                     new DefaultFilter("newValue", "A.newValue", SqlFieldType.Text),
                     new DefaultFilter("class", "A.class", SqlFieldType.Number),
-                    new DefaultFilter("version", "A.version", SqlFieldType.Number),
+                    new DefaultFilter("version", "isnull(A.version,0)", SqlFieldType.Number),
                     new DefaultFilter("previousValue", "A.previousValue", SqlFieldType.Text)
                 };
 
