@@ -22,6 +22,8 @@ using d360.core.entities.Process;
 using AngleSharp.Text;
 using System.Drawing;
 using System.Threading;
+using d360.model.helpers.filters;
+
 namespace d360.model.DataAccessLayer
 {
     public class AssetRepository : BaseRepository, IAssetRepository
@@ -420,7 +422,7 @@ namespace d360.model.DataAccessLayer
 
             fieldJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID");
 
-            dbArgs.Add("@assetTypePassedID", assetTypeID);
+            dbArgs.Add("@assetTypeID", assetTypeID);
             whereStatements.Add("A.AssetTypeID = @assetTypeID");
 
             dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
@@ -878,7 +880,8 @@ namespace d360.model.DataAccessLayer
                     }
                     getFieldSql(allFieldTypes, tempArgs, tempJoins, tempFieldColumns);
 
-                    var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, includeParent);
+                    var filterDataProvider = new FilterDataProvider(CompanyContext);
+                    var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CustomFields, includeParent);
                     filterExpressionParser.LoadFieldTypes(allFieldTypes, tempFieldColumns);
                     Dictionary<string, object> sqlParams = new Dictionary<string, object>();
                     List<int> filteredFields = new List<int>();
@@ -935,7 +938,8 @@ namespace d360.model.DataAccessLayer
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_relationfilter").Value;
                 if (!string.IsNullOrEmpty(value))
                 {
-                    var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.Relationships);
+                    var filterDataProvider = new FilterDataProvider(CompanyContext);
+                    var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.Relationships);
                     Dictionary<string, object> sqlParams = new Dictionary<string, object>();
                     List<int> filteredFields = new List<int>();
                     whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
@@ -1297,7 +1301,7 @@ namespace d360.model.DataAccessLayer
                 model.total = null;
             }
 
-            var getAllQuery = $"declare @assetTypeID int = (select @assetTypePassedId); {populatePremissionAssetTableSQL} {populateOwnershipLookupTableSQL} {countSql} {sql} ";
+            var getAllQuery = $"{populatePremissionAssetTableSQL} {populateOwnershipLookupTableSQL} {countSql} {sql} OPTION(RECOMPILE)";
 
             if (!string.IsNullOrEmpty(selectOwnershipSQL))
             {

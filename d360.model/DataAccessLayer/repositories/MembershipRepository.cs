@@ -3,7 +3,6 @@ using Dapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using d360.core.enums;
 using System.Net;
@@ -15,6 +14,7 @@ using d360.core;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using Newtonsoft.Json.Linq;
+using d360.model.helpers.filters;
 using d360.core.helpers;
 
 namespace d360.model.DataAccessLayer
@@ -1640,7 +1640,9 @@ order by	q.SortOrder";
 
                 if (!string.IsNullOrEmpty(filterValue))
                 {
-                    var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, false, true);
+                    var filterDataProvider = new FilterDataProvider(CompanyContext);
+
+                    var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CustomFields, false, true);
                     filterExpressionParser.OverrideAllowedDefaultFields(fieldList);
                     Dictionary<string, object> sqlParams = new Dictionary<string, object>();
                     List<int> filteredFieldIds = new List<int>();

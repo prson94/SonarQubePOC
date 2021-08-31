@@ -4,7 +4,6 @@ using d360.core.entities;
 using d360.model;
 using d360.web.Models.Attributes;
 using Dapper;
-using Resources;
 using SpreadsheetLight;
 using System;
 using System.Diagnostics;
@@ -19,10 +18,10 @@ using System.Collections.Generic;
 using Swashbuckle.Swagger.Annotations;
 using d360.web.Filters;
 using d360.web.Models;
-using d360.model.helpers;
 using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.entities.Metric;
+using d360.model.helpers.filters;
 
 namespace d360.web.Controllers.V2
 {
@@ -103,7 +102,7 @@ namespace d360.web.Controllers.V2
                     new DefaultFilter("field", "A.field", SqlFieldType.Text),
                     new DefaultFilter("newValue", "A.newValue", SqlFieldType.Text),
                     new DefaultFilter("class", "A.class", SqlFieldType.Number),
-                    new DefaultFilter("version", "A.version", SqlFieldType.Number),
+                    new DefaultFilter("version", "isnull(A.version,0)", SqlFieldType.Number),
                     new DefaultFilter("previousValue", "A.previousValue", SqlFieldType.Text)
                 };
 
