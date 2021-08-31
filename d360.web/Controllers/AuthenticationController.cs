@@ -798,6 +798,8 @@ namespace d360.web.Controllers
             string userName = null;
             string firstName = null;
             string lastName = null;
+            List<string> groups = new List<string>();
+
             try
             {
                 //var userInfo = await client.GetUserInfoAsync(new UserInfoRequest
@@ -841,6 +843,9 @@ namespace d360.web.Controllers
                         case "surname":
                             lastName = prop.Value.ToString();
                             break;
+                        //case "http://schemas.microsoft.com/ws/2008/06/identity/claims/groups":
+                        //    groups = prop.Values?.Select(v => v.Data.ToString())?.ToList();
+                        //    break;
                         default:
                             customClaims.Add(prop.Type, prop.Value.ToString());
                             break;
@@ -884,7 +889,7 @@ namespace d360.web.Controllers
                 };
 
                 return parseUserInfoAndLogin(userName, firstName, lastName, 
-                    null, customClaims, 
+                    groups, customClaims, 
                     openIdRequest.RedirectUrl, addOpenIdTokenToContext);
             }
             catch (Exception ex)
