@@ -2397,6 +2397,31 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                 }
             }
 
+            var fcmap = (await Company.QueryAsync<FieldColumnMapping>(@"
+                select ft.Name, DisplayInColumn from asset a
+                inner join fieldtype ft on ft.assettypeid = a.assettypeid
+                where a.object = @type and a.objectid = @objectid
+                and ft.isdisplayable = 1
+                order by ColumnOrder", new { type = type.ToString(), objectid = id })).ToList();
+
+            fcmap.TransformRowsAndCols();
+            model.fieldColumnMappings = fcmap;
+
+            for (int i = 0; i < model.rows.Count; i++)
+            {
+                var field = model.rows[i].FirstColumnFields.FirstOrDefault();
+                if (field == null)
+                {
+                    continue;
+                }
+                var map = fcmap.FirstOrDefault(x => x.Name == field.FieldName);
+                if (map == null)
+                {
+                    continue;
+                }
+                field.Row = map.Row;
+                field.Column = map.Col;
+            }
 
             switch (type)
             {
@@ -2407,7 +2432,27 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
 
                         if (asset != null)
                         {
-                            model.rows.AddRange(await loadDynamicDisplayFields(type, id).ConfigureAwait(false));
+                            var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
+                            foreach (var drow in dynamicRows)
+                            {
+                                var row = model.fieldColumnMappings.FirstOrDefault(x => x.Name == drow.FirstColumnFields.FirstOrDefault().FieldName).Row;
+                                drow.FirstColumnFields.ForEach(x => x.Row = row);
+                            }
+
+                            foreach (var drow in dynamicRows)
+                            {
+                                var row = model.fieldColumnMappings.FirstOrDefault(x => x.Name == drow.FirstColumnFields.FirstOrDefault().FieldName).Row;
+
+                                var refModel = model.rows.FirstOrDefault(x => x.FirstColumnFields.FirstOrDefault().Row == row);
+                                if (refModel == null)
+                                {
+                                    model.rows.Add(drow);
+                                }
+                                else
+                                {
+                                    refModel.FirstColumnFields.AddRange(drow.FirstColumnFields);
+                                }
+                            }
 
                             var parent = Company.GetParentObject(id, SystemObjects.Artifact);
 
@@ -3799,17 +3844,6 @@ where v.id = {0}", id)).FirstOrDefault();
                     }
                 });
             }
-
-            var fcmap = (await Company.QueryAsync<FieldColumnMapping>(@"
-                select ft.Name, DisplayInColumn from asset a
-                inner join fieldtype ft on ft.assettypeid = a.assettypeid
-                where a.object = @type and a.objectid = @objectid
-                and ft.isdisplayable = 1
-                order by ColumnOrder", new { type = type.ToString(), objectid = id })).ToList();
-
-            fcmap.TransformRowsAndCols();
-
-            model.fieldColumnMappings = fcmap;
 
             return model;
         }

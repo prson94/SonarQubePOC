@@ -17,9 +17,9 @@ namespace d360.web.Extensions
             {
                 bool displayInColumn = item.DisplayInColumn.HasValue && item.DisplayInColumn.Value == true;
 
-                if (displayInColumn != currentDisplayState && !(row == 1 && col == 1))
+                if (displayInColumn != currentDisplayState || displayInColumn == false)
                 {
-                    row++;
+                    row = fcMap.Max(x => x.Row) + 1;
                 }
 
                 if (!displayInColumn)
