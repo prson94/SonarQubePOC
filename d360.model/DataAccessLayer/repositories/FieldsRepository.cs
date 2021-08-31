@@ -1946,7 +1946,7 @@ from	IntersectType I
                 var definition = ftl.ParseComplexLookupDefinition();
 
                 var mappings = definition.GetFieldMapings();
-                var fieldTypeIds = definition.Fields.Select(x => x.FieldTypeID).Where(x => x > 0).ToList();
+                var fieldTypeIds = definition.Fields.Where(x=> !x.FieldTypeName.StartsWith("Related Item.")).Select(x => x.FieldTypeID).Where(x => x > 0).ToList();
                 List<FieldType> fields = Company.FieldTypes.Where(x => fieldTypeIds.Contains(x.ID)).AsNoTracking().ToList();
                 foreach (var f in mappings)
                 {
