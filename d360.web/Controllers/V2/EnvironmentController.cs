@@ -36,10 +36,12 @@ namespace d360.web.Controllers.V2
     {
         IStorageProvider _storage;
         IAssetRepository _assetRepository;
-        public EnvironmentController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IAssetRepository assetRepository) : base(community, company)
+        ISettingsRepository _settingsRepository;
+        public EnvironmentController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IAssetRepository assetRepository, ISettingsRepository settingsRepository) : base(community, company)
         {
             _storage = storage;
             _assetRepository = assetRepository;
+            _settingsRepository = settingsRepository;
         }
 
         [HttpGet, AjaxValidateAntiForgeryToken, Route("rebuilds"), ApiExplorerSettings(IgnoreApi = true)]
@@ -140,30 +142,14 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var settings = Community.Filter<CompanySetting>(i => i.CompanyID == Company.CurrentCompanyID).ToList();
-
-                var stylesSetting = settings.SingleOrDefault(i => i.SettingID == 24);
-                //if the css is not empty or null create a new css
                 if (!string.IsNullOrWhiteSpace(UpdateCss.css))
                 {
-                    //update the company setting to say where the files is 
-
-                    if (stylesSetting == null)
-                    {
-                        stylesSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 24, Value = $"{constants.COMPANY_STYLES_URL}{Company.CurrentCompanyID}.css" };
-                        Community.Add(stylesSetting);
-                    }
-                    else
-                    {
-                        stylesSetting.Value = $"{constants.COMPANY_STYLES_URL}{Company.CurrentCompanyID}.css";
-                        Community.SaveChanges();
-                    }
-
+                    _settingsRepository.UpsertSetting(Setting.CustomCSSLocation, $"{constants.COMPANY_STYLES_URL}{Company.CurrentCompanyID}.css");
                     await _storage.CreateFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css", UpdateCss.css, "text/css", false);
                 }
                 else
                 {
-                    Community.Delete<CompanySetting>(stylesSetting);
+                    _settingsRepository.DeleteSetting(Setting.CustomCSSLocation);
                 }
             }
             catch { }
@@ -202,33 +188,18 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var companySettings = Community.Query<SettingModel>(
-                    $@"select    S.ID as SettingID, 
-                                S.Name, 
-                                S.FieldName, 
-                                S.Description, 
-                                coalesce(C.Value, S.DefaultValue) as Value
-                    from        Setting S 
-                                left join CompanySetting C on C.SettingID = S.ID and C.CompanyID = @c
-                    {(settingId.HasValue ? "where S.ID = @settingId" : "")}", new { c = Company.CurrentCompanyID, settingId })
-                    .ToDictionary(k => k.FieldName, v => v.Value);
-
-
-
-                var settings = Community
-                    .Settings
-                    .AsEnumerable();
-
+                var settings = _settingsRepository.GetSettings();
                 if (settingId.HasValue)
-                    settings = settings.Where(s => s.ID == settingId);
-
+                {
+                    settings = settings.Where(s => (int)s.ID == settingId.Value).ToList();
+                }
+                
                 if (settingId.HasValue && settings.Count() == 0)
                 {
                     return ReturnApiError(HttpStatusCode.NotFound, "Setting with this id not found");
                 }
 
-                var response = settings.Select(s => new CompanySettingApiModel(s, companySettings[s.FieldName]));
-
+                var response = settings.Select(s => new CompanySettingApiModel(s, s.Value));
 
                 return Request.CreateResponse(HttpStatusCode.OK, response);
             }
@@ -259,9 +230,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var setting = Community
-                    .Settings
-                    .FirstOrDefault(s => s.ID == model.SettingID);
+                var setting = Setting.ActionMessage.GetAsList().SingleOrDefault(s => (int)s.ID == model.SettingID);
 
                 if (setting == null)
                     return ReturnApiError(HttpStatusCode.NotFound, "Setting with this id not found");
@@ -272,38 +241,18 @@ namespace d360.web.Controllers.V2
                 if (!model.HasExactlyOneValue)
                     return ReturnApiError(HttpStatusCode.BadRequest, "Exactly one value must be provided based on the setting's data type");
 
-
-                var companySetting = Community
-                    .CompanySettings
-                    .FirstOrDefault(c => c.CompanyID == Company.CurrentCompanyID && c.SettingID == model.SettingID);
-
                 bool clearSetting = false;
                 string value = "";
 
                 string valueErrorMessage = "Provided value does not match the expected data type for this setting";
-                switch (setting.SettingType)
+                switch (setting.Type)
                 {
                     case SettingType.Text:
                         if (model.StringSetting == null)
                             return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
                         if (model.StringSetting.Value == null)
                             clearSetting = true;
-
-                        if (model.SettingID == 73)
-                        {
-                            if (Guid.TryParse(model.StringSetting.Value, out Guid val))
-                            {
-                                value = val.ToString();
-                            }
-                            else
-                            {
-                                return ReturnApiError(HttpStatusCode.BadRequest, "Provided value is not a valid Guid");
-                            }
-                        }
-                        else
-                        {
-                            value = model.StringSetting.Value;
-                        }
+                        value = model.StringSetting.Value;
                         break;
                     case SettingType.Number:
                         if (model.NumberSetting == null)
@@ -386,10 +335,8 @@ namespace d360.web.Controllers.V2
                         break;
                 }
 
-
-
-                //sanitize allowed CORS origins
-                if (setting.ID == 76 && !string.IsNullOrEmpty(value))
+                // Sanitize allowed CORS origins
+                if (setting.ID == Setting.AllowedOrigins && !string.IsNullOrEmpty(value))
                 {
                     value = string.Join(",", value
                         .Split(',')
@@ -398,30 +345,15 @@ namespace d360.web.Controllers.V2
                         .ToList());
                 }
 
-                if (clearSetting && companySetting != null)
+                if (clearSetting)
                 {
-                    Community.CompanySettings.Remove(companySetting);
+                    _settingsRepository.DeleteSetting(setting.ID);
                 }
-                else if (!clearSetting)
+                else
                 {
-                    if (companySetting == null)
-                    {
-                        companySetting = new CompanySetting
-                        {
-                            CompanyID = Company.CurrentCompanyID,
-                            SettingID = model.SettingID,
-                            Value = value
-                        };
-
-                        Community.CompanySettings.Add(companySetting);
-                    }
-                    else
-                    {
-                        companySetting.Value = value;
-                    }
+                    _settingsRepository.UpsertSetting(setting.ID, value);
                 }
 
-                Community.SaveChanges();
                 return Request.CreateResponse(HttpStatusCode.OK);
             }
             catch (Exception ex)

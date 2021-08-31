@@ -35,12 +35,14 @@ namespace d360.web.Controllers
 
         readonly IStorageProvider Storage;
         readonly IResponsibilityRepository ResponsibilityRepository;
+        readonly ISettingsRepository SettingsRepository;
 
-        public FormController(ICommunityContext community, ICompanyContext company, ISecurityContextProvider secProvider, IStorageProvider storage, IResponsibilityRepository responsibilityRepository)
+        public FormController(ICommunityContext community, ICompanyContext company, ISecurityContextProvider secProvider, IStorageProvider storage, IResponsibilityRepository responsibilityRepository, ISettingsRepository settingsRepository)
             : base(community, company)
         {
             Storage = storage;
             ResponsibilityRepository = responsibilityRepository;
+            SettingsRepository = settingsRepository;
 #if DEBUG
             company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
 #endif
@@ -742,22 +744,22 @@ namespace d360.web.Controllers
         [Route("CompanySettings")]
         public JsonNetResult CompanySettings()
         {
-            var settings = Community.Filter<CompanySetting>(i => i.CompanyID == Company.CurrentCompanyID).ToList();
+            var settings = SettingsRepository.GetSettings();
             var model = new CompanySettingsEditorModel();
-            model.DisableCommunityPosting = (settings.Any(i => i.SettingID == 1) ? bool.Parse(settings.Single(i => i.SettingID == 1).Value) : false);
-            model.DisableIssueManagement = (settings.Any(i => i.SettingID == 17) ? bool.Parse(settings.Single(i => i.SettingID == 17).Value) : false);
-            model.EnableShoppingCart = (settings.Any(i => i.SettingID == 20) ? bool.Parse(settings.Single(i => i.SettingID == 20).Value) : false);
-            model.DefaultRoute = (settings.Any(i => i.SettingID == 22) ? settings.Single(i => i.SettingID == 22).Value : "");
-            model.EnableSearchExactMatch = (settings.Any(i => i.SettingID == 23) ? bool.Parse(settings.Single(i => i.SettingID == 23).Value) : false);
-            model.HideData3SixtyUsers = (settings.Any(i => i.SettingID == 9) ? bool.Parse(settings.Single(i => i.SettingID == 9).Value) : true);
-            model.ShowAllUsersAPIKey = (settings.Any(i => i.SettingID == 57) ? bool.Parse(settings.Single(i => i.SettingID == 57).Value) : true);
-            model.WorkflowCatchAllGroup = (settings.Any(i => i.SettingID == 58) ? Int32.Parse(settings.Single(i => i.SettingID == 58).Value) : 0);
-            model.WorkflowDigestEmailDays = (settings.Any(i => i.SettingID == 78) ? int.Parse(settings.Single(i => i.SettingID == 78).Value) : 0);
-            model.MaxDropdownItems = (settings.Any(i => i.SettingID == 60) ? Int32.Parse(settings.Single(i => i.SettingID == 60).Value) : 10000);
-            model.WriteActionDescription = (settings.Any(i => i.SettingID == 61) ? bool.Parse(settings.Single(i => i.SettingID == 61).Value) : true);
-            model.MaxExcelExportRows = (settings.Any(i => i.SettingID == 71) ? Int32.Parse(settings.Single(i => i.SettingID == 71).Value) : 10000);
-            model.CurrentCompanyIconPath = (settings.Any(i => i.SettingID == 3) ? settings.Single(i => i.SettingID == 3).Value : "");
-            model.CurrentCompanyLogoPath = (settings.Any(i => i.SettingID == 2) ? settings.Single(i => i.SettingID == 2).Value : "");
+            model.DisableCommunityPosting = settings.GetValue<bool>(Setting.DisableCommunityPosting);
+            model.DisableIssueManagement = settings.GetValue<bool>(Setting.DisableCommunityPosting)(settings.Any(i => i.SettingID == 17) ? bool.Parse(settings.Single(i => i.SettingID == 17).Value) : false);
+            model.EnableShoppingCart = settings.GetValue<bool>(Setting.DisableCommunityPosting)(settings.Any(i => i.SettingID == 20) ? bool.Parse(settings.Single(i => i.SettingID == 20).Value) : false);
+            model.DefaultRoute = settings.GetValue<bool>(Setting.DisableCommunityPosting)(settings.Any(i => i.SettingID == 22) ? settings.Single(i => i.SettingID == 22).Value : "");
+            model.EnableSearchExactMatch = settings.GetValue<bool>(Setting.DisableCommunityPosting)(settings.Any(i => i.SettingID == 23) ? bool.Parse(settings.Single(i => i.SettingID == 23).Value) : false);
+            model.HideData3SixtyUsers = settings.GetValue<bool>(Setting.DisableCommunityPosting)(settings.Any(i => i.SettingID == 9) ? bool.Parse(settings.Single(i => i.SettingID == 9).Value) : true);
+            model.ShowAllUsersAPIKey = settings.GetValue<bool>(Setting.DisableCommunityPosting)(settings.Any(i => i.SettingID == 57) ? bool.Parse(settings.Single(i => i.SettingID == 57).Value) : true);
+            model.WorkflowCatchAllGroup = settings.GetValue<bool>(Setting.DisableCommunityPosting)(settings.Any(i => i.SettingID == 58) ? Int32.Parse(settings.Single(i => i.SettingID == 58).Value) : 0);
+            model.WorkflowDigestEmailDays = settings.GetValue<bool>(Setting.DisableCommunityPosting)(settings.Any(i => i.SettingID == 78) ? int.Parse(settings.Single(i => i.SettingID == 78).Value) : 0);
+            model.MaxDropdownItems = settings.GetValue<bool>(Setting.DisableCommunityPosting)(settings.Any(i => i.SettingID == 60) ? Int32.Parse(settings.Single(i => i.SettingID == 60).Value) : 10000);
+            model.WriteActionDescription = settings.GetValue<bool>(Setting.DisableCommunityPosting)(settings.Any(i => i.SettingID == 61) ? bool.Parse(settings.Single(i => i.SettingID == 61).Value) : true);
+            model.MaxExcelExportRows = settings.GetValue<bool>(Setting.DisableCommunityPosting)(settings.Any(i => i.SettingID == 71) ? Int32.Parse(settings.Single(i => i.SettingID == 71).Value) : 10000);
+            model.CurrentCompanyIconPath = settings.GetValue<bool>(Setting.DisableCommunityPosting)(settings.Any(i => i.SettingID == 3) ? settings.Single(i => i.SettingID == 3).Value : "");
+            model.CurrentCompanyLogoPath = settings.GetValue<bool>(Setting.DisableCommunityPosting)(settings.Any(i => i.SettingID == 2) ? settings.Single(i => i.SettingID == 2).Value : "");
             if (settings.Any(i => i.SettingID == 4))
             {
                 var ipRaw = settings.Single(i => i.SettingID == 4).Value;
@@ -769,25 +771,25 @@ namespace d360.web.Controllers
                 }
             }
 
-            model.DefaultSearchTypes = (settings.Any(i => i.SettingID == 13) ? settings.Single(i => i.SettingID == 13).Value : "");
+            model.DefaultSearchTypes = settings.GetValue<bool>(Setting.DisableCommunityPosting)(settings.Any(i => i.SettingID == 13) ? settings.Single(i => i.SettingID == 13).Value : "");
 
-            model.LineageVersion = (settings.Any(i => i.SettingID == 68) ? int.Parse(settings.Single(i => i.SettingID == 68).Value) : 3);
+            model.LineageVersion = settings.GetValue<bool>(Setting.DisableCommunityPosting)(settings.Any(i => i.SettingID == 68) ? int.Parse(settings.Single(i => i.SettingID == 68).Value) : 3);
 
             IQueryable<SiteNav> siteNavs = Company.SiteNav.Where(s => s.ParentID == null && s.Name != "#Home").OrderBy(s => s.SortOrder);
             model.SiteNav = siteNavs.ToList();
 
             model.HeaderBackgroundColor = (settings.Any(i => i.SettingID == 10) ? settings.Single(i => i.SettingID == 10).Value : "");
 
-            model.ShowHomeAssignmentTile = (settings.Any(i => i.SettingID == 39) ? bool.Parse(settings.Single(i => i.SettingID == 39).Value) : true);
-            model.ShowHomeBoardTile = (settings.Any(i => i.SettingID == 40) ? bool.Parse(settings.Single(i => i.SettingID == 40).Value) : true);
-            model.ShowHomeActivityTile = (settings.Any(i => i.SettingID == 41) ? bool.Parse(settings.Single(i => i.SettingID == 41).Value) : true);
-            model.ShowHomePageTitle = (settings.Any(i => i.SettingID == 42) ? bool.Parse(settings.Single(i => i.SettingID == 42).Value) : false);
-            model.HomePageTitleSize = (settings.Any(i => i.SettingID == 43) ? settings.Single(i => i.SettingID == 43).Value : "38pt");
-            model.HomePageTitleColor = (settings.Any(i => i.SettingID == 44) ? settings.Single(i => i.SettingID == 44).Value : "#fff");
-            model.HomePageBackgroundImage = (settings.Any(i => i.SettingID == 45) ? settings.Single(i => i.SettingID == 45).Value : "");
-            model.BrowserTitlePrefix = (settings.Any(i => i.SettingID == 33) ? settings.Single(i => i.SettingID == 33).Value : "D3S");
-            model.AllowedOrigins = (settings.Any(i => i.SettingID == 76) ? settings.Single(i => i.SettingID == 76).Value : "");
-            model.FramingDomains = (settings.Any(i => i.SettingID == 77) ? settings.Single(i => i.SettingID == 77).Value : "");
+            model.ShowHomeAssignmentTile = settings.GetValue<bool>(Setting.DisableCommunityPosting)(settings.Any(i => i.SettingID == 39) ? bool.Parse(settings.Single(i => i.SettingID == 39).Value) : true);
+            model.ShowHomeBoardTile = settings.GetValue<bool>(Setting.DisableCommunityPosting)(settings.Any(i => i.SettingID == 40) ? bool.Parse(settings.Single(i => i.SettingID == 40).Value) : true);
+            model.ShowHomeActivityTile = settings.GetValue<bool>(Setting.DisableCommunityPosting)(settings.Any(i => i.SettingID == 41) ? bool.Parse(settings.Single(i => i.SettingID == 41).Value) : true);
+            model.ShowHomePageTitle = settings.GetValue<bool>(Setting.DisableCommunityPosting)(settings.Any(i => i.SettingID == 42) ? bool.Parse(settings.Single(i => i.SettingID == 42).Value) : false);
+            model.HomePageTitleSize = settings.GetValue<string>(Setting.HomePageTitleSize);
+            model.HomePageTitleColor = settings.GetValue<string>(Setting.HomePageTitleColor);
+            model.HomePageBackgroundImage = settings.GetValue<string>(Setting.HomePageBackgroundImage);
+            model.BrowserTitlePrefix = settings.GetValue<string>(Setting.BrowserTitlePrefix);
+            model.AllowedOrigins = settings.GetValue<string>(Setting.AllowedOrigins);
+            model.FramingDomains = settings.GetValue<string>(Setting.FramingDomains);
 
 
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };

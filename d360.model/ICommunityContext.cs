@@ -16,13 +16,11 @@ namespace d360.model
         DbSet<CompanyDomainSetting> CompanyDomainSettings { get; set; }        
         DbSet<CompanyRebuildJobStatus> CompanyRebuildJobStatuses { get; set; }        
         DbSet<CompanyResource> CompanyResources { get; set; }
-        DbSet<CompanySetting> CompanySettings { get; set; }
         CompanySsoModel CurrentCompanySsoModel { get; set; }
         DbSet<DatabaseServer> DatabaseServers { get; set; }
         DbSet<DomainCertificate> DomainCertificates { get; set; }
         DbSet<DomainSetting> DomainSettings { get; set; }                        
         DbSet<Resource> Resources { get; set; }
-        DbSet<Setting> Settings { get; set; }
 
         new bool Add<T>(T item) where T : BaseObject;
         bool ChangePassword(int resourceID, string oldPassword, string newPassword);        

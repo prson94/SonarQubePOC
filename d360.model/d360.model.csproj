@@ -139,6 +139,7 @@
     <Compile Include="DataAccessLayer\IRelationshipRepository.cs" />
     <Compile Include="DataAccessLayer\IResourceRepository.cs" />
     <Compile Include="DataAccessLayer\IResponsibilityRepository.cs" />
+    <Compile Include="DataAccessLayer\ISettingsRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\BaseRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\CommentRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\DataProfileRespository.cs" />
@@ -162,6 +163,7 @@
     <Compile Include="DataAccessLayer\repositories\ResourceRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\ResponsibilityRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\ScoringRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\SettingsRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\SurveyRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\ConnectorLabelRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\TagRepository.cs" />

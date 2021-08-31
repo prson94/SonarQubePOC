@@ -699,7 +699,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public async Task<IHttpActionResult> GetMetricFieldsByAssetType(Guid assetTypeUid)
+        public IHttpActionResult GetMetricFieldsByAssetType(Guid assetTypeUid)
         {
             try
             {

@@ -51,12 +51,10 @@ namespace d360.model
         public DbSet<CompanyDomainSetting> CompanyDomainSettings { get; set; }        
         public DbSet<CompanyRebuildJobStatus> CompanyRebuildJobStatuses { get; set; }
         public DbSet<CompanyResource> CompanyResources { get; set; }
-        public DbSet<CompanySetting> CompanySettings { get; set; }
         public DbSet<DatabaseServer> DatabaseServers { get; set; }
         public DbSet<DomainCertificate> DomainCertificates { get; set; }
         public DbSet<DomainSetting> DomainSettings { get; set; }        
         public DbSet<Resource> Resources { get; set; }
-        public DbSet<Setting> Settings { get; set; }
         
         #endregion
 
@@ -143,26 +141,10 @@ namespace d360.model
             var changedItems = this.ChangeTracker.Entries().Where(p => p.State == EntityState.Added ||
                     p.State == EntityState.Deleted ||
                     p.State == EntityState.Modified);
-
-            foreach (var entry in changedItems)
-            {
-                if (entry.Entity is CompanySetting)
-                {
-                    bClearSettingsCache = true;
-                }
-            }
            
             try
             {
                 returnValue = base.SaveChanges();
-
-                // After we update the database we clear the cached copy of settings.  
-                // if we do this before we update the database it opens a period of 
-                // at which a load request would cache the old data...
-                if (bClearSettingsCache)
-                {
-                    Caching.RemoveItem(SettingsCacheKey);  // clear the settings cache for this company as the settings have changed.
-                }
             }
             catch (OptimisticConcurrencyException)
             {
