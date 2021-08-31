@@ -459,9 +459,7 @@ namespace d360.model.DataAccessLayer
                 {
                     var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, false, true);
                     filterExpressionParser.OverrideAllowedDefaultFields(fieldList);
-                    Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                    List<int> filteredFieldIds = new List<int>();
-                    filters.Add(filterExpressionParser.Parse(filterValue, out sqlParams, out filteredFieldIds));                    
+                    filters.Add(filterExpressionParser.Parse(filterValue, out Dictionary<string, object> sqlParams, out List<int> filteredFieldIds));                    
 
                     foreach (var item in sqlParams)
                     {
