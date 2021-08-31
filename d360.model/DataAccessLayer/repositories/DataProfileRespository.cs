@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 using d360.core.queue;
 using d360.extensions;
 using d360.core.enums;
-using d360.model.helpers;
+using d360.model.helpers.filters;
 
 namespace d360.model.DataAccessLayer
 {
@@ -457,13 +457,11 @@ namespace d360.model.DataAccessLayer
 
                 if (!string.IsNullOrEmpty(filterValue))
                 {
-                    var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, false, true);
-                    filterExpressionParser.OverrideAllowedDefaultFields(fieldList);
-                    filters.Add(filterExpressionParser.Parse(filterValue, out Dictionary<string, object> sqlParams, out List<int> filteredFieldIds));                    
-
-                    foreach (var item in sqlParams)
+                    CompanyContext.ParseAdvancedFilterQueryParameter(queryParams, fieldList, out DynamicParameters advFilterArgs, out List<string>  advFilterStatements);
+                    if (advFilterArgs != null && advFilterStatements != null)
                     {
-                        dbArgs.Add(item.Key, item.Value);
+                        dbArgs.AddDynamicParams(advFilterArgs);
+                        filters.AddRange(advFilterStatements);
                     }
 
                     filterJoinSQL = $@"outer Apply (

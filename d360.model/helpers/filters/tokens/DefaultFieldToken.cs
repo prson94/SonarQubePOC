@@ -31,7 +31,7 @@ namespace d360.model.helpers.filters
         {
             this.sqlParamsRef = sqlParams;
 
-
+            value = value.ToString().ToLower(CultureInfo.InvariantCulture);
             if (defaultFilter.SqlFieldType == SqlFieldType.Xml)
             {
                 if (value.ToString().StartsWith("'"))
