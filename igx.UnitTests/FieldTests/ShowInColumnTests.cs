@@ -59,21 +59,23 @@ namespace igx.UnitTests.FieldsHelperTests
             fcmap.Add(new FieldColumnMapping() { DisplayInColumn = false });
             fcmap.Add(new FieldColumnMapping() { DisplayInColumn = null });
 
-            fcmap.TransformRowsAndCols();
-            Assert.True(fcmap[0].Row == 1);
-            Assert.True(fcmap[0].Col == 1);
+            var fcMapper = new FieldColumnMapper(fcmap, null);
+            fcMapper.TransformRowsAndCols(); 
 
-            Assert.True(fcmap[1].Row == 2);
-            Assert.True(fcmap[1].Col == 1);
+            Assert.True(fcMapper.FieldColumnMappings[0].Row == 1);
+            Assert.True(fcMapper.FieldColumnMappings[0].Col == 1);
 
-            Assert.True(fcmap[2].Row == 3);
-            Assert.True(fcmap[2].Col == 1);
+            Assert.True(fcMapper.FieldColumnMappings[1].Row == 2);
+            Assert.True(fcMapper.FieldColumnMappings[1].Col == 1);
 
-            Assert.True(fcmap[3].Row == 4);
-            Assert.True(fcmap[3].Col == 1);
+            Assert.True(fcMapper.FieldColumnMappings[2].Row == 3);
+            Assert.True(fcMapper.FieldColumnMappings[2].Col == 1);
 
-            Assert.True(fcmap[4].Row == 5);
-            Assert.True(fcmap[4].Col == 1);
+            Assert.True(fcMapper.FieldColumnMappings[3].Row == 4);
+            Assert.True(fcMapper.FieldColumnMappings[3].Col == 1);
+
+            Assert.True(fcMapper.FieldColumnMappings[4].Row == 5);
+            Assert.True(fcMapper.FieldColumnMappings[4].Col == 1);
         }
 
         [Fact]
@@ -86,21 +88,23 @@ namespace igx.UnitTests.FieldsHelperTests
             fcmap.Add(new FieldColumnMapping() { DisplayInColumn = false });
             fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
 
-            fcmap.TransformRowsAndCols();
-            Assert.True(fcmap[0].Row == 1);
-            Assert.True(fcmap[0].Col == 1);
+            var fcMapper = new FieldColumnMapper(fcmap, null);
+            fcMapper.TransformRowsAndCols();
 
-            Assert.True(fcmap[1].Row == 2);
-            Assert.True(fcmap[1].Col == 1);
+            Assert.True(fcMapper.FieldColumnMappings[0].Row == 1);
+            Assert.True(fcMapper.FieldColumnMappings[0].Col == 1);
 
-            Assert.True(fcmap[2].Row == 3);
-            Assert.True(fcmap[2].Col == 1);
+            Assert.True(fcMapper.FieldColumnMappings[1].Row == 2);
+            Assert.True(fcMapper.FieldColumnMappings[1].Col == 1);
 
-            Assert.True(fcmap[3].Row == 4);
-            Assert.True(fcmap[3].Col == 1);
+            Assert.True(fcMapper.FieldColumnMappings[2].Row == 3);
+            Assert.True(fcMapper.FieldColumnMappings[2].Col == 1);
 
-            Assert.True(fcmap[4].Row == 5);
-            Assert.True(fcmap[4].Col == 1);
+            Assert.True(fcMapper.FieldColumnMappings[3].Row == 4);
+            Assert.True(fcMapper.FieldColumnMappings[3].Col == 1);
+
+            Assert.True(fcMapper.FieldColumnMappings[4].Row == 5);
+            Assert.True(fcMapper.FieldColumnMappings[4].Col == 1);
         }
 
         [Fact]
@@ -113,21 +117,22 @@ namespace igx.UnitTests.FieldsHelperTests
             fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
             fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
 
-            fcmap.TransformRowsAndCols();
-            Assert.True(fcmap[0].Row == 1);
-            Assert.True(fcmap[0].Col == 1);
+            var fcMapper = new FieldColumnMapper(fcmap, null);
+            fcMapper.TransformRowsAndCols(); 
+            Assert.True(fcMapper.FieldColumnMappings[0].Row == 1);
+            Assert.True(fcMapper.FieldColumnMappings[0].Col == 1);
 
-            Assert.True(fcmap[1].Row == 1);
-            Assert.True(fcmap[1].Col == 2);
+            Assert.True(fcMapper.FieldColumnMappings[1].Row == 1);
+            Assert.True(fcMapper.FieldColumnMappings[1].Col == 2);
 
-            Assert.True(fcmap[2].Row == 1);
-            Assert.True(fcmap[2].Col == 3);
+            Assert.True(fcMapper.FieldColumnMappings[2].Row == 1);
+            Assert.True(fcMapper.FieldColumnMappings[2].Col == 3);
 
-            Assert.True(fcmap[3].Row == 1);
-            Assert.True(fcmap[3].Col == 4);
+            Assert.True(fcMapper.FieldColumnMappings[3].Row == 1);
+            Assert.True(fcMapper.FieldColumnMappings[3].Col == 4);
 
-            Assert.True(fcmap[4].Row == 1);
-            Assert.True(fcmap[4].Col == 5);
+            Assert.True(fcMapper.FieldColumnMappings[4].Row == 1);
+            Assert.True(fcMapper.FieldColumnMappings[4].Col == 5);
         }
 
         [Fact]
@@ -140,21 +145,23 @@ namespace igx.UnitTests.FieldsHelperTests
             fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
             fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
 
-            fcmap.TransformRowsAndCols();
-            Assert.True(fcmap[0].Row == 1);
-            Assert.True(fcmap[0].Col == 1);
+            var fcMapper = new FieldColumnMapper(fcmap, null);
+            fcMapper.TransformRowsAndCols(); 
+            
+            Assert.True(fcMapper.FieldColumnMappings[0].Row == 1);
+            Assert.True(fcMapper.FieldColumnMappings[0].Col == 1);
 
-            Assert.True(fcmap[1].Row == 1);
-            Assert.True(fcmap[1].Col == 2);
+            Assert.True(fcMapper.FieldColumnMappings[1].Row == 1);
+            Assert.True(fcMapper.FieldColumnMappings[1].Col == 2);
 
-            Assert.True(fcmap[2].Row == 2);
-            Assert.True(fcmap[2].Col == 1);
+            Assert.True(fcMapper.FieldColumnMappings[2].Row == 2);
+            Assert.True(fcMapper.FieldColumnMappings[2].Col == 1);
 
-            Assert.True(fcmap[3].Row == 3);
-            Assert.True(fcmap[3].Col == 1);
+            Assert.True(fcMapper.FieldColumnMappings[3].Row == 3);
+            Assert.True(fcMapper.FieldColumnMappings[3].Col == 1);
 
-            Assert.True(fcmap[4].Row == 3);
-            Assert.True(fcmap[4].Col == 2);
+            Assert.True(fcMapper.FieldColumnMappings[4].Row == 3);
+            Assert.True(fcMapper.FieldColumnMappings[4].Col == 2);
         }
 
         [Fact]
@@ -167,21 +174,23 @@ namespace igx.UnitTests.FieldsHelperTests
             fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
             fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
 
-            fcmap.TransformRowsAndCols();
-            Assert.True(fcmap[0].Row == 1);
-            Assert.True(fcmap[0].Col == 1);
+            var fcMapper = new FieldColumnMapper(fcmap, null);
+            fcMapper.TransformRowsAndCols(); 
+            
+            Assert.True(fcMapper.FieldColumnMappings[0].Row == 1);
+            Assert.True(fcMapper.FieldColumnMappings[0].Col == 1);
 
-            Assert.True(fcmap[1].Row == 2);
-            Assert.True(fcmap[1].Col == 1);
+            Assert.True(fcMapper.FieldColumnMappings[1].Row == 2);
+            Assert.True(fcMapper.FieldColumnMappings[1].Col == 1);
 
-            Assert.True(fcmap[2].Row == 2);
-            Assert.True(fcmap[2].Col == 2);
+            Assert.True(fcMapper.FieldColumnMappings[2].Row == 2);
+            Assert.True(fcMapper.FieldColumnMappings[2].Col == 2);
 
-            Assert.True(fcmap[3].Row == 2);
-            Assert.True(fcmap[3].Col == 3);
+            Assert.True(fcMapper.FieldColumnMappings[3].Row == 2);
+            Assert.True(fcMapper.FieldColumnMappings[3].Col == 3);
 
-            Assert.True(fcmap[4].Row == 2);
-            Assert.True(fcmap[4].Col == 4);
+            Assert.True(fcMapper.FieldColumnMappings[4].Row == 2);
+            Assert.True(fcMapper.FieldColumnMappings[4].Col == 4);
         }
 
         [Fact]
@@ -194,21 +203,23 @@ namespace igx.UnitTests.FieldsHelperTests
             fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
             fcmap.Add(new FieldColumnMapping() { DisplayInColumn = false });
 
-            fcmap.TransformRowsAndCols();
-            Assert.True(fcmap[0].Row == 1);
-            Assert.True(fcmap[0].Col == 1);
+            var fcMapper = new FieldColumnMapper(fcmap, null);
+            fcMapper.TransformRowsAndCols(); 
+            
+            Assert.True(fcMapper.FieldColumnMappings[0].Row == 1);
+            Assert.True(fcMapper.FieldColumnMappings[0].Col == 1);
 
-            Assert.True(fcmap[1].Row == 1);
-            Assert.True(fcmap[1].Col == 2);
+            Assert.True(fcMapper.FieldColumnMappings[1].Row == 1);
+            Assert.True(fcMapper.FieldColumnMappings[1].Col == 2);
 
-            Assert.True(fcmap[2].Row == 1);
-            Assert.True(fcmap[2].Col == 3);
+            Assert.True(fcMapper.FieldColumnMappings[2].Row == 1);
+            Assert.True(fcMapper.FieldColumnMappings[2].Col == 3);
 
-            Assert.True(fcmap[3].Row == 1);
-            Assert.True(fcmap[3].Col == 4);
+            Assert.True(fcMapper.FieldColumnMappings[3].Row == 1);
+            Assert.True(fcMapper.FieldColumnMappings[3].Col == 4);
 
-            Assert.True(fcmap[4].Row == 2);
-            Assert.True(fcmap[4].Col == 1);
+            Assert.True(fcMapper.FieldColumnMappings[4].Row == 2);
+            Assert.True(fcMapper.FieldColumnMappings[4].Col == 1);
         }
     }
 }

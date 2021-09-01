@@ -21,14 +21,6 @@ namespace d360.web.Models
         public int? Id { get; set; }
     }
 
-    public class FieldColumnMapping
-    {
-        public string Name { get; set; }
-        public bool? DisplayInColumn { get; set; }
-        public int Row { get; set; }
-        public int Col { get; set; }
-    }
-
     public class DetailReadOnlyModel
     {
         public DetailReadOnlyModel()
@@ -46,7 +38,6 @@ namespace d360.web.Models
         public List<dynamic> Scores { get; set; }
         public int columns { get; set; }
         public List<DetailReadOnlyRowModel> rows { get; set; }
-        public List<FieldColumnMapping> fieldColumnMappings { get; set; }
     }
 
     public class LookupDataReadOnlyModel

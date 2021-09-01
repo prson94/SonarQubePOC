@@ -2339,25 +2339,25 @@ from    (
         }
 
         [Route("{type}/{uid}/detail")]
-        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, Guid uid, bool useSingleColumn = false, bool includeHeader = false)
+        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, Guid uid, bool useAssetDetailColumnLayout = false, bool includeHeader = false)
         {
             int objectId = -1;
             switch (type)
             {
                 case SystemObjects.Tag:
                     objectId = Company.Tags.FirstOrDefault(x => x.uid == uid).ID;
-                    return await GetObjectDetailFields(type, objectId, useSingleColumn, includeHeader);
+                    return await GetObjectDetailFields(type, objectId, useAssetDetailColumnLayout, includeHeader);
                 default:
                     var asset = Company.Assets.FirstOrDefault(a => a.uid == uid);
-                    return await GetObjectDetailFields(type, asset?.ObjectID ?? -1, useSingleColumn, includeHeader);
+                    return await GetObjectDetailFields(type, asset?.ObjectID ?? -1, useAssetDetailColumnLayout, includeHeader);
             }
         }
 
 
         [Route("{type}/{id:int}/detail")]
-        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, int id, bool useSingleColumn = false, bool includeHeader = false)
+        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, int id, bool useAssetDetailColumnLayout = false, bool includeHeader = false)
         {
-            var model = new DetailReadOnlyModel() { columns = useSingleColumn ? 1 : 2 };
+            var model = new DetailReadOnlyModel() { columns = useAssetDetailColumnLayout ? 1 : 2 };
             model.Object = type.ToString();
             model.ObjectID = id;
 
@@ -2396,31 +2396,20 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                     model.ObjectTypeID = metadata.ObjectTypeID;
                 }
             }
+            FieldColumnMapper fcMapper = null;
 
-            var fcmap = (await Company.QueryAsync<FieldColumnMapping>(@"
+            if (useAssetDetailColumnLayout)
+            {
+                var fieldColumnMappings = (await Company.QueryAsync<FieldColumnMapping>(@"
                 select ft.Name, DisplayInColumn from asset a
                 inner join fieldtype ft on ft.assettypeid = a.assettypeid
                 where a.object = @type and a.objectid = @objectid
                 and ft.isdisplayable = 1
                 order by ColumnOrder", new { type = type.ToString(), objectid = id })).ToList();
 
-            fcmap.TransformRowsAndCols();
-            model.fieldColumnMappings = fcmap;
-
-            for (int i = 0; i < model.rows.Count; i++)
-            {
-                var field = model.rows[i].FirstColumnFields.FirstOrDefault();
-                if (field == null)
-                {
-                    continue;
-                }
-                var map = fcmap.FirstOrDefault(x => x.Name == field.FieldName);
-                if (map == null)
-                {
-                    continue;
-                }
-                field.Row = map.Row;
-                field.Column = map.Col;
+                fcMapper = new FieldColumnMapper(fieldColumnMappings, model);
+                fcMapper.TransformRowsAndCols();
+                fcMapper.UpdateModelRowsAndCols();
             }
 
             switch (type)
@@ -2433,26 +2422,16 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                         if (asset != null)
                         {
                             var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
-                            foreach (var drow in dynamicRows)
+
+                            if (useAssetDetailColumnLayout && fcMapper != null)
                             {
-                                var row = model.fieldColumnMappings.FirstOrDefault(x => x.Name == drow.FirstColumnFields.FirstOrDefault().FieldName).Row;
-                                drow.FirstColumnFields.ForEach(x => x.Row = row);
+                                fcMapper.ArrangeRowsAndCols(dynamicRows);
+                            }
+                            else
+                            {
+                                model.rows.AddRange(dynamicRows);
                             }
 
-                            foreach (var drow in dynamicRows)
-                            {
-                                var row = model.fieldColumnMappings.FirstOrDefault(x => x.Name == drow.FirstColumnFields.FirstOrDefault().FieldName).Row;
-
-                                var refModel = model.rows.FirstOrDefault(x => x.FirstColumnFields.FirstOrDefault().Row == row);
-                                if (refModel == null)
-                                {
-                                    model.rows.Add(drow);
-                                }
-                                else
-                                {
-                                    refModel.FirstColumnFields.AddRange(drow.FirstColumnFields);
-                                }
-                            }
 
                             var parent = Company.GetParentObject(id, SystemObjects.Artifact);
 
@@ -3832,7 +3811,7 @@ where v.id = {0}", id)).FirstOrDefault();
 
             }
 
-            if (useSingleColumn)
+            if (useAssetDetailColumnLayout)
             {
                 model.rows.ForEach(r =>
                 {
