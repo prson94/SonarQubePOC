@@ -24,27 +24,6 @@ export class RuleType {
     }
 }
 
-export class Rule {
-    Name: string;
-    ID: number;
-    Description: string;
-    Measurement: string;
-    Purpose: string;
-    Resolution: string;
-    SourceID: number;
-}
-
-export class RuleResult {
-    ID: number;
-    RuleID: number;
-    EffectiveDate: Date;
-    RowsPassed: number;
-    RowsFailed: number;
-    PassFraction: number;
-    FailFraction: number;
-    Passed: boolean;
-}
-
 export class RuleDetail {
     Name: string;
     ID: number;
@@ -85,7 +64,6 @@ export class RuleResultItems {
     PassCount: number;
     FailCount: number;
     PassFraction: number;
-    Passed: boolean;
 }
 
 export class RuleResultFilter {

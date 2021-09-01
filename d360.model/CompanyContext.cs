@@ -1502,9 +1502,6 @@ where	I.ID is null";
             modelBuilder.Entity<FieldWithRelation>().Property(x => x.MinimumLength).HasPrecision(38, 18);
             modelBuilder.Entity<FieldWithRelation>().Property(x => x.MaximumLength).HasPrecision(38, 18);
 
-            modelBuilder.Entity<core.entities.Rule>().Property(x => x.Threshold).HasPrecision(4, 3);
-
-            
             modelBuilder.Entity<Question>().HasMany<QuestionTypeOption>(i => i.QuestionTypeOptions).WithMany(i => i.Questions).Map(i =>
             {
                 i.MapLeftKey("QuestionID").MapRightKey("QuestionTypeOptionID").ToTable("QuestionOption");

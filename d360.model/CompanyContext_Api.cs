@@ -1309,17 +1309,6 @@ where T.ExecutionId = @executionid;
 ", new { executionID }, commandTimeout: timeout, transaction: trans);
         }
 
-        private void ResolveRuleTypeLookupValues(Guid executionID, int timeout = 3600)
-        {
-            Connection.Execute($@"
-                        update  T 
-                        set     T.Success = 0,
-                                T.Message = coalesce(T.Message, '') + 'Rule asset contains an invalid threshold; '
-                        from    api.ExecutionAsset T
-                                inner join {ApiExecutionFieldTable} S on S.ExecutionID = T.ExecutionID and T.ExecutionID = @executionID and S.ItemNumber = T.ItemNumber and S.FieldName = 'Threshold' and ISNUMERIC(S.FieldValue) = 0;
-                        ", new { executionID }, commandTimeout: timeout);
-        }
-
         private void ResolveColorValues(Guid executionID, int timeout = 3600)
         {
             Connection.Execute($@"
@@ -1553,14 +1542,6 @@ where T.ExecutionId = @executionid;
                                 success = false;
                                 errorMessages.Add($"{fieldName} is not a valid field");
                                 break;
-                        }
-                    }
-                    else if (ot == "RuleType")
-                    {
-                        if (fieldName != "Threshold" && fieldName != "Status" && fieldName != "Dimension")
-                        {
-                            success = false;
-                            errorMessages.Add($"{fieldName} is not a valid field");
                         }
                     }
                     else
@@ -4742,34 +4723,6 @@ where   ExecutionID = @ExecutionID
                                 }
                             }
 
-                            if (success && at.Object == "RuleType")
-                            {
-                                // Check to ensure Threshold is present.
-                                success = model.Fields.ContainsKey("Threshold");
-                                if (!success)
-                                {
-                                    errorMessage = "Asset is missing a required Threshold field value";
-                                }
-                                else if (decimal.TryParse(model.Fields["Threshold"], out decimal threshold)) //Check threshold is a number
-                                {
-                                    if (!(threshold > 0 && threshold <= 1)) //check threshold is between 0 and 1
-                                    {
-                                        errorMessage = "Threshold value must be between 0 and 1";
-                                        success = false;
-                                    }
-                                    else if (decimal.Round(threshold, 3) != threshold) //check threshold has a max of 3 decimal places
-                                    {
-                                        errorMessage = "Threshold value cannot exceed 3 decimal places.";
-                                        success = false;
-                                    }
-                                }
-                                else
-                                {
-                                    errorMessage = "Threshold value is not a valid number";
-                                    success = false;
-                                }
-                            }
-
                             if (success)
                             {
                                 importFields.Add(i, model.Fields.Keys.ToList());
@@ -4942,13 +4895,6 @@ where   ExecutionID = @ExecutionID
                             AddMeasurement(metrics, "ResolveFieldLookupValues", sw.ElapsedMilliseconds, ++step);
                             sw.Restart();
                         }
-                    }
-
-                    if (at.Class == AssetTypeClass.Rule)
-                    {
-                        ResolveRuleTypeLookupValues(execution.ExecutionID, timeout);
-                        AddMeasurement(metrics, "ResolveRuleTypeLookupValues", sw.ElapsedMilliseconds, ++step);
-                        sw.Restart();
                     }
 
                     if (hasLookupFieldTypes)
@@ -5278,10 +5224,8 @@ CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResu
 merge   [Rule] as T
 using   (
         select  A.ItemNumber,
-                T.FieldValue as Threshold,
                 CR.LookupValue as Color
         from    api.ExecutionAsset A
-                inner join {ApiExecutionFieldTable} T on T.ExecutionID = A.ExecutionID and T.ItemNumber = A.ItemNumber and T.FieldName = 'Threshold'
                 left join {ApiExecutionFieldTable} CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
         where   A.ExecutionID = @ExecutionID
                 and A.Success is null
@@ -5289,8 +5233,8 @@ using   (
         ) S
 on      (1 = 0)
 when    not matched then
-insert  (RuleTypeID, Threshold, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Color)
-values  (@ObjectID, S.Threshold, @R, @D, @R, @D, S.Color)
+insert  (RuleTypeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Color)
+values  (@ObjectID, @R, @D, @R, @D, S.Color)
 output  inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
 update  T
@@ -5312,14 +5256,11 @@ from    api.ExecutionAsset T
                                             {
                                                 Connection.Execute($@"
 update	T
-set		
-        T.Threshold = case when FD.FieldValue is not null then FD.FieldValue else T.Threshold end,
-        T.Color = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end,
+set		T.Color = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end,
         T.UpdatedBy = @R,
 		T.UpdatedOn = @D
 from	[Rule] T
 		inner join api.ExecutionAsset S on S.ObjectID = T.ID and {executionAssetWhereSql}
-        left join {ApiExecutionFieldTable} FD on FD.ExecutionID = S.ExecutionID and FD.ItemNumber = S.ItemNumber and FD.FieldName = 'Threshold'
         left join {ApiExecutionFieldTable} CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
 
 update	api.ExecutionAsset

@@ -559,7 +559,6 @@ namespace d360.web.Controllers.V2
 		                        A.ID as 'ID',
 		                        A.uid as 'AssetUid',
 		                        AT.uid as 'AssetTypeUid',
-		                        R.Threshold,
 		                        A.UpdatedOn,
 		                        A.CreatedOn,
                                 'asset/' +  + CAST(A.uid as varchar(36)) as 'Url'
@@ -577,7 +576,6 @@ namespace d360.web.Controllers.V2
 
             getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
 
-            fieldTypes.Add(new FieldType { Type = "decimal", Name = "Threshold", FriendlyName = "Threshold" });
             fieldTypes.Add(new FieldType { Type = "Number", Name = "AssetUid", FriendlyName = "Rule UID" });
             fieldTypes.Add(new FieldType { Type = "Number", Name = "ID", FriendlyName = "Rule ID" });
             if (template == null || (template != null && template.IncludeUrl))

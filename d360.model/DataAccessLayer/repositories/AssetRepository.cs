@@ -3599,7 +3599,6 @@ select  A.ID as AssetId,
         A.UpdatedOn,
         ACJ.ColorJson as Color,
         {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
-        {(assetType.Class == AssetTypeClass.Rule ? "R.Threshold," : "")}
         KP.KeyPath as [Path] {(fieldColumns.Any() ? "," : "")}
         {string.Join(",\n", fieldColumns)}
 from    Asset A

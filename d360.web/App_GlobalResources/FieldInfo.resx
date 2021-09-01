@@ -117,12 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ApiName_Description" xml:space="preserve">
-    <value>Please provide a name with no spaces.  This name is also used in any API requests where this field is allocated.</value>
-  </data>
-  <data name="ApiName_Name" xml:space="preserve">
-    <value>API Name</value>
-  </data>
   <data name="AssetId_Description" xml:space="preserve">
     <value>The Asset ID is the unique identifier for this asset across all Data360 assets.</value>
   </data>
@@ -138,89 +132,14 @@
   <data name="Description_Name" xml:space="preserve">
     <value>Description</value>
   </data>
-  <data name="DisplayDescription_Description" xml:space="preserve">
-    <value>Provide any description that will be displayed by default any time someone sees information in this field.</value>
-  </data>
-  <data name="DisplayDescription_Name" xml:space="preserve">
-    <value>Display Description</value>
-  </data>
   <data name="DisplayFormat_Description" xml:space="preserve">
     <value>The display format must be provided to properly render the text-based display value of the item.</value>
   </data>
   <data name="DisplayFormat_Name" xml:space="preserve">
     <value>Display Format</value>
   </data>
-  <data name="DisplayStyle_Name" xml:space="preserve">
-    <value>Display Style</value>
-  </data>
-  <data name="FieldReferenceItemListFromRelationship_NeededRelationship" xml:space="preserve">
-    <value>You should not be able to save or edit a 'reference item list from relationship' without a relationship.</value>
-  </data>
-  <data name="FieldTypeCategory_Name" xml:space="preserve">
-    <value>Category</value>
-  </data>
-  <data name="Field_RelationShipDuplicate" xml:space="preserve">
-    <value>A field type using the specified relationship type has already been defined. Only one relationship field type per relationship type is supported.</value>
-  </data>
-  <data name="FilterEnabled_Description" xml:space="preserve">
-    <value>Should this field be displayed in the relevant grid or list within the application?</value>
-  </data>
-  <data name="FilterEnabled_Name" xml:space="preserve">
-    <value>Listable?</value>
-  </data>
-  <data name="FormDescription_Description" xml:space="preserve">
-    <value>Provide any description that will be displayed by default any time someone adds or edits information in this field.</value>
-  </data>
-  <data name="FormDescription_Name" xml:space="preserve">
-    <value>Form Description</value>
-  </data>
-  <data name="FriendlyName_Description" xml:space="preserve">
-    <value>Please provide a user-friendly name that will be displayed in forms.</value>
-  </data>
-  <data name="FriendlyName_Name" xml:space="preserve">
-    <value>Friendly Name</value>
-  </data>
-  <data name="FusionPromotionEnable_ToolTip" xml:space="preserve">
-    <value>To enable the promotion rule, check the enabled check box.  This will enable the promotion rule within Data360.</value>
-  </data>
-  <data name="FusionPromotionTo_ToolTip" xml:space="preserve">
-    <value>Please select a destination where you would like the fusion item to be promoted to.</value>
-  </data>
-  <data name="FusionPromotionUnder_ToolTip" xml:space="preserve">
-    <value>Please select a parent for the item since the selected Promote To value has multiple levels.</value>
-  </data>
   <data name="ID_Name" xml:space="preserve">
     <value>ID</value>
-  </data>
-  <data name="InputType_Description" xml:space="preserve">
-    <value>You can choose from a variety of field types, including Lookup.</value>
-  </data>
-  <data name="InputType_Name" xml:space="preserve">
-    <value>Input Type</value>
-  </data>
-  <data name="ListDisplayFormat_Description" xml:space="preserve">
-    <value>Since list themselves can also contain dynamic fields, you must choose at least one field from the list to use as the display value.  You can also choose more than one field.  For example: {Name} : {Description}.</value>
-  </data>
-  <data name="ListDisplayFormat_Name" xml:space="preserve">
-    <value>List Display Format</value>
-  </data>
-  <data name="ListType_Description" xml:space="preserve">
-    <value>Since you have chosen Lookup as the field type, you can choose a list that will provide values for this field.</value>
-  </data>
-  <data name="ListType_Name" xml:space="preserve">
-    <value>Type of List</value>
-  </data>
-  <data name="MaximumLength_Description" xml:space="preserve">
-    <value>You may force a maximum length that the user is allowed to provide.</value>
-  </data>
-  <data name="MaximumLength_Name" xml:space="preserve">
-    <value>Maximum Length</value>
-  </data>
-  <data name="MinimumLength_Description" xml:space="preserve">
-    <value>You may force a minimum length that the user is required to provide.  This will make the field required.</value>
-  </data>
-  <data name="MinimumLength_Name" xml:space="preserve">
-    <value>Minimum Length</value>
   </data>
   <data name="Name_Name" xml:space="preserve">
     <value>Name</value>
@@ -230,90 +149,6 @@
   </data>
   <data name="Parent_Name" xml:space="preserve">
     <value>Owner/Parent</value>
-  </data>
-  <data name="Pattern_Description" xml:space="preserve">
-    <value>For text fields you can validate user entries using advanced regular expression.  You will find some common regular expressions below to the right.</value>
-  </data>
-  <data name="Pattern_Name" xml:space="preserve">
-    <value>Validation Pattern</value>
-  </data>
-  <data name="RelationshipObject_Name" xml:space="preserve">
-    <value>Object</value>
-  </data>
-  <data name="RelationshipPredicate_Name" xml:space="preserve">
-    <value>Predicate</value>
-  </data>
-  <data name="RelationshipSide1_Name" xml:space="preserve">
-    <value>Relationship Side 1</value>
-  </data>
-  <data name="RelationshipSide2_Name" xml:space="preserve">
-    <value>Relationship Side 2</value>
-  </data>
-  <data name="RelationshipSubject_Name" xml:space="preserve">
-    <value>Subject</value>
-  </data>
-  <data name="Required_Description" xml:space="preserve">
-    <value>Is a user required to choose or provide a value for this field?</value>
-  </data>
-  <data name="Required_Name" xml:space="preserve">
-    <value>Required?</value>
-  </data>
-  <data name="ResponsibilityAllocatedTo_Name" xml:space="preserve">
-    <value>Responsibility Allocated To</value>
-  </data>
-  <data name="ResponsibilitySourcedFrom_Name" xml:space="preserve">
-    <value>Responsibility Sourced From</value>
-  </data>
-  <data name="Role_Name" xml:space="preserve">
-    <value>Role</value>
-  </data>
-  <data name="RuleDescription_Description" xml:space="preserve">
-    <value>The description or definition of this rule.</value>
-  </data>
-  <data name="RuleDescription_Name" xml:space="preserve">
-    <value>Description</value>
-  </data>
-  <data name="RuleDimension_Description" xml:space="preserve">
-    <value>The dimension this rule is associated with.  This is a high-level classification for this rule, such as whether the rule measures completeness or accuracy.</value>
-  </data>
-  <data name="RuleDimension_Name" xml:space="preserve">
-    <value>Dimension</value>
-  </data>
-  <data name="RuleMeasurement_Description" xml:space="preserve">
-    <value>How do we measure this rule?</value>
-  </data>
-  <data name="RuleMeasurement_Name" xml:space="preserve">
-    <value>Measurement</value>
-  </data>
-  <data name="RuleName_Description" xml:space="preserve">
-    <value>The name of this rule within Data360.</value>
-  </data>
-  <data name="RuleName_Name" xml:space="preserve">
-    <value>Name</value>
-  </data>
-  <data name="RulePurpose_Description" xml:space="preserve">
-    <value>What is the purpose of this rule?  Why does this rule exist?</value>
-  </data>
-  <data name="RulePurpose_Name" xml:space="preserve">
-    <value>Purpose</value>
-  </data>
-  <data name="RuleResolution_Description" xml:space="preserve">
-    <value>How do we resolve this rule when it is triggered?</value>
-  </data>
-  <data name="RuleResolution_Name" xml:space="preserve">
-    <value>Resolution</value>
-  </data>
-  <data name="RuleStatus_Description" xml:space="preserve">
-    <value>What is the status of this rule?</value>
-  </data>
-  <data name="RuleStatus_Name" xml:space="preserve">
-    <value>Status</value>
-  </data>
-  <data name="RuleThreshold_Description" xml:space="preserve">
-    <value>The rule's threshold defines the minimum pass rate to consider of a particular rule result should be considered a pass or fail.</value>
-  </data>
-  <data name="RuleThreshold_Name" xml:space="preserve">
-    <value>Threshold</value>
   </data>
   <data name="RuleType_Description" xml:space="preserve">
     <value>The rule's type categorizes the rule according to its purpose.</value>
@@ -326,15 +161,6 @@
   </data>
   <data name="SystemNoCategory" xml:space="preserve">
     <value>None</value>
-  </data>
-  <data name="TaxonomyType_Description" xml:space="preserve">
-    <value>The subject area that owns the artifact.  All people and sourcing responsibilities will flow from this subject area, with the option to override where required.</value>
-  </data>
-  <data name="TaxonomyType_Name" xml:space="preserve">
-    <value>Subject Area</value>
-  </data>
-  <data name="TestPattern_Name" xml:space="preserve">
-    <value>Test Pattern</value>
   </data>
   <data name="UID_Description" xml:space="preserve">
     <value>The UID is the unique identifier for this item across all of Data360.</value>
@@ -359,17 +185,5 @@
   </data>
   <data name="UpdatedOn_Name" xml:space="preserve">
     <value>Date Last Modified</value>
-  </data>
-  <data name="UseAsTransformation_Description" xml:space="preserve">
-    <value>The assets of this type may be used as a connecting asset to form lineage relationships</value>
-  </data>
-  <data name="UseAsTransformation_Name" xml:space="preserve">
-    <value>Use As Transformation</value>
-  </data>
-  <data name="ValidationDescription_Description" xml:space="preserve">
-    <value>This message will appear to the user if they provide invalid or missing information on this field.  You must enable some form of regular expression pattern validation on this field in order for the message to appear.</value>
-  </data>
-  <data name="ValidationDescription_Name" xml:space="preserve">
-    <value>Validation Message</value>
   </data>
 </root>
