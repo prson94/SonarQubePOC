@@ -60,7 +60,7 @@ namespace igx.UnitTests.FieldsHelperTests
             fcmap.Add(new FieldColumnMapping() { DisplayInColumn = null });
 
             var fcMapper = new FieldColumnMapper(fcmap, null);
-            fcMapper.TransformRowsAndCols(); 
+            fcMapper.TransformRowsAndCols();
 
             Assert.True(fcMapper.FieldColumnMappings[0].Row == 1);
             Assert.True(fcMapper.FieldColumnMappings[0].Col == 1);
@@ -118,7 +118,7 @@ namespace igx.UnitTests.FieldsHelperTests
             fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
 
             var fcMapper = new FieldColumnMapper(fcmap, null);
-            fcMapper.TransformRowsAndCols(); 
+            fcMapper.TransformRowsAndCols();
             Assert.True(fcMapper.FieldColumnMappings[0].Row == 1);
             Assert.True(fcMapper.FieldColumnMappings[0].Col == 1);
 
@@ -146,8 +146,8 @@ namespace igx.UnitTests.FieldsHelperTests
             fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
 
             var fcMapper = new FieldColumnMapper(fcmap, null);
-            fcMapper.TransformRowsAndCols(); 
-            
+            fcMapper.TransformRowsAndCols();
+
             Assert.True(fcMapper.FieldColumnMappings[0].Row == 1);
             Assert.True(fcMapper.FieldColumnMappings[0].Col == 1);
 
@@ -175,8 +175,8 @@ namespace igx.UnitTests.FieldsHelperTests
             fcmap.Add(new FieldColumnMapping() { DisplayInColumn = true });
 
             var fcMapper = new FieldColumnMapper(fcmap, null);
-            fcMapper.TransformRowsAndCols(); 
-            
+            fcMapper.TransformRowsAndCols();
+
             Assert.True(fcMapper.FieldColumnMappings[0].Row == 1);
             Assert.True(fcMapper.FieldColumnMappings[0].Col == 1);
 
@@ -204,8 +204,8 @@ namespace igx.UnitTests.FieldsHelperTests
             fcmap.Add(new FieldColumnMapping() { DisplayInColumn = false });
 
             var fcMapper = new FieldColumnMapper(fcmap, null);
-            fcMapper.TransformRowsAndCols(); 
-            
+            fcMapper.TransformRowsAndCols();
+
             Assert.True(fcMapper.FieldColumnMappings[0].Row == 1);
             Assert.True(fcMapper.FieldColumnMappings[0].Col == 1);
 
@@ -221,5 +221,34 @@ namespace igx.UnitTests.FieldsHelperTests
             Assert.True(fcMapper.FieldColumnMappings[4].Row == 2);
             Assert.True(fcMapper.FieldColumnMappings[4].Col == 1);
         }
+
+        [Fact]
+        public void UpdateModelRowsAndCols()
+        {
+            var fcmap = new List<FieldColumnMapping>();
+            fcmap.Add(new FieldColumnMapping() { Name = "Field1", DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { Name = "Field2", DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { Name = "Field3", DisplayInColumn = false });
+            fcmap.Add(new FieldColumnMapping() { Name = "Field4", DisplayInColumn = true });
+            fcmap.Add(new FieldColumnMapping() { Name = "Field5", DisplayInColumn = true });
+
+            DetailReadOnlyModel model = new DetailReadOnlyModel();
+            var dynamiLoadedFields = new List<DetailReadOnlyRowModel>();
+            dynamiLoadedFields.Add(new DetailReadOnlyRowModel { FirstColumnFields = new List<ReadOnlyField> { new ReadOnlyField { FieldName = "Field1" } } });
+            dynamiLoadedFields.Add(new DetailReadOnlyRowModel { FirstColumnFields = new List<ReadOnlyField> { new ReadOnlyField { FieldName = "Field2" } } });
+            dynamiLoadedFields.Add(new DetailReadOnlyRowModel { FirstColumnFields = new List<ReadOnlyField> { new ReadOnlyField { FieldName = "Field3" } } });
+            dynamiLoadedFields.Add(new DetailReadOnlyRowModel { FirstColumnFields = new List<ReadOnlyField> { new ReadOnlyField { FieldName = "Field4" } } });
+            dynamiLoadedFields.Add(new DetailReadOnlyRowModel { FirstColumnFields = new List<ReadOnlyField> { new ReadOnlyField { FieldName = "Field5" } } });
+
+            var fcMapper = new FieldColumnMapper(fcmap, model);
+            fcMapper.TransformRowsAndCols();
+            fcMapper.ArrangeRowsAndCols(dynamiLoadedFields);
+
+            Assert.True(model.rows[0].FirstColumnFields.Count == 2);
+            Assert.True(model.rows[1].FirstColumnFields.Count == 1);
+            Assert.True(model.rows[2].FirstColumnFields.Count == 2);
+            
+        }
+
     }
 }

@@ -26,8 +26,8 @@ export class ObjectDetailService extends BaseObservableService {
         super(messagesService);
     }
 
-    getObjectDetailByUid(uid: string, objectType: string, useAssetDetailColumnLayout: boolean = false, includeHeader: boolean = false): Observable<any> {
-        return this.http.get(`api/${objectType}/${uid}/detail?useAssetDetailColumnLayout=${useAssetDetailColumnLayout}&includeHeader=${includeHeader}`)
+    getObjectDetailByUid(uid: string, objectType: string, useSingleColumn: boolean = false, includeHeader: boolean = false, useAssetDetailColumnDefinition: boolean = false): Observable<any> {
+        return this.http.get(`api/${objectType}/${uid}/detail?useSingleColumn=${useSingleColumn}&includeHeader=${includeHeader}&useAssetDetailColumnDefinition=${useAssetDetailColumnDefinition}`)
             .pipe(
                 map(response => <any>response),
                 catchError(err => this.handleError(err))
@@ -38,9 +38,10 @@ export class ObjectDetailService extends BaseObservableService {
         objectID: number,
         objectType: string,
         useSingleColumn: boolean = false,
-        includeHeader: boolean = false
+        includeHeader: boolean = false,
+        useAssetDetailColumnDefinition: boolean = false
     ): Observable<any> {
-        return this.http.get(`api/${objectType}/${objectID}/detail?useSingleColumn=${useSingleColumn}&includeHeader=${includeHeader}`)
+        return this.http.get(`api/${objectType}/${objectID}/detail?useSingleColumn=${useSingleColumn}&includeHeader=${includeHeader}&useAssetDetailColumnDefinition=${useAssetDetailColumnDefinition}`)
             .pipe(
                 map(response => <any>response),
                 catchError(err => this.handleError(err))

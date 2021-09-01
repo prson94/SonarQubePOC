@@ -32,6 +32,7 @@ export class AssetDetailComponent implements OnChanges {
     @Input() spacerHeight: string = '32px';
     @Input() paddingLeft: string;
     @Input() isSidePanel: boolean = false;
+    @Input() useAssetDetailColumnDefinition: boolean = false;
 
     assetUID: string;
     assetTypeUID: string;
@@ -75,11 +76,12 @@ export class AssetDetailComponent implements OnChanges {
         let detailSub = null;
 
         if (this.objectType && this.objectID) {
-            detailSub = this.objectDetailService.getObjectDetail(this.objectID, this.objectType, true, this.showHeader);
+            detailSub = this.objectDetailService.getObjectDetail(this.objectID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition);
         }
 
         if (this.objectType && this.objectUID) {
-            detailSub = this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType, true, this.showHeader);
+            console.log(this);
+            detailSub = this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition);
         }
 
         if (detailSub) {

@@ -55,26 +55,6 @@ namespace d360.web.Extensions
             }
         }
 
-        public void UpdateModelRowsAndCols()
-        {
-
-            for (int i = 0; i < _model.rows.Count; i++)
-            {
-                var field = _model.rows[i].FirstColumnFields.FirstOrDefault();
-                if (field == null)
-                {
-                    continue;
-                }
-                var map = _fieldColumnMappings.FirstOrDefault(x => x.Name == field.FieldName);
-                if (map == null)
-                {
-                    continue;
-                }
-                field.Row = map.Row;
-                field.Column = map.Col;
-            }
-        }
-
         public void ArrangeRowsAndCols(List<DetailReadOnlyRowModel> dynamicRows)
         {
             foreach (var drow in dynamicRows)
