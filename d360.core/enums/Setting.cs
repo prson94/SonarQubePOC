@@ -617,14 +617,14 @@ namespace d360.core.enums
                 case SettingType.Number:
                     NumberSetting = new CompanySettingApiNumberModel(setting, companyValue);
                     break;
-                case SettingType.Text:
-                    StringSetting = new CompanySettingApiStringModel(setting, companyValue);
-                    break;
                 case SettingType.IPAddress:
                     IpAddressSetting = new CompanySettingApiIpAddressModel(setting, companyValue);
                     break;
                 case SettingType.Guid:
                     GuidSetting = new CompanySettingApiGuidModel(setting, companyValue);
+                    break;
+                default:
+                    StringSetting = new CompanySettingApiStringModel(setting, companyValue);
                     break;
             }
 
@@ -651,9 +651,14 @@ namespace d360.core.enums
         public CompanySettingApiBooleanModel(SettingInfo setting, string companyValue)
         {
             if (bool.TryParse(setting.DefaultValue, out bool d))
+            {
                 Default = d;
+            }
+
             if (bool.TryParse(companyValue, out bool v))
+            {
                 Value = v;
+            }
         }
 
         public bool Value { get; set; }
@@ -681,9 +686,14 @@ namespace d360.core.enums
         public CompanySettingApiNumberModel(SettingInfo setting, string companyValue)
         {
             if (int.TryParse(setting.DefaultValue, out int d))
+            {
                 Default = d;
+            }
+
             if (int.TryParse(companyValue, out int v))
-                Value = v;
+            {
+                Value = v; 
+            }
         }
 
         public int Value { get; set; }
@@ -716,9 +726,14 @@ namespace d360.core.enums
         public CompanySettingApiGuidModel(SettingInfo setting, string companyValue)
         {
             if (Guid.TryParse(setting.DefaultValue, out Guid d))
+            {
                 Default = d;
+            }
+
             if (Guid.TryParse(companyValue, out Guid v))
+            {
                 Value = v;
+            }
         }
 
         public Guid Value { get; set; }

@@ -793,12 +793,11 @@ namespace d360.web.Controllers
                 SettingInfo currentSettingInfo = null;
                 Setting currentSetting;
 
-                Action<Setting, SettingInfo, bool> settingAction = (Setting s, SettingInfo i, bool delete) => {
+                Action<Setting, SettingInfo, bool> settingAction = (s, i, delete) => {
                     if (delete)
                     {
                         SettingsRepository.DeleteSetting(s);
                         settings.Remove(i);
-                        i = null;
                     }
                     else
                     {
@@ -806,7 +805,7 @@ namespace d360.web.Controllers
                     }
                 };
 
-                Action<Setting, string> settingActionValue = (Setting s, string newValue) => {
+                Action<Setting, string> settingActionValue = (s, newValue) => {
                     currentSettingInfo = settings.Single(o => o.ID == s);
                     currentSettingInfo.Value = newValue;
                     settingAction(s, currentSettingInfo, !currentSettingInfo.IsOverridden);

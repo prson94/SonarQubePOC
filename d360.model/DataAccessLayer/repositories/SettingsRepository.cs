@@ -8,7 +8,8 @@ namespace d360.model.DataAccessLayer
 {
     public class SettingsRepository : BaseRepository, ISettingsRepository
     {
-        ICompanyContext companyContext;
+        readonly ICompanyContext companyContext;
+
         public SettingsRepository(ICompanyContext companyContext)
             : base(companyContext)
         {

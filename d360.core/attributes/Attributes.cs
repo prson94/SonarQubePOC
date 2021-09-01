@@ -10,16 +10,16 @@ namespace d360.core
 
     public abstract class LocalizedAttribute : Attribute
     {
-        private readonly string _resourceKey = null;
-        private readonly ResourceManager _resource = null;
-        private string _value = "";
+        private readonly string _resourceKey;
+        private readonly ResourceManager _resource;
+        private readonly string _value = "";
 
-        public LocalizedAttribute(string value)
+        protected LocalizedAttribute(string value)
         {
             _value = value;
         }
 
-        public LocalizedAttribute(string resourceKey, Type localizedResource)
+        protected LocalizedAttribute(string resourceKey, Type localizedResource)
         {
             _resource = new ResourceManager(localizedResource);
             _resourceKey = resourceKey;
@@ -277,7 +277,7 @@ namespace d360.core
 
     public class LockedAttribute : Attribute
     {
-        public bool Locked { get; private set; } = false;
+        public bool Locked { get; private set; }
         public LockedAttribute(bool locked)
         {
             Locked = locked;

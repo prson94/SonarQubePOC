@@ -47,7 +47,7 @@ export class HeaderProfileComponent implements OnInit, OnDestroy {
             }
         });
 
-        if (this.authenticationService.isAdmin || (CompanySettings != null && CompanySettings.ShowAllUsersAPIKey != null && CompanySettings.ShowAllUsersAPIKey.toString() == 'true')) {
+        if (this.authenticationService.isAdmin || (CompanySettings != null && CompanySettings.ShowAllUsersAPIKey != null && CompanySettings.ShowAllUsersAPIKey.toString() === 'true')) {
             this.showAllUsersAPIKey = true;
         }
     }

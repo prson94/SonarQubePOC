@@ -247,16 +247,12 @@ namespace d360.web.Controllers.V2
                 string valueErrorMessage = "Provided value does not match the expected data type for this setting";
                 switch (setting.Type)
                 {
-                    case SettingType.Text:
-                        if (model.StringSetting == null)
-                            return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
-                        if (model.StringSetting.Value == null)
-                            clearSetting = true;
-                        value = model.StringSetting.Value;
-                        break;
                     case SettingType.Number:
                         if (model.NumberSetting == null)
+                        {
                             return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
+                        }
+
                         if (model.NumberSetting.Value == null)
                         {
                             clearSetting = true;
@@ -275,7 +271,10 @@ namespace d360.web.Controllers.V2
                         break;
                     case SettingType.Boolean:
                         if (model.BooleanSetting == null)
+                        {
                             return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
+                        }
+
                         if (model.BooleanSetting.Value == null)
                         {
                             clearSetting = true;
@@ -295,9 +294,14 @@ namespace d360.web.Controllers.V2
                         break;
                     case SettingType.IPAddress:
                         if (model.IpAddressSetting == null)
+                        {
                             return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
+                        }
+
                         if (model.IpAddressSetting.Value == null || model.IpAddressSetting.Value.Count == 0)
+                        {
                             clearSetting = true;
+                        }
 
                         if (model.IpAddressSetting.Value?.Any() ?? false)
                         {
@@ -326,11 +330,30 @@ namespace d360.web.Controllers.V2
 
                     case SettingType.Guid:
                         if (model.GuidSetting == null)
+                        {
                             return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
+                        }
+
                         if (model.GuidSetting.Value == null)
+                        {
                             clearSetting = true;
+                        }
 
                         value = model.GuidSetting.Value.ToString();
+
+                        break;
+                    default:
+                        if (model.StringSetting == null)
+                        {
+                            return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
+                        }
+
+                        if (model.StringSetting.Value == null)
+                        {
+                            clearSetting = true;
+                        }
+
+                        value = model.StringSetting.Value;
 
                         break;
                 }

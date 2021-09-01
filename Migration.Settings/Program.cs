@@ -10,14 +10,16 @@ using System.Threading.Tasks;
 
 namespace Migration.Settings
 {
-    class Program
+    static class Program
     {
         static void Main(string[] args)
         {
             using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
             {
                 if (cnn.State != System.Data.ConnectionState.Open)
+                {
                     cnn.Open();
+                }
 
                 int currentCompanyId = 0;
                 bool isNewCompany = false;
