@@ -342,6 +342,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Core.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_GlobalResources\DataProfileAPIMessages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>DataProfileAPIMessages.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\FieldInfo.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -723,6 +728,10 @@
     <Content Include="App_GlobalResources\ActionApiMessages.resx">
       <Generator>GlobalResourceProxyGenerator</Generator>
       <LastGenOutput>ActionApiMessages.designer.cs</LastGenOutput>
+    </Content>
+    <Content Include="App_GlobalResources\DataProfileAPIMessages.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>DataProfileAPIMessages.Designer.cs</LastGenOutput>
     </Content>
     <EmbeddedResource Include="Content\Swagger\index.html" />
     <EmbeddedResource Include="Content\Swagger\swagger.css">
