@@ -318,13 +318,15 @@ namespace d360.web.Controllers.V2
                     if (!string.IsNullOrEmpty(filterValue))
                     {
                         FilterExpressionParser filterExpressionParser;
+                        var filterDataProvider = new FilterDataProvider(this.Company);
+
                         if (!iscommunityuserresposibility)
                         {
-                            filterExpressionParser = new FilterExpressionParser(Company, FilterExpressionParseType.CustomFields, false, true);
+                            filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CustomFields, false, true);
                         }
                         else
                         {
-                            filterExpressionParser = new FilterExpressionParser(Company, FilterExpressionParseType.CommunityResposibilityResource, false, false);
+                            filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CommunityResposibilityResource, false, false);
                         }
                         filterExpressionParser.LoadFieldTypes(fieldTypes, fieldColumns);
                         queries.Add("(" + filterExpressionParser.Parse(filterValue, out Dictionary<string, object> sqlParams, out List<int> filteredFieldIds) + ")");

@@ -28,6 +28,7 @@ using System.Threading.Tasks;
 using d360.core.entities.Metric;
 using d360.model.helpers;
 using System.Text;
+using d360.model.helpers.filters;
 
 namespace d360.model
 {
@@ -2516,7 +2517,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
                 if (!string.IsNullOrEmpty(value))
                 {
-                    var filterExpressionParser = new FilterExpressionParser(this, FilterExpressionParseType.CustomFields, false);
+                    var filterDataProvider = new FilterDataProvider(this);
+                    var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CustomFields, false);
                     filterExpressionParser.OverrideAllowedDefaultFields(fieldList);
                     Dictionary<string, object> sqlParams = new Dictionary<string, object>();
                     List<int> filteredFields = new List<int>();

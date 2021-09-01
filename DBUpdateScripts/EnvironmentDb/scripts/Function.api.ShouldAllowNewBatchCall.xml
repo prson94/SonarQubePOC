@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Function.api.ShouldAllowNewBatchCall-v7">
-   <comment>GOV-14951</comment>
+  <changeSet author="TDuric" id="Function.api.ShouldAllowNewBatchCall-v8">
+   <comment>GOV-15690</comment>
    <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -109,12 +109,6 @@ BEGIN
 
 		--don't consider any execution older than 24 hrs
 		if exists (select 1 from api.Execution where ExecutionID = @executionID and StartedOn < DATEADD(day, -1, GETDATE()))
-		begin
-			return 0;
-		end
-
-		--don't consider any execution which is not in the top 2 pending executions
-		if not exists (select 1 where @executionID in (select top (2 - @runningCount) ExecutionID from api.Execution where completedOn is null and ProcessingStartedOn is null and StartedOn > DATEADD(day, -1, GETDATE()) order by startedOn asc))
 		begin
 			return 0;
 		end

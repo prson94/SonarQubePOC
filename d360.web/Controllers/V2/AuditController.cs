@@ -4,7 +4,6 @@ using d360.core.entities;
 using d360.model;
 using d360.web.Models.Attributes;
 using Dapper;
-using Resources;
 using SpreadsheetLight;
 using System;
 using System.Diagnostics;
@@ -19,10 +18,10 @@ using System.Collections.Generic;
 using Swashbuckle.Swagger.Annotations;
 using d360.web.Filters;
 using d360.web.Models;
-using d360.model.helpers;
 using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.entities.Metric;
+using d360.model.helpers.filters;
 using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers.V2
@@ -104,7 +103,7 @@ namespace d360.web.Controllers.V2
                     new DefaultFilter("field", "A.field", SqlFieldType.Text),
                     new DefaultFilter("newValue", "A.newValue", SqlFieldType.Text),
                     new DefaultFilter("class", "A.class", SqlFieldType.Number),
-                    new DefaultFilter("version", "A.version", SqlFieldType.Number),
+                    new DefaultFilter("version", "isnull(A.version,0)", SqlFieldType.Number),
                     new DefaultFilter("previousValue", "A.previousValue", SqlFieldType.Text)
                 };
 
@@ -280,6 +279,46 @@ namespace d360.web.Controllers.V2
             {
                 result = Company.Query<dynamic>($@"select 'Report' as Object, ID as ObjectId, Name as DisplayValue from Report where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
             }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Gets lists of User, Action and ActionObject values in change log for the asset yuid to use in advanced filter lists
+        /// </summary>
+        /// <param name="assetUid">The asset Uid</param>
+        /// <returns></returns>
+        [
+            HttpGet, MapToApiVersion("2.0"), Route("filterlists/{assetUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(Object)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public dynamic GetFilterLists(Guid assetUid)
+        {
+            dynamic objectInfo = GetLegacyObjectDetails(assetUid);
+            dynamic result = new System.Dynamic.ExpandoObject();
+
+            result.resourceName = Company.Query<dynamic>($@"select distinct
+	                CASE WHEN R.State = 3 THEN
+		                R.FirstName + ' ' + R.LastName + ' (deleted)'
+	                ELSE
+		                R.FirstName + ' ' + R.LastName
+	                END as val
+                from reporting.global_audit ga
+                inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
+			    where ga.[Object] = @Object and ga.ObjectId = @ObjectId", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => x.val).ToList();
+
+            result.action = Company.Query<dynamic>($@"select distinct ga.action as val
+                from reporting.global_audit ga
+			    where ga.[Object] = @Object and ga.ObjectId = @ObjectId", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => x.val).ToList();
+
+            result.actionObject = Company.Query<dynamic>($@"select distinct
+                case when ga.ActionObject = 'Intersect' then 'Relationship'
+                     when ga.ActionObject = 'IntersectType' then 'RelationshipType'
+                     else ga.ActionObject end val
+                from reporting.global_audit ga
+			    where ga.[Object] = @Object and ga.ObjectId = @ObjectId", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => x.val).ToList();
 
             return result;
         }

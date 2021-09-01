@@ -20,7 +20,7 @@ using Newtonsoft.Json.Linq;
 using System.Data.SqlClient;
 using System.Data;
 using d360.core.entities.Membership;
-using d360.model.helpers;
+using d360.model.helpers.filters;
 
 namespace d360.model
 {

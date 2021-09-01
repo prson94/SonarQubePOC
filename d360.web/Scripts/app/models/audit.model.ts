@@ -37,3 +37,8 @@ export class AuditObject {
     Object: string;
     DisplayValue: string;
 }
+export class AuditFilterLists {
+    resourceName: string[];
+    action: string[];
+    actionObject: string[];
+}
