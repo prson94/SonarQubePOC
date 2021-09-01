@@ -67,7 +67,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     @Input() showDescription: boolean = true;
     @Input() enableAllowMultipleValues: boolean = true;
     @Input() showAddToSearch: boolean = false;
-    @Input() showDisplayInColumn: boolean = true;
+    @Input() showDisplayInColumn: boolean = false;
 
     @Input() actionTypeUid: string;
     @Input() assetTypeUid: string;
@@ -353,8 +353,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private loadDataType(value: string, isFromLoad: boolean = false) {
         let observables: Array<Observable<any>> = [];
         this.showDescription = true;
-        this.showDisplayInColumn = true;
         this.enableAllowMultipleValues = true;
+
         if (value == null) {
             this.currentType = "Empty";
             this.model.FieldType.Type = new FieldType("Empty");

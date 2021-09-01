@@ -99,6 +99,7 @@
   <include file="scripts/GOV-15329.xml"/>  <!-- Drop tables dbo.CompanyHelpResource and dbo.HelpResource-->
   <include file="scripts/GOV-13879.xml"/>  <!-- Drop tables rename in Community schema-->
   <include file="scripts/GOV-15479.xml"/>  <!-- Create Index On table Resource-->
+  <include file="scripts/GOV-15239.xml"/>  <!-- Add AssetDefinitionColumnWidth setting-->
 	<!-- Tables -->
   <include file="scripts/Table.dbo.CompanyDomainGroup.xml"/>
 </databaseChangeLog>
