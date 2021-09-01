@@ -36,12 +36,12 @@ namespace d360.web.Controllers.V2
     {
         IStorageProvider _storage;
         IAssetRepository _assetRepository;
-        ISettingsRepository _settingsRepository;
-        public EnvironmentController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IAssetRepository assetRepository, ISettingsRepository settingsRepository) : base(community, company)
+
+        public EnvironmentController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IAssetRepository assetRepository, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
         {
             _storage = storage;
             _assetRepository = assetRepository;
-            _settingsRepository = settingsRepository;
+
         }
 
         [HttpGet, AjaxValidateAntiForgeryToken, Route("rebuilds"), ApiExplorerSettings(IgnoreApi = true)]
@@ -144,12 +144,12 @@ namespace d360.web.Controllers.V2
             {
                 if (!string.IsNullOrWhiteSpace(UpdateCss.css))
                 {
-                    _settingsRepository.UpsertSetting(Setting.CustomCSSLocation, $"{constants.COMPANY_STYLES_URL}{Company.CurrentCompanyID}.css");
+                    SettingsRepository.UpsertSetting(Setting.CustomCSSLocation, $"{constants.COMPANY_STYLES_URL}{Company.CurrentCompanyID}.css");
                     await _storage.CreateFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css", UpdateCss.css, "text/css", false);
                 }
                 else
                 {
-                    _settingsRepository.DeleteSetting(Setting.CustomCSSLocation);
+                    SettingsRepository.DeleteSetting(Setting.CustomCSSLocation);
                 }
             }
             catch { }
@@ -188,7 +188,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var settings = _settingsRepository.GetSettings();
+                var settings = SettingsRepository.GetSettings();
                 if (settingId.HasValue)
                 {
                     settings = settings.Where(s => (int)s.ID == settingId.Value).ToList();
@@ -347,11 +347,11 @@ namespace d360.web.Controllers.V2
 
                 if (clearSetting)
                 {
-                    _settingsRepository.DeleteSetting(setting.ID);
+                    SettingsRepository.DeleteSetting(setting.ID);
                 }
                 else
                 {
-                    _settingsRepository.UpsertSetting(setting.ID, value);
+                    SettingsRepository.UpsertSetting(setting.ID, value);
                 }
 
                 return Request.CreateResponse(HttpStatusCode.OK);

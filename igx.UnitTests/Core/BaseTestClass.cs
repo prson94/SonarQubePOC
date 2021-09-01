@@ -623,6 +623,23 @@ namespace igx.UnitTests
             return mock.Object;
         }
 
+        public ISettingsRepository GetSettingsRepository()
+        {
+            var mock = new Mock<ISettingsRepository>();
+
+            mock.Setup(x => x.GetSetting(Setting.ActionMessage))
+                .Returns(Setting.ActionMessage.AsInfoModel());
+
+            mock.Setup(x => x.GetSettingValue<bool>(Setting.DisableCommunityPosting)).Returns(false);
+
+            mock.Setup(x => x.GetSettingsAsDictionary()).Returns(Setting.ActionMessage.GetAsList().ToDictionary(k => k.ID.ToString(), v => v.Value ?? v.DefaultValue));
+
+            mock.Setup(x => x.GetSettings())
+                .Returns(Setting.ActionMessage.GetAsList());
+
+            return mock.Object;
+        }
+
         public IScoringRepository GetScoringRepository()
         {
             var mock = new Mock<IScoringRepository>();

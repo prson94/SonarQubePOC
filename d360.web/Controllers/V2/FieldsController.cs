@@ -43,8 +43,8 @@ namespace d360.web.Controllers.V2
         IFieldsRepository FieldsRepository;
         private readonly IAssetRepository AssetRepository;
 
-        public FieldsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IFieldsRepository fieldsRepository, IAssetRepository assetRepository)
-            : base(community, company)
+        public FieldsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IFieldsRepository fieldsRepository, IAssetRepository assetRepository, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
             QueueSource = queueSource;
             Storage = storage;
@@ -276,7 +276,7 @@ namespace d360.web.Controllers.V2
                     ExistingIntersectID = FieldsRepository.GetFieldInterSetUID(existingFields);
                 }
 
-                var isJsonAttributeFieldTypeEnabled = Community.GetCompanySettingByKey<bool>("EnableJsonAttribute");
+                var isJsonAttributeFieldTypeEnabled = SettingsRepository.GetSettingValue<bool>(Setting.EnableJsonAttribute);
 
                 var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, existingFields, ExistingIntersectID);
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
@@ -645,7 +645,7 @@ namespace d360.web.Controllers.V2
 
                 try
                 {
-                    enableJsonAttributes = Community.GetCompanySettingByKey<bool>("EnableJsonAttribute");
+                    enableJsonAttributes = SettingsRepository.GetSettingValue<bool>(Setting.EnableJsonAttribute);
                 }
                 catch { }
 

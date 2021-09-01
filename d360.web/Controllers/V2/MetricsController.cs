@@ -131,8 +131,8 @@ namespace d360.web.Controllers.V2
         IMetricsRepository MetricsRepository;
         IScoringRepository ScoringRepository;
 
-        public MetricsController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource, IScoringRepository scoringRepository, IMetricsRepository metricsRepository, IAssetRepository assetRepository)
-            : base(community, company)
+        public MetricsController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource, IScoringRepository scoringRepository, IMetricsRepository metricsRepository, IAssetRepository assetRepository, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
             QueueSource = queueSource;
             this.ScoringRepository = scoringRepository;

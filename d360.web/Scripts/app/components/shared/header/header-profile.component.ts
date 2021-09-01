@@ -39,14 +39,17 @@ export class HeaderProfileComponent implements OnInit, OnDestroy {
 
         this.isAdminSub = this.authenticationService.isAdmin$.subscribe(x => {
             let isAdmin: boolean = x;
-            if (isAdmin || (CompanySettings != null && CompanySettings.ShowAllUsersAPIKey != null && CompanySettings.ShowAllUsersAPIKey.toString() == 'true'))
+            if (isAdmin || (CompanySettings != null && CompanySettings.ShowAllUsersAPIKey != null && CompanySettings.ShowAllUsersAPIKey.toString() == 'true')) {
                 this.showAllUsersAPIKey = true;
-            else
+            }
+            else {
                 this.showAllUsersAPIKey = false;
+            }
         });
 
-        if (this.authenticationService.isAdmin || (CompanySettings != null && CompanySettings.ShowAllUsersAPIKey != null && CompanySettings.ShowAllUsersAPIKey.toString() == 'true'))
+        if (this.authenticationService.isAdmin || (CompanySettings != null && CompanySettings.ShowAllUsersAPIKey != null && CompanySettings.ShowAllUsersAPIKey.toString() == 'true')) {
             this.showAllUsersAPIKey = true;
+        }
     }
 
     ngOnDestroy(): void {

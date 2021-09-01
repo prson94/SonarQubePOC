@@ -20,7 +20,7 @@ namespace d360.model
     public class CommunityContext : BaseContext, ICommunityContext
     {
         internal IQueueSource QueueSource;
-        internal string SettingsCacheKey;
+        //internal string SettingsCacheKey;
 
         public CompanySsoModel CurrentCompanySsoModel { get; set; }
 
@@ -39,7 +39,7 @@ namespace d360.model
             CurrentCompanyDomain = context.CompanyPrefix;
             GetCompanySsoModel();
 
-            SettingsCacheKey = $"c{CurrentCompanyID}_settings";
+            //SettingsCacheKey = $"c{CurrentCompanyID}_settings";
         }
 
 
@@ -136,11 +136,10 @@ namespace d360.model
         public override int SaveChanges()
         {
             int returnValue = 0;
-            bool bClearSettingsCache = false;
 
-            var changedItems = this.ChangeTracker.Entries().Where(p => p.State == EntityState.Added ||
-                    p.State == EntityState.Deleted ||
-                    p.State == EntityState.Modified);
+            //var changedItems = this.ChangeTracker.Entries().Where(p => p.State == EntityState.Added ||
+            //        p.State == EntityState.Deleted ||
+            //        p.State == EntityState.Modified);
            
             try
             {
@@ -393,43 +392,43 @@ namespace d360.model
             return r;
         }
 
-        public class SettingModel
-        {
-            public int SettingID { get; set; }
+        //public class SettingModel
+        //{
+        //    public int SettingID { get; set; }
 
-            public string Name { get; set; }
+        //    public string Name { get; set; }
 
-            public string FieldName { get; set; }
+        //    public string FieldName { get; set; }
 
-            public string Description { get; set; }
+        //    public string Description { get; set; }
 
-            public string Value { get; set; }
-        }
+        //    public string Value { get; set; }
+        //}
 
-        public T GetCompanySettingByKey<T>(string key)
-        {
-            var settings = GetCompanySettings();
-            if (settings.ContainsKey(key))
-            {
-                var value = settings[key];
-                try
-                {
-                    T checkType = default(T);
-                    if (checkType is Guid)
-                    {
-                        var guid = Guid.Parse(value);
-                        return (T)(Convert.ChangeType(guid, typeof(T)));
-                    }
+        //public T GetCompanySettingByKey<T>(string key)
+        //{
+        //    var settings = GetCompanySettings();
+        //    if (settings.ContainsKey(key))
+        //    {
+        //        var value = settings[key];
+        //        try
+        //        {
+        //            T checkType = default(T);
+        //            if (checkType is Guid)
+        //            {
+        //                var guid = Guid.Parse(value);
+        //                return (T)(Convert.ChangeType(guid, typeof(T)));
+        //            }
 
-                    return (T)(Convert.ChangeType(value, typeof(T)));
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-            }
-            else throw new Exception($"Invalid settings key '{key}'");
-        }
+        //            return (T)(Convert.ChangeType(value, typeof(T)));
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            throw ex;
+        //        }
+        //    }
+        //    else throw new Exception($"Invalid settings key '{key}'");
+        //}
 
 
         public string GetPrimaryUrlPrefix()
@@ -437,22 +436,22 @@ namespace d360.model
             return Query<string>(@"select UrlPrefix from CompanyDomainSetting where CompanyID = @c and IsPrimary = 1", new { c = CurrentCompanyID }).FirstOrDefault();
         }
 
-        public Dictionary<string, string> GetCompanySettings()
-        {
-            Dictionary<string, string> settings = Caching.GetItem<Dictionary<string, string>>(SettingsCacheKey);
+//        public Dictionary<string, string> GetCompanySettings()
+//        {
+//            Dictionary<string, string> settings = Caching.GetItem<Dictionary<string, string>>(SettingsCacheKey);
 
-            if (settings == null)
-            {
-                settings = Query<SettingModel>(
-    @"select S.ID as SettingID, S.Name, S.FieldName, S.Description, coalesce(C.Value, S.DefaultValue) as Value
-from Setting S left join CompanySetting C on C.SettingID = S.ID and C.CompanyID = @c
-where S.ID <> 4", new { c = CurrentCompanyID })
-    .ToDictionary(k => k.FieldName, v => v.Value);
+//            if (settings == null)
+//            {
+//                settings = Query<SettingModel>(
+//    @"select S.ID as SettingID, S.Name, S.FieldName, S.Description, coalesce(C.Value, S.DefaultValue) as Value
+//from Setting S left join CompanySetting C on C.SettingID = S.ID and C.CompanyID = @c
+//where S.ID <> 4", new { c = CurrentCompanyID })
+//    .ToDictionary(k => k.FieldName, v => v.Value);
 
-                Caching.SetItem(SettingsCacheKey, settings, false, 10);
-            }
-            return settings;
-        }
+//                Caching.SetItem(SettingsCacheKey, settings, false, 10);
+//            }
+//            return settings;
+//        }
 
     }
 }

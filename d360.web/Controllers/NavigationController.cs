@@ -25,8 +25,8 @@ namespace d360.web.Controllers
     {
         IStorageProvider Storage;
 
-        public NavigationController(ICommunityContext community, ICompanyContext company, IStorageProvider storage)
-            : base(community, company)
+        public NavigationController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
             Storage = storage;
         }
@@ -94,7 +94,7 @@ namespace d360.web.Controllers
         public JsonNetResult SiteMenu()
         {            
             var techAssets = Company.Query<int>($"select count(*) from AssetType where Class = {(int)AssetTypeClass.TechnicalAsset}").First();
-            var showChildren = Community.GetCompanySettingByKey<bool>("ShowNavigationChildren");
+            var showChildren = SettingsRepository.GetSettingValue<bool>(Setting.ShowNavigationChildren);
 
             return new JsonNetResult
             {
@@ -914,10 +914,9 @@ namespace d360.web.Controllers
                     responseModel.MainTabTitle = "Diagram Asset Types";
                     responseModel.Object = SystemObjects.TaskType.ToString();
 
-                    var govRoleUid = Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid");
+                    var govRoleUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
 
                     responseModel.Items.HasGovernanceRoleUidSet = govRoleUid != null && govRoleUid != Guid.Empty;
-
                 }
 
                 if (model.ObjectType == SystemObjects.IntersectType.ToString())
@@ -1018,7 +1017,7 @@ namespace d360.web.Controllers
                     responseModel.DisplayValue = "Diagram Assets";
                     responseModel.MainTabTitle = "Diagram Asset Types";
                     responseModel.Items.HasAudit = true;
-                    var govRoleUid = Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid");
+                    var govRoleUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
                     if ((responseModel.Uid == null || responseModel.Uid == Guid.Empty) && responseModel.ObjectID == 0)
                     {
                         var assetType = Company.AssetTypes.Where(x => x.Object == SystemObjects.TaskType.ToString()).OrderBy(x => x.Name).FirstOrDefault();
@@ -1128,7 +1127,7 @@ namespace d360.web.Controllers
 
                     if (responseModel.Object == SystemObjects.Policy.ToString() && model.PreloadData)
                     {
-                        var apiCtrlr = new D3SApiController(this.Community, this.Company, null, null, null, null);
+                        var apiCtrlr = new D3SApiController(this.Community, this.Company, null, SettingsRepository, null, null, null);
                         apiCtrlr.Request = new System.Net.Http.HttpRequestMessage();
                         responseModel.PreloadData = apiCtrlr.GetPoliciesByType(responseModel.ObjectTypeId, true);
                     }
@@ -1136,7 +1135,7 @@ namespace d360.web.Controllers
 
                     if (responseModel.Object == SystemObjects.Taxonomy.ToString() && model.PreloadData)
                     {
-                        var apiCtrlr = new TaxonomyController(this.Community, this.Company);
+                        var apiCtrlr = new TaxonomyController(this.Community, this.Company, this.SettingsRepository);
                         responseModel.PreloadData = apiCtrlr.ModelHierarchy(responseModel.ObjectTypeId);
                     }
 

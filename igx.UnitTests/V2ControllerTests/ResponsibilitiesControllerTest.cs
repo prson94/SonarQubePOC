@@ -22,7 +22,7 @@ namespace igx.UnitTests.V2ControllerTests
 
         public ResponsibilitiesControllerTest()
         {
-            this.responsibilitiesController = new ResponsibilitiesController(GetCommunity(), GetCompany(), GetResponsibilityRepository(), GetAssetRepository())
+            this.responsibilitiesController = new ResponsibilitiesController(GetCommunity(), GetCompany(), GetResponsibilityRepository(), GetAssetRepository(), GetSettingsRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()

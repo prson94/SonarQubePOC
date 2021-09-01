@@ -33,7 +33,7 @@ namespace d360.web.Controllers
 
             var list = new List<EditableField>();
 
-            var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
+            var lineageVersion = SettingsRepository.GetSettingValue<int>(Setting.LineageVersion);
 
             var functionalTypes = PredicateType.DataLineage.GetAsList()
                 .Where(f => f.AllowEditFromPredicateEditor && f.AllowIntersectTypeAssignment && f.LineageVersionsSupported.Contains(lineageVersion))
@@ -55,7 +55,7 @@ namespace d360.web.Controllers
             var a = Company.GetById<Predicate>(id);
             var any = Company.Any<IntersectType>(i => i.PredicateID == id);
 
-            var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
+            var lineageVersion = SettingsRepository.GetSettingValue<int>(Setting.LineageVersion);
 
             var functionalTypes = PredicateType.DataLineage.GetAsList()
                 .Where(f => f.AllowEditFromPredicateEditor && f.AllowIntersectTypeAssignment && f.LineageVersionsSupported.Contains(lineageVersion))
@@ -576,7 +576,7 @@ order by r.Name";
         {
             try
             {
-                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
+                var lineageVersion = SettingsRepository.GetSettingValue<int>(Setting.LineageVersion);
                 var models = Company.GetPredicateOptions(lineageVersion, subject, subjectID, @object, objectID, predicateID)
                     .Select(i => new { label = $"{i.Name} / {i.Inverse} ({i.Type.AsInfoModel().Name})", value = i.ID, isSemantic = i.Type.AsInfoModel().SingleRelationshipByFunctionalType, type = i.Type.ToString() })
                     .OrderBy(i => i.label);
@@ -672,7 +672,7 @@ order by r.Name";
                     PredicateID = int.Parse(predicate)
                 };
 
-                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
+                var lineageVersion = SettingsRepository.GetSettingValue<int>(Setting.LineageVersion);
 
                 Company.UpsertIntersectType(model, lineageVersion);
                 var id = model.ID;
@@ -818,7 +818,7 @@ order by r.Name";
                 model.ObjectID = int.Parse(objectInfo[1]);
                 model.PredicateID = int.Parse(predicate);
 
-                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
+                var lineageVersion = SettingsRepository.GetSettingValue<int>(Setting.LineageVersion);
 
                 Company.UpsertIntersectType(model, lineageVersion);
                 Company.CreateRollupPathChangedExecution(id);

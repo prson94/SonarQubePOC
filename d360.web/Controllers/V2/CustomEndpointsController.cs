@@ -13,6 +13,7 @@ using Swashbuckle.Swagger.Annotations;
 using System.Threading.Tasks;
 using System.Web.Http.Description;
 using Resources;
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers.V2
 {
@@ -27,7 +28,7 @@ namespace d360.web.Controllers.V2
 
         #region DI
 
-        public CustomEndpointsController(ICommunityContext community, ICompanyContext company):base(community, company)
+        public CustomEndpointsController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository) :base(community, company, settingsRepository)
         {
 
         }

@@ -33,8 +33,8 @@ namespace d360.web.Controllers.V2
     {
         IResponsibilityRepository ResponsibilityRepository;
         IAssetRepository AssetRepository;
-        public ResponsibilitiesController(ICommunityContext community, ICompanyContext company, IResponsibilityRepository responsibilityRepository, IAssetRepository assetRepository)
-            : base(community, company)
+        public ResponsibilitiesController(ICommunityContext community, ICompanyContext company, IResponsibilityRepository responsibilityRepository, IAssetRepository assetRepository, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
             this.ResponsibilityRepository = responsibilityRepository;
             this.AssetRepository = assetRepository;

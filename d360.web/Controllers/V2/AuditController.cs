@@ -23,6 +23,7 @@ using d360.model.helpers;
 using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.entities.Metric;
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers.V2
 {
@@ -36,7 +37,7 @@ namespace d360.web.Controllers.V2
     ]
     public class AuditController : BaseV2ApiController
     {
-        public AuditController(ICommunityContext community, ICompanyContext company) : base(community, company)
+        public AuditController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
         {
 
         }

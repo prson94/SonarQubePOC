@@ -581,6 +581,8 @@ namespace d360.core.enums
         public SettingType Type { get; set; }
         public string DefaultValue { get; set; }
         public string Value { get; set; } // This will be populated by the SettingsRepo
+
+        public bool IsOverridden { get { return !Value.Equals(DefaultValue); } }
     }
 
     #region Transitive classes/models
@@ -776,10 +778,23 @@ namespace d360.core.enums
 
     public static class SettingExtensions
     {
+        public static string GetValue(this List<SettingInfo> settings, Setting s)
+        {
+            var value = settings.First(i => i.ID == s).Value;
+            return value;
+        }
         public static T GetValue<T>(this List<SettingInfo> settings, Setting s)
         {
             var value = settings.First(i => i.ID == s).Value;
-            return JsonConvert.DeserializeObject<T>(value);
+            try
+            {
+                return (T)Convert.ChangeType(value, typeof(T));
+            }
+            catch (Exception)
+            {
+                return default(T);
+            }
+            
         }
 
         public static string GetName(this Setting type)

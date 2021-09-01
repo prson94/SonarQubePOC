@@ -40,13 +40,14 @@ namespace d360.web.Controllers.V2
         IIssueRepository issueRepository;
         IResponsibilityRepository responsibilityRepository;
 
-        public ActionsController(ICommunityContext community, ICompanyContext company, ICommentRepository comments, IIssueRepository issues, IAssetRepository assets, IResponsibilityRepository responsibilities)
-            : base(community, company)
+        public ActionsController(ICommunityContext community, ICompanyContext company, ICommentRepository comments, IIssueRepository issues, IAssetRepository assets, IResponsibilityRepository responsibilities, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
             assetRepository = assets;
             commentRepository = comments;
             issueRepository = issues;
             responsibilityRepository = responsibilities;
+            SettingsRepository = settingsRepository;
         }
 
         /// <summary>
@@ -1165,16 +1166,8 @@ for json path";
 
         private bool IsWriteActionDescriptionEnabled()
         {
-            var setting = Community.Filter<CompanySetting>(i => i.CompanyID == Company.CurrentCompanyID && i.SettingID == 61).SingleOrDefault();
-            if (setting == null)
-            {
-                return true;
-            }
-            else
-            {
-                return bool.Parse(setting.Value);
-            }
-
+            var setting = SettingsRepository.GetSettings().Single(s => s.ID == Setting.WriteActionDescription);
+            return (setting.Value == "true");
         }        
 
         /// <summary>
