@@ -5,12 +5,37 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.dbo.GetParentByAssetID-v1">
+  <changeSet author="Puneet Gupta" id="Function.dbo.GetParentByAssetID-v2">
+  <comment>GOV-11726</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[GetParentByAssetID]
+(	
+	@id bigint
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	SELECT 
+		P.ID, 
+		I.ID as IntersectID, 
+		Y.ID as IntersectTypeID from Asset A
+	inner join AssetType T on T.ID = A.AssetTypeID
+	inner join [IntersectType] Y on Y.[Object] = T.[Object] and Y.ObjectID = T.ObjectID
+	inner join [Predicate] R on R.ID = Y.PredicateID
+		and R.[Type] = case when Y.[Subject] = 'PolicyType' or Y.[Subject] = 'TaxonomyType' then 4 else 3 end 
+	inner join [Intersect] I on I.IntersectTypeID = Y.ID and I.[Object] = A.[Object] and I.ObjectID = A.ObjectID
+	inner join Asset P on P.[Object] = I.[Subject] and P.ObjectID = I.SubjectID
+	where A.Object != 'FusionAttribute' and A.ID = @id
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER FUNCTION [dbo].[GetParentByAssetID]
 (	
 	@id bigint
@@ -41,11 +66,6 @@ RETURN
 	inner join Asset P on P.[Object] = I.[Subject] and P.ObjectID = I.SubjectID
 	where A.Object != 'FusionAttribute' and A.ID = @id
 )
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

@@ -27,16 +27,6 @@ namespace d360.core.enums
         ]
         Model = 2,
         [
-            Name("Fusion"),
-            Description("Fusion assets.")
-        ]
-        Fusion = 3,
-        [
-            Name("Fusion Attribute"),
-            Description("Fusion attribute assets.")
-        ]
-        FusionAttribute = 4,        
-        [
             Name("Policy"),
             Description("Policy asset."),
             AllowCommentsOnAsset
