@@ -5,23 +5,24 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="SDooley" id="GOV-7943">
+  <changeSet author="TDuric" id="GOV-15239">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
       <![CDATA[
-IF NOT EXISTS (SELECT 1 FROM [Setting] where ID = 69)
+IF NOT EXISTS (SELECT 1 FROM [Setting] where ID = 82)
 BEGIN
-	insert into [dbo].[Setting]([ID],[FieldName],[Name],[Description],[DefaultValue]) values(69,'UseAsTransformationLimit','Use As Transformation Limit','Maximum number of asset types that can be marked as a transformation asset type ','3')
+	insert into [dbo].[Setting]([ID],[FieldName],[Name],[Description],[DefaultValue],[SettingType]) 
+	values (82,'AssetDefinitionColumnWidth','Asset Definition Column Width','Width of columns (in pixels) used to lay out fields on the asset Definition panel.','200','2')
 END
 ]]>
     </sql>
     <rollback>
       <![CDATA[
-IF EXISTS (SELECT 1 FROM [Setting] where ID = 69)
+IF EXISTS (SELECT 1 FROM [Setting] where ID = 82)
 BEGIN
-	Delete from [dbo].[Setting] where [ID] = 69
+	Delete from [dbo].[Setting] where [ID] = 82
 END
 ]]>
     </rollback>

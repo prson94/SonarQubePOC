@@ -213,7 +213,7 @@ namespace d360.web.Controllers
         #region Dynamic Editor Field Type Information For Angular2
 
         [
-            HttpGet, 
+            HttpGet,
             Route("dynamiceditor/assets/{assetTypeUid}"),
             Route("dynamiceditor/assets/{assetTypeUid}/{assetUid}")
         ]
@@ -249,7 +249,7 @@ namespace d360.web.Controllers
                 }
                 return DynamicEditorAddFields(assetType.Object, null, parentId, assetType.ObjectID);
             }
-            
+
         }
 
         [HttpGet, Route("dynamiceditor/byUid/{assetTypeUid}/{assetUid}")]
@@ -789,6 +789,7 @@ namespace d360.web.Controllers
             model.AllowedOrigins = (settings.Any(i => i.SettingID == 76) ? settings.Single(i => i.SettingID == 76).Value : "");
             model.FramingDomains = (settings.Any(i => i.SettingID == 77) ? settings.Single(i => i.SettingID == 77).Value : "");
 
+            model.AssetDefinitionColumnWidth = (settings.Any(i => i.SettingID == 82) ? int.Parse(settings.Single(i => i.SettingID == 82).Value) : 200);
 
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -914,6 +915,18 @@ namespace d360.web.Controllers
                 updateCompanySetting(settings, 60, Math.Abs(formModel.MaxDropdownItems).ToString());
                 updateCompanySetting(settings, 61, formModel.WriteActionDescription.ToString().ToLower());
                 updateCompanySetting(settings, 71, Math.Abs(formModel.MaxExcelExportRows).ToString());
+
+                if (formModel.AssetDefinitionColumnWidth < 100)
+                {
+                    formModel.AssetDefinitionColumnWidth = 100;
+                }
+
+                if (formModel.AssetDefinitionColumnWidth > 1000)
+                {
+                    formModel.AssetDefinitionColumnWidth = 1000;
+                }
+
+                updateCompanySetting(settings, 82, Math.Abs(formModel.AssetDefinitionColumnWidth).ToString());
                 #endregion
 
                 #region IP
@@ -2543,13 +2556,13 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                     { (int)AssetTypeClass.BusinessAsset },
                     { (int)AssetTypeClass.TechnicalAsset },
                     { (int) AssetTypeClass.Rule }
-                });            
+                });
             list.Add(new EditableField { FieldName = "ID", Name = "ID", FieldType = DataType.Hidden.ToString(), Value = template.ID.ToString() });
             list.Add(new EditableField { FieldName = "Uid", Name = "Uid", FieldType = DataType.Hidden.ToString(), Value = template.Uid.ToString() });
             list.Add(new EditableField { FieldName = "IncludeFieldTypes", Name = "IncludeFieldTypes", FieldType = DataType.Hidden.ToString(), Value = template.IncludeFieldTypes == null ? template.IncludeFieldTypes.ToString() : null });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Namespace", true, "", 1, 250), Value = template.Name });
             list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = template.Description });
-            var names = Enum.GetNames(typeof(ExportView)).Select(i => new SelectListItem { Text = i, Value = i }).ToList();            
+            var names = Enum.GetNames(typeof(ExportView)).Select(i => new SelectListItem { Text = i, Value = i }).ToList();
 
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names, Value = template.ExportViewType.ToString() });
 

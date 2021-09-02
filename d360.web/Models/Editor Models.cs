@@ -129,6 +129,8 @@ namespace d360.web.Models
         public string AllowedOrigins { get; set; }
         public string FramingDomains { get; set; }
 
+        public int AssetDefinitionColumnWidth { get; set; }
+
     }
 
     public class DataQualityResult
