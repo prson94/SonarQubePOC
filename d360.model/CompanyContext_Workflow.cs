@@ -1012,7 +1012,7 @@ namespace d360.model
                 if (!string.IsNullOrEmpty(requestSettings.Body))
                 {
                     var lookupfieldspassedbyvalue = requestSettings.LookupFieldsPassedByValue;
-                    var body = await ProcessMessageTokens(requestSettings.Body, info, prefix, item, false, true, lookupfieldspassedbyvalue );
+                    var body = await ProcessMessageTokens(requestSettings.Body, info, prefix, item, false, true, lookupfieldspassedbyvalue);
                     var contentArray = Encoding.UTF8.GetBytes(body);
                     request.Content = new ByteArrayContent(contentArray);
                 }
@@ -2079,7 +2079,7 @@ namespace d360.model
 
             var url = "";
             var prefix = Community.GetPrimaryUrlPrefix();
-            
+
             url += $"https://{prefix}.data3sixty.com/workflow/details/{item.ItemID}";
 
             settings.BodyTemplate = await ProcessMessageTokens(settings.BodyTemplate, objectInfo, prefix, item);
@@ -2648,6 +2648,23 @@ namespace d360.model
                 }
 
                 result = result.Replace("[WORKFLOW_INITIATOR]", initiator);
+            }
+
+            if (result.Contains("[WORKFLOW_INITIATOR_UID]"))
+            {
+                Guid initiator = Guid.Empty;
+
+                if (itemStep.Item != null && itemStep.Item.StartedBy > 0)
+                {
+                    var user = GlobalReportingResources.Where(x => x.ResourceID == itemStep.Item.StartedBy).FirstOrDefault();
+
+                    if (user != null)
+                    {
+                        initiator = user.Uid;
+                    }
+                }
+
+                result = result.Replace("[WORKFLOW_INITIATOR_UID]", initiator.ToString());
             }
             //need to keep both options for existing workflows, remove [SCORE] once no workflow use it in any ENV
             if (result.Contains("[GOV_SCORE]") || result.Contains("[SCORE]"))
