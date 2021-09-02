@@ -8,6 +8,7 @@ import { CoreModule } from '../../shared/core.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 import { ShortcutModule } from '../../shared/shortcuts/shortcut.module';
+import { HelpMenuModule } from '../../shared/helpmenu/helpmenu.module';
 import { IconPickerModule } from '../../shared/controls/icon-picker/icon-picker.component';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { DayOfWeekInputModule } from "../../shared/small-widgets/dayofweek-input/dayofweek-input.component";
@@ -42,6 +43,7 @@ import { TableModule } from 'primeng/table';
         DropdownModule,
         InputTextModule,
         SharedModule,
+        HelpMenuModule,
         ColorPickerModule,
         TableModule,
 
