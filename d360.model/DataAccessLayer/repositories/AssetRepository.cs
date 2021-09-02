@@ -63,33 +63,9 @@ namespace d360.model.DataAccessLayer
 
             if (Class.HasValue)
             {
-                if (fusionTypeUid.HasValue && fusionTypeUid.Value != Guid.Empty && Class == AssetTypeClass.FusionAttribute)
-                {
-                    optionalJoin = @"inner join FusionAttributeType FAT on A.[Object] = 'FusionAttributeType' and A.Objectid = FAT.ID 
-                                        inner join AssetType ATTFusionType on ATTFusionType.[Object] = 'FusionType' and ATTFusionType.ObjectID = FAT.FusionTypeID";
-                    dbArgs.Add("@fusionTypeUid", fusionTypeUid);
-                    condition += " and ATTFusionType.uid = @fusionTypeUid";
-                }
-                else
-                {
                     var Id = (int)Class;
                     dbArgs.Add("@Id", Id.ToString());
                     condition = " and A.[Class]=@Id";
-                }
-            }
-            else if (fusionTypeUid.HasValue && fusionTypeUid.Value != Guid.Empty)
-            {
-
-
-                optionalJoin += @"left join FusionAttributeType FAT on A.[Object] = 'FusionAttributeType' and A.Objectid = FAT.ID 
-                                  left join AssetType ATTFusionType on ATTFusionType.[Object] = 'FusionType' and ATTFusionType.ObjectID = FAT.FusionTypeID 
-                                  left join AssetType ATQFusionType on ATQFusionType.[Object] = 'FusionType' and ATQFusionType.ObjectID = F.FusionTypeID ";
-
-                dbArgs.Add("@class1", (int)AssetTypeClass.FusionAttribute);
-                dbArgs.Add("@fusionTypeUid", fusionTypeUid);
-
-                condition = string.Format(" and A.[Class] = @class1 AND (ATQFusionType.uid = @fusionTypeUid or ATTFusionType.uid = @fusionTypeUid)");
-
             }
             var levelsSql = "";
             List<string> whereStatements = new List<string>();
@@ -278,7 +254,6 @@ namespace d360.model.DataAccessLayer
             Guid? parentUid = null;
             bool parentUidPopulated = false;
             var includeRelationships = false;
-            var fusionAttributeWithParent = false;
             var includeSegments = false;
             var includePermissionDetails = false;
             bool includeOnlyListableFields = false;
@@ -783,12 +758,6 @@ namespace d360.model.DataAccessLayer
             }
             getQueryParamsSql(model, assetType, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams);
 
-            if (assetType.Class == AssetTypeClass.FusionAttribute)
-            {
-                if ((await CompanyContext.Database.Connection.QueryFirstOrDefaultAsync<int>("select ISNULL(parentId,0) from fusionattributetype where id = @id", new { id = assetType.ObjectID }, commandTimeout: ApiTimeout)) > 0)
-                    fusionAttributeWithParent = true;
-            }
-
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_assetuid"))
             {
                 List<Guid> assetUids = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_assetuid")
@@ -1243,8 +1212,6 @@ namespace d360.model.DataAccessLayer
                 select  count(*)
                 from    Asset A 
                 {(includeAssetPathInCount ? " left join graph.AssetNodeDisplayPath Node on Node.id = a.id" : "")} 
-                {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
-                {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
                 {string.Join("\n", countJoins)}
                 {hierarchyParentUidSelect}
@@ -1270,8 +1237,6 @@ namespace d360.model.DataAccessLayer
                     {(includeProfilingCheck ? profilingCheckFields : "")}
                     {(includeSegments ? "Node.Segments," : "")}
                     KP.KeyPath as [Path]
-                    {(assetType.Object == "FusionAttributeType" ? " , FA.SourceID, FA.Name, FA.TextPath" : "")} 
-                    {(fusionAttributeWithParent ? " , ATP.uid as ParentUid" : "")}
                     {fieldsSql}
                     {(includePermissionDetails ? includePermissionFields : "")} 
                     {hierarchyParentUidCol}
@@ -1279,8 +1244,6 @@ namespace d360.model.DataAccessLayer
                 from Asset A
                 left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
-                {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
-                {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {string.Join("\n", fieldJoins)}
                 {(includeSegments || hasAssetPathField || whereSql.Contains("Node.") ? " left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID" : "")} 
                 left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
@@ -3360,8 +3323,6 @@ where	O.RowNum = 1";
             var includedAssetClasses = new List<AssetTypeClass>() {
                 AssetTypeClass.BusinessAsset,
                 AssetTypeClass.Diagram,
-                AssetTypeClass.Fusion,
-                AssetTypeClass.FusionAttribute,
                 AssetTypeClass.Group,
                 AssetTypeClass.Model,
                 AssetTypeClass.Organization,

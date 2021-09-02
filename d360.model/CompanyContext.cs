@@ -598,26 +598,6 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                             order by 3 desc, P.TextPath asc
                             OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
                     break;
-                case "FusionAttributeType":
-                    formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "'FusionAttribute'", "F.Id");
-                    formattedIntersectJoin = string.Format(intersectJoin, "'FusionAttribute'", "F.Id");
-
-                    countSql = $@"select count(*) from FusionAttribute F
-                                    inner join Fusion FF on FF.ID = F.FusionID
-                                    inner join [IntersectType] IT on IT.Id = @intersectTypeID
-                        left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-                                where FusionAttributeTypeID = @objID and F.Deleted = 0 and (@query is null or F.TextPath like '%' + @query + '%')
-                                {formattedCardinalityCheck}";
-                    sql = $@"select F.ID as Value, FF.Name + '.' + F.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected   
-                            from FusionAttribute F with (nolock)
-                            inner join Fusion FF on FF.ID = F.FusionID
-                            inner join [IntersectType] IT on IT.Id = @intersectTypeID
-                            left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-                            where F.FusionAttributeTypeID = @objID and F.Deleted = 0 and (@query is null or F.TextPath like '%' + @query + '%')
-                            {formattedCardinalityCheck}
-                            order by 3 desc, TextPath asc
-                            OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
-                    break;
                 case "ResourceType":
                     formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "'Resource'", "R.ResourceID");
                     formattedIntersectJoin = string.Format(intersectJoin, "'Resource'", "R.ResourceID");
@@ -1149,9 +1129,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
 
             List<string> excludedClasses = new List<string>
             {
-                SystemObjects.FusionType.ToString(),
                 SystemObjects.OrganizationType.ToString(),
-                SystemObjects.FusionAttributeType.ToString()
             };
 
             if (limitToClasses != null && limitToClasses.Count > 0)
@@ -1188,7 +1166,6 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
 		                case 
 			                when T.Object = 'ArtifactType' and T.[Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()} :: '
                             when T.Object = 'ArtifactType' and T.[Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()} :: '
-			                when T.Object = 'FusionAttributeType' then 'Fusion Attribute :: ' + FT.Name + ' / '
 			                when T.Object = 'GroupType' then 'Security :: '
 			                when T.Object = 'PolicyType' then '{CommonNames.AssetTypeClass_Policy.CleanForSql()} :: '
 			                when T.Object = 'ReferenceItemType' then 'Reference :: '
@@ -1200,8 +1177,6 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
 		                T.Object as Type
                 from	AssetType T
 		                cross apply dbo.GetAssetTypeTextPathById(T.ID, '/') P
-                        left join FusionAttributeType FAT on T.Object = 'FusionAttributeType' and FAT.ID = T.ObjectID 
-                        left join FusionType FT on FT.ID = FAT.FusionTypeID 
                 where	T.Object not in ({excludeClassInStatement}){classLimitSql}
 			 	{noClassLimitSql}{whereStatement}
                 ) I";
@@ -2236,7 +2211,6 @@ select @err";
                         if (relationFieldInfo != null)
                         {
                             var isReferenceItemType = (relationFieldInfo.Object == SystemObjects.ReferenceItemType.ToString());
-                            var isFusionAttributeType = (relationFieldInfo.Object == SystemObjects.FusionAttributeType.ToString());
                             var isTaxonomyType = (relationFieldInfo.Object == SystemObjects.TaxonomyType.ToString());
                             var isPolicyType = (relationFieldInfo.Object == SystemObjects.PolicyType.ToString());
                             var isArtifactType = (relationFieldInfo.Object == SystemObjects.ArtifactType.ToString());
@@ -2251,7 +2225,7 @@ select @err";
                                 columnbuilder.Append($"{name}_T.ID as [{name}ID], ");
                             }
 
-                            if (isReferenceItemType || isFusionAttributeType)
+                            if (isReferenceItemType)
                             {
                                 columnbuilder.Append($"{name}_OT.Name");
                             }
@@ -2290,7 +2264,7 @@ select @err";
                                 joinbuilder.Append($" left join asset {name}_AS on {name}_AS.Object = '{tableName}' and  {name}_AS.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID"));
                                 joinbuilder.Append($" outer apply [dbo].GetAssetTextPathById({name}_AS.ID, '/') {name}_OTT");
                             }
-                            else if (!isReferenceItemType && !isFusionAttributeType)
+                            else if (!isReferenceItemType)
                             {
                                 joinbuilder.Append($" left join asset {name}_AS on {name}_AS.Object = '{tableName}' and  {name}_AS.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID"));
                                 joinbuilder.Append($" cross apply [dbo].GetAssetDisplayValueById({name}_AS.ID) {name}_OTD");

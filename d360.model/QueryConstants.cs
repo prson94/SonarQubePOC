@@ -123,79 +123,6 @@ where   A.Type = 'TaxonomyType' and A.TypeID = @ID AND A.[State] = 1";
 	WHERE	FT.LookupObjectType = @type
             AND FT.LookupObjectID = @id";
 		        
-        public static readonly string FusionAttributeRelationshipAllCountsWithZero = @"
-select	IT.ID as IntersectTypeID,
-        IT.uid,
-		IT.Object,
-		IT.ObjectID,
-		I.[Count],
-		IT.Name,
-		IT.Cardinality,
-		case
-            when IT.PredicateType in ({0}) then cast(0 as bit)
-            else cast(1 as bit)
-        end as AllowEditFromRelationshipEditor,
-		IT.IsSubject,
-		IT.SameSubjectAndObject,
-        a.uid as ObjectUid
-from	[dbo].[fusionattribute] fa	
-        inner join asset a on a.object ='fusionattribute' and a.objectid = fa.id
-		cross apply (
-					select 
-			ITD.ID,
-			ITD.UID,
-			ITD.PredicateType,
-				case 
-				when (ITD.Subject = 'FusionAttributeType' and ITD.SubjectID = fa.fusionattributetypeid) then ITD.[Object]
-				else ITD.[Subject]
-			end as [Object],
-			case 
-				when (ITD.Subject = 'FusionAttributeType' and ITD.SubjectID = fa.fusionattributetypeid) then ITD.[ObjectID]
-				else ITD.[SubjectID]
-			end as [ObjectID],
-						case 
-				when (ITD.Subject = 'FusionAttributeType' and ITD.SubjectID = fa.fusionattributetypeid) then ITD.ObjectAssetTypeID
-				else ITD.SubjectAssetTypeID
-			end as ObjectAssetTypeID,	
-			case 
-				when (ITD.Subject = 'FusionAttributeType' and ITD.SubjectID = fa.fusionattributetypeid) then ITD.[ObjectName] 
-				else ITD.SubjectName
-			end + 
-			case 
-				when (ITD.Subject = 'FusionAttributeType' and ITD.SubjectID = fa.fusionattributetypeid) then ' [' + coalesce(ITD.PredicateName, 'N/A') + ']'
-				when (ITD.Object = 'FusionAttributeType' and ITD.ObjectID = fa.fusionattributetypeid) then ' [' + coalesce(ITD.PredicateInverse, 'N/A') + ']'
-			end as [Name],
-			case 
-				when (ITD.Subject = 'FusionAttributeType' and ITD.SubjectID = fa.fusionattributetypeid) then ITD.[ObjectCardinality] 
-				else ITD.SubjectCardinality
-			end as Cardinality,
-			case 
-				when (ITD.Subject = 'FusionAttributeType' and ITD.SubjectID = fa.fusionattributetypeid) then cast(1 as bit)
-				else cast(0 as bit)
-			end as IsSubject,
-			cast(0 as bit) as SameSubjectAndObject
-			from IntersectTypeDetail ITD 
-			where	ITD.SubjectAssetTypeID <> ITD.ObjectAssetTypeID 
-					and ((ITD.Subject = 'FusionAttributeType' and ITD.SubjectID = fa.fusionattributetypeid) 
-						or((ITD.Object = 'FusionAttributeType' and ITD.ObjectID = fa.fusionattributetypeid)))
-			union all
-			select ITD.ID, ITD.[UID], ITD.PredicateType, ITD.[Object], ITD.ObjectID, ITD.ObjectAssetTypeID, ITD.ObjectName + ' [' + coalesce(ITD.PredicateName, 'N/A') + ']' as [Name], ITD.[ObjectCardinality], cast(1 as bit) as IsSubject, cast(1 as bit) as SameSubjectAndObject from IntersectTypeDetail ITD where ITD.[Subject] = 'FusionAttributeType' and ITD.SubjectID = fa.fusionattributetypeid and ITD.SubjectAssetTypeID = ITD.ObjectAssetTypeID
-			union all
-			select ITD.ID, ITD.[UID], ITD.PredicateType, ITD.[Subject], ITD.SubjectID, ITD.ObjectAssetTypeID, ITD.SubjectName + ' [' + coalesce(ITD.PredicateInverse, 'N/A') + ']' as [Name], ITD.SubjectCardinality, cast(0 as bit) as IsSubject, cast(1 as bit) as SameSubjectAndObject  from IntersectTypeDetail ITD where ITD.[Subject] = 'FusionAttributeType' and ITD.SubjectID = fa.fusionattributetypeid and ITD.SubjectAssetTypeID = ITD.ObjectAssetTypeID
-		) IT
-		cross apply (
-					select	count(1) as [Count]
-					from	[Intersect] 
-					where	IntersectTypeID = IT.ID 
-							and 			(
-			 (IT.SameSubjectAndObject = 1 and IT.IsSubject = 1 and ([Subject] = @obj and SubjectID = @objId)) or
-			 (IT.SameSubjectAndObject = 1 and IT.IsSubject = 0 and ([Object] = @obj and ObjectID = @objId)) or
-			 (IT.SameSubjectAndObject = 0 and (([Subject] = @obj and SubjectID = @objId) or ([Object] = @obj and ObjectID = @objId)))
-			)
-					) I
-where	fa.ID = @objId
-order by IT.[Name]
-";
 
 		public static readonly string ReferenceListTypeRelationshipsAllCountsWithZero = @"
 select	IT.ID as IntersectTypeID,
@@ -671,18 +598,6 @@ where	T.ObjectID = @id and T.Object='TaxonomyType'";
 		            ) assetCount
 	            where
 		            T.[object] in ('ArtifactType','TaxonomyType','PolicyType','RuleType','ShoppingCartType','ReferenceItemType')
-	            union all
-	            select 
-		            'Fusion|' + cast(A.objectId as varchar) as [value],
-		            A.objectId as [id],
-		            'Fusion' as [type],
-		            'Fusion :: ' + F.[Name] as [label],
-		            1 as [count]
-	            from 
-		            AssetDetail A 
-                    inner join Fusion F on F.ID = A.ObjectID
-	            where
-		            A.[object] = 'Fusion'
 	            union all
                 select 'IntersectType|' + cast(t.id as varchar) as value, t.id, 'IntersectType' as [type], 'Relationship :: ' + t_name.Name as [label], 1 as [count] 
                 from intersecttype t

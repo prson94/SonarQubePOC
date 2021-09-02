@@ -791,8 +791,6 @@ namespace d360.web.Controllers.V2
                 var includedAssetClasses = new List<AssetTypeClass>() {
                     AssetTypeClass.BusinessAsset,
                     AssetTypeClass.Diagram,
-                    AssetTypeClass.Fusion,
-                    AssetTypeClass.FusionAttribute,
                     AssetTypeClass.Group,
                     AssetTypeClass.Model,
                     AssetTypeClass.Organization,

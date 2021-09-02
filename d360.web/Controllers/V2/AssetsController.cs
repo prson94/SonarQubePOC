@@ -134,7 +134,7 @@ namespace d360.web.Controllers.V2
                 Guid? fusionTypeGuid = Guid.Empty;
                 if (!string.IsNullOrEmpty(FusionTypeUID))
                 {
-                    if (Class == null || Class == AssetTypeClass.FusionAttribute)
+                    if (Class == null)
                     {
                         fusionTypeGuid = Guid.Parse(FusionTypeUID);
                     }
@@ -615,7 +615,7 @@ namespace d360.web.Controllers.V2
 
                 if (model.ObjectID > 0)
                 {
-                    if (model.Class != AssetTypeClass.FusionAttribute && model.Class != AssetTypeClass.Reference)
+                    if ( model.Class != AssetTypeClass.Reference)
                     {
                         var nameFieldType = new FieldType
                         {
@@ -904,7 +904,7 @@ namespace d360.web.Controllers.V2
                 if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} assets in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items."));
 
-                if (assets.Any(x => x.Uid != null && x.Uid != Guid.Empty) && (assetType.Class == AssetTypeClass.Rule || assetType.Class == AssetTypeClass.FusionAttribute))
+                if (assets.Any(x => x.Uid != null && x.Uid != Guid.Empty) && (assetType.Class == AssetTypeClass.Rule))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"UID parameter is not supported for {assetType.Class.GetDisplayName()} Asset Type."));
                 }

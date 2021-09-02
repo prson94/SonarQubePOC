@@ -5,11 +5,94 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="View.dbo.IntersectDetail-v2">
+  <changeSet author="Puneet Gupta" id="View.dbo.IntersectDetail-v3">
+  <comment>GOV-11726</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
+		<![CDATA[
+create or alter view [dbo].[IntersectDetail]
+as
+select	I.[uid],
+		I.IntersectID as ID,
+		I.IntersectTypeID,
+		I.IntersectTypeUid,
+		I.State,
+		I.Subject,
+		I.SubjectID,
+		S.Name as SubjectName,
+		S.Name as SubjectShortName,
+		case when S.AssetID is not null then
+			dbo.GenerateAssetUrl(S.AssetID)
+		else
+			dbo.GenerateAssetTypeUrl(S.AssetTypeID)
+		end as SubjectUrl,
+		S.Type as SubjectType,
+		S.TypeID as SubjectTypeID,
+		S.UID as SubjectUid,
+		S.TypeName as SubjectTypeName,
+		S.BackColor as SubjectIconBackColor,
+		S.ForeColor as SubjectIconForeColor,
+		S.Icon as SubjectIconText,
+
+		I.Object,
+		I.ObjectID,
+		O.Name as ObjectName,
+		O.Name as ObjectShortName,
+		case when O.AssetID is not null then
+			dbo.GenerateAssetUrl(O.AssetID)
+		else
+			dbo.GenerateAssetTypeUrl(O.AssetTypeID)
+		end as ObjectUrl,
+		O.Type as ObjectType,
+		O.TypeID as ObjectTypeID,
+		O.UID as ObjectUid,
+		O.TypeName as ObjectTypeName,
+		O.BackColor as ObjectIconBackColor,
+		O.ForeColor as ObjectIconForeColor,
+		O.Icon as ObjectIconText,
+
+		I.PredicateID,
+		I.PredicateUid,
+		I.PredicateType,
+		case I.PredicateType
+			when 1 then 'DataLineage'
+			when 2 then 'ReferenceLineage'
+			when 3 then 'InterTypeHierarchy'
+			when 4 then 'IntraTypeHierarchy'
+			when 5 then 'UserOwnership'
+			when 6 then 'Grammar'
+			when 7 then 'Simple'
+			when 8 then 'FusionMapping'
+			when 9 then 'SeeAlso'
+			when 10 then 'Usage'
+			when 11 then 'ObjectOwnerhip'
+		end as PredicateTypeName,
+		I.PredicateName,
+		I.PredicateInverse
+from	PredicateIntersect I with(nolock)
+		inner join (
+			select null as AssetID, null as AssetTypeID, NI.Name as Name, 'Intersect' as Object, I.ID as ObjectID, null as ForeColor, null as BackColor, null as Icon, 'IntersectType' as Type, IntersectTypeID as TypeID, NIT.Name as TypeName, I.uid from [Intersect] I
+			inner join IntersectType T on T.ID = I.IntersectTypeID
+			cross apply dbo.GetIntersectNames(I.ID) NI	
+			cross apply dbo.GetIntersectTypeNames(T.ID) NIT
+			union all
+			select null as AssetID, TA.ID as AssetTypeID, TA.Name, TA.Object, TA.ObjectID, null as ForeColor, null as BackColor, null as Icon, 'ReferenceItemType' as Type, 0 as TypeID, TA.Name as TypeName, TA.uid from AssetType TA
+			where TA.Object = 'ReferenceItemType'
+		) S on S.Object = I.Subject and S.ObjectID = I.SubjectID
+		inner join (
+			select null as AssetID, null as AssetTypeID, NI.Name as Name, 'Intersect' as Object, I.ID as ObjectID, null as ForeColor, null as BackColor, null as Icon, 'IntersectType' as Type, IntersectTypeID as TypeID, NIT.Name as TypeName, I.uid from [Intersect] I
+			inner join IntersectType T on T.ID = I.IntersectTypeID
+			cross apply dbo.GetIntersectNames(I.ID) NI	
+			cross apply dbo.GetIntersectTypeNames(T.ID) NIT
+			union all
+			select null as AssetID, TA.ID as AssetTypeID, TA.Name, TA.Object, TA.ObjectID, null as ForeColor, null as BackColor, null as Icon, 'ReferenceItemType' as Type, 0 as TypeID, TA.Name as TypeName, TA.uid from AssetType TA
+			where TA.Object = 'ReferenceItemType'
+		) O on O.Object = I.Object and O.ObjectID = I.ObjectID
+		]]>
+    </sql>
+	<rollback>
 		<![CDATA[
 create or alter view [dbo].[IntersectDetail]
 as
@@ -95,92 +178,6 @@ from	PredicateIntersect I with(nolock)
 			select null as AssetID, TA.ID as AssetTypeID, TA.Name, TA.Object, TA.ObjectID, null as ForeColor, null as BackColor, null as Icon, 'ReferenceItemType' as Type, 0 as TypeID, TA.Name as TypeName, TA.uid from AssetType TA
 			where TA.Object = 'ReferenceItemType'
 		) O on O.Object = I.Object and O.ObjectID = I.ObjectID
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[
-	create or alter view [dbo].[IntersectDetail]
-	as
-		select	I.[uid],
-				I.IntersectID as ID,
-				I.IntersectTypeID,
-				I.State,
-				I.Subject,
-				I.SubjectID,
-				S.Name as SubjectName,
-				S.Name as SubjectShortName,
-				case when S.AssetID is not null then
-					dbo.GenerateAssetUrl(S.AssetID)
-				else
-					dbo.GenerateAssetTypeUrl(S.AssetTypeID)
-				end as SubjectUrl,
-				S.Type as SubjectType,
-				S.TypeID as SubjectTypeID,
-				S.UID as SubjectUid,
-				S.TypeName as SubjectTypeName,
-				S.BackColor as SubjectIconBackColor,
-				S.ForeColor as SubjectIconForeColor,
-				S.Icon as SubjectIconText,
-
-				I.Object,
-				I.ObjectID,
-				O.Name as ObjectName,
-				O.Name as ObjectShortName,
-				case when O.AssetID is not null then
-					dbo.GenerateAssetUrl(O.AssetID)
-				else
-					dbo.GenerateAssetTypeUrl(O.AssetTypeID)
-				end as ObjectUrl,
-				O.Type as ObjectType,
-				O.TypeID as ObjectTypeID,
-				O.UID as ObjectUid,
-				O.TypeName as ObjectTypeName,
-				O.BackColor as ObjectIconBackColor,
-				O.ForeColor as ObjectIconForeColor,
-				O.Icon as ObjectIconText,
-
-				I.PredicateID,
-				I.PredicateType,
-				case I.PredicateType
-					when 1 then 'DataLineage'
-					when 2 then 'ReferenceLineage'
-					when 3 then 'InterTypeHierarchy'
-					when 4 then 'IntraTypeHierarchy'
-					when 5 then 'UserOwnership'
-					when 6 then 'Grammar'
-					when 7 then 'Simple'
-					when 8 then 'FusionMapping'
-					when 9 then 'SeeAlso'
-					when 10 then 'Usage'
-					when 11 then 'ObjectOwnerhip'
-				end as PredicateTypeName,
-				I.PredicateName,
-				I.PredicateInverse
-		from	PredicateIntersect I with(nolock)
-				inner join (
-					select A.ID as AssetID, A.AssetTypeID as AssetTypeID, coalesce(FA.TextPath,DisplayValue) as Name, Object, ObjectID, ForeColor, BackColor, Icon, Type, TypeID, TypeName, A.UID from AssetDetail A
-					left join FusionAttribute FA on FA.ID = A.ObjectID and A.Object = 'FusionAttribute'
-					union all
-					select null as AssetID, null as AssetTypeID, NI.Name as Name, 'Intersect' as Object, I.ID as ObjectID, null as ForeColor, null as BackColor, null as Icon, 'IntersectType' as Type, IntersectTypeID as TypeID, NIT.Name as TypeName, I.uid from [Intersect] I
-					inner join IntersectType T on T.ID = I.IntersectTypeID
-					cross apply dbo.GetIntersectNames(I.ID) NI	
-					cross apply dbo.GetIntersectTypeNames(T.ID) NIT
-					union all
-					select null as AssetID, TA.ID as AssetTypeID, TA.Name, TA.Object, TA.ObjectID, null as ForeColor, null as BackColor, null as Icon, 'ReferenceItemType' as Type, 0 as TypeID, TA.Name as TypeName, TA.uid from AssetType TA
-					where TA.Object = 'ReferenceItemType'
-				) S on S.Object = I.Subject and S.ObjectID = I.SubjectID
-				inner join (
-					select A.ID as AssetID, A.AssetTypeID as AssetTypeID, coalesce(FA.TextPath,DisplayValue) as Name, Object, ObjectID, ForeColor, BackColor, Icon, Type, TypeID, TypeName, A.UID from AssetDetail A
-					left join FusionAttribute FA on FA.ID = A.ObjectID and A.Object = 'FusionAttribute'
-					union all
-					select null as AssetID, null as AssetTypeID, NI.Name as Name, 'Intersect' as Object, I.ID as ObjectID, null as ForeColor, null as BackColor, null as Icon, 'IntersectType' as Type, IntersectTypeID as TypeID, NIT.Name as TypeName, I.uid from [Intersect] I
-					inner join IntersectType T on T.ID = I.IntersectTypeID
-					cross apply dbo.GetIntersectNames(I.ID) NI	
-					cross apply dbo.GetIntersectTypeNames(T.ID) NIT
-					union all
-					select null as AssetID, TA.ID as AssetTypeID, TA.Name, TA.Object, TA.ObjectID, null as ForeColor, null as BackColor, null as Icon, 'ReferenceItemType' as Type, 0 as TypeID, TA.Name as TypeName, TA.uid from AssetType TA
-					where TA.Object = 'ReferenceItemType'
-				) O on O.Object = I.Object and O.ObjectID = I.ObjectID
 		]]>
 	</rollback>
   </changeSet>

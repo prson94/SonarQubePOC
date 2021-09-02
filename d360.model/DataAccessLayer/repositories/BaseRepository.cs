@@ -675,15 +675,6 @@ namespace d360.model.DataAccessLayer.repositories
                                 whereStatements.Add($"FA.[TextPath] = @textpath");
                                 dbArgs.Add($"@textpath", q.Value);
                             }
-                            else if (assetType.Object == "FusionAttributeType" && key == "parentuid")
-                            {
-                                if ((CompanyContext.Database.Connection.QueryFirstOrDefault<int>("select ISNULL(parentId,0) from fusionattributetype where id = @id", new { id = assetType.ObjectID })) > 0)
-                                {
-                                    whereStatements.Add($"ATP.[uid] = @parentuid");
-                                    dbArgs.Add($"@parentuid", q.Value);
-                                }
-
-                            }
                             else if (assetType.Object == "ReferenceItemType" && key == "code")
                             {
                                 whereStatements.Add($"RI.[Code] = @code");

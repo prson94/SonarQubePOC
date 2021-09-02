@@ -962,16 +962,6 @@ namespace d360.web.Controllers
                     responseModel.Items.HasAudit = true;
                 }
 
-                if (model.ObjectType == SystemObjects.FusionType.ToString())
-                {
-                    execProcedure = false;
-                    responseModel.Object = responseModel.ObjectType = SystemObjects.FusionType.ToString();
-                    responseModel.ObjectID = model.ObjectId ?? 0;
-                    responseModel.DisplayValue = "Fusion";
-                    responseModel.MainTabTitle = "Fusion Types";
-                    responseModel.Items.HasAudit = true;
-                }
-
                 if (model.ObjectType == SystemObjects.TaxonomyType.ToString())
                 {
                     execProcedure = false;

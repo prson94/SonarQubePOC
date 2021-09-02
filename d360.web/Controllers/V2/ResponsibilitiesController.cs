@@ -329,7 +329,6 @@ namespace d360.web.Controllers.V2
                     {
                         AssetTypeClass.BusinessAsset,
                         AssetTypeClass.TechnicalAsset,
-                        AssetTypeClass.FusionAttribute,
                         AssetTypeClass.Model,
                         AssetTypeClass.Rule,
                         AssetTypeClass.Policy,
@@ -434,7 +433,6 @@ namespace d360.web.Controllers.V2
                     {
                         AssetTypeClass.BusinessAsset,
                         AssetTypeClass.TechnicalAsset,
-                        AssetTypeClass.FusionAttribute,
                         AssetTypeClass.Model,
                         AssetTypeClass.Rule,
                         AssetTypeClass.Policy,
@@ -542,7 +540,6 @@ namespace d360.web.Controllers.V2
                     {
                         AssetTypeClass.BusinessAsset,
                         AssetTypeClass.TechnicalAsset,
-                        AssetTypeClass.FusionAttribute,
                         AssetTypeClass.Model,
                         AssetTypeClass.Rule,
                         AssetTypeClass.Policy,
