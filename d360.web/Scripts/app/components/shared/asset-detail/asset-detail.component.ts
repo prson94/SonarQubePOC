@@ -80,7 +80,6 @@ export class AssetDetailComponent implements OnChanges {
         }
 
         if (this.objectType && this.objectUID) {
-            console.log(this);
             detailSub = this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition);
         }
 

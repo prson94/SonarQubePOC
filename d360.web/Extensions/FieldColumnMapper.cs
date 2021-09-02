@@ -8,8 +8,8 @@ namespace d360.web.Extensions
 {
     public class FieldColumnMapper
     {
-        private List<FieldColumnMapping> _fieldColumnMappings;
-        private DetailReadOnlyModel _model;
+        private readonly List<FieldColumnMapping> _fieldColumnMappings;
+        private readonly DetailReadOnlyModel _model;
 
         public FieldColumnMapper(List<FieldColumnMapping> columnData, DetailReadOnlyModel model)
         {
