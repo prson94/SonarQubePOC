@@ -1437,6 +1437,15 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 return (['Path', 'Html', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'ComplexRelationLookup', 'RefListRelationship', 'Score', 'Tag'].indexOf(this.currentType) > -1);
             case 'isSettingDisabled':
                 return (['Json', 'JSON', 'JsonElement', 'ComplexRelationLookup', 'Tag', 'RefListRelationship'].indexOf(this.currentType) > -1);
+            case 'DisplayInColumn':
+                if (this.currentType === "OwnershipLookup") {
+                    var isDisabled = !this.model.FieldType.Type[this.currentType].Definition.DisplayAsList;
+                    if (isDisabled) {
+                        this.model.FieldType.Type[this.currentType].DisplayInColumn = false;
+                    }
+                    return isDisabled;
+                }
+                return false;
             default:
                 console.warn(`invalid setting [${val}] passed to isSettingDisabled`);
         }
