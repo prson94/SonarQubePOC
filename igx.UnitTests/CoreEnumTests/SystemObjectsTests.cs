@@ -29,14 +29,9 @@ namespace igx.UnitTests.CoreEnumTests
             Assert.True(SystemObjects.ExportTemplate.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter));
             Assert.True(SystemObjects.Field.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter));
             Assert.True(SystemObjects.FieldType.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter));
-            Assert.True(SystemObjects.Fusion.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter));
-            Assert.True(SystemObjects.FusionAttribute.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter));
-            Assert.True(SystemObjects.FusionAttributeType.ExcludeDataType() == (DataType.OwnershipLookup | DataType.Path | DataType.RefListRelationship | DataType.Tag | DataType.Score | DataType.Counter));
             Assert.True(SystemObjects.FusionExecution.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter));
             Assert.True(SystemObjects.FusionQueryAttribute.ExcludeDataType() == (DataType.Path | DataType.JSON | DataType.JsonElement | DataType.Tag | DataType.Score | DataType.Counter));
             Assert.True(SystemObjects.FusionQueryAttributeType.ExcludeDataType() == (DataType.ComplexRelationLookup | DataType.FieldFromRelationship | DataType.JSON | DataType.JsonElement | DataType.Link | DataType.Lookup | DataType.OwnershipLookup | DataType.Path | DataType.RefListRelationship | DataType.Relationship | DataType.Tag | DataType.Score | DataType.Counter));
-            Assert.True(SystemObjects.FusionType.ExcludeDataType() == (DataType.ComplexRelationLookup | DataType.FieldFromRelationship | DataType.JSON | DataType.JsonElement |
-            DataType.Link | DataType.Lookup | DataType.OwnershipLookup | DataType.Path | DataType.RefListRelationship | DataType.Relationship | DataType.Tag | DataType.Score | DataType.Counter));
             Assert.True(SystemObjects.Group.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter));
             Assert.True(SystemObjects.GroupType.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter));
             Assert.True(SystemObjects.Intersect.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter));

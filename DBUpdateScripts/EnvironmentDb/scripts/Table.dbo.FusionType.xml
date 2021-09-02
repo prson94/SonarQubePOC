@@ -5,104 +5,25 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.FusionType-v1">
+  <changeSet author="Puneet Gupta" id="Table.dbo.FusionType-Rename-v1">
+  <comment>GOV-11726</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionType')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionType')
 BEGIN
-	CREATE TABLE [dbo].[FusionType](
-		[ID] [int] IDENTITY(50000,1) NOT NULL,
-		[Name] [nvarchar](250) NOT NULL,
-		[Description] [nvarchar](max) NULL,
-		[UpdatedOn] [datetime] NULL,
-		[UpdatedBy] [int] NULL,
-		CONSTRAINT [PK_FusionType] PRIMARY KEY CLUSTERED ( [ID] ASC )
-	)
+	exec sp_rename 'dbo.FusionType', 'FusionType_backup';
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Core" id="Table.dbo.FusionType-FusionType_AfterDelete-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[FusionType_AfterDelete]
-   ON  [dbo].[FusionType] 
-   AFTER DELETE
-AS 
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionType_backup')
 BEGIN
-	SET NOCOUNT ON
-	delete AssetType where Object = 'FusionType' and ObjectID in (select ID from deleted)
+	exec sp_rename 'dbo.FusionType_backup', 'FusionType';
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Core" id="Table.dbo.FusionType-FusionType_AfterInsert-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[FusionType_AfterInsert]
-   ON  [dbo].[FusionType] 
-   AFTER INSERT
-AS 
-BEGIN
-	SET NOCOUNT ON;
-	insert into AssetType (Name, Description, Class, DisplayFormat, [State], [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
-		select Name, Description, 3, '{Name}', 1, 0, 1, 'FusionType', ID, coalesce(UpdatedOn, getutcdate()), UpdatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy from inserted
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Core" id="Table.dbo.FusionType-FusionType_AfterUpdate-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[FusionType_AfterUpdate]
-   ON  [dbo].[FusionType] 
-   AFTER UPDATE
-AS 
-BEGIN
-	SET NOCOUNT ON;
-	update	T
-	set		T.Name = S.Name,
-			T.Description = S.Description,
-			T.UpdatedBy = S.UpdatedBy,
-			T.UpdatedOn = S.UpdatedOn
-	from	AssetType T
-			inner join inserted S on T.Object = 'FusionType' and T.ObjectID = S.ID
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

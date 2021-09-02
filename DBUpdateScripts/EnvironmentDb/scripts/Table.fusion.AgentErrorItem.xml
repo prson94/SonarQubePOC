@@ -5,35 +5,33 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.fusion.AgentErrorItem-v1">
+  <changeSet author="Puneet Gupta" id="Table.fusion.AgentErrorItem-Rename-v1">
+  <comment>GOV-11726</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'AgentErrorItem')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'AgentErrorItem')
 BEGIN
-	CREATE TABLE [fusion].[AgentErrorItem](
-		[ID] [bigint] IDENTITY(1,1) NOT NULL,
-		[AgentErrorID] [bigint] NOT NULL,
-		[Date] [datetime] CONSTRAINT [DF_FusionAgentErrorItem_Date] DEFAULT (getutcdate()) NOT NULL,
-		[Message] [nvarchar](max) NOT NULL,
-		CONSTRAINT [PK_FusionAgentErrorItem] PRIMARY KEY CLUSTERED ( [ID] ASC )
-	)
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_FusionAgentErrorItem_FusionAgentError')
-BEGIN
-	ALTER TABLE [fusion].[AgentErrorItem] WITH CHECK ADD CONSTRAINT [FK_FusionAgentErrorItem_FusionAgentError] FOREIGN KEY([AgentErrorID]) REFERENCES [fusion].[AgentError] ([ID]) ON DELETE CASCADE
-	ALTER TABLE [fusion].[AgentErrorItem] CHECK CONSTRAINT [FK_FusionAgentErrorItem_FusionAgentError]
+	IF EXISTS (select * 
+			   from sys.foreign_keys where name = 'FK_FusionAgentErrorItem_FusionAgentError' 
+			   and object_name(parent_object_id) = 'AgentErrorItem' and schema_name(schema_id) = 'fusion'
+			   )
+	BEGIN	
+		ALTER TABLE [fusion].[AgentErrorItem] DROP CONSTRAINT [FK_FusionAgentErrorItem_FusionAgentError]
+	END
+	exec sp_rename 'fusion.AgentErrorItem', 'AgentErrorItem_backup';
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'AgentErrorItem_backup')
+BEGIN
+	exec sp_rename 'fusion.AgentErrorItem_backup', 'AgentErrorItem';
+END
 		]]>
 	</rollback>
   </changeSet>
-
 </databaseChangeLog>

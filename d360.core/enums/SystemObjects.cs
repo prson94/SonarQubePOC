@@ -13,145 +13,134 @@ namespace d360.core
         [Description("Artifact"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag | DataType.Counter)]
         Artifact = 1,
         [Description("Synonym"), AllowSurvey(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
-        Synonym,
+        Synonym = 2,
         [Description("Synonym Type"), AllowSurvey(false), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
-        SynonymType,
+        SynonymType = 3,
         [Description("Artifact Type"), AllowSurvey(true), IsType(true)]
-        ArtifactType,
+        ArtifactType= 4,
         [Description("Email Template"), AllowOwnership(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag | DataType.Counter)]
-        EmailTemplate,
-        [Description("Fusion"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        Fusion,
-        [Description("Fusion Attribute"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        FusionAttribute,
-        [Description("Fusion Attribute Type"), IsType(true), 
-        ExcludeDataType(DataType.OwnershipLookup | DataType.Path | DataType.RefListRelationship | DataType.Tag | DataType.Score | DataType.Counter)]
-        FusionAttributeType,
-        [Description("Fusion Type"), IsType(true), 
-            ExcludeDataType(DataType.ComplexRelationLookup | DataType.FieldFromRelationship | DataType.JSON | DataType.JsonElement | 
-            DataType.Link | DataType.Lookup | DataType.OwnershipLookup | DataType.Path | DataType.RefListRelationship | DataType.Relationship | DataType.Tag | DataType.Score | DataType.Counter)]
-        FusionType,
+        EmailTemplate = 5,
         [Description("Group"), IsType(false),
          ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
-        Group,
+        Group = 10,
         [Description("Intersect"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
-        Intersect,
+        Intersect = 11,
         [Description("Intersect Type"), IsType(true), 
             ExcludeDataType(DataType.FieldFromRelationship |
             DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
-        IntersectType,
+        IntersectType = 12,
         [Description("Resource"), AllowOwnership(false), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
-        Resource,
+        Resource = 13,
         [Description("Resource Type"), AllowOwnership(false), AllowSurvey(true), IsType(true),
             ExcludeDataType(DataType.FieldFromRelationship |
             DataType.OwnershipLookup | DataType.RefListRelationship | DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        ResourceType,
+        ResourceType = 14,
         [Description("Survey Type"), AllowSurvey(false), IsType(true),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
-        SurveyType,
+        SurveyType = 15,
         [Description("Tag"), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Counter)]
-        Tag,
+        Tag = 16,
         [Description("Taxonomy"), IsType(false), ExcludeDataType(DataType.Tag)]
-        Taxonomy,
+        Taxonomy = 17,
         [Description("Taxonomy Type"), AllowSurvey(true), IsType(true)]
-        TaxonomyType,
+        TaxonomyType = 18,
         [Description("Tooltip  Template"), AllowOwnership(false), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
-        TooltipTemplate,
+        TooltipTemplate = 19,
         [Description("Field"), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
-        Field,
+        Field = 20,
         [Description("Field Type"), AllowSurvey(false), IsType(true),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
-        FieldType,
+        FieldType = 21,
         [Description("Response Type"), AllowSurvey(false), IsType(true),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
-        ResponseType,
+        ResponseType = 22,
         [Description("Score"), AllowSurvey(false), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
-        Score,
+        Score = 23,
         [Description("Score Type"), AllowSurvey(false), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
-        ScoreType,
+        ScoreType = 24,
         [Description("Responsibility"), AllowSurvey(false), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        Responsibility,
+        Responsibility = 25,
         [Description("Responsibility Type"), AllowSurvey(false), IsType(true),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        ResponsibilityType,
+        ResponsibilityType = 26,
         [Description("Responsibility Type Claim"), AllowSurvey(false), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        ResponsibilityTypeClaim,
+        ResponsibilityTypeClaim = 27,
         [Description("Claim"), AllowSurvey(false), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
-        Claim,
+        Claim = 28,
         [Description("Bulk Load"), AllowSurvey(false), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        Load,
+        Load = 29,
         [Description("Report"), AllowSurvey(false), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
-        Report,
+        Report = 30,
         [Description("Attribute Type Category"), AllowSurvey(false), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        AttributeTypeCategory,
+        AttributeTypeCategory = 31,
         [Description("Policy"), AllowSurvey(false), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement)]
-        Policy,
+        Policy = 32,
         [Description("Policy Type"), AllowSurvey(false), IsType(true)]
-        PolicyType,
+        PolicyType = 33,
         [Description("Rule"), AllowSurvey(false), IsType(false)]
-        Rule,
+        Rule = 34,
         [Description("Metric Allocation"), AllowSurvey(false), IsType(false)]
-        MetricAllocation,
+        MetricAllocation = 35,
         [Description("Rule Type"), AllowSurvey(false), IsType(true)]
-        RuleType,
+        RuleType = 36,
         [Description("Fusion Execution"), AllowSurvey(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        FusionExecution,
+        FusionExecution = 37,
         [Description("Workflow Relation"), AllowSurvey(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        WorkflowTypeRelation,
+        WorkflowTypeRelation = 38,
         [Description("Predicate"), AllowSurvey(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        Predicate,
+        Predicate = 39,
         [Description("Group Type"), AllowSurvey(false), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
-        GroupType,
+        GroupType = 40,
         [Description("Rule Dimension"), AllowSurvey(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
-        RuleDimension,        
+        RuleDimension = 41,        
         [Description("Map"), AllowSurvey(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
-        Map,
+        Map = 42,
         [Description("Map Type"), AllowSurvey(false), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
-        MapType,
+        MapType = 43,
         [Description("Reference Item"), AllowSurvey(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag | DataType.Score | DataType.Counter)]
-        ReferenceItem,
+        ReferenceItem = 44,
         [Description("Reference Item Type"), AllowSurvey(false), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag | DataType.Score | DataType.Counter)]
-        ReferenceItemType,
+        ReferenceItemType = 45,
         [Description("Fusion Query Attribute"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        FusionQueryAttribute,
+        FusionQueryAttribute = 46,
         [Description("Fusion Query Attribute Type"), IsType(true),
                     ExcludeDataType(DataType.ComplexRelationLookup | DataType.FieldFromRelationship | DataType.JSON | DataType.JsonElement |
                     DataType.Link | DataType.Lookup | DataType.OwnershipLookup | DataType.Path | DataType.RefListRelationship | DataType.Relationship | DataType.Tag | DataType.Score | DataType.Counter)]
-        FusionQueryAttributeType,
+        FusionQueryAttributeType = 47,
         [Description("Monitor"), AllowSurvey(false), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
-        Monitor,
+        Monitor = 48,
         [Description("Issue Type"), IsType(true), 
             ExcludeDataType(DataType.FieldFromRelationship |
             DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        IssueType,
+        IssueType = 49,
         [Description("Issue"), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        Issue,
+        Issue = 50,
         [Description("Score Type Metric"), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
-        ScoreTypeMetric,
+        ScoreTypeMetric = 51,
         [Description("Organization"), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        Organization,
+        Organization = 52,
         [Description("Organization Domain"), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        OrganizationDomain,
+        OrganizationDomain = 53,
         [Description("Organization Invitation"), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        OrganizationInvitation,
+        OrganizationInvitation = 54,
         [Description("Contract"), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        Contract,
+        Contract = 55,
         [Description("Shopping Cart Type"), IsType(true),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        ShoppingCartType,
+        ShoppingCartType = 56,
         [Description("Shopping Cart"), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        ShoppingCart,
+        ShoppingCart = 57,
         [Description("Organization Type"), IsType(true), 
             ExcludeDataType(DataType.FieldFromRelationship |
             DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        OrganizationType,
+        OrganizationType = 58,
         [Description("Export Template"), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
-        ExportTemplate,
+        ExportTemplate = 59,
         [Description("Task Type"), AllowSurvey(false), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.ComplexRelationLookup | DataType.RefListRelationship | DataType.FieldFromRelationship | DataType.OwnershipLookup | DataType.Relationship | DataType.Counter)]
-        TaskType,
+        TaskType = 60,
         [Description("Task"), AllowSurvey(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.ComplexRelationLookup | DataType.RefListRelationship | DataType.FieldFromRelationship | DataType.OwnershipLookup | DataType.Relationship | DataType.Counter)]
-        Task,
+        Task = 61,
         [Description("Connector Label"), AllowSurvey(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.ComplexRelationLookup | DataType.RefListRelationship | DataType.FieldFromRelationship | DataType.OwnershipLookup | DataType.Relationship | DataType.Counter)]
-        ConnectorLabel,
+        ConnectorLabel = 62,
         [Description("Issue Type Relation"), IsType(true),
         ExcludeDataType(DataType.FieldFromRelationship |
         DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        IssueTypeRelation
+        IssueTypeRelation = 63
     }
 
     public static class SystemObjectExtensions

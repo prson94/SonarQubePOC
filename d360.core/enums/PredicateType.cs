@@ -23,8 +23,8 @@ namespace d360.core.enums
             ForceDifferentSubjectObject(false),
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
-            SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.FusionAttribute, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.FusionAttribute, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset),
+            SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset),
+            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset),
             AllowIntersectTypeAsSubject(true)
         ]
         DataLineage = 1,
@@ -57,8 +57,8 @@ namespace d360.core.enums
             ForceDifferentSubjectObject(true),
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(false),
-            SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.FusionAttribute, AssetTypeClass.TechnicalAsset),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.FusionAttribute, AssetTypeClass.TechnicalAsset),
+            SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
+            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
             AllowIntersectTypeAsSubject(false)
         ]
         InterTypeHierarchy = 3,
