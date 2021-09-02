@@ -145,11 +145,6 @@ namespace igx.jobs.apiexecutionprocessor
                     company.Update(dbExecutionItem);
                 }
 
-
-                    3
-                    4
-                    1
-                    2
                 //check if this client should / can run an api load if the job already started and we are resuming it let it through without applying the should run api check
                 if (!jobAlreadyRunning && !(await ShouldRunApiJob(company, dbExecutionItem?.ExecutionID)))
                 {
