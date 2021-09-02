@@ -3021,9 +3021,16 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                             Category = Resources.FieldInfo.SystemNoCategory
                         });
 
+                        var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
 
-                        model.rows.AddRange(await loadDynamicDisplayFields(type, id).ConfigureAwait(false));
-
+                        if (useAssetDetailColumnDefinition && fcMapper != null)
+                        {
+                            fcMapper.ArrangeRowsAndCols(dynamicRows);
+                        }
+                        else
+                        {
+                            model.rows.AddRange(dynamicRows);
+                        }
                         var asset = Company.Assets.Where(x => x.Object == "Policy" && x.ObjectID == id).FirstOrDefault();
 
                         if (asset != null)
@@ -3091,7 +3098,16 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                             Category = Resources.FieldInfo.SystemNoCategory
                         });
 
-                        model.rows.AddRange(await loadDynamicDisplayFields(type, id).ConfigureAwait(false));
+                        var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
+
+                        if (useAssetDetailColumnDefinition && fcMapper != null)
+                        {
+                            fcMapper.ArrangeRowsAndCols(dynamicRows);
+                        }
+                        else
+                        {
+                            model.rows.AddRange(dynamicRows);
+                        }
 
                         var asset = Company.Assets.Where(x => x.Object == "Rule" && x.ObjectID == id).FirstOrDefault();
 
@@ -3684,7 +3700,16 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
                             });
                         }
 
-                        model.rows.AddRange(await loadDynamicDisplayFields(type, id).ConfigureAwait(false));
+                        var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
+
+                        if (useAssetDetailColumnDefinition && fcMapper != null)
+                        {
+                            fcMapper.ArrangeRowsAndCols(dynamicRows);
+                        }
+                        else
+                        {
+                            model.rows.AddRange(dynamicRows);
+                        }
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
