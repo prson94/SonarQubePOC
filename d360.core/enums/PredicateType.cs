@@ -146,7 +146,7 @@ namespace d360.core.enums
             AllowEditFromRelationshipEditor(true),
             LineageVersionsSupported(1, 2),
             SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule),
-            ObjectAssetClassesSupported(),
+            ObjectAssetClassesSupported,
             AllowIntersectTypeAsSubject(false)
         ]
         FusionMapping = 8,

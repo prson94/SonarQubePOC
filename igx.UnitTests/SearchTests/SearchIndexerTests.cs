@@ -42,7 +42,6 @@ namespace igx.UnitTests.SearchTests
 
         [Theory]
         [MemberData(nameof(GetAssetTypeClasses))]
-        [InlineData("Fusion", 3)]
         [InlineData("ReferenceItemType", 14)]
         public void SearchIndexerGetClassFromCategory(string classOrObjectName, int classId)
         {
