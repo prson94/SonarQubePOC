@@ -415,6 +415,14 @@ namespace d360.model.validators
                     }
                 }
 
+                if (field.Type.ComputedOwnershipLookup != null)
+                {
+                    if (field.Type.ComputedOwnershipLookup.DisplayInColumn == true && field.Type.ComputedOwnershipLookup.Definition.DisplayAsList != true)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"DisplayInColumn on ComputedOwnershipLookup can be set to True only if DisplayAsList is set to True.");
+                    }
+                }
+
                 //Diagram asset type validators
                 if (assetTypeIdentifierInfoModel != null && assetTypeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
                 {
