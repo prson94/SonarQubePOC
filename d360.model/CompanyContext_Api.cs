@@ -4345,7 +4345,7 @@ where   ExecutionID = @ExecutionID
 
             try
             {
-                enableJsonAttributes = Community.GetCompanySettingByKey<bool>("EnableJsonAttribute");
+                enableJsonAttributes = GetSettingValue<bool>(Setting.EnableJsonAttribute);
             }
             catch { }
 
@@ -7272,22 +7272,12 @@ where	T.ExecutionID = @ExecutionID
 
                     #region Log data errors
 
-                    int lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
                     var allowedFunctionalTypes = PredicateType.DataLineage.GetAsList()
                         .Where(p =>
-                            p.AllowEditFromPredicateEditor &&
-                            p.LineageVersionsSupported.Contains(lineageVersion)
+                            p.AllowEditFromPredicateEditor
                             ).ToList();
                     var allowedTypeIdList = string.Join(", ", allowedFunctionalTypes.Select(p => (int)p.ID));
                     var allowedTypeNameList = string.Join(", ", allowedFunctionalTypes.Select(p => p.ID.ToString().Replace("'", "''")));
-
-                    var differentLineageVersionFunctionalTypes = PredicateType.DataLineage
-                        .GetAsList()
-                        .Where(p => !p.LineageVersionsSupported.Contains(lineageVersion))
-                        .Select(p => (int)p.ID)
-                        .ToList();
-                    if (differentLineageVersionFunctionalTypes.Count == 0) differentLineageVersionFunctionalTypes.Add(-1);
-                    var differentLineageVersionIdList = string.Join(", ", differentLineageVersionFunctionalTypes);
 
                     var checkSQL = $@"
 update	api.ExecutionPredicate 
@@ -7338,12 +7328,7 @@ where	ExecutionID = @ExecutionID and (Inverse is null or TRIM(Inverse) = '');
 update	api.ExecutionPredicate
 set		Success = 0,
 		[Message] = coalesce([Message] + '; ', '') + 'Predicate Type invalid. Allowed values are {allowedTypeNameList}'
-where	ExecutionID = @ExecutionID and [Type] not in ({allowedTypeIdList}) and [Type] not in ({differentLineageVersionIdList})
-
-update	api.ExecutionPredicate
-set		Success = 0,
-		[Message] = coalesce([Message] + '; ', '') + 'Your current version of lineage does not support using this predicates of this type.'
-where	ExecutionID = @ExecutionID and [Type] in ({differentLineageVersionIdList});";
+where	ExecutionID = @ExecutionID and [Type] not in ({allowedTypeIdList});";
 
                     Connection.Execute(checkSQL, new { execution.ExecutionID }, commandTimeout: timeout);
 

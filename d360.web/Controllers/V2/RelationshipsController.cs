@@ -50,8 +50,7 @@ namespace d360.web.Controllers.V2
         IFieldsRepository FieldsRepository;
         IAssetRepository AssetRepository;
 
-        public RelationshipsController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource, IStorageProvider storage, IRelationshipRepository relationshipRepository, IFieldsRepository fieldsRepository, IAssetRepository assetRepository)
-            : base(community, company)
+        public RelationshipsController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource, IStorageProvider storage, IRelationshipRepository relationshipRepository, IFieldsRepository fieldsRepository, IAssetRepository assetRepository, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
         {
             QueueSource = queueSource;
             Storage = storage;
@@ -262,10 +261,8 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
-
                 var types = PredicateType.DataLineage.GetAsList()
-                    .Where(i => i.LineageVersionsSupported.Contains(lineageVersion) && !i.Obsolete)
+                    .Where(i => !i.Obsolete)
                     .Select(i => new PredicateTypeApiViewModel
                     {
                         Type = i.ID,

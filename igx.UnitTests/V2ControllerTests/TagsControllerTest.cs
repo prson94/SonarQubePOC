@@ -22,7 +22,7 @@ namespace igx.UnitTests.V2ControllerTests
 
         public TagsControllerTest()
         {
-            this.tagsController = new TagsController(GetCommunity(), GetCompany(), GetTagRepository(),GetAssetRepository())
+            this.tagsController = new TagsController(GetCommunity(), GetCompany(), GetTagRepository(), GetAssetRepository(), GetSettingsRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()

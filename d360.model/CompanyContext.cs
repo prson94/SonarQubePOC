@@ -46,7 +46,7 @@ namespace d360.model
         {
             get
             {
-                return this.Community.GetCompanySettingByKey<int>("ApiTimeout");
+                return GetSettingValue<int>(Setting.ApiTimeout);
             }
         }
 
@@ -1213,7 +1213,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
             return Database.Connection.Query<IntersectTypeOption>(sql, dbArgs).ToList();
         }
 
-        public List<Predicate> GetPredicateOptions(int lineageVersion, SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
+        public List<Predicate> GetPredicateOptions(SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
         {
             var sSubject = subject.ToString();
             var allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p => p.AllowIntersectTypeAssignment && p.AllowEditFromRelationshipEditor).ToList();
@@ -1250,8 +1250,7 @@ where	I.ID is null";
                 pid = predicateID
             }).ToList()
             .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment &&
-                        i.Type.AsInfoModel().AllowEditFromRelationshipEditor &&
-                        i.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion)
+                        i.Type.AsInfoModel().AllowEditFromRelationshipEditor
                   );
 
             predicates = predicates.Where(i => i.Type.In(allowedFunctionalTypes.Select(p => p.ID).ToArray()));
@@ -1259,7 +1258,7 @@ where	I.ID is null";
             return predicates.ToList();
         }
 
-        public IntersectType UpsertIntersectType(IntersectType model, int lineageVersion)
+        public IntersectType UpsertIntersectType(IntersectType model)
         {
             var predicateModel = GetById<Predicate>(model.PredicateID.Value);
 
@@ -1274,11 +1273,6 @@ where	I.ID is null";
             if (($"{model.Subject}{model.SubjectID}" == $"{model.Object}{model.ObjectID}") && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
             {
                 throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", "The subject and object may not be the same when using this Predicate.");
-            }
-
-            if (!predicateModel.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion))
-            {
-                throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"Your current version of lineage does not support using this predicates of type {predicateModel.Type.AsInfoModel().Name}.");
             }
 
             AssetType subjectAssetType = null;
@@ -2781,6 +2775,7 @@ new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = v
                             where json.uid = @assetUid";
             return Query<string>(diagramUrl, new { assetUid }).FirstOrDefault();
         }
+        
         public bool HasRelationshipInProcessDiagram(Guid intersectTypeUid)
         {
             return Query<int>(@"select count(*) from processexpandeddata ped
@@ -2804,5 +2799,92 @@ new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = v
                 where fcv.AssetId=@assetId and fcv.FieldTypeId=@fieldTypeId",
                               new { fieldTypeId, assetId }).FirstOrDefault();
         }
+
+
+        #region Environment Settings
+
+        private class EnvironmentSetting
+        {
+            public Setting ID { get; set; }
+            public string Value { get; set; }
+        }
+
+        private string SettingsCacheKey { get { return $"Settings_{CurrentCompanyID}"; } }
+
+        public void DeleteSetting(Setting setting)
+        {
+            // In essence, this would set back to the default, if any.
+            Connection.Execute("delete Setting where ID = @id", new { id = (int)setting });
+            Caching.RemoveItem(SettingsCacheKey);
+        }
+
+        public SettingInfo GetSetting(Setting setting)
+        {
+            return GetSettings().SingleOrDefault(s => s.ID == setting);
+        }
+
+        public T GetSettingValue<T>(Setting setting)
+        {
+            var info = GetSetting(setting);
+
+            T checkType = default(T);
+            if (checkType is Guid)
+            {
+                var guid = Guid.Parse(info.Value);
+                return (T)(Convert.ChangeType(guid, typeof(T)));
+            }
+
+            return (T)(Convert.ChangeType(info.Value, typeof(T)));
+        }
+
+        public List<SettingInfo> GetSettings()
+        {
+            // Get the list of settings from the D3S_###.dbo.Setting table.
+            // Get the full list of settings from the Setting enum.
+            // Return a list of SettingInfo, merging the values present from the environment into the SettingInfo.Value property.
+
+            var overrides = Caching.GetItem<List<EnvironmentSetting>>(SettingsCacheKey);
+            if (overrides == null)
+            {
+                overrides = Query<EnvironmentSetting>("select * from Setting").ToList();
+                Caching.SetItem(SettingsCacheKey, overrides, true, 3);
+            }
+            var settings = Setting.ActionMessage.GetAsList();
+
+            settings.ForEach(s =>
+            {
+                if (overrides.Any(o => o.ID == s.ID))
+                {
+                    s.Value = overrides.First(o => o.ID == s.ID).Value;
+                }
+                else
+                {
+                    s.Value = s.DefaultValue;
+                }
+            });
+
+            return settings;
+        }
+
+        public Dictionary<string, string> GetSettingsAsDictionary()
+        {
+            return GetSettings().ToDictionary(k => k.ID.ToString(), v => v.Value);
+        }
+
+        public void UpsertSetting(Setting setting, string value)
+        {
+            Connection.Execute(@"
+if exists(select 1 from [Setting] where ID = @ID) 
+begin 
+    update [Setting] set [Value] = @value where ID = @ID 
+end 
+else 
+begin 
+    insert [Setting] values (@ID, @value) 
+end", new { ID = (int)setting, value });
+            Caching.RemoveItem(SettingsCacheKey);
+        }
+
+        #endregion
     }
 }

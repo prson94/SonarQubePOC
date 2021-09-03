@@ -142,7 +142,6 @@ namespace d360.core.enums
             ForceDifferentSubjectObject(true),
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
-            LineageVersionsSupported(3),
             SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
             ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
             AllowIntersectTypeAsSubject(false)
@@ -160,7 +159,6 @@ namespace d360.core.enums
             ForceDifferentSubjectObject(true),
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
-            LineageVersionsSupported(3),
             SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule),
             ObjectAssetClassesSupported(AssetTypeClass.TechnicalAsset),
             AllowIntersectTypeAsSubject(false)
@@ -178,7 +176,6 @@ namespace d360.core.enums
             ForceDifferentSubjectObject(false),
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
-            LineageVersionsSupported(3),
             SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset),
             ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset),
             AllowIntersectTypeAsSubject(false)
@@ -283,9 +280,6 @@ namespace d360.core.enums
         public bool Obsolete { get; set; }
 
         [JsonIgnore]
-        public int[] LineageVersionsSupported { get; set; }
-
-        [JsonIgnore]
         public AssetTypeClass[] SubjectAssetClassesSupported { get; set; }
 
         [JsonIgnore]
@@ -349,9 +343,6 @@ namespace d360.core.enums
                         SingleRelationshipByFunctionalType = ((SingleRelationshipByFunctionalTypeAttribute)tm.GetCustomAttribute(typeof(SingleRelationshipByFunctionalTypeAttribute))).Allowed,
                         ForceDifferentSubjectObject = ((ForceDifferentSubjectObjectAttribute)tm.GetCustomAttribute(typeof(ForceDifferentSubjectObjectAttribute))).Allowed,
                         ReadOnly = ((ReadOnlyAttribute)tm.GetCustomAttribute(typeof(ReadOnlyAttribute))).IsReadOnly,
-                        LineageVersionsSupported = tm.IsDefined(typeof(LineageVersionsSupportedAttribute), false) ?
-                                                    ((LineageVersionsSupportedAttribute)tm.GetCustomAttribute(typeof(LineageVersionsSupportedAttribute))).Versions :
-                                                    new int[4] { 0, 1, 2, 3 }, //0 accounts for unit tests,
                         SubjectAssetClassesSupported = ((SubjectAssetClassesSupportedAttribute)tm.GetCustomAttribute(typeof(SubjectAssetClassesSupportedAttribute))).Classes,
                         ObjectAssetClassesSupported = ((ObjectAssetClassesSupportedAttribute)tm.GetCustomAttribute(typeof(ObjectAssetClassesSupportedAttribute))).Classes,
                         Obsolete = tm.IsDefined(typeof(ObsoleteAttribute), false)
@@ -378,9 +369,6 @@ namespace d360.core.enums
                     ReadOnly = ((ReadOnlyAttribute)t.GetCustomAttribute(typeof(ReadOnlyAttribute))).IsReadOnly,
                     AllowEditFromRelationshipEditor = ((AllowEditFromRelationshipEditorAttribute)t.GetCustomAttribute(typeof(AllowEditFromRelationshipEditorAttribute))).Allowed,
                     SingleRelationshipByFunctionalType = ((SingleRelationshipByFunctionalTypeAttribute)t.GetCustomAttribute(typeof(SingleRelationshipByFunctionalTypeAttribute))).Allowed,
-                    LineageVersionsSupported = t.IsDefined(typeof(LineageVersionsSupportedAttribute), false) ?
-                                                    ((LineageVersionsSupportedAttribute)t.GetCustomAttribute(typeof(LineageVersionsSupportedAttribute))).Versions :
-                                                    new int[4] { 0, 1, 2, 3 }, //0 accounts for unit tests
                     SubjectAssetClassesSupported = ((SubjectAssetClassesSupportedAttribute)t.GetCustomAttribute(typeof(SubjectAssetClassesSupportedAttribute))).Classes,
                     ObjectAssetClassesSupported = ((ObjectAssetClassesSupportedAttribute)t.GetCustomAttribute(typeof(ObjectAssetClassesSupportedAttribute))).Classes
                 };

@@ -43,6 +43,8 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     sidePanelTab: string;
     sidePanelStorageKey: string;
     hasProfiling: boolean = false;
+    gridLoading: boolean = true;
+    definitionLoaded: boolean = false;
     dataProfile: any;
     
 

@@ -32,6 +32,7 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using static d360.core.entities.Resource;
 using static d360.web.UserIDCheckMiddleware;
+using d360.core.enums;
 
 namespace d360.web.Controllers.V2
 {
@@ -46,8 +47,7 @@ namespace d360.web.Controllers.V2
         readonly ICompanyContext _company;
         readonly IMembershipRepository membershipRepository;
         readonly IAssetRepository assetRepository;
-        public MembershipController(ICommunityContext community, ICompanyContext company, IMembershipRepository membershipRepository, IAssetRepository assetRepository)
-            : base(community, company)
+        public MembershipController(ICommunityContext community, ICompanyContext company, IMembershipRepository membershipRepository, IAssetRepository assetRepository, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
         {
             _company = company;
             this.membershipRepository = membershipRepository;
@@ -91,7 +91,7 @@ namespace d360.web.Controllers.V2
                     Cancellationtoken = CancellationToken.None;
                 }
 
-                var settings = Community.GetCompanySettings();
+                var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
                 bool IsCurrentUser = false;
 
                 if (ResourceID != null)
@@ -102,7 +102,7 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
-                if (!Company.CurrentResourceIsAdmin && (settings["ShowResources"] ?? "").ToUpper() != "TRUE" && IsCurrentUser == false)
+                if (!Company.CurrentResourceIsAdmin && !showResources && IsCurrentUser == false)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
                 }
@@ -384,7 +384,8 @@ namespace d360.web.Controllers.V2
                     queries.Add("(" + string.Join(" or ", simpleFilters) + ")");
                 }
 
-                if (Community.GetCompanySettingByKey<bool>("HideData3SixtyUsers") && !IsCurrentUser)
+                var hide = SettingsRepository.GetSettingValue<bool>(Setting.HideData3SixtyUsers);
+                if (hide && !IsCurrentUser)
                 {                    
                     queries.Add("email not like '%@infogix.com'");
                 }
@@ -1616,13 +1617,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         {
             var prefix = "Membership.GetApikey => ";
 
-            var showAllUsersAPIKey = false;
-            var settings = Community.GetCompanySettings();
-            if (settings.Any(i => i.Key == "ShowAllUsersAPIKey"))
-            {
-                showAllUsersAPIKey = bool.Parse(settings["ShowAllUsersAPIKey"]);
-            }
-
+            var showAllUsersAPIKey = SettingsRepository.GetSettingValue<bool>(Setting.ShowAllUsersAPIKey);
 
             if (!Company.CurrentResourceIsAdmin && !showAllUsersAPIKey)
             {

@@ -68,12 +68,19 @@ export class TagView extends BaseComponent implements OnInit {
                     this.tags.push({ Value: t, uid: null });
                 });
             }
-            if (typeof this.data == 'object') {
-                this.tags = this.data;
-            }
 
+            if (typeof this.data == 'object') {
+                if (Array.isArray(this.data) && this.data.every(item => typeof item === "string")) {
+                    this.tags = [];
+                    this.data.forEach(t => {
+                        this.tags.push({ Value: t, uid: null });
+                    });
+                } else {
+                    this.tags = this.data;
+                }            
+            }
             if (this.tags) {
-                this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
+                this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));                               
             }
             this.selected = this.tags;
         }

@@ -54,6 +54,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     @Input() rowID: string = 'ObjectID';
     @Input() gridObject: AssetGridObject;
     @Output() selectedChange = new EventEmitter();
+    @Output() isLoadingChange = new EventEmitter();
+    @Output() isDefinitionLoadedChange = new EventEmitter();
 
     @Input() titlePostfix: string = ''; // added to end of header title.
     @Input() rowsPerPage: number = 25;
@@ -165,6 +167,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     showAssetListPage() {
         this.isDefinitionLoaded = true;
+        this.isDefinitionLoadedChange.emit(true);
         this.changeDetectorRef.markForCheck();
     }
 
@@ -216,6 +219,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     public filterGridData(dt: Table) {
         this.isLoading = true;
+        this.isLoadingChange.emit(true);
         this.stateService.artifactTypeFilters.currentPageNumber = 0;
         if (dt) {
             dt.reset();
@@ -372,6 +376,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     getData() {
         this.isLoading = true;
+        this.isLoadingChange.emit(true);
         if (this.assetSearchSub) {
             this.assetSearchSub.unsubscribe();
         }
@@ -444,10 +449,12 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 }
                 if (this.items && this.items.length > 0) this.selected = this.items[0];
                 this.isLoading = false;
+                this.isLoadingChange.emit(false);
                 this.changeDetectorRef.markForCheck();
             },
                 err => {
                     this.isLoading = false;
+                    this.isLoadingChange.emit(false);
                     this.items = [];
                     this.totalRecords = 0;
                     this.changeDetectorRef.markForCheck();
@@ -544,6 +551,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         if ($event.item.Uid) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                
         this.getData();
         this.isLoading = false;
+        this.isLoadingChange.emit(false);
         this.showEditor = false;
         this.showEditorChange.emit(false);
         this.changeDetectorRef.markForCheck();

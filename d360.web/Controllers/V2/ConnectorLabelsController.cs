@@ -39,8 +39,8 @@ namespace d360.web.Controllers.V2
 
         IConnectorLabelRepository ConnectorLabelRepository;
 
-        public ConnectorLabelsController(ICommunityContext community, ICompanyContext company, IConnectorLabelRepository connectorLabelRepository)
-            : base(community, company)
+        public ConnectorLabelsController(ICommunityContext community, ICompanyContext company, IConnectorLabelRepository connectorLabelRepository, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
             this.ConnectorLabelRepository = connectorLabelRepository;
         }

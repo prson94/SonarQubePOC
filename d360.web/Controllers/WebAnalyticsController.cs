@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.model;
+using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using Microsoft.Web.Http;
 using System;
@@ -19,8 +20,8 @@ namespace d360.web.Controllers
         #region DI
 
 
-        public D3SWebAnalyticsController(ICommunityContext community, ICompanyContext company)
-            : base(community, company)
+        public D3SWebAnalyticsController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
 #if DEBUG
             company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
