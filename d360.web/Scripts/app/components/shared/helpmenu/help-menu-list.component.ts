@@ -134,12 +134,12 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     }
 
     moveUp(id: number) {
-        let option = this.items.find(r => r.ID == id);
+        let option = this.items.find((r) => r.ID === id);
         var num = option.order - 1;
-        let newOption = this.items.find(o => o.order === num);
+        let newOption = this.items.find((o) => o.order === num);
 
         this.items.forEach((i) => {
-            if (i.ID == option.ID) {
+            if (i.ID === option.ID) {
                 i.order = i.order -1;
             }
             else if (i.ID === newOption.ID) {
@@ -153,13 +153,13 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     moveDown(id: number) {
         let option = this.items.find((r) => r.ID === id);
         var num = option.order + 1;
-        let newOption = this.items.find((o) => o.order == num);
+        let newOption = this.items.find((o) => o.order === num);
 
         this.items.forEach((i) => {
             if (i.ID === option.ID) {
                 i.order = i.order + 1;
             }
-            else if (i.ID == newOption.ID) {
+            else if (i.ID === newOption.ID) {
                 i.order = i.order -1;
             }
         });
@@ -169,7 +169,7 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
 
     moveTop(id: number) {
         this.items.find(i => {
-            if (i.ID == id) {
+            if (i.ID === id) {
                 i.order = -1;
                 this.items.sort((a, b) => (a.order < b.order ? -1 : 1));
             }
@@ -183,7 +183,7 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     }
 
     moveBottom(id: number) {
-        this.items.find(i => {
+        this.items.find((i) => {
             if (i.ID === id) {
                 i.order = 10000000;
                 this.items.sort((a, b) => (a.order < b.order ? -1 : 1));
@@ -278,10 +278,12 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     }
 
     validAdd(name: string, url: string) {
-        if (name === null || name === "")
+        if (name === null || name === "") {
             return false;
-        if (url === null || url === "")
+        }
+        if (url === null || url === "") {
             return false;
+        }
 
         return true;
     }
