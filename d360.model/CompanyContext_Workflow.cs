@@ -101,14 +101,13 @@ namespace d360.model
             return true;
         }
 
-
         public async Task SendDigestEmails(EnvironmentLevel environmentLevel)
         {
-            var companySettings = Community.GetCompanySettings();
+            var companySettings = GetSettings();
 
             // 0 check if the workflow digest emails are enabled for today
 
-            int digestDays = int.TryParse(companySettings["WorkflowDigestEmailDays"], out digestDays) ? digestDays : 0;
+            int digestDays = int.TryParse(companySettings.First(s => s.ID == Setting.WorkflowDigestEmailDays).Value, out digestDays) ? digestDays : 0;
             int todayDayOfWeek = (int)DateTime.UtcNow.DayOfWeek;
 
             //Check if today is a day to send digest emails
@@ -133,10 +132,8 @@ namespace d360.model
             // 2 loop through the users with outstanding workflows and create an email for each
             if (users != null && users.Any())
             {
-
-
-                var fromName = companySettings["WorkflowFromName"] ?? "Data3Sixty Workflow";
-                var fromEmail = companySettings["WorkflowFromEmail"] ?? "no-reply@data3sixty.com";
+                var fromName = companySettings.First(s => s.ID == Setting.WorkflowFromName).Value;
+                var fromEmail = companySettings.First(s => s.ID == Setting.WorkflowFromEmail).Value;
 
                 string tblHeader = string.Empty;
                 string tblTR = string.Empty;
@@ -225,8 +222,6 @@ namespace d360.model
                 }
             }
         }
-
-
 
         private async Task<IEnumerable<dynamic>> GetUsersWithOutstandingWorkflows()
         {
@@ -1893,10 +1888,9 @@ namespace d360.model
             var typeName = item?.Step?.Version?.Type?.Name ?? "";
             //based on the step settings get the users
 
-            var companySettings = Community.GetCompanySettings();
-
-            var fromName = companySettings["WorkflowFromName"] ?? "Data3Sixty Workflow";
-            var fromEmail = companySettings["WorkflowFromEmail"] ?? "no-reply@data3sixty.com";
+            var companySettings = GetSettings();
+            var fromName = companySettings.First(s => s.ID == Setting.WorkflowFromName).Value;
+            var fromEmail = companySettings.First(s => s.ID == Setting.WorkflowFromEmail).Value;
 
             if (settings.RecipientType == EmailTaskRecipientType.Initiator)
             {
@@ -2047,10 +2041,10 @@ namespace d360.model
 
             settings.EmailMessageTemplate += "</body></html>";
 
-            var companySettings = Community.GetCompanySettings();
+            var companySettings = GetSettings();
 
-            var fromName = companySettings["WorkflowFromName"] ?? "Data3Sixty Workflow";
-            var fromEmail = companySettings["WorkflowFromEmail"] ?? "no-reply@data3sixty.com";
+            var fromName = companySettings.First(s => s.ID == Setting.WorkflowFromName).Value;
+            var fromEmail = companySettings.First(s => s.ID == Setting.WorkflowFromEmail).Value;
 
             if (settings.RecipientType == EmailTaskRecipientType.SpecificUser)
             {
@@ -2087,10 +2081,10 @@ namespace d360.model
 
             settings.BodyTemplate = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\">{settings.BodyTemplate}<p>Item Workflow Details {url}</p>";
 
-            var companySettings = Community.GetCompanySettings();
+            var companySettings = GetSettings();
 
-            var fromName = companySettings["WorkflowFromName"] ?? "Data3Sixty Workflow";
-            var fromEmail = companySettings["WorkflowFromEmail"] ?? "no-reply@data3sixty.com";
+            var fromName = companySettings.First(s => s.ID == Setting.WorkflowFromName).Value;
+            var fromEmail = companySettings.First(s => s.ID == Setting.WorkflowFromEmail).Value;
 
             //if the setting to include responses from froms is enabled then get previous form responses and put in xml
             if (settings.ShouldIncludeFormResponses)
@@ -2334,9 +2328,8 @@ namespace d360.model
         {
             int defaultWorkflowUserGroup = 0;
 
-            var companySettings = Community.GetCompanySettings();
-
-            var defaultGroup = companySettings["WorkflowCatchAllGroup"] ?? "";
+            var companySettings = GetSettings();
+            var defaultGroup = companySettings.First(s => s.ID == Setting.WorkflowCatchAllGroup).Value;
 
             int.TryParse(defaultGroup, out defaultWorkflowUserGroup);
 

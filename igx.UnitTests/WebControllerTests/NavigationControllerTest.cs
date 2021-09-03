@@ -23,7 +23,7 @@ namespace igx.UnitTests.WebControllerTests
         internal NavigationController navigationController;
         public NavigationControllerTest()
         {
-            this.navigationController = new NavigationController(GetCommunity(), GetCompany(), GetStorage());
+            this.navigationController = new NavigationController(GetCommunity(), GetCompany(), GetStorage(), GetSettingsRepository());
         }
 
         [Fact]

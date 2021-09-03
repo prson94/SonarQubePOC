@@ -37,8 +37,8 @@ namespace d360.web.Controllers
         ISecurityContextProvider SecProvider;
         ITagRepository tagRepository;
         IConnectorLabelRepository connectorLabelRepository;
-        public D3SApiController(ICommunityContext community, ICompanyContext company, ICommentRepository comments, ITagRepository tagRepository, IConnectorLabelRepository connectorLabelRepository, ISecurityContextProvider secProvider)
-            : base(community, company)
+        public D3SApiController(ICommunityContext community, ICompanyContext company, ICommentRepository comments, ISettingsRepository settingsRepository, ITagRepository tagRepository, IConnectorLabelRepository connectorLabelRepository, ISecurityContextProvider secProvider)
+            : base(community, company, settingsRepository)
         {
 #if DEBUG
             company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
@@ -2029,10 +2029,10 @@ from        (
         [HttpGet, Route("resources/{typeID:int}")]
         public HttpResponseMessage GetResourcesByType(int typeID, string filter = "", bool includeInactive = true)
         {
-            var settings = Community.GetCompanySettings();
+            var showUsers = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
             //check that current user is an admin or the company settings allow users to be listed
-            if (!Company.CurrentResourceIsAdmin && (settings["ShowResources"] ?? "").ToUpper() != "TRUE")
-                throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+            if (!Company.CurrentResourceIsAdmin && !showUsers)
+                throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
 
             var joins = "";
             var columns = "";
@@ -2123,26 +2123,24 @@ from    (
         [Route("resources/{typeID:int}/{id:int}")]
         public Resource GetResource(int typeID, int id)
         {
-            //check that the user can see other users profiles
-            var settings = Community.GetCompanySettings();
-            //check that current user is an admin or the company settings allow users to be listed
+            // See if user can see other users profiles by checking that current user is an admin or the company settings allow users to be listed.
             if (id != Company.CurrentResourceID)
             {
-                if (!Company.CurrentResourceIsAdmin && (settings["ShowResources"] ?? "").ToUpper() != "TRUE")
-                    throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+                if (!SettingsRepository.GetSettingValue<bool>(Setting.ShowResources))
+                    throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
             }
 
             //check that this user exists in this environment
             if (!Company.GlobalReportingResources.Where(x => x.ResourceID == id).Any())
             {
                 // user is not a user of this environment get them outa here!
-                throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+                throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
             }
 
             var model = Community.GetById<Resource>(id);
 
             if (model == null)
-                throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+                throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
 
             return model;
         }

@@ -430,5 +430,39 @@ namespace d360.model
         List<AssetMeasureModel> GetMeasureModelsBasedOnResponsibilityAllocation(AssetType assetType, ResponsibilityType responsibility);
 
         #endregion
+
+        #region Environment Settings
+
+        /// <summary>
+        /// When at all possible, do not call directly. You should use the SettingsRepository instead.
+        /// </summary>
+        void DeleteSetting(Setting setting);
+
+        /// <summary>
+        /// When at all possible, do not call directly. You should use the SettingsRepository instead.
+        /// </summary>
+        SettingInfo GetSetting(Setting setting);
+
+        /// <summary>
+        /// When at all possible, do not call directly. You should use the SettingsRepository instead.
+        /// </summary>
+        T GetSettingValue<T>(Setting setting);
+
+        /// <summary>
+        /// When at all possible, do not call directly. You should use the SettingsRepository instead.
+        /// </summary>
+        List<SettingInfo> GetSettings();
+
+        /// <summary>
+        /// When at all possible, do not call directly. You should use the SettingsRepository instead.
+        /// </summary>
+        Dictionary<string, string> GetSettingsAsDictionary();
+
+        /// <summary>
+        /// When at all possible, do not call directly. You should use the SettingsRepository instead.
+        /// </summary>
+        void UpsertSetting(Setting setting, string value);
+
+        #endregion
     }
 }

@@ -59,8 +59,8 @@ namespace d360.web.Controllers.V2
         IFieldsRepository fieldsRepository;
 
         public AssetsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IAssetRepository repository, ITagRepository tagRepository,
-            IRelationshipRepository relationshipRepository, IFieldsRepository fieldsRepository)
-            : base(community, company)
+            IRelationshipRepository relationshipRepository, IFieldsRepository fieldsRepository, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
             QueueSource = queueSource;
             Storage = storage;
@@ -249,7 +249,7 @@ namespace d360.web.Controllers.V2
 
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
 
-                var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"));
+                var validator = new AssetTypeValidator(this.Company, SettingsRepository.GetSettingValue<int>(Setting.LineageVersion));
                 var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
                 if (assetType == null)
@@ -558,8 +558,9 @@ namespace d360.web.Controllers.V2
                     model.Class = AssetTypeClass.BusinessAsset;
                 }
 
-                var governanceRoleReferenceListUid = Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid");
-                var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), governanceRoleReferenceListUid);
+                var governanceRoleReferenceListUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
+                var lineageVersion = SettingsRepository.GetSettingValue<int>(Setting.LineageVersion);
+                var validator = new AssetTypeValidator(this.Company, lineageVersion, governanceRoleReferenceListUid);
 
                 AssetType parentAssetType = null;
                 if (model.ParentUid.HasValue && model.ParentUid != Guid.Empty)
@@ -780,7 +781,9 @@ namespace d360.web.Controllers.V2
                 if (!Company.CurrentResourceIsAdmin)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
 
-                var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid"));
+                var lineageVersion = SettingsRepository.GetSettingValue<int>(Setting.LineageVersion);
+                var govRoleUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
+                var validator = new AssetTypeValidator(this.Company, lineageVersion, govRoleUid);
 
                 if (model.Class == AssetTypeClass.Glossary)
                 {
@@ -2007,10 +2010,10 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var governanceRole = Community.GetCompanySettingByKey<string>("GovernanceRoleReferenceListUid");
+                var governanceRole = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
                 foreach (var asset in assetTypes)
                 {
-                    if (governanceRole == asset.Uid.ToString())
+                    if (governanceRole == asset.Uid)
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"UID {asset.Uid} is a reference list and is configured as the Governance Role and cannot be deleted."));
                 }
 
@@ -2076,9 +2079,10 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var governanceRole = Community.GetCompanySettingByKey<string>("GovernanceRoleReferenceListUid");
+                var lineageVersion = SettingsRepository.GetSettingValue<int>(Setting.LineageVersion);
+                var governanceRole = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
 
-                if (governanceRole == assetType.Uid.ToString())
+                if (governanceRole == assetType.Uid)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"UID {assetType.Uid} is a reference list and is configured as the Governance Role and cannot be deleted."));
 
                 if (assetType == null)

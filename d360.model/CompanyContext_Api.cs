@@ -4345,7 +4345,7 @@ where   ExecutionID = @ExecutionID
 
             try
             {
-                enableJsonAttributes = Community.GetCompanySettingByKey<bool>("EnableJsonAttribute");
+                enableJsonAttributes = GetSettingValue<bool>(Setting.EnableJsonAttribute);
             }
             catch { }
 
@@ -7272,7 +7272,7 @@ where	T.ExecutionID = @ExecutionID
 
                     #region Log data errors
 
-                    int lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
+                    int lineageVersion = GetSettingValue<int>(Setting.LineageVersion);
                     var allowedFunctionalTypes = PredicateType.DataLineage.GetAsList()
                         .Where(p =>
                             p.AllowEditFromPredicateEditor &&

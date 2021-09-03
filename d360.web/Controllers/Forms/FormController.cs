@@ -36,8 +36,8 @@ namespace d360.web.Controllers
         readonly IStorageProvider Storage;
         readonly IResponsibilityRepository ResponsibilityRepository;
 
-        public FormController(ICommunityContext community, ICompanyContext company, ISecurityContextProvider secProvider, IStorageProvider storage, IResponsibilityRepository responsibilityRepository)
-            : base(community, company)
+        public FormController(ICommunityContext community, ICompanyContext company, ISecurityContextProvider secProvider, IStorageProvider storage, IResponsibilityRepository responsibilityRepository, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
             Storage = storage;
             ResponsibilityRepository = responsibilityRepository;
@@ -729,66 +729,51 @@ namespace d360.web.Controllers
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
-        private bool IsWriteActionDescriptionEnabled()
-        {
-            var setting = Community.Filter<CompanySetting>(i => i.CompanyID == Company.CurrentCompanyID && i.SettingID == 61).SingleOrDefault();
-            if (setting == null)
-                return true;
-            else
-                return bool.Parse(setting.Value);
-
-        }
 
         [Route("CompanySettings")]
         public JsonNetResult CompanySettings()
         {
-            var settings = Community.Filter<CompanySetting>(i => i.CompanyID == Company.CurrentCompanyID).ToList();
-            var model = new CompanySettingsEditorModel();
-            model.DisableCommunityPosting = (settings.Any(i => i.SettingID == 1) ? bool.Parse(settings.Single(i => i.SettingID == 1).Value) : false);
-            model.DisableIssueManagement = (settings.Any(i => i.SettingID == 17) ? bool.Parse(settings.Single(i => i.SettingID == 17).Value) : false);
-            model.EnableShoppingCart = (settings.Any(i => i.SettingID == 20) ? bool.Parse(settings.Single(i => i.SettingID == 20).Value) : false);
-            model.DefaultRoute = (settings.Any(i => i.SettingID == 22) ? settings.Single(i => i.SettingID == 22).Value : "");
-            model.EnableSearchExactMatch = (settings.Any(i => i.SettingID == 23) ? bool.Parse(settings.Single(i => i.SettingID == 23).Value) : false);
-            model.HideData3SixtyUsers = (settings.Any(i => i.SettingID == 9) ? bool.Parse(settings.Single(i => i.SettingID == 9).Value) : true);
-            model.ShowAllUsersAPIKey = (settings.Any(i => i.SettingID == 57) ? bool.Parse(settings.Single(i => i.SettingID == 57).Value) : true);
-            model.WorkflowCatchAllGroup = (settings.Any(i => i.SettingID == 58) ? Int32.Parse(settings.Single(i => i.SettingID == 58).Value) : 0);
-            model.WorkflowDigestEmailDays = (settings.Any(i => i.SettingID == 78) ? int.Parse(settings.Single(i => i.SettingID == 78).Value) : 0);
-            model.MaxDropdownItems = (settings.Any(i => i.SettingID == 60) ? Int32.Parse(settings.Single(i => i.SettingID == 60).Value) : 10000);
-            model.WriteActionDescription = (settings.Any(i => i.SettingID == 61) ? bool.Parse(settings.Single(i => i.SettingID == 61).Value) : true);
-            model.MaxExcelExportRows = (settings.Any(i => i.SettingID == 71) ? Int32.Parse(settings.Single(i => i.SettingID == 71).Value) : 10000);
-            model.CurrentCompanyIconPath = (settings.Any(i => i.SettingID == 3) ? settings.Single(i => i.SettingID == 3).Value : "");
-            model.CurrentCompanyLogoPath = (settings.Any(i => i.SettingID == 2) ? settings.Single(i => i.SettingID == 2).Value : "");
-            if (settings.Any(i => i.SettingID == 4))
+            var settings = SettingsRepository.GetSettings();
+            var model = new CompanySettingsEditorModel
             {
-                var ipRaw = settings.Single(i => i.SettingID == 4).Value;
-                if (!string.IsNullOrEmpty(ipRaw))
-                {
-                    var ipXml = XElement.Parse(ipRaw);
-                    var ips = ipXml.Elements("ip").Select(i => new CompanySettingsIpRestrictionEditorModel { Name = i.Element("name").Value, Start = i.Element("start").Value, End = i.Element("end").Value });
-                    model.IpRestrictions.AddRange(ips);
-                }
+                DisableCommunityPosting = settings.GetValue<bool>(Setting.DisableCommunityPosting),
+                DisableIssueManagement = settings.GetValue<bool>(Setting.DisableIssueManagement),
+                EnableShoppingCart = settings.GetValue<bool>(Setting.EnableShoppingCart),
+                DefaultRoute = settings.GetValue(Setting.DefaultRoute),
+                EnableSearchExactMatch = settings.GetValue<bool>(Setting.SearchExactMatch),
+                HideData3SixtyUsers = settings.GetValue<bool>(Setting.HideData3SixtyUsers),
+                ShowAllUsersAPIKey = settings.GetValue<bool>(Setting.ShowAllUsersAPIKey),
+                WorkflowCatchAllGroup = settings.GetValue<int>(Setting.WorkflowCatchAllGroup),
+                WorkflowDigestEmailDays = settings.GetValue<int>(Setting.WorkflowDigestEmailDays),
+                MaxDropdownItems = settings.GetValue<int>(Setting.MaxDropdownItems),
+                WriteActionDescription = settings.GetValue<bool>(Setting.WriteActionDescription),
+                MaxExcelExportRows = settings.GetValue<int>(Setting.MaxExcelExportRows),
+                CurrentCompanyIconPath = settings.GetValue(Setting.CompanyIcon),
+                CurrentCompanyLogoPath = settings.GetValue(Setting.CompanyLogo),
+                DefaultSearchTypes = settings.GetValue(Setting.DefaultSearchTypes),
+                LineageVersion = settings.GetValue<int>(Setting.LineageVersion),
+                HeaderBackgroundColor = settings.GetValue(Setting.HeaderBackgroundColor),
+                ShowHomeAssignmentTile = settings.GetValue<bool>(Setting.ShowHomeAssignmentTile),
+                ShowHomeBoardTile = settings.GetValue<bool>(Setting.ShowHomeBoardTile),
+                ShowHomeActivityTile = settings.GetValue<bool>(Setting.ShowHomeActivityTile),
+                ShowHomePageTitle = settings.GetValue<bool>(Setting.ShowHomePageTitle),
+                HomePageTitleSize = settings.GetValue(Setting.HomePageTitleSize),
+                HomePageTitleColor = settings.GetValue(Setting.HomePageTitleColor),
+                HomePageBackgroundImage = settings.GetValue(Setting.HomePageBackgroundImage),
+                BrowserTitlePrefix = settings.GetValue(Setting.BrowserTitlePrefix),
+                AllowedOrigins = settings.GetValue(Setting.AllowedOrigins),
+                FramingDomains = settings.GetValue(Setting.FramingDomains)
+            };
+            var ipRaw = settings.GetValue(Setting.IpRestriction);
+            if (!string.IsNullOrEmpty(ipRaw))
+            {
+                var ipXml = XElement.Parse(ipRaw);
+                var ips = ipXml.Elements("ip").Select(i => new CompanySettingsIpRestrictionEditorModel { Name = i.Element("name").Value, Start = i.Element("start").Value, End = i.Element("end").Value });
+                model.IpRestrictions.AddRange(ips);
             }
-
-            model.DefaultSearchTypes = (settings.Any(i => i.SettingID == 13) ? settings.Single(i => i.SettingID == 13).Value : "");
-
-            model.LineageVersion = (settings.Any(i => i.SettingID == 68) ? int.Parse(settings.Single(i => i.SettingID == 68).Value) : 3);
 
             IQueryable<SiteNav> siteNavs = Company.SiteNav.Where(s => s.ParentID == null && s.Name != "#Home").OrderBy(s => s.SortOrder);
             model.SiteNav = siteNavs.ToList();
-
-            model.HeaderBackgroundColor = (settings.Any(i => i.SettingID == 10) ? settings.Single(i => i.SettingID == 10).Value : "");
-
-            model.ShowHomeAssignmentTile = (settings.Any(i => i.SettingID == 39) ? bool.Parse(settings.Single(i => i.SettingID == 39).Value) : true);
-            model.ShowHomeBoardTile = (settings.Any(i => i.SettingID == 40) ? bool.Parse(settings.Single(i => i.SettingID == 40).Value) : true);
-            model.ShowHomeActivityTile = (settings.Any(i => i.SettingID == 41) ? bool.Parse(settings.Single(i => i.SettingID == 41).Value) : true);
-            model.ShowHomePageTitle = (settings.Any(i => i.SettingID == 42) ? bool.Parse(settings.Single(i => i.SettingID == 42).Value) : false);
-            model.HomePageTitleSize = (settings.Any(i => i.SettingID == 43) ? settings.Single(i => i.SettingID == 43).Value : "38pt");
-            model.HomePageTitleColor = (settings.Any(i => i.SettingID == 44) ? settings.Single(i => i.SettingID == 44).Value : "#fff");
-            model.HomePageBackgroundImage = (settings.Any(i => i.SettingID == 45) ? settings.Single(i => i.SettingID == 45).Value : "");
-            model.BrowserTitlePrefix = (settings.Any(i => i.SettingID == 33) ? settings.Single(i => i.SettingID == 33).Value : "D3S");
-            model.AllowedOrigins = (settings.Any(i => i.SettingID == 76) ? settings.Single(i => i.SettingID == 76).Value : "");
-            model.FramingDomains = (settings.Any(i => i.SettingID == 77) ? settings.Single(i => i.SettingID == 77).Value : "");
-
 
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -804,17 +789,35 @@ namespace d360.web.Controllers
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                var settings = Community.Filter<CompanySetting>(i => i.CompanyID == Company.CurrentCompanyID).ToList();
+                var settings = SettingsRepository.GetSettings();
+                SettingInfo currentSettingInfo = null;
+                Setting currentSetting;
+
+                Action<Setting, SettingInfo, bool> settingAction = (s, i, delete) => {
+                    if (delete)
+                    {
+                        SettingsRepository.DeleteSetting(s);
+                        settings.Remove(i);
+                    }
+                    else
+                    {
+                        SettingsRepository.UpsertSetting(s, i.Value);
+                    }
+                };
+
+                Action<Setting, string> settingActionValue = (s, newValue) => {
+                    currentSettingInfo = settings.Single(o => o.ID == s);
+                    currentSettingInfo.Value = newValue;
+                    settingAction(s, currentSettingInfo, !currentSettingInfo.IsOverridden);
+                };
 
                 #region Icon
 
-                var iconSetting = settings.SingleOrDefault(i => i.SettingID == 3);
+                currentSetting = Setting.CompanyIcon;
+                currentSettingInfo = settings.Single(s => s.ID == currentSetting);
                 if (formModel.SetIconToDefault)
                 {
-                    if (iconSetting != null)
-                    {
-                        Community.Delete<CompanySetting>(iconSetting);
-                    }
+                    settingAction(currentSetting, currentSettingInfo, true);
                 }
                 else
                 {
@@ -830,33 +833,20 @@ namespace d360.web.Controllers
                         {
                             var iconFileName = string.Format("{0}{1}", Company.CurrentCompanyID, iconExtension);
                             await Storage.CreateFile(constants.COMPANY_ICON_FOLDER, iconFileName, iconStream);
-                            if (iconSetting == null)
-                            {
-                                iconSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 3, Value = string.Format("{0}{1}", constants.COMPANY_ICON_URL, iconFileName) };
-                                Community.Add<CompanySetting>(iconSetting);
-                            }
-                            else
-                            {
-                                iconSetting.Value = string.Format("{0}{1}", constants.COMPANY_ICON_URL, iconFileName);
-                                Community.SaveChanges();
-                            }
+                            settingActionValue(currentSetting, $"{constants.COMPANY_ICON_URL}{iconFileName}");
                         }
                     }
                 }
-
-
 
                 #endregion
 
                 #region Logo
 
-                var logoSetting = settings.SingleOrDefault(i => i.SettingID == 2);
+                currentSetting = Setting.CompanyLogo;
+                currentSettingInfo = settings.Single(s => s.ID == currentSetting);
                 if (formModel.SetLogoToDefault)
                 {
-                    if (logoSetting != null)
-                    {
-                        Community.Delete<CompanySetting>(logoSetting);
-                    }
+                    settingAction(currentSetting, currentSettingInfo, true);
                 }
                 else
                 {
@@ -878,48 +868,37 @@ namespace d360.web.Controllers
 
                             var logoFileName = string.Format("{0}{1}", Company.CurrentCompanyID, logoExtension);
                             await Storage.CreateFile(constants.COMPANY_LOGO_FOLDER, logoFileName, logoStream);
-
-                            if (logoSetting == null)
-                            {
-                                logoSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 2, Value = string.Format("{0}{1}", constants.COMPANY_LOGO_URL, logoFileName) };
-                                Community.Add<CompanySetting>(logoSetting);
-                            }
-                            else
-                            {
-                                logoSetting.Value = string.Format("{0}{1}", constants.COMPANY_LOGO_URL, logoFileName);
-                                Community.SaveChanges();
-                            }
+                            settingActionValue(currentSetting, $"{constants.COMPANY_LOGO_URL}{logoFileName}");
                         }
                     }
                 }
 
                 #endregion
 
-                #region Social
-
-                updateCompanySetting(settings, 1, formModel.DisableCommunityPosting.ToString().ToLower());
-
-                #endregion
+                // Social
+                settingActionValue(Setting.DisableCommunityPosting, formModel.DisableCommunityPosting.ToString().ToLower());
 
                 #region Global Fields
 
-                updateCompanySetting(settings, 17, formModel.DisableIssueManagement.ToString().ToLower());
-                updateCompanySetting(settings, 20, formModel.EnableShoppingCart.ToString().ToLower());
-                updateCompanySetting(settings, 22, (formModel.DefaultRoute ?? "").Trim());
-                updateCompanySetting(settings, 23, formModel.EnableSearchExactMatch.ToString().ToLower());
-                updateCompanySetting(settings, 9, formModel.HideData3SixtyUsers.ToString().ToLower());
-                updateCompanySetting(settings, 57, formModel.ShowAllUsersAPIKey.ToString().ToLower());
-                updateCompanySetting(settings, 58, formModel.WorkflowCatchAllGroup.ToString());
-                updateCompanySetting(settings, 78, Math.Abs(formModel.WorkflowDigestEmailDays).ToString());
-                updateCompanySetting(settings, 60, Math.Abs(formModel.MaxDropdownItems).ToString());
-                updateCompanySetting(settings, 61, formModel.WriteActionDescription.ToString().ToLower());
-                updateCompanySetting(settings, 71, Math.Abs(formModel.MaxExcelExportRows).ToString());
+                settingActionValue(Setting.DisableIssueManagement, formModel.DisableIssueManagement.ToString().ToLower());
+                settingActionValue(Setting.EnableShoppingCart, formModel.EnableShoppingCart.ToString().ToLower());
+                settingActionValue(Setting.DefaultRoute, (formModel.DefaultRoute ?? "").Trim());
+                settingActionValue(Setting.SearchExactMatch, formModel.EnableSearchExactMatch.ToString().ToLower());
+                settingActionValue(Setting.HideData3SixtyUsers, formModel.HideData3SixtyUsers.ToString().ToLower());
+                settingActionValue(Setting.ShowAllUsersAPIKey, formModel.ShowAllUsersAPIKey.ToString().ToLower());
+                settingActionValue(Setting.WorkflowCatchAllGroup, formModel.WorkflowCatchAllGroup.ToString());
+                settingActionValue(Setting.WorkflowDigestEmailDays, formModel.WorkflowDigestEmailDays.ToString());
+                settingActionValue(Setting.MaxDropdownItems, Math.Abs(formModel.MaxDropdownItems).ToString());
+                settingActionValue(Setting.WriteActionDescription, formModel.WriteActionDescription.ToString().ToLower());
+                settingActionValue(Setting.MaxExcelExportRows, Math.Abs(formModel.MaxExcelExportRows).ToString());
+
                 #endregion
 
                 #region IP
 
+                currentSetting = Setting.IpRestriction;
+
                 var ipValidationCheckPassed = true;
-                var ipSetting = settings.SingleOrDefault(i => i.SettingID == 4);
                 if (formModel.IpRestrictions != null)
                 {
                     var xml = new XElement("ips");
@@ -941,16 +920,7 @@ namespace d360.web.Controllers
                     }
                     if (ipValidationCheckPassed)
                     {
-                        if (ipSetting == null)
-                        {
-                            ipSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 4, Value = xml.ToString() };
-                            Community.Add<CompanySetting>(ipSetting);
-                        }
-                        else
-                        {
-                            ipSetting.Value = xml.ToString();
-                            Community.SaveChanges();
-                        }
+                        settingActionValue(currentSetting, xml.ToString());
                     }
                     else
                     {
@@ -959,33 +929,24 @@ namespace d360.web.Controllers
                 }
                 else
                 {
-                    if (ipSetting != null)
-                    {
-                        Community.Delete<CompanySetting>(ipSetting);
-                    }
+                    SettingsRepository.DeleteSetting(currentSetting);
                 }
 
                 #endregion
 
-                #region Search
+                // Search
+                settingActionValue(Setting.DefaultSearchTypes, (formModel.DefaultSearchTypes ?? "").ToString());
 
-                updateCompanySetting(settings, 13, (formModel.DefaultSearchTypes ?? "").ToString());
-
-                #endregion
-
-                #region Header Styles
-
-                updateCompanySetting(settings, 10, formModel.HeaderBackgroundColor);
-
-                #endregion
+                // Header Styles
+                settingActionValue(Setting.HeaderBackgroundColor, formModel.HeaderBackgroundColor);
 
                 #region Home Page Customization
 
-                updateCompanySetting(settings, 39, formModel.ShowHomeAssignmentTile.ToString().ToLower());
-                updateCompanySetting(settings, 40, formModel.ShowHomeBoardTile.ToString().ToLower());
-                updateCompanySetting(settings, 41, formModel.ShowHomeActivityTile.ToString().ToLower());
-                updateCompanySetting(settings, 42, formModel.ShowHomePageTitle.ToString().ToLower());
-                updateCompanySetting(settings, 33, formModel.BrowserTitlePrefix);
+                settingActionValue(Setting.ShowHomeAssignmentTile, formModel.ShowHomeAssignmentTile.ToString().ToLower());
+                settingActionValue(Setting.ShowHomeBoardTile, formModel.ShowHomeBoardTile.ToString().ToLower());
+                settingActionValue(Setting.ShowHomeActivityTile, formModel.ShowHomeActivityTile.ToString().ToLower());
+                settingActionValue(Setting.ShowHomePageTitle, formModel.ShowHomePageTitle.ToString().ToLower());
+                settingActionValue(Setting.BrowserTitlePrefix, formModel.BrowserTitlePrefix);
 
                 //prevent the user from entering special characters
                 var alphaNumericChars = "abcdefghijklmnopqrstuvwxyz0123456789";
@@ -995,18 +956,16 @@ namespace d360.web.Controllers
                 var safeSize = System.Text.RegularExpressions.Regex.Replace(formModel.HomePageTitleSize?.Trim() ?? "", $"[^{sizeAllowedChars}]", string.Empty, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
                 var safeColor = System.Text.RegularExpressions.Regex.Replace(formModel.HomePageTitleColor?.Trim() ?? "", $"[^{colorAllowedChars}]", string.Empty, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
-                updateCompanySetting(settings, 43, safeSize);
-                updateCompanySetting(settings, 44, safeColor);
+                settingActionValue(Setting.HomePageTitleSize, safeSize);
+                settingActionValue(Setting.HomePageTitleColor, safeColor);
 
                 #region Home Page Background Image
 
-                var homePageBackgroundSetting = settings.SingleOrDefault(i => i.SettingID == 45);
+                currentSetting = Setting.HomePageBackgroundImage;
+                currentSettingInfo = settings.Single(s => s.ID == currentSetting);
                 if (formModel.ClearHomePageBackgroundImage)
                 {
-                    if (homePageBackgroundSetting != null)
-                    {
-                        Community.Delete(homePageBackgroundSetting);
-                    }
+                    settingAction(currentSetting, currentSettingInfo, true);
                 }
                 else
                 {
@@ -1034,14 +993,8 @@ namespace d360.web.Controllers
 
                             var imageFileName = string.Format("{0}.home.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
                             await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
-
-                            //always delete and add for guid
-                            if (homePageBackgroundSetting != null)
-                                Community.Delete(homePageBackgroundSetting);
-
-                            var newHomePageBackgroundSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 45, Value = string.Format("{0}{1}", constants.COMPANY_RESOURCES_URL, imageFileName) };
-                            Community.Add(newHomePageBackgroundSetting);
-
+                            
+                            settingActionValue(currentSetting, $"{constants.COMPANY_RESOURCES_URL}{imageFileName}");
                         }
                     }
                 }
@@ -1052,9 +1005,11 @@ namespace d360.web.Controllers
 
                 #region Security
 
+                currentSetting = Setting.AllowedOrigins;
+                currentSettingInfo = settings.Single(s => s.ID == currentSetting);
                 if (string.IsNullOrWhiteSpace(formModel.AllowedOrigins))
                 {
-                    updateCompanySetting(settings, 76, null);
+                    settingAction(currentSetting, currentSettingInfo, true);
                 }
                 else
                 {
@@ -1063,13 +1018,16 @@ namespace d360.web.Controllers
                         .Select(o => o.Trim())
                         .Where(o => !string.IsNullOrWhiteSpace(o) && o != "*")
                         .ToList();
-                    updateCompanySetting(settings, 76, string.Join(",", origins));
+
+                    currentSettingInfo.Value = string.Join(",", origins);
+                    settingAction(currentSetting, currentSettingInfo, false);
                 }
 
-
+                currentSetting = Setting.FramingDomains;
+                currentSettingInfo = settings.Single(s => s.ID == currentSetting);
                 if (string.IsNullOrWhiteSpace(formModel.FramingDomains))
                 {
-                    updateCompanySetting(settings, 77, null);
+                    settingAction(currentSetting, currentSettingInfo, true);
                 }
                 else
                 {
@@ -1078,7 +1036,9 @@ namespace d360.web.Controllers
                         .Select(o => o.Trim())
                         .Where(o => !string.IsNullOrWhiteSpace(o) && o != "*")
                         .ToList();
-                    updateCompanySetting(settings, 77, string.Join(",", domains));
+
+                    currentSettingInfo.Value = string.Join(",", domains);
+                    settingAction(currentSetting, currentSettingInfo, false);
                 }
 
                 #endregion
@@ -1093,31 +1053,6 @@ namespace d360.web.Controllers
             {
                 SendException(ex);
                 return jsonException(ex.GetFullExceptionData(), HttpStatusCode.InternalServerError);
-            }
-        }
-
-        private void updateCompanySetting(List<CompanySetting> settings, int settingID, string value)
-        {
-            var setting = settings.FirstOrDefault(i => i.SettingID == settingID);
-            if (setting == null)
-            {
-                if (!string.IsNullOrEmpty(value))
-                {
-                    setting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = settingID, Value = value };
-                    Community.Add(setting);
-                }
-            }
-            else
-            {
-                if (string.IsNullOrEmpty(value))
-                {
-                    Community.Delete(setting);
-                }
-                else
-                {
-                    setting.Value = value;
-                    Community.SaveChanges();
-                }
             }
         }
 

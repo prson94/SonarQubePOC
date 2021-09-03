@@ -1,4 +1,5 @@
 ﻿using d360.core.entities;
+using d360.core.enums;
 using d360.model;
 using d360.web.Models;
 using d360.web.Models.Attributes;
@@ -24,7 +25,7 @@ namespace d360.web.Controllers
             string exceptionMessage = "";
             Boolean useTypeahead = false;
 
-            int typeaheadThreshold = 1 + int.Parse(Community.GetCompanySettings()["MaxDropdownItems"]);
+            int typeaheadThreshold = 1 + SettingsRepository.GetSettingValue<int>(Setting.MaxDropdownItems);
 
             try
             {

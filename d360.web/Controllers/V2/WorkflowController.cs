@@ -35,9 +35,9 @@ namespace d360.web.Controllers.V2
         IWorkflowRepository workflowRepository;
         IWorkflowApiModelValidator validator;
 
-        public WorkflowController(ICommunityContext community, ICompanyContext company, 
+        public WorkflowController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository, 
             IWorkflowRepository workflowRepository, IWorkflowApiModelValidator validator)
-            : base(community, company)
+            : base(community, company, settingsRepository)
         {
             this.workflowRepository = workflowRepository;
             this.validator = validator;

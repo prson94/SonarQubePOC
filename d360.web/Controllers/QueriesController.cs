@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.model;
+using d360.model.DataAccessLayer;
 using d360.web.Models.Attributes;
 using Dapper;
 using System;
@@ -14,8 +15,8 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public QueriesController(ICommunityContext community, ICompanyContext company)
-            : base(community, company)
+        public QueriesController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         { }
 
         #endregion

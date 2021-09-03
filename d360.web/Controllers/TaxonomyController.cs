@@ -4,6 +4,7 @@ using d360.web.Models.Attributes;
 using d360.core.enums;
 using System.Collections.Generic;
 using System.Linq;
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers
 {
@@ -12,8 +13,8 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public TaxonomyController(ICommunityContext community, ICompanyContext company)
-            : base(community, company)
+        public TaxonomyController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
         }
 

@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.helpers;
 using d360.model;
+using d360.model.DataAccessLayer;
 using d360.web.Models;
 using Dapper;
 using Newtonsoft.Json;
@@ -17,7 +18,7 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public DiagramsController(ICommunityContext community, ICompanyContext company) : base(community, company) { }
+        public DiagramsController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository) : base(community, company, settingsRepository) { }
 
         #endregion
 

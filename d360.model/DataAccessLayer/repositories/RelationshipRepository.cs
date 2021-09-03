@@ -95,7 +95,7 @@ namespace d360.model.DataAccessLayer
                 whereClause = $"WHERE {string.Join(" AND ", whereConditions)}";
             }
 
-            var currentLineageversion = communityContext.GetCompanySettingByKey<int>("LineageVersion");
+            var currentLineageversion = companyContext.GetSettingValue<int>(Setting.LineageVersion);
 
 
             var allPredicates = await companyContext.QueryAsync<PredicateApiViewModel>($@"select 
