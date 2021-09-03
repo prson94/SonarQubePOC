@@ -402,8 +402,12 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
 
                 var lookupData = await Company.QueryAsync<LookupDataReadOnlyModel>($@"select ft.id as FieldTypeId, trim(Val.Value) as Value, od.AssetId, od.Url, Color.ColorJson, flv.DisplayText from asset a
                     inner join fieldtype ft on ft.assettypeid = a.AssetTypeID
-                    inner join Field f on f.AssetID = a.ID and f.FieldTypeID = ft.ID
-                    cross apply (select * from STRING_SPLIT(f.Value,','))Val
+                    left join Field f on f.AssetID = a.ID and f.FieldTypeID = ft.ID
+                    cross apply (
+                        select * from STRING_SPLIT(f.Value,',')
+                        union 
+                        select DefaultValue from FieldType where id = ft.ID and isnull(f.value,'') = ''
+                        )Val
                     outer apply utility.ObjectDetail(ft.LookupObjectType, trim(Val.Value))OD
                     left join Asset refAsset on refAsset.ID = od.AssetID
                     outer apply dbo.GetAssetColorJsonByColor(refAsset.Color)Color
