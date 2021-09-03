@@ -196,7 +196,7 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
     }
 
     public getLoadIdentifier() {
-        return "changelog-" + this.uid;
+        return "changelog-" + this.uid.toLowerCase();
     }
 
     public onFiltersLoaded() {
