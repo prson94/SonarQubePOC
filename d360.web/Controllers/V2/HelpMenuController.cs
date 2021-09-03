@@ -42,30 +42,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetHelpMenuItems()
         {
-            List<HelpMenuItem> test = new List<HelpMenuItem>();
-            HelpMenuItem i = new HelpMenuItem();
-            i.Description = "";
-            i.Name = "test item 1";
-            i.ID = 1;
-            i.isEditable = true;
-            i.order = 0;
-            i.Uid = Guid.NewGuid();
-            i.Url = "www.google.ie";
-            i.visibilty = 1;
-
-            HelpMenuItem r = new HelpMenuItem();
-            r.Name = "test item 2";
-            r.Description = "";
-            r.ID = 2;
-            r.isEditable = false;
-            r.order = 1;
-            r.Uid = Guid.NewGuid();
-            r.Url = "www.google.ie";
-            r.visibilty = 2;
-
-            test.Add(i);
-            test.Add(r);
-
             var items = Company.HelpMenu.ToList();
 
             var response = Request.CreateResponse(HttpStatusCode.OK, items);
@@ -84,10 +60,6 @@ namespace d360.web.Controllers.V2
             var deleteRecords = model.Deletes;
             var records = model.Adds;
 
-            //for(int i = 0; i < records.Count(); i++)
-            //{
-            //    records[i].ID = i + 1;
-            //}
             if (deleteRecords.Count != 0)
             {
                 foreach (var item in deleteRecords)
@@ -108,7 +80,6 @@ namespace d360.web.Controllers.V2
                     if (helpItem == null)
                     {
                         var uid = Guid.NewGuid();
-                        //SaveItems(item);
                         _company.Query<int>(@"
                     insert into [dbo].[HelpMenu]([ID],[Name],[Description],[Url],[Uid],[isEditable],[visibilty],[order])
                     values(@id,@name,'',@url,@uid,@iseditable,@visibilty,@order)
@@ -118,7 +89,6 @@ namespace d360.web.Controllers.V2
                     {
                         helpItem.Description = item.Description;
                         helpItem.Name = item.Name;
-                        //helpItem.ID = item.ID;
                         helpItem.isEditable = item.isEditable;
                         helpItem.order = item.order;
                         helpItem.Url = item.Url;

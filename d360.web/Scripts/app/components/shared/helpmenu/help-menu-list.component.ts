@@ -74,7 +74,7 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
 
     edit(id: number) {
         this.formMode = FormMode.Editing;
-        this.selectedItem = this.items.find(s => s.ID == id);
+        this.selectedItem = this.items.find((s) => s.ID === id);
         this.editedName = this.selectedItem.Name;
         this.editedUrl = this.selectedItem.Url;
         this.editedDes = this.selectedItem.Description;
@@ -82,16 +82,17 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
 
     delete(id: number) {
         this.formMode = FormMode.Deleting;
-        this.selectedItem = this.items.find(s => s.ID == id);
+        this.selectedItem = this.items.find((s) => s.ID === id);
     }
 
     confirmDelete() {
-        if (this.selectedItem == null)
+        if (this.selectedItem == null) {
             return;
+        }
 
         this.deletedRecords.push(this.selectedItem);
         this.items.forEach((element, index) => {
-            if (element.ID == this.selectedItem.ID) {
+            if (element.ID === this.selectedItem.ID) {
                 this.items.splice(index, 1);
             }
         });
@@ -135,13 +136,13 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     moveUp(id: number) {
         let option = this.items.find(r => r.ID == id);
         var num = option.order - 1;
-        let newOption = this.items.find(o => o.order == num);
+        let newOption = this.items.find(o => o.order === num);
 
-        this.items.forEach(i => {
+        this.items.forEach((i) => {
             if (i.ID == option.ID) {
                 i.order = i.order -1;
             }
-            else if (i.ID == newOption.ID) {
+            else if (i.ID === newOption.ID) {
                 i.order = i.order + 1;
             }
         });
@@ -150,12 +151,12 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     }
 
     moveDown(id: number) {
-        let option = this.items.find(r => r.ID == id);
+        let option = this.items.find((r) => r.ID === id);
         var num = option.order + 1;
-        let newOption = this.items.find(o => o.order == num);
+        let newOption = this.items.find((o) => o.order == num);
 
-        this.items.forEach(i => {
-            if (i.ID == option.ID) {
+        this.items.forEach((i) => {
+            if (i.ID === option.ID) {
                 i.order = i.order + 1;
             }
             else if (i.ID == newOption.ID) {
@@ -183,7 +184,7 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
 
     moveBottom(id: number) {
         this.items.find(i => {
-            if (i.ID == id) {
+            if (i.ID === id) {
                 i.order = 10000000;
                 this.items.sort((a, b) => (a.order < b.order ? -1 : 1));
             }
@@ -266,18 +267,20 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     }
 
     valid() {
-        if (this.selectedItem.Name == null || this.selectedItem.Name == "")
+        if (this.selectedItem.Name === null || this.selectedItem.Name === "") {
             return false;
-        if (this.selectedItem.Url == null || this.selectedItem.Url == "")
+        }
+        if (this.selectedItem.Url === null || this.selectedItem.Url === "") {
             return false;
+        }
 
         return true;
     }
 
     validAdd(name: string, url: string) {
-        if (name == null || name == "")
+        if (name === null || name === "")
             return false;
-        if (url == null || url == "")
+        if (url === null || url === "")
             return false;
 
         return true;
