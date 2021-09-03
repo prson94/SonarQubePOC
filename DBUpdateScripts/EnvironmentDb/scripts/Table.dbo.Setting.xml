@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.dbo.Setting-v1">
+  <changeSet author="Pappas" id="Table.dbo.Setting-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -15,10 +15,12 @@ IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo
 BEGIN
 	CREATE TABLE [dbo].[Setting](
 		ID int NOT NULL,
-		[Value] nvarchar(250) NOT NULL,
+		[Value] nvarchar(max) NOT NULL,
 		CONSTRAINT [PK_Setting] PRIMARY KEY CLUSTERED ( ID ASC )
 	)
 END
+
+alter table dbo.[Setting] alter column [Value] nvarchar(max) NOT NULL;
 		]]>
     </sql>
 	<rollback>
