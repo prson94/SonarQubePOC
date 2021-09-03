@@ -55,8 +55,6 @@
                                       [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
             </ng-template>
         </p-table>
-        <d3s-tile-actions [hasAdd]="formMode == FormMode.Default"
-                          (addClick)="saving()"></d3s-tile-actions>
     </div>
     <div *ngSwitchCase="FormMode.Adding">
         <div class="row">

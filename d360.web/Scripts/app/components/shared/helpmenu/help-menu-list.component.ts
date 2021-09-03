@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit } from '@angular/core';
+﻿import { Input, Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { Shortcut } from '../../../models/shortcuts.model';
 import { HelpMenuService } from '../../shared/helpmenu/helpmenu.service';
@@ -14,8 +14,10 @@ import { MessagesObservableService } from '../../../services/messages-observable
 })
 
 export class HelpMenuListComponent extends BaseComponent implements OnInit {
-    private items: HelpMenu[] = [];
-    private deletedRecords: HelpMenu[] = [];
+    @Output() itemsChange = new EventEmitter();
+    @Input() items: HelpMenu[] = [];
+    @Output() deletedRecordsChange = new EventEmitter();
+    @Input() deletedRecords: HelpMenu[] = [];
     private selectedItem: HelpMenu = null;
     formMode = FormMode.Default;
     FormMode = FormMode;
@@ -64,6 +66,8 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
                 this.items.sort((a, b) => (a.ID < b.ID ? 1 : -1));
                 this.newID = this.items[0].ID + 1;
                 this.items.sort((a, b) => (a.order < b.order ? -1 : 1));
+                this.itemsChange.emit(this.items);
+                this.deletedRecordsChange.emit(this.deletedRecords);
             });
     }
 
@@ -97,15 +101,6 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
             }
         });
         this.formMode = FormMode.Default;
-    }
-
-    saving() {
-        this.items.sort((a, b) => (a.order < b.order ? -1 : 1));
-        for (let i = 0; i < this.items.length; i++) {
-            this.items[i].order = i;
-        }
-        this.helpMenuService.updateHelpMenuItems(this.items,this.deletedRecords).subscribe((r) => {
-        });
     }
 
     addNew(name: string, url: string, description: string) {
@@ -168,7 +163,7 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     }
 
     moveTop(id: number) {
-        this.items.find(i => {
+        this.items.find((i) => {
             if (i.ID === id) {
                 i.order = -1;
                 this.items.sort((a, b) => (a.order < b.order ? -1 : 1));
