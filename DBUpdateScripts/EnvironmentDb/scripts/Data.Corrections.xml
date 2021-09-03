@@ -1301,4 +1301,41 @@ from	metrics.AssetVersion V
 		</sql>
 	</changeSet>
 
+
+	<changeSet author="Pappas" id="Data.Corrections.GOV-9838-2">
+		<sql dbms="mssql" splitStatements="false" stripComments="false">
+	<![CDATA[
+update graph.AssetEdge set [PredicateType] = 7 where [PredicateType] = 10;
+update [Predicate] set [Type] = 7 where [Type] = 10;	--Usage predicate change
+
+delete Field where ObjectType = 'Intersect' and ObjectID in (
+	select	I.ID
+	from	[Intersect] I 
+			inner join IntersectType T on T.ID = I.IntersectTypeID 
+			inner join [Predicate] P on P.Id = T.PredicateID and P.[Type] in (5,8,11)
+);
+
+delete	I
+from	graph.AssetEdge I 
+where	I.PredicateType in (5,8,11);
+
+delete	I
+from	[Intersect] I 
+		inner join IntersectType T on T.ID = I.IntersectTypeID 
+		inner join [Predicate] P on P.Id = T.PredicateID and P.[Type] in (5,8,11);
+
+delete FieldType where Object = 'IntersectType' and ObjectID in (
+	select	T.ID
+	from	IntersectType T
+			inner join [Predicate] P on P.Id = T.PredicateID and P.[Type] in (5,8,11)
+);
+
+delete	T
+from	IntersectType T
+		inner join [Predicate] P on P.Id = T.PredicateID and P.[Type] in (5,8,11);
+
+delete	[Predicate] where [Type] in (5,8,11);
+	]]>
+		</sql>
+	</changeSet>
 	</databaseChangeLog>

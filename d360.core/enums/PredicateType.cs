@@ -80,24 +80,6 @@ namespace d360.core.enums
         ]
         IntraTypeHierarchy = 4,
         [
-            Category(""),
-            Name("User Ownership - NOT USED YET"),
-            Description("This allows owners to be associated with owned items."),
-            ReadOnly(true),
-            SingleRelationshipByFunctionalType(false),
-            AllowIntersectTypeAssignment(false),
-            AllowMultiplePredicates(false),
-            AllowDifferentSubjectObject(true),
-            ForceDifferentSubjectObject(true),
-            AllowEditFromPredicateEditor(false),
-            AllowEditFromRelationshipEditor(false),
-            Obsolete,
-            SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
-            AllowIntersectTypeAsSubject(false)
-        ]
-        UserOwnership = 5,
-        [
             Category("General"),
             Name("Grammatic Association"),
             Description("Allows you to establish grammatic association between two objects."),
@@ -132,23 +114,6 @@ namespace d360.core.enums
         ]
         Simple = 7,
         [
-            Category("Lineage"),
-            Name("Mapping"),
-            Description("Allows you to create mappings that are used in fusion rules."),
-            ReadOnly(true),
-            SingleRelationshipByFunctionalType(false),
-            AllowIntersectTypeAssignment(true),
-            AllowMultiplePredicates(false),
-            AllowDifferentSubjectObject(true),
-            ForceDifferentSubjectObject(false),
-            AllowEditFromPredicateEditor(true),
-            AllowEditFromRelationshipEditor(true),
-            SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule),
-            ObjectAssetClassesSupported,
-            AllowIntersectTypeAsSubject(false)
-        ]
-        FusionMapping = 8,
-        [
             Category("General"),
             Name("See Also"),
             Description("This type of predicate allows for items to be related together to express similarity between them."),
@@ -165,41 +130,6 @@ namespace d360.core.enums
             AllowIntersectTypeAsSubject(true)
         ]
         SeeAlso = 9,
-        [
-            Category("Lineage"),
-            Name("Usage"),
-            Description("This type of predicate allows for items to be act as filters within a greater lineage diagram to indicate that only certain paths are used."),
-            ReadOnly(false),
-            SingleRelationshipByFunctionalType(false),
-            AllowIntersectTypeAssignment(true),
-            AllowMultiplePredicates(true),
-            AllowDifferentSubjectObject(true),
-            ForceDifferentSubjectObject(true),
-            AllowEditFromPredicateEditor(true),
-            AllowEditFromRelationshipEditor(true),
-            SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset, AssetTypeClass.User),
-            AllowIntersectTypeAsSubject(true)
-        ]
-        Usage = 10,
-        [
-            Category(""),
-            Name("Object Ownership"),
-            Description("This type of predicate allows for fusion configurations to be owned by glossary-level objects."),
-            ReadOnly(true),
-            SingleRelationshipByFunctionalType(false),
-            AllowIntersectTypeAssignment(true),
-            AllowMultiplePredicates(true),
-            AllowDifferentSubjectObject(true),
-            ForceDifferentSubjectObject(true),
-            AllowEditFromPredicateEditor(false),
-            AllowEditFromRelationshipEditor(false),
-            Obsolete,
-            SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
-            AllowIntersectTypeAsSubject(false)
-        ]
-        ObjectOwnerhip = 11,
         [
             Category("Lineage"),
             Name("Transformation"),
