@@ -261,10 +261,8 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var lineageVersion = SettingsRepository.GetSettingValue<int>(Setting.LineageVersion);
-
                 var types = PredicateType.DataLineage.GetAsList()
-                    .Where(i => i.LineageVersionsSupported.Contains(lineageVersion) && !i.Obsolete)
+                    .Where(i => !i.Obsolete)
                     .Select(i => new PredicateTypeApiViewModel
                     {
                         Type = i.ID,

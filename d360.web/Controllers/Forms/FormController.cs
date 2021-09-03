@@ -751,7 +751,6 @@ namespace d360.web.Controllers
                 CurrentCompanyIconPath = settings.GetValue(Setting.CompanyIcon),
                 CurrentCompanyLogoPath = settings.GetValue(Setting.CompanyLogo),
                 DefaultSearchTypes = settings.GetValue(Setting.DefaultSearchTypes),
-                LineageVersion = settings.GetValue<int>(Setting.LineageVersion),
                 HeaderBackgroundColor = settings.GetValue(Setting.HeaderBackgroundColor),
                 ShowHomeAssignmentTile = settings.GetValue<bool>(Setting.ShowHomeAssignmentTile),
                 ShowHomeBoardTile = settings.GetValue<bool>(Setting.ShowHomeBoardTile),

@@ -266,15 +266,6 @@ namespace d360.core
         }
     }
 
-    public class LineageVersionsSupportedAttribute : Attribute
-    {
-        public int[] Versions { get; private set; }
-        public LineageVersionsSupportedAttribute(params int[] versions)
-        {
-            Versions = versions;
-        }
-    }
-
     public class LockedAttribute : Attribute
     {
         public bool Locked { get; private set; }

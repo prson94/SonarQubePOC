@@ -249,7 +249,7 @@ namespace d360.web.Controllers.V2
 
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
 
-                var validator = new AssetTypeValidator(this.Company, SettingsRepository.GetSettingValue<int>(Setting.LineageVersion));
+                var validator = new AssetTypeValidator(this.Company);
                 var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
                 if (assetType == null)
@@ -559,8 +559,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 var governanceRoleReferenceListUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
-                var lineageVersion = SettingsRepository.GetSettingValue<int>(Setting.LineageVersion);
-                var validator = new AssetTypeValidator(this.Company, lineageVersion, governanceRoleReferenceListUid);
+                var validator = new AssetTypeValidator(this.Company, governanceRoleReferenceListUid);
 
                 AssetType parentAssetType = null;
                 if (model.ParentUid.HasValue && model.ParentUid != Guid.Empty)
@@ -781,9 +780,8 @@ namespace d360.web.Controllers.V2
                 if (!Company.CurrentResourceIsAdmin)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
 
-                var lineageVersion = SettingsRepository.GetSettingValue<int>(Setting.LineageVersion);
                 var govRoleUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
-                var validator = new AssetTypeValidator(this.Company, lineageVersion, govRoleUid);
+                var validator = new AssetTypeValidator(this.Company, govRoleUid);
 
                 if (model.Class == AssetTypeClass.Glossary)
                 {
@@ -2079,7 +2077,6 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var lineageVersion = SettingsRepository.GetSettingValue<int>(Setting.LineageVersion);
                 var governanceRole = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
 
                 if (governanceRole == assetType.Uid)

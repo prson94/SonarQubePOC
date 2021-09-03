@@ -24,7 +24,7 @@ namespace d360.core.validators
         private Guid? _governanceRoleUid = null;
 
         ICompanyContext CompanyContext;
-        public AssetTypeValidator(ICompanyContext companyContext, int lineageVersion, Guid? govRoleUid = null)
+        public AssetTypeValidator(ICompanyContext companyContext, Guid? govRoleUid = null)
         {
             this.CompanyContext = companyContext;
             this._governanceRoleUid = govRoleUid;
