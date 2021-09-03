@@ -14,6 +14,7 @@ import { SharedGridPagingInfoModule } from "../grid-paging-info.component";
 import { PopupMenuModule } from "../controls/popup-menu/popup-menu.component";
 import { SearchFieldModule } from "../controls/search-field/search-field.component";
 import { FormsModule } from "@angular/forms";
+import { TagViewModule } from '../tags/d3s-tag-view.module';
 
 
 @NgModule({
@@ -29,7 +30,8 @@ import { FormsModule } from "@angular/forms";
         TableModule,
         SharedGridPagingInfoModule,
         PopupMenuModule,
-        SearchFieldModule
+        SearchFieldModule,
+        TagViewModule
     ],
     declarations: [
         DataProfileComponent,
