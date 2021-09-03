@@ -1213,7 +1213,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
             return Database.Connection.Query<IntersectTypeOption>(sql, dbArgs).ToList();
         }
 
-        public List<Predicate> GetPredicateOptions(int lineageVersion, SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
+        public List<Predicate> GetPredicateOptions(SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
         {
             var sSubject = subject.ToString();
             var allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p => p.AllowIntersectTypeAssignment && p.AllowEditFromRelationshipEditor).ToList();
@@ -1250,8 +1250,7 @@ where	I.ID is null";
                 pid = predicateID
             }).ToList()
             .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment &&
-                        i.Type.AsInfoModel().AllowEditFromRelationshipEditor &&
-                        i.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion)
+                        i.Type.AsInfoModel().AllowEditFromRelationshipEditor
                   );
 
             predicates = predicates.Where(i => i.Type.In(allowedFunctionalTypes.Select(p => p.ID).ToArray()));
@@ -1259,7 +1258,7 @@ where	I.ID is null";
             return predicates.ToList();
         }
 
-        public IntersectType UpsertIntersectType(IntersectType model, int lineageVersion)
+        public IntersectType UpsertIntersectType(IntersectType model)
         {
             var predicateModel = GetById<Predicate>(model.PredicateID.Value);
 
@@ -1274,11 +1273,6 @@ where	I.ID is null";
             if (($"{model.Subject}{model.SubjectID}" == $"{model.Object}{model.ObjectID}") && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
             {
                 throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", "The subject and object may not be the same when using this Predicate.");
-            }
-
-            if (!predicateModel.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion))
-            {
-                throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"Your current version of lineage does not support using this predicates of type {predicateModel.Type.AsInfoModel().Name}.");
             }
 
             AssetType subjectAssetType = null;

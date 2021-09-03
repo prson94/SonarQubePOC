@@ -437,24 +437,6 @@ namespace d360.core.enums
         RequestCertificationDraft = 64,
         
         [
-            DefaultValue(true), 
-            Description("EnableVersion1VerboseLineage_Desc", typeof(Settings)), 
-            Locked(false),
-            Name("EnableVersion1VerboseLineage_Name", typeof(Settings)),
-            Type(SettingType.Boolean)
-        ]
-        EnableVersion1VerboseLineage = 66,
-        
-        [
-            DefaultValue(3), 
-            Description("LineageVersion_Desc", typeof(Settings)), 
-            Locked(false),
-            Name("LineageVersion_Name", typeof(Settings)),
-            Type(SettingType.Number)
-        ]
-        LineageVersion = 68,
-        
-        [
             DefaultValue(6), 
             Description("UseAsTransformationLimit_Desc", typeof(Settings)), 
             Locked(false),
@@ -462,15 +444,6 @@ namespace d360.core.enums
             Type(SettingType.Number)
         ]
         UseAsTransformationLimit = 69,
-        
-        [
-            DefaultValue(false), 
-            Description("FusionEnabled_Desc", typeof(Settings)), 
-            Locked(false),
-            Name("FusionEnabled_Name", typeof(Settings)),
-            Type(SettingType.Boolean)
-        ]
-        FusionEnabled = 70,
         
         [
             DefaultValue(10000), 

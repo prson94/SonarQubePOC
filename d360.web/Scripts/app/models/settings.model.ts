@@ -40,7 +40,6 @@ export class CompanySettings {
     MaxDropdownItems: number;
     WriteActionDescription: boolean;
     CurrentCompanyLogoPath: string;
-    LineageVersion: number;
     MaxExcelExportRows: number;
     AllowedOrigins: string;
     FramingDomains: string;
