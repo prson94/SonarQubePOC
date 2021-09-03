@@ -823,10 +823,11 @@ namespace d360.model
         /// <param name="itemStepID"></param>
         /// <param name="itemID"></param>
         /// <returns></returns>
-        public async Task ExecuteStep(long itemStepID, long itemID, EventObjectInfo objectInfo)
+        public async Task ExecuteStep(long itemStepID, long itemID, EventInfo eventInfo)
         {
             bool isStepCompleted = false;
             var itemStep = getWorkflowItemStep(itemStepID);
+            var objectInfo = eventInfo.Object;
 
             //if the step is already done exit
             if (itemStep.CompletedOn.HasValue)
@@ -877,12 +878,11 @@ namespace d360.model
                 switch (itemStep.Step.ActivityType)
                 {
                     case WorkflowActivityType.EmailNotification:
-                        await SendWorkflowEmail(itemStep, objectInfo, stepSettings);
-                        isStepCompleted = true;
+                        isStepCompleted = await SendWorkflowEmail(itemStep, eventInfo, stepSettings);
                         break;
                     case WorkflowActivityType.Form:
                         // send form notification to owners
-                        await SendFormWorkflowEmail(itemStep, itemStepID, itemID, objectInfo, stepSettings);
+                        isStepCompleted = await SendFormWorkflowEmail(itemStep, itemStepID, itemID, eventInfo, stepSettings);
                         break;
                     case WorkflowActivityType.StatusChange:
                         // deprecated, just set to true and move on
@@ -1843,6 +1843,11 @@ namespace d360.model
                         Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), obj),
                         ObjectID = objId,
                     };
+                    var eventInfo = new EventInfo()
+                    {
+                        Action = ChangeType.Update,
+                        Object = objEventInfo
+                    };
 
                     var settings = itemStep.SettingsDocument;
                     var emails = settings.Element("emails");
@@ -1857,7 +1862,7 @@ namespace d360.model
                     //resend email to the reassigned user
                     stepSettings.SpecificUser = resource.Email;
                     stepSettings.RecipientType = EmailTaskRecipientType.SpecificUser;
-                    await SendFormWorkflowEmail(itemStep, itemStep.ID, itemStep.ItemID, objEventInfo, stepSettings);
+                    await SendFormWorkflowEmail(itemStep, itemStep.ID, itemStep.ItemID, eventInfo, stepSettings);
                 }
                 else
                 {
@@ -1880,12 +1885,13 @@ namespace d360.model
             await SaveChangesAsync();
         }
 
-        public async Task SendFormWorkflowEmail(WorkflowItemStep item, long itemStepID, long itemId, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
+        public async Task<bool> SendFormWorkflowEmail(WorkflowItemStep item, long itemStepID, long itemId, EventInfo eventInfo, WorkflowItemStepSettingModel settings)
         {
             List<string> emailedUsers = new List<string>();
             List<core.entities.GlobalReportingResource> users = new List<core.entities.GlobalReportingResource>();
             var typeId = item?.Step?.Version?.TypeID ?? 0;
             var typeName = item?.Step?.Version?.Type?.Name ?? "";
+            var objectInfo = eventInfo.Object;
             //based on the step settings get the users
 
             var companySettings = GetSettings();
@@ -1898,7 +1904,7 @@ namespace d360.model
                 {
                     Console.WriteLine("ERROR CANNOT DETERMINE WHO TO ASSIGN FORM STEP TO.");
 
-                    return;
+                    return true;
                 }
 
                 var res = GlobalReportingResources.Where(x => x.ResourceID == item.Item.StartedBy).FirstOrDefault();
@@ -1907,7 +1913,7 @@ namespace d360.model
                 {
                     Console.WriteLine("ERROR CANNOT FIND THE RESOURCE WHO STARTED THE WORKFLOW TO ASSIGN FORM TO.");
 
-                    return;
+                    return true;
                 }
 
                 users.Add(res);
@@ -1916,6 +1922,14 @@ namespace d360.model
             }
             else if (settings.RecipientType == EmailTaskRecipientType.Responsibility || settings.RecipientType == EmailTaskRecipientType.None)
             {
+                if (settings.RecipientType == EmailTaskRecipientType.Responsibility)
+                {
+                    if (await ShouldWaitForResponsibilityRuleToRun(item, settings, itemStepID, eventInfo))
+                    {
+                        return false;
+                    }
+                }
+
                 users = GetWorkflowUsersBasedOnResponsibility(typeId, item.Step.ID, item.ItemID).ToList();
             }
             else if (settings.RecipientType == EmailTaskRecipientType.SpecificUser)
@@ -1924,7 +1938,7 @@ namespace d360.model
                 {
                     Console.Write("ERROR - NO USER SPECIFIED FOR THE SPECIFIC USER FORM TASK.");
 
-                    return;
+                    return true;
                 }
 
                 Console.WriteLine($"DEBUG : FORM STEP IS ASSIGNED TO [{settings.SpecificUser}].");
@@ -1947,14 +1961,14 @@ namespace d360.model
                 if (settings.RecipientGroup == Guid.Empty)
                 {
                     Console.Write("ERROR - NO GROUP SPECIFIED FOR THE GROUP FORM TASK.");
-                    return;
+                    return true;
                 }
 
                 int recipientGroup = Query<int>(@"select ObjectID from asset where [Object] = 'Group' and uid = @Uid", new { Uid = settings.RecipientGroup }).FirstOrDefault();
                 if (recipientGroup <= 0)
                 {
                     Console.Write("ERROR - INVALID GROUP FOR THE GROUP FORM TASK.");
-                    return;
+                    return true;
                 }
 
                 users = GetWorkflowUsersBasedOnGroup(recipientGroup).ToList();
@@ -1981,7 +1995,7 @@ namespace d360.model
             if (!xml.Attributes("TotalResources").Any())
                 xml.Add(new XAttribute("TotalResources", users.Count()));
             item.Fields = xml.ToString();
-            SaveChanges();
+            await SaveChangesAsync();
 
             if (settings.FormShouldSendEmail)
             {
@@ -2033,6 +2047,7 @@ namespace d360.model
             }
 
             SaveItemAssignments(users, itemId, itemStepID);
+            return true;
         }
 
         private async Task SendAggregateWorkflowEmail(WorkflowEventRegistrationSettingsModel settings, List<string> items)
@@ -2065,9 +2080,10 @@ namespace d360.model
             }
         }
 
-        private async Task SendWorkflowEmail(WorkflowItemStep item, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
+        private async Task<bool> SendWorkflowEmail(WorkflowItemStep item, EventInfo eventInfo, WorkflowItemStepSettingModel settings)
         {
             List<string> emailedUsers = new List<string>();
+            var objectInfo = eventInfo.Object;
 
             if (string.IsNullOrEmpty(item.Step.Settings)) throw new Exception("INVALID EMAIL CONFIGURATION FOR SPECIFIED STEP.");
 
@@ -2100,7 +2116,7 @@ namespace d360.model
                 {
                     Console.WriteLine("ERROR CANNOT DETERMINE WHO TO EMAIL WORKLFOW EMAIL TASK MESSAGE TO.");
 
-                    return;
+                    return true;
                 }
 
                 var res = GlobalReportingResources.Where(x => x.ResourceID == item.Item.StartedBy).FirstOrDefault();
@@ -2109,7 +2125,7 @@ namespace d360.model
                 {
                     Console.WriteLine("ERROR CANNOT FIND THE RESOURCE WHO STARTED THE WORKFLOW TO EMAIL.");
 
-                    return;
+                    return true;
                 }
 
                 Console.WriteLine($"DEBUG : EMAIL STEP IS EMAILING [{res.Email}].");
@@ -2128,6 +2144,11 @@ namespace d360.model
             }
             else if (settings.RecipientType == EmailTaskRecipientType.Responsibility)
             {
+                if (await ShouldWaitForResponsibilityRuleToRun(item, settings, item.ID, eventInfo))
+                {
+                    return false;
+                }
+
                 var users = GetWorkflowUsersBasedOnResponsibility(item.Step.Version.TypeID, item.Step.ID, item.ItemID, settings.SendToDefaultUsers);
 
                 foreach (var user in users)
@@ -2176,7 +2197,7 @@ namespace d360.model
                 {
                     Console.Write("ERROR - NO USER SPECIFIED FOR THE SPECIFIC USER EMAIL TASK.");
 
-                    return;
+                    return true;
                 }
 
                 Console.WriteLine($"DEBUG : EMAIL STEP IS EMAILING [{settings.SpecificUser}].");
@@ -2202,7 +2223,7 @@ namespace d360.model
                 if (settings.RecipientGroup == Guid.Empty)
                 {
                     Console.Write("ERROR - NO GROUP SPECIFIED FOR THE GROUP EMAIL TASK.");
-                    return;
+                    return true;
                 }
 
                 int recipientGroup = Query<int>(@"select ObjectID from asset where [Object] = 'Group' and uid = @Uid", new { Uid = settings.RecipientGroup }).FirstOrDefault();
@@ -2210,7 +2231,7 @@ namespace d360.model
                 {
                     Console.Write("ERROR - INVALID GROUP FOR THE GROUP EMAIL TASK.");
 
-                    return;
+                    return true;
                 }
 
                 var users = GetWorkflowUsersBasedOnGroup(recipientGroup);
@@ -2236,6 +2257,7 @@ namespace d360.model
 
 
             SaveItemStepEmailedUsers(item, emailedUsers);
+            return true;
         }
 
         public string GenerateFormResponsesEmailContent(long itemId)
@@ -3222,6 +3244,78 @@ namespace d360.model
                 throw new ApplicationException("Item Step has already been completed.");
 
             return itemStep;
+        }
+
+        private async Task<bool> ShouldWaitForResponsibilityRuleToRun(WorkflowItemStep item, WorkflowItemStepSettingModel itemStep, long itemStepID, EventInfo eventInfo)
+        {
+            const int MAX_RETRIES = 3;
+            const string RETRIES = "Retries";
+
+            var assetSql = "left join Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID";
+
+            if (eventInfo.Object.Object == SystemObjects.Issue)
+            {
+                assetSql = @"left join Issue SS on SS.ID = I.ObjectID and I.Object = 'Issue'
+                            left join Asset A on A.Object = SS.Object and A.ObjectID = SS.ObjectID";
+            }
+
+            var createdOnDate = await QueryFirstOrDefaultAsync<DateTime?>($@"
+                    select  A.CreatedOn 
+                    from    workflow.ItemStep S
+                            inner join workflow.Item I on I.ID = S.ItemID
+                            {assetSql}
+                            inner join workflow.VersionStep VS on VS.ID = S.StepID
+                            inner join workflow.version V on V.ID = VS.VersionID
+                            inner join workflow.type T on T.PublishedVersionID = V.ID
+                            inner join workflow.EventRegistration E on E.TypeID = T.ID and E.ChangeType = @addChangeType
+                    where   S.ID = @itemStepID", new { itemStepID, addChangeType = (int)ChangeType.Add });
+
+            if (createdOnDate.HasValue)
+            {
+                var root = XElement.Parse(item.Settings);
+                var retries = 0;
+
+                if (root.Attribute(RETRIES) == null)
+                {
+                    root.Add(new XAttribute(RETRIES, 0));
+                }
+                else
+                {
+                    if (!int.TryParse(root.Attribute(RETRIES).Value, out retries))
+                    {
+                        Console.WriteLine("ERROR - COULD NOT PARSE RETRIES VALUE");
+                        return false;
+                    }
+                }
+
+                if (retries > MAX_RETRIES)
+                {
+                    return false;
+                }
+                else
+                {
+                    var lastRunOn = await QueryFirstOrDefaultAsync<DateTime?>(@"select min(R.LastRunOn) from ResponsibilityType T
+                        left join ResponsibilityTypeRelationRule R on R.ResponsibilityTypeID = T.ID
+                        where T.ID = @ResponsibilityTypeID", new { itemStep.ResponsibilityTypeID });
+
+                    if (lastRunOn.HasValue)
+                    {
+                        if (lastRunOn < createdOnDate)
+                        {
+                            int duration = (int)Math.Pow(2, (double)retries);
+                            retries++;
+                            root.Attribute(RETRIES).SetValue(retries);
+                            await QueueSource.CreateScheduledTopicMessageAsync(eventInfo, DateTimeOffset.UtcNow.AddMinutes(duration));
+                            item.Settings = root.ToString();
+                            await SaveChangesAsync();
+                            Console.WriteLine($"DEBUG DELAYING EXECUTION OF STEP {duration} MINUTE(S) UNTIL RESPONSIBILITY RULE HAS RUN (ATTEMPT {retries} OF {MAX_RETRIES})");
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
 
         private async Task<string> GetWorkflowAssignedResponsibility(int typeId, int stepId, long itemId)

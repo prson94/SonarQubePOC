@@ -162,7 +162,7 @@ namespace d360.model
         void Enqueue(string queueName, QueueObject item);
         Task EvaluateWorkflowTransition(long versionStepTransitionID, long itemID, EventObjectInfo objectInfo);
         Task<bool> ExecuteScheduledWorkflow(WorkflowEventRegistration registration);
-        Task ExecuteStep(long itemStepID, long itemID, EventObjectInfo objectInfo);
+        Task ExecuteStep(long itemStepID, long itemID, EventInfo eventInfo);
         bool ExecuteTimerSteps();
         string GenerateFormResponsesEmailContent(long itemId);
         Task<List<IntersectTypeApiViewModel>> GetActiveIntersectTypesByObjectType(int id, SystemObjects type);

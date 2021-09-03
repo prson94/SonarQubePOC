@@ -205,6 +205,14 @@ namespace d360.extensions.queue
             await sender.SendMessageAsync(bm);
         }
 
+        public async Task CreateScheduledTopicMessageAsync(EventInfo e, DateTimeOffset delay)
+        {
+            var topicName = getTopicName();
+            var bm = GetServiceBusMessageFromObject(e);
+            var sender = CreateServiceBusSender(topicName);
+            await sender.ScheduleMessageAsync(bm, delay);
+        }
+
         public void CreateTopicMessages(List<EventInfo> events)
         {
             var topicName = getTopicName();

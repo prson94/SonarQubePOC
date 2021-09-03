@@ -121,7 +121,7 @@ namespace igx.jobs.workflowsubscriber
                         log.WriteLine($"Debug - Event is an item step.");
                         CoreFunction.AITrackEvent(functionName, "WorkflowSubscriber starting new transition", new Dictionary<string, string> { { "CompanyID", info.CompanyID.ToString() }, { "Action", info.Action.ToString() }, { "WorkflowItemID", info.WorkflowItemID.ToString() }, { "ItemStepID", info.ItemStepID.ToString() } });
 
-                        await company.ExecuteStep(info.ItemStepID, info.WorkflowItemID, info.Object);
+                        await company.ExecuteStep(info.ItemStepID, info.WorkflowItemID, info);
                     }
                 }
 
