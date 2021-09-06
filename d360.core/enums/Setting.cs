@@ -542,7 +542,16 @@ namespace d360.core.enums
             Name("AssetDataProfileLifespan_Name", typeof(Settings)),
             Type(SettingType.Number)
         ]
-        AssetDataProfileLifespan = 81
+        AssetDataProfileLifespan = 81,
+
+        [
+            DefaultValue(200),
+            Description("AssetDefinitionColumnWidth_Desc", typeof(Settings)),
+            Locked(false),
+            Name("AssetDefinitionColumnWidth_Name", typeof(Settings)),
+            Type(SettingType.Number)
+        ]
+        AssetDefinitionColumnWidth = 82
     }
 
     public class SettingInfo

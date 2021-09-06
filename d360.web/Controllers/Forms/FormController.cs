@@ -761,7 +761,8 @@ namespace d360.web.Controllers
                 HomePageBackgroundImage = settings.GetValue(Setting.HomePageBackgroundImage),
                 BrowserTitlePrefix = settings.GetValue(Setting.BrowserTitlePrefix),
                 AllowedOrigins = settings.GetValue(Setting.AllowedOrigins),
-                FramingDomains = settings.GetValue(Setting.FramingDomains)
+                FramingDomains = settings.GetValue(Setting.FramingDomains),
+                AssetDefinitionColumnWidth = settings.GetValue<int>(Setting.AssetDefinitionColumnWidth)
             };
             var ipRaw = settings.GetValue(Setting.IpRestriction);
             if (!string.IsNullOrEmpty(ipRaw))
@@ -773,21 +774,6 @@ namespace d360.web.Controllers
 
             IQueryable<SiteNav> siteNavs = Company.SiteNav.Where(s => s.ParentID == null && s.Name != "#Home").OrderBy(s => s.SortOrder);
             model.SiteNav = siteNavs.ToList();
-
-            model.HeaderBackgroundColor = (settings.Any(i => i.SettingID == 10) ? settings.Single(i => i.SettingID == 10).Value : "");
-
-            model.ShowHomeAssignmentTile = (settings.Any(i => i.SettingID == 39) ? bool.Parse(settings.Single(i => i.SettingID == 39).Value) : true);
-            model.ShowHomeBoardTile = (settings.Any(i => i.SettingID == 40) ? bool.Parse(settings.Single(i => i.SettingID == 40).Value) : true);
-            model.ShowHomeActivityTile = (settings.Any(i => i.SettingID == 41) ? bool.Parse(settings.Single(i => i.SettingID == 41).Value) : true);
-            model.ShowHomePageTitle = (settings.Any(i => i.SettingID == 42) ? bool.Parse(settings.Single(i => i.SettingID == 42).Value) : false);
-            model.HomePageTitleSize = (settings.Any(i => i.SettingID == 43) ? settings.Single(i => i.SettingID == 43).Value : "38pt");
-            model.HomePageTitleColor = (settings.Any(i => i.SettingID == 44) ? settings.Single(i => i.SettingID == 44).Value : "#fff");
-            model.HomePageBackgroundImage = (settings.Any(i => i.SettingID == 45) ? settings.Single(i => i.SettingID == 45).Value : "");
-            model.BrowserTitlePrefix = (settings.Any(i => i.SettingID == 33) ? settings.Single(i => i.SettingID == 33).Value : "D3S");
-            model.AllowedOrigins = (settings.Any(i => i.SettingID == 76) ? settings.Single(i => i.SettingID == 76).Value : "");
-            model.FramingDomains = (settings.Any(i => i.SettingID == 77) ? settings.Single(i => i.SettingID == 77).Value : "");
-
-            model.AssetDefinitionColumnWidth = (settings.Any(i => i.SettingID == 82) ? int.Parse(settings.Single(i => i.SettingID == 82).Value) : 200);
 
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -807,7 +793,8 @@ namespace d360.web.Controllers
                 SettingInfo currentSettingInfo = null;
                 Setting currentSetting;
 
-                Action<Setting, SettingInfo, bool> settingAction = (s, i, delete) => {
+                Action<Setting, SettingInfo, bool> settingAction = (s, i, delete) =>
+                {
                     if (delete)
                     {
                         SettingsRepository.DeleteSetting(s);
@@ -819,11 +806,13 @@ namespace d360.web.Controllers
                     }
                 };
 
-                Action<Setting, string> settingActionValue = (s, newValue) => {
+                Action<Setting, string> settingActionValue = (s, newValue) =>
+                {
                     currentSettingInfo = settings.Single(o => o.ID == s);
                     currentSettingInfo.Value = newValue;
                     settingAction(s, currentSettingInfo, !currentSettingInfo.IsOverridden);
                 };
+
 
                 #region Icon
 
@@ -905,6 +894,17 @@ namespace d360.web.Controllers
                 settingActionValue(Setting.MaxDropdownItems, Math.Abs(formModel.MaxDropdownItems).ToString());
                 settingActionValue(Setting.WriteActionDescription, formModel.WriteActionDescription.ToString().ToLower());
                 settingActionValue(Setting.MaxExcelExportRows, Math.Abs(formModel.MaxExcelExportRows).ToString());
+
+                if (formModel.AssetDefinitionColumnWidth < 100)
+                {
+                    formModel.AssetDefinitionColumnWidth = 100;
+                }
+                if (formModel.AssetDefinitionColumnWidth > 1000)
+                {
+                    formModel.AssetDefinitionColumnWidth = 1000;
+                }
+
+                settingActionValue(Setting.AssetDefinitionColumnWidth, Math.Abs(formModel.AssetDefinitionColumnWidth).ToString());
 
                 #endregion
 
@@ -1007,7 +1007,7 @@ namespace d360.web.Controllers
 
                             var imageFileName = string.Format("{0}.home.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
                             await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
-                            
+
                             settingActionValue(currentSetting, $"{constants.COMPANY_RESOURCES_URL}{imageFileName}");
                         }
                     }
