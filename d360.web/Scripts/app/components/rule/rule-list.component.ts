@@ -44,6 +44,8 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     private sidePanelTab: string;
     private sidePanelStorageKey: string;
     private hasProfiling: boolean = false;
+    gridLoading: boolean = true;
+    definitionLoaded: boolean = false;
     dataProfile: any;
 
 

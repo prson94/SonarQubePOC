@@ -22,6 +22,7 @@ using d360.web.Filters;
 using Dapper;
 using Resources;
 using System.Threading.Tasks;
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Models
 {
@@ -50,8 +51,8 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public ResourcesController(ICommunityContext community, ICompanyContext company)
-            : base(community, company)
+        public ResourcesController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         { }
 
         #endregion

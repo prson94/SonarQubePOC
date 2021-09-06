@@ -22,6 +22,7 @@ using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.entities.Metric;
 using d360.model.helpers.filters;
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers.V2
 {
@@ -35,7 +36,7 @@ namespace d360.web.Controllers.V2
     ]
     public class AuditController : BaseV2ApiController
     {
-        public AuditController(ICommunityContext community, ICompanyContext company) : base(community, company)
+        public AuditController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
         {
 
         }
@@ -548,36 +549,6 @@ namespace d360.web.Controllers.V2
                 inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = @objType and ga.ObjectID = @objId
 				left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
                 left join AssetDetail AD on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID";
-            }
-
-            if (type.ToString() == "FusionType")
-            {
-                //Gets the Fusion audit for the fusion type
-                querySql += $@" UNION 
-                        select 	                            
-                        ga.*,
-                        case when R.State = {(int)CompanyResourceState.Deleted} then
-                            R.FirstName + ' ' + R.LastName + ' (deleted)'
-                        else
-                            R.FirstName + ' ' + R.LastName
-                        end as ResourceName, 
-                            fa.FieldName as Field, 
-                            fa.Value as NewValue, 
-                            3 as Class,
-                            fa.[Version] as 'Version',	                            
-                        (select top 1 fa_sub.value as 'value'			                            
-                        from reporting.global_fieldaudit fa_sub
-                        inner join reporting.global_audit ga_sub on ( fa_sub.auditid = ga_sub.id)	
-                        where ga_sub.[object] = ga.[object] 
-                            and ga_sub.[objectid] = ga.[objectid] 
-                            and fa_sub.version = (fa.Version -1) 
-                            and fa_sub.fieldname = fa.FieldName 
-                            and fa_sub.fieldtypeid = fa.FieldTypeId 
-                            and ga_sub.actionObjectId=ga.actionObjectId) as 'PreviousValue'
-                    from reporting.global_audit ga 
-                    left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id ) 
-                    inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = 'Fusion' 
-                    and ga.ObjectID in ( select Id from Fusion where fusiontypeid = @objId)";
             }
 
             if (type == SystemObjects.ReferenceItemType)

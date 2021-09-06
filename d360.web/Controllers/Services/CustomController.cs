@@ -23,6 +23,7 @@ using Microsoft.ApplicationInsights;
 using d360.core.entities;
 using Microsoft.Web.Http;
 using Swashbuckle.Swagger.Annotations;
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers.Services
 {
@@ -178,8 +179,8 @@ namespace d360.web.Controllers.Services
 
         #region DI
 
-        public CustomController(ICommunityContext community, ICompanyContext company)
-            : base(community, company)
+        public CustomController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
 
         }

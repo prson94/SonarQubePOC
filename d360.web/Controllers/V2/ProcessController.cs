@@ -16,6 +16,7 @@ using d360.model.DataAccessLayer;
 using d360.core.entities.Process;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using d360.core.enums;
 
 namespace d360.web.Controllers.V2
 {
@@ -33,7 +34,7 @@ namespace d360.web.Controllers.V2
         readonly IAssetRepository AssetRepository;
         readonly IProcessRepository ProcessRepository;
 
-        public ProcessController(ICommunityContext community, ICompanyContext company, IAssetRepository assetRepository, IProcessRepository processRepository) : base(community, company)
+        public ProcessController(ICommunityContext community, ICompanyContext company, IAssetRepository assetRepository, IProcessRepository processRepository, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
         {
             this.AssetRepository = assetRepository;
             this.ProcessRepository = processRepository;
@@ -57,7 +58,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetAvailableColorsForDiagramNodes(Guid assetUid)
         {
-            var governanceRoleUid = Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid");
+            var governanceRoleUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
             var results = await Company.QueryAsync<dynamic>($@"
                     drop table if exists #govRoles
                     create table #govRoles(

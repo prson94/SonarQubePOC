@@ -11,6 +11,7 @@ using d360.web.Models;
 using Dapper;
 using d360.core.enums;
 using System.Collections.Generic;
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers
 {
@@ -19,8 +20,8 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public MonitorController(ICommunityContext community, ICompanyContext company)
-            : base(community, company)
+        public MonitorController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
         }
 

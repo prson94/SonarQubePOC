@@ -51,12 +51,6 @@ namespace igx.UnitTests.CoreTests
             Assert.True(SystemObjectHelper.GetSystemObjects(d360.core.enums.AssetTypeClass.Model) == SystemObjects.TaxonomyType, "Expected Model type to return TaxonomyType system object");
         }
 
-        [Fact]
-        public void SystemObjectHelperFusionAttribute()
-        {
-            Assert.True(SystemObjectHelper.GetSystemObjects(d360.core.enums.AssetTypeClass.FusionAttribute) == SystemObjects.FusionAttributeType, "Expected FusionAttribute type to return FusionAttributeType system object");
-        }
-
 
         [Fact]
         public void SystemObjectHelperDiagram()

@@ -95,9 +95,6 @@ namespace d360.model.DataAccessLayer
                 whereClause = $"WHERE {string.Join(" AND ", whereConditions)}";
             }
 
-            var currentLineageversion = communityContext.GetCompanySettingByKey<int>("LineageVersion");
-
-
             var allPredicates = await companyContext.QueryAsync<PredicateApiViewModel>($@"select 
                                                                              P.Uid,
                                                                              P.Name,
@@ -112,7 +109,7 @@ namespace d360.model.DataAccessLayer
                                                                             outer apply(select top 1 id from IntersectType where PredicateID = P.Id)Usage
                                                                             {whereClause}          
                                                                             order by[Type], Name", dbArgs, ApiTimeout);
-            return allPredicates.Where(x => x.Type.AsInfoModel().LineageVersionsSupported.Contains(currentLineageversion));
+            return allPredicates;
         }
 
         public async Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
@@ -609,24 +606,20 @@ select	I.Id,
 		coalesce(P.Name,'') as 'Predicate.Name',
 		coalesce(P.Inverse,'') as 'Predicate.Inverse',
 		S.Uid as 'Subject.Uid',		
-		coalesce(SFT.Name + ' / ','') + coalesce(SP.[Path], S.Name) as 'Subject.Name',
+		coalesce(SP.[Path], S.Name) as 'Subject.Name',
 		coalesce(S.Class, 0) as 'Subject.Class',
 		I.SubjectCardinality as 'Subject.Cardinality',
 		O.Uid as 'Object.Uid',
-		coalesce(OFT.Name + ' / ','') + coalesce(OP.[Path], O.Name)  as 'Object.Name',
+		coalesce(OP.[Path], O.Name)  as 'Object.Name',
 		coalesce(O.Class, 0) as 'Object.Class',
 		I.ObjectCardinality as 'Object.Cardinality'
 from	IntersectType I
 		left join [Predicate] P on P.ID = I.PredicateID
 
 		left join AssetType S on (S.Object = I.Subject and S.ObjectID = I.SubjectID)
-        left join FusionAttributeType SFAT on I.Subject = 'FusionAttributeType' and SFAT.ID = I.SubjectID 
-        left join FusionType SFT on SFT.ID = SFAT.FusionTypeID 
         outer apply dbo.GetAssetTypeTextPathById(S.ID, '/') SP
 		
 		left join AssetType O on (O.Object = I.Object and O.ObjectID = I.ObjectID)
-        left join FusionAttributeType OFAT on I.Object = 'FusionAttributeType' and OFAT.ID = I.ObjectID 
-        left join FusionType OFT on OFT.ID = OFAT.FusionTypeID 
         outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
         {whereClause} for json path";
 

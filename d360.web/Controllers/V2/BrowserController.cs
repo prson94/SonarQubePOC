@@ -35,7 +35,7 @@ namespace d360.web.Controllers.V2
     {
         IGraphFilterRepository GraphFilterRepository;
 
-        public BrowserController(ICommunityContext community, ICompanyContext company, IGraphFilterRepository graphFilterRepository) : base(community, company)
+        public BrowserController(ICommunityContext community, ICompanyContext company, IGraphFilterRepository graphFilterRepository, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
         {
             GraphFilterRepository = graphFilterRepository;
         }
@@ -698,8 +698,8 @@ order by Name";
             var items = new List<dynamic>();
             int? initial = ((int)AssetBrowserDiagramType.Lineage);
 
-            var includeImpact = Community.GetCompanySettingByKey<bool>("ShowImpactSidebar");
-            var includeLineage = Community.GetCompanySettingByKey<bool>("ShowLineageSidebar") && assetType.Class != AssetTypeClass.ReferenceItemType;
+            var includeImpact = SettingsRepository.GetSettingValue<bool>(Setting.ShowImpactSidebar);
+            var includeLineage = SettingsRepository.GetSettingValue<bool>(Setting.ShowLineageSidebar) && assetType.Class != AssetTypeClass.ReferenceItemType;
             var anyDiagramRelationTypes = (await Company.QueryAsync<bool>("select case when count(*) > 0 then 1 else 0 end from IntersectTypeDetail D where D.PredicateType = @predicateType and D.SubjectUid = @uid ", new { assetType.uid, predicateType = (int)PredicateType.Diagram })).SingleOrDefault();
             bool anyProcessDiagram = false;
 

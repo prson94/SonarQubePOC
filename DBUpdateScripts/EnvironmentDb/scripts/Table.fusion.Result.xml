@@ -5,51 +5,25 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.fusion.Result-v1">
+  <changeSet author="Puneet Gupta" id="Table.fusion.Result-Rename-v1">
+  <comment>GOV-11726</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'Result')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'Result')
 BEGIN
-	CREATE TABLE [fusion].[Result](
-		[ExecutionID] [int] NOT NULL,
-		[FusionAttributeID] [int] NOT NULL,
-		[Body] [nvarchar](max) NULL,
-		[ID] [uniqueidentifier] NULL,
-		[FieldTypeID] [int] NULL,
-		[FieldName] [nvarchar](250) CONSTRAINT [DF_FusionResult_FieldName] DEFAULT ('Name') NOT NULL,
-		[Action] [varchar](1) NULL,
-		[OldValue] [nvarchar](max) NULL,
-		[NewValue] [nvarchar](max) NULL
-	)
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_FusionResult_Execution_FieldName')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FusionResult_Execution_FieldName] ON [fusion].[Result] ( [ExecutionID] DESC, [FieldName] DESC )
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_FusionResult_Execution_FusionAttribute')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FusionResult_Execution_FusionAttribute] ON [fusion].[Result] ( [ExecutionID] DESC, [FusionAttributeID] DESC )
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_FusionResult_ExecutionID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FusionResult_ExecutionID] ON [fusion].[Result] ( [ExecutionID] DESC )
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_FusionResult_ExecutionID_Action')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FusionResult_ExecutionID_Action] ON [fusion].[Result] ( [ExecutionID] ASC, [Action] ASC )
+	exec sp_rename 'fusion.Result', 'Result_backup';
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'fusion' AND TABLE_NAME = 'Result_backup')
+BEGIN
+	exec sp_rename 'fusion.Result_backup', 'Result';
+END
 		]]>
 	</rollback>
   </changeSet>

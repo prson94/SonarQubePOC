@@ -695,8 +695,6 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
                     var disallowedClasses = new List<AssetTypeClass>() {
                         AssetTypeClass.Organization,
-                        AssetTypeClass.Fusion,
-                        AssetTypeClass.FusionAttribute,
                         AssetTypeClass.User,
                         AssetTypeClass.ReferenceItemType
                     };
@@ -984,8 +982,6 @@ from	IntersectType I
                         else if (fieldInfo.Class == AssetTypeClass.Reference && i.AssetTypeUid != Guid.Empty && new[] { "Code" }.Contains(i.FieldTypeName))
                             bypassFieldValidation = true;
                         else if (fieldInfo.Class == AssetTypeClass.User && new[] { "FirstName", "LastName", "Email", "LastLoggedInOn", "DisplayValue" }.Contains(i.FieldTypeName))
-                            bypassFieldValidation = true;
-                        else if (fieldInfo.Class == AssetTypeClass.FusionAttribute && new[] { "Name", "TextPath" }.Contains(i.FieldTypeName))
                             bypassFieldValidation = true;
 
                         // Invalid computed field

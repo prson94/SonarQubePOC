@@ -17,6 +17,7 @@ import { AssetTypeClass } from '../../models/asset.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { ScoreType, ScoreTypeAllocation, ScoreTypeInfo } from '../../models/metrics.model';
+import { StringConstants } from '../../static/string-constants';
 
 declare var CompanySettings;
 
@@ -839,13 +840,7 @@ export class BaseComponent {
                     this.preloadedTreeData = r.PreloadData.Data;
                 }
             }
-            var area = "";
-            area = ['Business Assets', 'Technical Assets', 'Artifacts', 'Lookups', 'Models', 'Policies', 'Predicates', 'Relationships', 'Rules', 'Surveys', 'Workflow Actions', 'Workflows', 'Diagram Assets', 'Connector Labels']
-                .indexOf(areaName) !== -1 ? 'Configuration' : "Administration";
-
-            if (this.objectType == 'Tag' && this.uid && this.uid != '00000000-0000-0000-0000-000000000000') {
-                area = 'Tags';
-            }
+            let area = this.determineAreaForAdminPage(areaName);
 
             var homeUrl = SiteUrlHelpers.getUrl(r.Object, r.ObjectID, r.ObjectTypeId, areaName, this.uid);
             this.secondaryNavService.setLocalHomeUrl(homeUrl);
@@ -892,6 +887,31 @@ export class BaseComponent {
 
             this.activateComponent();
         })
+    }
+
+    protected determineAreaForAdminPage(areaName: string): string {
+        let area = "";
+
+        area = [
+            StringConstants.Section_BusinessAssets,
+            StringConstants.Section_TechnicalAssets,
+            StringConstants.Section_Artifacts,
+            StringConstants.Section_Models,
+            StringConstants.Section_Policies,
+            StringConstants.Section_Predicates,
+            StringConstants.Section_Relationships,
+            StringConstants.Section_Rules,
+            StringConstants.Section_Scoring,
+            StringConstants.Section_Surveys,
+            StringConstants.Section_Actions,
+            StringConstants.Section_Workflows]
+            .indexOf(areaName) !== -1 ? StringConstants.Area_Configuration : StringConstants.Area_Administration;
+
+        if (this.objectType == 'Tag' && this.uid && this.uid != '00000000-0000-0000-0000-000000000000') {
+            area = 'Tags';
+        }
+
+        return area;
     }
 
     private IsType(objectName: string): boolean {

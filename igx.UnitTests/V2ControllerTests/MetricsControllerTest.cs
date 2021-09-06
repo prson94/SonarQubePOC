@@ -20,7 +20,7 @@ namespace igx.UnitTests.V2ControllerTests
 
         public MetricsControllerTest()
         {
-            this.metricsController = new MetricsController(GetCommunity(), GetCompany(), GetQueue(), GetScoringRepository(), GetMetricsRepository(), GetAssetRepository())
+            this.metricsController = new MetricsController(GetCommunity(), GetCompany(), GetQueue(), GetScoringRepository(), GetMetricsRepository(), GetAssetRepository(), GetSettingsRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
@@ -312,7 +312,7 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void GetMetricFieldsByAssetType()
         {
-            var actionResult = await metricsController.GetMetricFieldsByAssetType(Guid.Parse(DataConstants.ValidGUID));
+            var actionResult = metricsController.GetMetricFieldsByAssetType(Guid.Parse(DataConstants.ValidGUID));
             var result = actionResult.ExecuteAsync(new System.Threading.CancellationToken()).Result;
             var str = await result.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JArray>(str);

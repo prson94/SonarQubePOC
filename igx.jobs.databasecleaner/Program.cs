@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Extensions.Hosting;
-
+using d360.core.enums;
 
 namespace igx.jobs.databasecleaner
 {
@@ -60,15 +60,17 @@ namespace igx.jobs.databasecleaner
                         using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
                         {
                             company.Open();
-                            var settings = CompanyConnectionUtils.GetCompanySettings(c.CompanyID);
-                            var dataProfileLifespan = settings.FirstOrDefault(s => s.SettingID == 81).Value;
+                            string overrideValue = company.Query<string>("select Value from Setting where ID = @ID", new { ID = (int)Setting.AssetDataProfileLifespan }).SingleOrDefault();
+                            var settingInfo = Setting.AssetDataProfileLifespan.AsInfoModel();
+                            settingInfo.Value = (string.IsNullOrEmpty(overrideValue)) ? settingInfo.DefaultValue : overrideValue;
+
                             //remove any old api execution records
                             await company.ExecuteAsync("[api].[DeleteExecutionRecords]", commandTimeout: 1800);
 
-                            //remove any old data profile records                            
-                            await company.ExecuteAsync("[DeleteAssetDataProfileRecords] @dataProfileLifespan", new { dataProfileLifespan = (int)(Convert.ChangeType(dataProfileLifespan, typeof(int))) }, commandTimeout: 1800);
+                            //remove any old data profile records
+                            await company.ExecuteAsync("[DeleteAssetDataProfileRecords] @dataProfileLifespan", new { dataProfileLifespan = (int)(Convert.ChangeType(settingInfo.Value, typeof(int))) }, commandTimeout: 1800);
 
-                            //remove any old score execution data                          
+                            //remove any old score execution data
                             await company.ExecuteAsync("metrics.CleanupExecutions", commandTimeout: 1800);
 
                             //update database statistics

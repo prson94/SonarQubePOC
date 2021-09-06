@@ -33,6 +33,7 @@ using d360.core.enums;
 using System.Web.Http.Description;
 using System.Xml.Serialization;
 using d360.core.helpers;
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers.Services
 {
@@ -42,8 +43,8 @@ namespace d360.web.Controllers.Services
 
         #region DI
 
-        public WorkflowController(ICommunityContext community, ICompanyContext company)
-            : base(community, company)
+        public WorkflowController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
         }
 

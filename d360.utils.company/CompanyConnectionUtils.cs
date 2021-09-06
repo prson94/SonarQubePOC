@@ -84,23 +84,6 @@ namespace d360.utils.company
             return companies;
         }
 
-        public static List<CompanySetting> GetCompanySettings(int companyID)
-        {
-            using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
-            {
-                cnn.Open();
-
-                return cnn.Query<CompanySetting>(@"
-                    select 
-                        @companyID as CompanyID, 
-                        S.ID as SettingID, 
-                        coalesce(CS.Value, S.DefaultValue) as Value
-                    from Setting S 
-                    left join CompanySetting CS on CS.CompanyID = @companyID and CS.SettingID = S.ID", new { companyID }).ToList();
-            }
-        }
-
-
         public static List<int> UpdateRebuildRequestForEnvironmentLevel(EnvironmentLevel level, CompanyRebuildJobToken jobToken)
         {
             List<int> companies = null;

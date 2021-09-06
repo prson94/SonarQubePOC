@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using d360.web.caching;
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers
 {
@@ -20,8 +21,8 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public HomeController(ICommunityContext community, ICompanyContext company)
-            : base(community, company)
+        public HomeController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         { }
 
         #endregion
@@ -47,7 +48,7 @@ namespace d360.web.Controllers
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
             ViewData.Add("ResourceID", Company.CurrentResourceID);
             ViewData.Add("ResourceHomePage", Company.GetUserHomePage());
-            ViewData.Add("Settings", new Dictionary<string, string>(Community.GetCompanySettings()));
+            ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
             ViewData.Add("EnvironmentSettings", new Dictionary<string, string> { { "HelpBaseUri", System.Configuration.ConfigurationManager.AppSettings["HelpBaseUri"].ToString() } });
             ViewData.Add("SingleSignOn", await IsSingleSignOn());
 
@@ -73,7 +74,7 @@ namespace d360.web.Controllers
         public ActionResult Terms(string redirectUri = null)
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-            ViewData.Add("Settings", new Dictionary<string, string>(Community.GetCompanySettings()));
+            ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
 
             var validations = Company.Query<ContractValidation>(@"select * from dbo.GetContractValidations(@ResourceID)", new { ResourceID = Company.CurrentResourceID });
 

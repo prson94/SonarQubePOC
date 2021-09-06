@@ -133,8 +133,6 @@ namespace d360.model.validators
                     if (assetTypeIdentifierInfoModel != null)
                     {
                         var restrictedTypes = new List<string>() {
-                            SystemObjects.FusionAttributeType.ToString(),
-                            SystemObjects.FusionType.ToString(),
                             SystemObjects.OrganizationType.ToString(),
                             SystemObjects.ResourceType.ToString()
                         };
@@ -210,8 +208,6 @@ namespace d360.model.validators
                     if (assetTypeIdentifierInfoModel != null)
                     {
                         var restrictedTypes = new List<string>() {
-                            SystemObjects.FusionAttributeType.ToString(),
-                            SystemObjects.FusionType.ToString(),
                             SystemObjects.OrganizationType.ToString(),
                             SystemObjects.ReferenceItemType.ToString(),
                             SystemObjects.ResourceType.ToString()
@@ -362,7 +358,7 @@ namespace d360.model.validators
                 {
                     if (field.Type.Json.Validation != null)
                     {
-                        if (field.Type.Json.Validation.IsRequired && assetTypeIdentifierInfoModel.Object != SystemObjects.FusionAttributeType.ToString())
+                        if (field.Type.Json.Validation.IsRequired)
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"IsRequired property can not be true for JSON field types defined on this asset type!");
                         }
