@@ -122,7 +122,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
             this.sidePanelLoading = true;
             this.dataProfileService.getDataProfiles(this.selection.AssetUid).subscribe(
                 (r) => {
-                    if (r && r.items && r.items.length > 0 && r.items[0].sampleCount != null) {
+                    if (r && r.items && r.items.length > 0) {
                         this.dataProfile = r.items[0];
 
                         forkJoin(
