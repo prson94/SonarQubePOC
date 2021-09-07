@@ -288,13 +288,13 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     }
 
     getVisibilityIcon(id: number) {
-        if (id == 1) {
+        if (id === 1) {
             return "fa fa-eye";
         }
-        if (id == 2) {
+        if (id === 2) {
             return "fa fa-cog";
         }
-        if (id == 3) {
+        if (id === 3) {
             return "fa fa-eye-slash";
         }
         else {
