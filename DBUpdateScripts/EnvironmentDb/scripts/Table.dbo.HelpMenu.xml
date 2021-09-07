@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="sDooley" id="Table.dbo.HelpMenu-v1">
+  <changeSet author="sDooley" id="Table.dbo.HelpMenu-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -14,7 +14,7 @@
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'HelpMenu')
 BEGIN
 CREATE TABLE [dbo].[HelpMenu](
-	[ID] [int] NULL,
+	[ID] [int] NOT NULL IDENTITY(1, 1),
 	[Name] [varchar](250) NOT NULL,
 	[Description] [nvarchar](500) NULL,
 	[Url] [varchar](250) NOT NULL,

@@ -16,7 +16,8 @@
                 <tr>
                     <th>Name</th>
                     <th>Url</th>
-                    <th></th>
+                    <th style="width: 40px"></th>
+                    <th style="width: 40px"></th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body"
@@ -26,24 +27,20 @@
                     <td><div *ngIf="item.isEditable">{{item.Url}}</div></td>
                     <td>
                         <div class="RowTools">
-                            <ng-container>
-                                <a *ngIf="item.visibilty == 1" style="cursor:pointer;" class="fa fa-eye" (click)="menu.toggle($event)">
-                                    <ig-popup-menu (onSelect)="changeVisibility($event,item)" [items]="visibilityItems()" #menu [tabIndex]="1"></ig-popup-menu>
-                                </a>
-                                <a *ngIf="item.visibilty == 2" style="cursor:pointer;" class="fa fa-cog" (click)="menu.toggle($event)">
-                                    <ig-popup-menu (onSelect)="changeVisibility($event,item)" [items]="visibilityItems()" #menu [tabIndex]="1"></ig-popup-menu>
-                                </a>
-                                <a *ngIf="item.visibilty == 3" style="cursor:pointer;" class="fa fa-eye-slash" (click)="menu.toggle($event)">
-                                    <ig-popup-menu (onSelect)="changeVisibility($event,item)" [items]="visibilityItems()" #menu [tabIndex]="1"></ig-popup-menu>
-                                </a>
-                                <a *ngIf="item.isEditable">
-                                    <button type="button" icon="fa-ellipsis-v" igButton (click)="menu.toggle($event)" pTooltip="Help Menu Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip" class="ig-button ig-button-icon-only"></button>
-                                    <ig-popup-menu (onSelect)="clickMenu($event,item)" [items]="deleteMenuItems(item.order != 0, item.order != (items.length-1))" #menu [tabIndex]="1"></ig-popup-menu>
-                                </a>
-                                <a *ngIf="!item.isEditable">
-                                    <button type="button" icon="fa-ellipsis-v" igButton (click)="menu.toggle($event)" pTooltip="Help Menu Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip" class="ig-button ig-button-icon-only"></button>
-                                    <ig-popup-menu (onSelect)="clickMenu($event,item)" [items]="menuItems(item.order != 0, item.order != (items.length-1))" #menu [tabIndex]="1"></ig-popup-menu>
-                                </a>
+                            <div style="cursor:pointer;" class="{{getVisibilityIcon(item.visibilty)}}" (click)="menu.toggle($event)">
+                                <ig-popup-menu (onSelect)="changeVisibility($event,item)" [items]="visibilityItems()" #menu [tabIndex]="10"></ig-popup-menu>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="RowTools">
+                            <div *ngIf="item.isEditable">
+                                <button type="button" icon="fa-ellipsis-v" igButton (click)="menu.toggle($event)" pTooltip="Help Menu Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                                <ig-popup-menu (onSelect)="clickMenu($event,item)" [items]="deleteMenuItems(item.order != 0, item.order != (items.length-1))" #menu [tabIndex]="1"></ig-popup-menu>
+                            </div>
+                            <ng-container *ngIf="!item.isEditable">
+                                <button type="button" icon="fa-ellipsis-v" igButton (click)="menu.toggle($event)" pTooltip="Help Menu Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                                <ig-popup-menu (onSelect)="clickMenu($event,item)" [items]="menuItems(item.order != 0, item.order != (items.length-1))" #menu [tabIndex]="1"></ig-popup-menu>
                             </ng-container>
                         </div>
                     </td>
@@ -78,7 +75,7 @@
         <div class="row" style="padding-top:12px">
             <div class="col s12">
                 <button pButton type="button" label="Save" (click)="addNew(name.value,url.value,description.value)" [disabled]="!validAdd(name.value,url.value)"></button>
-                <button pButton type="button" label="Cancel" (click)="cancel()"></button>
+                <button pButton type="button" label="Cancel" (click)="closeSave()"></button>
             </div>
         </div>
     </div>
@@ -103,7 +100,7 @@
         </div>
         <div class="row" style="padding-top:12px">
             <div class="col s12">
-                <button pButton type="button" label="Save" (click)="cancel()" [disabled]="!valid()"></button>
+                <button pButton type="button" label="Save" (click)="closeSave()" [disabled]="!valid()"></button>
                 <button pButton type="button" label="Cancel" (click)="cancel()"></button>
             </div>
         </div>

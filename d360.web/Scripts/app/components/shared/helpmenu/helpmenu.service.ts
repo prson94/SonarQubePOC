@@ -30,7 +30,7 @@ export class HelpMenuService extends BaseObservableService {
         let headers = new HttpHeaders({
             'Content-Type': 'application/json'
         });
-        return this.http.post('api/v2/helpmenu', JSON.stringify({ adds: addItems, deletes: deleteItems }), { headers: headers })
+        return this.http.post('api/v2/helpmenu', JSON.stringify({ adds: addItems, deletes: deleteItems }), { headers })
             .pipe(
                 map((response) => <any>response),
                 catchError((err) => this.handleError(err))

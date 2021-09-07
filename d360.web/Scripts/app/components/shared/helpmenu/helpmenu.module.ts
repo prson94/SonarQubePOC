@@ -12,7 +12,7 @@ import { TilesModule } from '../tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { IconPickerModule } from '../controls/icon-picker/icon-picker.component';
 
-import { HelpMenuListComponent } from './help-menu-list.component';
+import { HelpMenuListComponent } from './helpmenu-list.component';
 
 import { PopupMenuModule } from "../controls/popup-menu/popup-menu.component";
 

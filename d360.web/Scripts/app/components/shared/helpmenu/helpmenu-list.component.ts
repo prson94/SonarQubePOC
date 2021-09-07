@@ -1,6 +1,5 @@
 ﻿import { Input, Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { Shortcut } from '../../../models/shortcuts.model';
 import { HelpMenuService } from '../../shared/helpmenu/helpmenu.service';
 import { HelpMenu } from '../../../models/helpmenu.model';
 import { FormMode } from '../../../models/form.model';
@@ -8,8 +7,8 @@ import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
-    selector: 'd3s-help-menu-list',
-    templateUrl: './help-menu-list.component.html',
+    selector: 'd3s-helpmenu-list',
+    templateUrl: './helpmenu-list.component.html',
     providers: [HelpMenuService]
 })
 
@@ -24,7 +23,7 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     editedName: string = '';
     editedUrl: string = '';
     editedDes: string = '';
-    newID: number = 1;
+    newID: number = -1;
 
     private editMenuItems: any[] = [
         { title: "Edit" },
@@ -63,8 +62,8 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
         this.helpMenuService.getHelpMenuItems()
             .subscribe((r) => {
                 this.items = r;
-                this.items.sort((a, b) => (a.ID < b.ID ? 1 : -1));
-                this.newID = this.items[0].ID + 1;
+                //this.items.sort((a, b) => (a.ID < b.ID ? 1 : -1));
+                //this.newID = this.items[0].ID + 1;
                 this.items.sort((a, b) => (a.order < b.order ? -1 : 1));
                 this.itemsChange.emit(this.items);
                 this.deletedRecordsChange.emit(this.deletedRecords);
@@ -113,7 +112,7 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
         newItem.order = this.items.length;
         newItem.isEditable = true;
 
-        this.newID += 1;
+        this.newID -= 1;
 
         this.items.push(newItem);
         this.items.sort((a, b) => (a.order < b.order ? -1 : 1));
@@ -124,6 +123,11 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
         this.selectedItem.Name = this.editedName;
         this.selectedItem.Url = this.editedUrl;
         this.selectedItem.Description = this.editedDes;
+        this.selectedItem = null;
+        this.formMode = FormMode.Default;
+    }
+
+    closeSave() {
         this.selectedItem = null;
         this.formMode = FormMode.Default;
     }
@@ -281,5 +285,20 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
         }
 
         return true;
+    }
+
+    getVisibilityIcon(id: number) {
+        if (id == 1) {
+            return "fa fa-eye";
+        }
+        if (id == 2) {
+            return "fa fa-cog";
+        }
+        if (id == 3) {
+            return "fa fa-eye-slash";
+        }
+        else {
+            return "";
+        }       
     }
 }

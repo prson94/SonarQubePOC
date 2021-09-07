@@ -68,7 +68,6 @@ namespace d360.web.Controllers.V2
                     if(helpItem != null)
                     {
                         _company.HelpMenu.Remove(helpItem);
-                        _company.SaveChanges();
                     }
                 }
             }
@@ -81,9 +80,9 @@ namespace d360.web.Controllers.V2
                     {
                         var uid = Guid.NewGuid();
                         _company.Query<int>(@"
-                    insert into [dbo].[HelpMenu]([ID],[Name],[Description],[Url],[Uid],[isEditable],[visibilty],[order])
-                    values(@id,@name,'',@url,@uid,@iseditable,@visibilty,@order)
-                    ", new { item.ID, item.Name, item.Url, uid, item.isEditable, item.visibilty, item.order }).FirstOrDefault();
+                    insert into [dbo].[HelpMenu]([Name],[Description],[Url],[Uid],[isEditable],[visibilty],[order])
+                    values(@name,'',@url,@uid,@iseditable,@visibilty,@order)
+                    ", new { item.Name, item.Url, uid, item.isEditable, item.visibilty, item.order }).FirstOrDefault();
                     }
                     else
                     {
@@ -93,10 +92,10 @@ namespace d360.web.Controllers.V2
                         helpItem.order = item.order;
                         helpItem.Url = item.Url;
                         helpItem.visibilty = item.visibilty;
-                        _company.SaveChanges();
                     }
                 }
             }
+            _company.SaveChanges();
             var response = Request.CreateResponse(HttpStatusCode.OK);
             return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
         }

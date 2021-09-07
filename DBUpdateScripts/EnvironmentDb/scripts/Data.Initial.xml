@@ -204,13 +204,15 @@ end
 	</rollback>
   </changeSet>
 
-  <changeSet author="sDooley" id="Data.Initial.HelpMenu-v1">
+  <changeSet author="sDooley" id="Data.Initial.HelpMenu-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
       <![CDATA[
-if not exists (select 1 from [dbo].[HelpMenu] where ID = 1)
+SET IDENTITY_INSERT [dbo].[HelpMenu] ON;  
+	GO  
+  if not exists (select 1 from [dbo].[HelpMenu] where ID = 1)
 	begin
 	  insert into [dbo].[HelpMenu]([ID],[Name],[Description],[Url],[Uid],[isEditable],[visibilty],[order])
 	  values(1,'About Data360 Govern','','about',NEWID(),0,1,4)
@@ -238,6 +240,8 @@ if not exists (select 1 from [dbo].[HelpMenu] where ID = 1)
 		insert into [dbo].[HelpMenu]([ID],[Name],[Description],[Url],[Uid],[isEditable],[visibilty],[order])
 	  values(5,'Community','','https://support.infogix.com/hc/en-us/signin?return_to=https%3A%2F%2Fsupport.infogix.com%2Fhc%2Fen-us%2Fcommunity%2Ftopics%2F360000029388-Data3Sixty-Govern',NEWID(),0,1,3)
 	end
+
+	SET IDENTITY_INSERT [dbo].[HelpMenu] OFF; 
 		]]>
     </sql>
     <rollback>
