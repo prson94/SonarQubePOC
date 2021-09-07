@@ -761,7 +761,8 @@ namespace d360.web.Controllers
                 HomePageBackgroundImage = settings.GetValue(Setting.HomePageBackgroundImage),
                 BrowserTitlePrefix = settings.GetValue(Setting.BrowserTitlePrefix),
                 AllowedOrigins = settings.GetValue(Setting.AllowedOrigins),
-                FramingDomains = settings.GetValue(Setting.FramingDomains)
+                FramingDomains = settings.GetValue(Setting.FramingDomains),
+                HideHeaderBarControls = settings.GetValue<bool>(Setting.HideHeaderBarControls)
             };
             var ipRaw = settings.GetValue(Setting.IpRestriction);
             if (!string.IsNullOrEmpty(ipRaw))
@@ -936,8 +937,9 @@ namespace d360.web.Controllers
                 // Search
                 settingActionValue(Setting.DefaultSearchTypes, (formModel.DefaultSearchTypes ?? "").ToString());
 
-                // Header Styles
+                // Header
                 settingActionValue(Setting.HeaderBackgroundColor, formModel.HeaderBackgroundColor);
+                settingActionValue(Setting.HideHeaderBarControls, formModel.HideHeaderBarControls.ToString().ToLower());
 
                 #region Home Page Customization
 

@@ -13,7 +13,7 @@ declare var CompanySettings;
 @Component({
     selector: 'd3s-header-actions',
     template: `
-                <div #actions class="header-action-container" (window:resize)="onResize($event)">
+                <div *ngIf="enabled" #actions class="header-action-container" (window:resize)="onResize($event)">
                     <ul class="header-actions-list">
                         <li class="header-action-li spacer" *ngIf="headerActionsService.showSearch"><d3s-header-typeahead-search></d3s-header-typeahead-search></li>
                         <li class="header-action-li spacer" *ngIf="hasRaiseIssueButton && headerActionsService.showRaiseIssue"><d3s-raise-issue-button></d3s-raise-issue-button></li>
@@ -36,6 +36,7 @@ export class HeaderActionsComponent {
     @Output() controlWidthChange = new EventEmitter();
     @ViewChild('actions', { static: false }) actionsUIElem : any;
 
+    public enabled: boolean = true;
     public isAdminUrl = false;
     public isAdminSidebarUrl = false;
     public previousUrl: string;
@@ -69,6 +70,10 @@ export class HeaderActionsComponent {
         private router: Router) { }
 
     ngOnInit() {
+        if (CompanySettings && CompanySettings.HideHeaderBarControls.toString().toLowerCase() === 'true') {
+            this.enabled = false;
+        }
+
         this.routerSub = this.router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
                 this.headerActionsService.setActionsToDefaultValues();
@@ -190,9 +195,15 @@ export class HeaderActionsComponent {
     }
 
     private calculateControlWidth() {
-        this.controlWidth = this.actionsUIElem.nativeElement.parentElement.offsetWidth;
-        this.controlWidth += 100; //small buffer zone + paddings to avoid wrapping
+        let buffer = 100;
+        if (this.enabled === false) {
+            this.controlWidth = buffer;
+        } else {
+            this.controlWidth = this.actionsUIElem.nativeElement.parentElement.offsetWidth;
+            this.controlWidth += buffer; //small buffer zone + paddings to avoid wrapping           
+        }
         this.controlWidthChange.emit(this.controlWidth);
+
     }
     onResize(event) {
         clearTimeout(this.resizeTimer);

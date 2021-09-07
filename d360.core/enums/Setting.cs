@@ -542,7 +542,17 @@ namespace d360.core.enums
             Name("AssetDataProfileLifespan_Name", typeof(Settings)),
             Type(SettingType.Number)
         ]
-        AssetDataProfileLifespan = 81
+        AssetDataProfileLifespan = 81,
+
+
+        [
+            DefaultValue(false),
+            Description("HideHeaderBarControls_Desc", typeof(Settings)),
+            Locked(false),
+            Name("HideHeaderBarControls_Name", typeof(Settings)),
+            Type(SettingType.Boolean)
+        ]
+        HideHeaderBarControls = 82
     }
 
     public class SettingInfo

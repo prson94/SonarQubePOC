@@ -529,6 +529,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This setting hides the controls on the right side of the header bar.
+        /// </summary>
+        internal static string HideHeaderBarControls_Desc {
+            get {
+                return ResourceManager.GetString("HideHeaderBarControls_Desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hide Header Bar Controls.
+        /// </summary>
+        internal static string HideHeaderBarControls_Name {
+            get {
+                return ResourceManager.GetString("HideHeaderBarControls_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to When set this setting is used to display a custom image on the home page..
         /// </summary>
         internal static string HomePageBackgroundImage_Desc {
