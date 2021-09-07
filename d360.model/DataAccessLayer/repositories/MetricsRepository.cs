@@ -2295,7 +2295,7 @@ for json path";
                 pageNum = 1;
             }
 
-            if (pageSize <= 0 || pageSize > 1000)
+            if (pageSize <= 0)
             {
                 pageSize = 25;
             }
