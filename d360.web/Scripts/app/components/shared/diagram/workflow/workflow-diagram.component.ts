@@ -550,8 +550,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     //#region helper methods
 
     private resetContentPosition() {
-        this.diagram.alignDocument(go.Spot.TopLeft, go.Spot.TopLeft);
-        this.diagram.requestUpdate();
+        setTimeout(() => {
+            this.diagram.alignDocument(go.Spot.TopLeft, go.Spot.TopLeft);
+            this.diagram.requestUpdate();
+        }, 200);
     }
 
     private canLink(fromNode: any, fromPort: any, toNode: any, toPort: any) {
