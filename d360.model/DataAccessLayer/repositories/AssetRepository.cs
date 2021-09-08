@@ -1409,7 +1409,9 @@ namespace d360.model.DataAccessLayer
 
                         if (string.IsNullOrEmpty(orderBy))
                         {
-                            orderBy = fieldTypes.OrderByDescending(x => x.SortOrder).ThenBy(x => x.ID).FirstOrDefault().Name;
+                            orderBy = fieldTypes.Where(x=> x.IsListable)
+                                .OrderBy(x => x.SortOrder)
+                                .ThenBy(x => x.ID).FirstOrDefault().Name;
                         }
 
                         results = results.OrderBy(x => ((IDictionary<string, object>)x)[orderBy]).ToList();
