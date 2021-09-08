@@ -21,22 +21,24 @@
                                [showMoreInfo]="true"
                                [expanded]="matchType=='data'" 
                                [moreInfoHtml]="'Data is determined to be a match if the total row count, and a small representative sample from each data set are found to be matching.'">
-                <div readonly>
+                <div readonly>                    
                     <div class="search-bar">
-                        <ig-search-field mode="Keypress"
-                                         [(ngModel)]="duplicatesSimpleFilter"
-                                         [debounce]="300"
-                                         (onSearch)="dtDupli.filterGlobal($event.value, 'contains')">
-                        </ig-search-field>
+                        <div class="simple-search">
+                            <ig-search-field mode="Keypress"
+                                             [(ngModel)]="duplicatesSimpleFilter"
+                                             [debounce]="300"
+                                             (onSearch)="dtDupli.filterGlobal($event.value, 'contains')">
+                            </ig-search-field>
+                        </div>
+                        <advanced-filtering [loadIdentifier]="getLoadIdentifier('data')" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded('data')" (onChange)="advancedFiltersChanged($event, 'data')"></advanced-filtering>
                     </div>
-
                     <p-table #dtDupli
                              [metaKeySelection]="true"
                              selectionMode="single"
                              [value]="duplicatesData"
                              [(selection)]="duplicatesSelection"
                              [totalRecords]="duplicatesDataTotalCount"
-                             [globalFilterFields]="['Path']"
+                             [globalFilterFields]="['Path', 'Tag']"
                              dataKey="uid"
                              [lazy]="true"
                              [pageLinks]="3"
@@ -98,19 +100,21 @@
                                [expanded]="matchType=='similar'">
                 <div readonly>
                     <div class="search-bar">
-                        <ig-search-field mode="Keypress"
-                                         [(ngModel)]="similarSimpleFilter"
-                                         [debounce]="300"
-                                         (onSearch)="dtSimi.filterGlobal($event.value, 'contains')">
-                        </ig-search-field>
-                    </div>
-
+                        <div class="simple-search">
+                            <ig-search-field mode="Keypress"
+                                             [(ngModel)]="similarSimpleFilter"
+                                             [debounce]="300"
+                                             (onSearch)="dtSimi.filterGlobal($event.value, 'contains')">
+                            </ig-search-field>
+                        </div>
+                        <advanced-filtering [loadIdentifier]="getLoadIdentifier('similar')" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded('similar')" (onChange)="advancedFiltersChanged($event, 'similar')"></advanced-filtering>
+                    </div>                        
                     <p-table #dtSimi [metaKeySelection]="true"
                              selectionMode="single"
                              [value]="similarData"
                              [(selection)]="similarSelection"
                              [totalRecords]="similarDataTotalCount"
-                             [globalFilterFields]="['Path']"
+                             [globalFilterFields]="['Path','Tag']"
                              dataKey="uid"
                              [rows]="similarRows"
                              [lazy]="true"

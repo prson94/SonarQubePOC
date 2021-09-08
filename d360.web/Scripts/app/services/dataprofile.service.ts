@@ -55,16 +55,19 @@ export class DataProfileService extends BaseObservableService {
             );
     }
 
-    public getMatchesByMatchType(assetUid: string, matchType: string, pageNum: number, pageSize: number, simpleFilter: string = ''): Observable<any> {
+    public getMatchesByMatchType(assetUid: string, matchType: string, pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = ""): Observable<any> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
 
-        let url: string = `/api/v2/dataprofiles/${assetUid}/similar/${matchType}?_pageSize=${pageSize}&_pageNum=${pageNum}`;
+        let url: string = `/api/v2/dataprofiles/${assetUid}/similar/${matchType}?_pageSize=${pageSize}&_pageNum=${pageNum}&_filter=${advancedFilter}`;
         if (simpleFilter) {
             url += `&_simpleFilter=${simpleFilter}`;
         }
 
+        if (advancedFilter) {
+            url += `&_filter=${advancedFilter}`;
+        }
         return this
             .http
             .get(url, httpOptions)
