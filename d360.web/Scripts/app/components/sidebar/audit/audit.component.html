@@ -1,121 +1,93 @@
 <div class="row">
     <div class="col s12">
-        <div class="tile tile-detail">
-            <header>Change Log: {{objectName}}<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions></header>
-
-            <p-table #dt [loading]="isLoading" loadingIcon="fa fa-spinner" [sortField]="sortField" [sortOrder]="-1" [scrollable]="true" scrollWidth="100%" [lazy]="true" (onLazyLoad)="loadAuditsLazy($event)" [totalRecords]="totalRecords" [value]="audits" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['resourceName','date','action','field','newValue','previousValue','actionObject','actionObjectTypeName','actionObjectName','actionDescription','version']" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
-                <ng-template pTemplate="colgroup" let-columns>
-                    <colgroup>
-                        <col style="width:150px">
-                        <col style="width:200px">
-                        <col style="width:100px">
-                        <col style="width:200px">
-                        <col style="width:250px">
-                        <col style="width:250px">
-                        <col style="width:130px">
-                        <col style="width:130px">
-                        <col style="width:100px">
-                        <col style="width:250px">
-                        <col style="width:100px">
-                    </colgroup>
-                </ng-template>
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th [pSortableColumn]="'resourceName'" style="width: 150px">
-                            User
-                            <d3s-sortIcon [field]="'resourceName'"></d3s-sortIcon>
-                        </th>
-                        <th [pSortableColumn]="'date'" style="width: 200px">
-                            Date
-                            <d3s-sortIcon [field]="'date'"></d3s-sortIcon>
-                        </th>
-                        <th [pSortableColumn]="'action'" style="width: 100px">
-                            Action
-                            <d3s-sortIcon [field]="'action'"></d3s-sortIcon>
-                        </th>
-                        <th [pSortableColumn]="'field'" style="width: 200px">
-                            Field
-                            <d3s-sortIcon [field]="'field'"></d3s-sortIcon>
-                        </th>
-                        <th [pSortableColumn]="'newValue'" style="width: 250px">
-                            New Value
-                            <d3s-sortIcon [field]="'newValue'"></d3s-sortIcon>
-                        </th>
-                        <th [pSortableColumn]="'previousValue'" style="width: 250px">
-                            Previous Value
-                            <d3s-sortIcon [field]="'previousValue'"></d3s-sortIcon>
-                        </th>
-                        <th [pSortableColumn]="'actionObject'" style="width: 130px">
-                            Object
-                            <d3s-sortIcon [field]="'actionObject'"></d3s-sortIcon>
-                        </th>
-                        <th [pSortableColumn]="'actionObjectTypeName'" style="width: 130px">
-                            Type
-                            <d3s-sortIcon [field]="'actionObjectTypeName'"></d3s-sortIcon>
-                        </th>
-                        <th [pSortableColumn]="'actionObjectName'" style="width: 100px">
-                            Item
-                            <d3s-sortIcon [field]="'actionObjectName'"></d3s-sortIcon>
-                        </th>
-                        <th [pSortableColumn]="'actionDescription'" style="width: 250px">
-                            Audit Description
-                            <d3s-sortIcon [field]="'actionDescription'"></d3s-sortIcon>
-                        </th>
-                        <th [pSortableColumn]="'version'" style="width: 100px">
-                            Revision
-                            <d3s-sortIcon [field]="'version'"></d3s-sortIcon>
-                        </th>
-                    </tr>
-                    <tr [hidden]="false">
-                        <th><d3s-column-filter [field]="'resourceName'"></d3s-column-filter></th>
-                        <th><d3s-column-filter [field]="'date'"></d3s-column-filter></th>
-                        <th><d3s-column-filter [field]="'action'"></d3s-column-filter></th>
-                        <th><d3s-column-filter [field]="'field'"></d3s-column-filter></th>
-                        <th><d3s-column-filter [field]="'newValue'"></d3s-column-filter></th>
-                        <th><d3s-column-filter [field]="'previousValue'"></d3s-column-filter></th>
-                        <th><d3s-column-filter [field]="'actionObject'"></d3s-column-filter></th>
-                        <th><d3s-column-filter [field]="'actionObjectTypeName'"></d3s-column-filter></th>
-                        <th><d3s-column-filter [field]="'actionObjectName'"></d3s-column-filter></th>
-                        <th><d3s-column-filter [field]="'actionDescription'"></d3s-column-filter></th>
-                        <th><d3s-column-filter [field]="'version'"></d3s-column-filter></th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-item>
-                    <tr [pSelectableRow]="item">
-                        <td>{{item.resourceName}}</td>
-                        <td>
-                            <span>{{item.date | date: 'medium'}}</span>
-                        </td>
-                        <td>{{item.action}}</td>
-                        <td>{{item.field}}</td>
-                        <td *ngIf="item.newValue;else emptyValue">
-                            <span [ngSwitch]="(item.fieldType?item.fieldType:'').toLowerCase()">
-                                <div *ngSwitchCase="'date'" [innerHtml]="item.newValue | date: 'shortDate'"></div>
-                                <div *ngSwitchCase="'datetime'" [innerHtml]="item.newValue | date: 'medium'"></div>
-                                <div *ngSwitchDefault [innerHtml]="item.newValue"></div>
-                            </span>
-                        </td>                        
-                        <td *ngIf="item.previousValue;else emptyValue">
-                            <span [ngSwitch]="(item.fieldType?item.fieldType:'').toLowerCase()">
-                                <div *ngSwitchCase="'date'" [innerHtml]="item.previousValue | date: 'shortDate'"></div>
-                                <div *ngSwitchCase="'datetime'" [innerHtml]="item.previousValue | date: 'medium'"></div>
-                                <div *ngSwitchDefault [innerHtml]="item.previousValue"></div>
-                            </span>
-                        </td>
-                        <ng-template #emptyValue><td></td></ng-template>
-                        <td>{{item.actionObject}}</td>
-                        <td>{{item.actionObjectTypeName}}</td>
-                        <td>{{item.actionObjectName}}</td>
-                        <td>{{item.actionDescription}}</td>
-                        <td>{{item.version}}</td>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="summary">
-                    <d3s-grid-paging-info [first]="dt.first"
-                                          [rows]="dt.rows"
-                                          [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                </ng-template>
-            </p-table>
+        <div class="tile tile-detail main-panel">
+            <div class="grid-actions-header">
+                <advanced-filtering [loadIdentifier]="getLoadIdentifier()" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+                <div class="grid-action-buttons">
+                    <div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+                         tooltipPosition="left"
+                         tooltipStyleClass="ig-tooltip">
+                        <button igButton
+                                [disabled]="!canExportRecords() || isExportInProgress"
+                                icon="fa-download"
+                                [loading]="isExportInProgress"
+                                (click)="export()">
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-table-wrapper">
+                <p-table #dt
+                         [loading]="isLoading"
+                         loadingIcon="fa fa-spinner"
+                         [sortField]="sortField"
+                         [sortOrder]="-1"
+                         [scrollable]="true"
+                         scrollHeight="flex"
+                         scrollDirection="both"
+                         scrollWidth="100%"
+                         [lazy]="true"
+                         (onLazyLoad)="loadAuditsLazy($event)"
+                         [totalRecords]="totalRecords"
+                         [value]="audits"
+                         selectionMode="single"
+                         [metaKeySelection]="true"
+                         [globalFilterFields]="getFieldNames()"
+                         [pageLinks]="3"
+                         [paginator]="true"
+                         [rows]="rowsPerPage"
+                         [rowsPerPageOptions]="defaultPagingOptions"
+                         [(selection)]="selected">
+                    <ng-template pTemplate="colgroup">
+                        <colgroup>
+                            <col *ngFor="let column of columns" [style]="'width:' + column.columnWidth + 'px'">
+                        </colgroup>
+                    </ng-template>
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th *ngFor="let column of columns" [pSortableColumn]="column.datafield" [style]="'width:' + column.columnWidth + 'px'">
+                                {{column.text}}
+                                <d3s-sortIcon [field]="column.datafield"></d3s-sortIcon>
+                            </th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-item>
+                        <tr [pSelectableRow]="item">
+                            <td>{{item.resourceName}}</td>
+                            <td>
+                                <span>{{item.date | date: 'medium'}}</span>
+                            </td>
+                            <td>{{item.action}}</td>
+                            <td>{{item.field}}</td>
+                            <td *ngIf="item.newValue;else emptyValue">
+                                <span [ngSwitch]="(item.fieldType?item.fieldType:'').toLowerCase()">
+                                    <div *ngSwitchCase="'date'" [innerHtml]="item.newValue | date: 'shortDate'"></div>
+                                    <div *ngSwitchCase="'datetime'" [innerHtml]="item.newValue | date: 'medium'"></div>
+                                    <div *ngSwitchDefault [innerHtml]="item.newValue"></div>
+                                </span>
+                            </td>
+                            <td *ngIf="item.previousValue;else emptyValue">
+                                <span [ngSwitch]="(item.fieldType?item.fieldType:'').toLowerCase()">
+                                    <div *ngSwitchCase="'date'" [innerHtml]="item.previousValue | date: 'shortDate'"></div>
+                                    <div *ngSwitchCase="'datetime'" [innerHtml]="item.previousValue | date: 'medium'"></div>
+                                    <div *ngSwitchDefault [innerHtml]="item.previousValue"></div>
+                                </span>
+                            </td>
+                            <ng-template #emptyValue><td></td></ng-template>
+                            <td>{{item.actionObject}}</td>
+                            <td>{{item.actionObjectTypeName}}</td>
+                            <td>{{item.actionObjectName}}</td>
+                            <td>{{item.actionDescription}}</td>
+                            <td>{{item.version}}</td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="summary">
+                        <d3s-grid-paging-info [first]="dt.first"
+                                              [rows]="dt.rows"
+                                              [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                    </ng-template>
+                </p-table>
+            </div>
         </div>
     </div>
 </div>

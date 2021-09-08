@@ -148,9 +148,11 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     }
 
     clearValue() {
+        this.typeAheadQuery$.next("");
         if (this.result) {
-            if (!this.defaultValue)
+            if (!this.defaultValue) {
                 this.result = undefined;
+            }
             this.ref.markForCheck();
         }
     }

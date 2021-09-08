@@ -31,9 +31,9 @@ namespace d360.web.Controllers.V2
         IAssetRepository AssetRepository;
         ISurveyRepository SurveyRepository;
         ISurveyApiModelValidator validator;
-        public SurveysController(ICommunityContext community, ICompanyContext company, IAssetRepository assetRepository, ISurveyRepository surveyRepository,
+        public SurveysController(ICommunityContext community, ICompanyContext company, IAssetRepository assetRepository, ISettingsRepository settingsRepository, ISurveyRepository surveyRepository,
             ISurveyApiModelValidator validator)
-            : base(community, company)
+            : base(community, company, settingsRepository)
         {
             this.AssetRepository = assetRepository;
             this.SurveyRepository = surveyRepository;

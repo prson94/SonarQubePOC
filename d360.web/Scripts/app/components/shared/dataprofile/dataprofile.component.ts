@@ -49,6 +49,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
     private invalidCount: number;
 
     isMatchDetectionPopupVisible: boolean = false;
+    matchType: string = "";
 
     sampleDistributionChart: Highcharts.Chart;
     sampleChartXLabel: string = '';
@@ -370,6 +371,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
 
         } else if ((dataProfileType === 'date' || dataProfileType === 'datetime' || dataProfileType === 'localdate' || dataProfileType === 'localdatetime') && !isNaN(Date.parse(testCardinality))) {
             pointPadding = 0.1;          
+            leftPadding = 22; 
 
             let minDate = new Date(this.dataProfile.min);
             let maxDate = new Date(this.dataProfile.max);
@@ -547,7 +549,9 @@ export class DataProfileComponent extends BaseComponent implements OnInit, OnCha
                 height: 200,
                 spacingTop,
                 marginLeft: leftPadding,
-                spacingLeft: leftPadding
+                spacingLeft: leftPadding,
+                marginRight: 15,
+                spacingRight: 15
             },
             credits: {
                 enabled: false

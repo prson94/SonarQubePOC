@@ -1,4 +1,5 @@
 ﻿using d360.model;
+using d360.model.DataAccessLayer;
 using d360.web.Models;
 using Microsoft.Web.Http;
 using Swashbuckle.Swagger.Annotations;
@@ -24,7 +25,7 @@ namespace d360.web.Controllers.V2
     {
 
         ICompanyContext company;
-        public HealthController(ICommunityContext community, ICompanyContext company):base(community,company)
+        public HealthController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository) : base(community, company, settingsRepository)
         {
             this.Community = community;
             this.company = company;

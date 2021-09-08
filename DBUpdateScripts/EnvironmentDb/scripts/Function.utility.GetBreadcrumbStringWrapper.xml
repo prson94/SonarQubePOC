@@ -5,12 +5,44 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.utility.GetBreadcrumbStringWrapper-v1">
+  <changeSet author="Puneet Gupta" id="Function.utility.GetBreadcrumbStringWrapper-Drop-v1">
+  <comment>GOV-11726</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+if exists (select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'utility' and SPECIFIC_NAME = 'GetBreadcrumbStringWrapper')
+begin
+	IF EXISTS (SELECT f.name
+				FROM sys.Computed_columns f
+				inner join sys.objects o on f.object_id = o.object_id
+				where SCHEMA_NAME(schema_id) = 'dbo' and o.name = 'FusionAttributeType' and F.name ='TextPath' 
+				and f.is_computed = 1
+			   )
+	BEGIN	
+		ALTER TABLE [dbo].[FusionAttributeType] DROP column [TextPath]
+		
+		ALTER TABLE [dbo].[FusionAttributeType] ADD [TextPath] nvarchar(1000)
+	END
+	
+	IF EXISTS (SELECT f.name
+				FROM sys.Computed_columns f
+				inner join sys.objects o on f.object_id = o.object_id
+				where SCHEMA_NAME(schema_id) = 'dbo' and o.name = 'FusionAttributeType_backup' and F.name ='TextPath' 
+				and f.is_computed = 1
+			   )
+	BEGIN	
+		ALTER TABLE [dbo].[FusionAttributeType_backup] DROP column [TextPath]
+		
+		ALTER TABLE [dbo].[FusionAttributeType_backup] ADD [TextPath] nvarchar(1000)
+	END	
+	drop FUNCTION [utility].[GetBreadcrumbStringWrapper]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 if not exists (select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'utility' and SPECIFIC_NAME = 'GetBreadcrumbStringWrapper')
 begin
 	EXEC('CREATE FUNCTION [utility].[GetBreadcrumbStringWrapper]
@@ -25,11 +57,6 @@ begin
 		RETURN utility.GetBreadcrumbString(@Type, @ID, @Delimiter)
 	END')
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

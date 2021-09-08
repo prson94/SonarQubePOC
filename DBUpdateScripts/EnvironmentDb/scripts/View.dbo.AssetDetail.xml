@@ -5,12 +5,43 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="View.dbo.AssetDetail-v1">
+  <changeSet author="Puneet Gupta" id="View.dbo.AssetDetail-v2">
+  <comment>GOV-11726</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter view [dbo].[AssetDetail]
+as
+	select	A.ID,
+			A.AssetTypeID,
+			A.AssetTypeUid,
+			A.State,
+			A.Object,
+			A.ObjectID,
+			A.SourceID,
+			ADV.DisplayValue,
+			A.CreatedOn,
+			A.CreatedBy,
+			A.UpdatedOn,
+			A.UpdatedBy,
+			A.AssetTypeClass,
+			A.AssetTypeDescription,
+			A.TypeName,
+			A.Type,
+			A.TypeID,
+			A.BackColor,
+			A.ForeColor,
+			A.Icon,
+			A.[uid]
+	from	AssetWithType A
+			inner join AssetDisplayValue ADV on ADV.AssetID = A.ID
+	where	A.[Object] != 'FusionAttribute'
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter view [dbo].[AssetDetail]
 as
 	select	A.ID,
@@ -61,11 +92,6 @@ as
 			A.[uid]
 	from	AssetWithType A			
 			inner join dbo.FusionAttribute FA on (FA.ID = A.ObjectID and A.[Object] = 'FusionAttribute')
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

@@ -1,6 +1,7 @@
 ﻿using d360.core.entities;
 using d360.core.enums;
 using d360.model;
+using d360.model.DataAccessLayer;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,8 +20,8 @@ namespace d360.web.Controllers.V2
     public class BaseV2ApiController : BaseApiController
     {
         ICompanyContext _company;
-        public BaseV2ApiController(ICommunityContext community, ICompanyContext company)
-            : base(community, company)
+        public BaseV2ApiController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
 
         {
             _company = company;

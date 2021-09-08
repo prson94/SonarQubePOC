@@ -1,5 +1,6 @@
 ﻿using d360.core.exceptions;
 using d360.model;
+using d360.model.DataAccessLayer;
 using d360.web.Models;
 using Microsoft.Web.Http;
 using System;
@@ -21,8 +22,8 @@ namespace d360.web.Controllers.V2
     {
         #region DI
 
-        public ErrorsController(ICommunityContext community, ICompanyContext company)
-            : base(community, company)
+        public ErrorsController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
 
         }

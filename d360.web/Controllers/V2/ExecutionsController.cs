@@ -32,8 +32,8 @@ namespace d360.web.Controllers.V2
 
         IAssetRepository AssetRepository;        
         IStorageProvider Storage;
-        public ExecutionsController(ICommunityContext community, ICompanyContext company, IAssetRepository repository, IStorageProvider storage)
-            : base(community, company)
+        public ExecutionsController(ICommunityContext community, ICompanyContext company, IAssetRepository repository, ISettingsRepository settingsRepository, IStorageProvider storage)
+            : base(community, company, settingsRepository)
         {
             Storage = storage;
             AssetRepository = repository;

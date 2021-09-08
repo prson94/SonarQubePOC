@@ -65,7 +65,7 @@ namespace d360.web.Models
 
         public string Category { get; set; }
     }
-    
+
     public class FieldLoader
     {
         public List<Field> GetFormDynamicFieldValues(SystemObjects type, int id, ICollection<FieldType> fieldTypes, FormCollection form, HttpServerUtilityBase Server = null, bool ignoreFieldIfNull = true)

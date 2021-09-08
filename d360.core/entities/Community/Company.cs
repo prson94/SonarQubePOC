@@ -33,8 +33,5 @@ namespace d360.core.entities
 
         [IgnoreDataMember, ForeignKey("CompanyID")]
         public virtual ICollection<CompanyDomainSetting> CompanyDomainSettings { get; set; }
-
-        [IgnoreDataMember, ForeignKey("CompanyID")]
-        public virtual ICollection<CompanySetting> CompanySettings { get; set; }
     }
 }

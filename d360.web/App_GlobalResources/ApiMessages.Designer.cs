@@ -156,6 +156,14 @@ namespace Resources {
         internal static string InvalidHelpName {
             get {
                 return ResourceManager.GetString("InvalidHelpName", resourceCulture);
+              }
+        }
+        /// <summary>
+        ///   Looks up a localized string similar to AssetUid {0} is invalid.
+        /// </summary>
+        internal static string InvalidAssetUid {
+            get {
+                return ResourceManager.GetString("InvalidAssetUid", resourceCulture);
             }
         }
         
@@ -165,6 +173,14 @@ namespace Resources {
         internal static string InvalidHelpNameLength {
             get {
                 return ResourceManager.GetString("InvalidHelpNameLength", resourceCulture);
+            }
+        }
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for parameter &apos;_direction&apos;. Allowed values are &apos;desc&apos; and &apos;asc&apos;..
+        /// </summary>
+        internal static string InvalidDirection {
+            get {
+                return ResourceManager.GetString("InvalidDirection", resourceCulture);
             }
         }
         
@@ -183,6 +199,14 @@ namespace Resources {
         internal static string InvalidHelpUrlLength {
             get {
                 return ResourceManager.GetString("InvalidHelpUrlLength", resourceCulture);
+            }
+        }
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid _includeTotal provided.
+        /// </summary>
+        internal static string InvalidIncludeTotal {
+            get {
+                return ResourceManager.GetString("InvalidIncludeTotal", resourceCulture);
             }
         }
         

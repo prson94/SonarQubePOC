@@ -5,123 +5,33 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.Fusion-v1">
+  <changeSet author="Puneet Gupta" id="Table.dbo.Fusion-Rename-v1">
+  <comment>GOV-11726</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Fusion')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Fusion')
 BEGIN
-	CREATE TABLE [dbo].[Fusion](
-		[ID] [int] IDENTITY(1,1) NOT NULL,
-		[FusionTypeID] [int] NOT NULL,
-		[Name] [nvarchar](250) NOT NULL,
-		[Description] [nvarchar](max) NULL,
-		[Enabled] [bit] CONSTRAINT [DF_Fusion_Enabled] DEFAULT (1) NOT NULL,
-		[Manual] [bit] NOT NULL,
-		[LockPromotedItems] [bit] CONSTRAINT [DF_Fusion_LockPromotedItems] DEFAULT (1) NOT NULL,
-		[IntervalType] [int] NULL,
-		[Interval] [int] NULL,
-		[ForceRefresh] [bit] NULL,
-		[UpdatedOn] [datetime] NULL,
-		[UpdatedBy] [int] NULL,
-		CONSTRAINT [PK_Fusion] PRIMARY KEY CLUSTERED ( [ID] ASC )
-	)
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_Fusion_FusionType')
-BEGIN
-	ALTER TABLE [dbo].[Fusion] WITH CHECK ADD CONSTRAINT [FK_Fusion_FusionType] FOREIGN KEY([FusionTypeID]) REFERENCES [dbo].[FusionType] ([ID]) ON DELETE CASCADE
-	ALTER TABLE [dbo].[Fusion] CHECK CONSTRAINT [FK_Fusion_FusionType]
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Fusion_FusionTypeID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Fusion_FusionTypeID] ON [dbo].[Fusion] ( [FusionTypeID] ASC )
+	IF EXISTS (select * 
+			   from sys.foreign_keys where name = 'FK_Fusion_FusionType' 
+			   and object_name(parent_object_id) = 'Fusion' and schema_name(schema_id) = 'dbo'
+			   )
+	BEGIN	
+		ALTER TABLE [dbo].[Fusion] DROP CONSTRAINT [FK_Fusion_FusionType]
+	END
+	exec sp_rename 'dbo.Fusion', 'Fusion_backup';
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Core" id="Table.dbo.Fusion-Fusion_AfterDelete-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[Fusion_AfterDelete]
-   ON  [dbo].[Fusion] 
-   AFTER DELETE
-AS 
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Fusion_backup')
 BEGIN
-	SET NOCOUNT ON
-	delete Asset where Object = 'Fusion' and ObjectID in (select ID from deleted)
+	exec sp_rename 'dbo.Fusion_backup', 'Fusion';
 END
 		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
 	</rollback>
   </changeSet>
-  
-  <changeSet author="Core" id="Table.dbo.Fusion-Fusion_AfterInsert-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[Fusion_AfterInsert]
-   ON  [dbo].[Fusion] 
-   AFTER INSERT
-AS 
-BEGIN
-	SET NOCOUNT ON
-	INSERT INTO [dbo].[Asset] ([AssetTypeID],[State],[Object],[ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy])
-		SELECT	T.ID, 1, 'Fusion', O.ID, O.[UpdatedOn], O.[UpdatedBy], O.[UpdatedOn], O.[UpdatedBy]
-		FROM	inserted O inner join  AssetType T on T.Object = 'FusionType' and T.ObjectID = O.FusionTypeID
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Core" id="Table.dbo.Fusion-Fusion_AfterUpdate-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[Fusion_AfterUpdate]
-   ON  [dbo].[Fusion] 
-   AFTER UPDATE
-AS 
-BEGIN
-	SET NOCOUNT ON
-	update	T
-	set		T.UpdatedBy = S.UpdatedBy,
-			T.UpdatedOn = S.UpdatedOn
-	from	Asset T
-			inner join inserted S on T.Object = 'Fusion' and T.ObjectID = S.ID
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
 </databaseChangeLog>

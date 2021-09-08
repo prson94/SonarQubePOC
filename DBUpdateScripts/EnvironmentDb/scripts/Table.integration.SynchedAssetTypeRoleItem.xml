@@ -5,26 +5,40 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Table.integration.SynchedAssetTypeRoleItem-Rename-v1">
-  <comment>GOV-15287</comment>
+  <changeSet author="Puneet Gupta" id="Table.integration.SynchedAssetTypeRoleItem-Drop-v1">
+  <comment>GOV-15288</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'SynchedAssetTypeRoleItem')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'SynchedAssetTypeRoleItem_backup')
 BEGIN
-	exec sp_rename 'integration.SynchedAssetTypeRoleItem', 'SynchedAssetTypeRoleItem_backup';
+	drop table integration.SynchedAssetTypeRoleItem_backup;
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'SynchedAssetTypeRoleItem_backup')
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'SynchedAssetTypeRoleItem_backup')
 BEGIN
-	exec sp_rename 'integration.SynchedAssetTypeRoleItem_backup', 'SynchedAssetTypeRoleItem';
+	CREATE TABLE [integration].[SynchedAssetTypeRoleItem_backup](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[SynchedAssetTypeID] [int] NOT NULL,
+		[IncludeInPropertyRequest] [bit] CONSTRAINT [DF_IntegrationSynchedAssetTypeRoleItem_IncludeInPropertyRequest] DEFAULT (1) NOT NULL,
+		[SourceIdField] [varchar](250) NOT NULL,
+		[Active] [bit] CONSTRAINT [DF_IntegrationSynchedAssetTypeRoleItem_Active] DEFAULT (1) NOT NULL,
+		[ResponsibilityTypeID] [int] NOT NULL,
+		[ResolutionType] [int] CONSTRAINT [DF_IntegrationSynchedAssetTypeRoleItem_ResolutionType] DEFAULT (1) NOT NULL,
+		[ResolutionFieldTypeID] [int] NULL,
+		CONSTRAINT [PK_IntegrationSynchedAssetTypeRoleItem] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+	)
 END
 
+IF NOT EXISTS (select * from sys.indexes where name = 'CIX_IntegrationSynchedAssetTypeRoleItem')
+BEGIN
+	CREATE CLUSTERED INDEX [CIX_IntegrationSynchedAssetTypeRoleItem] ON [integration].[SynchedAssetTypeRoleItem_backup] ( [SynchedAssetTypeID] ASC, [SourceIdField] ASC )
+END
 		]]>
 	</rollback>
   </changeSet>

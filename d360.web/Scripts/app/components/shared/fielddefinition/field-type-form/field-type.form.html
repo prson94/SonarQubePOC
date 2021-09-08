@@ -125,6 +125,22 @@
                                     (ngModelChange)="model.FieldType.Type[currentType].IsDisplayable=$event;onShowDetailChange($event);"
                                     [disabled]="isSettingDisabled('IsDisplayable')">
                         </p-checkbox>
+
+                        <div *ngIf="model.FieldType.Type[currentType].IsDisplayable && showDisplayInColumn" style="margin-left: 16px;">
+                            <p-checkbox
+                                        [escape]="false"
+                                        pTooltip="Check to diplay the field in a column on the Definition panel.<br/> Multiple, adjacent columns will be displayed on a single line.<br/> Otherwise, the field will be displayed using the full width of the panel." 
+                                        tooltipPosition="left" 
+                                        tooltipStyleClass="ig-tooltip"
+                                        binary="true"
+                                        [(ngModel)]="model.FieldType.Type[currentType].DisplayInColumn"
+                                        label="Display In Column"
+                                        [ngModelOptions]="{standalone: true}"
+                                        (ngModelChange)="model.FieldType.Type[currentType].DisplayInColumn=$event;"
+                                        [disabled]="isSettingDisabled('DisplayInColumn')">
+                            </p-checkbox>
+                        </div>
+
                     </div>
                     <div *ngIf="showIsEditable">
                         <p-checkbox binary="true"

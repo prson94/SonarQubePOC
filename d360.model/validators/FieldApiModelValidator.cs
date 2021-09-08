@@ -133,8 +133,6 @@ namespace d360.model.validators
                     if (assetTypeIdentifierInfoModel != null)
                     {
                         var restrictedTypes = new List<string>() {
-                            SystemObjects.FusionAttributeType.ToString(),
-                            SystemObjects.FusionType.ToString(),
                             SystemObjects.OrganizationType.ToString(),
                             SystemObjects.ResourceType.ToString()
                         };
@@ -210,8 +208,6 @@ namespace d360.model.validators
                     if (assetTypeIdentifierInfoModel != null)
                     {
                         var restrictedTypes = new List<string>() {
-                            SystemObjects.FusionAttributeType.ToString(),
-                            SystemObjects.FusionType.ToString(),
                             SystemObjects.OrganizationType.ToString(),
                             SystemObjects.ReferenceItemType.ToString(),
                             SystemObjects.ResourceType.ToString()
@@ -362,7 +358,7 @@ namespace d360.model.validators
                 {
                     if (field.Type.Json.Validation != null)
                     {
-                        if (field.Type.Json.Validation.IsRequired && assetTypeIdentifierInfoModel.Object != SystemObjects.FusionAttributeType.ToString())
+                        if (field.Type.Json.Validation.IsRequired)
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"IsRequired property can not be true for JSON field types defined on this asset type!");
                         }
@@ -412,6 +408,14 @@ namespace d360.model.validators
                     if (assetTypeIdentifierInfoModel == null || !allowedTypes.Contains(assetTypeIdentifierInfoModel.Object))
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"This asset type may not have a Counter field type!");
+                    }
+                }
+
+                if (field.Type.ComputedOwnershipLookup != null)
+                {
+                    if (field.Type.ComputedOwnershipLookup.DisplayInColumn == true && field.Type.ComputedOwnershipLookup.Definition.DisplayAsList != true)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"DisplayInColumn on ComputedOwnershipLookup can be set to True only if DisplayAsList is set to True.");
                     }
                 }
 
