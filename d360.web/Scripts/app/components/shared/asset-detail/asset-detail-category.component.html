@@ -4,7 +4,7 @@
 <div *ngIf="category.loaded">
     <div *ngFor="let row of category.rows; let last=last">
         <div class="row" attr.data-category="{{row.Category}}">
-            <div *ngFor="let field of row.FirstColumnFields">
+            <div *ngFor="let field of row.FirstColumnFields" class="{{getRowClass(row.FirstColumnFields)}}" [style.width.px]="getColumnWidth(row.FirstColumnFields)">
                 <label *ngIf="field.FieldDescription && field.FieldDescription != ''" class="ig-label">
                     <span [pTooltip]="field.FieldDescription" tooltipPosition="top">
                         {{field.Name}}

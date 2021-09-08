@@ -184,6 +184,7 @@ export class Boolean implements ICommonOptions {
     IntersectTypeUid?: string;
     Validation: BooleanValidation = new BooleanValidation();
     Search: Search = new Search();
+    DisplayInColumn: boolean = false;
 }
 
 export class Description {
@@ -223,6 +224,7 @@ export class ComputedOwnershipLookup implements ICommonOptions {
     HideFooter: boolean = false;
     HideHeader: boolean = false;
     Search: Search = new Search();
+    DisplayInColumn: boolean = false;
 }
 
 export class ComputedOwnershipLookupDefinition {
@@ -248,6 +250,7 @@ export class ComputedRelationshipField implements ICommonOptions {
     ShowIfEmpty: boolean = false;
     JsonAttribute?: JSONAttribute;
     Search: Search = new Search();
+    DisplayInColumn: boolean = false;
 }
 
 export class JSONAttribute {
@@ -293,6 +296,7 @@ export class Counter implements ICommonOptions {
     CounterPrefix: string;
     CounterInitialIndex: number;
     Search: Search = new Search();
+    DisplayInColumn: boolean = false;
 }
 
 export class ComputedRelationshipLookupDefinition {
@@ -354,6 +358,7 @@ export class DateClass implements ICommonOptions {
     IsPrimaryFilter: boolean = false;
     ShowIfEmpty: boolean = false;
     Search: Search = new Search();
+    DisplayInColumn: boolean = false;
 }
 
 export class Decimal implements ICommonOptions {
@@ -371,6 +376,7 @@ export class Decimal implements ICommonOptions {
     IsPrimaryFilter: boolean = false;
     ShowIfEmpty: boolean = false;
     Search: Search = new Search();
+    DisplayInColumn: boolean = false;
 }
 
 export class DecimalValidation {
@@ -394,6 +400,7 @@ export class HTML implements ICommonOptions {
     IsPrimaryFilter: boolean = false;
     ShowIfEmpty: boolean = false;
     Search: Search = new Search();
+    DisplayInColumn: boolean = false;
 }
 
 export class HTMLValidation {
@@ -416,6 +423,7 @@ export class Link implements ICommonOptions {
     IsPrimaryFilter: boolean = false;
     ShowIfEmpty: boolean = false;
     Search: Search = new Search();
+    DisplayInColumn: boolean = false;
 }
 
 export class DefaultValue {
@@ -444,6 +452,7 @@ export class Lookup implements ICommonOptions {
     IsPrimaryFilter: boolean = false;
     ShowIfEmpty: boolean = false;
     Search: Search = new Search();
+    DisplayInColumn: boolean = false;
 }
 
 export class Filter {
@@ -476,6 +485,7 @@ export class Path implements ICommonOptions {
     IsListable: boolean = true;
     IsPrimaryFilter: boolean = false;
     Search: Search = new Search();
+    DisplayInColumn: boolean = false;
 }
 
 export class Tag implements ICommonOptions {
@@ -507,6 +517,7 @@ export class Text implements ICommonOptions {
     IsPrimaryFilter: boolean = false;
     ShowIfEmpty: boolean = false;
     Search: Search = new Search();
+    DisplayInColumn: boolean = false;
 }
 
 export class TextValidation {
@@ -534,6 +545,7 @@ export class Score implements ICommonOptions {
     ShowIfEmpty: boolean = false;
     ScoreType: number = null;
     Search: Search = new Search();
+    DisplayInColumn: boolean = false;
 }
 
 export class FieldTypeHelper {

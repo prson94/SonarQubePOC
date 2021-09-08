@@ -445,6 +445,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Controllers\TaxonomyController.cs" />
+    <Compile Include="Extensions\FieldColumnMapper.cs" />
     <Compile Include="Extensions\HttpRequestMessageExtensions.cs" />
     <Compile Include="Extensions\PowerBI.cs" />
     <Compile Include="Filters\AjaxValidationAntiForgeryTokenAttribute.cs" />
