@@ -28,8 +28,8 @@ namespace d360.web.Controllers.V2
     {
         readonly ICompanyContext _company;
         readonly IAssetRepository assetRepository;
-        public HelpMenuController(ICommunityContext community, ICompanyContext company, IAssetRepository assetRepository)
-            : base(community, company)
+        public HelpMenuController(ICommunityContext community, ICompanyContext company, IAssetRepository assetRepository, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
             _company = company;
             this.assetRepository = assetRepository;
