@@ -106,6 +106,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Duplicate Relationship Uid identifiers : {0}. Identifiers must be unique within a batch..
+        /// </summary>
+        public static string Error_Duplicate_Relationship_Uid {
+            get {
+                return ResourceManager.GetString("Error_Duplicate_Relationship_Uid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This field type is allocated to one ore more system objects..
         /// </summary>
         public static string Error_FieldType_Allocations {

@@ -73,6 +73,57 @@ END
 	</rollback>
   </changeSet>
 
+<changeSet author="Puneet Gupta" id="Table.dbo.Intersect-IX_Intersect_Uid-v1">
+<comment>GOV-15471</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+declare @count int=0;
+
+select @count = count(1)
+from 
+(
+	select top 1 uid
+	from dbo.[intersect]
+	group by uid
+	having count(1)>1
+) a
+
+if (exists (select * from sys.indexes where name = 'IX_Intersect_Uid' and is_unique = 0) and @count = 0)
+begin
+	if exists (select * from sys.indexes si where name = 'IX_Intersect_Uid' and object_name(object_id) = 'Intersect' 
+	   and exists (select 1 from sys.objects so where so.object_id = si.object_id and schema_name(so.schema_id) = 'dbo'))
+	begin
+		drop INDEX [IX_Intersect_Uid] ON [dbo].[Intersect];
+	end
+	if not exists (select * from sys.indexes where name = 'IX_Intersect_Uid')
+		begin
+			CREATE UNIQUE NONCLUSTERED INDEX [IX_Intersect_Uid] ON [dbo].[Intersect] ([uid] asc)
+		end
+end
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+if exists (select * from sys.indexes where name = 'IX_Intersect_Uid' and is_unique = 1)
+begin
+	if exists (select * from sys.indexes si where name = 'IX_Intersect_Uid' and object_name(object_id) = 'Intersect' 
+	   and exists (select 1 from sys.objects so where so.object_id = si.object_id and schema_name(so.schema_id) = 'dbo'))
+	begin
+		drop INDEX [IX_Intersect_Uid] ON [dbo].[Intersect]
+	end
+	if not exists (select * from sys.indexes where name = 'IX_Intersect_Uid')
+		begin
+			CREATE NONCLUSTERED INDEX [IX_Intersect_Uid] ON [dbo].[Intersect] ([uid] asc)
+		end
+end
+]]>
+	</rollback>
+  </changeSet>
+
+  
   <changeSet author="Core" id="Table.dbo.Intersect-Intersect_AfterDelete-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
