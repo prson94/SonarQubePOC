@@ -592,7 +592,7 @@ namespace d360.web.Controllers
                     var url = ru.CreateAuthorizeUrl(
                         clientId: authenticationSettings.clientId, 
                         responseType: "code", 
-                        scope: "openid profile email", 
+                        scope: "openid profile email", //infogix
                         callbackUri, 
                         state, 
                         nonce, 
@@ -870,7 +870,7 @@ namespace d360.web.Controllers
 
                 var user = response.IdentityToken.ValidateJwtIdentityToken(authenticationSettings.nameClaimType,
                     authenticationSettings.audience, false, 
-                    discoDoc.Issuer, true, 
+                    discoDoc.Issuer, (discoDoc.Issuer!=null), 
                     keySet.KeySet.Keys, true, true, true, false);
 
                 System.Action addOpenIdTokenToContext = () => {
