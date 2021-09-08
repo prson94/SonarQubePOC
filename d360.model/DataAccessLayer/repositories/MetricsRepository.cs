@@ -2221,6 +2221,7 @@ for json path";
                 simpleFilterWhereConditions.Add("R.PassCount like @simpleFilterLike");
                 simpleFilterWhereConditions.Add("R.PassFraction like @simpleFilterLike");
                 simpleFilterWhereConditions.Add("R.TotalCount like @simpleFilterLike");
+                simpleFilterWhereConditions.Add("P.[Path] like @simpleFilterLike");
                 simpleFilterWhereConditions.Add("E.Segments.exist('/path/segment[contains(lower-case(.),sql:variable(\"@simpleFilter\"))]') = 1");
 
                 var classes = AssetTypeClass.BusinessAsset.GetAsList();
