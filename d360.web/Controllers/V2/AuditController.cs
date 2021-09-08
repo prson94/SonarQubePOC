@@ -298,6 +298,25 @@ namespace d360.web.Controllers.V2
         {
             dynamic objectInfo = GetLegacyObjectDetails(assetUid);
             dynamic result = new System.Dynamic.ExpandoObject();
+            string condition;
+
+            AssetType assetType = Company.Filter<AssetType>(i => i.uid == assetUid).SingleOrDefault();
+            if (assetType?.Class == AssetTypeClass.Reference)
+            {
+                condition = @"(ga.[Object] = @Object and ga.ObjectId = @ObjectId) OR (
+                    ga.[Object] = 'ReferenceItem' and ga.ObjectID in 
+                        (select a.objectid from[dbo].[asset] a
+                        inner join[dbo].[assettype] att on(a.assettypeid = att.id)
+                        where att.[Object] = @Object and att.ObjectId = @ObjectId))";
+            }
+            else if (new List<string> { "ResourceType", "GroupType", "MetricAllocation", "Predicate" }.Contains(objectInfo.Object))
+            {
+                condition = "ga.[Object] = @Object";
+            }
+            else
+            {
+                condition = "ga.[Object] = @Object and ga.ObjectId = @ObjectId";
+            }
 
             result.resourceName = Company.Query<dynamic>($@"select distinct
 	                CASE WHEN R.State = 3 THEN
@@ -307,18 +326,18 @@ namespace d360.web.Controllers.V2
 	                END as val
                 from reporting.global_audit ga
                 inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
-			    where ga.[Object] = @Object and ga.ObjectId = @ObjectId", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => x.val).ToList();
+			    where {condition}", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => x.val).ToList();
 
             result.action = Company.Query<dynamic>($@"select distinct ga.action as val
                 from reporting.global_audit ga
-			    where ga.[Object] = @Object and ga.ObjectId = @ObjectId", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => x.val).ToList();
+			    where {condition}", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => x.val).ToList();
 
             result.actionObject = Company.Query<dynamic>($@"select distinct
                 case when ga.ActionObject = 'Intersect' then 'Relationship'
                      when ga.ActionObject = 'IntersectType' then 'RelationshipType'
                      else ga.ActionObject end val
                 from reporting.global_audit ga
-			    where ga.[Object] = @Object and ga.ObjectId = @ObjectId", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => x.val).ToList();
+			    where {condition}", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => x.val).ToList();
 
             return result;
         }
