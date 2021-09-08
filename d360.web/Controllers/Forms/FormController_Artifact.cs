@@ -189,10 +189,6 @@ namespace d360.web.Controllers
                 var appendTitle = "";
                 switch (@class)
                 {
-                    case AssetTypeClass.FusionAttribute:
-                        ot = SystemObjects.FusionAttributeType;
-                        appendTitle = FormInfo.FusionAttributeType;
-                        break;
                     case AssetTypeClass.BusinessAsset:
                     case AssetTypeClass.TechnicalAsset:
                         ot = SystemObjects.ArtifactType;
@@ -318,7 +314,7 @@ namespace d360.web.Controllers
                     model.FormName = string.Format(FormInfo.Add_Asset_Type_Title, appendTitle);
                     model.FormDescription = string.Format(FormInfo.Add_Asset_Type_Directions, appendTitle.ToLower());
 
-                    if (@class == AssetTypeClass.FusionAttribute || @class == AssetTypeClass.BusinessAsset || @class == AssetTypeClass.TechnicalAsset || @class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.Reference)
+                    if (@class == AssetTypeClass.BusinessAsset || @class == AssetTypeClass.TechnicalAsset || @class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.Reference)
                     {
                         var intersectType = Company.Filter<IntersectType>(i =>
                             i.Object == assetType.Object &&

@@ -147,6 +147,15 @@
   <data name="ForbiddenUserNotAuthorizedMessage" xml:space="preserve">
     <value>Forbidden user is not an administrator.</value>
   </data>
+  <data name="InvalidAssetUid" xml:space="preserve">
+    <value>AssetUid {0} is invalid</value>
+  </data>
+  <data name="InvalidDirection" xml:space="preserve">
+    <value>Invalid value for parameter '_direction'. Allowed values are 'desc' and 'asc'.</value>
+  </data>
+  <data name="InvalidIncludeTotal" xml:space="preserve">
+    <value>Invalid _includeTotal provided</value>
+  </data>
   <data name="InvalidHelpName" xml:space="preserve">
     <value>Name cannot be empty.</value>
   </data>

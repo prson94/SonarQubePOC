@@ -24,7 +24,7 @@ namespace igx.UnitTests.V2ControllerTests
 
         public ScoringControllerTest()
         {
-            this.scoringController = new ScoringController(GetCommunity(), GetCompany(), GetQueue(), GetScoringRepository(), GetAssetRepository(), GetMetricsRepository())
+            this.scoringController = new ScoringController(GetCommunity(), GetCompany(), GetQueue(), GetScoringRepository(), GetAssetRepository(), GetMetricsRepository(), GetSettingsRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()

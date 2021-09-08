@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.dbo.GetAssetHierarchy-v2">
-  <comment>GOV-12125</comment>
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.GetAssetHierarchy-v3">
+  <comment>GOV-11726</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -83,31 +83,6 @@ as
 		)  
 		select ID, ParentID,[Path],LevelName,Url,rank() over (Order by Level desc) as [Level] from Sub
   end
-  else if @Type = 'FusionAttribute'   
-  begin  
-	   with Sub as (  
-		select O.ID,  
-		  O.ParentID,  
-		  D.TextPath as [Path],  
-		  D.TypeName as LevelName,  
-		  D.Url as Url,  
-		  1 as [Level]  
-		from FusionAttribute O  
-		 cross apply [utility].[ObjectDetail](@Type,O.ID) as D  
-		where O.ID = @ID  
-		union all  
-		select O.ID,  
-		  O.ParentID,  
-		  D.TextPath as TextPath, 
-		  D.TypeName as LevelName,
-		  D.Url as Url,   
-		  C.[Level] + 1 as [Level]  
-		from FusionAttribute O  
-		  inner join Sub as C on C.ParentID = O.ID  
-		   cross apply [utility].[ObjectDetail](@Type,O.ID) as D  
-	   )  
-	  select ID, ParentID,[Path],LevelName,Url,rank() over (Order by Level desc) as [Level] from Sub;
-  end
   end
 		]]>
     </sql>
@@ -152,7 +127,7 @@ as
 	   )  
 	  select ID, ParentID,[Path],LevelName,Url,rank() over (Order by Level desc) as [Level] from Sub;
   end
-  else if @Type = 'Taxonomy'  
+  else if @Type in ('Taxonomy','Policy')  
   begin
 	  with Sub as (  
 		select O.ObjectID as ID,  
@@ -165,7 +140,7 @@ as
 			cross apply [utility].[ObjectDetail](@Type,O.ObjectID) as D
 			outer apply dbo.GetParentByAssetID(O.ID) P
 			left join Asset PA on PA.ID = P.ID
-		where O.ObjectID = @ID  and O.Object = 'Taxonomy' 
+		where O.ObjectID = @ID  and O.Object = @Type 
 		union all  
 		select O.ObjectID as ID,  
 			PA.ObjectID as ParentID,  
@@ -180,7 +155,7 @@ as
 			outer apply (
 				select * from Asset where ID = P.ID
 			) PA
-		where O.Object = 'Taxonomy' and (P.ID is null or (PA.ID = P.ID))
+		where O.Object = @Type and (P.ID is null or (PA.ID = P.ID))
 		)  
 		select ID, ParentID,[Path],LevelName,Url,rank() over (Order by Level desc) as [Level] from Sub
   end

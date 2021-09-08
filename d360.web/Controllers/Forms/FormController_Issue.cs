@@ -32,8 +32,6 @@ namespace d360.web.Controllers
             string ignoreObjectTypeSQL = string.Empty;
             List<string> ignoreObjects = new List<string>
             {
-                SystemObjects.FusionType.ToString(),
-                SystemObjects.FusionAttributeType.ToString(),
                 SystemObjects.ReferenceItemType.ToString()
             };
 

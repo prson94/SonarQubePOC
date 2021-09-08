@@ -20,7 +20,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     @Input() showSimilar: boolean = true;
 
     @Input() assetUid: string = '';
-
+    @Input() matchType: string = '';
     @Output() onClose = new EventEmitter();
 
     assetPathText: string = '';

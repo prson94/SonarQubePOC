@@ -1,6 +1,5 @@
 ﻿import { Pipe, PipeTransform } from '@angular/core';
-import { createWriteStream } from 'fs';
-import { isString, isObject, isArray } from 'util';
+import { isString, isArray } from 'lodash';
 
 @Pipe({
     name: 'simpleSearch'

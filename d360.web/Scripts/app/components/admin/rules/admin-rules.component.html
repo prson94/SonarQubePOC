@@ -45,11 +45,11 @@
                 </p-table>
             </span>
             <d3s-asset-type-delete *ngIf="showDelete"
-                                   (onCancel)="showDelete=false;" 
-                                   [callback]="theDeleteCallback" 
-                                   [artifactTypeUid]="selected?.uid" 
-                                   [assetTypeId]="selected?.ID" 
-                                   [count]="selected?.count" 
+                                   (onCancel)="showDelete=false;"
+                                   [callback]="theDeleteCallback"
+                                   [artifactTypeUid]="selected?.uid"
+                                   [assetTypeId]="selected?.ID"
+                                   [count]="selected?.count"
                                    [assetTypeName]="selected?.name"
                                    [assetTypeClass]="assetTypeClass">
             </d3s-asset-type-delete>
@@ -67,10 +67,12 @@
             <div class="col s12">
                 <div class="tile tile-detail">
                     <d3s-field-definition-tile [objectType]="'RuleType'"
-                                               [objectName]="selected?.Name" 
-                                            [supportsPrimaryFilterOption]="true"
-                                            [showAddToSearch]="true"
-                                            [objectID]="selected?.ID" [assetTypeUid]="selected?.uid"></d3s-field-definition-tile>
+                                               [objectName]="selected?.Name"
+                                               [supportsPrimaryFilterOption]="true"
+                                               [showAddToSearch]="true"
+                                               [showDisplayInColumn]="true"
+                                               [objectID]="selected?.ID"
+                                               [assetTypeUid]="selected?.uid"></d3s-field-definition-tile>
                 </div>
             </div>
         </div>

@@ -19,6 +19,7 @@
                                [showHeaderLine]="false"
                                [shouldBePadded]="false"
                                [showMoreInfo]="true"
+                               [expanded]="matchType=='data'" 
                                [moreInfoHtml]="'Data is determined to be a match if the total row count, and a small representative sample from each data set are found to be matching.'">
                 <div readonly>
                     <div class="search-bar">
@@ -51,6 +52,9 @@
                                 <th>
                                     Asset Path
                                 </th>
+                                <th>
+                                    Tags
+                                </th>
                                 <th width="50"></th>
                             </tr>
                         </ng-template>
@@ -58,6 +62,12 @@
                             <tr [pSelectableRow]="item">
                                 <td>
                                     <span class="item-value" [innerHTML]="formatPath(item.path)"></span>
+                                </td>
+                                <td *ngIf="item.tags">
+                                    <d3s-tag-view [data]="item.tags" [assetUID]="item.uid"></d3s-tag-view>
+                                </td>
+                                <td *ngIf="!item.tags">
+                                    Tag field not found
                                 </td>
                                 <td>
                                     <button type="button" icon="fa-ellipsis-v" igButton (click)="menu.toggle($event)" [darkMode]="true"></button>
@@ -84,7 +94,8 @@
             <ig-property-group *ngIf="showSimilar"
                                [title]="'Similar Fields (Same Type)'"
                                [showHeaderLine]="false"
-                               [shouldBePadded]="false">
+                               [shouldBePadded]="false"
+                               [expanded]="matchType=='similar'">
                 <div readonly>
                     <div class="search-bar">
                         <ig-search-field mode="Keypress"
@@ -115,6 +126,9 @@
                                 <th>
                                     Asset Path
                                 </th>
+                                <th>
+                                    Tags
+                                </th>
                                 <th width="50"></th>
                             </tr>
                         </ng-template>
@@ -122,6 +136,12 @@
                             <tr [pSelectableRow]="item">
                                 <td>
                                     <span class="item-value" [innerHTML]="item.path"></span>
+                                </td>
+                                <td *ngIf="item.tags">
+                                    <d3s-tag-view [data]="item.tags" [assetUID]="item.uid"></d3s-tag-view>
+                                </td>
+                                <td *ngIf="!item.tags">
+                                    Tag field not found
                                 </td>
                                 <td>
                                     <button type="button" icon="fa-ellipsis-v" igButton (click)="menu2.toggle($event)" [darkMode]="true"></button>

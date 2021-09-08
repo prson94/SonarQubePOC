@@ -5,176 +5,42 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.FusionAttribute-v1">
+  <changeSet author="Puneet Gupta" id="Table.dbo.FusionAttribute-Rename-v1">
+  <comment>GOV-11726</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionAttribute')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionAttribute')
 BEGIN
-	CREATE TABLE [dbo].[FusionAttribute](
-		[ParentID] [int] NULL,
-		[Name] [nvarchar](250) NOT NULL,
-		[FusionID] [int] NOT NULL,
-		[FusionAttributeTypeID] [int] NOT NULL,
-		[SourceID] [varchar](250) NULL,
-		[Deleted] [bit] CONSTRAINT [DF_FusionAttribute_Deleted] DEFAULT (0) NOT NULL,
-		[TextPath] [nvarchar](2500) NULL,
-		[ID] [int] CONSTRAINT [Const_FusionAttributeSeq] DEFAULT (NEXT VALUE FOR [dbo].[FusionAttribute_Seq]) NOT NULL,
-		CONSTRAINT [PK_FusionAttribute] PRIMARY KEY CLUSTERED ( [ID] ASC )
-	)
-END
+	IF EXISTS (select * 
+			   from sys.foreign_keys where name = 'FK_FusionAttribute_Fusion' 
+			   and object_name(parent_object_id) = 'FusionAttribute' and schema_name(schema_id) = 'dbo'
+			   )
+	BEGIN	
+		ALTER TABLE [dbo].[FusionAttribute] DROP CONSTRAINT [FK_FusionAttribute_Fusion]
+	END
 
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_FusionAttribute_Fusion')
-BEGIN
-	ALTER TABLE [dbo].[FusionAttribute]  WITH NOCHECK ADD  CONSTRAINT [FK_FusionAttribute_Fusion] FOREIGN KEY([FusionID]) REFERENCES [dbo].[Fusion] ([ID]) ON DELETE CASCADE
-	ALTER TABLE [dbo].[FusionAttribute] CHECK CONSTRAINT [FK_FusionAttribute_Fusion]
-END
+	IF EXISTS (select * 
+			   from sys.foreign_keys where name = 'FK_FusionAttribute_FusionAttributeType' 
+			   and object_name(parent_object_id) = 'FusionAttribute' and schema_name(schema_id) = 'dbo'
+			   )
+	BEGIN	
+		ALTER TABLE [dbo].[FusionAttribute] DROP CONSTRAINT [FK_FusionAttribute_FusionAttributeType]
+	END
 
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_FusionAttribute_FusionAttributeType')
-BEGIN
-	ALTER TABLE [dbo].[FusionAttribute]  WITH NOCHECK ADD  CONSTRAINT [FK_FusionAttribute_FusionAttributeType] FOREIGN KEY([FusionAttributeTypeID]) REFERENCES [dbo].[FusionAttributeType] ([ID]) ON DELETE CASCADE
-	ALTER TABLE [dbo].[FusionAttribute] CHECK CONSTRAINT [FK_FusionAttribute_FusionAttributeType]
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_FusionAttribute_Fusion_Include')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FusionAttribute_Fusion_Include] ON [dbo].[FusionAttribute] ( [FusionAttributeTypeID] ASC, [FusionID] ASC, [Deleted] ASC ) INCLUDE([Name],[ParentID]) 
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_FusionAttribute_FusionAttributeType_SourceID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FusionAttribute_FusionAttributeType_SourceID] ON [dbo].[FusionAttribute] ( [FusionAttributeTypeID] ASC ) INCLUDE([SourceID]) 
-END
- 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_FusionAttribute_FusionAttributeTypeID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FusionAttribute_FusionAttributeTypeID] ON [dbo].[FusionAttribute] ( [FusionAttributeTypeID] ASC ) INCLUDE([ID],[Name])
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_FusionAttribute_FusionID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FusionAttribute_FusionID] ON [dbo].[FusionAttribute] ( [FusionID] ASC )
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_FusionAttribute_FusionID_Deleted_ParentID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FusionAttribute_FusionID_Deleted_ParentID] ON [dbo].[FusionAttribute] ( [FusionID] ASC, [Deleted] ASC, [ParentID] ASC )
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_FusionAttribute_FusionID_TextPath')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FusionAttribute_FusionID_TextPath] ON [dbo].[FusionAttribute] ( [FusionID] ASC, [TextPath] ASC )
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_FusionAttribute_FusionID-FusionAttributeTypeID-SourceID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FusionAttribute_FusionID-FusionAttributeTypeID-SourceID] ON [dbo].[FusionAttribute] ( [FusionID] ASC, [FusionAttributeTypeID] ASC, [SourceID] ASC )
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_FusionAttribute_FusionID-SourceID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FusionAttribute_FusionID-SourceID] ON [dbo].[FusionAttribute] ( [FusionID] ASC, [SourceID] ASC )
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_FusionAttribute_ParentID_SourceID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FusionAttribute_ParentID_SourceID] ON [dbo].[FusionAttribute] ( [ParentID] ASC, [SourceID] ASC )
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_FusionAttribute_TypeID_SourceID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FusionAttribute_TypeID_SourceID] ON [dbo].[FusionAttribute] ( [FusionAttributeTypeID] ASC, [SourceID] ASC )
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_FusionAttributeType_FusionTypeID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FusionAttributeType_FusionTypeID] ON [dbo].[FusionAttributeType] ( [FusionTypeID] ASC )
+	exec sp_rename 'dbo.FusionAttribute', 'FusionAttribute_backup';
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Core" id="Table.dbo.FusionAttribute-FusionAttribute_AfterDelete-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[FusionAttribute_AfterDelete]
-   ON  [dbo].[FusionAttribute] 
-   AFTER DELETE
-AS 
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionAttribute_backup')
 BEGIN
-	SET NOCOUNT ON
-	delete Asset where Object = 'FusionAttribute' and ObjectID in (select ID from deleted)
+	exec sp_rename 'dbo.FusionAttribute_backup', 'FusionAttribute';
 END
 		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
 	</rollback>
   </changeSet>
-
-  <changeSet author="Core" id="Table.dbo.FusionAttribute-FusionAttribute_AfterInsert-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[FusionAttribute_AfterInsert]
-   ON  [dbo].[FusionAttribute] 
-   AFTER INSERT
-AS 
-BEGIN
-	SET NOCOUNT ON
-	INSERT INTO [dbo].[Asset] ([AssetTypeID],[State],SourceID,[Object],[ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy])
-		SELECT	T.ID, 1, O.SourceID, 'FusionAttribute', O.ID, getutcdate(), 0, getutcdate(), 0
-		FROM	inserted O inner join  AssetType T on T.Object = 'FusionAttributeType' and T.ObjectID = O.FusionAttributeTypeID
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Core" id="Table.dbo.FusionAttribute-FusionAttribute_AfterUpdate-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[FusionAttribute_AfterUpdate]
-   ON  [dbo].[FusionAttribute] 
-   AFTER UPDATE
-AS 
-BEGIN
-	SET NOCOUNT ON
-	update	T
-	set		T.UpdatedBy = 0,
-			T.[State] = ~S.Deleted,
-			T.UpdatedOn = getutcdate()
-	from	Asset T
-			inner join inserted S on T.Object = 'FusionAttribute' and T.ObjectID = S.ID
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
 </databaseChangeLog>

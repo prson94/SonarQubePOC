@@ -43,8 +43,8 @@ namespace d360.web.Controllers.V2
         IFieldsRepository FieldsRepository;
         private readonly IAssetRepository AssetRepository;
 
-        public FieldsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IFieldsRepository fieldsRepository, IAssetRepository assetRepository)
-            : base(community, company)
+        public FieldsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IFieldsRepository fieldsRepository, IAssetRepository assetRepository, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
             QueueSource = queueSource;
             Storage = storage;
@@ -275,8 +275,6 @@ namespace d360.web.Controllers.V2
                 {
                     ExistingIntersectID = FieldsRepository.GetFieldInterSetUID(existingFields);
                 }
-
-                var isJsonAttributeFieldTypeEnabled = Community.GetCompanySettingByKey<bool>("EnableJsonAttribute");
 
                 var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, existingFields, ExistingIntersectID);
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
@@ -645,7 +643,7 @@ namespace d360.web.Controllers.V2
 
                 try
                 {
-                    enableJsonAttributes = Community.GetCompanySettingByKey<bool>("EnableJsonAttribute");
+                    enableJsonAttributes = SettingsRepository.GetSettingValue<bool>(Setting.EnableJsonAttribute);
                 }
                 catch { }
 
@@ -656,7 +654,6 @@ namespace d360.web.Controllers.V2
 
                 var disallowedPathClasses = new List<AssetTypeClass>() {
                     AssetTypeClass.Organization,
-                    AssetTypeClass.Fusion,
                     AssetTypeClass.User,
                 };
                 if (AssetTypeUid != null && disallowedPathClasses.Contains(@class))
@@ -666,8 +663,6 @@ namespace d360.web.Controllers.V2
 
                 var disallowedScoreClasses = new List<AssetTypeClass>() {
                     AssetTypeClass.Organization,
-                    AssetTypeClass.Fusion,
-                    AssetTypeClass.FusionAttribute,
                     AssetTypeClass.User,
                     AssetTypeClass.ReferenceItemType,
                     AssetTypeClass.Diagram
@@ -1700,10 +1695,6 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     list.Add("Email", 0);
                     list.Add("LastLoggedInOn", 0);
                     list.Add("DisplayValue", 0);
-                }
-                else if (type == SystemObjects.FusionAttributeType)
-                {
-                    list.Add("Name", 0);
                 }
                 else
                 {

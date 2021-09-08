@@ -35,8 +35,8 @@ namespace d360.web.Controllers.V2
         ITagRepository tagRepository;
         IAssetRepository assetRepository;
 
-        public TagsController(ICommunityContext community, ICompanyContext company, ITagRepository repository, IAssetRepository assetRep)
-            : base(community, company)
+        public TagsController(ICommunityContext community, ICompanyContext company, ITagRepository repository, IAssetRepository assetRep, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
             this.tagRepository = repository;
             this.assetRepository = assetRep;

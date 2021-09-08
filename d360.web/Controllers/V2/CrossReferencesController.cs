@@ -33,8 +33,8 @@ namespace d360.web.Controllers.V2
         private IAssetRepository assetRepository;
         #region DI
 
-        public CrossReferencesController(ICommunityContext community, ICompanyContext company, ICrossReferencesRepository crossReferencesRepository,IAssetRepository assetRepository)
-            : base(community, company)
+        public CrossReferencesController(ICommunityContext community, ICompanyContext company, ICrossReferencesRepository crossReferencesRepository,IAssetRepository assetRepository, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
             this.crossReferencesRepository = crossReferencesRepository;
             this.assetRepository = assetRepository;

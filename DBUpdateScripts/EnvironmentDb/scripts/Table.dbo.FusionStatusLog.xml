@@ -5,47 +5,32 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.FusionStatusLog-v1">
+  <changeSet author="Puneet Gupta" id="Table.dbo.FusionStatusLog-Rename-v1">
+  <comment>GOV-11726</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionStatusLog')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionStatusLog')
 BEGIN
-	CREATE TABLE [dbo].[FusionStatusLog](
-		[ID] [uniqueidentifier] NOT NULL,
-		[FusionID] [int] NOT NULL,
-		[DateStarted] [datetime] NOT NULL,
-		[DateCompleted] [datetime] NULL,
-		[MachineQueuedOn] [varchar](250) NULL,
-		[Success] [bit] NOT NULL,
-		[Message] [nvarchar](max) NULL,
-		[FullRefresh] [bit] CONSTRAINT [DF_FusionStatusLog_FullRefresh] DEFAULT (0) NOT NULL,
-		CONSTRAINT [PK_FusionStatusLog] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
-	)
+	IF EXISTS (select * 
+			   from sys.foreign_keys where name = 'FK_FusionStatusLog_Fusion' 
+			   and object_name(parent_object_id) = 'FusionStatusLog' and schema_name(schema_id) = 'dbo'
+			   )
+	BEGIN	
+		ALTER TABLE [dbo].[FusionStatusLog] DROP CONSTRAINT [FK_FusionStatusLog_Fusion]
+	END
+	exec sp_rename 'dbo.FusionStatusLog', 'FusionStatusLog_backup';
 END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_FusionStatusLog_Fusion')
-BEGIN
-	ALTER TABLE [dbo].[FusionStatusLog] WITH CHECK ADD CONSTRAINT [FK_FusionStatusLog_Fusion] FOREIGN KEY([FusionID]) REFERENCES [dbo].[Fusion] ([ID]) ON DELETE CASCADE
-	ALTER TABLE [dbo].[FusionStatusLog] CHECK CONSTRAINT [FK_FusionStatusLog_Fusion]
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'CIX_FusionStatusLog')
-BEGIN
-	CREATE CLUSTERED INDEX [CIX_FusionStatusLog] ON [dbo].[FusionStatusLog] ( [FusionID] ASC, [DateCompleted] DESC )
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_FusionStatusLog_DateStarted_FusionID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FusionStatusLog_DateStarted_FusionID] ON [dbo].[FusionStatusLog] ( [FusionID] ASC, [DateStarted] DESC )
-END
-		]]>
+]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionStatusLog_backup')
+BEGIN
+	exec sp_rename 'dbo.FusionStatusLog_backup', 'FusionStatusLog';
+END
 		]]>
 	</rollback>
   </changeSet>

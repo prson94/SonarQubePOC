@@ -15,6 +15,7 @@ using System.Net;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using System.Configuration;
 using d360.core.entities.Views;
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers
 {
@@ -23,8 +24,8 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public ReportsController(ICommunityContext community, ICompanyContext company)
-            : base(community, company)
+        public ReportsController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         { }
 
         #endregion
@@ -39,12 +40,9 @@ namespace d360.web.Controllers
         [Route("powerbi/tokens/{reportId}")]
         public async Task<JsonNetResult> GetPowerBITokens(string reportId)
         {
-            var companySettings = Community.GetCompanySettings();
-            var groupId = string.Empty;
-            var clientId = string.Empty;
-
-            companySettings.TryGetValue("PowerBIClientId", out clientId);
-            companySettings.TryGetValue("PowerBIGroupId", out groupId);
+            var companySettings = SettingsRepository.GetSettings();
+            var groupId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIGroupId).Value;
+            var clientId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIClientId).Value;
 
             if (string.IsNullOrEmpty(groupId))
             {

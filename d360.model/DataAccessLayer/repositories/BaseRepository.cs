@@ -494,11 +494,7 @@ namespace d360.model.DataAccessLayer.repositories
                      }
                      else
                      {
-                         fieldJoins.Add($@"outer apply (select string_agg(flv.DisplayText,',') as FormattedValue, string_agg(f.Value,',') as Value 
-                            from Field F
-                            cross apply string_split(F.Value, ',') V	
-                            left join FieldLookupValue flv on flv.fieldtypeid = {f.ID}  and flv.Value = V.Value
-                            where F.FieldTypeId = {f.ID} and [ObjectType] = {objectSql} and [ObjectID]={objectIdSql})F{f.ID}");
+                         fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql}");
                      }
                  }
                  else if (f.Type == "ComplexRelationLookup" || f.Type == "OwnershipLookup")
@@ -678,15 +674,6 @@ namespace d360.model.DataAccessLayer.repositories
                             {
                                 whereStatements.Add($"FA.[TextPath] = @textpath");
                                 dbArgs.Add($"@textpath", q.Value);
-                            }
-                            else if (assetType.Object == "FusionAttributeType" && key == "parentuid")
-                            {
-                                if ((CompanyContext.Database.Connection.QueryFirstOrDefault<int>("select ISNULL(parentId,0) from fusionattributetype where id = @id", new { id = assetType.ObjectID })) > 0)
-                                {
-                                    whereStatements.Add($"ATP.[uid] = @parentuid");
-                                    dbArgs.Add($"@parentuid", q.Value);
-                                }
-
                             }
                             else if (assetType.Object == "ReferenceItemType" && key == "code")
                             {

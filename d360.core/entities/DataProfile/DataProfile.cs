@@ -1,4 +1,5 @@
 ﻿using d360.core.entities.Contracts;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -269,11 +270,23 @@ namespace d360.core.entities
         public Guid? ExecutionItemUid { get; set; }
     }
 
+    [DataContract]
     public class AssetDataProfileMatchingAssetsModel
     {
         [DataMember]
         public Guid uid { get; set; }
+        [DataMember]
         public string path { get; set; }
+        public string tagsJson { get; set; }
+        public bool hasTagField { get; set; }
+        [DataMember]
+        public List<string> tags
+        {
+            get
+            {
+                return hasTagField ? JsonConvert.DeserializeObject<List<string>>(tagsJson ?? "[]") : null;
+            }
+        }
     }
 
     public class AssetDataProfilesMatchingAssetsApiViewModel : PagedApiBaseViewModel

@@ -33,10 +33,8 @@ namespace d360.web.Controllers
 
             var list = new List<EditableField>();
 
-            var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
-
             var functionalTypes = PredicateType.DataLineage.GetAsList()
-                .Where(f => f.AllowEditFromPredicateEditor && f.AllowIntersectTypeAssignment && f.LineageVersionsSupported.Contains(lineageVersion))
+                .Where(f => f.AllowEditFromPredicateEditor && f.AllowIntersectTypeAssignment)
                 .Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name })
                 .ToList();
 
@@ -55,10 +53,8 @@ namespace d360.web.Controllers
             var a = Company.GetById<Predicate>(id);
             var any = Company.Any<IntersectType>(i => i.PredicateID == id);
 
-            var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
-
             var functionalTypes = PredicateType.DataLineage.GetAsList()
-                .Where(f => f.AllowEditFromPredicateEditor && f.AllowIntersectTypeAssignment && f.LineageVersionsSupported.Contains(lineageVersion))
+                .Where(f => f.AllowEditFromPredicateEditor && f.AllowIntersectTypeAssignment)
                 .Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name })
                 .ToList();
 
@@ -563,7 +559,7 @@ order by r.Name";
                     { "PredicateType", predicate?.Type }
                 };
 
-                return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
+                return new JsonNetResult { Data = model, Formatting = Formatting.None };
             }
             catch (Exception ex)
             {
@@ -576,12 +572,11 @@ order by r.Name";
         {
             try
             {
-                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
-                var models = Company.GetPredicateOptions(lineageVersion, subject, subjectID, @object, objectID, predicateID)
+                var models = Company.GetPredicateOptions(subject, subjectID, @object, objectID, predicateID)
                     .Select(i => new { label = $"{i.Name} / {i.Inverse} ({i.Type.AsInfoModel().Name})", value = i.ID, isSemantic = i.Type.AsInfoModel().SingleRelationshipByFunctionalType, type = i.Type.ToString() })
                     .OrderBy(i => i.label);
 
-                return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+                return new JsonNetResult { Data = models, Formatting = Formatting.None };
             }
             catch (Exception ex)
             {
@@ -595,7 +590,7 @@ order by r.Name";
             var models = Cardinality.One.GetList()
                 .Select(i => new { title = i.Name, value = i.ID });
 
-            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+            return new JsonNetResult { Data = models, Formatting = Formatting.None };
         }
 
         [Route("IntersectType_SubjectOptions")]
@@ -604,7 +599,7 @@ order by r.Name";
             var models = Company.GetIntersectTypeOptions()
                 .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
 
-            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+            return new JsonNetResult { Data = models, Formatting = Formatting.None };
         }
 
         [Route("IntersectType_ObjectOptions"), NonNullableParameters]
@@ -627,7 +622,7 @@ order by r.Name";
                     .Where(i => i.Type != "IntersectType")
                     .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
 
-                return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+                return new JsonNetResult { Data = models, Formatting = Formatting.None };
             }
             catch (Exception ex)
             {
@@ -672,9 +667,7 @@ order by r.Name";
                     PredicateID = int.Parse(predicate)
                 };
 
-                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
-
-                Company.UpsertIntersectType(model, lineageVersion);
+                Company.UpsertIntersectType(model);
                 var id = model.ID;
 
                 Company.CreateRollupPathChangedExecution(id);
@@ -818,9 +811,7 @@ order by r.Name";
                 model.ObjectID = int.Parse(objectInfo[1]);
                 model.PredicateID = int.Parse(predicate);
 
-                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
-
-                Company.UpsertIntersectType(model, lineageVersion);
+                Company.UpsertIntersectType(model);
                 Company.CreateRollupPathChangedExecution(id);
 
                 return jsonSuccess("Relationship type  successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);

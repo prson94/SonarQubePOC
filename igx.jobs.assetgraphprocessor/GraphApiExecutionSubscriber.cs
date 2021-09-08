@@ -272,6 +272,57 @@ namespace igx.jobs.assetgraphprocessor
                     , new { assetTypeUid }))
                     .SingleOrDefault();
 
+                    int? parentIntersectTypeId = (await company.QueryAsync<int?>(@"select case when T.ID is null then null else T.ID end from AssetType A
+                        left join IntersectTypeDetail T on T.Object = A.Object and T.ObjectID = A.ObjectID and T.PredicateType in (3,4)
+                        where A.[uid] = @assetTypeUid"
+                    , new { assetTypeUid }))
+                    .SingleOrDefault();
+
+                    
+                    //check for updated parents and update graph Edge records appropriately
+                    if (info.execution.Action != ApiExecutionAction.DeleteAssets && !isInsert && parentIntersectTypeId.HasValue)
+                    {
+                        await company.ExecuteAsync(@"
+                            insert into graph.AssetEdge ($from_id, $to_id, ID, Uid, IntersectTypeID, IntersectTypeUid, PredicateID, PredicateUid, PredicateType, Properties, [State], UpdatedOn) 
+                            select  N.$node_id, 
+                                    O.$node_id, 
+                                    E.ID, E.Uid, 
+                                    E.IntersectTypeID, 
+                                    E.IntersectTypeUid, 
+                                    E.PredicateID, 
+                                    E.PredicateUid, 
+                                    E.PredicateType, 
+                                    E.Properties, 
+                                    E.State, 
+                                    getutcdate() 
+                            from    graph.AssetEdge E
+                                    inner join graph.AssetNode S on S.$node_id = E.$from_id
+                                    inner join graph.AssetNode O on O.$node_id = E.$to_id
+                                    inner join [Intersect] I on I.ID = E.ID
+                                    inner join Asset SA on SA.Object = I.Subject and SA.ObjectID = I.SubjectID
+                                    inner join Asset OA on OA.Object = I.Object and OA.ObjectID = I.ObjectID
+                                    inner join #GraphAssets G on G.Uid = O.Uid  and G.GraphExists = 1 and G.AssetExists = 1
+                                    inner join graph.AssetNode N on N.ID = SA.ID 
+                            where   E.IntersectTypeID = @parentIntersectTypeId 
+                                    and OA.ID = O.ID 
+                                    and SA.ID != S.ID;
+
+                            delete  E 
+                            from    graph.AssetEdge E
+                                    inner join graph.AssetNode S on S.$node_id = E.$from_id
+                                    inner join graph.AssetNode O on O.$node_id = E.$to_id
+                                    inner join [Intersect] I on I.ID = E.ID
+                                    inner join Asset SA on SA.Object = I.Subject and SA.ObjectID = I.SubjectID
+                                    inner join Asset OA on OA.Object = I.Object and OA.ObjectID = I.ObjectID
+                                    inner join #GraphAssets G on G.Uid = O.Uid  and G.GraphExists = 1 and G.AssetExists = 1
+                            where   E.IntersectTypeID = @parentIntersectTypeId and OA.ID = O.ID and SA.ID != S.ID
+                        "
+                        , new { parentIntersectTypeId }
+                        , commandTimeout: timeout);
+
+                    }
+                    
+                    
                     //skip heirarchy update if we're deleting leaf assets
                     if (info.execution.Action == ApiExecutionAction.DeleteAssets && !hasChildAssetType)
                     {

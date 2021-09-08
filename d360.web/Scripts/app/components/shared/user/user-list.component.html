@@ -65,7 +65,7 @@
                         <a *ngIf="column.datafield=='FirstName'"
                            (click)="openResource(item)">{{item.FirstName}}</a>
                         <d3s-dynamic-field-value *ngIf="column.datafield!='FirstName'" [column]="column"
-                                                 [fields]="fields" [item]="item" [useApiName]="true"></d3s-dynamic-field-value>
+                                                 [fields]="fields" [item]="item" [useApiName]="true" [isDateUTC]="true"></d3s-dynamic-field-value>
                     </td>
                     <td *ngIf="hasModifyAssetPermissions()  && IsReadOnly()" style="width: 40px">
                         <div class="RowTools" *ngIf="item.ResourceID > 0">
@@ -115,7 +115,7 @@
         </div>
     </span>
     <d3s-dynamic-editor *ngIf="showEditor && !isLoading" [objectID]="objectID" objectType="ResourceType" title="Resource"
-                        [selection]="selected" rowID="ResourceID" (saveClick)="saveUser($event)"
+                        [selection]="selected" [useV2ApiLink]="true" rowID="ResourceID" (saveClick)="saveUser($event)"
                         [selectedObject]="'Resource'" [selectedObjectID]="selected?.ResourceID"
                         (closeClick)="closeEditor()"></d3s-dynamic-editor>
     <d3s-delete-form *ngIf="showDelete  && !isLoading"
