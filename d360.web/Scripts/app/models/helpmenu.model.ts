@@ -7,4 +7,5 @@
     isEditable: boolean;
     visibilty: number;
     order: number;
+    isSystem: boolean;
 }

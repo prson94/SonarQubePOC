@@ -779,7 +779,7 @@ namespace d360.web.Models
 
     public class HelpMenuModel
     {
-        public List<HelpMenu> Adds { get; set; }
-        public List<HelpMenu> Deletes { get; set; }
+        public List<HelpResource> Adds { get; set; }
+        public List<HelpResource> Deletes { get; set; }
     }
 }

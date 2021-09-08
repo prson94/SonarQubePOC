@@ -17,10 +17,10 @@ declare var VersionNumber: string;
                     <div class="header-help search-child header-profile-panel">
                        <ul>       
                             <ng-container *ngFor="let i of items">
-                                <li *ngIf="i.visibilty == 1 && i.ID != 1" class="header-item" pTooltip="Help Menu Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"><div class="mini-menu-line"><div class="text" ><a target="_blank" [href]="i.Url">{{i.Name}}</a></div></div></li>
-                                <li *ngIf="i.visibilty == 2 && isAdmin && i.ID != 1" class="header-item" pTooltip="Help Menu Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="i.Url">{{i.Name}}</a></div></div></li>
-                                <li *ngIf="i.visibilty == 1 && i.ID == 1" class="header-item" pTooltip="Help Menu Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"><div class="mini-menu-line"><div class="text"><a target="_blank" (click)="showAbout()">{{i.Name}}</a></div></div></li>
-                                <li *ngIf="i.visibilty == 2 && i.ID == 1 && isAdmin" class="header-item" pTooltip="Help Menu Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"><div class="mini-menu-line"><div class="text"><a target="_blank" (click)="showAbout()">{{i.Name}}</a></div></div></li>
+                                    <li *ngIf="i.visibilty == 1 && i.Url != 'about'" class="header-item" pTooltip="{{i.Description}} "tooltipPosition="top" tooltipStyleClass="ig-tooltip"><div class="mini-menu-line"><div class="text" ><a target="_blank" [href]="i.Url">{{i.Name}}</a></div></div></li>
+                                    <li *ngIf="i.visibilty == 2 && isAdmin && i.Url != 'about'" class="header-item" pTooltip="{{i.Description}} "tooltipPosition="top" tooltipStyleClass="ig-tooltip"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="i.Url">{{i.Name}}</a></div></div></li>
+                                    <li *ngIf="i.visibilty == 1 && (i.Url == 'about' && i.isSystem == 1)" class="header-item" pTooltip="{{i.Description}} "tooltipPosition="top" tooltipStyleClass="ig-tooltip"><div class="mini-menu-line"><div class="text"><a target="_blank" (click)="showAbout()">{{i.Name}}</a></div></div></li>
+                                    <li *ngIf="i.visibilty == 2 && (i.Url == 'about' && i.isSystem == 1) && isAdmin" class="header-item" pTooltip="{{i.Description}} "tooltipPosition="top" tooltipStyleClass="ig-tooltip"><div class="mini-menu-line"><div class="text"><a target="_blank" (click)="showAbout()">{{i.Name}}</a></div></div></li>
                             </ng-container> 
                        </ul>
                     </div>

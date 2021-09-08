@@ -42,7 +42,16 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetHelpMenuItems()
         {
-            var items = Company.HelpMenu.ToList();
+            var baseUrl = System.Configuration.ConfigurationManager.AppSettings["HelpBaseUri"].ToString();
+            var items = Company.HelpResources.ToList();
+
+            foreach (var item in items)
+            {
+                if(item.isSystem && (item.Url != "about" && item.Url != "https://support.infogix.com/hc/en-us/community/topics/360000029388-Data3Sixty-Govern"))
+                {
+                    item.Url = baseUrl + item.Url;
+                }
+            }
 
             var response = Request.CreateResponse(HttpStatusCode.OK, items);
             return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
@@ -64,10 +73,10 @@ namespace d360.web.Controllers.V2
             {
                 foreach (var item in deleteRecords)
                 {
-                    var helpItem = _company.HelpMenu.Where(x => x.ID == item.ID).FirstOrDefault();
+                    var helpItem = _company.HelpResources.Where(x => x.ID == item.ID).FirstOrDefault();
                     if(helpItem != null)
                     {
-                        _company.HelpMenu.Remove(helpItem);
+                        _company.HelpResources.Remove(helpItem);
                     }
                 }
             }
@@ -75,23 +84,26 @@ namespace d360.web.Controllers.V2
             {
                 foreach (var item in records)
                 {
-                    HelpMenu helpItem = _company.HelpMenu.Where(x => x.ID == item.ID).FirstOrDefault();
+                    HelpResource helpItem = _company.HelpResources.Where(x => x.ID == item.ID).FirstOrDefault();
                     if (helpItem == null)
                     {
                         var uid = Guid.NewGuid();
                         _company.Query<int>(@"
-                    insert into [dbo].[HelpMenu]([Name],[Description],[Url],[Uid],[isEditable],[visibilty],[order])
-                    values(@name,'',@url,@uid,@iseditable,@visibilty,@order)
-                    ", new { item.Name, item.Url, uid, item.isEditable, item.visibilty, item.order }).FirstOrDefault();
+                    insert into [dbo].[HelpResource]([Name],[Description],[Url],[uid],[isEditable],[visibilty],[order],[isSystem])
+                    values(@name,'',@url,@uid,@iseditable,@visibilty,@order,@issystem)
+                    ", new { item.Name, item.Url, uid, item.isEditable, item.visibilty, item.order,item.isSystem }).FirstOrDefault();
                     }
                     else
                     {
                         helpItem.Description = item.Description;
                         helpItem.Name = item.Name;
-                        helpItem.isEditable = item.isEditable;
                         helpItem.order = item.order;
-                        helpItem.Url = item.Url;
                         helpItem.visibilty = item.visibilty;
+                        if (!helpItem.isSystem)
+                        {
+                            helpItem.Url = item.Url;
+                            helpItem.isEditable = item.isEditable;
+                        }
                     }
                 }
             }

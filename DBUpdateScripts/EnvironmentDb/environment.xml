@@ -105,7 +105,6 @@
 	<include file="scripts/Table.dbo.FusionQueryAttribute.xml"/>
 	<include file="scripts/Table.dbo.FusionStatusLog.xml"/>
 	<include file="scripts/Table.dbo.Group.xml"/>
-  <include file="scripts/Table.dbo.HelpMenu.xml"/>
   <include file="scripts/Table.dbo.HelpResource.xml"/>
 	<include file="scripts/Table.dbo.Predicate.xml"/>
 	<include file="scripts/Table.dbo.IntersectType.xml"/>

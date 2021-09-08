@@ -37,6 +37,38 @@ IF EXISTS (
   BEGIN
     ALTER TABLE [dbo].[HelpResource] DROP COLUMN [Type]
 END
+
+ if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'HelpResource' and COLUMN_NAME = 'isEditable')
+begin
+	ALTER TABLE [dbo].[HelpResource]
+	ADD [isEditable] [bit] NOT NULL
+	CONSTRAINT DF_HelpResource_isEditable DEFAULT 1
+	WITH VALUES
+end
+
+  if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'HelpResource' and COLUMN_NAME = 'visibilty')
+begin
+	ALTER TABLE [dbo].[HelpResource]
+	ADD [visibilty] [int] NOT NULL
+	CONSTRAINT DF_HelpResource_visibilty DEFAULT 1
+	WITH VALUES
+end
+
+if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'HelpResource' and COLUMN_NAME = 'order')
+begin
+	ALTER TABLE [dbo].[HelpResource]
+	ADD [order] [int] NOT NULL
+	CONSTRAINT DF_HelpResource_order DEFAULT 1000
+	WITH VALUES
+end
+
+if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'HelpResource' and COLUMN_NAME = 'isSystem')
+begin
+	ALTER TABLE [dbo].[HelpResource]
+	ADD [isSystem] [bit] NOT NULL
+	CONSTRAINT DF_HelpResource_isSystem DEFAULT 0
+	WITH VALUES
+end
 		]]>
     </sql>	
   </changeSet>

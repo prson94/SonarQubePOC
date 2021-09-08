@@ -111,6 +111,7 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
         newItem.visibilty = 1;
         newItem.order = this.items.length;
         newItem.isEditable = true;
+        newItem.isSystem = false;
 
         this.newID -= 1;
 

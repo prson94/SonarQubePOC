@@ -1369,4 +1369,13 @@ end
     </rollback>
 		
 	</changeSet>
+
+
+  <changeSet author="sDooley" id="Data.Corrections.GOV-4117">
+    <sql dbms="mssql" splitStatements="false" stripComments="false">
+      <![CDATA[
+  update [dbo].[HelpResource] set [order] = [SortIndex] + 4 where [SortIndex] != 0;
+	]]>
+    </sql>
+  </changeSet>
 	</databaseChangeLog>

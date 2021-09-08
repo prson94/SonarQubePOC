@@ -65,7 +65,6 @@ namespace d360.model
         DbSet<GraphFilter> GraphFilters { get; set; }
         DbSet<Group> Groups { get; set; }
         DbSet<HelpResource> HelpResources { get; set; }
-        DbSet<HelpMenu> HelpMenu { get; set; }
         DbSet<IntersectDetail> IntersectDetails { get; set; }
         DbSet<Intersect> Intersects { get; set; }
         DbSet<IntersectTypeDetail> IntersectTypeDetails { get; set; }
