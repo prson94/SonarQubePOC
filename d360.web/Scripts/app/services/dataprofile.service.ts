@@ -60,7 +60,7 @@ export class DataProfileService extends BaseObservableService {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
 
-        let url: string = `/api/v2/dataprofiles/${assetUid}/similar/${matchType}?_pageSize=${pageSize}&_pageNum=${pageNum}&_filter=${advancedFilter}`;
+        let url: string = `/api/v2/dataprofiles/${assetUid}/similar/${matchType}?_pageSize=${pageSize}&_pageNum=${pageNum}`;
         if (simpleFilter) {
             url += `&_simpleFilter=${simpleFilter}`;
         }
