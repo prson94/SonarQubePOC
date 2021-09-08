@@ -2849,7 +2849,7 @@ new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = v
                 overrides = Query<EnvironmentSetting>("select * from Setting").ToList();
                 Caching.SetItem(SettingsCacheKey, overrides, true, 3);
             }
-            var settings = Setting.ActionMessage.GetAsList();
+            var settings = Setting.ActionMessage.GetAsList().OrderBy(s => (int)s.ID).ToList();
 
             settings.ForEach(s =>
             {
