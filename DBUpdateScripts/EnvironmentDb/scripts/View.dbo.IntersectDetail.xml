@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="View.dbo.IntersectDetail-v3">
-  <comment>GOV-11726</comment>
+  <changeSet author="Puneet Gupta" id="View.dbo.IntersectDetail-v4">
+  <comment>GOV-15730,GOV-11726</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -73,6 +73,8 @@ select	I.[uid],
 		I.PredicateInverse
 from	PredicateIntersect I with(nolock)
 		inner join (
+			select A.ID as AssetID, A.AssetTypeID as AssetTypeID, DisplayValue as Name, Object, ObjectID, ForeColor, BackColor, Icon, Type, TypeID, TypeName, A.UID from AssetDetail A
+			union all
 			select null as AssetID, null as AssetTypeID, NI.Name as Name, 'Intersect' as Object, I.ID as ObjectID, null as ForeColor, null as BackColor, null as Icon, 'IntersectType' as Type, IntersectTypeID as TypeID, NIT.Name as TypeName, I.uid from [Intersect] I
 			inner join IntersectType T on T.ID = I.IntersectTypeID
 			cross apply dbo.GetIntersectNames(I.ID) NI	
@@ -82,6 +84,8 @@ from	PredicateIntersect I with(nolock)
 			where TA.Object = 'ReferenceItemType'
 		) S on S.Object = I.Subject and S.ObjectID = I.SubjectID
 		inner join (
+			select A.ID as AssetID, A.AssetTypeID as AssetTypeID, DisplayValue as Name, Object, ObjectID, ForeColor, BackColor, Icon, Type, TypeID, TypeName, A.UID from AssetDetail A
+			union all
 			select null as AssetID, null as AssetTypeID, NI.Name as Name, 'Intersect' as Object, I.ID as ObjectID, null as ForeColor, null as BackColor, null as Icon, 'IntersectType' as Type, IntersectTypeID as TypeID, NIT.Name as TypeName, I.uid from [Intersect] I
 			inner join IntersectType T on T.ID = I.IntersectTypeID
 			cross apply dbo.GetIntersectNames(I.ID) NI	
