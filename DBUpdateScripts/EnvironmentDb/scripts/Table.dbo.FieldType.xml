@@ -213,7 +213,30 @@ end
 	  ]]>
     </rollback>
   </changeSet>
-
+    <changeSet author="TDuric" id="Table.dbo.FieldType-v6">
+    <comment>GOV-15239</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+		IF COL_LENGTH('[dbo].[FieldType]', 'DisplayInColumn') IS NULL
+		BEGIN
+			alter table dbo.FieldType
+			add [DisplayInColumn] bit
+		END
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+		IF COL_LENGTH('[dbo].[FieldType]', 'DisplayInColumn') IS NOT NULL
+		BEGIN
+			DROP COLUMN IF EXISTS
+				DisplayInColumn
+		END
+	  ]]>
+    </rollback>
+  </changeSet>
 
   <changeSet author="Core" id="Table.dbo.Field-FieldType_AfterInsert-v1">
     <sql dbms="mssql"

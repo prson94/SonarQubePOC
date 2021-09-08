@@ -30,6 +30,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     @Input() showIsPartOfKey: boolean = true;
     @Input() showAddToSearch: boolean = false;
 
+    @Input() showDisplayInColumn: boolean = false;
+
     @Input() objectName: string = "";
 
     @Output() onEdit = new EventEmitter();

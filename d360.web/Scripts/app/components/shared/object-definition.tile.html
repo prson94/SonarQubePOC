@@ -10,20 +10,19 @@
                      [nymTypes]="nymTypes"
                      [hasAddRelationshipsPermissions]="hasAddRelationshipsPermissions"
                      [hasModifyRelationshipsPermissions]="hasModifyRelationshipsPermissions"
-                     [hasDeleteRelationshipsPermissions]="hasDeleteRelationshipsPermissions">
+                     [hasDeleteRelationshipsPermissions]="hasDeleteRelationshipsPermissions"
+                     [useAssetDetailColumnDefinition]="true">
     </ig-asset-detail>
 </div>
-<d3s-dynamic-editor
-  *ngIf="formMode == FormMode.Editing && !useV2Api"
-  [objectID]="objectID"
-  [parentID]="object?.ParentID"
-  [objectType]="objectType"
-  [selection]="object"
-  [editUri]="'form/dynamicedit/edit/' + objectType"
-  [title]="object?.Name"
-  (saveClick)="save($event)"
-  (closeClick)="formMode = FormMode.Default; formModeChange.emit(formMode)"
->
+<d3s-dynamic-editor *ngIf="formMode == FormMode.Editing && !useV2Api"
+                    [objectID]="objectID"
+                    [parentID]="object?.ParentID"
+                    [objectType]="objectType"
+                    [selection]="object"
+                    [editUri]="'form/dynamicedit/edit/' + objectType"
+                    [title]="object?.Name"
+                    (saveClick)="save($event)"
+                    (closeClick)="formMode = FormMode.Default; formModeChange.emit(formMode)">
 </d3s-dynamic-editor>
 <d3s-dynamic-editor *ngIf="formMode == FormMode.Editing && useV2Api"
                     [objectID]="objectID"

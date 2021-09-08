@@ -141,6 +141,12 @@
   <data name="AssetDataProfileLifespan_Name" xml:space="preserve">
     <value>Asset Data Profile Lifespan</value>
   </data>
+  <data name="AssetDefinitionColumnWidth_Desc" xml:space="preserve">
+    <value>Asset Definition Column Width</value>
+  </data>
+  <data name="AssetDefinitionColumnWidth_Name" xml:space="preserve">
+    <value>Width of columns (in pixels) used to lay out fields on the asset Definition panel.</value>
+  </data>
   <data name="AzureADTenant_Desc" xml:space="preserve">
     <value>The name of the Azure Active directory tenant.</value>
   </data>

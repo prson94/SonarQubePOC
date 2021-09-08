@@ -2221,6 +2221,7 @@ for json path";
                 simpleFilterWhereConditions.Add("R.PassCount like @simpleFilterLike");
                 simpleFilterWhereConditions.Add("R.PassFraction like @simpleFilterLike");
                 simpleFilterWhereConditions.Add("R.TotalCount like @simpleFilterLike");
+                simpleFilterWhereConditions.Add("P.[Path] like @simpleFilterLike");
                 simpleFilterWhereConditions.Add("E.Segments.exist('/path/segment[contains(lower-case(.),sql:variable(\"@simpleFilter\"))]') = 1");
 
                 var classes = AssetTypeClass.BusinessAsset.GetAsList();
@@ -2295,7 +2296,7 @@ for json path";
                 pageNum = 1;
             }
 
-            if (pageSize <= 0 || pageSize > 1000)
+            if (pageSize <= 0)
             {
                 pageSize = 25;
             }

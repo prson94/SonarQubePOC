@@ -13,6 +13,8 @@ import { SharedModule } from 'primeng/api';
 
 import { PipesModule } from '../../../pipes/pipes.module';
 
+import { TooltipModule } from 'primeng/tooltip';
+
 import { HeaderActionsComponent } from './header-actions.component';
 import { HeaderBreadcrumbItemComponent } from './header-breadcrumb-item.component';
 import { HeaderBreadcrumbComponent } from './header-breadcrumb.component';
@@ -50,7 +52,9 @@ import { ResourceApiKeyModule } from '../../resource/api-key/resource-api.module
         TreeModule, 
         DialogModule,
         SiteModalModule,
-        ResourceApiKeyModule
+        ResourceApiKeyModule,
+
+        TooltipModule
     ],
     declarations: [
         HeaderActionsComponent,

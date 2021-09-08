@@ -25,6 +25,7 @@ using System.Web.Http.Description;
 using System.Xml.Linq;
 using d360.core.resources;
 using d360.model.DataAccessLayer;
+using d360.web.Extensions;
 
 namespace d360.web.Controllers
 {
@@ -2340,7 +2341,7 @@ from    (
         }
 
         [Route("{type}/{uid}/detail")]
-        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, Guid uid, bool useSingleColumn = false, bool includeHeader = false)
+        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, Guid uid, bool useSingleColumn = false, bool includeHeader = false, bool useAssetDetailColumnDefinition = false)
         {
             int objectId = -1;
             switch (type)
@@ -2350,13 +2351,13 @@ from    (
                     return await GetObjectDetailFields(type, objectId, useSingleColumn, includeHeader);
                 default:
                     var asset = Company.Assets.FirstOrDefault(a => a.uid == uid);
-                    return await GetObjectDetailFields(type, asset?.ObjectID ?? -1, useSingleColumn, includeHeader);
+                    return await GetObjectDetailFields(type, asset?.ObjectID ?? -1, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
             }
         }
 
 
         [Route("{type}/{id:int}/detail")]
-        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, int id, bool useSingleColumn = false, bool includeHeader = false)
+        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, int id, bool useSingleColumn = false, bool includeHeader = false, bool useAssetDetailColumnDefinition = false)
         {
             var model = new DetailReadOnlyModel() { columns = useSingleColumn ? 1 : 2 };
             model.Object = type.ToString();
@@ -2397,7 +2398,20 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                     model.ObjectTypeID = metadata.ObjectTypeID;
                 }
             }
+            FieldColumnMapper fcMapper = null;
 
+            if (useAssetDetailColumnDefinition)
+            {
+                var fieldColumnMappings = (await Company.QueryAsync<FieldColumnMapping>(@"
+                select ft.Name, DisplayInColumn from asset a
+                inner join fieldtype ft on ft.assettypeid = a.assettypeid
+                where a.object = @type and a.objectid = @objectid
+                and ft.isdisplayable = 1
+                order by ColumnOrder", new { type = type.ToString(), objectid = id })).ToList();
+
+                fcMapper = new FieldColumnMapper(fieldColumnMappings, model);
+                fcMapper.TransformRowsAndCols();
+            }
 
             switch (type)
             {
@@ -2408,7 +2422,17 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
 
                         if (asset != null)
                         {
-                            model.rows.AddRange(await loadDynamicDisplayFields(type, id).ConfigureAwait(false));
+                            var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
+
+                            if (useAssetDetailColumnDefinition && fcMapper != null)
+                            {
+                                fcMapper.ArrangeRowsAndCols(dynamicRows);
+                            }
+                            else
+                            {
+                                model.rows.AddRange(dynamicRows);
+                            }
+
 
                             var parent = Company.GetParentObject(id, SystemObjects.Artifact);
 
@@ -2999,9 +3023,16 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                             Category = Resources.FieldInfo.SystemNoCategory
                         });
 
+                        var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
 
-                        model.rows.AddRange(await loadDynamicDisplayFields(type, id).ConfigureAwait(false));
-
+                        if (useAssetDetailColumnDefinition && fcMapper != null)
+                        {
+                            fcMapper.ArrangeRowsAndCols(dynamicRows);
+                        }
+                        else
+                        {
+                            model.rows.AddRange(dynamicRows);
+                        }
                         var asset = Company.Assets.Where(x => x.Object == "Policy" && x.ObjectID == id).FirstOrDefault();
 
                         if (asset != null)
@@ -3069,7 +3100,16 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                             Category = Resources.FieldInfo.SystemNoCategory
                         });
 
-                        model.rows.AddRange(await loadDynamicDisplayFields(type, id).ConfigureAwait(false));
+                        var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
+
+                        if (useAssetDetailColumnDefinition && fcMapper != null)
+                        {
+                            fcMapper.ArrangeRowsAndCols(dynamicRows);
+                        }
+                        else
+                        {
+                            model.rows.AddRange(dynamicRows);
+                        }
 
                         var asset = Company.Assets.Where(x => x.Object == "Rule" && x.ObjectID == id).FirstOrDefault();
 
@@ -3662,7 +3702,16 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
                             });
                         }
 
-                        model.rows.AddRange(await loadDynamicDisplayFields(type, id).ConfigureAwait(false));
+                        var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
+
+                        if (useAssetDetailColumnDefinition && fcMapper != null)
+                        {
+                            fcMapper.ArrangeRowsAndCols(dynamicRows);
+                        }
+                        else
+                        {
+                            model.rows.AddRange(dynamicRows);
+                        }
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
@@ -3788,7 +3837,7 @@ where v.id = {0}", id)).FirstOrDefault();
 
             }
 
-            if (useSingleColumn)
+            if (useSingleColumn || useAssetDetailColumnDefinition)
             {
                 model.rows.ForEach(r =>
                 {
