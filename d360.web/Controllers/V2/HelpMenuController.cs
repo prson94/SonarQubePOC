@@ -4,6 +4,7 @@ using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
 using Microsoft.Web.Http;
+using Resources;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -42,12 +43,15 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetHelpMenuItems()
         {
+            const string supportUrl = "https://support.infogix.com/hc/en-us/community/topics/360000029388-Data3Sixty-Govern";
+            const string aboutUrl = "about";
             var baseUrl = System.Configuration.ConfigurationManager.AppSettings["HelpBaseUri"].ToString();
-            var items = Company.HelpResources.ToList();
+
+            var items = Company.HelpResources.ToList();           
 
             foreach (var item in items)
             {
-                if(item.isSystem && (item.Url != "about" && item.Url != "https://support.infogix.com/hc/en-us/community/topics/360000029388-Data3Sixty-Govern"))
+                if(item.isSystem && (item.Url != aboutUrl && item.Url != supportUrl))
                 {
                     item.Url = baseUrl + item.Url;
                 }
@@ -74,7 +78,11 @@ namespace d360.web.Controllers.V2
                 foreach (var item in deleteRecords)
                 {
                     var helpItem = _company.HelpResources.Where(x => x.ID == item.ID).FirstOrDefault();
-                    if(helpItem != null)
+                    if (helpItem.isSystem)
+                    {
+                        throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorDeletingDefaultHelpItem));
+                    }
+                    if (helpItem != null && !helpItem.isSystem)
                     {
                         _company.HelpResources.Remove(helpItem);
                     }
@@ -85,13 +93,30 @@ namespace d360.web.Controllers.V2
                 foreach (var item in records)
                 {
                     HelpResource helpItem = _company.HelpResources.Where(x => x.ID == item.ID).FirstOrDefault();
+
+                    if (item.Name.Trim() == "")
+                    {
+                        throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidHelpName));
+                    }
+                    if (item.Name.Length > 500)
+                    {
+                        throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidHelpNameLength));
+                    }
+                    if (item.Url.Trim() == "")
+                    {
+                        throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidHelpUrl));
+                    }
+                    if (item.Url.Length > 2000)
+                    {
+                        throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidHelpUrlLength));
+                    }
+
                     if (helpItem == null)
                     {
                         var uid = Guid.NewGuid();
-                        _company.Query<int>(@"
-                    insert into [dbo].[HelpResource]([Name],[Description],[Url],[uid],[isEditable],[visibilty],[order],[isSystem])
-                    values(@name,'',@url,@uid,@iseditable,@visibilty,@order,@issystem)
-                    ", new { item.Name, item.Url, uid, item.isEditable, item.visibilty, item.order,item.isSystem }).FirstOrDefault();
+                        _company.HelpResources.Add(new HelpResource { Name = item.Name, Description = item.Description, 
+                        Url = item.Url,uid = uid, isEditable = item.isEditable, visibilty = item.visibilty, 
+                        order = item.order,isSystem = item.isSystem});
                     }
                     else
                     {
