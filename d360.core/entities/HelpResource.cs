@@ -21,5 +21,13 @@ namespace d360.core.entities
 
         [DataMember]
         public int SortIndex { get; set; }
+        [DataMember]
+        public bool isEditable { get; set; }
+        [DataMember]
+        public int visibilty { get; set; }
+        [DataMember]
+        public int order { get; set; }
+        [DataMember]
+        public bool isSystem { get; set; }
     }
 }

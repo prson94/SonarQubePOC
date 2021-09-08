@@ -394,6 +394,7 @@
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
     <Compile Include="Controllers\V2\CommentsController.cs" />
     <Compile Include="Controllers\V2\DataProfilesController.cs" />
+    <Compile Include="Controllers\V2\HelpMenuController.cs" />
     <Compile Include="Controllers\V2\ProcessController.cs" />
     <Compile Include="Controllers\V2\FieldsController.cs" />
     <Compile Include="Controllers\V2\AuditController.cs" />
@@ -905,6 +906,7 @@
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\multiselect-grid.component.html" />
     <Content Include="Scripts\app\components\shared\editor-header.component.html" />
     <Content Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.html" />
+    <Content Include="Scripts\app\components\shared\helpmenu\helpmenu-list.component.html" />
     <Content Include="Scripts\app\components\shared\menu\site-menu.component.html" />
     <Content Include="Scripts\app\components\shared\modal\gov-modal.component.html" />
     <Content Include="Scripts\app\components\shared\object-definition.tile.html" />
@@ -1089,6 +1091,9 @@
     <Content Include="Scripts\app\components\shared\header\header-profile.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor\asset-editor.component.ts" />
     <Content Include="Scripts\app\components\shared\menu\site-menu-category.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\helpmenu\helpmenu-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\helpmenu\helpmenu.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\helpmenu\helpmenu.service.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\object-detail-category.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\asset-score.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\definition\score-definition.component.ts" />
@@ -1343,6 +1348,7 @@
       <DependentUpon>Web.config</DependentUpon>
     </None>
     <TypeScriptCompile Include="Scripts\app\guards\redirect.guard.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\helpmenu.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\search-admin.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\side-panel.model.ts" />
     <TypeScriptCompile Include="Scripts\app\services\dataprofile.service.ts" />
