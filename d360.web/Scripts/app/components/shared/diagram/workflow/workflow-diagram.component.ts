@@ -337,7 +337,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 .pipe(
                     map(r => this.fieldTypes = r),
                     map(() => this.parseData(this.model)),
-                    map(() => this.isLoading = false)
+                    map(() => this.isLoading = false),
+                    map(() => { this.resetContentPosition() })
                 );
         }
 
@@ -363,6 +364,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 map(() => {
                     this.isLoading = false;
                     this.hasType = true;
+                    this.resetContentPosition();
                     })
                 );
     }
@@ -546,6 +548,13 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     //#endregion
 
     //#region helper methods
+
+    private resetContentPosition() {
+        setTimeout(() => {
+            this.diagram.alignDocument(go.Spot.TopLeft, go.Spot.TopLeft);
+            this.diagram.requestUpdate();
+        }, 200);
+    }
 
     private canLink(fromNode: any, fromPort: any, toNode: any, toPort: any) {
 
