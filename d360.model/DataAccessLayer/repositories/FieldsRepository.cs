@@ -502,6 +502,7 @@ select	@pageSize as 'pageSize',
                 case when FT.Type = 'Relationship' then FT.SearchPrefix else null end as 'Type.Relationship.Search.Prefix', 
                 case when FT.Type = 'Relationship' then FT.SearchSuffix else null end as 'Type.Relationship.Search.Suffix', 
                 case when FT.Type = 'Relationship' then FT.SearchDisplayOrder else null end as 'Type.Relationship.Search.DisplayOrder', 
+                case when FT.Type = 'Relationship' then FT.DisplayInColumn else null end as 'Type.Relationship.DisplayInColumn', 
 
 		        case when FT.Type = 'Text' then FT.ColumnOrder else null end as 'Type.Text.ColumnOrder',
 		        case when FT.Type = 'Text' then FT.ColumnWidth else null end as 'Type.Text.ColumnWidth',
@@ -1532,6 +1533,7 @@ from	IntersectType I
                     newFieldType.ShowIfEmpty = f.Type.Relationship.ShowIfEmpty;
                     newFieldType.SortOrder = f.Type.Relationship.SortOrder;
                     newFieldType.IsPrimaryFilter = f.Type.Relationship.IsPrimaryFilter;
+                    newFieldType.DisplayInColumn = f.Type.Relationship.DisplayInColumn;
                     if (f.Type.Relationship.Search != null)
                     {
                         newFieldType.SearchAddToResult = f.Type.Relationship.Search.AddToResult;

@@ -625,6 +625,8 @@ namespace d360.core.entities
         [DataMember]
         public bool IsPrimaryFilter { get; set; }
         [DataMember]
+        public bool? DisplayInColumn { get; set; }
+        [DataMember]
         public FieldTypeDescriptionApiViewModel_Search Search { get; set; }
     }
 
