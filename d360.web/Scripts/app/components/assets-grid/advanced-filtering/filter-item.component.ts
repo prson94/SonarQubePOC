@@ -7,7 +7,7 @@ import { FieldsObservableService } from "../../../services/fieldsObservable.serv
 import { AssetTypeService } from "../../../services/asset-type.service";
 import { TagService } from "../../../services/tag.service";
 import { RelationshipType } from "../../../models/relationship.model";
-import { Subscription, Observable } from "rxjs";
+import { Subscription } from "rxjs";
 import { MultiInputField } from "../../shared/controls/multi-input-field/multi-input-field.component";
 import { Table } from "primeng/table";
 import { AssetService } from "../../../services/asset.service";
@@ -561,25 +561,29 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         this.doesNeedValue = this.needsValue();
     }
 
-    private getLookupMethod(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
-        var fieldTypeUid = this.currentField.AssetTypeUid ?? "00000000-0000-0000-0000-000000000000";
-
-        return (this.currentField.ValueLoader) ? this.currentField.ValueLoader(params) : this.fieldsService.getLookupValues(fieldTypeUid, this.currentField.Name.trim(), params);
-    }
-
-    loadLookupValues(params: LookupValuesAPIParameters) {
+    private checkIfLoadLookupValues(params: LookupValuesAPIParameters): boolean {
         if (this.currentField.Values && this.currentField.Values.length > 0 && !params.filter) {
             var subData = this.currentField.Values.slice(+params.skip, +params.skip + +params.take);
             if (!subData.some((x) => !x)) {
-                return;
+                return false;
             }
         }
+        return true;
+    }
 
-        if (this.lazyLoadSubscription) {
-            this.lazyLoadSubscription.unsubscribe();
+    loadLookupValues(params: LookupValuesAPIParameters) {
+        if (this.checkIfLoadLookupValues(params)) {
+
+            if (this.lazyLoadSubscription) {
+                this.lazyLoadSubscription.unsubscribe();
+            }
+            this.isLookupValuesLoading = true;
+            var fieldTypeUid = this.currentField.AssetTypeUid ?? "00000000-0000-0000-0000-000000000000";
+
+            let lookupMethod = (this.currentField.ValueLoader) ? this.currentField.ValueLoader(params) : this.fieldsService.getLookupValues(fieldTypeUid, this.currentField.Name.trim(), params);
+
+            this.lazyLoadSubscription = lookupMethod.subscribe((res) => this.consumeLoadedLookupValues(res, params));
         }
-        this.isLookupValuesLoading = true;
-        this.lazyLoadSubscription = this.getLookupMethod(params).subscribe((res) => this.consumeLoadedLookupValues(res, params));
     }
 
     private consumeLoadedLookupValues(res: LookupValuesAPIModel, params: LookupValuesAPIParameters) {
