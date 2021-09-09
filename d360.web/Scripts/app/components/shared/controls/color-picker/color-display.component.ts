@@ -35,12 +35,26 @@ export class ColorDisplayComponent implements OnInit {
     }
     ngOnInit() {
         if (this.colorsJSON) {
-            try {
-                this.colorsObject = JSON.parse(this.colorsJSON);
-            } catch{
-                this.colorsObject = { name: this.colorsJSON, color: 'transparent' };
+            if (typeof this.colorsJSON === 'string') {
+                if (this.isStringJson(this.colorsJSON)) {
+                    this.colorsObject = JSON.parse(this.colorsJSON);
+                }
+                else {
+                    this.colorsObject = [{ name: this.colorsJSON, color: 'transparent' }];
+                }
+            }
+            else {
+                this.colorsObject = this.colorsJSON;
             }
         }
+    }
+    private isStringJson(str) {
+        try {
+            JSON.parse(str);
+        } catch (e) {
+            return false;
+        }
+        return true;
     }
 
     getColorFromName(status: string) {

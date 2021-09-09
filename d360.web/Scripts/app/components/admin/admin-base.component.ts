@@ -31,21 +31,7 @@ export class AdminBaseComponent extends BaseComponent {
 
     setCommonItems(showAreaAsType: boolean = false, headerOverride: string = null) {
 
-        this.area = [
-            StringConstants.Section_BusinessAssets,
-            StringConstants.Section_TechnicalAssets,
-            StringConstants.Section_Artifacts,
-            StringConstants.Section_Models,
-            StringConstants.Section_Policies,
-            StringConstants.Section_Predicates,
-            StringConstants.Section_Relationships,
-            StringConstants.Section_Rules,
-            StringConstants.Section_Scoring,
-            StringConstants.Section_Surveys,
-            StringConstants.Section_Actions,
-            StringConstants.Section_Workflows
-        ].indexOf(this.areaName) !== -1 ? StringConstants.Area_Configuration : StringConstants.Area_Administration;
-
+        this.area = this.determineAreaForAdminPage(this.areaName);
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.area));
         if (this.adminHeading)

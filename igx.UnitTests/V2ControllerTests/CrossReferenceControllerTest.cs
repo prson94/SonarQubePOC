@@ -22,7 +22,7 @@ namespace igx.UnitTests.V2ControllerTests
         internal CrossReferencesController crossReferencesController;
         public CrossReferenceControllerTest()
         {
-            this.crossReferencesController = new CrossReferencesController(GetCommunity(), GetCompany(), GetCrossReferencesRepository(),GetAssetRepository())
+            this.crossReferencesController = new CrossReferencesController(GetCommunity(), GetCompany(), GetCrossReferencesRepository(),GetAssetRepository(), GetSettingsRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()

@@ -109,6 +109,7 @@
     <Compile Include="ExtensionsTests\HttpRequestMessageExtensionsTests.cs" />
     <Compile Include="ExtensionsTests\QueueSourceTests.cs" />
     <Compile Include="FilterParserTests\FieldValidatorsTests.cs" />
+    <Compile Include="FieldTests\ShowInColumnTests.cs" />
     <Compile Include="FilterParserTests\RuleResultTests.cs" />
     <Compile Include="ModelExtensionTests\ModelExtensionTests-ComplexLookupDefinition.cs" />
     <Compile Include="ModelExtensionTests\ModelExtensionTests-OwnershipLookupDefinition.cs" />
@@ -128,6 +129,8 @@
     <Compile Include="ScoringTests\OperatorTests-DateCompares.cs" />
     <Compile Include="SearchTests\ElasticSourceTests.cs" />
     <Compile Include="SearchTests\SearchIndexerTests.cs" />
+    <Compile Include="SettingsTests\SettingsTests-Get.cs" />
+    <Compile Include="V2ControllerTests\EnvironmentControllerTest.cs" />
     <Compile Include="WebControllerTests\NavigationControllerTest.cs" />
     <Compile Include="V2ControllerTests\ActionsControllerTest.cs" />
     <Compile Include="V2ControllerTests\AssetsControllerTest.cs" />

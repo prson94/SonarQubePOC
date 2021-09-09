@@ -1,6 +1,7 @@
 ﻿using d360.core.entities;
 using d360.extensions;
 using d360.model;
+using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using Microsoft.Web.Http;
 using Swashbuckle.Swagger.Annotations;
@@ -27,7 +28,7 @@ namespace d360.web.Controllers.V2
     {
         ISearchSource SearchSource;
 
-        public SearchController(ICommunityContext community, ICompanyContext company, ISearchSource searchSource) : base(community, company)
+        public SearchController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository, ISearchSource searchSource) : base(community, company, settingsRepository)
         {
             SearchSource = searchSource;
         }

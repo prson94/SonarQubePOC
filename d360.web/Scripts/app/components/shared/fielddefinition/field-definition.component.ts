@@ -30,6 +30,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     @Input() showIsPartOfKey: boolean = true;
     @Input() showAddToSearch: boolean = false;
 
+    @Input() showDisplayInColumn: boolean = false;
+
     @Input() objectName: string = "";
 
     @Output() onEdit = new EventEmitter();
@@ -93,6 +95,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                         displayField.FriendlyName = field.FriendlyName;
                         displayField.Category = field.Category;
                         displayField.FieldType = this.getDisplayTypeName(type);
+                        displayField.DisplayInColumn = field.Type[type].DisplayInColumn;
                         displayField.IsListable = field.Type[type].IsListable;
                         displayField.IsPartOfKey = field.Type[type].IsPartOfKey;
                         displayField.SortOrder = field.Type[type].SortOrder;

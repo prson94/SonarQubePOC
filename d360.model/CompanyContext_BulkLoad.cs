@@ -492,7 +492,6 @@ from	[Load] L
                 {
                     case AssetTypeClass.BusinessAsset:
                     case AssetTypeClass.TechnicalAsset:
-                    case AssetTypeClass.FusionAttribute:
                     case AssetTypeClass.ReferenceItemType:
                         predicateType = PredicateType.InterTypeHierarchy;
                         calculateParentHashByUid = true;

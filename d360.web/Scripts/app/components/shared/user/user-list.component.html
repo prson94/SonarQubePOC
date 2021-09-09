@@ -115,7 +115,7 @@
         </div>
     </span>
     <d3s-dynamic-editor *ngIf="showEditor && !isLoading" [objectID]="objectID" objectType="ResourceType" title="Resource"
-                        [selection]="selected" rowID="ResourceID" (saveClick)="saveUser($event)"
+                        [selection]="selected" [useV2ApiLink]="true" rowID="ResourceID" (saveClick)="saveUser($event)"
                         [selectedObject]="'Resource'" [selectedObjectID]="selected?.ResourceID"
                         (closeClick)="closeEditor()"></d3s-dynamic-editor>
     <d3s-delete-form *ngIf="showDelete  && !isLoading"

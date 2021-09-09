@@ -18,21 +18,23 @@ namespace igx.UnitTests.V2ControllerTests
     {
 
         internal ActionsController actionsController;
+        
         public ActionsControllerTest()
         {
-            this.actionsController = new ActionsController(GetCommunity(), GetCompany(), GetCommentRepository(), GetIssueRepository(), GetAssetRepository(), GetResponsibilityRepository())
+            this.actionsController = new ActionsController(GetCommunity(), GetCompany(), GetCommentRepository(), GetIssueRepository(), GetAssetRepository(), GetResponsibilityRepository(), GetSettingsRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
             };
         }
+
         [Fact]
         public async void GetIssueTypesTest()
         {
             var actionResult = await actionsController.GetIssueTypes();
             Assert.True(actionResult.IsSuccessStatusCode, XMsg.BadResponseCode);
-
         }
+
         [Fact]
         public async void GetAllocationByAssetTypeAsyncTest()
         {

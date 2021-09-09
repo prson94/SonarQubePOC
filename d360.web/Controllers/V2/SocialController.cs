@@ -13,6 +13,7 @@ using System.Web.Http.Description;
 using System;
 using System.Linq;
 using System.Data.Entity;
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers.V2
 {
@@ -24,8 +25,8 @@ namespace d360.web.Controllers.V2
     ]
     public class SocialController : BaseV2ApiController
     {
-        public SocialController(ICommunityContext community, ICompanyContext company)
-            : base(community, company)
+        public SocialController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
         }
 

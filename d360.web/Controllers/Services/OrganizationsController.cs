@@ -1,6 +1,7 @@
 ﻿using d360.core.entities;
 using d360.core.enums;
 using d360.model;
+using d360.model.DataAccessLayer;
 using Microsoft.Web.Http;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,8 +18,8 @@ namespace d360.web.Controllers.Services
     {
         #region DI
 
-        public OrganizationsController(ICommunityContext community, ICompanyContext company)
-            : base(community, company)
+        public OrganizationsController(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository)
+            : base(community, company, settingsRepository)
         {
         }
 

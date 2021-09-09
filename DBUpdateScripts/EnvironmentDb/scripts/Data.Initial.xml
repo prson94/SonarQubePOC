@@ -203,4 +203,51 @@ end
 		]]>
 	</rollback>
   </changeSet>
+
+  <changeSet author="sDooley" id="Data.Initial.HelpMenu-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+if not exists (select 1 from [dbo].[HelpResource] where [Url] = 'about' and [isSystem] = 1)
+	begin
+	  insert into [dbo].[HelpResource]([Name],[Description],[Url],[uid],[isEditable],[visibilty],[order],[isSystem])
+	  values('About Data360 Govern','About Data360','about',NEWID(),0,1,4,1)
+	end
+	if not exists (select 1 from [dbo].[HelpResource] where [Url] = 'Default.htm#c-user-guide/user-guide.htm%3FTocPath%3DUser%2520guide%7C_____0' and [isSystem] = 1)
+	begin
+		insert into [dbo].[HelpResource]([Name],[Description],[Url],[uid],[isEditable],[visibilty],[order],[isSystem])
+		values('User Guide','User Guide','Default.htm#c-user-guide/user-guide.htm%3FTocPath%3DUser%2520guide%7C_____0',NEWID(),0,1,0,1)
+	end
+
+	if not exists (select 1 from [dbo].[HelpResource] where [Url] = 'Default.htm#d-admin/admin-intro.htm%3FTocPath%3DAdministration%2520guide%7C_____0' and [isSystem] = 1)
+	begin
+		insert into [dbo].[HelpResource]([Name],[Description],[Url],[uid],[isEditable],[visibilty],[order],[isSystem])
+		values('Admin Guide','Admin Guide','Default.htm#d-admin/admin-intro.htm%3FTocPath%3DAdministration%2520guide%7C_____0',NEWID(),0,1,1,1)
+	end
+
+	if not exists (select 1 from [dbo].[HelpResource] where [Url] = 'Default.htm#b-release-notes/whats-new.htm%3FTocPath%3DWhat' and [isSystem] = 1)
+	begin
+		insert into [dbo].[HelpResource]([Name],[Description],[Url],[uid],[isEditable],[visibilty],[order],[isSystem])
+		values('Whats New','Whats New','Default.htm#b-release-notes/whats-new.htm%3FTocPath%3DWhat',NEWID(),0,1,2,1)
+	end
+
+	if not exists (select 1 from [dbo].[HelpResource] where [Url] = 'https://support.infogix.com/hc/en-us/community/topics/360000029388-Data3Sixty-Govern' and [isSystem] = 1)
+	begin
+		insert into [dbo].[HelpResource]([Name],[Description],[Url],[uid],[isEditable],[visibilty],[order],[isSystem])
+	  values('Community','Community','https://support.infogix.com/hc/en-us/community/topics/360000029388-Data3Sixty-Govern',NEWID(),0,1,3,1)
+	end
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+		delete from [dbo].[HelpResource] where [Url] = 'about' and [isSystem] = 1;
+		delete from [dbo].[HelpResource] where [Url] = 'Default.htm#c-user-guide/user-guide.htm%3FTocPath%3DUser%2520guide%7C_____0' and [isSystem] = 1;
+		delete from [dbo].[HelpResource] where [Url] = 'Default.htm#d-admin/admin-intro.htm%3FTocPath%3DAdministration%2520guide%7C_____0' and [isSystem] = 1;
+		delete from [dbo].[HelpResource] where [Url] = 'Default.htm#b-release-notes/whats-new.htm%3FTocPath%3DWhat' and [isSystem] = 1;
+		delete from [dbo].[HelpResource] where [Url] = 'https://support.infogix.com/hc/en-us/community/topics/360000029388-Data3Sixty-Govern' and [isSystem] = 1;
+		]]>
+    </rollback>
+  </changeSet>
 </databaseChangeLog>

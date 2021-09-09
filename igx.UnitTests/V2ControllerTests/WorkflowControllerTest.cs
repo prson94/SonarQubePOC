@@ -20,7 +20,7 @@ namespace igx.UnitTests.V2ControllerTests
 
         public WorkflowControllerTest()
         {
-            this.workflowController = new WorkflowController(GetCommunity(), GetCompany(), GetWorkflowRepository(), GetWorkflowApiModelValidator())
+            this.workflowController = new WorkflowController(GetCommunity(), GetCompany(), GetSettingsRepository(), GetWorkflowRepository(), GetWorkflowApiModelValidator())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
