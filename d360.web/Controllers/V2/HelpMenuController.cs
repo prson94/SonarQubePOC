@@ -78,7 +78,7 @@ namespace d360.web.Controllers.V2
                 foreach (var item in deleteRecords)
                 {
                     var helpItem = _company.HelpResources.Where(x => x.ID == item.ID).FirstOrDefault();
-                    if (helpItem.isSystem)
+                    if (helpItem != null && helpItem.isSystem)
                     {
                         throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorDeletingDefaultHelpItem));
                     }
