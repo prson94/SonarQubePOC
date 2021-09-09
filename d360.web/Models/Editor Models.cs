@@ -128,6 +128,7 @@ namespace d360.web.Models
         public int MaxExcelExportRows { get; set; }
         public string AllowedOrigins { get; set; }
         public string FramingDomains { get; set; }
+        public bool HideHeaderBarControls { get; set; }
 
         public int AssetDefinitionColumnWidth { get; set; }
 

@@ -279,6 +279,12 @@
   <data name="HideData3SixtyUsers_Name" xml:space="preserve">
     <value>Hide Data3Sixty Users</value>
   </data>
+  <data name="HideHeaderBarControls_Desc" xml:space="preserve">
+    <value>This setting hides the controls on the right side of the header bar</value>
+  </data>
+  <data name="HideHeaderBarControls_Name" xml:space="preserve">
+    <value>Hide Header Bar Controls</value>
+  </data>
   <data name="HomePageBackgroundImage_Desc" xml:space="preserve">
     <value>When set this setting is used to display a custom image on the home page.</value>
   </data>

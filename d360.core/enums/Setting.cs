@@ -551,7 +551,15 @@ namespace d360.core.enums
             Name("AssetDefinitionColumnWidth_Name", typeof(Settings)),
             Type(SettingType.Number)
         ]
-        AssetDefinitionColumnWidth = 82
+        AssetDefinitionColumnWidth = 82,
+        [
+            DefaultValue(false),
+            Description("HideHeaderBarControls_Desc", typeof(Settings)),
+            Locked(false),
+            Name("HideHeaderBarControls_Name", typeof(Settings)),
+            Type(SettingType.Boolean)
+        ]
+        HideHeaderBarControls = 83
     }
 
     public class SettingInfo
