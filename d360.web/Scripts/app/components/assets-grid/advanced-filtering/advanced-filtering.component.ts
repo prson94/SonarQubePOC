@@ -5,7 +5,7 @@ import { FieldsObservableService } from "../../../services/fieldsObservable.serv
 import { CompanySettingsService } from "../../../services/settings.service";
 import { FieldTypeAPIModelField, FieldTypeHelper } from "../../../models/fieldtype-api.model";
 import { forkJoin, Observable, of } from "rxjs";
-import { AdvancedFilterFieldType, AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, ComplexFieldDefinition, FieldTypeAPIModelFieldCondition, Filters, SystemFields } from "./advanced-filtering.models";
+import { AdvancedFilterFieldType, AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, ComplexFieldDefinition, FieldTypeAPIModelFieldAdvancedCondition, Filters, SystemFields } from "./advanced-filtering.models";
 import { DatePipe } from "@angular/common";
 import { AllocationService } from "../../../services/allocations.service";
 import { ScoreTypeAllocation } from "../../../models/metrics.model";
@@ -36,7 +36,7 @@ export class AdvancedFilteringComponent implements OnChanges {
     filters: Filters;
     emittedFilters: string;
 
-    fields: FieldTypeAPIModelFieldCondition[] = null;
+    fields: FieldTypeAPIModelFieldAdvancedCondition[] = null;
     operators: OperatorModel[] = [];
 
     conditions: AdvancedFilterFieldConditionCollection;
@@ -225,22 +225,22 @@ export class AdvancedFilteringComponent implements OnChanges {
     }
 
     private processLoadedData(res: AdvancedFilterFieldType[]) {
-        var tempFields: FieldTypeAPIModelFieldCondition[] = [];
+        var tempFields: FieldTypeAPIModelFieldAdvancedCondition[] = [];
         res.forEach((f) => {
             if (FieldTypeHelper.isFieldForOperatorAdvancedFilters(f.Type)) {
-                var fModel = f as FieldTypeAPIModelFieldCondition;
+                var fModel = f as FieldTypeAPIModelFieldAdvancedCondition;
                 tempFields.push(fModel);
             }
         });
 
         SystemFields.GetSystemFieldDefinition(this.gridType).forEach((f) => {
-            var fModel = f as FieldTypeAPIModelFieldCondition;
+            var fModel = f as FieldTypeAPIModelFieldAdvancedCondition;
             fModel.IsSystemField = true;
             tempFields.push(fModel);
         });
 
         SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).forEach((f) => {
-            var fModel = f as FieldTypeAPIModelFieldCondition;
+            var fModel = f as FieldTypeAPIModelFieldAdvancedCondition;
             fModel.IsSystemField = true;
             tempFields.push(fModel);
         });
@@ -276,12 +276,6 @@ export class AdvancedFilteringComponent implements OnChanges {
         res.filter((r) => r.RemovePopulatedOperator).forEach((r) => {
             let ft = tempFields.find((t) => t.Name === r.Name);
             ft.Operators = ft.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
-        });
-
-        res.filter((r) => r.ValueList?.length > 0).forEach((r) => {
-            let ft = tempFields.find((t) => t.Name === r.Name);
-            ft.Values = [];
-            r.ValueList.forEach((vl) => ft.Values.push(vl));
         });
 
         this.fields = tempFields;
@@ -332,7 +326,7 @@ export class AdvancedFilteringComponent implements OnChanges {
         }, 50);
     }
 
-    private updateOperatorsForDateTimeSystemField(f: FieldTypeAPIModelFieldCondition) {
+    private updateOperatorsForDateTimeSystemField(f: FieldTypeAPIModelFieldAdvancedCondition) {
         f.Operators = f.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
         f.Operators.forEach((item) => {
             if (item.value === "Equals") {

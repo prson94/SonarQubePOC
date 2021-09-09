@@ -1053,7 +1053,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\badge\badge.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\badge\badge.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\date\date.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\controls\field-condition-grid\field-condition-grid.models.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\field-condition-grid\field-condition-grid.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\message-box\message-box.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\message-box\message-box.module.ts" />

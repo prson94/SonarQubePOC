@@ -10,6 +10,7 @@ import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from "./baseObservable.service";
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 import { FieldType, FieldTypeAPIModel, FieldTypeAPIModelField } from '../models/fieldtype-api.model';
+import { LookupValuesAPIModel } from '../components/assets-grid/advanced-filtering/advanced-filtering.models';
 
 @Injectable({
     providedIn: 'root'
@@ -511,7 +512,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
     }
 
 
-    getLookupValues(assetTypeUid: string, fieldName: string, params: any): Observable<any> {
+    getLookupValues(assetTypeUid: string, fieldName: string, params: any): Observable<LookupValuesAPIModel> {
         var qString = '';
         if (params) {
             qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');

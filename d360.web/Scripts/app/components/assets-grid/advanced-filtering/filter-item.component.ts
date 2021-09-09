@@ -1,9 +1,8 @@
 ﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, OnDestroy, OnChanges, Output, EventEmitter, HostListener, AfterViewChecked } from "@angular/core";
 import { LazyLoadEvent, SelectItem, SelectItemGroup } from "primeng/api";
 import * as _ from "lodash";
-import { FieldTypeAPIModelFieldCondition } from "../../../models/field-condition-grid.models";
 import { OperatorModel } from "../../../models/operator.model";
-import { AdvancedFilterFieldCondition, ComplexFieldDefinition, SystemFields } from "./advanced-filtering.models";
+import { FieldTypeAPIModelFieldAdvancedCondition, AdvancedFilterFieldCondition, ComplexFieldDefinition, SystemFields, LookupValuesAPIParameters, LookupValuesAPIModel } from "./advanced-filtering.models";
 import { FieldsObservableService } from "../../../services/fieldsObservable.service";
 import { AssetTypeService } from "../../../services/asset-type.service";
 import { TagService } from "../../../services/tag.service";
@@ -24,7 +23,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     @Input() loadIdentifier: string = "";
     @Input() gridType: string = "List";
     @Input() condition: AdvancedFilterFieldCondition;
-    @Input() fields: FieldTypeAPIModelFieldCondition[] = null;
+    @Input() fields: FieldTypeAPIModelFieldAdvancedCondition[] = null;
     @Input() operators: OperatorModel[] = [];
     @Input() relationshipTypes: RelationshipType[] = [];
 
@@ -34,7 +33,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
     lazyLoadSubscription: Subscription;
 
-    currentField: FieldTypeAPIModelFieldCondition;
+    currentField: FieldTypeAPIModelFieldAdvancedCondition;
 
     allFieldsDropdown: SelectItemGroup[] = [];
 
@@ -508,7 +507,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
     loadListLazy(event: LazyLoadEvent) {
 
-        var params = { skip: event.first, take: event.rows, filter: event.globalFilter ?? "" };
+        var params: LookupValuesAPIParameters = { skip: event.first, take: event.rows, filter: event.globalFilter ?? "" };
         var type = this.getFieldType(this.condition);
         if (type.Type) {
             if (this.condition.fieldType === "Lookup") {
@@ -562,44 +561,48 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         this.doesNeedValue = this.needsValue();
     }
 
-    loadLookupValues(params: any) {
-        if (this.currentField.Values && this.currentField.Values.length > 0 && !params.filter) {
-            var subData = this.currentField.Values.slice(+params.skip, +params.skip + +params.take);
-            if (!subData.some((x) => !x)) {
-                return;
-            }
+    private checkIfLoadLookupValues(params: LookupValuesAPIParameters): boolean {
+        let ret = true;
+        if (this.currentField.Values?.length > 0 && !params.filter) {
+            ret = this.currentField.Values.slice(+params.skip, +params.skip + +params.take).some((x) => !x);
+        }
+        return ret;
+    }
+
+    loadLookupValues(params: LookupValuesAPIParameters) {
+        if (!this.checkIfLoadLookupValues(params)) {
+            return;
         }
 
         if (this.lazyLoadSubscription) {
             this.lazyLoadSubscription.unsubscribe();
         }
         this.isLookupValuesLoading = true;
-        var fieldTypeUid = this.currentField.AssetTypeUid;
+        var fieldTypeUid = this.currentField.AssetTypeUid ?? "00000000-0000-0000-0000-000000000000";
 
-        if (!fieldTypeUid) {
-            fieldTypeUid = "00000000-0000-0000-0000-000000000000";
+        let lookupMethod = (this.currentField.ValueLoader) ? this.currentField.ValueLoader(params) : this.fieldsService.getLookupValues(fieldTypeUid, this.currentField.Name.trim(), params);
+
+        this.lazyLoadSubscription = lookupMethod.subscribe((res) => this.consumeLoadedLookupValues(res, params));
+    }
+
+    private consumeLoadedLookupValues(res: LookupValuesAPIModel, params: LookupValuesAPIParameters) {
+        if (!this.currentField.Values || this.currentField.Values.length === 0) {
+            this.currentField.Values = Array.from({ length: res.count });
         }
 
-        this.lazyLoadSubscription = this.fieldsService.getLookupValues(fieldTypeUid, this.currentField.Name.trim(), params)
-            .subscribe((res) => {
-                if (!this.currentField.Values || this.currentField.Values.length === 0) {
-                    this.currentField.Values = Array.from({ length: res.count });
-                }
+        let loadedData = [];
 
-                let loadedData = [];
+        res.items.forEach((str) => {
+            loadedData.push({ title: str, value: str });
+        });
 
-                res.items.forEach((str) => {
-                    loadedData.push({ title: str, value: str });
-                });
+        Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
 
-                Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
+        this.currentField.Values = [...this.currentField.Values];
 
-                this.currentField.Values = [...this.currentField.Values];
+        this.isLookupValuesLoading = false;
 
-                this.isLookupValuesLoading = false;
-
-                this.cdRef.markForCheck();
-            });
+        this.cdRef.markForCheck();
     }
 
     loadLookupValuesForComplexFields(params: any) {
