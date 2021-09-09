@@ -38,6 +38,7 @@
                     <col style="width: 20%">
                     <col style="width: 15%">
                     <col style="width: 15%">
+                    <col style="width: 12%" *ngIf="showDisplayInColumn">
                     <col style="width: 12%" *ngIf="showIsListable">
                     <col style="width: 12%">
                     <col style="width: 12%" *ngIf="showIsPartOfKey">
@@ -61,6 +62,10 @@
                     <th [pSortableColumn]="'Category'" style="width: 15%">
                         Category
                         <d3s-sortIcon [field]="'Category'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'DisplayInColumn'" style="width: 12%" *ngIf="showDisplayInColumn">
+                        Display in Column?
+                        <d3s-sortIcon [field]="'DisplayInColumn'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'IsListable'" style="width: 12%" *ngIf="showIsListable">
                         Listable?
@@ -91,6 +96,7 @@
                     <th><d3s-column-filter [field]="'FriendlyName'" [datatype]="'text'"></d3s-column-filter></th>
                     <th><d3s-column-filter [field]="'FieldType'" [datatype]="'text'"></d3s-column-filter></th>
                     <th><d3s-column-filter [field]="'Category'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th *ngIf="showDisplayInColumn"></th>
                     <th *ngIf="showIsListable"></th>
                     <th></th>
                     <th *ngIf="showIsPartOfKey"></th>
@@ -107,6 +113,10 @@
                     <td>{{item.FriendlyName}}</td>
                     <td>{{item.FieldType}}</td>
                     <td>{{item.Category}}</td>
+                    <td *ngIf="showDisplayInColumn">
+                        <span><i *ngIf="item?.DisplayInColumn" class="fa fa-check enabled" title="True"></i></span>
+                        <span><i *ngIf="!item?.DisplayInColumn" class="fa fa-times disabled" title="False"></i></span>
+                    </td>
                     <td *ngIf="showIsListable">
                         <span><i *ngIf="item?.IsListable" class="fa fa-check enabled" title="True"></i></span>
                         <span><i *ngIf="!item?.IsListable" class="fa fa-times disabled" title="False"></i></span>

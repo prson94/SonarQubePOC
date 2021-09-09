@@ -132,6 +132,7 @@ export class FieldDisplayModel {
     FriendlyName: string;
     Category: string;
     FieldType: string;
+    DisplayInColumn: boolean;
     IsListable: boolean;
     IsPartOfKey: boolean;
     IsRequired: boolean;

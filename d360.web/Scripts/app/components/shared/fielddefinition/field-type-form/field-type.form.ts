@@ -382,7 +382,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 }
                 break;
             case 'relationship':
-                this.showDisplayInColumn = false;
                 try {
                     if (this.model.FieldType.Type["Relationship"].IntersectTypeUid) {
                         observables.push(this.cardinalRelationshipSelected(this.model.FieldType.Type["Relationship"].IntersectTypeUid));

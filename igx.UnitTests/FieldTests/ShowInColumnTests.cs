@@ -36,7 +36,7 @@ namespace igx.UnitTests.FieldsHelperTests
             Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeLookupApiViewModel(), true), "Lookup property check failed");
             Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeNumberApiViewModel(), true), "Number property check failed");
             Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypePathApiViewModel(), true), "Path property check failed");
-            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeRelationshipApiViewModel(), false), "Relationship property check failed");
+            Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeRelationshipApiViewModel(), true), "Relationship property check failed");
             Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeTextApiViewModel(), true), "Text property check failed");
             Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeTagApiViewModel(), false), "Tag property check failed");
             Assert.True(IsPropAssumptionCorrect(new FieldTypeDataTypeComputedScoreApiViewModel(), true), "Score property check failed");

@@ -127,10 +127,9 @@
                         </p-checkbox>
 
                         <div *ngIf="model.FieldType.Type[currentType].IsDisplayable && showDisplayInColumn" style="margin-left: 16px;">
-                            <p-checkbox
-                                        [escape]="false"
-                                        pTooltip="Check to diplay the field in a column on the Definition panel.<br/> Multiple, adjacent columns will be displayed on a single line.<br/> Otherwise, the field will be displayed using the full width of the panel." 
-                                        tooltipPosition="left" 
+                            <p-checkbox [escape]="false"
+                                        pTooltip="Check to diplay the field in a column on the Definition panel.<br/> Multiple, adjacent columns will be displayed on a single line.<br/> Otherwise, the field will be displayed using the full width of the panel."
+                                        tooltipPosition="left"
                                         tooltipStyleClass="ig-tooltip"
                                         binary="true"
                                         [(ngModel)]="model.FieldType.Type[currentType].DisplayInColumn"
