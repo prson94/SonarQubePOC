@@ -118,6 +118,7 @@ namespace d360.model.DataAccessLayer
             bool includeTotal = true;
             bool includeAssetPath = false;
             bool orderByAssetPath = false;
+            bool listColorsAsJSON = false;
 
             string _orderBy = "I.IntersectTypeID,I.ID";
             string _orderDirection = "asc";
@@ -163,6 +164,10 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                         whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" T.[Uid] = @relationshiptypeuid";
                         fieldTypes = companyContext.Query<FieldType>("select F.* from FieldType F inner join IntersectType I on F.Object = 'IntersectType' and I.ID = F.ObjectID and I.[Uid] = @relationshipTypeUid", new { relationshipTypeUid }, ApiTimeout).ToList();
                     }
+                }
+                if (queryParamsList.Any(k => k.Key.ToLower() == "_listcolorsasjson"))
+                {
+                    bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_listcolorsasjson").Value, out listColorsAsJSON);
                 }
                 if (queryParamsList.Any(q => q.Key.ToLower() == "state"))
                 {
@@ -276,7 +281,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
 
             if (fieldTypes != null)
             {
-                getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "'Intersect'", "i.Id");
+                getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "'Intersect'", "i.Id", listColorsAsJSON);
             }
 
             if (queryParams.Any(x => x.Key.ToLower() == "_order"))
