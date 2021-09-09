@@ -20,6 +20,7 @@ import { ButtonModule } from 'primeng/button';
 import { SharedModule } from 'primeng/api';
 import { ColorPickerModule } from 'primeng/colorpicker';
 import { TableModule } from 'primeng/table';
+import { TooltipModule } from 'primeng/tooltip';
 
 
 @NgModule({
@@ -34,6 +35,7 @@ import { TableModule } from 'primeng/table';
         SharedGridPagingInfoModule,
         IconPickerModule,
         PopupMenuModule,
+        TooltipModule,
 
         //prime
         ColorPickerModule,
