@@ -401,7 +401,7 @@ namespace d360.core.enums
         WorkflowCatchAllGroup = 58,
         
         [
-            DefaultValue(1), 
+            DefaultValue(10000), 
             Description("MaxDropdownItems_Desc", typeof(Settings)), 
             Locked(false),
             Name("MaxDropdownItems_Name", typeof(Settings)),
