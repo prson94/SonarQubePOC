@@ -117,7 +117,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     lazyLoadDuplicates(e: LazyLoadEvent) {
         this.duplicatesDataLoading = true;
 
-        this.duplicateRowsPerPage = e.rows
+        this.duplicateRowsPerPage = e.rows;
         this.duplicateCurrentPageNumber = (e.first / e.rows) + 1;
 
         localStorage.setItem("duplicate-rows", e.rows.toString());
@@ -128,7 +128,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     lazyLoadSimiliar(e: LazyLoadEvent) {
         this.similarDataLoading = true;
 
-        this.similarRowsPerPage = e.rows
+        this.similarRowsPerPage = e.rows;
         this.similarCurrentPageNumber = (e.first / e.rows) + 1;
 
         localStorage.setItem("similar-rows", e.rows.toString());
@@ -166,7 +166,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     }
 
     getData(type: string) {
-        if (type.toLowerCase() == "data") {
+        if (type.toLowerCase() === "data") {
             this.dataProfileService.getMatchesByMatchType(this.assetUid, "Data", this.duplicateCurrentPageNumber, this.duplicateRowsPerPage, this.duplicatesSimpleFilter, this.duplicateAdvancedFilter)
                 .subscribe((res) => {
                     this.duplicatesDataTotalCount = +res.total;
@@ -174,7 +174,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                     this.duplicatesDataLoading = false;
                     this.cdRef.markForCheck();
                 });
-        } else if (type.toLowerCase() == "similar") {
+        } else if (type.toLowerCase() === "similar") {
             this.dataProfileService.getMatchesByMatchType(this.assetUid, "Structure", this.similarCurrentPageNumber, this.similarRowsPerPage, this.similarSimpleFilter, this.similarAdvancedFilter)
                 .subscribe((res) => {
                     this.similarData = res.items;
@@ -186,10 +186,10 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     }
 
     advancedFiltersChanged($event: Filters, type: string) {
-        if (type == 'data') {
+        if (type === 'data') {
             this.duplicateAdvancedFilter = $event.filter;            
             this.getData(type);
-        } else if(type == 'similar')  {
+        } else if(type === 'similar')  {
             this.similarAdvancedFilter = $event.filter
             this.getData(type);
         }                  
