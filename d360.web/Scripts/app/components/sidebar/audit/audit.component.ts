@@ -5,13 +5,14 @@ import { LazyLoadEvent } from 'primeng/api';
 import { BaseComponent } from '../../shared/base.component';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { AuditService } from '../../../services/audit.service';
-import { Audit, AuditApiFilters } from '../../../models/audit.model';
+import { Audit, AuditApiFilters, AuditFilterLists } from '../../../models/audit.model';
 import { SortOrder } from '../../../models/enums.model';
 import { GridColumn, GridFilterExpression } from '../../../models/grid-definition.model';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { FieldType } from "../../../models/fieldtype-api.model";
-import { AdvancedFilterFieldType, Filters } from "../../assets-grid/advanced-filtering/advanced-filtering.models";
-import { Observable, of, ReplaySubject } from "rxjs";
+import { AdvancedFilterFieldType, Filters, LookupValuesAPIParameters, LookupValuesAPIModel } from "../../assets-grid/advanced-filtering/advanced-filtering.models";
+import { Observable, ReplaySubject } from "rxjs";
+import { map, shareReplay } from "rxjs/operators";
 
 @Component({
     selector: 'd3s-audit',
@@ -39,6 +40,7 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
     advancedFilter: string = "";
     isFiltersReady: boolean = false;
     columns: GridColumn[] = [];
+    lookupColumns: string[] = ["resourceName", "action", "actionObject"];
     isExportInProgress: boolean = false;
 
     constructor(
@@ -211,31 +213,44 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
         return true;
     }
 
-    public setAdvancedFilters():void {
-        this.auditService.getFilterLists(this.uid).subscribe((lists) => {
-            let fields: AdvancedFilterFieldType[] = [];
+    private filterLists$: Observable<AuditFilterLists>;
 
-            this.columns.forEach((c) => {
-                let field: AdvancedFilterFieldType = {
-                    Name: c.datafield,
-                    FriendlyName: c.text,
-                    Type: lists[c.datafield] ? new FieldType("Lookup") : new FieldType(c.fieldType),
-                    Category: "",
-                    RemovePopulatedOperator: ["newValue", "previousValue"].indexOf(c.datafield) === -1
+    public getFilterLists(): Observable<AuditFilterLists> {
+        if (!this.filterLists$) {
+            this.filterLists$ = this.auditService.getFilterLists(this.uid).pipe(shareReplay(1));
+        }
+        return this.filterLists$;
+    }
+
+    public getLookupValues(field: string, params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
+        return this.getFilterLists().pipe(
+            map((lists) => {
+                const values = lists[field].filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? "") !== -1);
+                return {
+                    items: values,
+                    count: values.length
                 };
-                if (lists[c.datafield]) {
-                    field.ValueList = lists[c.datafield].map((l) => {
-                        return {value: l, title: l};
-                    });
-                    if (field.ValueList.length === 0) {
-                        field.ValueList.push({value: " ", title: "No Value"});
-                    }
-                }
-                fields.push(field);
-            });
-            this.filterFieldsSubject.next(fields);
-            this.filterFieldsSubject.complete();
+            })
+        )
+    }
 
+    public setAdvancedFilters():void {
+        let fields: AdvancedFilterFieldType[] = [];
+
+        this.columns.forEach((c) => {
+            let field: AdvancedFilterFieldType = {
+                Name: c.datafield,
+                FriendlyName: c.text,
+                Type: this.lookupColumns.indexOf(c.datafield) !== -1 ? new FieldType("Lookup") : new FieldType(c.fieldType),
+                Category: "",
+                RemovePopulatedOperator: ["newValue", "previousValue"].indexOf(c.datafield) === -1
+            };
+            if (this.lookupColumns.indexOf(c.datafield) !== -1) {
+                field.ValueLoader = this.getLookupValues.bind(this, c.datafield);
+            }
+            fields.push(field);
         });
+        this.filterFieldsSubject.next(fields);
+        this.filterFieldsSubject.complete();
     }
 }
