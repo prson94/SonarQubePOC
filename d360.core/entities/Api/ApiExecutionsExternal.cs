@@ -36,6 +36,7 @@ namespace d360.core.entities
         public Guid? ExternalId { get; set; }
         public string Detail { get; set; }
         public string Component { get; set; }
+        public Dictionary<string, string> Configuration { get; set; }
     }
 
     public class ApiExecutionExternalViewModel
