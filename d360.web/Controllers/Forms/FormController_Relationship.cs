@@ -597,6 +597,7 @@ order by r.Name";
         public JsonNetResult IntersectType_SubjectOptions()
         {
             var models = Company.GetIntersectTypeOptions()
+                .Where(i => i.Type != "MetricAllocation" && i.Type != "Predicate")
                 .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
 
             return new JsonNetResult { Data = models, Formatting = Formatting.None };
