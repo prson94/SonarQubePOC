@@ -190,7 +190,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             this.duplicateAdvancedFilter = $event.filter;            
             this.getData(type);
         } else if(type === 'similar')  {
-            this.similarAdvancedFilter = $event.filter
+            this.similarAdvancedFilter = $event.filter;
             this.getData(type);
         }                  
     }
