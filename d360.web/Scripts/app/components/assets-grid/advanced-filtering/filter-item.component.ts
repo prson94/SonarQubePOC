@@ -573,18 +573,11 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             this.lazyLoadSubscription.unsubscribe();
         }
         this.isLookupValuesLoading = true;
-        var fieldTypeUid = this.currentField.AssetTypeUid;
+        var fieldTypeUid = this.currentField.AssetTypeUid ?? "00000000-0000-0000-0000-000000000000";
 
-        if (!fieldTypeUid) {
-            fieldTypeUid = "00000000-0000-0000-0000-000000000000";
-        }
+        let lookupMethod = (this.currentField.ValueLoader) ? this.currentField.ValueLoader(params) : this.fieldsService.getLookupValues(fieldTypeUid, this.currentField.Name.trim(), params);
 
-        if (this.currentField.ValueLoader) {
-            this.lazyLoadSubscription = this.currentField.ValueLoader(params).subscribe((res) => this.consumeLoadedLookupValues(res, params));
-        } else {
-            this.lazyLoadSubscription = this.fieldsService.getLookupValues(fieldTypeUid, this.currentField.Name.trim(), params)
-                .subscribe((res) => this.consumeLoadedLookupValues(res, params));
-        }
+        this.lazyLoadSubscription = lookupMethod.subscribe((res) => this.consumeLoadedLookupValues(res, params));
     }
 
     private consumeLoadedLookupValues(res: LookupValuesAPIModel, params: LookupValuesAPIParameters) {

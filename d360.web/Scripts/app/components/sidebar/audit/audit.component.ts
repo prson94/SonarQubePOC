@@ -225,13 +225,13 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
     public getLookupValues(field: string, params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
         return this.getFilterLists().pipe(
             map((lists) => {
-                const values = lists[field].filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? "") !== -1);
+                const values = lists[`${field}`].filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? "") !== -1);
                 return {
                     items: values,
                     count: values.length
                 };
             })
-        )
+        );
     }
 
     public setAdvancedFilters():void {

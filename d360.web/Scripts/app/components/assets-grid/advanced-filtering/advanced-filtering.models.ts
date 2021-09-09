@@ -35,7 +35,7 @@ export class FieldTypeAPIModelFieldAdvancedCondition extends FieldTypeAPIModelFi
 
     constructor(data: WithOptional<FieldTypeAPIModelFieldAdvancedCondition, "AssetTypeUid" | "ValueLoader" | "IsOwnerField" | "IsSystemField" | "IsRelationship">) {
         super();
-        Object.assign(this, data)
+        Object.assign(this, data);
     }
 }
 
