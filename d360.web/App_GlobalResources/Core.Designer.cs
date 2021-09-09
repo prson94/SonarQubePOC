@@ -70,65 +70,11 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Data Event.
-        /// </summary>
-        public static string CommentType_DataEvent {
-            get {
-                return ResourceManager.GetString("CommentType_DataEvent", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Comment.
         /// </summary>
         public static string CommentType_Social {
             get {
                 return ResourceManager.GetString("CommentType_Social", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Task.
-        /// </summary>
-        public static string CommentType_Task {
-            get {
-                return ResourceManager.GetString("CommentType_Task", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Certify Artifact.
-        /// </summary>
-        public static string WorkflowType_CertifyArtifact {
-            get {
-                return ResourceManager.GetString("WorkflowType_CertifyArtifact", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Challenge.
-        /// </summary>
-        public static string WorkflowType_ChallengeArtifact {
-            get {
-                return ResourceManager.GetString("WorkflowType_ChallengeArtifact", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Propose New Artifact.
-        /// </summary>
-        public static string WorkflowType_SuggestNewArtifact {
-            get {
-                return ResourceManager.GetString("WorkflowType_SuggestNewArtifact", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Actions.
-        /// </summary>
-        public static string WorkflowType_WorkIssue {
-            get {
-                return ResourceManager.GetString("WorkflowType_WorkIssue", resourceCulture);
             }
         }
     }

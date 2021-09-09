@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.Rule-v1">
+  <changeSet author="Pappas" id="Table.dbo.Rule-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -28,6 +28,40 @@ BEGIN
 	)
 END
 
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Rule' and COLUMN_NAME = 'Color')
+begin
+	alter table [dbo].[Rule] add [Color] varchar(7) null
+end
+
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Rule' and COLUMN_NAME = 'Threshold')
+begin
+	ALTER TABLE [dbo].[Rule] DROP CONSTRAINT [DF_Rule_Threshold];
+	alter table [dbo].[Rule] drop column [Threshold];
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Rule' and COLUMN_NAME = 'Color')
+begin
+	alter table [dbo].[Rule] drop column [Color]
+end
+
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Rule' and COLUMN_NAME = 'Color')
+begin
+	alter table [dbo].[Rule] add [Threshold] [decimal](4, 3) NULL;
+	ALTER TABLE [dbo].[Rule] ADD  CONSTRAINT [DF_Rule_Threshold]  DEFAULT ((0)) FOR [Threshold];
+end
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.Rule-Indices-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
 IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_Rule_RuleType')
 BEGIN
 	ALTER TABLE [dbo].[Rule] WITH CHECK ADD CONSTRAINT [FK_Rule_RuleType] FOREIGN KEY([RuleTypeID]) REFERENCES [dbo].[RuleType] ([ID])
@@ -46,29 +80,7 @@ END
 		]]>
 	</rollback>
   </changeSet>
-    <changeSet author="MDonato" id="Table.dbo.Rule-v2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-<![CDATA[
-if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Rule' and COLUMN_NAME = 'Color')
-begin
-	alter table [dbo].[Rule] add [Color] varchar(7) null
-end
 
-]]>
-    </sql>
-	<rollback>
-<![CDATA[
-if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Rule' and COLUMN_NAME = 'Color')
-begin
-	alter table [dbo].[Rule] drop column [Color]
-end
-
-]]>
-	</rollback>
-  </changeSet>
   <changeSet author="Core" id="Table.dbo.Rule-Rule_AfterDelete-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"

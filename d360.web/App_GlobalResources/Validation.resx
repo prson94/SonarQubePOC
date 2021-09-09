@@ -117,35 +117,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Action" xml:space="preserve">
-    <value>Please provide an action.</value>
-  </data>
-  <data name="Body" xml:space="preserve">
-    <value>Please provide a body.</value>
-  </data>
-  <data name="Code" xml:space="preserve">
-    <value>Please provide a code.</value>
-  </data>
-  <data name="CurrentPassword" xml:space="preserve">
-    <value>Please provide your current password.</value>
-  </data>
-  <data name="ExtensionName" xml:space="preserve">
-    <value>Please provide an extension name.</value>
-  </data>
-  <data name="FirstName" xml:space="preserve">
-    <value>Please provide a first name.</value>
-  </data>
-  <data name="LastName" xml:space="preserve">
-    <value>Please provide a last name.</value>
-  </data>
   <data name="Length_Tokenized" xml:space="preserve">
     <value>{0} must be between {1} and {2} characters in length.</value>
-  </data>
-  <data name="Level" xml:space="preserve">
-    <value>Please provide a level number.</value>
-  </data>
-  <data name="MaximumDepth" xml:space="preserve">
-    <value>Please provide a maximum depth.</value>
   </data>
   <data name="MaxLength_Tokenized" xml:space="preserve">
     <value>{0} may only be a maximum of {1} characters in length.</value>
@@ -153,41 +126,11 @@
   <data name="MinLength_Tokenized" xml:space="preserve">
     <value>{0} must be at least {1} characters in length.</value>
   </data>
-  <data name="Name" xml:space="preserve">
-    <value>Please provide a name.</value>
-  </data>
-  <data name="NewPassword" xml:space="preserve">
-    <value>Please provide your new password.</value>
-  </data>
-  <data name="Password" xml:space="preserve">
-    <value>Please provide a password at least seven (7) characters long.</value>
-  </data>
   <data name="Pattern_Tokenized" xml:space="preserve">
     <value>{0} must adhere to the following requirements: {1}.</value>
   </data>
   <data name="Required_Tokenized" xml:space="preserve">
     <value>Please provide a valid {0}.</value>
-  </data>
-  <data name="Score" xml:space="preserve">
-    <value>Please provide a score.</value>
-  </data>
-  <data name="Subject" xml:space="preserve">
-    <value>Please provide a subject.</value>
-  </data>
-  <data name="Tab" xml:space="preserve">
-    <value>Please provide a tab name.</value>
-  </data>
-  <data name="DisplayFormat" xml:space="preserve">
-    <value>Please provide a proper format string.</value>
-  </data>
-  <data name="TextFormatString" xml:space="preserve">
-    <value>Please provide a proper format string.</value>
-  </data>
-  <data name="Username" xml:space="preserve">
-    <value>Please provide a valid username.</value>
-  </data>
-  <data name="Value" xml:space="preserve">
-    <value>Please provide a value.</value>
   </data>
   <data name="Password_Regex" xml:space="preserve">
     <value>(?=^.{7,25}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*</value>

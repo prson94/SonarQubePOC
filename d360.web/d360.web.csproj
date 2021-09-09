@@ -357,11 +357,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>FormInfo.resx</DependentUpon>
     </Compile>
-    <Compile Include="App_GlobalResources\PageInfo.designer.cs">
-      <DependentUpon>PageInfo.resx</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <Compile Include="App_GlobalResources\Validation.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -1357,14 +1352,6 @@
     <TypeScriptCompile Include="Scripts\main.ts" />
     <TypeScriptCompile Include="Scripts\polyfills.ts" />
     <TypeScriptCompile Include="Scripts\vendor.ts" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="App_GlobalResources\PageInfo.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>PageInfo.designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Authentication\Login.cshtml" />

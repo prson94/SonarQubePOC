@@ -3090,16 +3090,6 @@ where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow 
                             Category = Resources.FieldInfo.SystemFieldCategory
                         });
 
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleThreshold_Name, FieldName = "RuleThreshold", FieldDescription = Resources.FieldInfo.RuleThreshold_Description, Value = rule.Threshold.ToString() }
-                            },
-                            Category = Resources.FieldInfo.SystemNoCategory
-                        });
-
                         var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
 
                         if (useAssetDetailColumnDefinition && fcMapper != null)

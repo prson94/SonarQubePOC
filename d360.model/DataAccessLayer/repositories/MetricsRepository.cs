@@ -2263,7 +2263,6 @@ for json path";
                     case "FailCount":
                     case "OwningAssetUid":
                     case "PassCount":
-                    case "Passed":
                     case "PassFraction":
                     case "ResultUid":
                     case "RunDate":
@@ -2316,11 +2315,6 @@ for json path";
 			R.FailCount, 
 			R.TotalCount, 
 			R.PassFraction, 
-			case 
-				when R.PassCount = 0 and R.FailCount = 0 then null 
-				when Ru.Threshold <= R.PassFraction then cast(1 as bit) 
-				else cast(0 as bit)
-			end as Passed,
 			case 
 				when ROW_NUMBER() over (partition by O.Uid, R.EffectiveDate order by R.RunDate desc) = 1 then cast(0 as bit) 
 				else cast(1 as bit) 
@@ -2391,8 +2385,7 @@ select	R.ResultUid,
 		R.PassCount, 
 		R.FailCount, 
 		R.TotalCount, 
-		R.PassFraction, 
-		R.Passed{dupeColumnReference}
+		R.PassFraction{dupeColumnReference}
 from	R
 		left join E on E.ResultUid = R.ResultUid
 		outer apply dbo.GetAssetTypeTextPathById(E.EvaluatedAssetTypeId, ' > ') P
