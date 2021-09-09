@@ -227,6 +227,9 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
                     field.ValueList = lists[c.datafield].map((l) => {
                         return {value: l, title: l};
                     });
+                    if (field.ValueList.length === 0) {
+                        field.ValueList.push({value: " ", title: "No Value"});
+                    }
                 }
                 fields.push(field);
             });

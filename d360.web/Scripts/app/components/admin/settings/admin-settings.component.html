@@ -15,6 +15,9 @@
         <div class="tile tile-detail">
             <d3s-admin-home [(companySettings)]="companySettings" [(homePageImage)]="homePageImage"></d3s-admin-home>
         </div>
+        <div class="tile tile-detail">
+            <d3s-helpmenu-list [(items)]="items" [(deletedRecords)]="deletedRecords"></d3s-helpmenu-list>
+        </div>
     </div>
     <div class="col s12 m12 l3">
         <div class="tile tile-detail">
@@ -53,6 +56,12 @@
                 The maximum number of items able to be exported in an excel spreadsheet.
             </div>
             <input type="number" min="0" [(ngModel)]="companySettings.MaxExcelExportRows" style="width: 95%" /> <br />
+            <div class="FieldName">Asset Definition Panel Column Width</div>
+            <div class="directions">
+                Width of columns (in pixels) used to lay out fields on the asset Definition panel.
+            </div>
+            <input type="number" min="100" max="1000" [(ngModel)]="companySettings.AssetDefinitionColumnWidth" style="width: 95%" /> <br />
+
         </div>
         <div class="tile tile-detail">
             <header>Workflow</header>

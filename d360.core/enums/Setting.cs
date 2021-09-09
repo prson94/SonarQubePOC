@@ -401,7 +401,7 @@ namespace d360.core.enums
         WorkflowCatchAllGroup = 58,
         
         [
-            DefaultValue(1), 
+            DefaultValue(10000), 
             Description("MaxDropdownItems_Desc", typeof(Settings)), 
             Locked(false),
             Name("MaxDropdownItems_Name", typeof(Settings)),
@@ -542,7 +542,16 @@ namespace d360.core.enums
             Name("AssetDataProfileLifespan_Name", typeof(Settings)),
             Type(SettingType.Number)
         ]
-        AssetDataProfileLifespan = 81
+        AssetDataProfileLifespan = 81,
+
+        [
+            DefaultValue(200),
+            Description("AssetDefinitionColumnWidth_Desc", typeof(Settings)),
+            Locked(false),
+            Name("AssetDefinitionColumnWidth_Name", typeof(Settings)),
+            Type(SettingType.Number)
+        ]
+        AssetDefinitionColumnWidth = 82
     }
 
     public class SettingInfo

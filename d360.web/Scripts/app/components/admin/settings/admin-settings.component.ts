@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input, ViewChild } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettings, CompanyImage, SearchType, SettingsHelper, CompanyRebuildJobStatusApiModel, CompanyRebuildJobStatusState } from '../../../models/settings.model';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -11,6 +11,8 @@ import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { DynamicButton } from '../../../models/secondaryNav.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from '../../../static/string-constants';
+import { HelpMenu } from '../../../models/helpmenu.model';
+import { HelpMenuService } from '../../shared/helpmenu/helpmenu.service';
 
 @Component({
     selector: 'admin-settings',
@@ -35,7 +37,8 @@ import { StringConstants } from '../../../static/string-constants';
 })
 
 export class AdminSettingsComponent extends AdminBaseComponent {
-    
+    items: HelpMenu[] = []; 
+    deletedRecords: HelpMenu[] = []; 
     companySettings: CompanySettings = new CompanySettings();
     searchTypes: SearchType[];
     companyLogo: CompanyImage = new CompanyImage();
@@ -63,6 +66,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         private companySettingsService: CompanySettingsService,
         private searchService: SearchService,
         secondaryNavService: SecondaryNavService,
+        private helpMenuService: HelpMenuService,
         titleService: Title,
         private messagesService: MessagesObservableService,
     ) {
@@ -121,6 +125,13 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.companySettings.CompanyIcon = this.companyIcon.dataUrl;
         this.companySettings.CompanyLogo = this.companyLogo.dataUrl;
         this.companySettings.HomePageBackgroundImage = this.homePageImage.dataUrl;
+
+        this.items.sort((a, b) => (a.order < b.order ? -1 : 1));
+        for (let i = 0; i < this.items.length; i++) {
+            this.items[i].order = i;
+        }
+        this.helpMenuService.updateHelpMenuItems(this.items, this.deletedRecords).subscribe((r) => {
+        });
 
         this.companySettingsService.putSettings(this.companySettings)
             .subscribe(data => {                

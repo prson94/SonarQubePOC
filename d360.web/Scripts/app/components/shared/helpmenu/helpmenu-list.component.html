@@ -1,0 +1,121 @@
+﻿<header>
+    Help Menu
+    <d3s-tile-actions [hasAdd]="formMode == FormMode.Default"
+                      (addClick)="add()"></d3s-tile-actions>
+</header>
+<div [ngSwitch]="formMode">
+    <div *ngSwitchCase="FormMode.Default">
+        <p-table #dt
+                 [value]="items"
+                 selectionMode="single"
+                 [metaKeySelection]="true"
+                 [pageLinks]="3"
+                 [paginator]="true"
+                 [rows]="10">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Name</th>
+                    <th>Url</th>
+                    <th style="width: 40px"></th>
+                    <th style="width: 40px"></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body"
+                         let-item>
+                <tr [pSelectableRow]="item">
+                    <td>{{item.Name}}</td>
+                    <td><div *ngIf="item.isEditable">{{item.Url}}</div></td>
+                    <td>
+                        <div class="RowTools">
+                            <div style="cursor:pointer;" class="{{getVisibilityIcon(item.visibilty)}}" (click)="menu.toggle($event)">
+                                <ig-popup-menu (onSelect)="changeVisibility($event,item)" [items]="visibilityItems()" #menu [tabIndex]="10"></ig-popup-menu>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="RowTools">
+                            <div *ngIf="item.isEditable">
+                                <button type="button" icon="fa-ellipsis-v" igButton (click)="menu.toggle($event)" pTooltip="Help Menu Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                                <ig-popup-menu (onSelect)="clickMenu($event,item)" [items]="deleteMenuItems(item.order != 0, item.order != (items.length-1))" #menu [tabIndex]="1"></ig-popup-menu>
+                            </div>
+                            <ng-container *ngIf="!item.isEditable">
+                                <button type="button" icon="fa-ellipsis-v" igButton (click)="menu.toggle($event)" pTooltip="Help Menu Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                                <ig-popup-menu (onSelect)="clickMenu($event,item)" [items]="menuItems(item.order != 0, item.order != (items.length-1))" #menu [tabIndex]="1"></ig-popup-menu>
+                            </ng-container>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="summary">
+                <d3s-grid-paging-info [first]="dt.first"
+                                      [rows]="dt.rows"
+                                      [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+            </ng-template>
+        </p-table>
+    </div>
+    <div *ngSwitchCase="FormMode.Adding">
+        <div class="row">
+            <div class="col s12">
+                <div class="FieldName">Name</div>
+                <input type="text" placeholder="Value required" style="width: 98%" maxlength="250" #name />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <div class="FieldName">Url</div>
+                <input type="text" placeholder="Value required" style="width: 98%" maxlength="250" #url/>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <div class="FieldName">Description</div>
+                <input type="text" placeholder="Optional" style="width: 98%" maxlength="500" #description/>
+            </div>
+        </div>
+        <div class="row" style="padding-top:12px">
+            <div class="col s12">
+                <button pButton type="button" label="Save" (click)="addNew(name.value,url.value,description.value)" [disabled]="!validAdd(name.value,url.value)"></button>
+                <button pButton type="button" label="Cancel" (click)="closeSave()"></button>
+            </div>
+        </div>
+    </div>
+    <div *ngSwitchCase="FormMode.Editing">
+        <div class="row">
+            <div class="col s12">
+                <div class="FieldName">Name</div>
+                <input type="text" placeholder="Value required" [(ngModel)]="selectedItem.Name" style="width: 98%" maxlength="250" />
+            </div>
+        </div>
+        <div class="row">
+            <div *ngIf="selectedItem.isEditable" class="col s12">
+                <div class="FieldName">Url</div>
+                <input type="text" placeholder="Value required" [(ngModel)]="selectedItem.Url" style="width: 98%" maxlength="250" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <div class="FieldName">Description</div>
+                <input type="text" placeholder="Optional" [(ngModel)]="selectedItem.Description" style="width: 98%" maxlength="500" />
+            </div>
+        </div>
+        <div class="row" style="padding-top:12px">
+            <div class="col s12">
+                <button pButton type="button" label="Save" (click)="closeSave()" [disabled]="!valid()"></button>
+                <button pButton type="button" label="Cancel" (click)="cancel()"></button>
+            </div>
+        </div>
+    </div>
+    <div *ngSwitchCase="FormMode.Deleting">
+        <div>
+            Are you sure you want to delete the menu item "[{{selectedItem.Name}}]"?
+        </div>
+        <button pButton
+                type="button"
+                label="Delete"
+                (click)="confirmDelete()"></button>
+        <button pButton
+                type="button"
+                label="Cancel"
+                (click)="formMode = FormMode.Default"></button>
+    </div>
+</div>

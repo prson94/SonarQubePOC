@@ -410,7 +410,7 @@ namespace d360.model.DataAccessLayer
 
             if (includeProfilingCheck)
             {
-                profilingCheckSql = $"cross apply (select case when exists (select 1 from AssetDataProfile where AssetID = A.ID and SampleCount is not null and TotalCount is not null) then cast(1 as bit) else cast(0 as bit) end as HasProfiling) Profiling";
+                profilingCheckSql = $"cross apply (select case when exists (select 1 from AssetDataProfile where AssetID = A.ID) then cast(1 as bit) else cast(0 as bit) end as HasProfiling) Profiling";
                 profilingCheckFields = $"Profiling.HasProfiling as HasProfiling,";
             }
 
@@ -1409,7 +1409,9 @@ namespace d360.model.DataAccessLayer
 
                         if (string.IsNullOrEmpty(orderBy))
                         {
-                            orderBy = fieldTypes.OrderByDescending(x => x.SortOrder).ThenBy(x => x.ID).FirstOrDefault().Name;
+                            orderBy = fieldTypes.Where(x=> x.IsListable)
+                                .OrderBy(x => x.SortOrder)
+                                .ThenBy(x => x.ID).FirstOrDefault().Name;
                         }
 
                         results = results.OrderBy(x => ((IDictionary<string, object>)x)[orderBy]).ToList();
