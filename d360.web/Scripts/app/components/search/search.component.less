@@ -7,18 +7,14 @@
   margin-right: -11px;
 
   .title-bar.search {
-    margin-right: 0px;
-    margin-left: 0px;
+    margin-right: 0;
+    margin-left: 0;
     white-space: nowrap;
 
     .tile {
       z-index: 1;
       top: -10px;
       box-shadow: none;
-    }
-
-    .button {
-      margin-left: 10px;
     }
 
     .titlebar-search ::ng-deep {
@@ -39,7 +35,7 @@
         }
 
         &:focus-within {
-          border: 1px solid #4D90FE;
+          border: 1px solid @ig-midblue-t3;
         }
       }
 
@@ -56,42 +52,13 @@
       flex-shrink: 0;
     }
 
-    p-multiselect {
-      height: 30px;
-    }
-
     .icon {
       position: relative;
-      right: 0px;
+      right: 0;
       min-width: unset;
-    }
-
-    .button {
-      flex-shrink: 0;
-    }
-
-    .checkbox {
-      display: flex;
-      align-self: center;
-      flex-shrink: 0;
-
-      input {
-        width: 17px;
-        height: 17px;
-        outline: none;
-        box-shadow: none;
-        align-self: center;
-      }
-
-      span {
-        padding-left: 8px;
-        white-space: nowrap;
-        user-select: none;
-      }
     }
   }
 }
-
 
 .search-container {
   flex-grow: 1;

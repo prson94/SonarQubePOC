@@ -30,6 +30,18 @@ export class SearchResult {
     Tags: SearchResultTags[];
 }
 
+export class AssetScore {
+    AssetUid: string;
+    EffectiveDate: string;
+    EndDate: string;
+    Value: number;
+    ScoreType: string;
+    ShortName: string;
+    RunDate: string;
+    LowerThreshold: number;
+    UpperThreshold: number;
+}
+
 export class SearchFullResult extends SearchResult {
     ID: string;
     Description: string;
@@ -150,18 +162,6 @@ export class SearchAssetDetail {
     Object: string;
     ObjectId: number;
     Id: number;
-}
-
-export class AssetScore {
-    AssetUid: string;
-    EffectiveDate: string;
-    EndDate: string;
-    Value: number;
-    ScoreType: string;
-    ShortName: string;
-    RunDate: string;
-    LowerThreshold: number;
-    UpperThreshold: number;
 }
 
 export class SearchDetail {

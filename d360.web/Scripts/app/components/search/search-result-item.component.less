@@ -6,7 +6,7 @@
   max-width: 100%;
   flex-direction: column;
   margin-bottom: 15px;
-  padding: 0px 16px 16px;
+  padding: 0 16px 16px;
   border: solid 1px rgba(185, 192, 197, 0.7);
   border-radius: 4px;
   background-color: @ig-white;
@@ -17,7 +17,7 @@
   }
 
   div.card-row {
-    margin-bottom: 0px;
+    margin-bottom: 0;
     margin-top: 8px;
 
     .field-bar-outer {
@@ -31,7 +31,6 @@
         display: inline-flex;
         box-sizing: border-box;
         flex-direction: row;
-        box-sizing: border-box;
         background: white;
         height: 28px;
 
@@ -54,13 +53,12 @@
       width: 100%;
       height: auto;
 
-
       &.can-overflow {
         position: absolute;
         overflow-y: hidden;
         overflow-x: auto;
-        right: 0px;
-        left: 0px;
+        right: 0;
+        left: 0;
         width: auto;
         scrollbar-width: none !important; /* Firefox */
         -ms-overflow-style: none !important; /* IE 10+ */
@@ -71,8 +69,8 @@
       }
 
       &::-webkit-scrollbar { /* WebKit hide scrollbar */
-        width: 0px !important;
-        height: 0px !important;
+        width: 0 !important;
+        height: 0 !important;
       }
     }
 
@@ -89,13 +87,15 @@
       padding: 0;
       width: 24px;
 
-      &:focus, &.focused {
+      &:focus,
+      &.focused {
         box-shadow: none;
         outline: 1px solid fade(@ig-midblue, 20%);
         outline-offset: -1px;
       }
 
-      &:disabled, &.disabled {
+      &:disabled,
+      &.disabled {
         cursor: default;
         opacity: 0.33;
       }
@@ -114,7 +114,8 @@
     .search-result-field {
       white-space: nowrap;
 
-      .label, .value, .statement {
+      .label, .value,
+      .statement {
         max-width: 150px;
         display: inline-block;
         white-space: nowrap;
@@ -134,19 +135,20 @@
 
     .search-result-field:not(:first-of-type)::before {
       content: '\25cf';
-      padding: 0px 8px;
+      padding: 0 8px;
       vertical-align: top;
     }
 
     &.badges {
-      margin-top: 0px;
+      margin-top: 0;
       height: 48px;
       display: inline-flex;
       align-items: flex-end;
       justify-content: space-between;
     }
 
-    &.title, &.description, &.tags {
+    &.title, &.description,
+    &.tags {
       margin-top: 16px;
     }
 
@@ -174,7 +176,7 @@
 
       ::ng-deep {
         &:first-of-type {
-          margin-top: 0px;
+          margin-top: 0;
         }
 
         i.fa {
@@ -207,7 +209,7 @@
           border-radius: 2px;
           background-color: #dce6ec;
           margin-right: 9px;
-          padding: 0px 8px !important;
+          padding: 0 8px !important;
 
           .tag-item-wrapper {
             color: @igx-blue-light;
