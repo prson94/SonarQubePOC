@@ -27,6 +27,9 @@ namespace d360.core.entities
 
         [DataMember]
         public DateTime CreatedOn { get; set; }
+
+        [DataMember]
+        public string Configuration { get; set; }
     }
 
 
@@ -36,7 +39,7 @@ namespace d360.core.entities
         public Guid? ExternalId { get; set; }
         public string Detail { get; set; }
         public string Component { get; set; }
-        public Dictionary<string, string> Configuration { get; set; }
+        public List<Dictionary<string, object>> Configuration { get; set; }
     }
 
     public class ApiExecutionExternalViewModel
@@ -46,6 +49,7 @@ namespace d360.core.entities
         public string Detail { get; set; }
         public string Component { get; set; }
         public DateTime? CreatedOn { get; set; }
+        public List<Dictionary<string, object>> Configuration { get; set; }
     }
 
     public class APIExecutionExternalAPIModelResult : PagedApiBaseViewModel
@@ -65,5 +69,8 @@ namespace d360.core.entities
         public string detail { get; set; }
         public string component { get; set; }
         public DateTime createdOn { get; set; }
+        public List<Dictionary<string, object>> Configuration { get; set; }
+        [IgnoreDataMember]
+        public string ConfigurationJSON { get; set; }
     }
 }
