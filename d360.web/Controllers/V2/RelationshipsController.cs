@@ -1076,7 +1076,7 @@ namespace d360.web.Controllers.V2
         /// Takes a given set of relationships and inserts/updates them. Use this endpoint if you want to process under 250 items and need immediate results.
         /// </summary>
         /// <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
-        /// <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid.</param>
+        /// <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid. Uid is optional.</param>
         /// <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
         /// <param name="lookupFieldsPassedByValue">Optional query string parameter that allows you to pass list values numeric value instead of plain text value.  The default value for this is false.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -1157,7 +1157,7 @@ namespace d360.web.Controllers.V2
         /// Inserts or updates a given set of relationships based on the specific relationship type Uid. This endpoint is meant for a greater number of items as it stores the relationship list for asynchronous or batch processing.
         /// </summary>
         /// <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
-        /// <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid.</param>
+        /// <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid. Uid is optional.</param>
         /// <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
         /// <returns>An HTTP status code and message.</returns>
         [

@@ -326,6 +326,9 @@ namespace d360.core.entities
     public class RelationshipInsert
     {
         [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
         public Guid SubjectAssetUid { get; set; }
         [DataMember]
         public Guid ObjectAssetUid { get; set; }

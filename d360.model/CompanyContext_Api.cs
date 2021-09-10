@@ -5339,6 +5339,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
             bool checkSemanticRelation = false;
             bool relationshipTypeHasFieldTypes = false;
             bool relationshipTypeHasLookupFieldTypes = false;
+            bool IsUidPassed = false;
             Dictionary<string, double> metrics = new Dictionary<string, double>();
             var step = 0;
 
@@ -5363,6 +5364,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
             var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             var tooLongOwners = import.Where(x => !string.IsNullOrEmpty(x.Owner) && x.Owner.Length > 100).ToList();
+            var uidDupes = import.Where(i => i.Uid != Guid.Empty && i.Uid != null).GroupBy(i => i.Uid).Where(i => i.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
 
             if (executionItemDupes.Any())
             {
@@ -5376,7 +5378,13 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                 execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(import.Select(i => new DatabaseBulkRelationshipResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
-            else if (!executionItemDupes.Any() && !tooLongOwners.Any())
+            else if (uidDupes.Any())
+            {
+                string message = string.Format(Messages.Error_Duplicate_Relationship_Uid, string.Join(", ", uidDupes.Select(i => i.Uid)));
+                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+                results.AddRange(import.Select(i => new DatabaseBulkRelationshipResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
+            }
+            else if (!executionItemDupes.Any() && !tooLongOwners.Any() && !uidDupes.Any())
             {
                 var sw = Stopwatch.StartNew();
                 try
@@ -5404,6 +5412,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                     table.Columns.Add("ObjectUid", typeof(Guid));
                     table.Columns.Add("ExecutionItemUid", typeof(Guid));
                     table.Columns.Add("Owner", typeof(string));
+                    table.Columns.Add("uid", typeof(Guid));
 
                     var errorTable = new DataTable();
                     errorTable.Columns.Add("ExecutionID", typeof(Guid));
@@ -5453,6 +5462,11 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                 row["ObjectUid"] = model.ObjectAssetUid;
                                 row["Owner"] = model.Owner;
                                 if (model.ExecutionItemUid.HasValue) row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
+                                if (model.Uid != Guid.Empty)
+                                {
+                                    row["uid"] = model.Uid;
+                                    IsUidPassed = true;
+                                }
                                 table.Rows.Add(row);
                             }
                             else
@@ -5499,6 +5513,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                         bulkCopy.ColumnMappings.Add("ObjectUid", "ObjectUid");
                         bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
                         bulkCopy.ColumnMappings.Add("Owner", "Owner");
+                        bulkCopy.ColumnMappings.Add("uid", "uid");
 
                         bulkCopy.WriteToServer(table);
                     }
@@ -5584,6 +5599,101 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                     }
                     #endregion
 
+                    if (IsUidPassed)
+                    { 
+                        #region Validate Relationship Uid
+                        Connection.Execute(@"
+                            declare @it int;
+
+                            select	@it = ID
+                            from	IntersectType
+                            where	[uid] = @uid
+
+                            drop table if exists #tempdupuid;
+
+                            select I.IntersectTypeID,
+                            T.SubjectUid Ex_SubjectUid,T.ObjectUid Ex_ObjectUid, S.Uid Int_SubjectUid,
+                            O.Uid Int_ObjectUid
+                            into #tempdupuid
+                            from api.ExecutionRelationship T
+                            inner join [Intersect] I on I.Uid = T.Uid
+		                    left join Asset S on S.[object] = I.[Subject] and S.[objectId] = I.[SubjectId]
+		                    left join Asset O on O.[object] = I.[object] and O.[objectId] = I.[objectId]
+                            where   T.ExecutionId = @ExecutionID and T.Uid is not null;
+
+                            create index idx_tempdupuid on #tempdupuid(IntersectTypeID);
+
+                            
+                            if exists (select 1 from #tempdupuid where IntersectTypeID != @it)
+                               begin
+                                    update	T
+                                    set		T.Message = coalesce(T.Message + '; ', '') + 'Batch failed due to relationship uid is already specified with different relationship type.',
+		                                    T.Success = 0
+                                    from	api.ExecutionRelationship T
+		                            where   T.ExecutionId = @ExecutionID
+                            end
+
+                            if exists (select 1 from #tempdupuid where IntersectTypeID = @it and (Ex_SubjectUid != Int_SubjectUid or Ex_ObjectUid != Int_ObjectUid))
+                               begin
+                                    update	T
+                                    set		T.Message = coalesce(T.Message + '; ', '') + 'Batch failed due to passed relationship uid match. But SubjectUid and ObjectUid not match.',
+		                                    T.Success = 0
+                                    from	api.ExecutionRelationship T
+		                            where   T.ExecutionId = @ExecutionID
+                            end
+                        ",
+                        new { execution.ExecutionID, rt.uid }, commandTimeout: timeout);
+                        AddMeasurement(metrics, "Log Validate Relationship Uid", sw.ElapsedMilliseconds, ++step);
+                        #endregion
+
+                        #region Validate Relationship Uid - Add
+                        Connection.Execute(@"
+                            declare @st varchar(50),
+	                            @stid int,
+	                            @ot varchar(50),
+	                            @otid int,
+	                            @it int
+
+
+                            select	@st = Subject,
+	                            @stid = SubjectID,
+	                            @ot = Object,
+	                            @otid = ObjectID,
+	                            @it = ID
+                            from	IntersectType
+                            where	[uid] = @uid
+
+                            drop table if exists #tempNewuid;
+                            
+                            select T.uid
+                            into #tempNewuid
+                            from api.ExecutionRelationship T
+                            left outer join [Intersect] I on T.uid = I.uid
+                            where  T.ExecutionId = @ExecutionID and T.Uid is not null and I.Id is null;
+
+                            create index idx_tempNewuid on #tempNewuid(uid);
+
+                            if exists ( select 1
+                                        from	api.ExecutionRelationship T
+                                        inner join #tempNewuid N on T.uid = N.uid
+		                                left join AssetWithType S on S.[Type] = @st and S.TypeID = @stid and S.[uid] = T.SubjectUid
+		                                left join AssetWithType O on O.[Type] = @ot and O.TypeID = @otid and O.[uid] = T.ObjectUid
+                                        left join IntersectType IT on IT.uid = @uid
+                                        left join [Intersect] I on IT.Id = I.IntersectTypeId and I.SubjectId= S.ObjectId and I.ObjectId = O.ObjectId and I.Subject = S.Object and I.Object = O.Object
+                                        where   T.ExecutionId = @ExecutionID and I.id is not null
+                                      )
+                               begin
+                                    update	T
+                                    set		T.Message = coalesce(T.Message + '; ', '') + 'Batch failed due to unique relationship uid passed. But subjectuid and objectuid exist for relationship type.',
+		                                    T.Success = 0
+                                    from	api.ExecutionRelationship T
+		                            where   T.ExecutionId = @ExecutionID
+                            end
+                        ",
+                        new { execution.ExecutionID, rt.uid }, commandTimeout: timeout);
+                        AddMeasurement(metrics, "Log Validate Relationship Uid - Add", sw.ElapsedMilliseconds, ++step);
+                        #endregion
+                    }
                     #region Validate subjects/objects
                     sw.Restart();
                     Connection.Execute(@"
@@ -5593,6 +5703,7 @@ declare @st varchar(50),
 	@otid int,
 	@it int
 
+
 select	@st = Subject,
 	@stid = SubjectID,
 	@ot = Object,
@@ -5600,6 +5711,20 @@ select	@st = Subject,
 	@it = ID
 from	IntersectType
 where	[uid] = @uid
+
+
+update	T
+set	T.Subject = I.Object,
+	T.SubjectID = I.ObjectID,
+	T.Object = I.Object,
+	T.ObjectID = I.ObjectID,
+    T.IsNew = CASE
+                WHEN I.Id is null THEN 1
+                ELSE 0
+                END
+from	api.ExecutionRelationship T
+        inner join [Intersect] I on abs(I.IntersectTypeId) =  @it and I.Uid = T.Uid
+    where T.ExecutionID = @ExecutionID and T.Uid Is not null;
 
 update	T
 set		T.Subject = S.Object,
@@ -5615,7 +5740,7 @@ from	api.ExecutionRelationship T
 		left join AssetWithType O on O.[Type] = @ot and O.TypeID = @otid and O.[uid] = T.ObjectUid
         left join IntersectType IT on IT.uid = @uid
         left join [Intersect] I on IT.Id = I.IntersectTypeId and I.SubjectId= S.ObjectId and I.ObjectId = O.ObjectId and I.Subject = S.Object and I.Object = O.Object
-    where T.ExecutionID = @ExecutionID;
+    where T.ExecutionID = @ExecutionID and (T.IsNew is null OR T.IsNew = 1);
 
 if @st = 'ReferenceItemType' and @stid = 0
 begin
@@ -5880,8 +6005,8 @@ end",
 			    T.UpdatedOn = getutcdate(),
                 T.Owner = coalesce(S.Owner,T.Owner)
     when not matched by target then
-	    insert  (IntersectTypeID, Subject, SubjectID, Object, ObjectID, [State], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
-	    values  (@rtID, S.Subject, S.SubjectID, S.Object, S.ObjectID, 1, @CurrentResourceID, getutcdate(), @CurrentResourceID, getutcdate(), coalesce(S.Owner,'BULK_API'))
+	    insert  (uid,IntersectTypeID, Subject, SubjectID, Object, ObjectID, [State], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
+	    values  (isnull(S.Uid,newid()),@rtID, S.Subject, S.SubjectID, S.Object, S.ObjectID, 1, @CurrentResourceID, getutcdate(), @CurrentResourceID, getutcdate(), coalesce(S.Owner,'BULK_API'))
     output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
     update	T
