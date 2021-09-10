@@ -354,6 +354,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         let observables: Array<Observable<any>> = [];
         this.showDescription = true;
         this.enableAllowMultipleValues = true;
+        this.showDisplayInColumn = true;
 
         if (value == null) {
             this.currentType = "Empty";
